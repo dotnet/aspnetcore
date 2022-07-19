@@ -341,10 +341,8 @@ public partial class HttpConnectionTests
             Assert.Equal(1, accessTokenCallCount);
         }
 
-        [Theory]
-        [InlineData(HttpStatusCode.Unauthorized)]
-        [InlineData(HttpStatusCode.Forbidden)]
-        public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsLongPolling(HttpStatusCode httpStatusCode)
+        [Fact]
+        public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsLongPolling()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             var requestsExecuted = false;
@@ -365,7 +363,7 @@ public partial class HttpConnectionTests
                 if (pollCount % 2 == 0)
                 {
                     pollCount++;
-                    return ResponseUtils.CreateResponse(httpStatusCode);
+                    return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
                 }
                 if (pollCount / 2 >= messageFragments.Length)
                 {
@@ -385,7 +383,7 @@ public partial class HttpConnectionTests
                 if (!requestsExecuted)
                 {
                     requestsExecuted = true;
-                    return Task.FromResult(ResponseUtils.CreateResponse(httpStatusCode));
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized));
                 }
 
                 Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
@@ -419,10 +417,8 @@ public partial class HttpConnectionTests
             Assert.Equal(7, accessTokenCallCount);
         }
 
-        [Theory]
-        [InlineData(HttpStatusCode.Unauthorized)]
-        [InlineData(HttpStatusCode.Forbidden)]
-        public async Task HttpConnectionFailsAfterFirstRetryFailsLongPolling(HttpStatusCode httpStatusCode)
+        [Fact]
+        public async Task HttpConnectionFailsAfterFirstRetryFailsLongPolling()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             var accessTokenCallCount = 0;
@@ -434,7 +430,7 @@ public partial class HttpConnectionTests
 
             testHttpHandler.OnLongPoll(_ =>
             {
-                return ResponseUtils.CreateResponse(httpStatusCode);
+                return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
             });
 
             Task<string> AccessTokenProvider()
@@ -455,10 +451,8 @@ public partial class HttpConnectionTests
             Assert.Equal(2, accessTokenCallCount);
         }
 
-        [Theory]
-        [InlineData(HttpStatusCode.Unauthorized)]
-        [InlineData(HttpStatusCode.Forbidden)]
-        public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsServerSentEvents(HttpStatusCode httpStatusCode)
+        [Fact]
+        public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsServerSentEvents()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             var requestsExecuted = false;
@@ -476,7 +470,7 @@ public partial class HttpConnectionTests
                 if (!sendRequestExecuted)
                 {
                     sendRequestExecuted = true;
-                    return ResponseUtils.CreateResponse(httpStatusCode);
+                    return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
                 }
                 sendFinishedTcs.SetResult();
                 return ResponseUtils.CreateResponse(HttpStatusCode.OK);
@@ -489,7 +483,7 @@ public partial class HttpConnectionTests
                 if (!requestsExecuted)
                 {
                     requestsExecuted = true;
-                    return Task.FromResult(ResponseUtils.CreateResponse(httpStatusCode));
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized));
                 }
 
                 Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
@@ -519,10 +513,8 @@ public partial class HttpConnectionTests
             Assert.Equal(3, accessTokenCallCount);
         }
 
-        [Theory]
-        [InlineData(HttpStatusCode.Unauthorized)]
-        [InlineData(HttpStatusCode.Forbidden)]
-        public async Task HttpConnectionFailsAfterFirstRetryFailsServerSentEvents(HttpStatusCode httpStatusCode)
+        [Fact]
+        public async Task HttpConnectionFailsAfterFirstRetryFailsServerSentEvents()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             var accessTokenCallCount = 0;
@@ -534,7 +526,7 @@ public partial class HttpConnectionTests
 
             testHttpHandler.OnSocketSend((_, _) =>
             {
-                return ResponseUtils.CreateResponse(httpStatusCode);
+                return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
             });
 
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

@@ -24,7 +24,12 @@ internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
         var isNegotiate = false;
         if (string.IsNullOrEmpty(_accessToken) ||
             // Negotiate redirects likely will have a new access token so let's always grab a (potentially) new access token on negotiate
-            request.RequestUri!.OriginalString.Contains("/negotiate?"))
+#if NET5_0_OR_GREATER
+            request.Options.TryGetValue(new HttpRequestOptionsKey<bool>("IsNegotiate"), out var value) && value == true
+#else
+            request.Properties.TryGetValue("IsNegotiate", out var value) && value is true
+#endif
+            )
         {
             isNegotiate = true;
             _accessToken = await _httpConnection.GetAccessTokenAsync().ConfigureAwait(false);
@@ -37,7 +42,7 @@ internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
 
         var result = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         // retry once with a new token on auth failure
-        if (!isNegotiate && result.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized)
+        if (!isNegotiate && result.StatusCode is HttpStatusCode.Unauthorized)
         {
             HttpConnection.Log.RetryAccessToken(_httpConnection._logger, result.StatusCode);
             result.Dispose();
