@@ -3,18 +3,13 @@
 
 #nullable enable
 
-using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -27,7 +22,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         GetBuilderEndpointDataSource(endpointRouteBuilder) switch
         {
             RouteEndpointDataSource routeDataSource => routeDataSource.GetSingleRouteEndpointBuilder(),
-            ModelEndpointDataSource modelDataSource => Assert.IsType<RouteEndpointBuilder>(Assert.Single(modelDataSource.EndpointBuilders)),
             _ => throw new InvalidOperationException($"Unknown EndointDataSource type!"),
         };
 
@@ -233,9 +227,11 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var dataSource = Assert.Single(builder.DataSources);
         var endpoint = Assert.Single(dataSource.Endpoints);
 
+        // As with the Delegate Map method overloads for route handlers, the attributes on the RequestDelegate
+        // can override the HttpMethodMetadata. Extension methods could already do this.
         Assert.Equal(3, endpoint.Metadata.Count);
-        Assert.Equal("ATTRIBUTE", GetMethod(endpoint.Metadata[0]));
-        Assert.Equal("METHOD", GetMethod(endpoint.Metadata[1]));
+        Assert.Equal("METHOD", GetMethod(endpoint.Metadata[0]));
+        Assert.Equal("ATTRIBUTE", GetMethod(endpoint.Metadata[1]));
         Assert.Equal("BUILDER", GetMethod(endpoint.Metadata[2]));
 
         Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
