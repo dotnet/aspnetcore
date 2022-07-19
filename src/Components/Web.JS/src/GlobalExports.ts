@@ -11,7 +11,7 @@ import { InputFile } from './InputFile';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
+import { Platform, Pointer } from './Platform/Platform';
 import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
@@ -32,37 +32,46 @@ interface IBlazor {
     domWrapper: typeof domFunctions,
     Virtualize: typeof Virtualize,
     PageTitle: typeof PageTitle,
-    forceCloseConnection?: () => Promise<void>;
+    forceCloseConnection?: () => Promise<void>,
     InputFile?: typeof InputFile,
-    invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
-    endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
-    receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
-    retrieveByteArray?: () => System_Object;
-    getPersistedState?: () => System_String;
-    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
+    invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any, // obsolete, legacy, don't use for new code. Use [JSImport] instead
+    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, marshalledCallArgsJson: string, marshalledCallAsyncHandle: number) => string | null,
+    endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void,
+    receiveByteArray?: (id: number, data: Uint8Array) => void,
+    retrieveByteArray?: () => Uint8Array,
+    getPersistedState?: () => string,
+    attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void,
     registeredComponents?: {
       getRegisteredComponentsCount: () => number,
       getId: (index) => number,
-      getAssembly: (id) => System_String,
-      getTypeName: (id) => System_String,
-      getParameterDefinitions: (id) => System_String,
-      getParameterValues: (id) => any,
+      getAssembly: (id) => string,
+      getTypeName: (id) => string,
+      getParameterDefinitions: (id) => string,
+      getParameterValues: (id) => string,
     };
     renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void,
-    getConfig?: (dotNetFileName: System_String) => System_Object | undefined,
-    getApplicationEnvironment?: () => System_String,
-    readLazyAssemblies?: () => System_Array<System_Object>,
-    readLazyPdbs?: () => System_Array<System_Object>,
-    readSatelliteAssemblies?: () => System_Array<System_Object>,
-    getLazyAssemblies?: any
-    dotNetCriticalError?: any
-    getSatelliteAssemblies?: any,
-    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
-    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
-    receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,
+    getConfig?: (fileName: string) => Uint8Array | undefined,
+    getApplicationEnvironment?: () => string,
+    readLazyAssembly?: (index: number) => Uint8Array | null,
+    readLazyPdb?: (index: number) => Uint8Array | null,
+    readSatelliteAssembly?: (index: number) => Uint8Array | null,
+    getLazyAssemblies?: (assemblies: string[]) => Promise<number>,
+    dotNetCriticalError?: (string) => void,
+    getSatelliteAssemblies?: (culturesToLoad: string[]) => Promise<number>,
+    sendJSDataStream?: (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => void,
+    getJSDataStreamChunk?: (data: ArrayBufferView | Blob, position: number, chunkSize: number) => Promise<Uint8Array>,
+    receiveDotNetDataStream?: (streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string) => void,
     attachWebRendererInterop?: typeof attachWebRendererInterop,
 
+    readLazyAssembliesCount?: () => number,
+    readSatelliteAssembliesCount?: () => number,
+    InvokeDotNet?: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => string | null, // obsolete, legacy, don't use for new code. Use [JSExport] instead
+    BeginInvokeDotNet?: (callId: string | null, assemblyName: string | null, dotNetObjectId: number, methodIdentifier: string, argsJson: string) => void,
+    EndInvokeJS?: (argsJson: string) => void,
+    NotifyByteArrayAvailable?: (id: number) => void,
+
     // APIs invoked by hot reload
+    initHotReload?: (url: string) => Promise<void>,
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void,
     getApplyUpdateCapabilities?: () => string,
   }

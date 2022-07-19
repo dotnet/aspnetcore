@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.JSInterop.Implementation;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop;
@@ -10,8 +11,15 @@ namespace Microsoft.JSInterop;
 /// <summary>
 /// Abstract base class for an in-process JavaScript runtime.
 /// </summary>
-public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
+public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime, IInternalCallsProvider
 {
+    /// <summary>
+    /// Infrastructure
+    /// </summary>
+    public abstract TResult GetInternalCalls<TResult>() where TResult : IInternalCalls;
+
+    internal IJSInternalCalls JSInternalCalls => GetInternalCalls<IJSInternalCalls>();
+
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, params object?[]? args)
     {

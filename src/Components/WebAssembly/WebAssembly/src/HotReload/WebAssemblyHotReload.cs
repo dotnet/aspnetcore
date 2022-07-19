@@ -5,9 +5,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 /// code.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class WebAssemblyHotReload
+public static partial class WebAssemblyHotReload
 {
     private static HotReloadAgent? _hotReloadAgent;
     private static readonly UpdateDelta[] _updateDeltas = new[]
@@ -24,7 +24,7 @@ public static class WebAssemblyHotReload
         new UpdateDelta(),
     };
 
-    internal static async Task InitializeAsync()
+    internal static async Task InitializeAsync(IComponentsInternalCalls _internalCalls)
     {
         _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
 
@@ -33,9 +33,7 @@ public static class WebAssemblyHotReload
             // Attempt to read previously applied hot reload deltas if the ASP.NET Core browser tools are available (indicated by the presence of the Environment variable).
             // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage .
             // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-
-            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
-            await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+            await _internalCalls.InitHotReload("/_framework/blazor-hotreload.js");
         }
     }
 

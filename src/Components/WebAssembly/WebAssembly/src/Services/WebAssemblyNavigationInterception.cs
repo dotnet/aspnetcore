@@ -3,17 +3,22 @@
 
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed class WebAssemblyNavigationInterception : INavigationInterception
 {
-    public static readonly WebAssemblyNavigationInterception Instance = new WebAssemblyNavigationInterception();
+    private readonly IComponentsInternalCalls _internalCalls;
+    public WebAssemblyNavigationInterception(IJSRuntime jsRuntime)
+    {
+        _internalCalls = ((IInternalCallsProvider)jsRuntime).GetInternalCalls<IComponentsInternalCalls>();
+
+    }
 
     public Task EnableNavigationInterceptionAsync()
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EnableNavigationInterception);
+        _internalCalls.EnableNavigationInterception();
         return Task.CompletedTask;
     }
 }

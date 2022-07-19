@@ -20,6 +20,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.JSInterop.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
+    <InternalsVisibleTo Include="Microsoft.JSInterop.WebAssembly" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
 
 </Project>

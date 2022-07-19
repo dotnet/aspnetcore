@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 
@@ -20,7 +22,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+    public WebAssemblyRenderer(IComponentsInternalCalls internalCalls, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         // The WebAssembly renderer registers and unregisters itself with the static registry
@@ -81,12 +83,12 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private void CallBaseProcessPendingRender() => base.ProcessPendingRender();
 
     /// <inheritdoc />
-    protected override Task UpdateDisplayAsync(in RenderBatch batch)
+    protected override unsafe Task UpdateDisplayAsync(in RenderBatch batch)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
-            "Blazor._internal.renderBatch",
-            RendererId,
-            batch);
+        // Hazard: it would be ideal to pin batch and all it contains to protect it from moving GC (on multi-threading runtime) or pause the GC for guration of the RenderBatch call
+        // it would be even better if this could be serialized into one immutable binary message.
+        var b = batch;
+        RenderBatch(RendererId, Unsafe.AsPointer(ref b));
 
         if (WebAssemblyCallQueue.HasUnstartedWork)
         {
@@ -127,4 +129,5 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         public static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
     }
+
 }

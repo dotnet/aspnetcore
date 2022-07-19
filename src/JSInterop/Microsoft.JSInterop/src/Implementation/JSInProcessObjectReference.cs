@@ -9,7 +9,7 @@ namespace Microsoft.JSInterop.Implementation;
 /// <summary>
 /// Implements functionality for <see cref="IJSInProcessObjectReference"/>.
 /// </summary>
-public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
+public partial class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
 {
     private readonly JSInProcessRuntime _jsRuntime;
 
@@ -39,7 +39,7 @@ public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectR
         {
             Disposed = true;
 
-            _jsRuntime.InvokeVoid("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
+            _jsRuntime.JSInternalCalls.DisposeJSObjectReferenceById(Id);
         }
     }
 }

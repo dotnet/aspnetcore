@@ -14,6 +14,8 @@ namespace Microsoft.JSInterop.WebAssembly;
 /// </summary>
 public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
 {
+    private IWebAssemblyInternalCalls WasmInternalCalls => GetInternalCalls<IWebAssemblyInternalCalls>();
+
     /// <summary>
     /// Initializes a new instance of <see cref="WebAssemblyJSRuntime"/>.
     /// </summary>
@@ -25,54 +27,39 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     /// <inheritdoc />
     protected override string InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var callInfo = new JSCallInfo
+        try
         {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-            MarshalledCallArgsJson = argsJson ?? "[]",
-            MarshalledCallAsyncHandle = default
-        };
-
-        var result = InternalCalls.InvokeJS<object, object, object, string>(out var exception, ref callInfo, null, null, null);
-
-        return exception != null
-            ? throw new JSException(exception)
-            : result;
+            return WasmInternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", 0);
+        }
+        catch (Exception exception)
+        {
+            throw new JSException(exception.Message, exception);
+        }
     }
 
     /// <inheritdoc />
     protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var callInfo = new JSCallInfo
-        {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-            MarshalledCallArgsJson = argsJson ?? "[]",
-            MarshalledCallAsyncHandle = asyncHandle
-        };
-
-        InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
+        WasmInternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
     }
 
     /// <inheritdoc />
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
-    protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
+    protected internal override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
     {
         var resultJsonOrErrorMessage = dispatchResult.Success
             ? dispatchResult.ResultJson!
             : dispatchResult.Exception!.ToString();
-        InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
-            callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+        WasmInternalCalls.EndInvokeDotNetFromJS(callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
     }
 
     /// <inheritdoc />
-    protected override void SendByteArray(int id, byte[] data)
+    protected internal override void SendByteArray(int id, byte[] data)
     {
-        InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
+        WasmInternalCalls.ReceiveByteArray(id, data);
     }
 
+    [Obsolete]
     internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
     {
         var resultType = JSCallResultTypeHelper.FromGeneric<TResult>();
@@ -90,17 +77,17 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         {
             case JSCallResultType.Default:
             case JSCallResultType.JSVoidResult:
-                var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
+                var result = WasmInternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
                 return exception != null
                     ? throw new JSException(exception)
                     : result;
             case JSCallResultType.JSObjectReference:
-                var id = InternalCalls.InvokeJS<T0, T1, T2, int>(out exception, ref callInfo, arg0, arg1, arg2);
+                var id = WasmInternalCalls.InvokeJS<T0, T1, T2, int>(out exception, ref callInfo, arg0, arg1, arg2);
                 return exception != null
                     ? throw new JSException(exception)
                     : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
             case JSCallResultType.JSStreamReference:
-                var serializedStreamReference = InternalCalls.InvokeJS<T0, T1, T2, string>(out exception, ref callInfo, arg0, arg1, arg2);
+                var serializedStreamReference = WasmInternalCalls.InvokeJS<T0, T1, T2, string>(out exception, ref callInfo, arg0, arg1, arg2);
                 return exception != null
                     ? throw new JSException(exception)
                     : (TResult)(object)DeserializeJSStreamReference(serializedStreamReference);
@@ -122,18 +109,22 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
+    [Obsolete]
     public TResult InvokeUnmarshalled<TResult>(string identifier)
         => InvokeUnmarshalled<object?, object?, object?, TResult>(identifier, null, null, null, 0);
 
     /// <inheritdoc />
+    [Obsolete]
     public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
         => InvokeUnmarshalled<T0, object?, object?, TResult>(identifier, arg0, null, null, 0);
 
     /// <inheritdoc />
+    [Obsolete]
     public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
         => InvokeUnmarshalled<T0, T1, object?, TResult>(identifier, arg0, arg1, null, 0);
 
     /// <inheritdoc />
+    [Obsolete]
     public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         => InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2, 0);
 }

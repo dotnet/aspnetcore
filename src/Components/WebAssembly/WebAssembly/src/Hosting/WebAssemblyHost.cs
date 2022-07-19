@@ -24,6 +24,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     private readonly IConfiguration _configuration;
     private readonly RootComponentMappingCollection _rootComponents;
     private readonly string? _persistedState;
+    internal readonly IComponentsInternalCalls _internalCalls;
 
     // NOTE: the host is disposable because it OWNs references to disposable things.
     //
@@ -52,6 +53,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         _configuration = builder.Configuration;
         _rootComponents = builder.RootComponents;
         _persistedState = persistedState;
+        _internalCalls = builder._internalCalls;
     }
 
     /// <summary>
@@ -137,7 +139,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         if (MetadataUpdater.IsSupported)
         {
-            await WebAssemblyHotReload.InitializeAsync();
+            await WebAssemblyHotReload.InitializeAsync(_internalCalls);
         }
 
         var tcs = new TaskCompletionSource();

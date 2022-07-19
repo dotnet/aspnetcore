@@ -1,1 +1,5 @@
 #nullable enable
+abstract Microsoft.JSInterop.JSInProcessRuntime.GetInternalCalls<TResult>() -> TResult
+Microsoft.JSInterop.IInternalCalls
+Microsoft.JSInterop.IInternalCallsProvider
+Microsoft.JSInterop.IInternalCallsProvider.GetInternalCalls<TResult>() -> TResult

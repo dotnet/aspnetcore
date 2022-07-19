@@ -22,10 +22,10 @@ internal class TestJSUnmarshalledRuntime : IJSUnmarshalledRuntime
                 return (TResult)(object)_environment;
             case "Blazor._internal.getConfig":
                 return (TResult)(object)null;
-            case "Blazor._internal.navigationManager.getUnmarshalledBaseURI":
+            case "Blazor._internal.navigationManager.getBaseUri":
                 var testUri = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests";
                 return (TResult)(object)testUri;
-            case "Blazor._internal.navigationManager.getUnmarshalledLocationHref":
+            case "Blazor._internal.navigationManager.getLocationHref":
                 var testHref = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool";
                 return (TResult)(object)testHref;
             case "Blazor._internal.registeredComponents.getRegisteredComponentsCount":

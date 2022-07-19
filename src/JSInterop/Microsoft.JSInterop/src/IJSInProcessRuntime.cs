@@ -21,3 +21,21 @@ public interface IJSInProcessRuntime : IJSRuntime
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     TResult Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(string identifier, params object?[]? args);
 }
+
+/// <summary>
+/// Infrastructure marker interface
+/// </summary>
+public interface IInternalCalls
+{
+}
+
+/// <summary>
+/// Infrastructure
+/// </summary>
+public interface IInternalCallsProvider
+{
+    /// <summary>
+    /// Infrastructure
+    /// </summary>
+    TResult GetInternalCalls<TResult>() where TResult : IInternalCalls;
+}

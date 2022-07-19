@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.WebAssembly;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -17,17 +18,19 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
     private static readonly StringBuilder _logBuilder = new StringBuilder();
 
     private readonly string _name;
-    private readonly WebAssemblyJSRuntime _jsRuntime;
+    private readonly IComponentsInternalCalls _internalCalls;
 
     public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
         : this(string.Empty, (WebAssemblyJSRuntime)jsRuntime) // Cast for DI
     {
+        _internalCalls = ((IInternalCallsProvider)jsRuntime).GetInternalCalls<IComponentsInternalCalls>();
     }
 
     public WebAssemblyConsoleLogger(string name, WebAssemblyJSRuntime jsRuntime)
     {
         _name = name ?? throw new ArgumentNullException(nameof(name));
-        _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+        _internalCalls = ((IInternalCallsProvider)jsRuntime).GetInternalCalls<IComponentsInternalCalls>();
     }
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull
@@ -79,23 +82,22 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
                         // messages if you enable "Verbose" in the filter dropdown (which is off
                         // by default). As such "console.debug" is the best choice for messages
                         // with a lower severity level than "Information".
-                        _jsRuntime.InvokeVoid("console.debug", formattedMessage);
+                        _internalCalls.ConsoleDebug(formattedMessage);
                         break;
                     case LogLevel.Information:
-                        _jsRuntime.InvokeVoid("console.info", formattedMessage);
+                        _internalCalls.ConsoleInfo(formattedMessage);
                         break;
                     case LogLevel.Warning:
-                        _jsRuntime.InvokeVoid("console.warn", formattedMessage);
+                        _internalCalls.ConsoleWarn(formattedMessage);
                         break;
                     case LogLevel.Error:
-                        _jsRuntime.InvokeVoid("console.error", formattedMessage);
+                        _internalCalls.ConsoleError(formattedMessage);
                         break;
                     case LogLevel.Critical:
-                        _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
+                        _internalCalls.DotNetCriticalError(formattedMessage);
                         break;
                     default: // invalid enum values
                         Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
-                        _jsRuntime.InvokeVoid("console.log", formattedMessage);
                         break;
                 }
             }
