@@ -338,7 +338,6 @@ internal sealed class ParameterBindingMethodCache
             return (constructor, parametersWithPropertyInfo);
         }
 
-        type = Nullable.GetUnderlyingType(type) ?? type;
         return _constructorCache.GetOrAdd(type, Finder);
     }
 
