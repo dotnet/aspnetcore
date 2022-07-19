@@ -401,7 +401,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(42, httpContext.Items["input"]);
     }
-    
+
     [Fact]
     public async Task RequestDelegatePopulatesFromNullableNullOptionalParameter()
     {
@@ -4681,7 +4681,8 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             void TestParameterListNullableStruct([AsParameters] ParameterListStruct? args)
             {
-                args.Value.HttpContext.Items.Add("input", args.Value.Value);
+                var req = args!.Value;
+                req.HttpContext.Items.Add("input", req.Value);
             }
 
             void TestParameterListMutableStruct([AsParameters] ParameterListMutableStruct args)
@@ -4939,7 +4940,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
-        
+
         Assert.Equal(200, httpContext.Response.StatusCode);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal("Hello, TestName!", decodedResponseBody);
