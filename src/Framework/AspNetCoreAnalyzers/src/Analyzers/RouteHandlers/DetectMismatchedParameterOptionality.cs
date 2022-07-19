@@ -27,7 +27,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             if (argument.Parameter.Ordinal == 1)
             {
-                value = invocation.Arguments[1].Value;
+                value = argument.Value;
             }
         }
 
