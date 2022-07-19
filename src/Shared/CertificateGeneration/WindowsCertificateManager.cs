@@ -41,12 +41,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
 
     internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
-        if (IsTrusted(candidate))
-        {
-            return new CheckCertificateStateResult(true, null);
-        }
-
-        return new CheckCertificateStateResult(false, "The ASP.NET Core developer certificate is not trusted.");
+        return new CheckCertificateStateResult(true, null);
     }
 
     internal override void CorrectCertificateState(X509Certificate2 candidate)
