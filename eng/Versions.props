@@ -139,6 +139,8 @@
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>7.0.0-beta.22367.1</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>7.0.0-beta.22367.1</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <!-- Packages from dotnet/source-build-externals -->
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>7.0.0-alpha.1.22369.2</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
   </PropertyGroup>
   <!--
 
@@ -222,7 +224,7 @@
     <MicrosoftOwinTestingVersion>3.0.1</MicrosoftOwinTestingVersion>
     <MicrosoftWebAdministrationVersion>11.1.0</MicrosoftWebAdministrationVersion>
     <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
-    <SystemIdentityModelTokensJwtVersion>6.15.1</SystemIdentityModelTokensJwtVersion>
+    <SystemIdentityModelTokensJwtVersion>6.21.0</SystemIdentityModelTokensJwtVersion>
     <NuGetPackagingVersion>6.2.0</NuGetPackagingVersion>
     <NuGetVersioningVersion>6.2.0</NuGetVersioningVersion>
     <NuGetFrameworksVersion>6.2.0</NuGetFrameworksVersion>
