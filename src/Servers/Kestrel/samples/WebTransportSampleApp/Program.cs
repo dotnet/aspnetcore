@@ -59,7 +59,7 @@ await host.RunAsync();
 static X509Certificate2 GenerateManualCertificate()
 {
     X509Certificate2 cert = null;
-    var store = new X509Store("KestrelWebTransportCertificates", StoreLocation.CurrentUser);
+    var store = new X509Store("KestrelSampleWebTransportCertificates", StoreLocation.CurrentUser);
     store.Open(OpenFlags.ReadWrite);
     if (store.Certificates.Count > 0)
     {

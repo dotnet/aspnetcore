@@ -40,7 +40,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly object _protocolSelectionLock = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    private readonly Dictionary<long, WebTransportSession> _webtransportSessions = new();
+    private readonly Dictionary<long, WebTransportSession>? _webtransportSessions;
 
     private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
     private bool _aborted;
@@ -66,6 +66,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         // technically these are 2 different settings so they should have separate values but the Chromium implementation requires
         // them to both be 1 to use WebTransport.
         _serverSettings.H3Datagram = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
+
+        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+        {
+            _webtransportSessions = new();
+        }
     }
 
     private void UpdateHighestOpenedRequestStreamId(long streamId)
@@ -156,15 +161,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             _aborted = true;
         }
 
-        foreach (var session in _webtransportSessions)
+        if (_webtransportSessions is not null)
         {
-            if (ex.InnerException is not null)
+            foreach (var session in _webtransportSessions)
             {
-                session.Value.Abort(new ConnectionAbortedException(ex.Message, ex.InnerException), errorCode);
-            }
-            else
-            {
-                session.Value.Abort(new ConnectionAbortedException(ex.Message), errorCode);
+                if (ex.InnerException is not null)
+                {
+                    session.Value.Abort(new ConnectionAbortedException(ex.Message, ex.InnerException), errorCode);
+                }
+                else
+                {
+                    session.Value.Abort(new ConnectionAbortedException(ex.Message), errorCode);
+                }
             }
         }
 
@@ -325,77 +333,63 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Debug.Assert(streamIdFeature != null);
 
                     var context = CreateHttpStreamContext(streamContext);
-                    var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
-
-                    _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
                     // unidirectional stream
                     if (!streamDirectionFeature.CanWrite)
                     {
-                        var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, null);
-
-                        _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
-
-                        if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
+                        if (!context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
-                            await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
+                            var controlStream = new Http3ControlStream<TContext>(application, context, null);
+                            _streamLifetimeHandler.OnStreamCreated(controlStream);
+                            ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
                         }
                         else
                         {
-                            var controlStream = new Http3ControlStream<TContext>(application, context, streamType);
-                            _streamLifetimeHandler.OnStreamCreated(controlStream);
-                            ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
+                            var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
+
+                            _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
+
+                            var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, null);
+
+                            _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
+
+                            if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
+                            {
+                                await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
+                            }
+                            else
+                            {
+                                var controlStream = new Http3ControlStream<TContext>(application, context, streamType);
+                                _streamLifetimeHandler.OnStreamCreated(controlStream);
+                                ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
+                            }
                         }
                     }
                     // bidirectional stream
                     else
                     {
-                        var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, Http3StreamType.WebTransportBidirectional);
-
-                        _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
-
-                        if (streamType == (long)Http3StreamType.WebTransportBidirectional)
+                        if (!context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
-                            await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
-                        }
-                        else
-                        {
-                            // http request stream
-                            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
-                            if (_gracefulCloseStarted)
+                            var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
+
+                            _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
+
+                            var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, Http3StreamType.WebTransportBidirectional);
+
+                            _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
+
+                            if (streamType == (long)Http3StreamType.WebTransportBidirectional)
                             {
-                                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
-                                streamContext.Features.GetRequiredFeature<IProtocolErrorCodeFeature>().Error = (long)Http3ErrorCode.RequestRejected;
-                                streamContext.Abort(new ConnectionAbortedException("HTTP/3 connection is closing and no longer accepts new requests."));
-                                await streamContext.DisposeAsync();
-
-                                return;
-                            }
-
-                            // Request stream IDs are tracked.
-                            UpdateHighestOpenedRequestStreamId(streamIdFeature.StreamId);
-
-                            var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
-                            Debug.Assert(persistentStateFeature != null, $"Required {nameof(IPersistentStateFeature)} not on stream context.");
-
-                            Http3Stream stream;
-
-                            // Check whether there is an existing HTTP/3 stream on the transport stream.
-                            // A stream will only be cached if the transport stream itself is reused.
-                            if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
-                            {
-                                stream = new Http3Stream<TContext>(application, context);
-                                persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
+                                await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
                             }
                             else
                             {
-                                stream = (Http3Stream<TContext>)s!;
-                                stream.InitializeWithExistingContext(streamContext.Transport);
+                                await CreateHttp3Stream(streamContext, context, application, streamIdFeature.StreamId);
                             }
-
-                            _streamLifetimeHandler.OnStreamCreated(stream);
-                            KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
-                            ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+                        }
+                        else
+                        {
+                            await CreateHttp3Stream(streamContext, context, application, streamIdFeature.StreamId);
                         }
                     }
                 }
@@ -471,9 +465,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
-                foreach (var session in _webtransportSessions.Values)
+                if (_webtransportSessions is not null)
                 {
-                    session.OnClientConnectionClosed();
+                    foreach (var session in _webtransportSessions.Values)
+                    {
+                        session.OnClientConnectionClosed();
+                    }
                 }
 
                 if (outboundControlStream != null)
@@ -513,11 +510,56 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
+    private async Task CreateHttp3Stream<TContext>(ConnectionContext streamContext, Http3StreamContext context, IHttpApplication<TContext> application, long streamId) where TContext : notnull
+    {
+        // http request stream
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
+        if (_gracefulCloseStarted)
+        {
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
+            streamContext.Features.GetRequiredFeature<IProtocolErrorCodeFeature>().Error = (long)Http3ErrorCode.RequestRejected;
+            streamContext.Abort(new ConnectionAbortedException("HTTP/3 connection is closing and no longer accepts new requests."));
+            await streamContext.DisposeAsync();
+
+            return;
+        }
+
+        // Request stream IDs are tracked.
+        UpdateHighestOpenedRequestStreamId(streamId);
+
+        var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
+        Debug.Assert(persistentStateFeature != null, $"Required {nameof(IPersistentStateFeature)} not on stream context.");
+
+        Http3Stream stream;
+
+        // Check whether there is an existing HTTP/3 stream on the transport stream.
+        // A stream will only be cached if the transport stream itself is reused.
+        if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
+        {
+            stream = new Http3Stream<TContext>(application, context);
+            persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
+        }
+        else
+        {
+            stream = (Http3Stream<TContext>)s!;
+            stream.InitializeWithExistingContext(streamContext.Transport);
+        }
+
+        _streamLifetimeHandler.OnStreamCreated(stream);
+        KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
+        ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+    }
+
     private async Task CreateAndAddWebTransportStream(Http3PendingStream stream, long streamId, WebTransportStreamType type)
     {
+        if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+        {
+            return;
+        }
+
         var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, null);
 
-        lock (_webtransportSessions)
+        lock (_webtransportSessions!)
         {
             if (!_webtransportSessions.TryGetValue(correspondingSession, out var session))
             {
@@ -791,8 +833,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)
     {
+        if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+        {
+            throw new InvalidOperationException("Cannot open new session as WebTransport is disabled");
+        }
+
         WebTransportSession session;
-        lock (_webtransportSessions)
+        lock (_webtransportSessions!)
         {
             Debug.Assert(!_webtransportSessions.ContainsKey(http3Stream.StreamId));
 

@@ -25,22 +25,22 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly IStreamIdFeature _streamIdFeature;
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
-    private readonly long _headerType;
     private volatile int _isClosed;
+    private long _headerType;
     private int _gracefulCloseInitiator;
 
     private bool _haveReceivedSettingsFrame;
 
     public long StreamId => _streamIdFeature.StreamId;
 
-    public Http3ControlStream(Http3StreamContext context, long headerType)
+    public Http3ControlStream(Http3StreamContext context, long? headerType)
     {
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
         _context = context;
         _serverPeerSettings = context.ServerPeerSettings;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
-        _headerType = headerType;
+        _headerType = headerType ?? -1;
 
         _frameWriter = new Http3FrameWriter(
             context.StreamContext,
@@ -113,10 +113,54 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
 
+    private async ValueTask<long> TryReadStreamHeaderAsync()
+    {
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2
+        while (_isClosed == 0)
+        {
+            var result = await Input.ReadAsync();
+            var readableBuffer = result.Buffer;
+            var consumed = readableBuffer.Start;
+            var examined = readableBuffer.End;
+
+            try
+            {
+                if (!readableBuffer.IsEmpty)
+                {
+                    var id = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                    if (id != -1)
+                    {
+                        return id;
+                    }
+                }
+
+                if (result.IsCompleted)
+                {
+                    return -1;
+                }
+            }
+            finally
+            {
+                Input.AdvanceTo(consumed, examined);
+            }
+        }
+
+        return -1;
+    }
+
     public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
     {
         try
         {
+            // todo: the headertype should be read earlier
+            // and by the Http3PendingStream. However, to
+            // avoid perf issues with the current implementation
+            // we can defer the reading until now
+            if (_headerType == -1)
+            {
+                _headerType = await TryReadStreamHeaderAsync();
+            }
+
             _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             switch (_headerType)
