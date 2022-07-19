@@ -548,7 +548,7 @@ public class OpenApiOperationGeneratorTests
     }
 
     [Fact]
-    public void HandleAcceptsMetadata()
+    public void HandleAcceptsMetadataWithNoParams()
     {
         // Arrange
         var operation = GetOpenApiOperation(() => "",
@@ -784,13 +784,18 @@ public class OpenApiOperationGeneratorTests
     }
 
     [Fact]
-    public void HandlesEndpointWithNoRequestBody()
+    public void HandlesEndpointWithNoRequestBodyOrParams()
     {
         var operationWithNoParams = GetOpenApiOperation(() => "", "/");
-        var operationWithNoBodyParams = GetOpenApiOperation((int id) => "", "/", httpMethods: new[] { "PUT"});
 
         Assert.Empty(operationWithNoParams.Parameters);
         Assert.Null(operationWithNoParams.RequestBody);
+    }
+
+    [Fact]
+    public void HandlesEndpointWithNoRequestBody()
+    {
+        var operationWithNoBodyParams = GetOpenApiOperation((int id) => "", "/", httpMethods: new[] { "PUT" });
 
         Assert.Single(operationWithNoBodyParams.Parameters);
         Assert.Null(operationWithNoBodyParams.RequestBody);
