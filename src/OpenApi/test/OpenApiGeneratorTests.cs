@@ -388,6 +388,7 @@ public class OpenApiOperationGeneratorTests
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListClass req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListStruct? req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecord req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordStruct req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));

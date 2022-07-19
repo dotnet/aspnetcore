@@ -477,6 +477,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListClass req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct? req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
