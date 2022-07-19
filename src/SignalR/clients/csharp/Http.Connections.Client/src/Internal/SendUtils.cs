@@ -40,8 +40,6 @@ internal static partial class SendUtils
 
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                        // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
-                        request.Version = new Version(1, 1);
 
                         request.Content = new ReadOnlySequenceContent(buffer);
 

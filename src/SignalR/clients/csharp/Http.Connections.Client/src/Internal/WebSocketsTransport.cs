@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
@@ -24,6 +25,7 @@ internal sealed partial class WebSocketsTransport : ITransport
     private readonly TimeSpan _closeTimeout;
     private volatile bool _aborted;
     private readonly HttpConnectionOptions _httpConnectionOptions;
+    private readonly HttpClient? _httpClient;
 
     private IDuplexPipe? _transport;
 
@@ -33,7 +35,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider)
+    public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient)
     {
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
@@ -43,6 +45,8 @@ internal sealed partial class WebSocketsTransport : ITransport
         // We were given an updated delegate from the HttpConnection and we are updating what we have in httpOptions
         // options itself is copied object of user's options
         _httpConnectionOptions.AccessTokenProvider = accessTokenProvider;
+
+        _httpClient = httpClient;
     }
 
     private async ValueTask<WebSocket> DefaultWebSocketFactory(WebSocketConnectionContext context, CancellationToken cancellationToken)
@@ -138,7 +142,12 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         try
         {
+#if NET7_0_OR_GREATER
+            // TODO: Pass _httpClient here once https://github.com/dotnet/runtime/issues/72476 and https://github.com/dotnet/runtime/issues/72301 are resolved
+            await webSocket.ConnectAsync(url, invoker: null, cancellationToken).ConfigureAwait(false);
+#else
             await webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+#endif
         }
         catch
         {

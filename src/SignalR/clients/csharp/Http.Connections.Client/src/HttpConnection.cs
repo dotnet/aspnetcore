@@ -461,9 +461,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
-                // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
-                request.Version = new Version(1, 1);
-
 #if NET5_0_OR_GREATER
                 request.Options.Set(new HttpRequestOptionsKey<bool>("IsNegotiate"), true);
 #else
