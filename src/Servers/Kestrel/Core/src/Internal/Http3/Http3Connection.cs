@@ -337,13 +337,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     // unidirectional stream
                     if (!streamDirectionFeature.CanWrite)
                     {
-                        if (!context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
-                        {
-                            var controlStream = new Http3ControlStream<TContext>(application, context, null);
-                            _streamLifetimeHandler.OnStreamCreated(controlStream);
-                            ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
-                        }
-                        else
+                        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
                             var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
@@ -364,11 +358,17 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
                             }
                         }
+                        else
+                        {
+                            var controlStream = new Http3ControlStream<TContext>(application, context, null);
+                            _streamLifetimeHandler.OnStreamCreated(controlStream);
+                            ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
+                        }
                     }
                     // bidirectional stream
                     else
                     {
-                        if (!context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
                             var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
