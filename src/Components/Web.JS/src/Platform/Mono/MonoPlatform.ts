@@ -18,6 +18,7 @@ import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConf
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let IMPORTS: any = undefined as any;
 
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
@@ -286,18 +287,19 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
-    const { MONO: mono, BINDING: binding, Module: module } = api;
+    const { MONO: mono, BINDING: binding, Module: module, IMPORTS: imports } = api;
     Module = module;
     BINDING = binding;
     MONO = mono;
+    IMPORTS = imports;
 
     // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-    const instantiateWasm = (imports, successCallback) => {
+    const instantiateWasm = (wasmImports, successCallback) => {
       (async () => {
         let compiledInstance: WebAssembly.Instance;
         try {
           const dotnetWasmResource = await wasmBeingLoaded;
-          compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
+          compiledInstance = await compileWasmModule(dotnetWasmResource, wasmImports);
         } catch (ex) {
           printErr((ex as Error).toString());
           throw ex;
@@ -329,9 +331,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
       pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-      Blazor._internal.dotNetCriticalError = (message) => {
-        printErr(BINDING.conv_string(message) || '(null)');
-      };
+      Blazor._internal.dotNetCriticalError = (message) => printErr(message || '(null)');
 
       // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
       // startup sequence to load satellite assemblies for the application's culture.
@@ -467,6 +467,20 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       // -1 enables debugging with logging disabled. 0 disables debugging entirely.
       MONO.mono_wasm_load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
       MONO.mono_wasm_runtime_ready();
+      try {
+        BINDING.bind_static_method('invalid-fqn', '');
+      } catch (e) {
+        // HOTFIX: until https://github.com/dotnet/runtime/pull/72275
+        // this would always throw, but it will initialize runtime interop as side-effect
+      }
+
+      // makes Blazor._internal visible to [JSImport]
+      Object.assign(IMPORTS, {
+        Blazor: {
+          _internal: Blazor._internal,
+        },
+      });
+
       attachInteropInvoker();
       runtimeReadyResolve(api);
     };

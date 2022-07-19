@@ -52,6 +52,12 @@ public class Startup
         app.UseStaticFiles();
 
         app.UseRouting();
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers.Add("Cross-Origin-Embedder-Policy", "require-corp");
+            context.Response.Headers.Add("Cross-Origin-Opener-Policy", "same-origin");
+            await next();
+        });
 
         app.UseEndpoints(endpoints =>
         {
