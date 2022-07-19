@@ -136,9 +136,6 @@ internal sealed class PagedByteBuffer : IDisposable
 
     private void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(nameof(PagedByteBuffer));
-        }
+        ObjectDisposedException.ThrowIf(Disposed, nameof(PagedByteBuffer));
     }
 }

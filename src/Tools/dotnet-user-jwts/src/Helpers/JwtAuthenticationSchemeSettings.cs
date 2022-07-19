@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -25,8 +26,8 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
 
         var settingsObject = new JsonObject
         {
-            [nameof(Audiences)] = new JsonArray(Audiences.Select(aud => JsonValue.Create(aud)).ToArray()),
-            [nameof(ClaimsIssuer)] = ClaimsIssuer
+            [nameof(TokenValidationParameters.ValidAudiences)] = new JsonArray(Audiences.Select(aud => JsonValue.Create(aud)).ToArray()),
+            [nameof(TokenValidationParameters.ValidIssuer)] = ClaimsIssuer
         };
 
         if (config[AuthenticationKey] is JsonObject authentication)

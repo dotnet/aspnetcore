@@ -142,13 +142,13 @@ internal sealed partial class RateLimitingMiddleware
         {
             if (_globalLimiter is not null)
             {
-                globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken);
+                globalLease = await _globalLimiter.WaitAndAcquireAsync(context, cancellationToken: cancellationToken);
                 if (!globalLease.IsAcquired)
                 {
                     return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
                 }
             }
-            endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken);
+            endpointLease = await _endpointLimiter.WaitAndAcquireAsync(context, cancellationToken: cancellationToken);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
@@ -183,7 +183,7 @@ internal sealed partial class RateLimitingMiddleware
                     throw new InvalidOperationException($"This endpoint requires a rate limiting policy with name {name}, but no such policy exists.");
                 }
             }
-            return RateLimitPartition.CreateNoLimiter<DefaultKeyType>(_defaultPolicyKey);
+            return RateLimitPartition.GetNoLimiter<DefaultKeyType>(_defaultPolicyKey);
         }, new DefaultKeyTypeEqualityComparer());
     }
 

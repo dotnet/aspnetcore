@@ -150,9 +150,6 @@ internal sealed class ReferenceReadStream : Stream
 
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ReferenceReadStream));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(ReferenceReadStream));
     }
 }

@@ -22,7 +22,7 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
         }
 
         ProblemDetails = problemDetails;
-        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: StatusCodes.Status400BadRequest);
+        ProblemDetailsDefaults.Apply(ProblemDetails, statusCode: StatusCodes.Status400BadRequest);
     }
 
     /// <summary>

@@ -54,7 +54,7 @@ internal sealed class ChunkingCookieManager
 
     /// <summary>
     /// The maximum size of cookie to send back to the client. If a cookie exceeds this size it will be broken down into multiple
-    /// cookies. Set this value to null to disable this behavior. The default is 4090 characters, which is supported by all
+    /// cookies. Set this value to null to disable this behavior. The default is 4050 characters, which is supported by all
     /// common browsers.
     ///
     /// Note that browsers may also have limits on the total size of all cookies per domain, and on the number of cookies per domain.

@@ -148,10 +148,7 @@ internal sealed partial class RequestQueue
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     private static partial class Log

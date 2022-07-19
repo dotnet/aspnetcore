@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Http.Extensions;
+namespace Microsoft.AspNetCore.Http;
 
 internal static class ProblemDetailsDefaults
 {
@@ -32,6 +31,12 @@ internal static class ProblemDetailsDefaults
         (
             "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             "Not Found"
+        ),
+
+        [405] =
+        (
+            "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+            "Method Not Allowed"
         ),
 
         [406] =
@@ -64,4 +69,30 @@ internal static class ProblemDetailsDefaults
             "An error occurred while processing your request."
         ),
     };
+
+    public static void Apply(ProblemDetails problemDetails, int? statusCode)
+    {
+        // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
+        // This lets users write <c>return Conflict(new Problem("some description"))</c>
+        // or <c>return Problem("some-problem", 422)</c> and have the response have consistent fields.
+        if (problemDetails.Status is null)
+        {
+            if (statusCode is not null)
+            {
+                problemDetails.Status = statusCode;
+            }
+            else
+            {
+                problemDetails.Status = problemDetails is HttpValidationProblemDetails ?
+                    StatusCodes.Status400BadRequest :
+                    StatusCodes.Status500InternalServerError;
+            }
+        }
+
+        if (Defaults.TryGetValue(problemDetails.Status.Value, out var defaults))
+        {
+            problemDetails.Title ??= defaults.Title;
+            problemDetails.Type ??= defaults.Type;
+        }
+    }
 }
