@@ -52,21 +52,28 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        NotifyLocationChangingAsync(uri, options.HistoryEntryState, false).AsTask().ContinueWith(t =>
+        _ = PerformNavigationAsync();
+
+        async Task PerformNavigationAsync()
         {
-            if (t.Exception is { } exception)
+            try
             {
-                Log.NavigationFailed(_logger, uri, exception);
+                var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
+
+                if (shouldContinueNavigation)
+                {
+                    _ipcSender.Navigate(uri, options);
+                }
+                else
+                {
+                    Log.NavigationCanceled(_logger, uri);
+                }
             }
-            else if (!t.Result)
+            catch (Exception ex)
             {
-                Log.NavigationCanceled(_logger, uri);
+                Log.NavigationFailed(_logger, uri, ex);
             }
-            else
-            {
-                _ipcSender.Navigate(uri, options);
-            }
-        }, TaskScheduler.Current);
+        }
     }
 
     private static partial class Log

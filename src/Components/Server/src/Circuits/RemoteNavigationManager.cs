@@ -89,21 +89,28 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             throw new NavigationException(absoluteUriString);
         }
 
-        NotifyLocationChangingAsync(uri, options.HistoryEntryState, false).AsTask().ContinueWith(t =>
+        _ = PerformNavigationAsync();
+
+        async Task PerformNavigationAsync()
         {
-            if (t.Exception is { } exception)
+            try
             {
-                Log.NavigationFailed(_logger, uri, exception);
+                var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
+
+                if (shouldContinueNavigation)
+                {
+                    await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
+                }
+                else
+                {
+                    Log.NavigationCanceled(_logger, uri);
+                }
             }
-            else if (!t.Result)
+            catch (Exception ex)
             {
-                Log.NavigationCanceled(_logger, uri);
+                Log.NavigationFailed(_logger, uri, ex);
             }
-            else
-            {
-                _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options).Preserve();
-            }
-        }, TaskScheduler.Current);
+        }
     }
 
     protected override void SetNavigationLockState(bool value)

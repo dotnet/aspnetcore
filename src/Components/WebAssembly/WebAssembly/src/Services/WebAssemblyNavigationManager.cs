@@ -56,21 +56,28 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
             throw new ArgumentNullException(nameof(uri));
         }
 
-        NotifyLocationChangingAsync(uri, options.HistoryEntryState, false).AsTask().ContinueWith(t =>
+        _ = PerformNavigationAsync();
+
+        async Task PerformNavigationAsync()
         {
-            if (t.Exception is { } exception)
+            try
             {
-                Log.NavigationFailed(_logger, uri, exception);
+                var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
+
+                if (shouldContinueNavigation)
+                {
+                    DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
+                }
+                else
+                {
+                    Log.NavigationCanceled(_logger, uri);
+                }
             }
-            else if (!t.Result)
+            catch (Exception ex)
             {
-                Log.NavigationCanceled(_logger, uri);
+                Log.NavigationFailed(_logger, uri, ex);
             }
-            else
-            {
-                DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
-            }
-        }, TaskScheduler.Current);
+        }
     }
 
     protected override void SetNavigationLockState(bool value)

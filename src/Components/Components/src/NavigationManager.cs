@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
 
-using LocationChangingHandler = Func<LocationChangingContext, ValueTask>;
-
 /// <summary>
 /// Provides an abstraction for querying and managing URI navigation.
 /// </summary>
@@ -34,7 +32,7 @@ public abstract class NavigationManager
 
     private EventHandler<LocationChangedEventArgs>? _locationChanged;
 
-    private readonly List<LocationChangingHandler> _locationChangingHandlers = new();
+    private readonly List<Func<LocationChangingContext, ValueTask>> _locationChangingHandlers = new();
 
     private CancellationTokenSource? _locationChangingCts;
 
@@ -309,7 +307,7 @@ public abstract class NavigationManager
         {
             if (handlerCount == 1)
             {
-                var handlerTask = _locationChangingHandlers[0].Invoke(context);
+                var handlerTask = _locationChangingHandlers[0](context);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -323,7 +321,7 @@ public abstract class NavigationManager
             }
             else
             {
-                var locationChangingHandlersCopy = ArrayPool<LocationChangingHandler>.Shared.Rent(handlerCount);
+                var locationChangingHandlersCopy = ArrayPool<Func<LocationChangingContext, ValueTask>>.Shared.Rent(handlerCount);
 
                 try
                 {
@@ -333,7 +331,7 @@ public abstract class NavigationManager
 
                     for (var i = 0; i < handlerCount; i++)
                     {
-                        var handlerTask = locationChangingHandlersCopy[i].Invoke(context);
+                        var handlerTask = locationChangingHandlersCopy[i](context);
 
                         if (cancellationToken.IsCancellationRequested)
                         {
@@ -347,7 +345,7 @@ public abstract class NavigationManager
                 }
                 finally
                 {
-                    ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
+                    ArrayPool<Func<LocationChangingContext, ValueTask>>.Shared.Return(locationChangingHandlersCopy);
                 }
             }
 
@@ -377,7 +375,7 @@ public abstract class NavigationManager
     /// Adds a handler to process incoming navigation events.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
-    public void AddLocationChangingHandler(LocationChangingHandler locationChangingHandler)
+    public void AddLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
 
@@ -395,7 +393,7 @@ public abstract class NavigationManager
     /// Removes a previously-added location changing handler.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to remove.</param>
-    public void RemoveLocationChangingHandler(LocationChangingHandler locationChangingHandler)
+    public void RemoveLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
 
