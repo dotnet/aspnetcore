@@ -3,9 +3,6 @@ using System.Net.Http;
 #endif
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-#if (EnableOpenAPI)
-using Microsoft.AspNetCore.OpenApi;
-#endif
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif
