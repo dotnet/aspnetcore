@@ -131,8 +131,8 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42820")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/42820", Queues = "Windows.11.Amd64.Client.Open")]
     [SkipIfDebug]
     [InlineData("CheckLargeStdErrWrites")]
     [InlineData("CheckLargeStdOutWrites")]
