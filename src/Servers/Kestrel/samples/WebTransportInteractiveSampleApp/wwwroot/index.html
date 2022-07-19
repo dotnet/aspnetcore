@@ -39,7 +39,7 @@
 
     <div id="communicationLogPanel">
         <h2 style="text-align: center;">Communication Log</h2>
-        <table>
+        <table style="overflow: auto; max-height: 1000px;">
             <thead>
                 <tr>
                     <td>Timestamp</td>
@@ -316,6 +316,8 @@
         max-width: 400px;
         min-width: 200px;
         flex: 1;
+        min-height: 1200px;
+        overflow: auto;
     }
 
     #panel > * {
@@ -338,6 +340,11 @@
 
     #messageInput {
         max-width: 100%;
+    }
+
+    #streamsList {
+        max-height: 400px;
+        overflow: auto;
     }
 
     input {
