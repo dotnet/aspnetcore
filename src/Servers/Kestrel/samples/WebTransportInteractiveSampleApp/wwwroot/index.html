@@ -195,7 +195,7 @@
                     let data = await reader.read();
                     let msgOut = "";
                     data.value.forEach(x => msgOut += String.fromCharCode(x));
-                    addToCommsLog("Server", "Client", `RECEVIED FROM STREAM ${streamId}: ${msgOut}`);
+                    addToCommsLog("Server", "Client", `RECEIVED FROM STREAM ${streamId}: ${msgOut}`);
                 }
             } catch {
                 alert(`Stream ${streamId} ${closed ? "was closed" : "failed to read"}. Ending reading from it.`);
