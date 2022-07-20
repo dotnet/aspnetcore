@@ -111,7 +111,10 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
         m_disconnectFired = true;
     }
 
-    if (pManagedHttpContext != nullptr)
+    // Guard against IndicatemanagedRequestComplete happening before handler is invoked
+    // If m_pManagedHttpContext has changed, do not call the handler
+    // https://github.com/dotnet/aspnetcore/issues/40498
+    if (pManagedHttpContext != nullptr && pManagedHttpContext == m_pManagedHttpContext)
     {
         m_pDisconnectHandler(pManagedHttpContext);
     }
