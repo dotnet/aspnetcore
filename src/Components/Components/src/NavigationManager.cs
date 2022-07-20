@@ -298,10 +298,12 @@ public abstract class NavigationManager
             return true;
         }
 
-        _locationChangingCts = new();
+        var cts = new CancellationTokenSource();
 
-        var context = new LocationChangingContext(uri, state, isNavigationIntercepted, _locationChangingCts);
-        var cancellationToken = _locationChangingCts.Token;
+        _locationChangingCts = cts;
+
+        var cancellationToken = cts.Token;
+        var context = new LocationChangingContext(uri, state, isNavigationIntercepted, cancellationToken);
 
         try
         {
@@ -309,7 +311,7 @@ public abstract class NavigationManager
             {
                 var handlerTask = _locationChangingHandlers[0](context);
 
-                if (cancellationToken.IsCancellationRequested)
+                if (context.DidPreventNavigation)
                 {
                     return false;
                 }
@@ -327,21 +329,31 @@ public abstract class NavigationManager
                 {
                     _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
 
-                    var locationChangingTasks = new Task[handlerCount];
+                    var locationChangingTasks = new HashSet<Task>();
 
                     for (var i = 0; i < handlerCount; i++)
                     {
                         var handlerTask = locationChangingHandlersCopy[i](context);
 
-                        if (cancellationToken.IsCancellationRequested)
+                        if (context.DidPreventNavigation)
                         {
                             return false;
                         }
 
-                        locationChangingTasks[i] = handlerTask.AsTask();
+                        locationChangingTasks.Add(handlerTask.AsTask());
                     }
 
-                    await Task.WhenAll(locationChangingTasks).WaitAsync(cancellationToken);
+                    while (locationChangingTasks.Count != 0)
+                    {
+                        var completedHandler = await Task.WhenAny(locationChangingTasks).WaitAsync(cancellationToken);
+
+                        if (context.DidPreventNavigation)
+                        {
+                            return false;
+                        }
+
+                        locationChangingTasks.Remove(completedHandler);
+                    }
                 }
                 finally
                 {
@@ -349,16 +361,28 @@ public abstract class NavigationManager
                 }
             }
 
-            return !cancellationToken.IsCancellationRequested;
+            return !context.DidPreventNavigation;
         }
         catch (TaskCanceledException ex)
         {
             if (ex.CancellationToken == cancellationToken)
             {
+                // This navigation was in progress when a successive navigation occurred.
+                // We treat this as a canceled navigation.
                 return false;
             }
 
             throw;
+        }
+        finally
+        {
+            cts.Cancel();
+            cts.Dispose();
+
+            if (_locationChangingCts == cts)
+            {
+                _locationChangingCts = null;
+            }
         }
     }
 

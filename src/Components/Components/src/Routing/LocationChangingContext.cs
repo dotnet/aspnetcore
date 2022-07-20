@@ -8,16 +8,15 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class LocationChangingContext
 {
-    private readonly CancellationTokenSource _cts;
-
-    internal LocationChangingContext(string targetLocation, string? historyEntryState, bool isNavigationIntercepted, CancellationTokenSource cts)
+    internal LocationChangingContext(string targetLocation, string? historyEntryState, bool isNavigationIntercepted, CancellationToken cancellationToken)
     {
         TargetLocation = targetLocation;
         HistoryEntryState = historyEntryState;
         IsNavigationIntercepted = isNavigationIntercepted;
-
-        _cts = cts;
+        CancellationToken = cancellationToken;
     }
+
+    internal bool DidPreventNavigation { get; private set; }
 
     /// <summary>
     /// Gets the target location.
@@ -38,13 +37,13 @@ public class LocationChangingContext
     /// Gets a <see cref="System.Threading.CancellationToken"/> that can be used to determine if this navigation was canceled
     /// (for example, because the user has triggered a different navigation).
     /// </summary>
-    public CancellationToken CancellationToken => _cts.Token;
+    public CancellationToken CancellationToken { get; }
 
     /// <summary>
     /// Prevents this navigation from continuing.
     /// </summary>
     public void PreventNavigation()
     {
-        _cts.Cancel();
+        DidPreventNavigation = true;
     }
 }
