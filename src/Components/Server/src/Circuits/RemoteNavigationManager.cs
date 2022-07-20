@@ -18,6 +18,8 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private IJSRuntime _jsRuntime;
     private bool? _navigationLockStateBeforeJsRuntimeAttached;
 
+    public event EventHandler<Exception>? UnhandledException;
+
     /// <summary>
     /// Creates a new <see cref="RemoteNavigationManager"/> instance.
     /// </summary>
@@ -109,6 +111,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             catch (Exception ex)
             {
                 Log.NavigationFailed(_logger, uri, ex);
+                UnhandledException?.Invoke(this, ex);
             }
         }
     }

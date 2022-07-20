@@ -19,6 +19,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
     private readonly CircuitHandler[] _circuitHandlers;
+    private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
     private bool _initialized;
     private bool _disposed;
@@ -39,6 +40,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteRenderer renderer,
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
+        RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
         ILogger logger)
     {
@@ -55,6 +57,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -68,6 +71,8 @@ internal partial class CircuitHost : IAsyncDisposable
         Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
 
         JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
+
+        _navigationManager.UnhandledException += ReportAndInvoke_UnhandledException;
     }
 
     public CircuitHandle Handle { get; }
@@ -503,8 +508,7 @@ internal partial class CircuitHost : IAsyncDisposable
             await Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.LocationChange(_logger, uri, CircuitId);
-                var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                navigationManager.NotifyLocationChanged(uri, state, intercepted);
+                _navigationManager.NotifyLocationChanged(uri, state, intercepted);
                 Log.LocationChangeSucceeded(_logger, uri, CircuitId);
             });
         }
@@ -546,8 +550,7 @@ internal partial class CircuitHost : IAsyncDisposable
             var shouldContinueNavigation = await Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
-                var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                return await navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
+                return await _navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
             });
 
             await Client.SendAsync("JS.EndLocationChanging", callId, shouldContinueNavigation);
