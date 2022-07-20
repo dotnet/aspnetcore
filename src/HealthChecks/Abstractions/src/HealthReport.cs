@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -15,12 +14,12 @@ public sealed class HealthReport
     /// <summary>
     /// Create a new <see cref="HealthReport"/> from the specified results.
     /// </summary>
-    /// <param name="entries">A <see cref="IEnumerable{KeyValuePair}"/> containing the results from each health check.</param>
+    /// <param name="entries">A <see cref="IReadOnlyDictionary{TKey, T}"/> containing the results from each health check.</param>
     /// <param name="totalDuration">A value indicating the time the health check service took to execute.</param>
-    public HealthReport(IEnumerable<KeyValuePair<string, HealthReportEntry>> entries, TimeSpan totalDuration)
+    public HealthReport(IReadOnlyDictionary<string, HealthReportEntry> entries, TimeSpan totalDuration)
         : this(
             entries,
-            CalculateAggregateStatus(entries?.Select(e => e.Value) ?? throw new ArgumentNullException(nameof(entries))),
+            CalculateAggregateStatus(entries?.Values ?? throw new ArgumentNullException(nameof(entries))),
             totalDuration)
     {
     }
@@ -28,10 +27,10 @@ public sealed class HealthReport
     /// <summary>
     /// Create a new <see cref="HealthReport"/> from the specified results.
     /// </summary>
-    /// <param name="entries">A <see cref="IEnumerable{KeyValuePair}"/> containing the results from each health check.</param>
+    /// <param name="entries">A <see cref="IReadOnlyDictionary{TKey, T}"/> containing the results from each health check.</param>
     /// <param name="status">A <see cref="HealthStatus"/> representing the aggregate status of all the health checks.</param>
     /// <param name="totalDuration">A value indicating the time the health check service took to execute.</param>
-    public HealthReport(IEnumerable<KeyValuePair<string, HealthReportEntry>> entries, HealthStatus status, TimeSpan totalDuration)
+    public HealthReport(IReadOnlyDictionary<string, HealthReportEntry> entries, HealthStatus status, TimeSpan totalDuration)
     {
         Entries = entries;
         Status = status;
@@ -45,7 +44,7 @@ public sealed class HealthReport
     /// The keys in this dictionary map the name of each executed health check to a <see cref="HealthReportEntry"/> for the
     /// result data returned from the corresponding health check.
     /// </remarks>
-    public IEnumerable<KeyValuePair<string, HealthReportEntry>> Entries { get; }
+    public IReadOnlyDictionary<string, HealthReportEntry> Entries { get; }
 
     /// <summary>
     /// Gets a <see cref="HealthStatus"/> representing the aggregate status of all the health checks. The value of <see cref="Status"/>
