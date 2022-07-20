@@ -41,6 +41,7 @@ public class SetCookieHeaderValue
 
     private StringSegment _name;
     private StringSegment _value;
+    private List<StringSegment>? _extensions;
 
     private SetCookieHeaderValue()
     {
@@ -177,7 +178,10 @@ public class SetCookieHeaderValue
     /// <summary>
     /// Gets a collection of additional values to append to the cookie.
     /// </summary>
-    public IList<StringSegment> Extensions { get; } = new List<StringSegment>();
+    public IList<StringSegment> Extensions
+    {
+        get => _extensions ??= new List<StringSegment>();
+    }
 
     // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
     /// <inheritdoc />
@@ -236,9 +240,12 @@ public class SetCookieHeaderValue
             length += SeparatorToken.Length + HttpOnlyToken.Length;
         }
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            length += SeparatorToken.Length + extension.Length;
+            foreach (var extension in _extensions)
+            {
+                length += SeparatorToken.Length + extension.Length;
+            }
         }
 
         return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
@@ -291,9 +298,12 @@ public class SetCookieHeaderValue
                 AppendSegment(ref span, HttpOnlyToken, null);
             }
 
-            foreach (var extension in Extensions)
+            if (_extensions?.Count > 0)
             {
-                AppendSegment(ref span, extension, null);
+                foreach (var extension in _extensions)
+                {
+                    AppendSegment(ref span, extension, null);
+                }
             }
         });
     }
@@ -373,9 +383,12 @@ public class SetCookieHeaderValue
             AppendSegment(builder, HttpOnlyToken, null);
         }
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            AppendSegment(builder, extension, null);
+            foreach (var extension in _extensions)
+            {
+                AppendSegment(builder, extension, null);
+            }
         }
     }
 
@@ -701,7 +714,7 @@ public class SetCookieHeaderValue
             && Secure == other.Secure
             && SameSite == other.SameSite
             && HttpOnly == other.HttpOnly
-            && HeaderUtilities.AreEqualCollections(Extensions, other.Extensions, StringSegmentComparer.OrdinalIgnoreCase);
+            && HeaderUtilities.AreEqualCollections(_extensions, other._extensions, StringSegmentComparer.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -717,9 +730,12 @@ public class SetCookieHeaderValue
             ^ SameSite.GetHashCode()
             ^ HttpOnly.GetHashCode();
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            hash ^= extension.GetHashCode();
+            foreach (var extension in _extensions)
+            {
+                hash ^= extension.GetHashCode();
+            }
         }
 
         return hash;

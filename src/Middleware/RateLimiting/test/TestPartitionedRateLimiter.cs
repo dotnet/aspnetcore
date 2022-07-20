@@ -57,7 +57,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         return new TestRateLimitLease(true, leases);
     }
 
-    protected override async ValueTask<RateLimitLease> WaitAsyncCore(TResource resourceID, int permitCount, CancellationToken cancellationToken)
+    protected override async ValueTask<RateLimitLease> WaitAndAcquireAsyncCore(TResource resourceID, int permitCount, CancellationToken cancellationToken)
     {
         if (permitCount != 1)
         {
@@ -66,7 +66,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         var leases = new List<RateLimitLease>();
         foreach (var limiter in limiters)
         {
-            leases.Add(await limiter.WaitAsync().ConfigureAwait(false));
+            leases.Add(await limiter.WaitAndAcquireAsync());
         }
         foreach (var lease in leases)
         {

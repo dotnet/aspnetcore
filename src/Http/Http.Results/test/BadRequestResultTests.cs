@@ -45,7 +45,7 @@ public class BadRequestResultTests
         // Arrange
         BadRequest MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<BadRequest>(context);
@@ -71,6 +71,14 @@ public class BadRequestResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<BadRequest>(null));
+    }
+
+    [Fact]
+    public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new BadRequest());
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

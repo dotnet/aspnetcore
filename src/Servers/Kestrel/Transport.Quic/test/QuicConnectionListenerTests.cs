@@ -44,8 +44,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         // Assert
         await using var serverConnection = await acceptTask.DefaultTimeout();
@@ -72,15 +71,14 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         options.ClientAuthenticationOptions.ClientCertificates = new X509CertificateCollection { testCert };
 
         // Act
-        using var quicConnection = new QuicConnection(options);
-        await quicConnection.ConnectAsync().DefaultTimeout();
+        await using var quicConnection = await QuicConnection.ConnectAsync(options);
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
         // Server waits for stream from client
         var serverStreamTask = serverConnection.AcceptAsync().DefaultTimeout();
 
         // Client creates stream
-        using var clientStream = await quicConnection.OpenBidirectionalStreamAsync();
+        using var clientStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         // Server finishes accepting
@@ -101,17 +99,13 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    // https://github.com/dotnet/runtime/issues/57308, RemoteCertificateValidationCallback should allow us to accept a null cert,
-    // but it doesn't right now.
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    public async Task ClientCertificate_Required_NotSent_ConnectionAborted()
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42389")]
+    public async Task ClientCertificate_Required_NotSent_AcceptedViaCallback()
     {
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(options);
-
-        var qex = await Assert.ThrowsAnyAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
-        Assert.StartsWith("Connection has been shutdown by transport:", qex.Message);
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
     }
 }

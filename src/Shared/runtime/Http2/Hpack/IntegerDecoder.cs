@@ -73,7 +73,7 @@ namespace System.Net.Http.HPack
                 throw new HPackDecodingException(SR.net_http_hpack_bad_integer);
             }
 
-            _i = _i + ((b & 0x7f) << _m);
+            _i += ((b & 0x7f) << _m);
 
             // If the addition overflowed, the result will be negative.
             if (_i < 0)
@@ -81,7 +81,7 @@ namespace System.Net.Http.HPack
                 throw new HPackDecodingException(SR.net_http_hpack_bad_integer);
             }
 
-            _m = _m + 7;
+            _m += 7;
 
             if ((b & 128) == 0)
             {

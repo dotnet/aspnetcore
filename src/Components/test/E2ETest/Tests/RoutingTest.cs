@@ -52,7 +52,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
     }
 
     [Fact]
@@ -277,6 +277,17 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void CanFollowLinkToDefaultPage_NoTrailingSlash()
+    {
+        SetUrlViaPushState("/Other");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Default, no trailing slash (matches all)")).Click();
+        Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
+    }
+
+    [Fact]
     public void CanFollowLinkToOtherPageWithQueryString()
     {
         SetUrlViaPushState("/");
@@ -299,6 +310,17 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void CanFollowLinkToDefaultPageWithQueryString_NoTrailingSlash()
+    {
+        SetUrlViaPushState("/Other");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Default with query, no trailing slash")).Click();
+        Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Default with query, no trailing slash");
+    }
+
+    [Fact]
     public void CanFollowLinkToOtherPageWithHash()
     {
         SetUrlViaPushState("/");
@@ -318,6 +340,17 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         app.FindElement(By.LinkText("Default with hash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
         AssertHighlightedLinks("Default with hash");
+    }
+
+    [Fact]
+    public void CanFollowLinkToDefaultPageWithHash_NoTrailingSlash()
+    {
+        SetUrlViaPushState("/Other");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Default with hash, no trailing slash")).Click();
+        Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks("Default with hash, no trailing slash");
     }
 
     [Fact]
@@ -406,6 +439,74 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void CanNavigateProgrammaticallyWithStateValidateNoReplaceHistoryEntry()
+    {
+        // This test checks if default navigation does not replace Browser history entries
+        SetUrlViaPushState("/");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        var testSelector = Browser.WaitUntilTestSelectorReady();
+
+        app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+        Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+        // We navigate to the /Other page
+        app.FindElement(By.Id("do-other-navigation-state")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+        Browser.Contains("state", () => app.FindElement(By.Id("test-state")).Text);
+        AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+        // After we press back, we should end up at the "/ProgrammaticNavigationCases" page so we know browser history has not been replaced
+        // If history had been replaced we would have ended up at the "/" page
+        Browser.Navigate().Back();
+        Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+        AssertHighlightedLinks("Programmatic navigation cases");
+
+        // When the navigation is forced, the state is ignored (we could choose to throw here).
+        app.FindElement(By.Id("do-other-navigation-forced-state")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+        Browser.DoesNotExist(By.Id("test-state"));
+
+        // We check if we had a force load
+        Assert.Throws<StaleElementReferenceException>(() =>
+            testSelector.SelectedOption.GetAttribute("value"));
+
+        // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
+        Browser.Navigate().Back();
+        Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+        Browser.WaitUntilTestSelectorReady();
+    }
+
+    [Fact]
+    public void CanNavigateProgrammaticallyWithStateReplaceHistoryEntry()
+    {
+        SetUrlViaPushState("/");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        var testSelector = Browser.WaitUntilTestSelectorReady();
+
+        app.FindElement(By.LinkText("Programmatic navigation cases")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/ProgrammaticNavigationCases", StringComparison.Ordinal));
+        Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
+
+        // We navigate to the /Other page, with "replace" enabled
+        app.FindElement(By.Id("do-other-navigation-state-replacehistoryentry")).Click();
+        Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
+        Browser.Contains("state", () => app.FindElement(By.Id("test-state")).Text);
+        AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+        // After we press back, we should end up at the "/" page so we know browser history has been replaced
+        // If history would not have been replaced we would have ended up at the "/ProgrammaticNavigationCases" page
+        Browser.Navigate().Back();
+        Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+
+        // Because this was all with client-side navigation, we didn't lose the state in the test selector
+        Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+    }
+
+    [Fact]
     public void CanNavigateProgrammaticallyValidateNoReplaceHistoryEntry()
     {
         // This test checks if default navigation does not replace Browser history entries
@@ -419,7 +520,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Contains("programmatic navigation", () => app.FindElement(By.Id("test-info")).Text);
 
         // We navigate to the /Other page
-        // This will also test our new NavigatTo(string uri) overload (it should not replace the browser history)
+        // This will also test our new NavigateTo(string uri) overload (it should not replace the browser history)
         app.FindElement(By.Id("do-other-navigation")).Click();
         Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
@@ -799,7 +900,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void CanArriveAtQueryStringPageWithDateTimeQuery()
     {
         var dateTime = new DateTime(2000, 1, 2, 3, 4, 5, 6);

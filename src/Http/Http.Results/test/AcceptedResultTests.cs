@@ -32,7 +32,7 @@ public class AcceptedResultTests
         // Arrange
         Accepted MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Accepted>(context);
@@ -57,6 +57,14 @@ public class AcceptedResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Accepted>(null));
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Accepted("location"));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

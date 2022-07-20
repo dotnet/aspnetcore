@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class AuthorizationAppBuilderExtensions
 {
+    internal const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
+
     /// <summary>
     /// Adds the <see cref="AuthorizationMiddleware"/> to the specified <see cref="IApplicationBuilder"/>, which enables authorization capabilities.
     /// <para>
@@ -30,6 +32,7 @@ public static class AuthorizationAppBuilderExtensions
 
         VerifyServicesRegistered(app);
 
+        app.Properties[AuthorizationMiddlewareSetKey] = true;
         return app.UseMiddleware<AuthorizationMiddleware>();
     }
 

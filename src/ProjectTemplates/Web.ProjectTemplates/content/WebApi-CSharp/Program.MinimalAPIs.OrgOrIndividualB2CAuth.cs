@@ -3,9 +3,6 @@ using System.Net.Http;
 #endif
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-#if (EnableOpenAPI)
-using Microsoft.AspNetCore.OpenApi;
-#endif
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif
@@ -59,7 +56,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 #endif
-#if (RequiresHttps)
+#if (HasHttpsProfile)
 
 app.UseHttpsRedirection();
 #endif
@@ -93,7 +90,7 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            DateTime.Now.AddDays(index),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -110,7 +107,7 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServic
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            DateTime.Now.AddDays(index),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -125,7 +122,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            DateTime.Now.AddDays(index),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -144,7 +141,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 
 app.Run();
 
-record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }

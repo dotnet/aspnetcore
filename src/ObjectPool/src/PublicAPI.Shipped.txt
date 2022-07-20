@@ -1,8 +1,8 @@
 #nullable enable
-~Microsoft.Extensions.ObjectPool.DefaultObjectPool<T>
-~Microsoft.Extensions.ObjectPool.DefaultPooledObjectPolicy<T>
-~Microsoft.Extensions.ObjectPool.LeakTrackingObjectPool<T>
-~Microsoft.Extensions.ObjectPool.ObjectPool<T>
+Microsoft.Extensions.ObjectPool.DefaultObjectPool<T>
+Microsoft.Extensions.ObjectPool.DefaultPooledObjectPolicy<T>
+Microsoft.Extensions.ObjectPool.LeakTrackingObjectPool<T>
+Microsoft.Extensions.ObjectPool.ObjectPool<T>
 abstract Microsoft.Extensions.ObjectPool.ObjectPool<T>.Get() -> T!
 abstract Microsoft.Extensions.ObjectPool.ObjectPool<T>.Return(T! obj) -> void
 abstract Microsoft.Extensions.ObjectPool.ObjectPoolProvider.Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T!>! policy) -> Microsoft.Extensions.ObjectPool.ObjectPool<T!>!

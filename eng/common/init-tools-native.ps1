@@ -87,6 +87,7 @@ try {
         $NativeTools.PSObject.Properties | ForEach-Object {
           $ToolName = $_.Name
           $ToolVersion = $_.Value
+          $InstalledTools = @{}
 
           if ((Get-Command "$ToolName" -ErrorAction SilentlyContinue) -eq $null) {
             if ($ToolVersion -eq "latest") {
@@ -111,9 +112,10 @@ try {
             $ToolPath = Convert-Path -Path $BinPath
             Write-Host "Adding $ToolName to the path ($ToolPath)..."
             Write-Host "##vso[task.prependpath]$ToolPath"
+            $InstalledTools += @{ $ToolName = $ToolDirectory.FullName }
           }
         }
-        exit 0
+        return $InstalledTools
       } else {
         $NativeTools.PSObject.Properties | ForEach-Object {
           $ToolName = $_.Name

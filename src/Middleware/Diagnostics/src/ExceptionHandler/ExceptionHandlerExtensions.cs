@@ -104,6 +104,10 @@ public static class ExceptionHandlerExtensions
     private static IApplicationBuilder SetExceptionHandlerMiddleware(IApplicationBuilder app, IOptions<ExceptionHandlerOptions>? options)
     {
         const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+        var problemDetailsService = app.ApplicationServices.GetService<IProblemDetailsService>();
+
+        app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware";
+
         // Only use this path if there's a global router (in the 'WebApplication' case).
         if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
@@ -131,15 +135,15 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = builder.Build();
                 }
 
-                return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener).Invoke;
+                return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;
             });
         }
 
         if (options is null)
         {
-            return app.UseMiddleware<ExceptionHandlerMiddleware>();
+            return app.UseMiddleware<ExceptionHandlerMiddlewareImpl>();
         }
 
-        return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
+        return app.UseMiddleware<ExceptionHandlerMiddlewareImpl>(options);
     }
 }

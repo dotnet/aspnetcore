@@ -28,7 +28,7 @@ module Program =
 
         let app = builder.Build()
 
-#if !NoHttps
+#if HasHttpsProfile
         app.UseHttpsRedirection()
 #endif
 

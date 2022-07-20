@@ -89,7 +89,7 @@ public partial class CreatedAtRouteOfTResultTests
         // Arrange
         CreatedAtRoute<Todo> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<CreatedAtRoute<Todo>>(context);
@@ -117,6 +117,52 @@ public partial class CreatedAtRouteOfTResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<CreatedAtRoute<object>>(null));
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var rawResult = new CreatedAtRoute<object>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: null);
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(rawResult);
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var rawResult = new CreatedAtRoute<string>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: value);
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(rawResult);
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var rawResult = new CreatedAtRoute<string>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: value);
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(rawResult);
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

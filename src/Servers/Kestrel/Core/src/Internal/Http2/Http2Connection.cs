@@ -23,6 +23,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
+    // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+    private static ReadOnlySpan<byte> ClientPrefaceBytes => "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> AuthorityBytes => ":authority"u8;
+    private static ReadOnlySpan<byte> MethodBytes => ":method"u8;
+    private static ReadOnlySpan<byte> PathBytes => ":path"u8;
+    private static ReadOnlySpan<byte> SchemeBytes => ":scheme"u8;
+    private static ReadOnlySpan<byte> StatusBytes => ":status"u8;
+    private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
+    private static ReadOnlySpan<byte> TeBytes => "te"u8;
+    private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
+    private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
+    private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
+
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
     public static byte[]? InvalidHttp1xErrorResponseBytes;
 
@@ -1617,6 +1630,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         {
             return PseudoHeaderFields.Authority;
         }
+        else if (name.SequenceEqual(ProtocolBytes))
+        {
+            return PseudoHeaderFields.Protocol;
+        }
         else
         {
             return PseudoHeaderFields.Unknown;
@@ -1721,6 +1738,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Path = 0x4,
         Scheme = 0x8,
         Status = 0x10,
+        Protocol = 0x20,
         Unknown = 0x40000000
     }
 

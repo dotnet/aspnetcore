@@ -26,7 +26,8 @@ public static class DeveloperExceptionPageExtensions
             throw new ArgumentNullException(nameof(app));
         }
 
-        return app.UseMiddleware<DeveloperExceptionPageMiddleware>();
+        app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware";
+        return app.UseMiddleware<DeveloperExceptionPageMiddlewareImpl>();
     }
 
     /// <summary>
@@ -52,6 +53,7 @@ public static class DeveloperExceptionPageExtensions
             throw new ArgumentNullException(nameof(options));
         }
 
-        return app.UseMiddleware<DeveloperExceptionPageMiddleware>(Options.Create(options));
+        app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware";
+        return app.UseMiddleware<DeveloperExceptionPageMiddlewareImpl>(Options.Create(options));
     }
 }

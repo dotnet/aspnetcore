@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
@@ -29,6 +28,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private static ReadOnlySpan<byte> AuthorityBytes => ":authority"u8;
     private static ReadOnlySpan<byte> MethodBytes => ":method"u8;
     private static ReadOnlySpan<byte> PathBytes => ":path"u8;
+    private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
     private static ReadOnlySpan<byte> SchemeBytes => ":scheme"u8;
     private static ReadOnlySpan<byte> StatusBytes => ":status"u8;
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
@@ -51,6 +51,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private Http3MessageBody? _messageBody;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
@@ -507,6 +508,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         {
             return PseudoHeaderFields.Authority;
         }
+        else if (name.SequenceEqual(ProtocolBytes))
+        {
+            return PseudoHeaderFields.Protocol;
+        }
         else
         {
             return PseudoHeaderFields.Unknown;
@@ -632,9 +637,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
         finally
         {
-            var streamError = error as ConnectionAbortedException
-                ?? new ConnectionAbortedException("The stream has completed.", error!);
-
             await Input.CompleteAsync();
 
             // Once the header is finished being received then the app has started.
@@ -687,6 +689,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
             catch
             {
+                var streamError = error as ConnectionAbortedException
+                   ?? new ConnectionAbortedException("The stream has completed.", error!);
+
                 Abort(streamError, Http3ErrorCode.ProtocolError);
                 throw;
             }
@@ -821,7 +826,25 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
-        if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
+        // https://datatracker.ietf.org/doc/html/draft-ietf-webtrans-http3/#section-3.3
+        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams && HttpRequestHeaders.HeaderProtocol.Count > 0)
+        {
+            if (!_isMethodConnect)
+            {
+                throw new Http3StreamErrorException(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader, Http3ErrorCode.ProtocolError);
+            }
+
+            if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
+            {
+                throw new Http3StreamErrorException(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders, Http3ErrorCode.ProtocolError);
+            }
+
+            if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
+            }
+        }
+        else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
         {
             // All HTTP/3 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
             // fields, unless it is a CONNECT request. An HTTP request that omits mandatory pseudo-header
@@ -898,7 +921,18 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     }
 
     protected override MessageBody CreateMessageBody()
-        => Http3MessageBody.For(this);
+    {
+        if (_messageBody != null)
+        {
+            _messageBody.Reset();
+        }
+        else
+        {
+            _messageBody = new Http3MessageBody(this);
+        }
+
+        return _messageBody;
+    }
 
     protected override bool TryParseRequest(ReadResult result, out bool endConnection)
     {
@@ -928,10 +962,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
-        // CONNECT - :scheme and :path must be excluded
-        if (Method == Http.HttpMethod.Connect)
+        // CONNECT - :scheme and :path must be excluded=
+        if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
-            if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
+            if (!string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Path]))
             {
                 Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                 return false;
@@ -1157,6 +1191,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Path = 0x4,
         Scheme = 0x8,
         Status = 0x10,
+        Protocol = 0x20,
         Unknown = 0x40000000
     }
 

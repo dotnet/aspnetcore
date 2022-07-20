@@ -225,6 +225,7 @@ public class ClientDisconnectTests : StrictTestServerTests
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41812")]
     public async Task ReaderThrowsResetExceptionOnInvalidBody()
     {
         var requestStartedCompletionSource = CreateTaskCompletionSource();

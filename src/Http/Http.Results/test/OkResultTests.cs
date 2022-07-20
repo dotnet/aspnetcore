@@ -45,7 +45,7 @@ public class OkResultTests
         // Arrange
         Ok MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Ok>(context);
@@ -71,6 +71,14 @@ public class OkResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Ok>(null));
+    }
+
+    [Fact]
+    public void OkObjectResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Ok());
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

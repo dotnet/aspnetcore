@@ -7,6 +7,9 @@
     <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
     <SignAssembly>false</SignAssembly>
     <SkipHelixAlpine>true</SkipHelixAlpine>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>

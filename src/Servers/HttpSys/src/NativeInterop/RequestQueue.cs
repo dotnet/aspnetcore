@@ -44,7 +44,7 @@ internal sealed partial class RequestQueue
         var statusCode = HttpApi.HttpCreateRequestQueue(
                 HttpApi.Version,
                 requestQueueName,
-                null,
+                IntPtr.Zero,
                 flags,
                 out var requestQueueHandle);
 
@@ -56,7 +56,7 @@ internal sealed partial class RequestQueue
             statusCode = HttpApi.HttpCreateRequestQueue(
                     HttpApi.Version,
                     requestQueueName,
-                    null,
+                    IntPtr.Zero,
                     flags,
                     out requestQueueHandle);
         }
@@ -148,10 +148,7 @@ internal sealed partial class RequestQueue
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     private static partial class Log

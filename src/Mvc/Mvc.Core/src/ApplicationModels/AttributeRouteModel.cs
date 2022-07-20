@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -67,6 +68,7 @@ public class AttributeRouteModel
     /// <summary>
     /// Gets or sets the attribute route template.
     /// </summary>
+    [StringSyntax("Route")]
     public string? Template { get; set; }
 
     /// <summary>
@@ -140,7 +142,7 @@ public class AttributeRouteModel
     /// <param name="prefix">The prefix.</param>
     /// <param name="template">The route template.</param>
     /// <returns>The combined pattern.</returns>
-    public static string? CombineTemplates(string? prefix, string? template)
+    public static string? CombineTemplates([StringSyntax("Route")] string? prefix, [StringSyntax("Route")] string? template)
     {
         var result = CombineCore(prefix, template);
         return CleanTemplate(result);
@@ -154,7 +156,7 @@ public class AttributeRouteModel
     /// <remarks>
     /// Route templates starting with "~/" or "/" can be used to override the prefix.
     /// </remarks>
-    public static bool IsOverridePattern(string? template)
+    public static bool IsOverridePattern([StringSyntax("Route")] string? template)
     {
         return template != null &&
             (template.StartsWith("~/", StringComparison.Ordinal) ||
@@ -265,7 +267,7 @@ public class AttributeRouteModel
     /// <param name="values">The token values to use.</param>
     /// <param name="routeTokenTransformer">The route token transformer.</param>
     /// <returns>A new string with the replaced values.</returns>
-    public static string ReplaceTokens(string template, IDictionary<string, string?> values, IOutboundParameterTransformer? routeTokenTransformer)
+    public static string ReplaceTokens([StringSyntax("Route")] string template, IDictionary<string, string?> values, IOutboundParameterTransformer? routeTokenTransformer)
     {
         var builder = new StringBuilder();
         var state = TemplateParserState.Plaintext;

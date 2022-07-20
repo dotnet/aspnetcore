@@ -441,7 +441,7 @@ namespace System.Net
         #region Custom WriteEvent overloads
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primitive values.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, string? arg3, string? arg4)
         {
             if (IsEnabled())
@@ -486,7 +486,7 @@ namespace System.Net
         }
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primitive values.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, byte[]? arg3)
         {
             if (IsEnabled())
@@ -530,6 +530,7 @@ namespace System.Net
         }
 
         [NonEvent]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, int arg2, int arg3, int arg4)
         {
             if (IsEnabled())
@@ -568,6 +569,7 @@ namespace System.Net
         }
 
         [NonEvent]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, int arg2, string? arg3)
         {
             if (IsEnabled())
@@ -603,6 +605,7 @@ namespace System.Net
         }
 
         [NonEvent]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, int arg3)
         {
             if (IsEnabled())
@@ -638,6 +641,7 @@ namespace System.Net
         }
 
         [NonEvent]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, string? arg3, int arg4)
         {
             if (IsEnabled())

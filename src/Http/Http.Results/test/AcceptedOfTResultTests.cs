@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
@@ -62,7 +63,7 @@ public class AcceptedOfTResultTests
         // Arrange
         Accepted<Todo> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Accepted<Todo>>(context);
@@ -90,6 +91,38 @@ public class AcceptedOfTResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Accepted<object>>(null));
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Accepted<string>("location", null));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new Accepted<string>("location", value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new Accepted<string>("location", value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

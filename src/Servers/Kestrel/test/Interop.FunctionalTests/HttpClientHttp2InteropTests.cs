@@ -600,7 +600,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         var url = host.MakeUrl(scheme);
         using var client = CreateClient();
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url)).DefaultTimeout();
-        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
+        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.Message);
         await host.StopAsync().DefaultTimeout();
     }
 
@@ -629,12 +629,13 @@ public class HttpClientHttp2InteropTests : LoggedTest
         response.EnsureSuccessStatusCode();
         receivedHeaders.SetResult();
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync()).DefaultTimeout();
-        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
+        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.Message);
         await host.StopAsync().DefaultTimeout();
     }
 
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41843")]
     public async Task ServerReset_AfterEndStream_NoError(string scheme)
     {
         var hostBuilder = new HostBuilder()
@@ -742,7 +743,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await serverReset.Task.DefaultTimeout();
         var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
         Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-        await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+        await Assert.ThrowsAsync<HttpProtocolException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
         await host.StopAsync().DefaultTimeout();
@@ -801,7 +802,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await serverReset.Task.DefaultTimeout();
         var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
         Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-        await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+        await Assert.ThrowsAsync<HttpProtocolException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
         await host.StopAsync().DefaultTimeout();

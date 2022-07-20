@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 public class UnprocessableEntityOfTResultTests
 {
     [Fact]
-    public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    public void UnprocessableEntityObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
@@ -82,7 +82,7 @@ public class UnprocessableEntityOfTResultTests
         // Arrange
         UnprocessableEntity<Todo> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<UnprocessableEntity<Todo>>(context);
@@ -110,6 +110,38 @@ public class UnprocessableEntityOfTResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<UnprocessableEntity<object>>(null));
+    }
+
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new UnprocessableEntity<object>(null));
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+    }
+
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new UnprocessableEntity<string>(value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new UnprocessableEntity<string>(value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

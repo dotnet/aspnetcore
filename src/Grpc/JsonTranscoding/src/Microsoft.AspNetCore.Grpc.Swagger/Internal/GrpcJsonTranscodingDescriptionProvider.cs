@@ -84,7 +84,8 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         }
 
         var methodMetadata = routeEndpoint.Metadata.GetMetadata<GrpcMethodMetadata>()!;
-        var routeParameters = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeEndpoint.RoutePattern, methodDescriptor.InputType);
+        var httpRoutePattern = HttpRoutePattern.Parse(pattern);
+        var routeParameters = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(httpRoutePattern.Variables.Select(v => v.FieldPath).ToList(), methodDescriptor.InputType);
 
         foreach (var routeParameter in routeParameters)
         {

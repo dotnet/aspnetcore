@@ -118,7 +118,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication().AddFacebook(o =>
+                services.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddFacebook(o =>
                 {
                     o.AppId = "Test App Id";
                     o.AppSecret = "Test App Secret";
@@ -148,7 +148,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication().AddFacebook(o =>
+                services.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddFacebook(o =>
                 {
                     o.AppId = "Test App Id";
                     o.AppSecret = "Test App Secret";
@@ -180,7 +180,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication().AddFacebook(o =>
+                services.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddFacebook(o =>
                 {
                     o.AppId = "Test App Id";
                     o.AppSecret = "Test App Secret";
