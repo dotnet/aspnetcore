@@ -30,20 +30,8 @@ host.Run(async (context) =>
     }
     var session = await feature.AcceptAsync(CancellationToken.None);
 
-    //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
-    //var stream2 = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
-    //if (stream2 is null)
-    //{
-    //    return;
-    //}
-
     //// ACCEPT AN INCOMING STREAM
     var stream = await session.AcceptStreamAsync(CancellationToken.None);
-
-    //// WRITE TO A STREAM
-    //await Task.Delay(200);
-    //await stream!.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-    //await stream!.Transport.Output.FlushAsync();
 
     //// READ FROM A STREAM:
     var memory = new Memory<byte>(new byte[4096]);

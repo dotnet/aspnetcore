@@ -152,10 +152,11 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     {
         try
         {
-            // todo: the headertype should be read earlier
+            // todo: the _headerType should be read earlier
             // and by the Http3PendingStream. However, to
             // avoid perf issues with the current implementation
             // we can defer the reading until now
+            // (https://github.com/dotnet/aspnetcore/issues/42789)
             if (_headerType == -1)
             {
                 _headerType = await TryReadStreamHeaderAsync();

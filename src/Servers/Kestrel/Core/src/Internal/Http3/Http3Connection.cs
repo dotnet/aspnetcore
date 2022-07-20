@@ -343,6 +343,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                             _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
+                            // TODO: This needs to get dispatched off of the accept loop to avoid blocking other streams. (https://github.com/dotnet/aspnetcore/issues/42789)
                             var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, null);
 
                             _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
@@ -374,6 +375,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                             _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
+                            // TODO: This needs to get dispatched off of the accept loop to avoid blocking other streams. (https://github.com/dotnet/aspnetcore/issues/42789)
                             var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, Http3StreamType.WebTransportBidirectional);
 
                             _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
@@ -554,6 +556,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     {
         Debug.Assert(_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
 
+        // TODO: This needs to get dispatched off of the accept loop to avoid blocking other streams. (https://github.com/dotnet/aspnetcore/issues/42789)
         var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, null);
 
         lock (_webtransportSessions!)

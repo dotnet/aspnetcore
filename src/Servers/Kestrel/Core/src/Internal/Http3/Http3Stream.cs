@@ -161,10 +161,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
 
-            if (_context.WebTransportSession is not null)
-            {
-                _context.WebTransportSession.Abort(abortReason, errorCode);
-            }
+            _context.WebTransportSession?.Abort(abortReason, errorCode);
 
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
 
@@ -707,10 +704,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 _context.StreamLifetimeHandler.OnStreamCompleted(this);
 
                 // If we have a webtransport session on this stream, end it
-                if (IsWebTransportRequest && _context.WebTransportSession is not null)
-                {
-                    _context.WebTransportSession.OnClientConnectionClosed();
-                }
+                _context.WebTransportSession?.OnClientConnectionClosed();
 
                 // TODO this is a hack for .NET 6 pooling.
                 //
@@ -749,10 +743,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
         }
 
-        if (_context.WebTransportSession is not null)
-        {
-            _context.WebTransportSession.OnClientConnectionClosed();
-        }
+        _context.WebTransportSession?.OnClientConnectionClosed();
 
         OnTrailersComplete();
         return RequestBodyPipe.Writer.CompleteAsync();
@@ -1195,7 +1186,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         {
             throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
         }
-        _isWebTransportSessionAccepted = true;
 
         if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
         {
@@ -1207,14 +1197,16 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
         }
 
+        _isWebTransportSessionAccepted = true;
+
         // version negotiation
         var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
+
+        _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 
         // send version negotiation resulting version
         ResponseHeaders[WebTransportSession.VersionHeaderPrefix] = version;
         await FlushAsync(token);
-
-        _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 
         return _context.WebTransportSession;
     }
