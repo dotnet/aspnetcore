@@ -3,21 +3,50 @@
 
 using System.Net;
 using System.Net.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
-public class WebTransportTests : Http3TestBase
+public class WebTransportHandshakeTests : Http3TestBase
 {
     [Fact]
     public async Task WebTransportHandshake_ClientToServerPasses()
     {
         _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
-        await Http3Api.InitializeConnectionAsync(_noopApplication);
+        var appCompletedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            var success = true;
+
+            var webTransportFeature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+
+            success &= webTransportFeature.IsWebTransportRequest;
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+            try
+            {
+                var session = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout(); // todo session is null here
+
+                success &= session is not null;
+
+                appCompletedTcs.SetResult(success);
+            }
+            catch (TimeoutException)
+            {
+                appCompletedTcs.SetResult(false);
+            }
+#pragma warning restore CA2252
+
+        });
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
 
@@ -34,23 +63,23 @@ public class WebTransportTests : Http3TestBase
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 
-        var requestStream = await Http3Api.CreateRequestStream();
-        var headersConnectFrame = new[]
+        var requestStream = await Http3Api.CreateRequestStream(new[]
         {
             new KeyValuePair<string, string>(PseudoHeaderNames.Method, "CONNECT"),
             new KeyValuePair<string, string>(PseudoHeaderNames.Protocol, "webtransport"),
             new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "server.example.com"),
-            new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com")
-        };
+            new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
+        });
 
-        await requestStream.SendHeadersAsync(headersConnectFrame);
         var response2 = await requestStream.ExpectHeadersAsync();
 
         Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[PseudoHeaderNames.Status], null));
 
         await requestStream.OnDisposedTask.DefaultTimeout();
+        Assert.True(await appCompletedTcs.Task);
     }
 
     [Theory]
@@ -79,7 +108,7 @@ public class WebTransportTests : Http3TestBase
         nameof(PseudoHeaderNames.Scheme), "http",
         nameof(PseudoHeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
-    public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers) // todo replace the "" with CoreStrings.... then push (maybe also update the waitforstreamerror function) and resolve stephen's comment
+    public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers)
     {
         _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
@@ -100,14 +129,13 @@ public class WebTransportTests : Http3TestBase
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 
-        var requestStream = await Http3Api.CreateRequestStream();
-
         var headersConnectFrame = new List<KeyValuePair<string, string>>();
         for (var i = 0; i < headers.Length; i += 2)
         {
             headersConnectFrame.Add(new KeyValuePair<string, string>(GetHeaderFromName(headers[i]), headers[i + 1]));
         }
-        await requestStream.SendHeadersAsync(headersConnectFrame);
+
+        var requestStream = await Http3Api.CreateRequestStream(headersConnectFrame);
 
         await requestStream.WaitForStreamErrorAsync((Http3ErrorCode)error, AssertExpectedErrorMessages, GetCoreStringFromName(targetErrorMessage));
     }

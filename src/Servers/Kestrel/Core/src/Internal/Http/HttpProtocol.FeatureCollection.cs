@@ -342,4 +342,12 @@ internal partial class HttpProtocol
     {
         return CompleteAsync();
     }
+
+#pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
+    public bool IsWebTransportRequest { get; set; }
+    public virtual ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+    {
+        throw new NotSupportedException();
+    }
+#pragma warning restore CA2252
 }

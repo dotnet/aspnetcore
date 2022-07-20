@@ -7,13 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" LinkBase="shared" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Turn on the WebTransport AppContext switch -->
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams" Value="true" />
   </ItemGroup>
 </Project>
