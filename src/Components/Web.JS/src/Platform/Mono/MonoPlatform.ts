@@ -475,11 +475,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       }
 
       // makes Blazor._internal visible to [JSImport]
-      Object.assign(IMPORTS, {
-        Blazor: {
-          _internal: Blazor._internal,
-        },
-      });
+      IMPORTS.Blazor = { _internal: Blazor._internal };
 
       attachInteropInvoker();
       runtimeReadyResolve(api);
