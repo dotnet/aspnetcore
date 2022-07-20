@@ -1603,25 +1603,19 @@ public static partial class RequestDelegateFactory
             //      wasParamCheckFailure = true;
             //      Log.RequiredParameterNotProvided(httpContext, "TypeOfValue", "param1");
             // }
-
-            Expression checkRequiredExpression = Expression.Empty();
-
-            if (!parameter.ParameterType.IsValueType)
-            {
-                checkRequiredExpression = Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
-                            Expression.Block(
-                                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                                Expression.Call(LogRequiredParameterNotProvidedMethod,
-                                    HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, sourceConstant,
-                                    Expression.Constant(factoryContext.ThrowOnBadRequest))
-                            )
-                        );
-            };
-
             var checkRequiredStringParameterBlock = Expression.Block(
                 Expression.Assign(argument, valueExpression),
-                checkRequiredExpression
+                Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
+                    Expression.Block(
+                        Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                        Expression.Call(LogRequiredParameterNotProvidedMethod,
+                            HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, sourceConstant,
+                            Expression.Constant(factoryContext.ThrowOnBadRequest))
+                    )
+                )
             );
+
+            // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
 
             factoryContext.ExtraLocals.Add(argument);
             factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
@@ -1631,6 +1625,16 @@ public static partial class RequestDelegateFactory
         // Allow nullable parameters that don't have a default value
         if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
         {
+            if (parameter.ParameterType == typeof(StringValues?))
+            {
+                // when Nullable<StringValues> is used and the actual value is StringValues.Empty, we should pass in a Nullable<StringValues>
+                return Expression.Block(
+                    Expression.Condition(Expression.Equal(valueExpression, Expression.Convert(Expression.Constant(StringValues.Empty), parameter.ParameterType)),
+                            Expression.Convert(Expression.Constant(null), parameter.ParameterType),
+                            valueExpression
+                        )
+                    );
+            }
             return valueExpression;
         }
 
@@ -1727,7 +1731,7 @@ public static partial class RequestDelegateFactory
         // Do not duplicate the metadata if there are multiple form parameters
         if (!factoryContext.ReadForm)
         {
-            InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType,  FormFileContentType);
+            InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
         }
 
         factoryContext.ReadForm = true;
