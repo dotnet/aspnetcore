@@ -347,6 +347,11 @@ public abstract class NavigationManager
                     {
                         var completedHandler = await Task.WhenAny(locationChangingTasks).WaitAsync(cancellationToken);
 
+                        if (completedHandler.Exception is { } exception)
+                        {
+                            throw exception;
+                        }
+
                         if (context.DidPreventNavigation)
                         {
                             return false;
