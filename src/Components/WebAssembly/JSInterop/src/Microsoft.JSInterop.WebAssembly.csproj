@@ -8,7 +8,6 @@
     <IsShippingPackage>true</IsShippingPackage>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
