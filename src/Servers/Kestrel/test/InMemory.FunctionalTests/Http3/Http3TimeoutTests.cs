@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class Http3TimeoutTests : Http3TestBase
 {
+
     [Fact]
     public async Task HEADERS_IncompleteFrameReceivedWithinRequestHeadersTimeout_StreamError()
     {
@@ -32,8 +33,6 @@ public class Http3TimeoutTests : Http3TestBase
 
         var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
         await controlStream.ExpectSettingsAsync().DefaultTimeout();
-
-        await requestStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
 
         await requestStream.SendHeadersPartialAsync().DefaultTimeout();
 
@@ -54,9 +53,13 @@ public class Http3TimeoutTests : Http3TestBase
             CoreStrings.BadRequest_RequestHeadersTimeout);
     }
 
-    [Fact]
-    public async Task HEADERS_HeaderFrameReceivedWithinRequestHeadersTimeout_Success()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task HEADERS_HeaderFrameReceivedWithinRequestHeadersTimeout_Success(bool pendingStreamsEnabled)
     {
+        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamsEnabled;
+
         var now = _serviceContext.MockSystemClock.UtcNow;
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
@@ -72,9 +75,20 @@ public class Http3TimeoutTests : Http3TestBase
         var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
         await controlStream.ExpectSettingsAsync().DefaultTimeout();
 
-        await requestStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
+        dynamic serverRequestStream;
 
-        var serverRequestStream = Http3Api.Connection._unidentifiedStreams[requestStream.StreamId];
+        if (pendingStreamsEnabled)
+        {
+            await requestStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
+
+            serverRequestStream = Http3Api.Connection._unidentifiedStreams[requestStream.StreamId];
+        }
+        else
+        {
+            await requestStream.OnStreamCreatedTask.DefaultTimeout();
+
+            serverRequestStream = Http3Api.Connection._streams[requestStream.StreamId];
+        }
 
         Http3Api.TriggerTick(now);
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout);

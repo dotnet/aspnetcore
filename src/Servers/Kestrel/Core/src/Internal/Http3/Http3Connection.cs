@@ -552,10 +552,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     private async Task CreateAndAddWebTransportStream(Http3PendingStream stream, long streamId, WebTransportStreamType type)
     {
-        if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
-        {
-            return;
-        }
+        Debug.Assert(_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
 
         var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, null);
 
@@ -833,10 +830,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)
     {
-        if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
-        {
-            throw new InvalidOperationException("Cannot open new session as WebTransport is disabled");
-        }
+        Debug.Assert(_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
 
         WebTransportSession session;
         lock (_webtransportSessions!)
