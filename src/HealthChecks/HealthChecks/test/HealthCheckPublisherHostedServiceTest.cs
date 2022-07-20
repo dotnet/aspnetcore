@@ -215,7 +215,7 @@ public class HealthCheckPublisherHostedServiceTest
             for (var i = 0; i < publishers.Length; i++)
             {
                 var report = Assert.Single(publishers[i].Entries).report;
-                Assert.Equal(new[] { "one", "two", }, report.Entries.Select(e => e.Key).OrderBy(k => k));
+                Assert.Equal(new[] { "one", "two", }, report.Entries.Keys.OrderBy(k => k));
             }
         }
         finally
@@ -281,7 +281,7 @@ public class HealthCheckPublisherHostedServiceTest
             for (var i = 0; i < publishers.Length; i++)
             {
                 var report = Assert.Single(publishers[i].Entries).report;
-                Assert.Equal(new[] { "one", "two", }, report.Entries.Select(e => e.Key).OrderBy(k => k));
+                Assert.Equal(new[] { "one", "two", }, report.Entries.Keys.OrderBy(k => k));
             }
         }
         finally
@@ -374,7 +374,7 @@ public class HealthCheckPublisherHostedServiceTest
             for (var i = 0; i < publishers.Length; i++)
             {
                 var report = Assert.Single(publishers[i].Entries).report;
-                Assert.Equal(new[] { "one", }, report.Entries.Select(e => e.Key).OrderBy(k => k));
+                Assert.Equal(new[] { "one", }, report.Entries.Keys.OrderBy(k => k));
             }
         }
         finally
