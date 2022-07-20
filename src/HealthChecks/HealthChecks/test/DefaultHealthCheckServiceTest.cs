@@ -121,32 +121,82 @@ public class DefaultHealthCheckServiceTest
     {
         const string DataKey = "Foo";
         const string DataValue = "Bar";
+        const string DegradedMessage = "I'm not feeling so good";
+        const string UnhealthyMessage = "Halp!";
         const string HealthyMessage = "Everything is A-OK";
+        var exception = new Exception("Things are pretty bad!");
         var healthyCheckTags = new List<string> { "healthy-check-tag" };
+        var degradedCheckTags = new List<string> { "degraded-check-tag" };
+        var unhealthyCheckTags = new List<string> { "unhealthy-check-tag" };
 
         // Arrange
         var data = new Dictionary<string, object>()
             {
                 { DataKey, DataValue }
             };
+        var healthyCheckInsideCheck = new TaskCompletionSource<object?>();
+        var degradedCheckInsideCheck = new TaskCompletionSource<object?>();
+        var unhealthyCheckInsideCheck = new TaskCompletionSource<object?>();
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("Check1Period3", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(3));
-            b.AddAsyncCheck("Check2Period7", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(7));
-            b.AddAsyncCheck("Check3Period12", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(12));
+            b.AddAsyncCheck("HealthyCheck", _ =>
+            {
+                if (!healthyCheckInsideCheck.Task.IsCompleted)
+                {
+                    healthyCheckInsideCheck.SetResult(null);
+                }
+
+                return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+            },
+                healthyCheckTags,
+                period: TimeSpan.FromSeconds(2));
+
+            b.AddAsyncCheck("DegradedCheck", _ =>
+            {
+                if (!degradedCheckInsideCheck.Task.IsCompleted)
+                {
+                    degradedCheckInsideCheck.SetResult(null);
+                }
+
+                return Task.FromResult(HealthCheckResult.Degraded(DegradedMessage));
+            },
+                degradedCheckTags,
+                period: TimeSpan.FromSeconds(3));
+
+            b.AddAsyncCheck("UnhealthyCheck", _ =>
+                {
+                    if (!unhealthyCheckInsideCheck.Task.IsCompleted)
+                    {
+                        unhealthyCheckInsideCheck.SetResult(null);
+                    }
+                    return Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception));
+
+                },
+                unhealthyCheckTags,
+                period: TimeSpan.FromSeconds(5));
         });
 
         // Act
-        await Task.Delay(TimeSpan.FromSeconds(20));
+        await Task.WhenAll(healthyCheckInsideCheck.Task, degradedCheckInsideCheck.Task, unhealthyCheckInsideCheck.Task, Task.Delay(10000));
         var results = await service.CheckHealthAsync();
 
         // Assert
+        // All individual checks to be triggered at least once
         Assert.Collection(
-            results.Entries.GroupBy(kvp => kvp.Key).Select(x => x.First()).OrderBy(kvp => kvp.Key),
+            results.Entries.OrderBy(kvp => kvp.Key).GroupBy(kvp => kvp.Key).Select(l => l.First()),
             actual =>
             {
-                Assert.Equal("Check1Period3", actual.Key);
+                Assert.Equal("DegradedCheck", actual.Key);
+                Assert.Equal(DegradedMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
+                Assert.Null(actual.Value.Exception);
+                Assert.Empty(actual.Value.Data);
+                Assert.Equal(actual.Value.Tags, degradedCheckTags);
+            },
+            actual =>
+            {
+                Assert.Equal("HealthyCheck", actual.Key);
                 Assert.Equal(HealthyMessage, actual.Value.Description);
                 Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
                 Assert.Null(actual.Value.Exception);
@@ -159,39 +209,27 @@ public class DefaultHealthCheckServiceTest
             },
             actual =>
             {
-                Assert.Equal("Check2Period7", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
-            },
-            actual =>
-            {
-                Assert.Equal("Check3Period12", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
+                Assert.Equal("UnhealthyCheck", actual.Key);
+                Assert.Equal(UnhealthyMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                Assert.Same(exception, actual.Value.Exception);
+                Assert.Empty(actual.Value.Data);
+                Assert.Equal(actual.Value.Tags, unhealthyCheckTags);
             });
     }
 
     [Fact]
-    public async Task CheckAsync_MixedPublisherIndividualPeriodicity_RunsAllChecksAndAggregatesResultsAsync()
+    public async Task CheckAsync_MixedPeriodicity_RunsAllChecksAndAggregatesResultsAsync()
     {
         const string DataKey = "Foo";
         const string DataValue = "Bar";
         const string HealthyMessage = "Everything is A-OK";
-        var healthyCheckTags = new List<string> { "healthy-check-tag" };
+
+        var check1PeriodDefaultInsideCheck = new TaskCompletionSource<object?>();
+        var check2PeriodDefaultInsideCheck = new TaskCompletionSource<object?>();
+        var check3Period2InsideCheck = new TaskCompletionSource<object?>();
+        var check4Period5InsideCheck = new TaskCompletionSource<object?>();
+        var check5Period7InsideCheck = new TaskCompletionSource<object?>();
 
         // Arrange
         var data = new Dictionary<string, object>()
@@ -201,11 +239,55 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
             {
-                b.AddAsyncCheck("Check1PeriodDefault", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-                b.AddAsyncCheck("Check2PeriodDefault", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-                b.AddAsyncCheck("Check3Period3", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(3));
-                b.AddAsyncCheck("Check4Period7", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(7));
-                b.AddAsyncCheck("Check5Period12", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(12));
+                b.AddAsyncCheck("Check1PeriodDefault", _ =>
+                {
+                    if (!check1PeriodDefaultInsideCheck.Task.IsCompleted)
+                    {
+                        check1PeriodDefaultInsideCheck.SetResult(null);
+                    }
+
+                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                });
+
+                b.AddAsyncCheck("Check2PeriodDefault", _ =>
+                {
+                    if (!check2PeriodDefaultInsideCheck.Task.IsCompleted)
+                    {
+                        check2PeriodDefaultInsideCheck.SetResult(null);
+                    }
+
+                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                });
+
+                b.AddAsyncCheck("Check3Period2", _ =>
+                {
+                    if (!check3Period2InsideCheck.Task.IsCompleted)
+                    {
+                        check3Period2InsideCheck.SetResult(null);
+                    }
+
+                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                }, period: TimeSpan.FromSeconds(2));
+
+                b.AddAsyncCheck("Check4Period5", _ =>
+                {
+                    if (!check4Period5InsideCheck.Task.IsCompleted)
+                    {
+                        check4Period5InsideCheck.SetResult(null);
+                    }
+
+                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                }, period: TimeSpan.FromSeconds(5));
+
+                b.AddAsyncCheck("Check5Period7", _ =>
+                {
+                    if (!check5Period7InsideCheck.Task.IsCompleted)
+                    {
+                        check5Period7InsideCheck.SetResult(null);
+                    }
+
+                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                }, period: TimeSpan.FromSeconds(5));
             },
             options =>
             {
@@ -213,12 +295,13 @@ public class DefaultHealthCheckServiceTest
             });
 
         // Act
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        await Task.WhenAll(check3Period2InsideCheck.Task, check4Period5InsideCheck.Task, check5Period7InsideCheck.Task, Task.Delay(10000));
         var results = await service.CheckHealthAsync();
 
         // Assert
+        // All individual checks to be triggered at least once
         Assert.Collection(
-            results.Entries.GroupBy(kvp => kvp.Key).Select(x => x.First()).OrderBy(kvp => kvp.Key),
+            results.Entries.OrderBy(kvp => kvp.Key).GroupBy(kvp => kvp.Key).Select(l => l.First()),
             actual =>
             {
                 Assert.Equal("Check1PeriodDefault", actual.Key);
@@ -230,7 +313,6 @@ public class DefaultHealthCheckServiceTest
                     Assert.Equal(DataKey, item.Key);
                     Assert.Equal(DataValue, item.Value);
                 });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
             },
             actual =>
             {
@@ -243,11 +325,10 @@ public class DefaultHealthCheckServiceTest
                     Assert.Equal(DataKey, item.Key);
                     Assert.Equal(DataValue, item.Value);
                 });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
             },
             actual =>
             {
-                Assert.Equal("Check3Period3", actual.Key);
+                Assert.Equal("Check3Period2", actual.Key);
                 Assert.Equal(HealthyMessage, actual.Value.Description);
                 Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
                 Assert.Null(actual.Value.Exception);
@@ -256,11 +337,10 @@ public class DefaultHealthCheckServiceTest
                     Assert.Equal(DataKey, item.Key);
                     Assert.Equal(DataValue, item.Value);
                 });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
             },
             actual =>
             {
-                Assert.Equal("Check4Period7", actual.Key);
+                Assert.Equal("Check4Period5", actual.Key);
                 Assert.Equal(HealthyMessage, actual.Value.Description);
                 Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
                 Assert.Null(actual.Value.Exception);
@@ -269,11 +349,10 @@ public class DefaultHealthCheckServiceTest
                     Assert.Equal(DataKey, item.Key);
                     Assert.Equal(DataValue, item.Value);
                 });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
             },
             actual =>
             {
-                Assert.Equal("Check5Period12", actual.Key);
+                Assert.Equal("Check5Period7", actual.Key);
                 Assert.Equal(HealthyMessage, actual.Value.Description);
                 Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
                 Assert.Null(actual.Value.Exception);
@@ -282,108 +361,6 @@ public class DefaultHealthCheckServiceTest
                     Assert.Equal(DataKey, item.Key);
                     Assert.Equal(DataValue, item.Value);
                 });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
-            });
-    }
-
-    [Fact]
-    public async Task CheckAsync_MixedPublisherIndividualPeriodicityWithinDefaultPeriod_RunsAllChecksAndAggregatesResultsAsync()
-    {
-        const string DataKey = "Foo";
-        const string DataValue = "Bar";
-        const string HealthyMessage = "Everything is A-OK";
-        var healthyCheckTags = new List<string> { "healthy-check-tag" };
-
-        // Arrange
-        var data = new Dictionary<string, object>()
-            {
-                { DataKey, DataValue }
-            };
-
-        var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("Check1PeriodDefault", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-                b.AddAsyncCheck("Check2PeriodDefault", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-                b.AddAsyncCheck("Check3Period3", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(1));
-                b.AddAsyncCheck("Check4Period7", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(7));
-                b.AddAsyncCheck("Check5Period12", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags, period: TimeSpan.FromSeconds(11));
-            },
-            options =>
-            {
-                options.Period = TimeSpan.FromSeconds(50);
-            });
-
-        // Act
-        await Task.Delay(TimeSpan.FromSeconds(20));
-        var results = await service.CheckHealthAsync();
-
-        // Assert
-        Assert.Collection(
-            results.Entries.GroupBy(kvp => kvp.Key).Select(x => x.First()).OrderBy(kvp => kvp.Key),
-            actual =>
-            {
-                Assert.Equal("Check1PeriodDefault", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
-            },
-            actual =>
-            {
-                Assert.Equal("Check2PeriodDefault", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
-            },
-            actual =>
-            {
-                Assert.Equal("Check3Period3", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
-            },
-            actual =>
-            {
-                Assert.Equal("Check4Period7", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
-            },
-            actual =>
-            {
-                Assert.Equal("Check5Period12", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-                Assert.Equal(actual.Value.Tags, healthyCheckTags);
             });
     }
 
@@ -471,63 +448,6 @@ public class DefaultHealthCheckServiceTest
     }
 
     [Fact]
-    public async Task CheckAsync_IndividualPeriodicity_RunsFilteredChecksThroughPredicateAndAggregatesResultsAsync()
-    {
-        const string DataKey = "Foo";
-        const string DataValue = "Bar";
-        const string HealthyMessage = "Everything is A-OK";
-
-        // Arrange
-        var data = new Dictionary<string, object>
-            {
-                { DataKey, DataValue }
-            };
-
-        // TODO: currently periodic HCs initiated in the cctor use the default predicate instead of the one passed in CheckHealthAsync
-        var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("PredicateCheck1", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), period: TimeSpan.FromSeconds(2));
-                b.AddAsyncCheck("PredicateCheck2", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), period: TimeSpan.FromSeconds(7));
-                b.AddAsyncCheck("Check3", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), period: TimeSpan.FromSeconds(11));
-            },
-            options =>
-            {
-                options.Predicate = r => r.Name.Contains("Predicate");
-            });
-
-        // Act
-        await Task.Delay(TimeSpan.FromSeconds(20));
-        var results = await service.CheckHealthAsync();
-
-        // Assert
-        Assert.Collection(results.Entries.GroupBy(kvp => kvp.Key).Select(x => x.First()).OrderBy(kvp => kvp.Key),
-            actual =>
-            {
-                Assert.Equal("PredicateCheck1", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-            },
-            actual =>
-            {
-                Assert.Equal("PredicateCheck2", actual.Key);
-                Assert.Equal(HealthyMessage, actual.Value.Description);
-                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                Assert.Null(actual.Value.Exception);
-                Assert.Collection(actual.Value.Data, item =>
-                {
-                    Assert.Equal(DataKey, item.Key);
-                    Assert.Equal(DataValue, item.Value);
-                });
-            });
-    }
-
-    [Fact]
     public async Task CheckHealthAsync_SetsRegistrationForEachCheck()
     {
         // Arrange
@@ -600,45 +520,6 @@ public class DefaultHealthCheckServiceTest
     }
 
     [Fact]
-    public async Task CheckHealthAsync_IndividualPeriodicity_Cancellation_CanPropagate()
-    {
-        // Arrange
-        var insideCheck = new TaskCompletionSource<object?>();
-
-        var service = CreateHealthChecksService(b =>
-        {
-            b.AddAsyncCheck("cancels1", async ct =>
-            {
-                insideCheck.SetResult(null);
-
-                await Task.Delay(10000, ct);
-                return HealthCheckResult.Unhealthy();
-            }, period: TimeSpan.FromSeconds(5));
-
-            b.AddAsyncCheck("cancels2", async ct =>
-            {
-                insideCheck.SetResult(null);
-
-                await Task.Delay(10000, ct);
-                return HealthCheckResult.Unhealthy();
-            }, period: TimeSpan.FromSeconds(7));
-        });
-
-        var cancel = new CancellationTokenSource();
-        var task = service.CheckHealthAsync(cancel.Token);
-
-        // After this returns we know the check has started
-        await insideCheck.Task;
-
-        cancel.Cancel();
-
-        // TODO handle missing cancellation
-
-        // Act & Assert
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
-    }
-
-    [Fact]
     public async Task CheckHealthAsync_ConvertsExceptionInHealthCheckToUnhealthyResultAsync()
     {
         // Arrange
@@ -657,7 +538,7 @@ public class DefaultHealthCheckServiceTest
 
         // Assert
         Assert.Collection(
-            results.Entries,
+            results.Entries.OrderBy(kvp => kvp.Key),
             actual =>
             {
                 Assert.Equal("Faults", actual.Key);
