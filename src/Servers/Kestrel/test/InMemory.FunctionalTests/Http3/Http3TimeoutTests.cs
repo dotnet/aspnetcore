@@ -109,11 +109,9 @@ public class Http3TimeoutTests : Http3TestBase
     }
 
     [Fact]
-    public async Task ControlStream_HeaderNotReceivedWithinRequestHeadersTimeout_StreamError_PendingStreamEnabled()
+    public async Task ControlStream_HeaderNotReceivedWithinRequestHeadersTimeout_StreamError_PendingStreamsEnabled()
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
-
-        var waitTask = WaitForLogMessage(message => message.Exception?.Message.Contains(CoreStrings.AttemptedToReadHeaderOnAbortedStream) ?? false);
 
         var now = _serviceContext.MockSystemClock.UtcNow;
         var limits = _serviceContext.ServerOptions.Limits;
@@ -134,17 +132,22 @@ public class Http3TimeoutTests : Http3TestBase
         Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverInboundControlStream.StreamTimeoutTicks);
 
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
-
-        await waitTask;
     }
 
     [Fact]
-    public async Task ControlStream_HeaderNotReceivedWithinRequestHeadersTimeout_StreamError_PendingStreamDisabled()
+    public async Task ControlStream_HeaderNotReceivedWithinRequestHeadersTimeout_StreamError()
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
 
         var now = _serviceContext.MockSystemClock.UtcNow;
         var limits = _serviceContext.ServerOptions.Limits;
+        var headers = new[]
+        {
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+            };
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -191,10 +194,12 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
     }
 
-    [Fact]
-    public async Task ControlStream_RequestHeadersTimeoutMaxValue_ExpirationIsMaxValue_PendingStreamEnabled()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ControlStream_RequestHeadersTimeoutMaxValue_ExpirationIsMaxValue(bool pendingStreamEnabled)
     {
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
+        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamEnabled;
 
         var now = _serviceContext.MockSystemClock.UtcNow;
         var limits = _serviceContext.ServerOptions.Limits;
@@ -207,34 +212,17 @@ public class Http3TimeoutTests : Http3TestBase
 
         var outboundControlStream = await Http3Api.CreateControlStream(id: null);
 
-        await outboundControlStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
-
-        var serverInboundControlStream = Http3Api.Connection._unidentifiedStreams[outboundControlStream.StreamId];
-
-        Http3Api.TriggerTick(now);
-
-        Assert.Equal(TimeSpan.MaxValue.Ticks, serverInboundControlStream.StreamTimeoutTicks);
-    }
-
-    [Fact]
-    public async Task ControlStream_RequestHeadersTimeoutMaxValue_ExpirationIsMaxValue_PendingStreamDisabled()
-    {
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
-
-        var now = _serviceContext.MockSystemClock.UtcNow;
-        var limits = _serviceContext.ServerOptions.Limits;
-        limits.RequestHeadersTimeout = TimeSpan.MaxValue;
-
-        await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
-
-        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
-        await controlStream.ExpectSettingsAsync().DefaultTimeout();
-
-        var outboundControlStream = await Http3Api.CreateControlStream(id: null);
-
-        await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
-
-        var serverInboundControlStream = Http3Api.Connection._streams[outboundControlStream.StreamId];
+        dynamic serverInboundControlStream;
+        if (pendingStreamEnabled)
+        {
+            await outboundControlStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
+            serverInboundControlStream = Http3Api.Connection._unidentifiedStreams[outboundControlStream.StreamId];
+        }
+        else
+        {
+            await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
+            serverInboundControlStream = Http3Api.Connection._streams[outboundControlStream.StreamId];
+        }
 
         Http3Api.TriggerTick(now);
 
