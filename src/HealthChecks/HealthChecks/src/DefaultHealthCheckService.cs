@@ -24,7 +24,8 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
     private readonly ILogger<DefaultHealthCheckService> _logger;
     private readonly ConcurrentQueue<KeyValuePair<string, HealthReportEntry>> _healthReportEntriesQueue;
     private readonly IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> _periodHealthChecksMap;
-    private readonly ICollection<Timer> _healthCheckRegistrationTimers;
+    private readonly IDictionary<TimeSpan, Timer> _healthCheckRegistrationTimers;
+    private CancellationToken _isStopping;
 
     public DefaultHealthCheckService(
         IServiceScopeFactory scopeFactory,
@@ -51,23 +52,63 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
                                   group r by r.Period).ToDictionary(g => g.Key, g => g.ToList());
 
         // Aggregate Timers for HealthCheckRegistration having the same period
-        _healthCheckRegistrationTimers = _periodHealthChecksMap.AsParallel().Select(t =>
+        _healthCheckRegistrationTimers = CreateTimers(_periodHealthChecksMap);
+    }
+
+    // Internal for unit testing
+    internal IDictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
+    {
+        return _periodHealthChecksMap.Select(m => CreateTimer(m.Key, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
+    }
+
+    internal KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
+    {
+        return new KeyValuePair<TimeSpan, Timer>(
+            period,
             NonCapturingTimer.Create(
-                async (state) =>
+            async (state) =>
+            {
+                var entries = await RunChecksAsync(registrations, IsStopping).ConfigureAwait(false);
+                foreach (var entry in entries)
                 {
-                    var entries = await RunChecksAsync(t.Value).ConfigureAwait(false);
-                    foreach (var entry in entries)
-                    {
-                        _healthReportEntriesQueue.Enqueue(entry);
-                    }
-                },
-                null,
-                dueTime: healthCheckPublisherOptions.Value.Delay,
-                period: t.Key)).ToList();
+                    _healthReportEntriesQueue.Enqueue(entry);
+                }
+            },
+            null,
+            dueTime: _healthCheckPublisherOptions.Value.Delay,
+            period: period));
+    }
+
+    internal void StopTimers()
+    {
+        //IsStopping.ThrowIfCancellationRequested();
+        foreach (var timerPeriod in _healthCheckRegistrationTimers.Keys)
+        {
+            StopTimer(timerPeriod);
+        }
+    }
+
+    internal void StopTimer(TimeSpan period)
+    {
+        _healthCheckRegistrationTimers[period].Dispose();
+        _healthCheckRegistrationTimers[period] = null;
+    }
+
+    internal CancellationToken IsStopping
+    {
+        get { return _isStopping; }
+        set
+        {
+            if (value != default)
+            {
+                _isStopping = value;
+            }
+        }
     }
 
     public override async Task<HealthReport> CheckHealthAsync(Func<HealthCheckRegistration, bool>? predicate, CancellationToken cancellationToken = default)
     {
+        IsStopping = cancellationToken;
         // TODO: if we decide for the current design, where HCs with default periodicity are initiated during CheckHealthAsync,
         // individual-periodicity HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService)
 
@@ -78,7 +119,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         var registrationsDefaultPeriod = _healthCheckServiceOptions.Value.Registrations.Where(r => r.Period == Timeout.InfiniteTimeSpan && ByPredicate(r, predicate)).ToList();
 
         // Run healthchecks with default/publisher period
-        var healthReportEntriesValues = await RunChecksAsync(registrationsDefaultPeriod, cancellationToken).ConfigureAwait(false);
+        List<KeyValuePair<string, HealthReportEntry>>? healthReportEntriesValues = await RunChecksAsync(registrationsDefaultPeriod, cancellationToken).ConfigureAwait(false);
 
         // Collect health report entries from previously run periodic healthchecks within the default period
         while (_healthReportEntriesQueue.TryDequeue(out var entry))
@@ -87,7 +128,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         }
 
         var totalElapsedTime = totalTime.GetElapsedTime();
-        var report = new HealthReport(healthReportEntriesValues.OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase), totalElapsedTime);
+        var report = new HealthReport(new HealthReportEntryDictionary(healthReportEntriesValues, StringComparer.OrdinalIgnoreCase), totalElapsedTime);
         Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
 
         return report;
@@ -110,7 +151,8 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         index = 0;
         foreach (var registration in registrations)
         {
-            entries.Add(new KeyValuePair<string, HealthReportEntry>(registration.Name, tasks[index++].Result));
+            var healthReportEntry = tasks[index++].Result;
+            entries.Add(new KeyValuePair<string, HealthReportEntry>(registration.Name, healthReportEntry));
         }
 
         return entries;
