@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly int _maxModelValidationErrors;
+        private readonly int _maxModelBindingRecursionDepth;
         private readonly ILogger _logger;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly IActionResultTypeMapper _mapper;
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
             _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
+            _maxModelBindingRecursionDepth = optionsAccessor.Value.MaxModelBindingRecursionDepth;
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
             _diagnosticListener = diagnosticListener;
             _mapper = mapper;
@@ -68,6 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
                 };
                 controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+                controllerContext.ModelState.MaxRecursionDepth = _maxModelBindingRecursionDepth;
 
                 var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
 

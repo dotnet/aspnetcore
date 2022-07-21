@@ -24,11 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultMaxAllowedErrors = 200;
 
+        private const int DefaultMaxRecursionDepth = 32;
         private const char DelimiterDot = '.';
         private const char DelimiterOpen = '[';
 
         private readonly ModelStateNode _root;
         private int _maxAllowedErrors;
+        private int _maxRecursionDepth;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
@@ -44,6 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public ModelStateDictionary(int maxAllowedErrors)
         {
             MaxAllowedErrors = maxAllowedErrors;
+            MaxRecursionDepth = DefaultMaxRecursionDepth;
             var emptySegment = new StringSegment(buffer: string.Empty);
             _root = new ModelStateNode(subKey: emptySegment)
             {
@@ -153,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public ModelValidationState ValidationState => GetValidity(_root) ?? ModelValidationState.Valid;
+        public ModelValidationState ValidationState => GetValidity(_root, currentDepth: 0) ?? ModelValidationState.Valid;
 
         /// <inheritdoc />
         public ModelStateEntry this[string key]
@@ -172,6 +175,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         // Flag that indicates if TooManyModelErrorException has already been added to this dictionary.
         private bool HasRecordedMaxModelError { get; set; }
+
+        internal int MaxRecursionDepth
+        {
+            get
+            {
+                return _maxRecursionDepth;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+                _maxRecursionDepth = value;
+            }
+        }
 
         /// <summary>
         /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
@@ -409,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var item = GetNode(key);
-            return GetValidity(item) ?? ModelValidationState.Unvalidated;
+            return GetValidity(item, currentDepth: 0) ?? ModelValidationState.Unvalidated;
         }
 
         /// <summary>
@@ -661,9 +680,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new StringSegment(key, keyStart, index - keyStart);
         }
 
-        private static ModelValidationState? GetValidity(ModelStateNode node)
+        private static ModelValidationState? GetValidity(ModelStateNode node, int currentDepth)
         {
-            if (node == null)
+            if (node == null || currentDepth >= MaxRecursionDepth)
             {
                 return null;
             }
@@ -686,9 +705,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (node.ChildNodes != null)
             {
+                currentDepth++;
+
                 for (var i = 0; i < node.ChildNodes.Count; i++)
                 {
-                    var entryState = GetValidity(node.ChildNodes[i]);
+                    var entryState = GetValidity(node.ChildNodes[i], currentDepth);
 
                     if (entryState == ModelValidationState.Unvalidated)
                     {
