@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void GetFieldValidity_ReturnsUnvalidated_IfTreeHeightIsBiggerThanLimit()
+        public void GetFieldValidity_ReturnsUnvalidated_IfTreeHeightIsGreaterThanLimit()
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
