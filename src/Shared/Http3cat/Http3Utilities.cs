@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http3Cat;
 
-internal sealed class Http3Utilities : IHttpStreamHeadersHandler
+internal sealed class Http3Utilities
 {
 
 }
