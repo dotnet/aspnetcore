@@ -140,7 +140,7 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("HealthyCheck", _ =>
+            b.AddAsyncPeriodicCheck("HealthyCheck", _ =>
             {
                 if (!healthyCheckInsideCheck.Task.IsCompleted)
                 {
@@ -152,7 +152,7 @@ public class DefaultHealthCheckServiceTest
                 healthyCheckTags,
                 period: TimeSpan.FromSeconds(2));
 
-            b.AddAsyncCheck("DegradedCheck", _ =>
+            b.AddAsyncPeriodicCheck("DegradedCheck", _ =>
             {
                 if (!degradedCheckInsideCheck.Task.IsCompleted)
                 {
@@ -164,7 +164,7 @@ public class DefaultHealthCheckServiceTest
                 degradedCheckTags,
                 period: TimeSpan.FromSeconds(3));
 
-            b.AddAsyncCheck("UnhealthyCheck", _ =>
+            b.AddAsyncPeriodicCheck("UnhealthyCheck", _ =>
                 {
                     if (!unhealthyCheckInsideCheck.Task.IsCompleted)
                     {
@@ -259,7 +259,7 @@ public class DefaultHealthCheckServiceTest
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
                 });
 
-                b.AddAsyncCheck("Check3Period2", _ =>
+                b.AddAsyncPeriodicCheck("Check3Period2", _ =>
                 {
                     if (!check3Period2InsideCheck.Task.IsCompleted)
                     {
@@ -269,7 +269,7 @@ public class DefaultHealthCheckServiceTest
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
                 }, period: TimeSpan.FromSeconds(2));
 
-                b.AddAsyncCheck("Check4Period5", _ =>
+                b.AddAsyncPeriodicCheck("Check4Period5", _ =>
                 {
                     if (!check4Period5InsideCheck.Task.IsCompleted)
                     {
@@ -279,7 +279,7 @@ public class DefaultHealthCheckServiceTest
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
                 }, period: TimeSpan.FromSeconds(5));
 
-                b.AddAsyncCheck("Check5Period7", _ =>
+                b.AddAsyncPeriodicCheck("Check5Period7", _ =>
                 {
                     if (!check5Period7InsideCheck.Task.IsCompleted)
                     {
@@ -848,7 +848,7 @@ public class DefaultHealthCheckServiceTest
         // Arrange
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("test", async () =>
+            b.AddAsyncPeriodicCheck("test", async () =>
             {
                 await Task.Delay(10).ConfigureAwait(false);
                 return HealthCheckResult.Healthy();
