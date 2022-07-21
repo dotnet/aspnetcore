@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
@@ -229,6 +230,23 @@ public class OpenApiOperationGeneratorTests
 
         Assert.NotNull(badRequestResponseType);
         Assert.Empty(badRequestResponseType.Content);
+    }
+
+    [Fact]
+    public void ResponseDescriptionIsCorrect()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(2, operation.Responses.Count);
+
+        var successResponse = operation.Responses["201"];
+        Assert.Equal("success", successResponse.Description);
+
+        var clientErrorResponse = operation.Responses["400"];
+        Assert.Equal("client error", clientErrorResponse.Description);
     }
 
     [Fact]
