@@ -32,7 +32,7 @@ internal static class DevJwtCliHelpers
             return projectPath;
         }
 
-        var csprojFiles = Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory(), "*.*proj", SearchOption.TopDirectoryOnly)
+        var csprojFiles = Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory(), "*.*proj", SearchOption.AllDirectories)
                 .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
                 .ToList();
         if (csprojFiles is [var path])
@@ -48,14 +48,14 @@ internal static class DevJwtCliHelpers
         userSecretsId = null;
         if (project == null)
         {
-            reporter.Error($"No project found at `-p|--project` path or current directory.");
+            reporter.Error(Resources.ProjectOption_ProjectNotFound);
             return false;
         }
 
         userSecretsId = GetOrSetUserSecretsId(project);
         if (userSecretsId == null)
         {
-            reporter.Error($"Project does not contain a user secrets ID.");
+            reporter.Error(Resources.ProjectOption_SercretIdNotFound);
             return false;
         }
         return true;
@@ -112,7 +112,10 @@ internal static class DevJwtCliHelpers
 
     public static List<string> GetAudienceCandidatesFromLaunchSettings(string project)
     {
-        ArgumentException.ThrowIfNullOrEmpty(nameof(project));
+        if (project is null)
+        {
+            return new List<string>();
+        }
 
         var launchSettingsFilePath = Path.Combine(Path.GetDirectoryName(project)!, "Properties", "launchSettings.json");
         var applicationUrls = new HashSet<string>();

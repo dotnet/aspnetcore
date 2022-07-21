@@ -480,4 +480,88 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var resetKey = resetMatches.SingleOrDefault().Groups[1].Value;
         Assert.NotEqual(key, resetKey);
     }
+
+    [Fact]
+    public void Create_CanHandleNoProjectOptionProvided()
+    {
+        var projectPath = _fixture.CreateProject();
+
+        Directory.SetCurrentDirectory(Path.Combine(projectPath, ".."));
+
+        var app = new Program(_console);
+        app.Run(new[] { "create" });
+
+        Assert.DoesNotContain("No project found at `-p|--project` path, current directory, or child directories.", _console.GetOutput());
+        Assert.Contains("New JWT saved", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Create_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var projectPath = _fixture.CreateProject();
+        var projectParent = Path.Combine(projectPath, "..");
+
+        Directory.Delete(projectParent, true);
+        Directory.CreateDirectory(projectParent);
+
+        Directory.SetCurrentDirectory(projectParent);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create" });
+
+        Assert.Contains("No project found at `-p|--project` path, current directory, or child directories.", _console.GetOutput());
+        Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
+    }
+
+    [Fact]
+    public void Delete_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var projectPath = _fixture.CreateProject();
+        var projectParent = Path.Combine(projectPath, "..");
+
+        Directory.Delete(projectParent, true);
+        Directory.CreateDirectory(projectParent);
+
+        Directory.SetCurrentDirectory(projectParent);
+
+        var app = new Program(_console);
+        app.Run(new[] { "remove", "some-id" });
+
+        Assert.Contains("No project found at `-p|--project` path, current directory, or child directories.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Clear_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var projectPath = _fixture.CreateProject();
+        var projectParent = Path.Combine(projectPath, "..");
+
+        Directory.Delete(projectParent, true);
+        Directory.CreateDirectory(projectParent);
+
+        Directory.SetCurrentDirectory(projectParent);
+
+        var app = new Program(_console);
+        app.Run(new[] { "clear" });
+
+        Assert.Contains("No project found at `-p|--project` path, current directory, or child directories.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var projectPath = _fixture.CreateProject();
+        var projectParent = Path.Combine(projectPath, "..");
+
+        Directory.Delete(projectParent, true);
+        Directory.CreateDirectory(projectParent);
+
+        Directory.SetCurrentDirectory(projectParent);
+
+        var app = new Program(_console);
+        app.Run(new[] { "list" });
+
+        Assert.Contains("No project found at `-p|--project` path, current directory, or child directories.", _console.GetOutput());
+        Console.WriteLine(_console.GetOutput());
+    }
 }
