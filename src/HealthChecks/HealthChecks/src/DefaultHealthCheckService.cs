@@ -58,7 +58,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
     // Internal for unit testing
     internal IDictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
     {
-        return _periodHealthChecksMap.Select(m => CreateTimer(m.Key, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        return periodHealthChecksMap.Select(m => CreateTimer(m.Key, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
     internal KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
