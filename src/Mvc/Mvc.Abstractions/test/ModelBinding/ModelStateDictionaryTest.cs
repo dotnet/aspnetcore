@@ -693,6 +693,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(ModelValidationState.Unvalidated, validationState);
         }
 
+        [Fact]
+        public void GetFieldValidity_ReturnsUnvalidated_IfTreeHeightIsBiggerThanLimit()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", dictionary.MaxRecursionDepth + 1));
+            dictionary.MarkFieldValid(key);
+
+            // Act
+            var validationState = dictionary.GetFieldValidationState("foo");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Unvalidated, validationState);
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("user")]
