@@ -57,7 +57,7 @@ internal sealed class DisposableObjectPool<T> : DefaultObjectPool<T>, IDisposabl
             else
             {
                 var items = _items;
-                for (var i = 0; i < items.Length && !(returnedTooPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
+                for (var i = 0; i < items.Length && !(returnedToPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
                 {
                 }
             }
