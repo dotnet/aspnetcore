@@ -295,7 +295,7 @@
     <value>Whether to show all details associated with the JWT.</value>
   </data>
   <data name="ProjectOption_ProjectNotFound" xml:space="preserve">
-    <value>No project found at `-p|--project` path, current directory, or child directories.</value>
+    <value>No project found at `-p|--project` path or current directory.</value>
   </data>
   <data name="ProjectOption_SercretIdNotFound" xml:space="preserve">
     <value>Project does not contain a user secrets ID.</value>

@@ -32,7 +32,7 @@ internal static class DevJwtCliHelpers
             return projectPath;
         }
 
-        var csprojFiles = Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory(), "*.*proj", SearchOption.AllDirectories)
+        var csprojFiles = Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory(), "*.*proj", SearchOption.TopDirectoryOnly)
                 .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
                 .ToList();
         if (csprojFiles is [var path])
@@ -112,7 +112,7 @@ internal static class DevJwtCliHelpers
 
     public static List<string> GetAudienceCandidatesFromLaunchSettings(string project)
     {
-        if (project is null)
+        if (string.IsNullOrEmpty(project))
         {
             return new List<string>();
         }
