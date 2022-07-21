@@ -1159,6 +1159,64 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void NavigationLock_CanRenderUIForExceptions_ProgrammaticNavigation()
+    {
+        SetUrlViaPushState("/");
+
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
+        
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+
+        Browser.FindElement(By.Id("programmatic-navigation")).Click();
+
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Throw an exception for the current navigation
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-throw-exception")).Click();
+
+        // The exception shows up in the UI
+        var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+        Assert.NotNull(errorUiElem);
+    }
+
+    [Fact]
+    public void NavigationLock_CanRenderUIForExceptions_InternalLinkNavigation()
+    {
+        SetUrlViaPushState("/");
+
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
+        
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+
+        Browser.FindElement(By.Id("internal-link-navigation")).Click();
+
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Throw an exception for the current navigation
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-throw-exception")).Click();
+
+        // The exception shows up in the UI
+        var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+        Assert.NotNull(errorUiElem);
+    }
+
+    [Fact]
     public void CanArriveAtRouteWithExtension()
     {
         // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to

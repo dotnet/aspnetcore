@@ -557,9 +557,10 @@ internal partial class CircuitHost : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            // Exceptions thrown by location changing handlers should be treated like unhandled exceptions in user-code.
-            Log.LocationChangeFailedInCircuit(_logger, uri, CircuitId, ex);
-            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location changing to '{uri}' failed."));
+            // An exception caught at this point was probably thrown inside the NavigationManager. Treat
+            // this like bad data.
+            Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location change to '{uri}' failed."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
         }
     }

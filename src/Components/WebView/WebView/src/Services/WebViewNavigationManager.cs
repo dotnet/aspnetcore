@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
@@ -28,26 +29,30 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
         NotifyLocationChanged(intercepted);
     }
 
-    public async ValueTask HandleLocationChangingAsync(int callId, string uri, string? state, bool intercepted)
+    public void HandleLocationChanging(int callId, string uri, string? state, bool intercepted)
     {
-        bool shouldContinueNavigation;
+        _ = HandleLocationChangingAsync();
 
-        try
+        async Task HandleLocationChangingAsync()
         {
-            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, state, intercepted);
-
-            if (!shouldContinueNavigation)
+            try
             {
-                Log.NavigationCanceled(_logger, uri);
+                var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, state, intercepted);
+
+                if (!shouldContinueNavigation)
+                {
+                    Log.NavigationCanceled(_logger, uri);
+                }
+
+                _ipcSender.EndLocationChanging(callId, shouldContinueNavigation);
+            }
+            catch (Exception ex)
+            {
+                // We shouldn't ever reach this since exceptions thrown from handlers are caught in InvokeLocationChangingHandlerAsync.
+                // But if some other exception gets thrown, we still want to know about it.
+                Log.NavigationFailed(_logger, uri, ex);
             }
         }
-        catch (Exception ex)
-        {
-            shouldContinueNavigation = false;
-            Log.NavigationFailed(_logger, uri, ex);
-        }
-
-        _ipcSender.EndLocationChanging(callId, shouldContinueNavigation);
     }
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
@@ -60,19 +65,36 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
             {
                 var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
 
-                if (shouldContinueNavigation)
-                {
-                    _ipcSender.Navigate(uri, options);
-                }
-                else
+                if (!shouldContinueNavigation)
                 {
                     Log.NavigationCanceled(_logger, uri);
+                    return;
                 }
+
+                _ipcSender.Navigate(uri, options);
             }
             catch (Exception ex)
             {
+                // We shouldn't ever reach this since exceptions thrown from handlers are caught in InvokeLocationChangingHandlerAsync.
+                // But if some other exception gets thrown, we still want to know about it.
                 Log.NavigationFailed(_logger, uri, ex);
             }
+        }
+    }
+
+    protected override async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+    {
+        try
+        {
+            await handler(context);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        catch (Exception ex)
+        {
+            Log.NavigationFailed(_logger, context.TargetLocation, ex);
         }
     }
 

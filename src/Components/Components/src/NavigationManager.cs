@@ -309,7 +309,7 @@ public abstract class NavigationManager
         {
             if (handlerCount == 1)
             {
-                var handlerTask = _locationChangingHandlers[0](context);
+                var handlerTask = InvokeLocationChangingHandlerAsync(_locationChangingHandlers[0], context);
 
                 if (context.DidPreventNavigation)
                 {
@@ -333,7 +333,13 @@ public abstract class NavigationManager
 
                     for (var i = 0; i < handlerCount; i++)
                     {
-                        var handlerTask = locationChangingHandlersCopy[i](context);
+                        var handlerTask = InvokeLocationChangingHandlerAsync(locationChangingHandlersCopy[i], context);
+
+                        if (handlerTask.IsFaulted)
+                        {
+                            await handlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
 
                         if (context.DidPreventNavigation)
                         {
@@ -345,11 +351,12 @@ public abstract class NavigationManager
 
                     while (locationChangingTasks.Count != 0)
                     {
-                        var completedHandler = await Task.WhenAny(locationChangingTasks).WaitAsync(cancellationToken);
+                        var completedHandlerTask = await Task.WhenAny(locationChangingTasks).WaitAsync(cancellationToken);
 
-                        if (completedHandler.Exception is { } exception)
+                        if (completedHandlerTask.IsFaulted)
                         {
-                            throw exception;
+                            await completedHandlerTask;
+                            return false; // Unreachable because the previous line will throw.
                         }
 
                         if (context.DidPreventNavigation)
@@ -357,7 +364,7 @@ public abstract class NavigationManager
                             return false;
                         }
 
-                        locationChangingTasks.Remove(completedHandler);
+                        locationChangingTasks.Remove(completedHandlerTask);
                     }
                 }
                 finally
@@ -390,6 +397,18 @@ public abstract class NavigationManager
             }
         }
     }
+
+    /// <summary>
+    /// Invokes the provided <paramref name="handler"/>, passing it the given <paramref name="context"/>.
+    /// This method can be overridden to analyze the state of the handler task even after
+    /// <see cref="NotifyLocationChangingAsync(string, string?, bool)"/> completes. For example, this can be useful for
+    /// processing exceptions thrown from handlers that continue running after the navigation ends.
+    /// </summary>
+    /// <param name="handler">The handler to invoke.</param>
+    /// <param name="context">The context to pass to the handler.</param>
+    /// <returns></returns>
+    protected virtual ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+        => handler(context);
 
     /// <summary>
     /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call

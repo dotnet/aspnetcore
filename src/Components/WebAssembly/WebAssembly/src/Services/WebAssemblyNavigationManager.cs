@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
@@ -64,19 +65,36 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
             {
                 var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
 
-                if (shouldContinueNavigation)
-                {
-                    DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
-                }
-                else
+                if (!shouldContinueNavigation)
                 {
                     Log.NavigationCanceled(_logger, uri);
+                    return;
                 }
+
+                DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
             }
             catch (Exception ex)
             {
+                // We shouldn't ever reach this since exceptions thrown from handlers are caught in InvokeLocationChangingHandlerAsync.
+                // But if some other exception gets thrown, we still want to know about it.
                 Log.NavigationFailed(_logger, uri, ex);
             }
+        }
+    }
+
+    protected override async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+    {
+        try
+        {
+            await handler(context);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        catch (Exception ex)
+        {
+            Log.NavigationFailed(_logger, context.TargetLocation, ex);
         }
     }
 

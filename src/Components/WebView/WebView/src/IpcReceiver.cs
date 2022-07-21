@@ -107,6 +107,6 @@ internal sealed class IpcReceiver
 
     private static void OnLocationChanging(PageContext pageContext, int callId, string uri, string? state, bool intercepted)
     {
-        pageContext.NavigationManager.HandleLocationChangingAsync(callId, uri, state, intercepted).Preserve();
+        pageContext.NavigationManager.HandleLocationChanging(callId, uri, state, intercepted);
     }
 }
