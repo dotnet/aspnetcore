@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
+[Collection(nameof(NoParallelCollection))]
 public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
@@ -448,6 +449,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         var now = new DateTimeOffset(2021, 7, 6, 12, 0, 0, TimeSpan.Zero);
         var testSystemClock = new TestSystemClock { UtcNow = now };
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testSystemClock);
@@ -464,7 +467,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
 
-        var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+        var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection, Logger);
 
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
@@ -477,7 +480,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
-        var stream2 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+        var stream2 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection, Logger);
 
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         pooledStream = quicConnectionContext.StreamPool._array[0];

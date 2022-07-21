@@ -9,11 +9,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
+[Collection(nameof(NoParallelCollection))]
 public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
@@ -103,6 +105,8 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42389")]
     public async Task ClientCertificate_Required_NotSent_AcceptedViaCallback()
     {
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);

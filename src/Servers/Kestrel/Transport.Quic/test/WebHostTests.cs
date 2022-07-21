@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
+[Collection(nameof(NoParallelCollection))]
 public class WebHostTests : LoggedTest
 {
     [ConditionalFact]
@@ -21,6 +23,8 @@ public class WebHostTests : LoggedTest
     public async Task UseUrls_HelloWorld_ClientSuccess()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         var builder = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {

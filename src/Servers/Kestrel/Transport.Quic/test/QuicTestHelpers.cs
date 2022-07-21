@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Serilog.Core;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
@@ -107,11 +108,18 @@ internal static class QuicTestHelpers
         };
     }
 
-    public static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection clientConnection, MultiplexedConnectionContext serverConnection)
+    public static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection clientConnection, MultiplexedConnectionContext serverConnection, ILogger logger)
     {
+        logger.LogInformation("Client starting stream.");
         var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+
+        logger.LogInformation("Client sending data.");
         await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
+
+        logger.LogInformation("Server accepting stream.");
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+
+        logger.LogInformation("Server reading data.");
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
 
@@ -120,16 +128,19 @@ internal static class QuicTestHelpers
         Assert.True(readResult.IsCompleted);
 
         // Complete reading and writing.
+        logger.LogInformation("Server completing input and output.");
         await serverStream.Transport.Input.CompleteAsync();
         await serverStream.Transport.Output.CompleteAsync();
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
         // Both send and receive loops have exited.
+        logger.LogInformation("Server verifying stream is finished.");
         await quicStreamContext._processingTask.DefaultTimeout();
         Assert.True(quicStreamContext.CanWrite);
         Assert.True(quicStreamContext.CanRead);
 
+        logger.LogInformation("Server disposing stream.");
         await quicStreamContext.DisposeAsync();
         quicStreamContext.Dispose();
 
