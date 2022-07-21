@@ -90,7 +90,6 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
     internal void StopTimer(TimeSpan period)
     {
         _healthCheckRegistrationTimers[period].Dispose();
-        _healthCheckRegistrationTimers[period] = null;
     }
 
     internal CancellationToken IsStopping
