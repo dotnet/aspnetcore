@@ -88,17 +88,17 @@ public class OpenApiOperationGeneratorTests
         }
 
         AssertCustomRequestFormat(GetOpenApiOperation(
-            [Consumes("application/custom")] (InferredJsonClass fromBody) => { }));
+            [Consumes("application/custom")] ([FromQuery] int foo) => { }));
 
         AssertCustomRequestFormat(GetOpenApiOperation(
-            [Consumes("application/custom")] ([FromBody] int fromBody) => { }));
+            [Consumes("application/custom")] ([FromHeader] int fromBody) => { }));
     }
 
     [Fact]
     public void AddsMultipleRequestFormatsFromMetadata()
     {
         var operation = GetOpenApiOperation(
-            [Consumes("application/custom0", "application/custom1")] (InferredJsonClass fromBody) => { });
+            [Consumes("application/custom0", "application/custom1")] (int foo) => { });
 
         var request = Assert.Single(operation.Parameters);
 
@@ -336,7 +336,7 @@ public class OpenApiOperationGeneratorTests
     public void AddsMultipleParameters()
     {
         var operation = GetOpenApiOperation(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
-        Assert.Equal(3, operation.Parameters.Count);
+        Assert.Equal(2, operation.Parameters.Count);
 
         var fooParam = operation.Parameters[0];
         Assert.Equal("foo", fooParam.Name);
@@ -373,14 +373,6 @@ public class OpenApiOperationGeneratorTests
                     Assert.Equal("Bar", param.Name);
                     Assert.Equal(ParameterLocation.Query, param.In);
                     Assert.True(param.Required);
-                },
-                param =>
-                {
-                    Assert.Equal("FromBody", param.Name);
-                    var fromBodyParam = operation.RequestBody;
-                    var fromBodyContent = Assert.Single(fromBodyParam.Content);
-                    Assert.Equal("application/json", fromBodyContent.Key);
-                    Assert.False(fromBodyParam.Required);
                 }
             );
         }
@@ -769,6 +761,22 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("200", response.Key);
         Assert.Equal("application/json", content.Key);
 
+    }
+
+    [Fact]
+    public void OnlyAddParametersWithCorrectLocations()
+    {
+        var operation = GetOpenApiOperation(([FromBody] int fromBody, [FromRoute] int fromRoute, [FromServices] int fromServices) => { });
+
+        Assert.Single(operation.Parameters);
+    }
+
+    [Fact]
+    public void DoNotAddParametersWithTypeIFormFile()
+    {
+        var operation = GetOpenApiOperation((IFormFile foo, IFormFileCollection bar) => { });
+
+        Assert.Empty(operation.Parameters);
     }
 
     [Theory]

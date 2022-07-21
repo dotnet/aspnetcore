@@ -250,7 +250,7 @@ internal sealed class OpenApiGenerator
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         foreach (var parameter in parameters)
         {
-            var (bodyOrFormParameter, _) = GetOpenApiParameterLocation(parameter, pattern, false);
+            var (bodyOrFormParameter, _, _) = GetOpenApiParameterLocation(parameter, pattern, false);
             hasFormOrBodyParameter |= bodyOrFormParameter;
             if (hasFormOrBodyParameter)
             {
@@ -361,16 +361,12 @@ internal sealed class OpenApiGenerator
                 throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
             }
 
-            var (isBodyOrFormParameter, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
+            var (_, parameterLocation, isParameter) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
 
-            // If the parameter isn't something that would be populated in RequestBody
-            // or doesn't have a valid ParameterLocation, then it must be a service
-            // parameter that we can ignore.
-            if (!isBodyOrFormParameter && parameterLocation is null)
+            if (!isParameter || parameterLocation is null)
             {
                 continue;
             }
-
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
@@ -404,29 +400,29 @@ internal sealed class OpenApiGenerator
         return openApiParameterContent;
     }
 
-    private (bool isBodyOrForm, ParameterLocation? locatedIn) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
+    private (bool isBodyOrForm, ParameterLocation? locatedIn, bool isParameter) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
         var attributes = parameter.GetCustomAttributes();
 
         if (attributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
-            return (false, ParameterLocation.Path);
+            return (false, ParameterLocation.Path, true);
         }
         else if (attributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
         {
-            return (false, ParameterLocation.Query);
+            return (false, ParameterLocation.Query, true);
         }
         else if (attributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
         {
-            return (false, ParameterLocation.Header);
+            return (false, ParameterLocation.Header, true);
         }
         else if (attributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } fromBodyAttribute)
         {
-            return (true, null);
+            return (true, null, false);
         }
         else if (attributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } fromFormAttribute)
         {
-            return (true, null);
+            return (true, null, false);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                 parameter.ParameterType == typeof(HttpContext) ||
@@ -437,7 +433,7 @@ internal sealed class OpenApiGenerator
                 ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                 _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
         {
-            return (false, null);
+            return (false, null, false);
         }
         else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
@@ -447,27 +443,27 @@ internal sealed class OpenApiGenerator
             // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
             if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
             {
-                return (false, ParameterLocation.Path);
+                return (false, ParameterLocation.Path, true);
             }
             else
             {
-                return (false, ParameterLocation.Query);
+                return (false, ParameterLocation.Query, true);
             }
         }
         else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
         {
-            return (true, null);
+            return (true, null, false);
         }
         else if (disableInferredBody && (
                  (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
                  parameter.ParameterType == typeof(StringValues)))
         {
-            return (false, ParameterLocation.Query);
+            return (false, ParameterLocation.Query, true);
         }
         else
         {
-            return (true, null);
+            return (true, null, false);
         }
     }
 }
