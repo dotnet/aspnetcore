@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new StringSegment(key, keyStart, index - keyStart);
         }
 
-        private static ModelValidationState? GetValidity(ModelStateNode node, int currentDepth)
+        private ModelValidationState? GetValidity(ModelStateNode node, int currentDepth)
         {
             if (node == null || currentDepth >= MaxRecursionDepth)
             {
