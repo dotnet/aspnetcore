@@ -81,7 +81,6 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
     internal void StopTimers()
     {
-        //IsStopping.ThrowIfCancellationRequested();
         foreach (var timerPeriod in _healthCheckRegistrationTimers.Keys)
         {
             StopTimer(timerPeriod);
@@ -108,7 +107,9 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
     public override async Task<HealthReport> CheckHealthAsync(Func<HealthCheckRegistration, bool>? predicate, CancellationToken cancellationToken = default)
     {
+        // Save the cancellation token, so to propagate cancellation to the individual periodicity HCs
         IsStopping = cancellationToken;
+
         // TODO: if we decide for the current design, where HCs with default periodicity are initiated during CheckHealthAsync,
         // individual-periodicity HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService)
 
@@ -269,12 +270,12 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
     private bool ByPredicate(HealthCheckRegistration registration, Func<HealthCheckRegistration, bool>? predicate)
     {
+        // Default to the HealthCheckPublisher predicate
         if (predicate == null)
         {
             predicate = _healthCheckPublisherOptions.Value.Predicate;
         }
 
-        // Default to the HealthCheckPublisher predicate
         if (predicate == null)
         {
             return true;
