@@ -142,6 +142,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
+// obsolete, legacy, don't use for new code!
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
   const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
   const resultType = monoPlatform.readInt32Field(callInfo, 4);

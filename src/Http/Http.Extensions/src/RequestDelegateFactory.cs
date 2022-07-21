@@ -638,6 +638,16 @@ public static partial class RequestDelegateFactory
         else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
         {
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyAttribute);
+
+            if (parameter.ParameterType == typeof(Stream))
+            {
+                return RequestStreamExpr;
+            }
+            else if (parameter.ParameterType == typeof(PipeReader))
+            {
+                return RequestPipeReaderExpr;
+            }
+
             return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
         }
         else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)

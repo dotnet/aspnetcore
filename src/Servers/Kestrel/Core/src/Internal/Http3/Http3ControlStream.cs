@@ -26,21 +26,21 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private volatile int _isClosed;
-    private int _gracefulCloseInitiator;
     private long _headerType;
+    private int _gracefulCloseInitiator;
 
     private bool _haveReceivedSettingsFrame;
 
     public long StreamId => _streamIdFeature.StreamId;
 
-    public Http3ControlStream(Http3StreamContext context)
+    public Http3ControlStream(Http3StreamContext context, long? headerType)
     {
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
         _context = context;
         _serverPeerSettings = context.ServerPeerSettings;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
-        _headerType = -1;
+        _headerType = headerType ?? -1;
 
         _frameWriter = new Http3FrameWriter(
             context.StreamContext,
@@ -152,7 +152,16 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     {
         try
         {
-            _headerType = await TryReadStreamHeaderAsync();
+            // todo: the _headerType should be read earlier
+            // and by the Http3PendingStream. However, to
+            // avoid perf issues with the current implementation
+            // we can defer the reading until now
+            // (https://github.com/dotnet/aspnetcore/issues/42789)
+            if (_headerType == -1)
+            {
+                _headerType = await TryReadStreamHeaderAsync();
+            }
+
             _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             switch (_headerType)
