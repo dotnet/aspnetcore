@@ -4587,6 +4587,12 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Value { get; set; }
     }
 
+    private struct NonRequiredParameterListStruct
+    {
+        [FromRoute]
+        public int? Value { get; set; }
+    }
+
     private struct ParameterListMutableStruct
     {
         public ParameterListMutableStruct()
@@ -4742,6 +4748,26 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesDefaultValueForNullableStructParameterList()
+    {
+        NonRequiredParameterListStruct? boundArgs = null;
+
+        void TestParameterListNullableStruct([AsParameters] NonRequiredParameterListStruct? args)
+        {
+            boundArgs = args;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestParameterListNullableStruct);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(default(NonRequiredParameterListStruct), boundArgs);
     }
 
     private record struct SampleParameterList(int Foo);
