@@ -31,7 +31,7 @@
   <Target Name="_AddContentRootForProjectReferences" BeforeTargets="PrepareResources" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup Condition="'@(_ContentRootProjectReferences->Count())' != '0'">
       <_ManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
-        <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
+        <ContentRoot>$([System.IO.Path]::GetDirectoryName('%(_ContentRootProjectReferences.MSBuildSourceProjectFile)'))</ContentRoot>
       </_ManifestProjects>
     </ItemGroup>
 
