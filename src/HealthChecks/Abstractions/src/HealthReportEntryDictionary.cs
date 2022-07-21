@@ -41,7 +41,7 @@ public sealed class HealthReportEntryDictionary : IReadOnlyDictionary<string, He
     /// <param name="stringComparer">An <see cref="IEqualityComparer"/> to compare keys.</param>
     public HealthReportEntryDictionary(ICollection<KeyValuePair<string, HealthReportEntry>> entries, StringComparer stringComparer = default)
     {
-        stringComparer = stringComparer ?? StringComparer.OrdinalIgnoreCase;
+        stringComparer ??= StringComparer.OrdinalIgnoreCase;
         _entries = entries.GroupBy(e => e.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Select(s => s.Value).ToList(), stringComparer);
     }
 
