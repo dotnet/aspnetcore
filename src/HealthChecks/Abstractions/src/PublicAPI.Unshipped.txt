@@ -10,7 +10,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.ContainsKey(string! key) -> bool
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.Count.get -> int
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry>>!
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.HealthReportEntryDictionary(System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry>>! entries, System.StringComparer! ordinalIgnoreCase = null) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.HealthReportEntryDictionary(System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry>>! entries, System.StringComparer! stringComparer = null) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.Keys.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.this[string! key].get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntryDictionary.TryGetValue(string! key, out Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry value) -> bool
