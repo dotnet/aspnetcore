@@ -39,7 +39,7 @@ public sealed class HealthReportEntryDictionary : IReadOnlyDictionary<string, He
     /// </summary>
     /// <param name="entries">An <see cref="ICollection{KeyValuePair}"/> of <see cref="HealthReportEntry"/></param>
     /// <param name="stringComparer">An <see cref="IEqualityComparer"/> to compare keys.</param>
-    public HealthReportEntryDictionary(ICollection<KeyValuePair<string, HealthReportEntry>> entries, StringComparer stringComparer = default)
+    public HealthReportEntryDictionary(ICollection<KeyValuePair<string, HealthReportEntry>> entries, StringComparer? stringComparer = default)
     {
         stringComparer ??= StringComparer.OrdinalIgnoreCase;
         _entries = entries.GroupBy(e => e.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Select(s => s.Value).ToList(), stringComparer);
