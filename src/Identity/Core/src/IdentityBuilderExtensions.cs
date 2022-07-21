@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -55,7 +56,7 @@ public static class IdentityBuilderExtensions
     /// <typeparam name="TSignInManager">The type of the sign in manager to add.</typeparam>
     /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public static IdentityBuilder AddSignInManager<TSignInManager>(this IdentityBuilder builder) where TSignInManager : class
+    public static IdentityBuilder AddSignInManager<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSignInManager>(this IdentityBuilder builder) where TSignInManager : class
     {
         builder.AddSignInManagerDeps();
         var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
