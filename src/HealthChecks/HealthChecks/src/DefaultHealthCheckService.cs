@@ -68,7 +68,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
             NonCapturingTimer.Create(
             async (state) =>
             {
-                var entries = await RunChecksAsync(registrations, IsStopping).ConfigureAwait(false);
+                var entries = await RunChecksAsync(registrations, cancellationToken).ConfigureAwait(false);
                 foreach (var entry in entries)
                 {
                     _healthReportEntriesQueue.Enqueue(entry);
