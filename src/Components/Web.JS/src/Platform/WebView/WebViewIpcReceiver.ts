@@ -40,6 +40,8 @@ export function startIpcReceiver(): void {
 
     'Navigate': navigationManagerFunctions.navigateTo,
 
+    'SetHasLocationChangingListeners': navigationManagerFunctions.setHasLocationChangingListeners,
+
     'EndLocationChanging': navigationManagerFunctions.endLocationChanging,
   };
 

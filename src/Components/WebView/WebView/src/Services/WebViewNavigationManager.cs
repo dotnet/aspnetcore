@@ -51,6 +51,7 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
                 // We shouldn't ever reach this since exceptions thrown from handlers are caught in InvokeLocationChangingHandlerAsync.
                 // But if some other exception gets thrown, we still want to know about it.
                 Log.NavigationFailed(_logger, uri, ex);
+                _ipcSender.NotifyUnhandledException(ex);
             }
         }
     }
@@ -78,6 +79,7 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
                 // We shouldn't ever reach this since exceptions thrown from handlers are caught in InvokeLocationChangingHandlerAsync.
                 // But if some other exception gets thrown, we still want to know about it.
                 Log.NavigationFailed(_logger, uri, ex);
+                _ipcSender.NotifyUnhandledException(ex);
             }
         }
     }
@@ -95,7 +97,13 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
         catch (Exception ex)
         {
             Log.NavigationFailed(_logger, context.TargetLocation, ex);
+            _ipcSender.NotifyUnhandledException(ex);
         }
+    }
+
+    protected override void SetNavigationLockState(bool value)
+    {
+        _ipcSender.SetHasLocationChangingListeners(value);
     }
 
     private static partial class Log

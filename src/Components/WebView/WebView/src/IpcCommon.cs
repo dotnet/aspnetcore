@@ -74,6 +74,7 @@ internal sealed class IpcCommon
         NotifyUnhandledException,
         BeginInvokeJS,
         SendByteArrayToJS,
+        SetHasLocationChangingListeners,
         EndLocationChanging,
     }
 }
