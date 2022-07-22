@@ -467,7 +467,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_GenerateComposites"
-    DependsOnTargets="_ExpandRuntimePackageRoot">
+          Condition="'$(TargetOsName)' == 'linux'"
+          DependsOnTargets="_ExpandRuntimePackageRoot">
 
     <PropertyGroup>
       <CompositeTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Composite', '$(Configuration)'))</CompositeTargetDir>
@@ -475,7 +476,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
 
       <BaseAssemblies>$(ManagedAssetsFullPath)\*.dll</BaseAssemblies>
-      <BaseAssemblies Condition="Exists('$(NativeAssetsFullPath)') and '$(TargetOsName)' == 'win'">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
 
       <CompositeArgs>--composite</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
@@ -489,11 +489,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <MakeDir Directories="$(CompositeTargetDir)" />
 
     <ItemGroup>
-      <NativeSharedObjects Include="$(NativeAssetsFullPath)\*.so" Condition="Exists('$(NativeAssetsFullPath)') and '$(TargetOsName)' != 'win'" />
+      <NativeSharedObjects Include="$(NativeAssetsFullPath)\*.so" />
     </ItemGroup>
 
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(CompositeArgs)" />
-    <Copy SourceFiles="@(NativeSharedObjects)" DestinationFolder="$(CompositeTargetDir)" Condition="'$(TargetOsName)' != 'win'" />
+    <Copy SourceFiles="@(NativeSharedObjects)" DestinationFolder="$(CompositeTargetDir)" />
   </Target>
 
   <!--
@@ -586,7 +586,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistLayoutTargetDir)" />
   </Target>
 
-  <Target Name="_BatchCopyToCompositeLayout">
+  <Target Name="_BatchCopyToCompositeLayout"
+          Condition="'$(TargetOsName)' == 'linux'">
     <PropertyGroup>
       <CompositeFrameworkLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', CompositeFx.Layout, '$(Configuration)', '$(TargetRuntimeIdentifier)'))</CompositeFrameworkLayoutRoot>
       <LayoutAspnetPath>$(CompositeFrameworkLayoutRoot)\shared\$(SharedFxName)\$(SharedFxVersion)\</LayoutAspnetPath>
@@ -599,8 +600,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
 
     <RemoveDir Directories="$(CompositeFrameworkLayoutRoot)" />
-    <MakeDir Directories="$(CompositeFrameworkLayoutRoot)" />
-    <Copy SourceFiles="@(RedistLayoutFiles)" DestinationFolder="$(CompositeFrameworkLayoutRoot)\%(RecursiveDir)" />
+    <Copy SourceFiles="@(RedistLayoutFiles)" DestinationFolder="$(CompositeFrameworkLayoutRoot)%(RecursiveDir)" />
 
     <ItemGroup>
       <AspnetFiles Include="$(LayoutAspnetPath)**\*.*" />
@@ -657,14 +657,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"
+          Condition="'$(TargetOsName)' == 'linux'"
           Inputs="$(CompositeTargetDir)"
           Outputs="$(CompositeArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />
-    <ZipDirectory
-      SourceDirectory="$(CompositeFrameworkLayoutRoot)"
-      DestinationFile="$(CompositeArchiveOutputPath)"
-      Overwrite="true"
-      Condition="'$(ArchiveExtension)' == '.zip'" />
     <Exec
       Command="tar -czf $(CompositeArchiveOutputPath) ."
       WorkingDirectory="$(CompositeFrameworkLayoutRoot)"
