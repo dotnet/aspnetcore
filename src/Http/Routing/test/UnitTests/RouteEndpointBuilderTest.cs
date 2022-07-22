@@ -32,7 +32,6 @@ public class RouteEndpointBuilderTest
     [Fact]
     public async void Build_DoesNot_RunFilters()
     {
-
         var endpointFilterCallCount = 0;
         var invocationFilterCallCount = 0;
         var invocationCallCount = 0;
