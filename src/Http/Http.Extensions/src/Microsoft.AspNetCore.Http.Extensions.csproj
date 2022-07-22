@@ -18,6 +18,7 @@
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LingBase="Shared"/>
   </ItemGroup>
 
   <ItemGroup>
