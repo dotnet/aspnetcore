@@ -753,9 +753,10 @@ public static partial class RequestDelegateFactory
         else if (factoryContext.DisableInferredFromBody && (
                  (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
-                 parameter.ParameterType == typeof(StringValues)))
+                 parameter.ParameterType == typeof(StringValues) ||
+                 parameter.ParameterType == typeof(StringValues?)))
         {
-            // We only infer parameter types if you have an array of TryParsables/string[]/StringValues, and DisableInferredFromBody is true
+            // We only infer parameter types if you have an array of TryParsables/string[]/StringValues/StringValues?, and DisableInferredFromBody is true
 
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
             return BindParameterFromProperty(parameter, QueryExpr, QueryIndexerProperty, parameter.Name, factoryContext, "query string");
@@ -1352,18 +1353,18 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext, string source)
     {
-        var isOptional = IsOptionalParameter(parameter, factoryContext);
+        if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[])
+            || parameter.ParameterType == typeof(StringValues) || parameter.ParameterType == typeof(StringValues?))
+        {
+            return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
+        }
 
+        var isOptional = IsOptionalParameter(parameter, factoryContext);
         var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
         var parameterTypeNameConstant = Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false));
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
-
-        if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[]) || parameter.ParameterType == typeof(StringValues))
-        {
-            return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
-        }
 
         factoryContext.UsingTempSourceString = true;
 
@@ -1614,6 +1615,8 @@ public static partial class RequestDelegateFactory
                 )
             );
 
+            // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
+
             factoryContext.ExtraLocals.Add(argument);
             factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
             return argument;
@@ -1622,6 +1625,16 @@ public static partial class RequestDelegateFactory
         // Allow nullable parameters that don't have a default value
         if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
         {
+            if (parameter.ParameterType == typeof(StringValues?))
+            {
+                // when Nullable<StringValues> is used and the actual value is StringValues.Empty, we should pass in a Nullable<StringValues>
+                return Expression.Block(
+                    Expression.Condition(Expression.Equal(valueExpression, Expression.Convert(Expression.Constant(StringValues.Empty), parameter.ParameterType)),
+                            Expression.Convert(Expression.Constant(null), parameter.ParameterType),
+                            valueExpression
+                        )
+                    );
+            }
             return valueExpression;
         }
 
@@ -1643,6 +1656,7 @@ public static partial class RequestDelegateFactory
     private static Type? GetExpressionType(Type type) =>
         type.IsArray ? typeof(string[]) :
         type == typeof(StringValues) ? typeof(StringValues) :
+        type == typeof(StringValues?) ? typeof(StringValues?) :
         null;
 
     private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
@@ -1717,7 +1731,7 @@ public static partial class RequestDelegateFactory
         // Do not duplicate the metadata if there are multiple form parameters
         if (!factoryContext.ReadForm)
         {
-            InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType,  FormFileContentType);
+            InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
         }
 
         factoryContext.ReadForm = true;

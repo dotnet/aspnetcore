@@ -883,6 +883,31 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateHandlesOptionalStringValuesFromNullQueryString()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["values"] = (string?)null
+        });
+
+        static void StoreNullableStringValues(HttpContext httpContext, StringValues? values)
+        {
+            Assert.False(values.HasValue);
+            httpContext.Items["values"] = values;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(StoreNullableStringValues, new() { DisableInferBodyFromParameters = true });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.NotEmpty(httpContext.Items);
+        Assert.Null(httpContext.Items["values"]);
+    }
+
+    [Fact]
     public async Task RequestDelegateHandlesArraysFromExplicitQueryStringSource()
     {
         var httpContext = CreateHttpContext();
@@ -907,6 +932,119 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
         Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+            [FromHeader(Name = "Custom")] StringValues headerValues,
+            [FromQuery(Name = "a")] StringValues queryValues) =>
+        {
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
+        Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSource()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+            [FromHeader(Name = "Custom")] StringValues? headerValues,
+            [FromQuery(Name = "a")] StringValues? queryValues) =>
+        {
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
+        Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateLogsStringValuesFromExplicitQueryStringSourceForUnpresentedValuesFailuresAsDebugAndSets400Response()
+    {
+        var invoked = false;
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+                [FromHeader(Name = "foo")] StringValues headerValues,
+                [FromQuery(Name = "bar")] StringValues queryValues) =>
+        {
+            invoked = true;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        var logs = TestSink.Writes.ToArray();
+
+        Assert.Equal(2, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""StringValues headerValues"" was not provided from header.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""StringValues queryValues"" was not provided from query string.", logs[1].Message);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSourceForUnpresentedValues()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+                [FromHeader(Name = "foo")] StringValues? headerValues,
+                [FromQuery(Name = "bar")] StringValues? queryValues) =>
+        {
+            Assert.False(headerValues.HasValue);
+            Assert.False(queryValues.HasValue);
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["query"]);
+        Assert.Null(httpContext.Items["headers"]);
     }
 
     [Fact]
