@@ -663,8 +663,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />
     <Exec
       Command="tar -czf $(CompositeArchiveOutputPath) ."
-      WorkingDirectory="$(CompositeFrameworkLayoutRoot)"
-      Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+      WorkingDirectory="$(CompositeFrameworkLayoutRoot)" />
   </Target>
 
   <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
