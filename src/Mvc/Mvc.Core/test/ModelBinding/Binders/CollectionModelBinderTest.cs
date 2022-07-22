@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -226,6 +227,7 @@ public class CollectionModelBinderTest
     }
 
     private IActionResult ActionWithListParameter(List<string> parameter) => null;
+    private IActionResult ActionWithListParameterDefaultValue(List<string> parameter = null) => null;
 
     [Theory]
     [InlineData(false, false)]
@@ -303,6 +305,43 @@ public class CollectionModelBinderTest
         Assert.Equal("modelName", keyValuePair.Key);
         var error = Assert.Single(keyValuePair.Value.Errors);
         Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
+    }
+
+    // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject except
+    // Model has a default value.
+    [Fact]
+    public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelHasDefaultValue()
+    {
+        // Arrange
+        var binder = new CollectionModelBinder<string>(
+            new StubModelBinder(result: ModelBindingResult.Failed()),
+            NullLoggerFactory.Instance,
+            allowValidatingTopLevelNodes: true);
+
+        var bindingContext = CreateContext();
+        bindingContext.IsTopLevelObject = true;
+
+        // Lack of prefix and non-empty model name both ignored.
+        bindingContext.ModelName = "modelName";
+
+        var metadataProvider = new TestModelMetadataProvider();
+        var parameter = typeof(CollectionModelBinderTest)
+            .GetMethod(nameof(ActionWithListParameterDefaultValue), BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetParameters()[0];
+        metadataProvider
+            .ForParameter(parameter)
+            .BindingDetails(b => b.IsBindingRequired = false);
+        bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
+
+        bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.Null(bindingContext.Result.Model);
+        Assert.True(bindingContext.Result.IsModelSet);
+        Assert.Equal(0, bindingContext.ModelState.ErrorCount);
     }
 
     // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject  except
