@@ -42,13 +42,13 @@ internal static class RoutePatternParametersDetector
 
         foreach (var child in childSymbols)
         {
-            if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
-            {
-                resolvedParameterSymbols.AddRange(ResolvedParameters(child.GetParameterType(), wellKnownTypes));
-            }
-            else if (HasExplicitNonRouteAttribute(child, allNoneRouteMetadataTypes) || HasSpecialType(child, specialTypes))
+            if (HasSpecialType(child, specialTypes) || HasExplicitNonRouteAttribute(child, allNoneRouteMetadataTypes))
             {
                 continue;
+            }
+            else if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
+            {
+                resolvedParameterSymbols.AddRange(ResolvedParameters(child.GetParameterType(), wellKnownTypes));
             }
             else
             {
