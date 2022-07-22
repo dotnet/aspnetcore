@@ -26,12 +26,14 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         var cancellationToken = context.CancellationToken;
 
         var root = syntaxTree.GetRoot(cancellationToken);
-        Analyze(context, root, cancellationToken);
+        WellKnownTypes? wellKnownTypes = null;
+        Analyze(context, root, ref wellKnownTypes, cancellationToken);
     }
 
     private void Analyze(
         SemanticModelAnalysisContext context,
         SyntaxNode node,
+        ref WellKnownTypes? wellKnownTypes,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -40,7 +42,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         {
             if (child.IsNode)
             {
-                Analyze(context, child.AsNode()!, cancellationToken);
+                Analyze(context, child.AsNode()!, ref wellKnownTypes, cancellationToken);
             }
             else
             {
@@ -50,7 +52,12 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                     continue;
                 }
 
-                var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, cancellationToken);
+                if (wellKnownTypes == null && !WellKnownTypes.TryGetOrCreate(context.SemanticModel.Compilation, out wellKnownTypes))
+                {
+                    return;
+                }
+
+                var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, wellKnownTypes, cancellationToken);
 
                 var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
                 var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);

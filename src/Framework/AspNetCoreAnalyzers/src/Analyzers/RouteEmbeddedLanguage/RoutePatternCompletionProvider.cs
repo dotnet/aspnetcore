@@ -103,7 +103,12 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        var (methodSymbol, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, context.CancellationToken);
+        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
+        {
+            return;
+        }
+
+        var (methodSymbol, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, wellKnownTypes, context.CancellationToken);
 
         var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(stringToken);
         var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: isMvcAttribute);
@@ -113,7 +118,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         }
 
         var routePatternCompletionContext = new EmbeddedCompletionContext(
-            context, tree, stringToken, semanticModel, methodSymbol, isMinimal, isMvcAttribute);
+            context, tree, stringToken, wellKnownTypes, methodSymbol, isMinimal, isMvcAttribute);
         ProvideCompletions(routePatternCompletionContext);
 
         if (routePatternCompletionContext.Items.Count == 0)
@@ -211,7 +216,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
     {
         if (context.MethodSymbol != null)
         {
-            var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(context.MethodSymbol, context.SemanticModel);
+            var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(context.MethodSymbol, context.WellKnownTypes);
             foreach (var parameterSymbol in resolvedParameterSymbols)
             {
                 context.AddIfMissing(parameterSymbol.Name, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: null);
@@ -294,7 +299,7 @@ If there are two arguments then the string length must be greater than, or equal
 
         public readonly RoutePatternTree Tree;
         public readonly SyntaxToken StringToken;
-        public readonly SemanticModel SemanticModel;
+        public readonly WellKnownTypes WellKnownTypes;
         public readonly IMethodSymbol? MethodSymbol;
         public readonly bool IsMinimal;
         public readonly bool IsMvcAttribute;
@@ -307,7 +312,7 @@ If there are two arguments then the string length must be greater than, or equal
             CompletionContext context,
             RoutePatternTree tree,
             SyntaxToken stringToken,
-            SemanticModel semanticModel,
+            WellKnownTypes wellKnownTypes,
             IMethodSymbol? methodSymbol,
             bool isMinimal,
             bool isMvcAttribute)
@@ -315,7 +320,7 @@ If there are two arguments then the string length must be greater than, or equal
             _context = context;
             Tree = tree;
             StringToken = stringToken;
-            SemanticModel = semanticModel;
+            WellKnownTypes = wellKnownTypes;
             MethodSymbol = methodSymbol;
             IsMinimal = isMinimal;
             IsMvcAttribute = isMvcAttribute;

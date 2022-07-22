@@ -9,10 +9,8 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class SymbolExtensions
 {
-    public static bool HasAttribute(this ISymbol symbol, string typeName, SemanticModel semanticModel)
+    public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attributeType)
     {
-        var attributeType = semanticModel.Compilation.GetTypeByMetadataName(typeName);
-
         foreach (var attributeData in symbol.GetAttributes())
         {
             if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
@@ -38,6 +36,9 @@ internal static class SymbolExtensions
 
     public static bool IsType(this INamedTypeSymbol type, string typeName, SemanticModel semanticModel)
         => SymbolEqualityComparer.Default.Equals(type, semanticModel.Compilation.GetTypeByMetadataName(typeName));
+
+    public static bool IsType(this INamedTypeSymbol type, INamedTypeSymbol otherType)
+        => SymbolEqualityComparer.Default.Equals(type, otherType);
 
     public static ITypeSymbol GetParameterType(this ISymbol symbol)
     {

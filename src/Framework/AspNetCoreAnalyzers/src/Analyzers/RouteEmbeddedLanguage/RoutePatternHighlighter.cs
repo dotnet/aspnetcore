@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -15,16 +13,20 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 
+namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
+
 [ExportAspNetCoreEmbeddedLanguageDocumentHighlighter(name: "Route", language: LanguageNames.CSharp)]
 internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHighlighter
 {
-    // Regex example:
-    // new System.Text.RegularExpressions.Regex(@"(?:a(?<digit>[0-5])|b(?<digit>[4-7]))c\k<digit>");
-
     public ImmutableArray<AspNetCoreDocumentHighlights> GetDocumentHighlights(
         SemanticModel semanticModel, SyntaxToken token, int position, CancellationToken cancellationToken)
     {
-        var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, cancellationToken);
+        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
+        {
+            return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
+        }
+
+        var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
 
         var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
         var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
@@ -33,11 +35,11 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
             return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
         }
 
-        return GetHighlights(tree, semanticModel, position, usageContext.MethodSymbol, cancellationToken);
+        return GetHighlights(tree, semanticModel, wellKnownTypes, position, usageContext.MethodSymbol, cancellationToken);
     }
 
     private static ImmutableArray<AspNetCoreDocumentHighlights> GetHighlights(
-        RoutePatternTree tree, SemanticModel semanticModel, int position, IMethodSymbol methodSymbol, CancellationToken cancellationToken)
+        RoutePatternTree tree, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, int position, IMethodSymbol methodSymbol, CancellationToken cancellationToken)
     {
         var virtualChar = tree.Text.Find(position);
         if (virtualChar == null)
@@ -59,7 +61,7 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         if (methodSymbol != null)
         {
             // Resolve possible parameter symbols. Includes properties from AsParametersAttribute.
-            var parameters = RoutePatternParametersDetector.ResolvedParameters(methodSymbol, semanticModel);
+            var parameters = RoutePatternParametersDetector.ResolvedParameters(methodSymbol, wellKnownTypes);
 
             // Match route parameter to method parameter. Parameters in a route aren't case sensitive.
             // First attempt an exact match, then a case insensitive match.

@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class RoutePatternParametersDetector
 {
-    public static ImmutableArray<ISymbol> ResolvedParameters(ISymbol symbol, SemanticModel semanticModel)
+    public static ImmutableArray<ISymbol> ResolvedParameters(ISymbol symbol, WellKnownTypes wellKnownTypes)
     {
         var resolvedParameterSymbols = ImmutableArray.CreateBuilder<ISymbol>();
         var childSymbols = symbol switch
@@ -20,13 +19,34 @@ internal static class RoutePatternParametersDetector
             _ => throw new InvalidOperationException("Unexpected symbol type: " + symbol)
         };
 
+        var allNoneRouteMetadataTypes = new[]
+        {
+            wellKnownTypes.IFromBodyMetadata,
+            wellKnownTypes.IFromFormMetadata,
+            wellKnownTypes.IFromHeaderMetadata,
+            wellKnownTypes.IFromQueryMetadata,
+            wellKnownTypes.IFromServiceMetadata
+        };
+        var specialTypes = new[]
+        {
+            wellKnownTypes.CancellationToken,
+            wellKnownTypes.HttpContext,
+            wellKnownTypes.HttpRequest,
+            wellKnownTypes.HttpResponse,
+            wellKnownTypes.ClaimsPrincipal,
+            wellKnownTypes.IFormFileCollection,
+            wellKnownTypes.IFormFile,
+            wellKnownTypes.Stream,
+            wellKnownTypes.PipeReader
+        };
+
         foreach (var child in childSymbols)
         {
-            if (child.HasAttribute("Microsoft.AspNetCore.Http.AsParametersAttribute", semanticModel))
+            if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
             {
-                resolvedParameterSymbols.AddRange(ResolvedParameters(child.GetParameterType(), semanticModel));
+                resolvedParameterSymbols.AddRange(ResolvedParameters(child.GetParameterType(), wellKnownTypes));
             }
-            else if (HasExplicitNonRouteAttribute(child, semanticModel) || HasSpecialType(child, semanticModel))
+            else if (HasExplicitNonRouteAttribute(child, allNoneRouteMetadataTypes) || HasSpecialType(child, specialTypes))
             {
                 continue;
             }
@@ -38,78 +58,26 @@ internal static class RoutePatternParametersDetector
         return resolvedParameterSymbols.ToImmutable();
     }
 
-    private static bool HasSpecialType(ISymbol child, SemanticModel semanticModel)
+    private static bool HasSpecialType(ISymbol child, INamedTypeSymbol[] specialTypes)
     {
         if (child.GetParameterType() is not INamedTypeSymbol type)
         {
             return false;
         }
 
-        if (type.IsType(typeof(CancellationToken).FullName!, semanticModel))
+        foreach (var specialType in specialTypes)
         {
-            return true;
-        }
-
-        if (type.IsType("Microsoft.AspNetCore.Http.HttpContext", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("Microsoft.AspNetCore.Http.HttpRequest", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("Microsoft.AspNetCore.Http.HttpResponse", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("System.Security.Claims.ClaimsPrincipal", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("Microsoft.AspNetCore.Http.IFormFileCollection", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("Microsoft.AspNetCore.Http.IFormFile", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("System.IO.Stream", semanticModel))
-        {
-            return true;
-        }
-
-        if (type.IsType("System.IO.Pipelines.PipeReader", semanticModel))
-        {
-            return true;
+            if (type.IsType(specialType))
+            {
+                return true;
+            }
         }
 
         return false;
     }
 
-    private static bool HasExplicitNonRouteAttribute(ISymbol child, SemanticModel semanticModel)
+    private static bool HasExplicitNonRouteAttribute(ISymbol child, INamedTypeSymbol[] allNoneRouteMetadataTypes)
     {
-        var fromBodyMetadataType = semanticModel.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata");
-        var fromFormMetadataType = semanticModel.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata");
-        var fromHeaderMetadataType = semanticModel.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata");
-        var fromQueryMetadataType = semanticModel.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata");
-        var fromServicesMetadataType = semanticModel.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata");
-
-        var allNoneRouteMetadataTypes = new[]
-        {
-            fromBodyMetadataType,
-            fromFormMetadataType,
-            fromHeaderMetadataType,
-            fromQueryMetadataType,
-            fromServicesMetadataType
-        };
-
         foreach (var attributeData in child.GetAttributes())
         {
             foreach (var nonRouteMetadata in allNoneRouteMetadataTypes)

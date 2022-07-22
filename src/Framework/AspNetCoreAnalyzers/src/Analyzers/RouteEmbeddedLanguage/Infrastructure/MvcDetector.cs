@@ -12,7 +12,7 @@ internal static class MvcDetector
 
     // Replicates logic from ControllerFeatureProvider.IsController.
     // https://github.com/dotnet/aspnetcore/blob/785cf9bd845a8d28dce3a079c4fedf4a4c2afe57/src/Mvc/Mvc.Core/src/Controllers/ControllerFeatureProvider.cs#L39
-    public static bool IsController(INamedTypeSymbol typeSymbol, SemanticModel semanticModel)
+    public static bool IsController(INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         if (!typeSymbol.IsReferenceType)
         {
@@ -42,12 +42,12 @@ internal static class MvcDetector
 
         // Check name before attribute's for performance.
         if (!typeSymbol.Name.EndsWith(ControllerTypeNameSuffix, StringComparison.OrdinalIgnoreCase) &&
-            !typeSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.ControllerAttribute", semanticModel))
+            !typeSymbol.HasAttribute(wellKnownTypes.ControllerAttribute))
         {
             return false;
         }
 
-        if (typeSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.NonControllerAttribute", semanticModel))
+        if (typeSymbol.HasAttribute(wellKnownTypes.NonControllerAttribute))
         {
             return false;
         }
@@ -57,7 +57,7 @@ internal static class MvcDetector
 
     // Replicates logic from DefaultApplicationModelProvider.IsAction.
     // https://github.com/dotnet/aspnetcore/blob/785cf9bd845a8d28dce3a079c4fedf4a4c2afe57/src/Mvc/Mvc.Core/src/ApplicationModels/DefaultApplicationModelProvider.cs#L393
-    public static bool IsAction(IMethodSymbol methodSymbol, SemanticModel semanticModel)
+    public static bool IsAction(IMethodSymbol methodSymbol, WellKnownTypes wellKnownTypes)
     {
         if (methodSymbol == null)
         {
@@ -97,7 +97,7 @@ internal static class MvcDetector
             return false;
         }
 
-        if (methodSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.NonActionAttribute", semanticModel))
+        if (methodSymbol.HasAttribute(wellKnownTypes.NonActionAttribute))
         {
             return false;
         }
