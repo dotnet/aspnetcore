@@ -181,6 +181,11 @@ public class RoutePatternCompletionProvider : CompletionProvider
         // We added no items, but the user explicitly asked for completion.  Add all the
         // items we can to help them out.
         _ = context.Tree.Text.Find(context.Position);
+
+        // TODO: CompletionProvider's loaded from projects currently don't support overriding
+        // description or customizing how text is added. This is needed to properly support
+        // completions when the user explicitly asked for completion.
+        // Will be fixed in VS 17.4 - https://github.com/dotnet/roslyn/pull/61976
     }
 
     private void ProvideCompletionsBasedOffOfPrecedingCharacter(EmbeddedCompletionContext context)
