@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using Microsoft.AspNetCore.Analyzer.Testing;
-using Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.CodeAnalysis.Completion;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -116,9 +112,6 @@ class Program
 
         // Assert
         Assert.Empty(result.Completions.Items);
-
-        //var description = await result.Service.GetDescriptionAsync(result.Document, result.Completions.Items[0]);
-        //Assert.Equal("int", description.Text);
     }
 
     [Fact]
@@ -159,6 +152,35 @@ class Program
     static void Main()
     {
         EndpointRouteBuilderExtensions.MapGet(null, @""{$$"", ExecuteGet);
+    }
+
+    static string ExecuteGet(string id)
+    {
+        return """";
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.Items,
+            i => Assert.Equal("id", i.DisplayText));
+    }
+
+    [Fact]
+    public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasMethod_NamedParameters_ReturnDelegateParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(handler: ExecuteGet, pattern: @""{$$"", endpoints: null);
     }
 
     static string ExecuteGet(string id)

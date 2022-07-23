@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -166,7 +167,26 @@ internal static class RoutePatternUsageDetector
             return null;
         }
 
-        var item = argumentList.Arguments[delegateIndex];
+        ArgumentSyntax? item = null;
+        foreach (var argument in argumentList.Arguments)
+        {
+            // Handle named argument
+            if (argument.NameColon != null && !argument.NameColon.IsMissing)
+            {
+                var name = argument.NameColon.Name.Identifier.ValueText;
+                if (name == delegateArgument.Name)
+                {
+                    item = argument;
+                    break;
+                }
+            }
+        }
+
+        if (item == null)
+        {
+            // Handle positional argument
+            item = argumentList.Arguments[delegateIndex];
+        }
 
         return GetMethodInfo(semanticModel, item.Expression, cancellationToken);
     }
