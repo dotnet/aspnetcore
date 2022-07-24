@@ -23,9 +23,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
     private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
     private readonly ILogger<DefaultHealthCheckService> _logger;
     private readonly ConcurrentQueue<KeyValuePair<string, HealthReportEntry>> _healthReportEntriesQueue;
-    private readonly IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> _periodHealthChecksMap;
-    private readonly IDictionary<TimeSpan, Timer> _healthCheckRegistrationTimers;
-    private CancellationToken _isStopping;
+    private readonly Dictionary<TimeSpan, List<HealthCheckRegistration>> _periodHealthChecksMap;
 
     public DefaultHealthCheckService(
         IServiceScopeFactory scopeFactory,
@@ -52,16 +50,16 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
                                   group r by r.Period).ToDictionary(g => g.Key, g => g.ToList());
 
         // Aggregate Timers for HealthCheckRegistration having the same period
-        _healthCheckRegistrationTimers = CreateTimers(_periodHealthChecksMap);
+        _ = CreateTimers(_periodHealthChecksMap);
     }
 
-    // Internal for unit testing
-    internal IDictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
+
+    private Dictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
     {
         return periodHealthChecksMap.Select(m => CreateTimer(m.Key, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
-    internal KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
+    private KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
     {
         return new KeyValuePair<TimeSpan, Timer>(
             period,
@@ -79,38 +77,10 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
             period: period));
     }
 
-    internal void StopTimers()
-    {
-        foreach (var timerPeriod in _healthCheckRegistrationTimers.Keys)
-        {
-            StopTimer(timerPeriod);
-        }
-    }
-
-    internal void StopTimer(TimeSpan period)
-    {
-        _healthCheckRegistrationTimers[period].Dispose();
-    }
-
-    internal CancellationToken IsStopping
-    {
-        get { return _isStopping; }
-        set
-        {
-            if (value != default)
-            {
-                _isStopping = value;
-            }
-        }
-    }
-
     public override async Task<HealthReport> CheckHealthAsync(Func<HealthCheckRegistration, bool>? predicate, CancellationToken cancellationToken = default)
     {
-        // Save the cancellation token, so to propagate cancellation to the individual periodicity HCs
-        IsStopping = cancellationToken;
-
-        // TODO: if we decide for the current design, where HCs with default periodicity are initiated during CheckHealthAsync,
-        // individual-periodicity HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService)
+        // In the current design, where HCs with default periodicity are initiated during CheckHealthAsync,
+        // individual-periodicity HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService instead)
 
         var totalTime = ValueStopwatch.StartNew();
         Log.HealthCheckProcessingBegin(_logger);
