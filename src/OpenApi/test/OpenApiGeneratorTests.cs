@@ -82,9 +82,9 @@ public class OpenApiOperationGeneratorTests
     {
         static void AssertCustomRequestFormat(OpenApiOperation operation)
         {
-            var request = Assert.Single(operation.Parameters);
-            var content = Assert.Single(request.Content);
-            Assert.Equal("application/custom", content.Key);
+            Assert.Empty(operation.Parameters);
+            var content = operation.RequestBody.Content.Keys.FirstOrDefault();
+            Assert.Equal("application/custom", content);
         }
 
         AssertCustomRequestFormat(GetOpenApiOperation(
@@ -98,12 +98,13 @@ public class OpenApiOperationGeneratorTests
     public void AddsMultipleRequestFormatsFromMetadata()
     {
         var operation = GetOpenApiOperation(
-            [Consumes("application/custom0", "application/custom1")] (int foo) => { });
+            [Consumes("application/custom0", "application/custom1")] (InferredJsonClass fromBody) => { });
 
-        var request = Assert.Single(operation.Parameters);
+        Assert.Empty(operation.Parameters);
 
-        Assert.Equal(2, request.Content.Count);
-        Assert.Equal(new[] { "application/custom0", "application/custom1" }, request.Content.Keys);
+        var content = operation.RequestBody.Content;
+        Assert.Equal(2, content.Count);
+        Assert.Equal(new[] { "application/custom0", "application/custom1" }, content.Keys);
     }
 
     [Fact]
