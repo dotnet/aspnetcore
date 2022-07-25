@@ -73,7 +73,7 @@ public static class HealthChecksBuilderAddCheckExtensions
             throw new ArgumentNullException(nameof(instance));
         }
 
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout, default));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout, default, default));
     }
 
     /// <summary>
@@ -88,16 +88,18 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// </param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static IHealthChecksBuilder AddPeriodicCheck(
+    public static IHealthChecksBuilder AddIndividualCheck(
         this IHealthChecksBuilder builder,
         string name,
         IHealthCheck instance,
         HealthStatus? failureStatus = null,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = null,
+        TimeSpan? delay = null,
         TimeSpan? period = null)
     {
         if (builder == null)
@@ -115,7 +117,7 @@ public static class HealthChecksBuilderAddCheckExtensions
             throw new ArgumentNullException(nameof(instance));
         }
 
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout, delay, period));
     }
 
     /// <summary>
@@ -203,6 +205,7 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// </param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     /// <remarks>
@@ -212,12 +215,13 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// access to services from the dependency injection container.
     /// </remarks>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static IHealthChecksBuilder AddPeriodicCheck<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+    public static IHealthChecksBuilder AddIndividualCheck<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
         this IHealthChecksBuilder builder,
         string name,
         HealthStatus? failureStatus = null,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = null,
+        TimeSpan? delay = null,
         TimeSpan? period = null) where T : class, IHealthCheck
     {
         if (builder == null)
@@ -230,7 +234,7 @@ public static class HealthChecksBuilderAddCheckExtensions
             throw new ArgumentNullException(nameof(name));
         }
 
-        return builder.Add(new HealthCheckRegistration(name, GetServiceOrCreateInstance, failureStatus, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, GetServiceOrCreateInstance, failureStatus, tags, timeout, delay, period));
 
         [UnconditionalSuppressMessage("Trimming", "IL2091",
            Justification = "DynamicallyAccessedMemberTypes.PublicConstructors is enforced by calling method.")]
@@ -406,19 +410,21 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="args">Additional arguments to provide to the constructor.</param>
     /// <param name="timeout">A <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     /// <remarks>
     /// This method will use <see cref="ActivatorUtilities.CreateInstance{T}(IServiceProvider, object[])"/> to create the health check
     /// instance when needed. Additional arguments can be provided to the constructor via <paramref name="args"/>.
     /// </remarks>
-    public static IHealthChecksBuilder AddTypeActivatedPeriodicCheck<
+    public static IHealthChecksBuilder AddTypeActivatedIndividualCheck<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
         this IHealthChecksBuilder builder,
         string name,
         HealthStatus? failureStatus,
         IEnumerable<string> tags,
         TimeSpan timeout,
+        TimeSpan delay,
         TimeSpan period,
         params object[] args) where T : class, IHealthCheck
     {
@@ -432,7 +438,7 @@ public static class HealthChecksBuilderAddCheckExtensions
             throw new ArgumentNullException(nameof(name));
         }
 
-        return builder.Add(new HealthCheckRegistration(name, CreateInstance, failureStatus, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, CreateInstance, failureStatus, tags, timeout, delay, period));
 
         [UnconditionalSuppressMessage("Trimming", "IL2091",
             Justification = "DynamicallyAccessedMemberTypes.PublicConstructors is enforced by calling method.")]

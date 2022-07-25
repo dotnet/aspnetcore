@@ -66,7 +66,7 @@ public static class HealthChecksBuilderDelegateExtensions
         }
 
         var instance = new DelegateHealthCheck((ct) => Task.FromResult(check()));
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, default));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, default, default));
     }
 
     /// <summary>
@@ -77,15 +77,17 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static IHealthChecksBuilder AddPeriodicCheck(
+    public static IHealthChecksBuilder AddIndividualCheck(
         this IHealthChecksBuilder builder,
         string name,
         Func<HealthCheckResult> check,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default,
+        TimeSpan? delay = default,
         TimeSpan? period = default)
     {
         if (builder == null)
@@ -104,7 +106,7 @@ public static class HealthChecksBuilderDelegateExtensions
         }
 
         var instance = new DelegateHealthCheck((ct) => Task.FromResult(check()));
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, delay, period));
     }
 
     /// <summary>
@@ -169,15 +171,17 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static IHealthChecksBuilder AddPeriodicCheck(
+    public static IHealthChecksBuilder AddIndividualCheck(
         this IHealthChecksBuilder builder,
         string name,
         Func<CancellationToken, HealthCheckResult> check,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default,
+        TimeSpan? delay = default,
         TimeSpan? period = default)
     {
         if (builder == null)
@@ -196,7 +200,7 @@ public static class HealthChecksBuilderDelegateExtensions
         }
 
         var instance = new DelegateHealthCheck((ct) => Task.FromResult(check(ct)));
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, delay, period));
     }
 
     /// <summary>
@@ -250,7 +254,7 @@ public static class HealthChecksBuilderDelegateExtensions
         }
 
         var instance = new DelegateHealthCheck((ct) => check());
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, default));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, default, default));
     }
 
     /// <summary>
@@ -261,15 +265,17 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static IHealthChecksBuilder AddAsyncPeriodicCheck(
+    public static IHealthChecksBuilder AddAsyncIndividualCheck(
         this IHealthChecksBuilder builder,
         string name,
         Func<Task<HealthCheckResult>> check,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default,
+        TimeSpan? delay = default,
         TimeSpan? period = default)
     {
         if (builder == null)
@@ -288,7 +294,7 @@ public static class HealthChecksBuilderDelegateExtensions
         }
 
         var instance = new DelegateHealthCheck((ct) => check());
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, delay, period));
     }
 
     /// <summary>
@@ -354,16 +360,18 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
 
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static IHealthChecksBuilder AddAsyncPeriodicCheck(
+    public static IHealthChecksBuilder AddAsyncIndividualCheck(
         this IHealthChecksBuilder builder,
         string name,
         Func<CancellationToken, Task<HealthCheckResult>> check,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default,
+        TimeSpan? delay = default,
         TimeSpan? period = default)
     {
         if (builder == null)
@@ -382,6 +390,6 @@ public static class HealthChecksBuilderDelegateExtensions
         }
 
         var instance = new DelegateHealthCheck((ct) => check(ct));
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, period));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout, delay, period));
     }
 }
