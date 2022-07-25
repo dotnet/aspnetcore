@@ -230,7 +230,7 @@ public class OpenApiOperationGeneratorTests
     }
 
     [Fact]
-    public void ResponseDescriptionIsCorrect()
+    public void DefaultResponseDescriptionIsCorrect()
     {
         var operation = GetOpenApiOperation(
         [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
@@ -244,6 +244,52 @@ public class OpenApiOperationGeneratorTests
 
         var clientErrorResponse = operation.Responses["400"];
         Assert.Equal("client error", clientErrorResponse.Description);
+    }
+
+    [Fact]
+    public void DefaultResponseDescriptionIsCorrectForTwoSimilarResponses()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(StatusCodes.Status100Continue)]
+        [ProducesResponseType(StatusCodes.Status101SwitchingProtocols)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(2, operation.Responses.Count);
+
+        var continueResponse = operation.Responses["100"];
+        Assert.Equal("information", continueResponse.Description);
+
+        var switchingProtocolsResponse = operation.Responses["101"];
+        Assert.Equal("information", switchingProtocolsResponse.Description);
+    }
+
+    [Fact]
+    public void AllDefaultResponseDescriptions()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(StatusCodes.Status100Continue)]
+        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status300MultipleChoices)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(5, operation.Responses.Count);
+
+        var continueResponse = operation.Responses["100"];
+        Assert.Equal("information", continueResponse.Description);
+
+        var createdResponse = operation.Responses["201"];
+        Assert.Equal("success", createdResponse.Description);
+
+        var multipleChoicesResponse = operation.Responses["300"];
+        Assert.Equal("redirection", multipleChoicesResponse.Description);
+
+        var badRequestResponse = operation.Responses["400"];
+        Assert.Equal("client error", badRequestResponse.Description);
+
+        var InternalServerErrorResponse = operation.Responses["500"];
+        Assert.Equal("server error", InternalServerErrorResponse.Description);
     }
 
     [Fact]

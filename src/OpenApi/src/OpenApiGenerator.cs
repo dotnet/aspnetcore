@@ -204,39 +204,29 @@ internal sealed class OpenApiGenerator
             responses[statusCode] = new OpenApiResponse
             {
                 Content = responseContent,
-                Description = GetDescription(statusCode)
+                Description = GetResponseDescription(statusCode)
             };
         }
-
         return responses;
     }
 
-    private static string GetDescription(string statusCode)
+    private static string GetResponseDescription(string statusCode)
     {
-        string first = statusCode[..1];
-        if (first == "1")
+        char first = statusCode[0];
+        switch (first)
         {
-            return "information";
-        }
-        else if (first == "2")
-        {
-            return "success";
-        }
-        else if (first == "3")
-        {
-            return "redirection";
-        }
-        else if (first == "4")
-        {
-            return "client error";
-        }
-        else if (first == "5")
-        {
-            return "server error";
-        }
-        else
-        {
-            return "null";
+            case '1':
+                return "information";
+            case '2':
+                return "success";
+            case '3':
+                return "redirection";
+            case '4':
+                return "client error";
+            case '5':
+                return "server error";
+            default:
+                return "";
         }
     }
 
