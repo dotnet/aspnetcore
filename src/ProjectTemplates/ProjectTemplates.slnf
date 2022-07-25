@@ -68,6 +68,7 @@
       "src\\ProjectTemplates\\test\\Templates.Blazor.Server.Tests\\Templates.Blazor.Server.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.Tests\\Templates.Blazor.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Tests\\Templates.Blazor.WebAssembly.Tests.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Tests\\Templates.Blazor.WebAssembly.Auth.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Mvc.Tests\\Templates.Mvc.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Tests\\Templates.Tests.csproj",
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
