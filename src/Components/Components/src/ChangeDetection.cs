@@ -40,5 +40,6 @@ internal sealed class ChangeDetection
         || type == typeof(DateTime)
         || type == typeof(Type)
         || type == typeof(decimal)
-        || type == typeof(Guid);
+        || type == typeof(Guid)
+		|| type.isEnum;
 }
