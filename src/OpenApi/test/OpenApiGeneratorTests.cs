@@ -88,10 +88,10 @@ public class OpenApiOperationGeneratorTests
         }
 
         AssertCustomRequestFormat(GetOpenApiOperation(
-            [Consumes("application/custom")] ([FromQuery] int foo) => { }));
+            [Consumes("application/custom")] (InferredJsonClass fromBody) => { }));
 
         AssertCustomRequestFormat(GetOpenApiOperation(
-            [Consumes("application/custom")] ([FromHeader] int fromBody) => { }));
+            [Consumes("application/custom")] ([FromBody] int fromBody) => { }));
     }
 
     [Fact]
@@ -402,13 +402,6 @@ public class OpenApiOperationGeneratorTests
                     Assert.Equal("integer", param.Schema.Type);
                     Assert.Equal(ParameterLocation.Query, param.In);
                     Assert.True(param.Required);
-                },
-                param =>
-                {
-                    Assert.Equal("FromBody", param.Name);
-                    var fromBodyParam = operation.RequestBody;
-                    Assert.Equal("object", fromBodyParam.Content.First().Value.Schema.Type);
-                    Assert.False(fromBodyParam.Required);
                 }
             );
         }
