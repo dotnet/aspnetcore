@@ -293,6 +293,27 @@ public class OpenApiOperationGeneratorTests
     }
 
     [Fact]
+    public void UnregisteredStatusCodeDescriptions()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(46)]
+        [ProducesResponseType(654)]
+        [ProducesResponseType(1111)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(3, operation.Responses.Count);
+
+        var unregisteredResponse1 = operation.Responses["46"];
+        Assert.Equal("", unregisteredResponse1.Description);
+
+        var unregisteredResponse2 = operation.Responses["654"];
+        Assert.Equal("", unregisteredResponse2.Description);
+
+        var unregisteredResponse3 = operation.Responses["1111"];
+        Assert.Equal("", unregisteredResponse3.Description);
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPath()
     {
         static void AssertPathParameter(OpenApiOperation operation)

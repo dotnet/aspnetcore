@@ -212,6 +212,11 @@ internal sealed class OpenApiGenerator
 
     private static string GetResponseDescription(string statusCode)
     {
+        if (statusCode.Length != 3)
+        {
+            return "";
+        }
+
         char first = statusCode[0];
         switch (first)
         {
