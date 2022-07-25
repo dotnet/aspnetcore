@@ -41,5 +41,5 @@ internal sealed class ChangeDetection
         || type == typeof(Type)
         || type == typeof(decimal)
         || type == typeof(Guid)
-		|| type.isEnum;
+		|| type.IsEnum;
 }
