@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "SCSS Style Sheet (SASS)",
-  "description": "SCSS is a language that compiles into CSS",
-  "postActions/openInEditor/description": "Opens styleSheet1.scss in the editor"
+  "name": "Folha de estilo SCSS (SASS)",
+  "description": "SCSS é uma linguagem que compila em CSS",
+  "postActions/openInEditor/description": "Abre styleSheet1.scss no editor"
 }

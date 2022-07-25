@@ -54,7 +54,7 @@ internal sealed class ChunkingCookieManager
 
     /// <summary>
     /// The maximum size of cookie to send back to the client. If a cookie exceeds this size it will be broken down into multiple
-    /// cookies. Set this value to null to disable this behavior. The default is 4090 characters, which is supported by all
+    /// cookies. Set this value to null to disable this behavior. The default is 4050 characters, which is supported by all
     /// common browsers.
     ///
     /// Note that browsers may also have limits on the total size of all cookies per domain, and on the number of cookies per domain.
@@ -173,18 +173,7 @@ internal sealed class ChunkingCookieManager
             return;
         }
 
-        var template = new SetCookieHeaderValue(key)
-        {
-            Domain = options.Domain,
-            Expires = options.Expires,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly,
-            Path = options.Path,
-            Secure = options.Secure,
-            MaxAge = options.MaxAge,
-        };
-
-        var templateLength = template.ToString().Length;
+        var templateLength = options.CreateCookieHeader(key, string.Empty).ToString().Length;
 
         // Normal cookie
         if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + value.Length)
@@ -324,15 +313,9 @@ internal sealed class ChunkingCookieManager
             keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);
         }
 
-        responseCookies.Append(keyValuePairs, new CookieOptions()
+        responseCookies.Append(keyValuePairs, new CookieOptions(options)
         {
-            Path = options.Path,
-            Domain = options.Domain,
-            SameSite = options.SameSite,
-            Secure = options.Secure,
-            IsEssential = options.IsEssential,
             Expires = DateTimeOffset.UnixEpoch,
-            HttpOnly = options.HttpOnly,
         });
     }
 }

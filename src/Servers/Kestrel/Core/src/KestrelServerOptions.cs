@@ -295,6 +295,11 @@ public class KestrelServerOptions
                     }
 
                     logger.LocatedDevelopmentCertificate(DefaultCertificate);
+
+                    if (!CertificateManager.Instance.IsTrusted(DefaultCertificate))
+                    {
+                        logger.DeveloperCertificateNotTrusted();
+                    }
                 }
                 else
                 {

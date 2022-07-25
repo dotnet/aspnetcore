@@ -28,6 +28,7 @@ public static class AuthenticationServiceCollectionExtensions
         services.AddWebEncoders();
         services.TryAddSingleton<ISystemClock, SystemClock>();
         services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
+
         return new AuthenticationBuilder(services);
     }
 

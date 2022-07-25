@@ -48,10 +48,10 @@ public abstract class Http2ConnectionBenchmarkBase
         _connectionPair = DuplexPipe.CreateConnectionPair(options, options);
 
         _httpRequestHeaders = new HttpRequestHeaders();
-        _httpRequestHeaders[HeaderNames.Method] = new StringValues("GET");
-        _httpRequestHeaders[HeaderNames.Path] = new StringValues("/");
-        _httpRequestHeaders[HeaderNames.Scheme] = new StringValues("http");
-        _httpRequestHeaders[HeaderNames.Authority] = new StringValues("localhost:80");
+        _httpRequestHeaders[PseudoHeaderNames.Method] = new StringValues("GET");
+        _httpRequestHeaders[PseudoHeaderNames.Path] = new StringValues("/");
+        _httpRequestHeaders[PseudoHeaderNames.Scheme] = new StringValues("http");
+        _httpRequestHeaders[PseudoHeaderNames.Authority] = new StringValues("localhost:80");
 
         if (NumCookies > 0)
         {

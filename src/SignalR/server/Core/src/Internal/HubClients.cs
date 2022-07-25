@@ -13,11 +13,6 @@ internal sealed class HubClients<THub> : IHubClients where THub : Hub
         All = new AllClientProxy<THub>(_lifetimeManager);
     }
 
-    public ISingleClientProxy Single(string connectionId)
-    {
-        return new SingleClientProxy<THub>(_lifetimeManager, connectionId);
-    }
-
     public IClientProxy All { get; }
 
     public IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds)
@@ -25,7 +20,8 @@ internal sealed class HubClients<THub> : IHubClients where THub : Hub
         return new AllClientsExceptProxy<THub>(_lifetimeManager, excludedConnectionIds);
     }
 
-    public IClientProxy Client(string connectionId)
+    IClientProxy IHubClients<IClientProxy>.Client(string connectionId) => Client(connectionId);
+    public ISingleClientProxy Client(string connectionId)
     {
         return new SingleClientProxy<THub>(_lifetimeManager, connectionId);
     }

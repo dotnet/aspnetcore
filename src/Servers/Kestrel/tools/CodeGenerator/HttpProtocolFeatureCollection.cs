@@ -36,8 +36,10 @@ public class HttpProtocolFeatureCollection
                 "IHttpRequestTrailersFeature",
                 "IHttpResponseTrailersFeature",
                 "ITlsConnectionFeature",
+                "IHttpExtendedConnectFeature",
                 "IHttpUpgradeFeature",
                 "IHttpWebSocketFeature",
+                "IHttpWebTransportFeature",
                 "IBadRequestExceptionFeature"
             };
         var maybeFeatures = new[]
@@ -70,6 +72,7 @@ public class HttpProtocolFeatureCollection
                 "IEndpointFeature",
                 "IHttpRequestIdentifierFeature",
                 "IHttpRequestTrailersFeature",
+                "IHttpExtendedConnectFeature",
                 "IHttpUpgradeFeature",
                 "IRequestBodyPipeFeature",
                 "IHttpConnectionFeature",
@@ -77,6 +80,7 @@ public class HttpProtocolFeatureCollection
                 "IHttpBodyControlFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpRequestBodyDetectionFeature",
+                "IHttpWebTransportFeature",
                 "IBadRequestExceptionFeature"
             };
 

@@ -21,7 +21,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         Pop-Location
     }
 
-    Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
+    Run-DotnetNew "install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
 
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory
     Push-Location $tmpDir
@@ -47,10 +47,10 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         foreach ($projPath in $proj) {
             $projContent = Get-Content -Path $projPath -Raw
             if ($isBlazorWasmHosted) {
-                $importPath = "$PSScriptRoot/../test/bin/Debug/net7.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net7.0/TestTemplates"
             }
             else {
-                $importPath = "$PSScriptRoot/../test/bin/Debug/net7.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net7.0/TestTemplates"
             }
             $projContent = $projContent -replace ('(?:<Project Sdk="Microsoft.NET.(?<SdkSuffix>Sdk\.\w+)">)', ('<Project Sdk="Microsoft.NET.${SdkSuffix}">
                 <Import Project="' + $importPath + '/Directory.Build.props" />

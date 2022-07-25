@@ -193,15 +193,12 @@ internal sealed class OpenApiGenerator
         foreach (var annotation in eligibileAnnotations)
         {
             var statusCode = annotation.Key.ToString(CultureInfo.InvariantCulture);
-            var (type, contentTypes) = annotation.Value;
+            var (_, contentTypes) = annotation.Value;
             var responseContent = new Dictionary<string, OpenApiMediaType>();
 
             foreach (var contentType in contentTypes)
             {
-                responseContent[contentType] = new OpenApiMediaType
-                {
-                    Schema = OpenApiSchemaGenerator.GetOpenApiSchema(type)
-                };
+                responseContent[contentType] = new OpenApiMediaType();
             }
 
             responses[statusCode] = new OpenApiResponse { Content = responseContent };
@@ -264,27 +261,22 @@ internal sealed class OpenApiGenerator
 
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
         var requestBodyContent = new Dictionary<string, OpenApiMediaType>();
-        var isRequired = false;
 
         if (acceptsMetadata is not null)
         {
             foreach (var contentType in acceptsMetadata.ContentTypes)
             {
-                requestBodyContent[contentType] = new OpenApiMediaType
+                requestBodyContent[contentType] = new OpenApiMediaType();
+            }
+
+            if (!hasFormOrBodyParameter)
+            {
+                return new OpenApiRequestBody()
                 {
-                    Schema =  OpenApiSchemaGenerator.GetOpenApiSchema(acceptsMetadata.RequestType ?? requestBodyParameter?.ParameterType)
+                    Required = !acceptsMetadata.IsOptional,
+                    Content = requestBodyContent
                 };
             }
-            isRequired = !acceptsMetadata.IsOptional;
-        }
-
-        if (!hasFormOrBodyParameter)
-        {
-            return new OpenApiRequestBody()
-            {
-                Required = isRequired,
-                Content = requestBodyContent
-            };
         }
 
         if (requestBodyParameter is not null)
@@ -295,17 +287,11 @@ internal sealed class OpenApiGenerator
                 var hasFormAttribute = requestBodyParameter.GetCustomAttributes().OfType<IFromFormMetadata>().FirstOrDefault() != null;
                 if (isFormType || hasFormAttribute)
                 {
-                    requestBodyContent["multipart/form-data"] = new OpenApiMediaType
-                    {
-                        Schema =  OpenApiSchemaGenerator.GetOpenApiSchema(requestBodyParameter.ParameterType)
-                    };
+                    requestBodyContent["multipart/form-data"] = new OpenApiMediaType();
                 }
                 else
                 {
-                    requestBodyContent["application/json"] = new OpenApiMediaType
-                    {
-                        Schema = OpenApiSchemaGenerator.GetOpenApiSchema(requestBodyParameter.ParameterType)
-                    };
+                    requestBodyContent["application/json"] = new OpenApiMediaType();
                 }
             }
 
@@ -385,10 +371,9 @@ internal sealed class OpenApiGenerator
             var name = pattern.GetParameter(parameter.Name) is { } routeParameter ? routeParameter.Name : parameter.Name;
             var openApiParameter = new OpenApiParameter()
             {
-                Name =  name,
+                Name = name,
                 In = parameterLocation,
                 Content = GetOpenApiParameterContent(metadata),
-                Schema = OpenApiSchemaGenerator.GetOpenApiSchema(parameter.ParameterType),
                 Required = !isOptional
 
             };

@@ -18,7 +18,9 @@ public class AuthenticationBuilder
     /// </summary>
     /// <param name="services">The services being configured.</param>
     public AuthenticationBuilder(IServiceCollection services)
-        => Services = services;
+    {
+        Services = services;
+    }
 
     /// <summary>
     /// The services being configured.

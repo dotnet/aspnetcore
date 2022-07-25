@@ -5,6 +5,7 @@ using System.Net;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.Core;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Http;
@@ -99,7 +100,8 @@ public class JsonTranscodingServerCallContextTests
                 null,
                 false,
                 null,
-                new Dictionary<string, List<FieldDescriptor>>()),
+                new Dictionary<string, List<FieldDescriptor>>(),
+                JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")!)),
             NullLogger.Instance);
     }
 }

@@ -97,9 +97,6 @@ public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(JSInvokabl
 
     internal void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(Disposed, this);
     }
 }

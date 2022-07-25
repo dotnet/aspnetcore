@@ -2066,16 +2066,28 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ReceiveCorrectErrorFromStreamThrowing(bool detailedErrors)
+    [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), "Exception: Exception from async enumerable")]
+    [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), null)]
+    [InlineData(nameof(StreamingHub.ExceptionStream), "Exception: Exception from channel")]
+    [InlineData(nameof(StreamingHub.ExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), "ChannelClosedException: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), "Exception: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), null)]
+    public async Task ReceiveCorrectErrorFromStreamThrowing(string streamMethod, string detailedError)
     {
-        using (StartVerifiableLog())
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                   writeContext.EventId.Name == "FailedStreaming";
+        }
+
+        using (StartVerifiableLog(ExpectedErrors))
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             builder.AddSignalR(options =>
             {
-                options.EnableDetailedErrors = detailedErrors;
+                options.EnableDetailedErrors = detailedError != null;
             }), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
 
@@ -2085,14 +2097,14 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 await client.Connected.DefaultTimeout();
 
-                var messages = await client.StreamAsync(nameof(StreamingHub.ExceptionStream));
+                var messages = await client.StreamAsync(streamMethod);
 
                 Assert.Equal(1, messages.Count);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
-                if (detailedErrors)
+                if (detailedError != null)
                 {
-                    Assert.Equal("An error occurred on the server while streaming results. Exception: Exception from channel", completion.Error);
+                    Assert.Equal($"An error occurred on the server while streaming results. {detailedError}", completion.Error);
                 }
                 else
                 {

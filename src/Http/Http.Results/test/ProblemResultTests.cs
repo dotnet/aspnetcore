@@ -134,6 +134,54 @@ public class ProblemResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
+    [Fact]
+    public void ProblemResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ProblemHttpResult(new() { Status = StatusCodes.Status416RangeNotSatisfiable }));
+        Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, result.StatusCode);
+    }
+
+    [Fact]
+    public void ProblemResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatusCode()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ProblemHttpResult(new()));
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+    }
+
+    [Fact]
+    public void ProblemResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var value = new ProblemDetails();
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new ProblemHttpResult(value));
+        Assert.IsType<ProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void ProblemResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange 
+        var value = new ProblemDetails();
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<ProblemDetails>>(new ProblemHttpResult(value));
+        Assert.IsType<ProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void ProblemResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new ProblemHttpResult(new()));
+        Assert.Equal("application/problem+json", result.ContentType);
+    }
+
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();

@@ -335,7 +335,7 @@ public class MethodHub : TestHub
 
     public async Task<int> GetClientResult(int num)
     {
-        var sum = await Clients.Single(Context.ConnectionId).InvokeAsync<int>("Sum", num);
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num);
         return sum;
     }
 }
@@ -525,9 +525,8 @@ public class HubT : Hub<ITest>
         return Clients.Caller.Send(message);
     }
 
-    public async Task<ClientResults> GetClientResultThreeWays(int singleValue, int clientValue, int callerValue) =>
+    public async Task<ClientResults> GetClientResultTwoWays(int clientValue, int callerValue) =>
         new ClientResults(
-            await Clients.Single(Context.ConnectionId).GetClientResult(singleValue),
             await Clients.Client(Context.ConnectionId).GetClientResult(clientValue),
             await Clients.Caller.GetClientResult(callerValue));
 }
@@ -540,7 +539,7 @@ public interface ITest
     Task<int> GetClientResult(int value);
 }
 
-public record ClientResults(int SingleResult, int ClientResult, int CallerResult);
+public record ClientResults(int ClientResult, int CallerResult);
 
 public class OnConnectedThrowsHub : Hub
 {
@@ -692,6 +691,15 @@ public class StreamingHub : TestHub
         }
     }
 
+    public async IAsyncEnumerable<string> ExceptionAsyncEnumerable()
+    {
+        await Task.Yield();
+        throw new Exception("Exception from async enumerable");
+#pragma warning disable CS0162 // Unreachable code detected
+        yield break;
+#pragma warning restore CS0162 // Unreachable code detected
+    }
+
     public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
     {
         await Task.Yield();
@@ -717,6 +725,20 @@ public class StreamingHub : TestHub
     {
         var channel = Channel.CreateUnbounded<int>();
         channel.Writer.TryComplete(new Exception("Exception from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException("ChannelClosedException from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionInnerExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException(new Exception("ChannelClosedException from channel")));
         return channel.Reader;
     }
 

@@ -25,7 +25,7 @@ internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFe
     private readonly Pipe _requestPipe;
 
     private Action<HttpContext>? _responseReadCompleteCallback;
-    private Task? _sendRequestStreamTask;
+    private Func<PipeWriter, Task>? _sendRequestStream;
 
     internal HttpContextBuilder(ApplicationWrapper application, bool allowSynchronousIO, bool preserveExecutionContext)
     {
@@ -75,7 +75,7 @@ internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFe
             throw new ArgumentNullException(nameof(sendRequestStream));
         }
 
-        _sendRequestStreamTask = sendRequestStream(_requestPipe.Writer);
+        _sendRequestStream = sendRequestStream;
     }
 
     internal void RegisterResponseReadCompleteCallback(Action<HttpContext> responseReadCompleteCallback)
@@ -107,6 +107,18 @@ internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFe
             _testContext = _application.CreateContext(_httpContext.Features);
             try
             {
+                if (_sendRequestStream != null)
+                {
+                    // Read content into a pipe in a background task.
+                    // A background task allows duplex streaming scenarios.
+                    var requestTask = _sendRequestStream(_requestPipe.Writer);
+                    // Observe synchronous exceptions immediately.
+                    if (requestTask.IsCompleted)
+                    {
+                        await requestTask;
+                    }
+                }
+
                 await _application.ProcessRequestAsync(_testContext);
 
                 // Determine whether request body was complete when the delegate exited.

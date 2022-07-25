@@ -82,10 +82,8 @@ internal sealed class W3CLoggingMiddleware
     {
         var options = _options.CurrentValue;
 
-        var additionalHeadersLength = _additionalRequestHeaders.Count;
-
         var elements = new string[_fieldsLength];
-        var additionalHeaderElements = new string[additionalHeadersLength];
+        var additionalHeaderElements = new string[_additionalRequestHeaders.Count];
 
         // Whether any of the requested fields actually had content
         bool shouldLog = false;
@@ -154,11 +152,9 @@ internal sealed class W3CLoggingMiddleware
 
             if ((W3CLoggingFields.RequestHeaders & options.LoggingFields) != W3CLoggingFields.None)
             {
-                var headers = request.Headers;
-
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Host))
                 {
-                    if (headers.TryGetValue(HeaderNames.Host, out var host))
+                    if (request.Headers.TryGetValue(HeaderNames.Host, out var host))
                     {
                         shouldLog |= AddToList(elements, _hostIndex, host.ToString());
                     }
@@ -166,7 +162,7 @@ internal sealed class W3CLoggingMiddleware
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Referer))
                 {
-                    if (headers.TryGetValue(HeaderNames.Referer, out var referer))
+                    if (request.Headers.TryGetValue(HeaderNames.Referer, out var referer))
                     {
                         shouldLog |= AddToList(elements, _refererIndex, referer.ToString());
                     }
@@ -174,7 +170,7 @@ internal sealed class W3CLoggingMiddleware
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.UserAgent))
                 {
-                    if (headers.TryGetValue(HeaderNames.UserAgent, out var agent))
+                    if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var agent))
                     {
                         shouldLog |= AddToList(elements, _userAgentIndex, agent.ToString());
                     }
@@ -182,23 +178,23 @@ internal sealed class W3CLoggingMiddleware
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
                 {
-                    if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
+                    if (request.Headers.TryGetValue(HeaderNames.Cookie, out var cookie))
                     {
                         shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
                     }
                 }
+            }
+        }
 
-                if (_additionalRequestHeaders.Count != 0)
+        if (_additionalRequestHeaders.Count != 0)
+        {
+            var additionalRequestHeaders = _additionalRequestHeaders.ToList();
+
+            for (var i = 0; i < additionalRequestHeaders.Count; i++)
+            {
+                if (context.Request.Headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
                 {
-                    var additionalRequestHeaders = _additionalRequestHeaders.ToList();
-
-                    for (var i = 0; i < additionalHeadersLength; i++)
-                    {
-                        if (headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
-                        {
-                            shouldLog |= AddToList(additionalHeaderElements, i, headerValue.ToString());
-                        }
-                    }
+                    shouldLog |= AddToList(additionalHeaderElements, i, headerValue.ToString());
                 }
             }
         }
@@ -226,7 +222,7 @@ internal sealed class W3CLoggingMiddleware
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
         {
-            shouldLog |= AddToList(elements, _protocolStatusIndex, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            shouldLog |= AddToList(elements, _protocolStatusIndex, StatusCodeHelper.ToStatusString(response.StatusCode));
         }
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.TimeTaken))

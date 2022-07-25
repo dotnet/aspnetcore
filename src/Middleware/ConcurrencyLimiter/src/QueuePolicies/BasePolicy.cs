@@ -47,7 +47,7 @@ internal class BasePolicy : IQueuePolicy, IDisposable
             return ValueTask.FromResult(true);
         }
 
-        var task = _limiter.WaitAsync();
+        var task = _limiter.WaitAndAcquireAsync();
         if (task.IsCompletedSuccessfully)
         {
             lease = task.Result;

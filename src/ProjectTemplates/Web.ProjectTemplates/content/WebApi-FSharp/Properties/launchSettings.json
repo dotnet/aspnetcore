@@ -10,10 +10,10 @@
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
-      //#if(NoHttps)
-      "sslPort": 0
-      //#else
+      //#if (HasHttpsProfile)
       "sslPort": 44300
+      //#else
+      "sslPort": 0
       //#endif
     }
   },
@@ -22,26 +22,18 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
-      "launchUrl": "swagger",
-      //#else
       "launchUrl": "weatherforecast",
-      //#endif
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    //#if(!NoHttps)
+    //#if (HasHttpsProfile)
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
-      "launchUrl": "swagger",
-      //#else
       "launchUrl": "weatherforecast",
-      //#endif
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
