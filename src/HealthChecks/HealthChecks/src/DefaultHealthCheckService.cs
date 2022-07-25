@@ -23,7 +23,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
     private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
     private readonly ILogger<DefaultHealthCheckService> _logger;
     private readonly ConcurrentQueue<KeyValuePair<string, HealthReportEntry>> _healthReportEntriesQueue;
-    private readonly Dictionary<TimeSpan, List<HealthCheckRegistration>> _periodHealthChecksMap;
+    private readonly Dictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> _individualHealthChecksMap;
 
     public DefaultHealthCheckService(
         IServiceScopeFactory scopeFactory,
@@ -43,23 +43,24 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
         _healthReportEntriesQueue = new ConcurrentQueue<KeyValuePair<string, HealthReportEntry>>();
 
-        // Group healthcheck registrations by period, to build a Dictionary<TimeSpan, List<HealthCheckRegistration>>
-        _periodHealthChecksMap = (from r in _healthCheckServiceOptions.Value.Registrations
-                                  where ByPredicate(r, _healthCheckPublisherOptions.Value.Predicate) // Apply publisher predicate
-                                  where r.Period != Timeout.InfiniteTimeSpan // Skip HCs with no individual period
-                                  group r by r.Period).ToDictionary(g => g.Key, g => g.ToList());
+        // Group healthcheck registrations by delay and period, to build a Dictionary<(TimeSpan, TimeSpan), List<HealthCheckRegistration>>
+        _individualHealthChecksMap = (from r in _healthCheckServiceOptions.Value.Registrations
+                                      where ByPredicate(r, _healthCheckPublisherOptions.Value.Predicate) // Apply publisher predicate
+                                      where !IsDefaultHealthCheck(r)  // Skip default HCs initiated with publisher
+                                      group r by (r.Delay, r.Period)).ToDictionary(g => g.Key, g => g.ToList());
 
         // Aggregate Timers for HealthCheckRegistration having the same period
-        _ = CreateTimers(_periodHealthChecksMap);
+        _ = CreateTimers(_individualHealthChecksMap);
     }
 
+    private static bool IsDefaultHealthCheck(HealthCheckRegistration registration) => registration.Delay == Timeout.InfiniteTimeSpan && registration.Period == default;
 
-    private Dictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
+    private Dictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
     {
-        return periodHealthChecksMap.Select(m => CreateTimer(m.Key, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        return periodHealthChecksMap.Select(m => CreateTimer(m.Key.Delay, m.Key.Period, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
-    private KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
+    private KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan delay, TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
     {
         return new KeyValuePair<TimeSpan, Timer>(
             period,
@@ -73,23 +74,24 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
                 }
             },
             null,
-            dueTime: _healthCheckPublisherOptions.Value.Delay,
-            period: period));
+            dueTime: delay == Timeout.InfiniteTimeSpan ? _healthCheckPublisherOptions.Value.Delay : delay, // Default to publisher Delay
+            period: period == default ? _healthCheckPublisherOptions.Value.Period : period) // Default to publisher Period
+        );
     }
 
     public override async Task<HealthReport> CheckHealthAsync(Func<HealthCheckRegistration, bool>? predicate, CancellationToken cancellationToken = default)
     {
         // In the current design, where HCs with default periodicity are initiated during CheckHealthAsync,
-        // individual-periodicity HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService instead)
+        // individual HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService instead)
 
         var totalTime = ValueStopwatch.StartNew();
         Log.HealthCheckProcessingBegin(_logger);
 
-        // Filter registrations by default publisher period and predicate
-        var registrationsDefaultPeriod = _healthCheckServiceOptions.Value.Registrations.Where(r => r.Period == Timeout.InfiniteTimeSpan && ByPredicate(r, predicate)).ToList();
+        // Filter registrations by default HC and applied predicate
+        var registrationsDefaultPeriod = _healthCheckServiceOptions.Value.Registrations.Where(r => IsDefaultHealthCheck(r) && ByPredicate(r, predicate)).ToList();
 
-        // Run healthchecks with default/publisher period
-        List<KeyValuePair<string, HealthReportEntry>>? healthReportEntriesValues = await RunChecksAsync(registrationsDefaultPeriod, cancellationToken).ConfigureAwait(false);
+        // Run healthchecks with default same delay and period as publisher
+        var healthReportEntriesValues = await RunChecksAsync(registrationsDefaultPeriod, cancellationToken).ConfigureAwait(false);
 
         // Collect health report entries from previously run periodic healthchecks within the default period
         while (_healthReportEntriesQueue.TryDequeue(out var entry))
