@@ -25,6 +25,7 @@ public sealed class HealthCheckRegistration
     private Func<IServiceProvider, IHealthCheck> _factory;
     private string _name;
     private TimeSpan _timeout;
+    private TimeSpan _delay;
     private TimeSpan _period;
 
     /// <summary>
@@ -38,7 +39,7 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags)
-        : this(name, instance, failureStatus, tags, default, default)
+        : this(name, instance, failureStatus, tags, default, default, default)
     {
     }
 
@@ -54,7 +55,7 @@ public sealed class HealthCheckRegistration
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
     public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout)
-        : this(name, instance, failureStatus, tags, timeout, default)
+        : this(name, instance, failureStatus, tags, timeout, default, default)
     {
     }
 
@@ -69,8 +70,9 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
-    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, TimeSpan? period)
+    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, TimeSpan? delay, TimeSpan? period)
     {
         if (name == null)
         {
@@ -87,6 +89,11 @@ public sealed class HealthCheckRegistration
             throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
+        if (delay < TimeSpan.Zero || delay == System.Threading.Timeout.InfiniteTimeSpan)
+        {
+            throw new ArgumentOutOfRangeException(nameof(delay));
+        }
+
         if (period < TimeSpan.FromSeconds(1) && period != System.Threading.Timeout.InfiniteTimeSpan)
         {
             throw new ArgumentOutOfRangeException(nameof(period));
@@ -97,7 +104,8 @@ public sealed class HealthCheckRegistration
         Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         _factory = (_) => instance;
         Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
-        Period = period ?? System.Threading.Timeout.InfiniteTimeSpan;
+        _delay = delay ?? System.Threading.Timeout.InfiniteTimeSpan; // Use InfiniteTimeSpan as default delay for non-default HCs
+        _period = period ?? default; // Use TimeSpan.Zero as default period for non-default HCs
     }
 
     /// <summary>
@@ -115,7 +123,7 @@ public sealed class HealthCheckRegistration
         Func<IServiceProvider, IHealthCheck> factory,
         HealthStatus? failureStatus,
         IEnumerable<string>? tags)
-        : this(name, factory, failureStatus, tags, default, default)
+        : this(name, factory, failureStatus, tags, default, default, default)
     {
     }
 
@@ -136,7 +144,7 @@ public sealed class HealthCheckRegistration
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout)
-        : this(name, factory, failureStatus, tags, timeout, default)
+        : this(name, factory, failureStatus, tags, timeout, default, default)
     {
     }
 
@@ -151,6 +159,7 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     public HealthCheckRegistration(
         string name,
@@ -158,6 +167,7 @@ public sealed class HealthCheckRegistration
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout,
+        TimeSpan? delay,
         TimeSpan? period)
     {
         if (name == null)
@@ -175,6 +185,11 @@ public sealed class HealthCheckRegistration
             throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
+        if (delay < TimeSpan.Zero || delay == System.Threading.Timeout.InfiniteTimeSpan)
+        {
+            throw new ArgumentOutOfRangeException(nameof(delay));
+        }
+
         if (period <= TimeSpan.Zero && period != System.Threading.Timeout.InfiniteTimeSpan)
         {
             throw new ArgumentOutOfRangeException(nameof(period));
@@ -185,7 +200,8 @@ public sealed class HealthCheckRegistration
         Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         _factory = factory;
         Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
-        Period = period ?? System.Threading.Timeout.InfiniteTimeSpan;
+        _delay = delay ?? System.Threading.Timeout.InfiniteTimeSpan; // Use InfiniteTimeSpan as default delay for non-default HCs
+        _period = period ?? default; // Use TimeSpan.Zero as default period for non-default HCs
     }
 
     /// <summary>
@@ -224,6 +240,26 @@ public sealed class HealthCheckRegistration
             }
 
             _timeout = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the initial individual delay applied to the
+    /// individual HealthCheck after the application starts before executing.
+    /// The delay is applied once at startup, and does
+    /// not apply to subsequent iterations. The default value is 5 seconds.
+    /// </summary>
+    public TimeSpan Delay
+    {
+        get => _delay;
+        set
+        {
+            if (value < TimeSpan.Zero || value == System.Threading.Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentException($"The {nameof(Delay)} must not be infinite.", nameof(value));
+            }
+
+            _delay = value;
         }
     }
 
