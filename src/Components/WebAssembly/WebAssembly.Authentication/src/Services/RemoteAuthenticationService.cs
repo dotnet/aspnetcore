@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -81,14 +82,8 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
-        var result = internalResult.Convert();
-        if (result.Status == RemoteAuthenticationStatus.Success)
-        {
-            var getUserTask = GetUser();
-            await getUserTask;
-            UpdateUser(getUserTask);
-        }
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
+        await UpdateUserOnSuccess(result);
 
         return result;
     }
@@ -98,14 +93,8 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignIn", context.Url);
-        var result = internalResult.Convert();
-        if (result.Status == RemoteAuthenticationStatus.Success)
-        {
-            var getUserTask = GetUser();
-            await getUserTask;
-            UpdateUser(getUserTask);
-        }
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignIn", context.Url);
+        await UpdateUserOnSuccess(result);
 
         return result;
     }
@@ -115,14 +104,8 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
-        var result = internalResult.Convert();
-        if (result.Status == RemoteAuthenticationStatus.Success)
-        {
-            var getUserTask = GetUser();
-            await getUserTask;
-            UpdateUser(getUserTask);
-        }
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
+        await UpdateUserOnSuccess(result);
 
         return result;
     }
@@ -132,14 +115,8 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignOut", context.Url);
-        var result = internalResult.Convert();
-        if (result.Status == RemoteAuthenticationStatus.Success)
-        {
-            var getUserTask = GetUser();
-            await getUserTask;
-            UpdateUser(getUserTask);
-        }
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignOut", context.Url);
+        await UpdateUserOnSuccess(result);
 
         return result;
     }
@@ -150,18 +127,10 @@ public class RemoteAuthenticationService<
         await EnsureAuthService();
         var result = await JsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken");
 
-        if (!Enum.TryParse<AccessTokenResultStatus>(result.Status, ignoreCase: true, out var parsedStatus))
-        {
-            throw new InvalidOperationException($"Invalid access token result status '{result.Status ?? "(null)"}'");
-        }
-
-        if (parsedStatus == AccessTokenResultStatus.RequiresRedirect)
-        {
-            var redirectUrl = GetRedirectUrl(null);
-            result.RedirectUrl = redirectUrl.ToString();
-        }
-
-        return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
+        return new AccessTokenResult(
+            result.Status,
+            result.Token,
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? GetRedirectUrl(null).ToString() : null);
     }
 
     /// <inheritdoc />
@@ -177,18 +146,10 @@ public class RemoteAuthenticationService<
         await EnsureAuthService();
         var result = await JsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken", options);
 
-        if (!Enum.TryParse<AccessTokenResultStatus>(result.Status, ignoreCase: true, out var parsedStatus))
-        {
-            throw new InvalidOperationException($"Invalid access token result status '{result.Status ?? "(null)"}'");
-        }
-
-        if (parsedStatus == AccessTokenResultStatus.RequiresRedirect)
-        {
-            var redirectUrl = GetRedirectUrl(options.ReturnUrl);
-            result.RedirectUrl = redirectUrl.ToString();
-        }
-
-        return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
+        return new AccessTokenResult(
+            result.Status,
+            result.Token,
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? GetRedirectUrl(options.ReturnUrl).ToString() : null);
     }
 
     private Uri GetRedirectUrl(string customReturnUrl)
@@ -234,6 +195,15 @@ public class RemoteAuthenticationService<
             _initialized = true;
         }
     }
+    private async Task UpdateUserOnSuccess(RemoteAuthenticationResult<TRemoteAuthenticationState> result)
+    {
+        if (result.Status == RemoteAuthenticationStatus.Success)
+        {
+            var getUserTask = GetUser();
+            await getUserTask;
+            UpdateUser(getUserTask);
+        }
+    }
 
     private void UpdateUser(Task<ClaimsPrincipal> task)
     {
@@ -244,37 +214,4 @@ public class RemoteAuthenticationService<
 }
 
 // Internal for testing purposes
-internal struct InternalAccessTokenResult
-{
-    public string Status { get; set; }
-    public AccessToken Token { get; set; }
-    public string RedirectUrl { get; set; }
-}
-
-// Internal for testing purposes
-internal struct InternalRemoteAuthenticationResult<TRemoteAuthenticationState> where TRemoteAuthenticationState : RemoteAuthenticationState
-{
-    public string Status { get; set; }
-
-    public string ErrorMessage { get; set; }
-
-    public TRemoteAuthenticationState State { get; set; }
-
-    public RemoteAuthenticationResult<TRemoteAuthenticationState> Convert()
-    {
-        var result = new RemoteAuthenticationResult<TRemoteAuthenticationState>();
-        result.ErrorMessage = ErrorMessage;
-        result.State = State;
-
-        if (Status != null && Enum.TryParse<RemoteAuthenticationStatus>(Status, ignoreCase: true, out var status))
-        {
-            result.Status = status;
-        }
-        else
-        {
-            throw new InvalidOperationException($"Can't convert status '${Status ?? "(null)"}'.");
-        }
-
-        return result;
-    }
-}
+internal record struct InternalAccessTokenResult([property: JsonConverter(typeof(JsonStringEnumConverter))] AccessTokenResultStatus Status, AccessToken Token);

@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "API web ASP.NET Core",
+    "description": "Modèle de projet permettant de créer une application ASP.NET Core avec un exemple de contrôleur pour un service HTTP RESTful. Vous pouvez également utiliser ce modèle pour les vues et contrôleurs ASP.NET Core MVC.",
+    "parameter.DisableOpenAPI.name": "Activer la prise en charge d'_OpenAPI",
+    "parameter.DisableOpenAPI.description": "Active la prise en charge d'OpenAPI (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Utiliser des contrôleurs (décocher pour utiliser un minimum d'API)",
+    "parameter.UseMinimalAPIs.description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur."
+  }
+}

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with status code Created (201) and Location header.
 /// </summary>
-public sealed class Created : IResult, IEndpointMetadataProvider
+public sealed class Created : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Created"/> class with the values
@@ -49,6 +49,8 @@ public sealed class Created : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public string? Location { get; }

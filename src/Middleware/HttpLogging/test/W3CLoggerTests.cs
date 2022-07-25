@@ -3,8 +3,6 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
@@ -24,7 +22,7 @@ public class W3CLoggerTests
         };
         try
         {
-            await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+            await using (var logger = Helpers.CreateTestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
             {
                 var elements = new string[W3CLoggingMiddleware._fieldsLength];
                 var additionalHeaders = new string[0];
@@ -67,7 +65,7 @@ public class W3CLoggerTests
         };
         try
         {
-            await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+            await using (var logger = Helpers.CreateTestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options)))
             {
                 var elements = new string[W3CLoggingMiddleware._fieldsLength];
                 var additionalHeaders = new string[0];

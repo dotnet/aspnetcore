@@ -293,6 +293,13 @@
             "Client/Shared/NavMenu.NoGraphOrApi.razor",
             "Client/Shared/NavMenu.CallsMicrosoftGraph.razor"
           ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Client/Properties/launchSettings.json",
+            "Server/Properties/launchSettings.json"
+          ]
         }
       ]
     }
@@ -559,7 +566,15 @@
     },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
+      "value": "(OrganizationalAuth || IndividualAuth)"
+    },
+    "HasHttpProfile": {
+      "type": "computed",
+      "value": "(!RequiresHttps)"
+    },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(RequiresHttps || !NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",

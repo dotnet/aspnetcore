@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
-public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken> :
+public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserClaim, TUserLogin, TUserToken> :
     IUserLoginStore<TUser>,
     IUserClaimStore<TUser>,
     IUserPasswordStore<TUser>,
@@ -237,6 +237,8 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// </summary>
     /// <param name="id">The id to convert.</param>
     /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "TKey is annoated with RequiresUnreferencedCodeAttribute.All.")]
     public virtual TKey? ConvertIdFromString(string? id)
     {
         if (id == null)
@@ -1085,7 +1087,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
 /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
-public abstract class UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
+public abstract class UserStoreBase<TUser, TRole, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
     UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
     IUserRoleStore<TUser>
     where TUser : IdentityUser<TKey>

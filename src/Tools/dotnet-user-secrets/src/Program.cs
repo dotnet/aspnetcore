@@ -75,14 +75,10 @@ public class Program
             return 0;
         }
 
-        string userSecretsId;
-        try
+        var userSecretsId = ResolveId(options, reporter);
+
+        if (string.IsNullOrEmpty(userSecretsId))
         {
-            userSecretsId = ResolveId(options, reporter);
-        }
-        catch (Exception ex) when (ex is InvalidOperationException || ex is FileNotFoundException)
-        {
-            reporter.Error(ex.Message);
             return 1;
         }
 

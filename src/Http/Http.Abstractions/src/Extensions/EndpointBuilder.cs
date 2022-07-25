@@ -28,11 +28,17 @@ public abstract class EndpointBuilder
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> associated with the endpoint.
     /// </summary>
-    public IServiceProvider? ServiceProvider { get; set; }
+    public IServiceProvider ApplicationServices { get; set; } = EmptyServiceProvider.Instance;
 
     /// <summary>
     /// Creates an instance of <see cref="Endpoint"/> from the <see cref="EndpointBuilder"/>.
     /// </summary>
     /// <returns>The created <see cref="Endpoint"/>.</returns>
     public abstract Endpoint Build();
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
+        public object? GetService(Type serviceType) => null;
+    }
 }

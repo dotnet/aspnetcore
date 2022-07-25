@@ -5,6 +5,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
 </Project>

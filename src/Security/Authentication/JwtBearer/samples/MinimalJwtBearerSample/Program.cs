@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Authentication.AddJwtBearer();
-builder.Authentication.AddJwtBearer("ClaimedDetails");
+builder.Services.AddAuthentication()
+    .AddJwtBearer()
+    .AddJwtBearer("ClaimedDetails")
+    .AddJwtBearer("InvalidScheme");
 
 builder.Services.AddAuthorization(options =>
     options.AddPolicy("is_admin", policy =>

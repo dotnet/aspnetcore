@@ -79,4 +79,40 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotUseHostConfigureLogging = new(
+        "ASP0011",
+        "Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLogging",
+        "Suggest using builder.Logging instead of {0}",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+  
+    internal static readonly DiagnosticDescriptor DoNotUseHostConfigureServices = new(
+        "ASP0012",
+        "Suggest using builder.Services over Host.ConfigureServices or WebHost.ConfigureServices",
+        "Suggest using builder.Services instead of {0}",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DisallowConfigureAppConfigureHostBuilder = new(
+        "ASP0013",
+        "Suggest using WebApplicationBuilder.Configuration over Configure methods",
+        "Suggest using WebApplicationBuilder.Configuration instead of {0}",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor RoutePatternIssue = new(
+        "RP0001",
+        new LocalizableResourceString(nameof(Resources.Invalid_Route_pattern), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Route_issue_0), Resources.ResourceManager, typeof(Resources)),
+        "Style",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

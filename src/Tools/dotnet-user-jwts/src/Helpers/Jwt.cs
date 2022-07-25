@@ -24,7 +24,7 @@ public record Jwt(string Id, string Scheme, string Name, string Audience, DateTi
         IEnumerable<string> roles = null,
         IDictionary<string, string> customClaims = null)
     {
-        return new Jwt(token.Id, scheme, token.Subject, token.Audiences.FirstOrDefault(), token.ValidFrom, token.ValidTo, token.IssuedAt, encodedToken)
+        return new Jwt(token.Id, scheme, token.Subject, string.Join(", ", token.Audiences), token.ValidFrom, token.ValidTo, token.IssuedAt, encodedToken)
         {
             Scopes = scopes,
             Roles = roles,

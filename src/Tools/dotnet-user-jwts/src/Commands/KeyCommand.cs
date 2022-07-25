@@ -13,28 +13,44 @@ internal sealed class KeyCommand
     {
         app.Command("key", cmd =>
         {
-            cmd.Description = "Display or reset the signing key used to issue JWTs";
+            cmd.Description = Resources.KeyCommand_Description;
+
+            var schemeOption = cmd.Option(
+                "--scheme",
+                Resources.KeyCommand_SchemeOption_Description,
+                CommandOptionType.SingleValue
+            );
+
+            var issuerOption = cmd.Option(
+                "--issuer",
+                Resources.KeyCommand_IssuerOption_Description,
+                CommandOptionType.SingleValue
+            );
 
             var resetOption = cmd.Option(
                 "--reset",
-                "Reset the signing key. This will invalidate all previously issued JWTs for this project.",
+                Resources.KeyCommand_ResetOption_Description,
                 CommandOptionType.NoValue);
 
             var forceOption = cmd.Option(
                 "--force",
-                "Don't prompt for confirmation before resetting the signing key.",
+                Resources.KeyCommand_ForceOption_Description,
                 CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), resetOption.HasValue(), forceOption.HasValue());
+                return Execute(cmd.Reporter,
+                    cmd.ProjectOption.Value(),
+                    schemeOption.Value() ?? DevJwtsDefaults.Scheme,
+                    issuerOption.Value() ?? DevJwtsDefaults.Issuer,
+                    resetOption.HasValue(), forceOption.HasValue());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool reset, bool force)
+    private static int Execute(IReporter reporter, string projectPath, string schemeName, string issuer, bool reset, bool force)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -45,31 +61,32 @@ internal sealed class KeyCommand
         {
             if (!force)
             {
-                reporter.Output("Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.\n [Y]es / [N]o");
+                reporter.Output(Resources.KeyCommand_Permission);
+                reporter.Error("[Y]es / [N]o");
                 if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
                 {
-                    reporter.Output("Key reset canceled.");
+                    reporter.Output(Resources.KeyCommand_Canceled);
                     return 0;
                 }
             }
 
-            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, reset: true);
-            reporter.Output($"New signing key created: {Convert.ToBase64String(key)}");
-            return 0; 
+            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, schemeName, issuer, reset: true);
+            reporter.Output(Resources.FormatKeyCommand_KeyCreated(Convert.ToBase64String(key)));
+            return 0;
         }
 
         var projectConfiguration = new ConfigurationBuilder()
             .AddUserSecrets(userSecretsId)
             .Build();
-        var signingKeyMaterial = projectConfiguration[DevJwtsDefaults.SigningKeyConfigurationKey];
+        var signingKeyMaterial = projectConfiguration[DevJwtCliHelpers.GetSigningKeyPropertyName(schemeName, issuer)];
 
         if (signingKeyMaterial is null)
         {
-            reporter.Output("Signing key for JWTs was not found. One will be created automatically when the first JWT is created, or you can force creation of a key with the --reset option.");
+            reporter.Output(Resources.KeyCommand_KeyNotFound);
             return 0;
         }
 
-        reporter.Output($"Signing Key: {signingKeyMaterial}");
+        reporter.Output(Resources.FormatKeyCommand_Confirmed(signingKeyMaterial));
         return 0;
     }
 }

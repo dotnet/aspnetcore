@@ -1,6 +1,6 @@
 #nullable enable
-~Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>
-~Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>
+Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>
+Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>
 abstract Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void
 Microsoft.AspNetCore.Authentication.ClaimActionCollectionMapExtensions
 Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction

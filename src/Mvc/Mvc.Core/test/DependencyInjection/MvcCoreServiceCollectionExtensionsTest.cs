@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -321,6 +322,13 @@ public class MvcCoreServiceCollectionExtensionsTest
                         {
                             typeof(ActionConstraintMatcherPolicy),
                             typeof(DynamicControllerEndpointMatcherPolicy),
+                        }
+                    },
+                    {
+                        typeof(IProblemDetailsWriter),
+                        new Type[]
+                        {
+                            typeof(DefaultApiProblemDetailsWriter),
                         }
                     },
                 };
