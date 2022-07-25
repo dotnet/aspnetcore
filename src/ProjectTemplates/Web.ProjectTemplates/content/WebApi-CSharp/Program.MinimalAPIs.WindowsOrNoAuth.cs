@@ -1,7 +1,3 @@
-#if (EnableOpenAPI)
-using Microsoft.AspNetCore.OpenApi;
-
-#endif
 #if (WindowsAuth)
 using Microsoft.AspNetCore.Authentication.Negotiate;
 

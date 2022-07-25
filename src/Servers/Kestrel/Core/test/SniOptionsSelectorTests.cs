@@ -794,6 +794,8 @@ public class SniOptionsSelectorTests
             ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
             // Defaults to null
             ServerCertificateSelectionCallback = (sender, serverName) => null,
+            // Defaults to null
+            CertificateChainPolicy = new X509ChainPolicy(),
         };
 
         var clonedOptions = SniOptionsSelector.CloneSslOptions(options);
@@ -835,6 +837,9 @@ public class SniOptionsSelectorTests
 
         Assert.Same(options.ServerCertificateSelectionCallback, clonedOptions.ServerCertificateSelectionCallback);
         Assert.True(propertyNames.Remove(nameof(options.ServerCertificateSelectionCallback)));
+
+        Assert.Same(options.CertificateChainPolicy, clonedOptions.CertificateChainPolicy);
+        Assert.True(propertyNames.Remove(nameof(options.CertificateChainPolicy)));
 
         // Ensure we've checked every property. When new properties get added, we'll have to update this test along with the CloneSslOptions implementation.
         Assert.Empty(propertyNames);

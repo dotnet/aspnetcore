@@ -95,7 +95,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    /// Sets the <see cref="EndpointNameAttribute"/> for all endpoints produced
+    /// Adds the <see cref="IEndpointNameMetadata"/> to the Metadata collection for all endpoints produced
     /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointName" />.
     /// The <see cref="IEndpointNameMetadata" /> on the endpoint is used for link generation and
     /// is treated as the operation ID in the given endpoint's OpenAPI specification.

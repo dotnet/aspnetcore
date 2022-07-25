@@ -372,7 +372,7 @@ public class Program
         }
 
         Console.WriteLine("     .NET Core: " + Path.GetFileName(Path.GetDirectoryName(typeof(object).Assembly.Location)));
-        Console.WriteLine("  ASP.NET Core: " + Path.GetFileName(Path.GetDirectoryName(typeof(WebHost).Assembly.Location)));
+        Console.WriteLine("  ASP.NET Core: " + Path.GetFileName(Path.GetDirectoryName(typeof(IWebHostBuilder).Assembly.Location)));
         Console.WriteLine("       Tracing: " + (logPath == null ? (object)false : logPath.Length == 0 ? (object)true : logPath));
         Console.WriteLine("   ASP.NET Log: " + aspnetLog);
         Console.WriteLine("   Concurrency: " + concurrentRequests);
@@ -385,10 +385,11 @@ public class Program
 
         // Start the Kestrel web server in-proc.
         Console.WriteLine("Starting server.");
-        WebHost.CreateDefaultBuilder()
-
+        var host = Host.CreateDefaultBuilder();
+        host.ConfigureWebHost(webHost =>
+        {
             //Use Kestrel, and configure it for HTTPS with a self - signed test certificate.
-            .UseKestrel(ko =>
+            webHost.UseKestrel(ko =>
             {
                 ko.ListenLocalhost(HttpsPort, listenOptions =>
                 {
@@ -500,9 +501,11 @@ public class Program
                         await context.Request.Body.CopyToAsync(Stream.Null);
                     });
                 });
-            })
-            .Build()
-            .Start();
+            });
+
+        })
+        .Build()
+        .Start();
 
         // Start the client.
         Console.WriteLine($"Starting {concurrentRequests} client workers.");

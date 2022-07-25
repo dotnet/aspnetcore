@@ -204,6 +204,7 @@ internal static class JsonRequestHelpers
                             // TODO: JsonSerializer currently doesn't support deserializing values onto an existing object or collection.
                             // Either update this to use new functionality in JsonSerializer or improve work-around perf.
                             type = JsonConverterHelper.GetFieldType(serverCallContext.DescriptorInfo.BodyFieldDescriptors.Last());
+                            type = type.GetGenericArguments()[0];
                             type = typeof(List<>).MakeGenericType(type);
 
                             GrpcServerLog.DeserializingMessage(serverCallContext.Logger, type);

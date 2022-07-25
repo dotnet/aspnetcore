@@ -635,7 +635,7 @@ function InitializeNativeTools() {
         InstallDirectory = "$ToolsDir"
       }
     }
-    if (Test-Path variable:NativeToolsOnMachine) {
+    if ($env:NativeToolsOnMachine) {
       Write-Host "Variable NativeToolsOnMachine detected, enabling native tool path promotion..."
       $nativeArgs += @{ PathPromotion = $true }
     }

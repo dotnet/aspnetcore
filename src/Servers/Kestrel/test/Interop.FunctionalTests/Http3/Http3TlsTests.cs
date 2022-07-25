@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
 
+[Collection(nameof(NoParallelCollection))]
 public class Http3TlsTests : LoggedTest
 {
     [ConditionalFact]
@@ -34,7 +35,7 @@ public class Http3TlsTests : LoggedTest
                     httpsOptions.ServerCertificateSelector = (context, host) =>
                     {
                         Assert.Null(context); // The context isn't available durring the quic handshake.
-                        Assert.Equal("localhost", host);
+                        Assert.Equal("testhost", host);
                         return TestResources.GetTestCertificate();
                     };
                 });
@@ -46,11 +47,9 @@ public class Http3TlsTests : LoggedTest
 
         await host.StartAsync().DefaultTimeout();
 
-        // Using localhost instead of 127.0.0.1 because IPs don't set SNI and the Host header isn't currently used as an override.
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://localhost:{host.GetPort()}/");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
         request.Version = HttpVersion.Version30;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-        // https://github.com/dotnet/runtime/issues/57169 Host isn't used for SNI
         request.Headers.Host = "testhost";
 
         var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
@@ -66,7 +65,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.RequireCertificate)]
     [InlineData(ClientCertificateMode.AllowCertificate)]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2,
         SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
     public async Task ClientCertificate_AllowOrRequire_Available_Accepted(ClientCertificateMode mode)
@@ -111,7 +109,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.NoCertificate)]
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41131")]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
@@ -157,7 +154,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.AllowCertificate, false)]
     [InlineData(ClientCertificateMode.AllowCertificate, true)]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task ClientCertificate_AllowOrRequire_Available_Invalid_Refused(ClientCertificateMode mode, bool serverAllowInvalid)
     {
@@ -213,7 +209,6 @@ public class Http3TlsTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42388")]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {

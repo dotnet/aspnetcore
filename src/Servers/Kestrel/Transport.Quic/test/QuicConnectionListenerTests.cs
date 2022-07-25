@@ -9,11 +9,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
+[Collection(nameof(NoParallelCollection))]
 public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
@@ -44,8 +46,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         // Assert
         await using var serverConnection = await acceptTask.DefaultTimeout();
@@ -72,15 +73,14 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         options.ClientAuthenticationOptions.ClientCertificates = new X509CertificateCollection { testCert };
 
         // Act
-        using var quicConnection = await QuicConnection.ConnectAsync(options);
-        await quicConnection.ConnectAsync().DefaultTimeout();
+        await using var quicConnection = await QuicConnection.ConnectAsync(options);
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
         // Server waits for stream from client
         var serverStreamTask = serverConnection.AcceptAsync().DefaultTimeout();
 
         // Client creates stream
-        using var clientStream = await quicConnection.OpenBidirectionalStreamAsync();
+        using var clientStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         // Server finishes accepting
@@ -105,12 +105,11 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42389")]
     public async Task ClientCertificate_Required_NotSent_AcceptedViaCallback()
     {
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-
-        await clientConnection.ConnectAsync().DefaultTimeout();
-        Assert.True(clientConnection.Connected);
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
     }
 }

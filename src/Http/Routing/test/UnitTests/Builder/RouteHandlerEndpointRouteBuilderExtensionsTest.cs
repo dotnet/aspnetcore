@@ -851,8 +851,8 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
     public static object[][] AddFiltersByClassData =
     {
-        new object[] { (Action<IEndpointConventionBuilder>)((IEndpointConventionBuilder builder) => builder.AddRouteHandlerFilter(new IncrementArgFilter())) },
-        new object[] { (Action<IEndpointConventionBuilder>)((IEndpointConventionBuilder builder) => builder.AddRouteHandlerFilter<IEndpointConventionBuilder, IncrementArgFilter>()) }
+        new object[] { (Action<IEndpointConventionBuilder>)((IEndpointConventionBuilder builder) => builder.AddEndpointFilter(new IncrementArgFilter())) },
+        new object[] { (Action<IEndpointConventionBuilder>)((IEndpointConventionBuilder builder) => builder.AddEndpointFilter<IEndpointConventionBuilder, IncrementArgFilter>()) }
     };
 
     public static object[][] AddFiltersByDelegateData
@@ -860,14 +860,14 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         get
         {
             void WithFilter(IEndpointConventionBuilder builder) =>
-                builder.AddRouteHandlerFilter(async (context, next) =>
+                builder.AddEndpointFilter(async (context, next) =>
                 {
                     context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
                     return await next(context);
                 });
 
             void WithFilterFactory(IEndpointConventionBuilder builder) =>
-                builder.AddRouteHandlerFilter((routeHandlerContext, next) => async (context) =>
+                builder.AddEndpointFilter((routeHandlerContext, next) => async (context) =>
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
@@ -908,7 +908,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Theory]
     [MemberData(nameof(AddFiltersByClassData))]
     [MemberData(nameof(AddFiltersByDelegateData))]
-    public async Task AddRouteHandlerFilterMethods_CanRegisterFilterWithClassAndDelegateImplementations(Action<IEndpointConventionBuilder> addFilter)
+    public async Task AddEndpointFilterMethods_CanRegisterFilterWithClassAndDelegateImplementations(Action<IEndpointConventionBuilder> addFilter)
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
 
@@ -924,7 +924,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Theory]
     [MemberData(nameof(AddFiltersByClassData))]
     [MemberData(nameof(AddFiltersByDelegateData))]
-    public async Task AddRouteHandlerFilterMethods_WorkWithMapGroup(Action<IEndpointConventionBuilder> addFilter)
+    public async Task AddEndpointFilterMethods_WorkWithMapGroup(Action<IEndpointConventionBuilder> addFilter)
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
 
@@ -958,7 +958,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
         string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
-        routeHandlerBuilder.AddRouteHandlerFilter<ServiceAccessingRouteHandlerFilter>();
+        routeHandlerBuilder.AddEndpointFilter<ServiceAccessingEndpointFilter>();
 
         var dataSource = GetBuilderEndpointDataSource(builder);
         // Trigger Endpoint build by calling getter.
@@ -991,7 +991,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
         string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
-        routeHandlerBuilder.AddRouteHandlerFilter((rhc, next) =>
+        routeHandlerBuilder.AddEndpointFilter((rhc, next) =>
         {
             Assert.NotNull(rhc.ApplicationServices);
             var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
@@ -1009,37 +1009,37 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
     {
-        Assert.Throws<ArgumentNullException>("methodInfo", () => new RouteHandlerContext(null!, new List<object>(), new ServiceCollection().BuildServiceProvider()));
+        Assert.Throws<ArgumentNullException>("methodInfo", () => new EndpointFilterFactoryContext(null!, new List<object>(), new ServiceCollection().BuildServiceProvider()));
     }
 
     [Fact]
     public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
     {
         var handler = () => { };
-        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new RouteHandlerContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
+        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new EndpointFilterFactoryContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
     }
 
     [Fact]
     public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
     {
         var handler = () => { };
-        Assert.Throws<ArgumentNullException>("applicationServices", () => new RouteHandlerContext(handler.Method, new List<object>(), null!));
+        Assert.Throws<ArgumentNullException>("applicationServices", () => new EndpointFilterFactoryContext(handler.Method, new List<object>(), null!));
     }
 
     class MyService { }
 
-    class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
+    class ServiceAccessingEndpointFilter : IEndpointFilter
     {
         private ILogger _logger;
-        private RouteHandlerContext _routeHandlerContext;
+        private EndpointFilterFactoryContext _routeHandlerContext;
 
-        public ServiceAccessingRouteHandlerFilter(ILoggerFactory loggerFactory, RouteHandlerContext routeHandlerContext)
+        public ServiceAccessingEndpointFilter(ILoggerFactory loggerFactory, EndpointFilterFactoryContext routeHandlerContext)
         {
-            _logger = loggerFactory.CreateLogger<ServiceAccessingRouteHandlerFilter>();
+            _logger = loggerFactory.CreateLogger<ServiceAccessingEndpointFilter>();
             _routeHandlerContext = routeHandlerContext;
         }
 
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
             context.HttpContext.Items["parentName"] = _routeHandlerContext.MethodInfo.DeclaringType?.Name;
@@ -1047,9 +1047,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         }
     }
 
-    class IncrementArgFilter : IRouteHandlerFilter
+    class IncrementArgFilter : IEndpointFilter
     {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
             context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
             return await next(context);

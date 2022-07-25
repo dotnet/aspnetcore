@@ -883,6 +883,31 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateHandlesOptionalStringValuesFromNullQueryString()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["values"] = (string?)null
+        });
+
+        static void StoreNullableStringValues(HttpContext httpContext, StringValues? values)
+        {
+            Assert.False(values.HasValue);
+            httpContext.Items["values"] = values;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(StoreNullableStringValues, new() { DisableInferBodyFromParameters = true });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.NotEmpty(httpContext.Items);
+        Assert.Null(httpContext.Items["values"]);
+    }
+
+    [Fact]
     public async Task RequestDelegateHandlesArraysFromExplicitQueryStringSource()
     {
         var httpContext = CreateHttpContext();
@@ -907,6 +932,119 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
         Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+            [FromHeader(Name = "Custom")] StringValues headerValues,
+            [FromQuery(Name = "a")] StringValues queryValues) =>
+        {
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
+        Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSource()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+            [FromHeader(Name = "Custom")] StringValues? headerValues,
+            [FromQuery(Name = "a")] StringValues? queryValues) =>
+        {
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
+        Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateLogsStringValuesFromExplicitQueryStringSourceForUnpresentedValuesFailuresAsDebugAndSets400Response()
+    {
+        var invoked = false;
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+                [FromHeader(Name = "foo")] StringValues headerValues,
+                [FromQuery(Name = "bar")] StringValues queryValues) =>
+        {
+            invoked = true;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        var logs = TestSink.Writes.ToArray();
+
+        Assert.Equal(2, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""StringValues headerValues"" was not provided from header.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""StringValues queryValues"" was not provided from query string.", logs[1].Message);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSourceForUnpresentedValues()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+                [FromHeader(Name = "foo")] StringValues? headerValues,
+                [FromQuery(Name = "bar")] StringValues? queryValues) =>
+        {
+            Assert.False(headerValues.HasValue);
+            Assert.False(queryValues.HasValue);
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["query"]);
+        Assert.Null(httpContext.Items["headers"]);
     }
 
     [Fact]
@@ -1713,7 +1851,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalTodo.Name, ((ITodo)deserializedRequestBody!).Name);
     }
 
-    public static object[][] RawFromBodyActions
+    public static object[][] ImplicitRawFromBodyActions
     {
         get
         {
@@ -1739,9 +1877,35 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    public static object[][] ExplicitRawFromBodyActions
+    {
+        get
+        {
+            void TestStream(HttpContext httpContext, [FromBody] Stream stream)
+            {
+                var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            async Task TestPipeReader(HttpContext httpContext, [FromBody] PipeReader reader)
+            {
+                var ms = new MemoryStream();
+                await reader.CopyToAsync(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            return new[]
+            {
+                new object[] { (Action<HttpContext, Stream>)TestStream },
+                new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader }
+            };
+        }
+    }
+
     [Theory]
-    [MemberData(nameof(RawFromBodyActions))]
-    public async Task RequestDelegatePopulatesFromRawBodyParameter(Delegate action)
+    [MemberData(nameof(ImplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromImplicitRawBodyParameter(Delegate action)
     {
         var httpContext = CreateHttpContext();
 
@@ -1786,8 +1950,99 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Theory]
-    [MemberData(nameof(RawFromBodyActions))]
-    public async Task RequestDelegatePopulatesFromRawBodyParameterPipeReader(Delegate action)
+    [MemberData(nameof(ExplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromExplicitRawBodyParameter(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing
+        httpContext.Request.Body.Position = 0;
+        byte[] data = new byte[requestBodyBytes.Length];
+        int read = await httpContext.Request.Body.ReadAsync(data.AsMemory());
+        Assert.Equal(read, data.Length);
+        Assert.Equal(requestBodyBytes, data);
+
+        httpContext.Request.Body.Position = 0;
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(requestBodyBytes.Length, result.Buffer.Length);
+        Assert.Equal(requestBodyBytes, result.Buffer.ToArray());
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(ImplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromImplicitRawBodyParameterPipeReader(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var pipeReader = PipeReader.Create(new MemoryStream(requestBodyBytes));
+        var stream = pipeReader.AsStream();
+        httpContext.Features.Set<IRequestBodyPipeFeature>(new PipeRequestBodyFeature(pipeReader));
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = requestBodyBytes.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+        Assert.Same(httpContext.Request.BodyReader, pipeReader);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing and verify that they are empty (the pipe reader isn't seekable here)
+        int read = await httpContext.Request.Body.ReadAsync(new byte[requestBodyBytes.Length].AsMemory());
+        Assert.Equal(0, read);
+
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(0, result.Buffer.Length);
+        Assert.True(result.IsCompleted);
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromExplicitRawBodyParameterPipeReader(Delegate action)
     {
         var httpContext = CreateHttpContext();
 
@@ -4479,18 +4734,19 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Theory]
-    [InlineData("Authorization", "bearer my-token", "Support for binding parameters from an HTTP request's form is not currently supported if the request contains an \"Authorization\" HTTP request header. Use of an HTTP request form is not currently secure for HTTP requests in scenarios which require authentication.")]
-    [InlineData("Cookie", ".AspNetCore.Auth=abc123", "Support for binding parameters from an HTTP request's form is not currently supported if the request contains a \"Cookie\" HTTP request header. Use of an HTTP request form is not currently secure for HTTP requests in scenarios which require authentication.")]
-    public async Task RequestDelegateThrowsIfRequestUsingFormContainsSecureHeader(
+    [InlineData("Authorization", "bearer my-token")]
+    [InlineData("Cookie", ".AspNetCore.Auth=abc123")]
+    public async Task RequestDelegatePopulatesFromIFormFileParameterIfRequestContainsSecureHeader(
         string headerName,
-        string headerValue,
-        string expectedMessage)
+        string headerValue)
     {
-        var invoked = false;
+        IFormFile? fileArgument = null;
+        TraceIdentifier traceIdArgument = default;
 
-        void TestAction(IFormFile file)
+        void TestAction(IFormFile? file, TraceIdentifier traceId)
         {
-            invoked = true;
+            fileArgument = file;
+            traceIdArgument = traceId;
         }
 
         var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
@@ -4507,34 +4763,30 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.Request.Headers[headerName] = headerValue;
         httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.TraceIdentifier = "my-trace-id";
 
         var factoryResult = RequestDelegateFactory.Create(TestAction);
         var requestDelegate = factoryResult.RequestDelegate;
 
-        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+        await requestDelegate(httpContext);
 
-        Assert.False(invoked);
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
 
-        // The httpContext should be untouched.
-        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.False(httpContext.Response.HasStarted);
-
-        // We don't log bad requests when we throw.
-        Assert.Empty(TestSink.Writes);
-
-        Assert.Equal(expectedMessage, badHttpRequestException.Message);
-        Assert.Equal(400, badHttpRequestException.StatusCode);
+        Assert.Equal("my-trace-id", traceIdArgument.Id);
     }
 
     [Fact]
-    public async Task RequestDelegateThrowsIfRequestUsingFormHasClientCertificate()
+    public async Task RequestDelegatePopulatesFromIFormFileParameterIfRequestHasClientCertificate()
     {
-        var invoked = false;
+        IFormFile? fileArgument = null;
+        TraceIdentifier traceIdArgument = default;
 
-        void TestAction(IFormFile file)
+        void TestAction(IFormFile? file, TraceIdentifier traceId)
         {
-            invoked = true;
+            fileArgument = file;
+            traceIdArgument = traceId;
         }
 
         var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
@@ -4550,6 +4802,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.Request.Body = stream;
         httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.TraceIdentifier = "my-trace-id";
 
 #pragma warning disable SYSLIB0026 // Type or member is obsolete
         var clientCertificate = new X509Certificate2();
@@ -4560,20 +4813,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         var factoryResult = RequestDelegateFactory.Create(TestAction);
         var requestDelegate = factoryResult.RequestDelegate;
 
-        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+        await requestDelegate(httpContext);
 
-        Assert.False(invoked);
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
 
-        // The httpContext should be untouched.
-        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.False(httpContext.Response.HasStarted);
-
-        // We don't log bad requests when we throw.
-        Assert.Empty(TestSink.Writes);
-
-        Assert.Equal("Support for binding parameters from an HTTP request's form is not currently supported if the request is associated with a client certificate. Use of an HTTP request form is not currently secure for HTTP requests in scenarios which require authentication.", badHttpRequestException.Message);
-        Assert.Equal(400, badHttpRequestException.StatusCode);
+        Assert.Equal("my-trace-id", traceIdArgument.Id);
     }
 
     private record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
@@ -4898,7 +5144,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -4930,7 +5176,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create((string name) => $"Hello, {name}!", new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -4972,7 +5218,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(methodInfo!, null, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5015,7 +5261,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         };
         var factoryResult = RequestDelegateFactory.Create(methodInfo!, targetFactory, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5052,7 +5298,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>() {
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>() {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     if (context.HttpContext.Response.StatusCode == 400)
@@ -5098,7 +5344,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5146,7 +5392,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) =>
                 {
@@ -5201,7 +5447,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) =>
                 {
@@ -5252,7 +5498,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(PrintTodo, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5293,7 +5539,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5336,7 +5582,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5405,7 +5651,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5463,7 +5709,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5528,7 +5774,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5562,7 +5808,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HandlerWithTaskAwait, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5629,7 +5875,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5665,11 +5911,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    Assert.IsType<DefaultRouteHandlerInvocationContext>(context);
+                    Assert.IsType<DefaultEndpointFilterInvocationContext>(context);
                     Assert.Equal(11, context.Arguments.Count);
                     return await next(context);
                 }
@@ -5696,11 +5942,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    Assert.IsType<DefaultRouteHandlerInvocationContext>(context);
+                    Assert.IsType<DefaultEndpointFilterInvocationContext>(context);
                     Assert.Equal(0, context.Arguments.Count);
                     return await next(context);
                 }
@@ -6090,7 +6336,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         RequestDelegateFactoryOptions options = new()
         {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) =>
                 {

@@ -101,7 +101,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("http://example.com/Account/Login?ReturnUrl=%2FCustomRedirect", location.ToString());
     }
 
-    private Task SignInAsAlice(HttpContext context)
+    private static Task SignInAsAlice(HttpContext context)
     {
         var user = new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"));
         user.AddClaim(new Claim("marker", "true"));
@@ -110,7 +110,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
             new AuthenticationProperties());
     }
 
-    private Task SignInAsWrong(HttpContext context)
+    private static Task SignInAsWrong(HttpContext context)
     {
         return context.SignInAsync("Oops",
             new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
@@ -145,6 +145,107 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.True(transaction.Response.Headers.CacheControl.NoCache);
         Assert.True(transaction.Response.Headers.CacheControl.NoStore);
         Assert.Equal("no-cache", transaction.Response.Headers.Pragma.ToString());
+    }
+
+    private class TestTicketStore : ITicketStore
+    {
+        private const string KeyPrefix = "AuthSessionStore-";
+        public readonly Dictionary<string, AuthenticationTicket> Store = new Dictionary<string, AuthenticationTicket>();
+
+        public async Task<string> StoreAsync(AuthenticationTicket ticket)
+        {
+            var guid = Guid.NewGuid();
+            var key = KeyPrefix + guid.ToString();
+            await RenewAsync(key, ticket);
+            return key;
+        }
+
+        public Task RenewAsync(string key, AuthenticationTicket ticket)
+        {
+            Store[key] = ticket;
+
+            return Task.FromResult(0);
+        }
+
+        public Task<AuthenticationTicket> RetrieveAsync(string key)
+        {
+            AuthenticationTicket ticket;
+            Store.TryGetValue(key, out ticket);
+            return Task.FromResult(ticket);
+        }
+
+        public Task RemoveAsync(string key)
+        {
+            Store.Remove(key);
+            return Task.FromResult(0);
+        }
+    }
+
+    [Fact]
+    public async Task SignInWithTicketStoreWorks()
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddSingleton<ISystemClock>(_clock);
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.SessionStore = sessionStore;
+            });
+        }, SignInAsAlice);
+
+        using var server = host.GetTestServer();
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+        var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+
+        // Make sure we have one key as the session id
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+        Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+
+        // Make sure the session is expired
+        _clock.Add(TimeSpan.FromDays(60));
+
+        // Verify that a new session is generated with a new key
+        var transaction3 = await SendAsync(server, "http://example.com/signinalice", transaction1.CookieNameValue);
+
+        var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
+
+        var key2 = Assert.Single(sessionStore.Store.Keys);
+        Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
+    public async Task SessionStoreRemovesExpired()
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddSingleton<ISystemClock>(_clock);
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.SessionStore = sessionStore;
+            });
+        }, SignInAsAlice);
+
+        using var server = host.GetTestServer();
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+        var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+
+        // Make sure we have one key as the session id
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+        Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+
+        // Make sure the session is expired
+        _clock.Add(TimeSpan.FromDays(60));
+
+        // Verify that a new session is generated with a new key
+        var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+
+        Assert.Empty(sessionStore.Store.Keys);
+        Assert.Null(FindClaimValue(transaction3, ClaimTypes.Name));
     }
 
     [Fact]
@@ -1667,17 +1768,6 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         return property.Attribute("value").Value;
     }
 
-    private static async Task<XElement> GetAuthData(TestServer server, string url, string cookie)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Add("Cookie", cookie);
-
-        var response2 = await server.CreateClient().SendAsync(request);
-        var text = await response2.Content.ReadAsStringAsync();
-        var me = XElement.Parse(text);
-        return me;
-    }
-
     private class ClaimsTransformer : IClaimsTransformation
     {
         public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal p)
@@ -1734,6 +1824,10 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                             else if (req.Path == new PathString("/challenge"))
                             {
                                 await context.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            }
+                            else if (req.Path == new PathString("/signinalice"))
+                            {
+                                await SignInAsAlice(context);
                             }
                             else if (req.Path == new PathString("/signout"))
                             {

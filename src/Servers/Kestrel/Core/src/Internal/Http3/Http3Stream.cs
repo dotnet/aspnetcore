@@ -15,9 +15,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
@@ -46,38 +46,35 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IProtocolErrorCodeFeature _errorCodeFeature = default!;
     private IStreamIdFeature _streamIdFeature = default!;
     private IStreamAbortFeature _streamAbortFeature = default!;
-    private int _isClosed;
-    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
-    protected RequestHeaderParsingState _requestHeaderParsingState;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
+    private StreamCompletionFlags _completionState;
+    private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private bool _isWebTransportSessionAccepted;
+    private Http3MessageBody? _messageBody;
 
-    private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
+    private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
+    private readonly object _completionLock = new();
 
-    private StreamCompletionFlags _completionState;
-    private readonly object _completionLock = new object();
+    protected RequestHeaderParsingState _requestHeaderParsingState;
+    protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
     private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
-
     public long? InputRemaining { get; internal set; }
-
     public QPackDecoder QPackDecoder { get; private set; } = default!;
 
     public PipeReader Input => _context.Transport.Input;
-
     public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
     public long StreamId => _streamIdFeature.StreamId;
-
     public long StreamTimeoutTicks { get; set; }
     public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
-
     public bool IsRequestStream => true;
 
     public void Initialize(Http3StreamContext context)
@@ -163,6 +160,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             {
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
+
+            _context.WebTransportSession?.Abort(abortReason, errorCode);
 
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
 
@@ -637,9 +636,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
         finally
         {
-            var streamError = error as ConnectionAbortedException
-                ?? new ConnectionAbortedException("The stream has completed.", error!);
-
             await Input.CompleteAsync();
 
             // Once the header is finished being received then the app has started.
@@ -692,6 +688,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
             catch
             {
+                var streamError = error as ConnectionAbortedException
+                   ?? new ConnectionAbortedException("The stream has completed.", error!);
+
                 Abort(streamError, Http3ErrorCode.ProtocolError);
                 throw;
             }
@@ -703,6 +702,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 // Tells the connection to remove the stream from its active collection.
                 ApplyCompletionFlag(StreamCompletionFlags.Completed);
                 _context.StreamLifetimeHandler.OnStreamCompleted(this);
+
+                // If we have a webtransport session on this stream, end it
+                _context.WebTransportSession?.OnClientConnectionClosed();
 
                 // TODO this is a hack for .NET 6 pooling.
                 //
@@ -741,31 +743,30 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
         }
 
+        _context.WebTransportSession?.OnClientConnectionClosed();
+
         OnTrailersComplete();
         return RequestBodyPipe.Writer.CompleteAsync();
     }
 
     private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
-        switch (_incomingFrame.Type)
+        return _incomingFrame.Type switch
         {
-            case Http3FrameType.Data:
-                return ProcessDataFrameAsync(payload);
-            case Http3FrameType.Headers:
-                return ProcessHeadersFrameAsync(application, payload, isCompleted);
-            case Http3FrameType.Settings:
-            case Http3FrameType.CancelPush:
-            case Http3FrameType.GoAway:
-            case Http3FrameType.MaxPushId:
-                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
-                // These frames need to be on a control stream
-                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
-            case Http3FrameType.PushPromise:
-                // The server should never receive push promise
-                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
-            default:
-                return ProcessUnknownFrameAsync();
-        }
+            Http3FrameType.Data => ProcessDataFrameAsync(payload),
+            Http3FrameType.Headers => ProcessHeadersFrameAsync(application, payload, isCompleted),
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
+            // These frames need to be on a control stream
+            Http3FrameType.Settings or
+            Http3FrameType.CancelPush or
+            Http3FrameType.GoAway or
+            Http3FrameType.MaxPushId => throw new Http3ConnectionErrorException(
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+            // The server should never receive push promise
+            Http3FrameType.PushPromise => throw new Http3ConnectionErrorException(
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+            _ => ProcessUnknownFrameAsync(),
+        };
     }
 
     private static Task ProcessUnknownFrameAsync()
@@ -843,6 +844,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             {
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
+
+            if (string.Equals(HttpRequestHeaders.HeaderProtocol, WebTransportSession.WebTransportProtocolValue, StringComparison.Ordinal))
+            {
+                // if the client supports the same version of WebTransport as Kestrel, make this a WebTransport request
+                if (((AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders).TryGetValue(WebTransportSession.CurrentSuppportedVersion, out var version) && string.Equals(version, WebTransportSession.VersionEnabledIndicator, StringComparison.Ordinal))
+                {
+                    IsWebTransportRequest = true;
+                }
+            }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
         {
@@ -901,6 +911,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _keepAlive = true;
         _connectionAborted = false;
         _userTrailers = null;
+        _isWebTransportSessionAccepted = false;
+        _isMethodConnect = false;
 
         // Reset Http3 Features
         _currentIHttpMinRequestBodyDataRateFeature = this;
@@ -921,7 +933,18 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     }
 
     protected override MessageBody CreateMessageBody()
-        => Http3MessageBody.For(this);
+    {
+        if (_messageBody != null)
+        {
+            _messageBody.Reset();
+        }
+        else
+        {
+            _messageBody = new Http3MessageBody(this);
+        }
+
+        return _messageBody;
+    }
 
     protected override bool TryParseRequest(ReadResult result, out bool endConnection)
     {
@@ -954,7 +977,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // CONNECT - :scheme and :path must be excluded=
         if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
-            if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
+            if (!string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Path]))
             {
                 Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                 return false;
@@ -1157,10 +1180,46 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
     }
 
+    public override async ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+    {
+        if (_isWebTransportSessionAccepted)
+        {
+            throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
+        }
+
+        if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+        {
+            throw new InvalidOperationException(CoreStrings.WebTransportIsDisabled);
+        }
+
+        if (!IsWebTransportRequest)
+        {
+            throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
+        }
+
+        _isWebTransportSessionAccepted = true;
+
+        // version negotiation
+        var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
+
+        _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
+
+        // send version negotiation resulting version
+        ResponseHeaders[WebTransportSession.VersionHeaderPrefix] = version;
+        await FlushAsync(token);
+
+        return _context.WebTransportSession;
+    }
+
     /// <summary>
     /// Used to kick off the request processing loop by derived classes.
     /// </summary>
     public abstract void Execute();
+
+    public void Abort()
+    {
+        Abort(new(), Http3ErrorCode.RequestCancelled);
+    }
 
     protected enum RequestHeaderParsingState
     {

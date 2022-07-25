@@ -15,4 +15,6 @@ internal static class BrowserNavigationManagerInterop
     public const string GetBaseUri = Prefix + "getUnmarshalledBaseURI";
 
     public const string NavigateTo = Prefix + "navigateTo";
+
+    public const string SetHasLocationChangingListeners = Prefix + "setHasLocationChangingListeners";
 }

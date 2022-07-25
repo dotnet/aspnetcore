@@ -22,7 +22,7 @@
     "jest": "^26.6.3",
     "jest-junit": "^13.0.0",
     "rimraf": "^3.0.2",
-    "terser": "^5.13.1",
+    "terser": "^5.14.2",
     "terser-webpack-plugin": "^5.3.1",
     "ts-jest": "^26.5.2",
     "ts-loader": "^8.0.17",
