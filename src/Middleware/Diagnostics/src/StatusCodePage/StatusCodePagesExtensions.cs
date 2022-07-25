@@ -5,6 +5,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -178,17 +179,7 @@ public static class StatusCodePagesExtensions
         {
             return app.Use(next =>
             {
-                RequestDelegate? newNext = null;
-                // start a new middleware pipeline
-                var builder = app.New();
-                // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                builder.UseRouting();
-                // apply the next middleware
-                builder.Run(next);
-                newNext = builder.Build();
-
+                var newNext = ReRouteHelper.ReRoute(app, routeBuilder, next);
                 return new StatusCodePagesMiddleware(next,
                     Options.Create(new StatusCodePagesOptions() { HandleAsync = CreateHandler(pathFormat, queryFormat, newNext) })).Invoke;
             });

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -67,15 +68,8 @@ public static class RewriteBuilderExtensions
                 var webHostEnv = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
 
-                // start a new middleware pipeline
-                var builder = app.New();
-                // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                builder.UseRouting();
-                // apply the next middleware
-                builder.Run(next);
-                options.Value.BranchedNext = builder.Build();
+                var newNext = ReRouteHelper.ReRoute(app, routeBuilder, next);
+                options.Value.BranchedNext = newNext;
 
                 return new RewriteMiddleware(next, webHostEnv, loggerFactory, options).Invoke;
             });

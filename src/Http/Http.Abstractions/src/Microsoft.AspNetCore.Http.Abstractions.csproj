@@ -28,6 +28,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\HttpValidationProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
+    <Compile Include="$(SharedSourceRoot)ReRoute.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -123,16 +124,9 @@ public static class ExceptionHandlerExtensions
 
                 if (!string.IsNullOrEmpty(options.Value.ExceptionHandlingPath) && options.Value.ExceptionHandler is null)
                 {
-                    // start a new middleware pipeline
-                    var builder = app.New();
-                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                    builder.UseRouting();
-                    // apply the next middleware
-                    builder.Run(next);
+                    var newNext = ReRouteHelper.ReRoute(app, routeBuilder, next);
                     // store the pipeline for the error case
-                    options.Value.ExceptionHandler = builder.Build();
+                    options.Value.ExceptionHandler = newNext;
                 }
 
                 return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;

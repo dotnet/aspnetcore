@@ -175,10 +175,27 @@ public class UsePathBaseExtensionsTests
 
         app.UseRouting();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.Map("/path", context => context.Response.WriteAsync("Response"));
-        });
+        app.MapGet("/path", context => context.Response.WriteAsync("Response"));
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
+    [Fact]
+    public async Task PathBaseWorksWithoutUseRoutingWithWebApplication()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UsePathBase("/base");
+
+        app.MapGet("/path", context => context.Response.WriteAsync("Response"));
 
         await app.StartAsync();
 
