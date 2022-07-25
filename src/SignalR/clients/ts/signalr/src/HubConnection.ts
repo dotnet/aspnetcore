@@ -235,6 +235,10 @@ export class HubConnection {
                 // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw this._stopDuringStartError;
             }
+
+            if (!this.connection.features.inherentKeepAlive) {
+                await this._sendMessage(this._cachedPingMessage);
+            }
         } catch (e) {
             this._logger.log(LogLevel.Debug, `Hub handshake failed with error '${e}' during start(). Stopping HubConnection.`);
 
