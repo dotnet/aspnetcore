@@ -55,15 +55,15 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
     private static bool IsDefaultHealthCheck(HealthCheckRegistration registration) => registration.Delay == Timeout.InfiniteTimeSpan && registration.Period == default;
 
-    private Dictionary<TimeSpan, Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
+    private Dictionary<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
     {
         return periodHealthChecksMap.Select(m => CreateTimer(m.Key.Delay, m.Key.Period, m.Value, cancellationToken)).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
-    private KeyValuePair<TimeSpan, Timer> CreateTimer(TimeSpan delay, TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
+    private KeyValuePair<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimer(TimeSpan delay, TimeSpan period, List<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
     {
-        return new KeyValuePair<TimeSpan, Timer>(
-            period,
+        return new KeyValuePair<(TimeSpan Delay, TimeSpan Period), Timer>(
+            (delay, period),
             NonCapturingTimer.Create(
             async (state) =>
             {
