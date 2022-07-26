@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -262,7 +263,7 @@ public class SetCookieHeaderValue
                 Append(ref span, ExpiresToken);
                 Append(ref span, EqualsToken);
 
-                var formatted = expiresValue.TryFormat(span, out var charsWritten, ExpiresDateFormat);
+                var formatted = expiresValue.TryFormat(span, out var charsWritten, ExpiresDateFormat, CultureInfo.InvariantCulture);
                 span = span.Slice(charsWritten);
 
                 Debug.Assert(formatted);

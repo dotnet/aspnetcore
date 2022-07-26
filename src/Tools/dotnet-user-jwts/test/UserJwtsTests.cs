@@ -480,4 +480,66 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var resetKey = resetMatches.SingleOrDefault().Groups[1].Value;
         Assert.NotEqual(key, resetKey);
     }
+
+    [Fact]
+    public void Create_CanHandleNoProjectOptionProvided()
+    {
+        var projectPath = _fixture.CreateProject();
+        Directory.SetCurrentDirectory(projectPath);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create" });
+
+        Assert.DoesNotContain("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains("New JWT saved", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Create_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
+        Directory.SetCurrentDirectory(path.FullName);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create" });
+
+        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
+    }
+
+    [Fact]
+    public void Delete_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
+        Directory.SetCurrentDirectory(path.FullName);
+
+        var app = new Program(_console);
+        app.Run(new[] { "remove", "some-id" });
+
+        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Clear_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
+        Directory.SetCurrentDirectory(path.FullName);
+
+        var app = new Program(_console);
+        app.Run(new[] { "clear" });
+
+        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_CanHandleNoProjectOptionProvided_WithNoProjects()
+    {
+        var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
+        Directory.SetCurrentDirectory(path.FullName);
+
+        var app = new Program(_console);
+        app.Run(new[] { "list" });
+
+        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+    }
 }

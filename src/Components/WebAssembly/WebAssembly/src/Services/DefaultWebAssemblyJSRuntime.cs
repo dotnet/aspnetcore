@@ -86,7 +86,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     /// <param name="id">Id of the byte array</param>
     public static void NotifyByteArrayAvailable(int id)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
+#pragma warning restore CS0618 // Type or member is obsolete
 
         DotNetDispatcher.ReceiveByteArray(Instance, id, data);
     }

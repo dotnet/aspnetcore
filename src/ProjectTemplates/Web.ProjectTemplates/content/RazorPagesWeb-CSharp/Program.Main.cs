@@ -140,11 +140,6 @@ public class Program
 
         app.UseRouting();
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
-        #endif
-        app.UseAuthorization();
-
         app.MapRazorPages();
         #if (IndividualB2CAuth || OrganizationalAuth)
         app.MapControllers();

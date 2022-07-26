@@ -105,9 +105,11 @@ public sealed class LazyAssemblyLoader
         }
 
         var jsRuntime = (IJSUnmarshalledRuntime)_jsRuntime;
+#pragma warning disable CS0618 // Type or member is obsolete
         var count = (int)await jsRuntime.InvokeUnmarshalled<string[], Task<object>>(
            GetLazyAssemblies,
            newAssembliesToLoad.ToArray());
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (count == 0)
         {
@@ -115,8 +117,10 @@ public sealed class LazyAssemblyLoader
         }
 
         var loadedAssemblies = new List<Assembly>();
+#pragma warning disable CS0618 // Type or member is obsolete
         var assemblies = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyAssemblies);
         var pdbs = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyPDBs);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         for (int i = 0; i < assemblies.Length; i++)
         {

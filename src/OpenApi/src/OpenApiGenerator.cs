@@ -261,7 +261,6 @@ internal sealed class OpenApiGenerator
 
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
         var requestBodyContent = new Dictionary<string, OpenApiMediaType>();
-        var isRequired = false;
 
         if (acceptsMetadata is not null)
         {
@@ -269,16 +268,15 @@ internal sealed class OpenApiGenerator
             {
                 requestBodyContent[contentType] = new OpenApiMediaType();
             }
-            isRequired = !acceptsMetadata.IsOptional;
-        }
 
-        if (!hasFormOrBodyParameter)
-        {
-            return new OpenApiRequestBody()
+            if (!hasFormOrBodyParameter)
             {
-                Required = isRequired,
-                Content = requestBodyContent
-            };
+                return new OpenApiRequestBody()
+                {
+                    Required = !acceptsMetadata.IsOptional,
+                    Content = requestBodyContent
+                };
+            }
         }
 
         if (requestBodyParameter is not null)

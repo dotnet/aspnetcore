@@ -131,6 +131,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42820")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [SkipIfDebug]
     [InlineData("CheckLargeStdErrWrites")]

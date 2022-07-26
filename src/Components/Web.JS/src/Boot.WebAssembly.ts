@@ -87,6 +87,16 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       state,
       intercepted
     );
+  }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+    const shouldContinueNavigation = await DotNet.invokeMethodAsync<boolean>(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChangingAsync',
+      uri,
+      state,
+      intercepted
+    );
+
+    Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });
 
   const candidateOptions = options ?? {};
@@ -142,6 +152,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
+// obsolete, legacy, don't use for new code!
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
   const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
   const resultType = monoPlatform.readInt32Field(callInfo, 4);
