@@ -201,10 +201,31 @@ internal sealed class OpenApiGenerator
                 responseContent[contentType] = new OpenApiMediaType();
             }
 
-            responses[statusCode] = new OpenApiResponse { Content = responseContent };
+            responses[statusCode] = new OpenApiResponse
+            {
+                Content = responseContent,
+                Description = GetResponseDescription(statusCode)
+            };
         }
-
         return responses;
+    }
+
+    private static string GetResponseDescription(string statusCode)
+    {
+        if (statusCode.Length != 3)
+        {
+            return string.Empty;
+        }
+        var first = statusCode[0];
+        return first switch
+        {
+            '1' => "Information",
+            '2' => "Success",
+            '3' => "Redirection",
+            '4' => "Client error",
+            '5' => "Server error",
+            _ => string.Empty,
+        };
     }
 
     private static void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type? discoveredTypeAnnotation)

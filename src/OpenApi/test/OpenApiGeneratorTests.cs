@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
@@ -226,6 +227,90 @@ public class OpenApiOperationGeneratorTests
 
         Assert.NotNull(badRequestResponseType);
         Assert.Empty(badRequestResponseType.Content);
+    }
+
+    [Fact]
+    public void DefaultResponseDescriptionIsCorrect()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(2, operation.Responses.Count);
+
+        var successResponse = operation.Responses["201"];
+        Assert.Equal("Success", successResponse.Description);
+
+        var clientErrorResponse = operation.Responses["400"];
+        Assert.Equal("Client error", clientErrorResponse.Description);
+    }
+
+    [Fact]
+    public void DefaultResponseDescriptionIsCorrectForTwoSimilarResponses()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(StatusCodes.Status100Continue)]
+        [ProducesResponseType(StatusCodes.Status101SwitchingProtocols)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(2, operation.Responses.Count);
+
+        var continueResponse = operation.Responses["100"];
+        Assert.Equal("Information", continueResponse.Description);
+
+        var switchingProtocolsResponse = operation.Responses["101"];
+        Assert.Equal("Information", switchingProtocolsResponse.Description);
+    }
+
+    [Fact]
+    public void AllDefaultResponseDescriptions()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(StatusCodes.Status100Continue)]
+        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status300MultipleChoices)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(5, operation.Responses.Count);
+
+        var continueResponse = operation.Responses["100"];
+        Assert.Equal("Information", continueResponse.Description);
+
+        var createdResponse = operation.Responses["201"];
+        Assert.Equal("Success", createdResponse.Description);
+
+        var multipleChoicesResponse = operation.Responses["300"];
+        Assert.Equal("Redirection", multipleChoicesResponse.Description);
+
+        var badRequestResponse = operation.Responses["400"];
+        Assert.Equal("Client error", badRequestResponse.Description);
+
+        var InternalServerErrorResponse = operation.Responses["500"];
+        Assert.Equal("Server error", InternalServerErrorResponse.Description);
+    }
+
+    [Fact]
+    public void UnregisteredStatusCodeDescriptions()
+    {
+        var operation = GetOpenApiOperation(
+        [ProducesResponseType(46)]
+        [ProducesResponseType(654)]
+        [ProducesResponseType(1111)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(3, operation.Responses.Count);
+
+        var unregisteredResponse1 = operation.Responses["46"];
+        Assert.Equal("", unregisteredResponse1.Description);
+
+        var unregisteredResponse2 = operation.Responses["654"];
+        Assert.Equal("", unregisteredResponse2.Description);
+
+        var unregisteredResponse3 = operation.Responses["1111"];
+        Assert.Equal("", unregisteredResponse3.Description);
     }
 
     [Fact]
