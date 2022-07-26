@@ -167,7 +167,7 @@ namespace Microsoft.Extensions.Http
                 disposable.Dispose();
             }
 
-            var result = await base.SendAsync(request, cancellationToken);
+            var result = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
             request.Properties[PriorResponseKey] = result;
 
