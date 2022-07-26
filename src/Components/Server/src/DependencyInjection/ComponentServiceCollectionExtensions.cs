@@ -79,7 +79,7 @@ public static class ComponentServiceCollectionExtensions
         services.AddScoped<NavigationManager, RemoteNavigationManager>();
         services.AddScoped<IJSRuntime, RemoteJSRuntime>();
         services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
-        services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+        services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
