@@ -45,7 +45,6 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
         // Group healthcheck registrations by delay and period, to build a Dictionary<(TimeSpan, TimeSpan), List<HealthCheckRegistration>>
         _individualHealthChecksMap = (from r in _healthCheckServiceOptions.Value.Registrations
-                                      where ByPredicate(r, _healthCheckPublisherOptions.Value.Predicate) // Apply publisher predicate
                                       where !IsDefaultHealthCheck(r)  // Skip default HCs initiated with publisher
                                       group r by (r.Delay, r.Period)).ToDictionary(g => g.Key, g => g.ToList());
 
@@ -67,7 +66,8 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
             NonCapturingTimer.Create(
             async (state) =>
             {
-                var entries = await RunChecksAsync(registrations, cancellationToken).ConfigureAwait(false);
+                var checksToRun = registrations.Where(r => ByPredicate(r)).ToList(); // Apply publisher predicate
+                var entries = await RunChecksAsync(checksToRun, cancellationToken).ConfigureAwait(false);
                 foreach (var entry in entries)
                 {
                     _healthReportEntriesQueue.Enqueue(entry);
@@ -239,15 +239,15 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         }
     }
 
-    private bool ByPredicate(HealthCheckRegistration registration, Func<HealthCheckRegistration, bool>? predicate)
+    private bool ByPredicate(HealthCheckRegistration registration, Func<HealthCheckRegistration, bool>? predicate = default)
     {
         // Default to the HealthCheckPublisher predicate
-        if (predicate == null)
+        if (predicate == default)
         {
             predicate = _healthCheckPublisherOptions.Value.Predicate;
         }
 
-        if (predicate == null)
+        if (predicate == default)
         {
             return true;
         }
