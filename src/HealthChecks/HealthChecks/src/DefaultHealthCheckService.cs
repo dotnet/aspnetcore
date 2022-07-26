@@ -49,7 +49,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
                                       where !IsDefaultHealthCheck(r)  // Skip default HCs initiated with publisher
                                       group r by (r.Delay, r.Period)).ToDictionary(g => g.Key, g => g.ToList());
 
-        // Aggregate Timers for HealthCheckRegistration having the same period
+        // Aggregate Timers for HealthCheckRegistration having the same delay and period
         _ = CreateTimers(_individualHealthChecksMap);
     }
 
