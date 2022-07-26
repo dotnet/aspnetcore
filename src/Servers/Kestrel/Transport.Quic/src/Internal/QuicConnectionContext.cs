@@ -55,7 +55,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             lock (_shutdownLock)
             {
-                _closeTask ??= _connection.CloseAsync(errorCode: 0).AsTask();
+                _closeTask ??= _connection.CloseAsync(errorCode: _context.Options.DefaultCloseErrorCode).AsTask();
             }
 
             await _closeTask;

@@ -53,8 +53,8 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                     IdleTimeout = options.IdleTimeout,
                     MaxInboundBidirectionalStreams = options.MaxBidirectionalStreamCount,
                     MaxInboundUnidirectionalStreams = options.MaxUnidirectionalStreamCount,
-                    DefaultCloseErrorCode = 0,
-                    DefaultStreamErrorCode = 0,
+                    DefaultCloseErrorCode = options.DefaultCloseErrorCode,
+                    DefaultStreamErrorCode = options.DefaultStreamErrorCode,
                 };
                 return ValueTask.FromResult(connectionOptions);
             }

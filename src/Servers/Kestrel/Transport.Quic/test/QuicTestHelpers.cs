@@ -27,12 +27,16 @@ internal static class QuicTestHelpers
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
-    public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
+    public static QuicTransportFactory CreateTransportFactory(
+        ILoggerFactory loggerFactory = null,
+        ISystemClock systemClock = null,
+        long defaultCloseErrorCode = 0)
     {
         var quicTransportOptions = new QuicTransportOptions();
         quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
         quicTransportOptions.MaxBidirectionalStreamCount = 200;
         quicTransportOptions.MaxUnidirectionalStreamCount = 200;
+        quicTransportOptions.DefaultCloseErrorCode = defaultCloseErrorCode;
         if (systemClock != null)
         {
             quicTransportOptions.SystemClock = systemClock;
@@ -41,9 +45,16 @@ internal static class QuicTestHelpers
         return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
     }
 
-    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null, bool clientCertificateRequired = false)
+    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(
+        ILoggerFactory loggerFactory = null,
+        ISystemClock systemClock = null,
+        bool clientCertificateRequired = false,
+        long defaultCloseErrorCode = 0)
     {
-        var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
+        var transportFactory = CreateTransportFactory(
+            loggerFactory,
+            systemClock,
+            defaultCloseErrorCode: defaultCloseErrorCode);
 
         // Use ephemeral port 0. OS will assign unused port.
         var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
