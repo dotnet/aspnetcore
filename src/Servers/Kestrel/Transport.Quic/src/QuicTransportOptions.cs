@@ -74,7 +74,7 @@ public sealed class QuicTransportOptions
         const long MinErrorCode = 0;
         const long MaxErrorCode = (1L << 62) - 1;
 
-        if (errorCode < 0 || errorCode > MaxErrorCode)
+        if (errorCode < MinErrorCode || errorCode > MaxErrorCode)
         {
             throw new ArgumentOutOfRangeException(nameof(errorCode), errorCode, $"A value between {MinErrorCode} and {MaxErrorCode} is required.");
         }
