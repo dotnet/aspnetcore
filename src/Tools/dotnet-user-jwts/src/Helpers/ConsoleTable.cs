@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.CommandLineUtils;
@@ -59,25 +57,95 @@ internal sealed class ConsoleTable
                 .Select(x => x!.ToString()!.Length).Max())
             .ToList();
 
+        var equalColumnLengths = (Console.WindowWidth / _columns.Count);
+
+        for (var i = 0; i < maxColumnLengths.Count; i++)
+        {
+            if (maxColumnLengths[i] > equalColumnLengths)
+            {
+                maxColumnLengths[i] = equalColumnLengths;
+            }
+        }
+
         var formatRow = Enumerable.Range(0, _columns.Count)
             .Select(i => " | {" + i + ", " + maxColumnLengths[i] + "}")
             .Aggregate((previousRowColumn, nextRowColumn) => previousRowColumn + nextRowColumn) + " |";
 
-        var formattedRows = _rows.Select(row => string.Format(CultureInfo.InvariantCulture, formatRow, row)).ToList();
         var columnHeaders = string.Format(CultureInfo.InvariantCulture, formatRow, _columns.ToArray());
         var rowDivider = $" {new string('-', columnHeaders.Length - 1)} ";
+
+        // Creates a nested list of items, each representing a single jwt
+
+        var formattedRows = new List<List<string>>();
+
+        foreach (var jwtObject in _rows)
+        {
+            var stringListOfJwtItems = new List<string>();
+            var jwtList = jwtObject.ToList();
+
+            for (var i = 0; i < jwtList.Count; i++)
+            {
+                stringListOfJwtItems.Add(jwtList[i].ToString());
+            }
+            formattedRows.Add(stringListOfJwtItems);
+        }
 
         builder.AppendLine(rowDivider);
         builder.AppendLine(columnHeaders);
 
-        foreach (var formattedRow in formattedRows)
-        {
-            builder.AppendLine(rowDivider);
-            builder.AppendLine(formattedRow);
-        }
+        // Call buildString() on formattedRows to wrap the items that are way too long
+        var newFormattedRows = WriteTableContent(formattedRows, maxColumnLengths, rowDivider);
 
         builder.AppendLine(rowDivider);
 
+        foreach (var formattedRow in newFormattedRows)
+        {
+            builder.AppendLine(formattedRow);
+        }
+
         _reporter.Output(builder.ToString());
+
+        // Write each jwt into the table making sure that longer items are wrapped.
+        static List<string> WriteTableContent(List<List<string>> rows, List<int> columnLengths, string divider)
+        {
+            var listOfRows = new List<string>();
+            for (var i = 0; i < rows.Count; i++)
+            {
+                var updatedRow = rows[i];
+
+                bool status = true;
+                while (status)
+                {
+                    var outputRow = "";
+
+                    for (var j = 0; j < updatedRow.Count; j++)
+                    {
+                        outputRow = string.Concat(outputRow, " | ");
+                        var currentItem = updatedRow[j];
+
+                        if (currentItem.Length <= columnLengths[j])
+                        {
+                            outputRow = string.Concat(outputRow, currentItem, new string(' ', columnLengths[j] - currentItem.Length));
+                            updatedRow[j] = "";
+                        }
+                        else
+                        {
+                            outputRow = string.Concat(outputRow, currentItem.Substring(0, columnLengths[j]));
+                            updatedRow[j] = currentItem.Substring(columnLengths[j]);
+                        }
+                    }
+                    outputRow = string.Concat(outputRow, " |");
+                    listOfRows.Add(outputRow);
+
+                    // Check if all items in updated row are set to an empty string
+                    if (updatedRow.All(item => item == ""))
+                    {
+                        status = false;
+                    }
+                }
+                listOfRows.Add(divider);
+            }
+            return listOfRows;
+        }
     }
 }
