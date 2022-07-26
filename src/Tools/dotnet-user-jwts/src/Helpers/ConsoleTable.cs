@@ -93,7 +93,6 @@ internal sealed class ConsoleTable
         builder.AppendLine(rowDivider);
         builder.AppendLine(columnHeaders);
 
-        // Call buildString() on formattedRows to wrap the items that are way too long
         var newFormattedRows = WriteTableContent(formattedRows, maxColumnLengths, rowDivider);
 
         builder.AppendLine(rowDivider);
