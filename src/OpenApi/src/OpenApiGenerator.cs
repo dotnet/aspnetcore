@@ -214,25 +214,18 @@ internal sealed class OpenApiGenerator
     {
         if (statusCode.Length != 3)
         {
-            return "";
+            return string.Empty;
         }
-
-        char first = statusCode[0];
-        switch (first)
+        var first = statusCode[0];
+        return first switch
         {
-            case '1':
-                return "information";
-            case '2':
-                return "success";
-            case '3':
-                return "redirection";
-            case '4':
-                return "client error";
-            case '5':
-                return "server error";
-            default:
-                return "";
-        }
+            '1' => "Information",
+            '2' => "Success",
+            '3' => "Redirection",
+            '4' => "Client error",
+            '5' => "Server error",
+            _ => string.Empty,
+        };
     }
 
     private static void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type? discoveredTypeAnnotation)

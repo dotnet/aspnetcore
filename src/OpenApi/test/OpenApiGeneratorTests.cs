@@ -240,10 +240,10 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(2, operation.Responses.Count);
 
         var successResponse = operation.Responses["201"];
-        Assert.Equal("success", successResponse.Description);
+        Assert.Equal("Success", successResponse.Description);
 
         var clientErrorResponse = operation.Responses["400"];
-        Assert.Equal("client error", clientErrorResponse.Description);
+        Assert.Equal("Client error", clientErrorResponse.Description);
     }
 
     [Fact]
@@ -257,10 +257,10 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(2, operation.Responses.Count);
 
         var continueResponse = operation.Responses["100"];
-        Assert.Equal("information", continueResponse.Description);
+        Assert.Equal("Information", continueResponse.Description);
 
         var switchingProtocolsResponse = operation.Responses["101"];
-        Assert.Equal("information", switchingProtocolsResponse.Description);
+        Assert.Equal("Information", switchingProtocolsResponse.Description);
     }
 
     [Fact]
@@ -277,19 +277,19 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(5, operation.Responses.Count);
 
         var continueResponse = operation.Responses["100"];
-        Assert.Equal("information", continueResponse.Description);
+        Assert.Equal("Information", continueResponse.Description);
 
         var createdResponse = operation.Responses["201"];
-        Assert.Equal("success", createdResponse.Description);
+        Assert.Equal("Success", createdResponse.Description);
 
         var multipleChoicesResponse = operation.Responses["300"];
-        Assert.Equal("redirection", multipleChoicesResponse.Description);
+        Assert.Equal("Redirection", multipleChoicesResponse.Description);
 
         var badRequestResponse = operation.Responses["400"];
-        Assert.Equal("client error", badRequestResponse.Description);
+        Assert.Equal("Client error", badRequestResponse.Description);
 
         var InternalServerErrorResponse = operation.Responses["500"];
-        Assert.Equal("server error", InternalServerErrorResponse.Description);
+        Assert.Equal("Server error", InternalServerErrorResponse.Description);
     }
 
     [Fact]
