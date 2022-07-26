@@ -323,12 +323,6 @@ internal sealed class Program
             }
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            // Warn users here so they know that a successful --check doesn't mean that apps using the old OID will work.
-            PrintOidChangeWarning(reporter);
-        }
-
         return Success;
     }
 
@@ -404,11 +398,6 @@ internal sealed class Program
             password.Value(),
             exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            PrintOidChangeWarning(reporter);
-        }
-
         switch (result)
         {
             case EnsureCertificateResult.Succeeded:
@@ -450,14 +439,5 @@ internal sealed class Program
                 reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                 return CriticalError;
         }
-    }
-
-    private static void PrintOidChangeWarning(IReporter reporter)
-    {
-        // See comment near the definition of AspNetHttpsOid in CertificateManager.
-        reporter.Warn("NOTE: If your app is targeting a version of .NET earlier than .NET 7, this version of "
-            + "the dev-certs tool will not install/check for the correct certificate for your app. Please use "
-            + "the dev-certs tool from the .NET 6 SDK or the SDK version that matches your app instead. For "
-            + "more information, see https://aka.ms/aspnetcore-macos-cert-change");
     }
 }
