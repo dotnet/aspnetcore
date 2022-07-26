@@ -56,8 +56,8 @@ internal sealed class TransportManager
 
         var features = new FeatureCollection();
 
-        // This should always be set in production, but it's not set for InMemory tests.
-        // The transport will check if the feature is missing.
+        // HttpsOptions or HttpsCallbackOptions should always be set in production, but it's not set for InMemory tests.
+        // The QUIC transport will check if TlsConnectionCallbackOptions is missing.
         if (listenOptions.HttpsOptions != null)
         {
             var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions);
@@ -68,7 +68,7 @@ internal sealed class TransportManager
                 OnConnectionState = null,
             });
         }
-        if (listenOptions.HttpsCallbackOptions != null)
+        else if (listenOptions.HttpsCallbackOptions != null)
         {
             features.Set(new TlsConnectionCallbackOptions
             {

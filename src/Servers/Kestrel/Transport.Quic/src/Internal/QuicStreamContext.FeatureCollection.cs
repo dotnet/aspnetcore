@@ -15,11 +15,11 @@ internal sealed partial class QuicStreamContext :
     IStreamAbortFeature,
     IStreamClosedFeature
 {
-    private readonly record struct CloseAction(Action<object?> Callback, object? State);
+    private readonly record struct OnCloseRegistration(Action<object?> Callback, object? State);
 
     private IDictionary<object, object?>? _persistentState;
     private long? _error;
-    private List<CloseAction>? _onClosed;
+    private List<OnCloseRegistration>? _onClosedRegistrations;
 
     public bool CanRead { get; private set; }
     public bool CanWrite { get; private set; }
@@ -87,11 +87,11 @@ internal sealed partial class QuicStreamContext :
         {
             if (!_streamClosed)
             {
-                if (_onClosed == null)
+                if (_onClosedRegistrations == null)
                 {
-                    _onClosed = new List<CloseAction>();
+                    _onClosedRegistrations = new List<OnCloseRegistration>();
                 }
-                _onClosed.Add(new CloseAction(callback, state));
+                _onClosedRegistrations.Add(new OnCloseRegistration(callback, state));
                 return;
             }
         }
