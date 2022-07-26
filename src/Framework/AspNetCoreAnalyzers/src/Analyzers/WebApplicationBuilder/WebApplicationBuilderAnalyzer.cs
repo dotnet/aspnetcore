@@ -23,7 +23,8 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
         DiagnosticDescriptors.DoNotUseHostConfigureLogging,
         DiagnosticDescriptors.DoNotUseHostConfigureServices,
-        DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder
+        DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+        DiagnosticDescriptors.UseTopLevelRouteRegistrationsInsteadOfUseEndpoints
     });
 
     public override void Initialize(AnalysisContext context)
@@ -65,6 +66,11 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                 wellKnownTypes.HostingHostBuilderExtensions,
             };
             INamedTypeSymbol[] configureHostTypes = { wellKnownTypes.ConfigureHostBuilder };
+            INamedTypeSymbol[] useEndpointTypes =
+            {
+                wellKnownTypes.EndpointRoutingApplicationBuilderExtensions,
+                wellKnownTypes.WebApplicationBuilder
+            };
 
             compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
             {
@@ -228,6 +234,24 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(
                             DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+                            invocation));
+                }
+
+                //var builder = WebApplication.CreateBuilder(args);
+                //var app= builder.Build();
+                //app.UseRouting();
+                //app.UseEndpoints(x => {})
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.WebApplicationBuilder,
+                        "UseEndpoints",
+                        useEndpointTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.UseTopLevelRouteRegistrationsInsteadOfUseEndpoints,
                             invocation));
                 }
 
