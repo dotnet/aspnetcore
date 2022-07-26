@@ -46,6 +46,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IProtocolErrorCodeFeature _errorCodeFeature = default!;
     private IStreamIdFeature _streamIdFeature = default!;
     private IStreamAbortFeature _streamAbortFeature = default!;
+    private IStreamClosedFeature _streamClosedFeature = default!;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private StreamCompletionFlags _completionState;
     private int _isClosed;
@@ -88,6 +89,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _errorCodeFeature = _context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
         _streamIdFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
         _streamAbortFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
+        _streamClosedFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamClosedFeature>();
 
         _appCompletedTaskSource.Reset();
         _isClosed = 0;
@@ -144,7 +146,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         lock (_completionLock)
         {
-            if (IsCompleted)
+            if (IsCompleted || IsAborted)
             {
                 return;
             }
@@ -573,6 +575,28 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         Exception? error = null;
 
+        // With HTTP/3 the write-side of the stream can be aborted by the client after the server
+        // has finished reading incoming content. That means errors can happen after the Input loop
+        // has finished reading.
+        //
+        // To get notification of request aborted we register to the stream closing or complete.
+        // It will notify this type that the client has aborted the request and Kestrel will complete
+        // pipes and cancel the HttpContext.RequestAborted token.
+        _streamClosedFeature.OnClosed(static s =>
+        {
+            var stream = (Http3Stream)s!;
+
+            if (!stream.IsCompleted)
+            {
+                // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
+                var errorCode = stream._errorCodeFeature.Error;
+                if (errorCode >= 0)
+                {
+                    stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);
+                }
+            }
+        }, this);
+
         try
         {
             while (_isClosed == 0)
@@ -643,44 +667,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 ? new ValueTask(_appCompletedTaskSource, _appCompletedTaskSource.Version)
                 : ValueTask.CompletedTask;
 
-            if (!appCompletedTask.IsCompletedSuccessfully)
-            {
-                // At this point in the stream's read-side is complete. However, with HTTP/3
-                // the write-side of the stream can still be aborted by the client on request
-                // aborted.
-                //
-                // To get notification of request aborted we register to connection closed
-                // token. It will notify this type that the client has aborted the request
-                // and Kestrel will complete pipes and cancel the RequestAborted token.
-                //
-                // Only subscribe to this event after the stream's read-side is complete to
-                // avoid interactions between reading that is in-progress and an abort.
-                // This means while reading, read-side abort will handle getting abort notifications.
-                //
-                // We don't need to hang on to the CancellationTokenRegistration from register.
-                // The CTS is cleaned up in StreamContext.DisposeAsync.
-                //
-                // TODO: Consider a better way to provide this notification. For perf we want to
-                // make the ConnectionClosed CTS pay-for-play, and change this event to use
-                // something that is more lightweight than a CTS.
-                _context.StreamContext.ConnectionClosed.Register(static s =>
-                {
-                    var stream = (Http3Stream)s!;
-
-                    if (!stream.IsCompleted)
-                    {
-                        // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
-                        var errorCode = stream._errorCodeFeature.Error;
-                        if (errorCode >= 0)
-                        {
-                            stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);
-                        }
-                    }
-                }, this);
-
-                // Make sure application func is completed before completing writer.
-                await appCompletedTask;
-            }
+            // At this point, assuming an error wasn't thrown, the stream's read-side is complete.
+            // Make sure application func is completed before completing writer.
+            await appCompletedTask;
 
             try
             {

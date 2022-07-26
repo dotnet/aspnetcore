@@ -23,11 +23,13 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly Http3StreamContext _context;
     private readonly Http3PeerSettings _serverPeerSettings;
     private readonly IStreamIdFeature _streamIdFeature;
+    private readonly IStreamClosedFeature _streamClosedFeature;
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private volatile int _isClosed;
     private long _headerType;
     private int _gracefulCloseInitiator;
+    private bool _connectionClosed;
 
     private bool _haveReceivedSettingsFrame;
 
@@ -39,6 +41,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         _context = context;
         _serverPeerSettings = context.ServerPeerSettings;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
+        _streamClosedFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamClosedFeature>();
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
         _headerType = headerType ?? -1;
 
@@ -57,6 +60,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private void OnStreamClosed()
     {
         Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
+        _connectionClosed = true;
     }
 
     public PipeReader Input => _context.Transport.Input;
@@ -237,7 +241,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
                 if (result.IsCompleted)
                 {
-                    if (!_context.StreamContext.ConnectionClosed.IsCancellationRequested)
+                    if (!_connectionClosed)
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1-2
                         throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClientClosedInbound, Http3ErrorCode.ClosedCriticalStream);
@@ -298,7 +302,11 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
 
         _haveReceivedSettingsFrame = true;
-        using var closedRegistration = _context.StreamContext.ConnectionClosed.Register(state => ((Http3ControlStream)state!).OnStreamClosed(), this);
+        _streamClosedFeature.OnClosed(static state =>
+        {
+            var stream = (Http3ControlStream)state!;
+            stream.OnStreamClosed();
+        }, this);
 
         while (true)
         {
