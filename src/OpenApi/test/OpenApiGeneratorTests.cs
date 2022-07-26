@@ -355,7 +355,6 @@ public class OpenApiOperationGeneratorTests
         var fromBodyContent = Assert.Single(fromBodyParam.Content);
         Assert.Equal("application/json", fromBodyContent.Key);
         Assert.True(fromBodyParam.Required);
-        Assert.Empty(operation.Parameters);
     }
 #nullable disable
 
