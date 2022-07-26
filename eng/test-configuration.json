@@ -10,6 +10,7 @@
     {"testName": {"contains": "ServerCertificateSelector_Invoked"}},
     {"testName": {"contains": "TraceIdentifierIsUnique"}},
     {"testName": {"contains": "LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning"}},
+    {"testName": {"contains": "ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug"}},
     {"testAssembly": {"contains": "IIS"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
