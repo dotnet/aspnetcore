@@ -21,7 +21,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeUsed()
+    public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeReported()
     {
         // Arrange
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
@@ -37,12 +37,14 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         await using var serverConnection = await acceptTask.DefaultTimeout();
 
-        // Wait for stream and then cancel
         await serverConnection.DisposeAsync();
 
+        // Assert
         var ex = await ExceptionAssert.ThrowsAsync<QuicException>(
             () => clientConnection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional).AsTask(),
             exceptionMessage: $"Connection aborted by peer ({(long)Http3ErrorCode.RequestCancelled}).");
+
+        Assert.Equal((long)Http3ErrorCode.RequestCancelled, ex.ApplicationErrorCode);
     }
 
     [ConditionalFact]
