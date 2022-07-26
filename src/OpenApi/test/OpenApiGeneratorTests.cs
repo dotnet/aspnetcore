@@ -114,8 +114,8 @@ public class OpenApiOperationGeneratorTests
             [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)] () => { });
         var request = operation.RequestBody;
         Assert.NotNull(request);
-
         Assert.Equal(2, request.Content.Count);
+        Assert.Empty(operation.Parameters);
 
         Assert.Equal("application/custom0", request.Content.First().Key);
         Assert.Equal("application/custom1", request.Content.Last().Key);
@@ -136,6 +136,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("application/custom0", request.Content.First().Key);
         Assert.Equal("application/custom1", request.Content.Last().Key);
         Assert.True(request.Required);
+        Assert.Empty(operation.Parameters);
     }
 
 #nullable disable
@@ -187,8 +188,8 @@ public class OpenApiOperationGeneratorTests
     {
         var operation = GetOpenApiOperation(
             [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
-            [ProducesResponseType(StatusCodes.Status400BadRequest)]
-            () => new InferredJsonClass());
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () => new InferredJsonClass());
 
         var responses = operation.Responses;
 
@@ -212,8 +213,8 @@ public class OpenApiOperationGeneratorTests
     {
         var operation = GetOpenApiOperation(
             [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
-            [ProducesResponseType(StatusCodes.Status400BadRequest)]
-            () => Results.Ok(new InferredJsonClass()));
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () => Results.Ok(new InferredJsonClass()));
 
         Assert.Equal(2, operation.Responses.Count);
 
@@ -325,6 +326,7 @@ public class OpenApiOperationGeneratorTests
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("application/json", content.Key);
+            Assert.Empty(operation.Parameters);
         }
 
         AssertBodyParameter(GetOpenApiOperation((InferredJsonClass foo) => { }), "foo", "object");
@@ -353,6 +355,7 @@ public class OpenApiOperationGeneratorTests
         var fromBodyContent = Assert.Single(fromBodyParam.Content);
         Assert.Equal("application/json", fromBodyContent.Key);
         Assert.True(fromBodyParam.Required);
+        Assert.Empty(operation.Parameters);
     }
 #nullable disable
 
@@ -553,6 +556,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.RequestBody;
 
         // Assert
+        Assert.Empty(operation.Parameters);
         Assert.Collection(
             requestBody.Content,
             parameter =>
@@ -579,6 +583,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.False(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
 #nullable enable
@@ -594,6 +599,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("application/json", content.Key);
         Assert.True(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -607,6 +613,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("application/json", content.Key);
         Assert.False(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -620,6 +627,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("application/xml", content.Key);
         Assert.False(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -633,6 +641,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("multipart/form-data", content.Key);
         Assert.True(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -646,6 +655,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("multipart/form-data", content.Key);
         Assert.False(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -659,6 +669,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("multipart/form-data", content.Key);
         Assert.True(requestBody.Required);
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -677,6 +688,8 @@ public class OpenApiOperationGeneratorTests
 
         var requestFormat1 = content["application/custom1"];
         Assert.NotNull(requestFormat1);
+
+        Assert.Empty(operation.Parameters);
     }
 
     [Fact]
@@ -706,6 +719,7 @@ public class OpenApiOperationGeneratorTests
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
+            Assert.Empty(operation.Parameters);
         }
 
         AssertFormFileParameter(GetOpenApiOperation((IFormFile file) => { }), "object", "file");
@@ -728,6 +742,7 @@ public class OpenApiOperationGeneratorTests
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
             Assert.True(requestBody.Required);
+            Assert.Empty(operation.Parameters);
         }
     }
 
@@ -770,14 +785,6 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(([FromBody] int fromBody, [FromRoute] int fromRoute, [FromServices] int fromServices) => { });
 
         Assert.Single(operation.Parameters);
-    }
-
-    [Fact]
-    public void DoNotAddParametersWithTypeIFormFile()
-    {
-        var operation = GetOpenApiOperation((IFormFile foo, IFormFileCollection bar) => { });
-
-        Assert.Empty(operation.Parameters);
     }
 
     [Theory]

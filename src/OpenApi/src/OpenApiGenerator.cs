@@ -361,6 +361,8 @@ internal sealed class OpenApiGenerator
 
             var (_, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
 
+            // if the parameter doesn't have a valid location
+            // then we should ignore it
             if (parameterLocation is null)
             {
                 continue;
