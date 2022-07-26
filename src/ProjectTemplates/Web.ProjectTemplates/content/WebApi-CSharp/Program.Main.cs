@@ -89,11 +89,6 @@ public class Program
         app.UseHttpsRedirection();
         #endif
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
-        #endif
-        app.UseAuthorization();
-
         #if (UseMinimalAPIs)
         #if (OrganizationalAuth || IndividualB2CAuth)
         var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";

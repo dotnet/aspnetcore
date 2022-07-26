@@ -77,11 +77,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 #endif
 
-#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-app.UseAuthentication();
-#endif
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
