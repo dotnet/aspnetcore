@@ -31,7 +31,7 @@
   "symbols/CallsMicrosoftGraph/description": "Określa, czy aplikacja internetowa wywołuje program Microsoft Graph. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth SingleOrg.",
   "symbols/CalledApiScopes/description": "Zakresy do żądania wywołania interfejsu API z aplikacji internetowej. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth SingleOrg lub --auth IndividualB2C.",
   "symbols/DisableOpenAPI/description": "Włącz obsługę interfejsu OpenAPI (Swagger)",
-  "symbols/UseProgramMain/displayName": "Nie używaj instrukcji najwyższego poziomu",
+  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""

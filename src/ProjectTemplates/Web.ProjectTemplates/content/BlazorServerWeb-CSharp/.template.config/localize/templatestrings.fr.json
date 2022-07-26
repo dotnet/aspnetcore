@@ -34,7 +34,7 @@
   "symbols/CallsMicrosoftGraph/description": "Spécifie si l’application web appelle Microsoft Graph. Cette option s’applique uniquement si --auth SingleOrg ou --auth MultiOrg est spécifié.",
   "symbols/CalledApiScopes/description": "Étendues pour demander à appeler l’API à partir de l’application web. Cette option s’applique uniquement si --auth SingleOrg, --auth MultiOrg ou --auth IndividualB2C est spécifié.",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
-  "symbols/UseProgramMain/displayName": "N’utilisez pas d’instructions de niveau supérieur",
+  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »"

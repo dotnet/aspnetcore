@@ -31,7 +31,7 @@
   "symbols/CallsMicrosoftGraph/description": "Указывает, вызывает ли веб-приложение Microsoft Graph. Этот параметр применяется, только если указывается --auth SingleOrg.",
   "symbols/CalledApiScopes/description": "Области для запроса вызова API из веб-приложения. Этот параметр применяется, только если указывается --auth SingleOrg или --auth IndividualB2C.",
   "symbols/DisableOpenAPI/description": "Отключение поддержки OpenAPI (Swagger)",
-  "symbols/UseProgramMain/displayName": "Не использовать операторы верхнего уровня",
+  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""

@@ -6,7 +6,7 @@
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net7.0/description": "Destinazione net7.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
-  "symbols/UseProgramMain/displayName": "Non usare istruzioni di primo livello",
+  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"

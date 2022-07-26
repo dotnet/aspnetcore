@@ -31,7 +31,7 @@
   "symbols/CallsMicrosoftGraph/description": "Určuje, jestli webová aplikace volá Microsoft Graph. Tato možnost platí pouze v případě, že je zadáno --auth SingleOrg.",
   "symbols/CalledApiScopes/description": "Obory, které se mají požádat o volání rozhraní API z webové aplikace Tato možnost platí jenom v případě, že je zadaná možnost --auth SingleOrg nebo --auth IndividualB2C.",
   "symbols/DisableOpenAPI/description": "Zakázání podpory OpenAPI (Swagger)",
-  "symbols/UseProgramMain/displayName": "Nepoužívat příkazy nejvyšší úrovně",
+  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
