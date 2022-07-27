@@ -380,16 +380,14 @@ internal sealed class OpenApiGenerator
                 throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
             }
 
-            var (isBodyOrFormParameter, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
+            var (_, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
 
-            // If the parameter isn't something that would be populated in RequestBody
-            // or doesn't have a valid ParameterLocation, then it must be a service
-            // parameter that we can ignore.
-            if (!isBodyOrFormParameter && parameterLocation is null)
+            // if the parameter doesn't have a valid location
+            // then we should ignore it
+            if (parameterLocation is null)
             {
                 continue;
             }
-
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
