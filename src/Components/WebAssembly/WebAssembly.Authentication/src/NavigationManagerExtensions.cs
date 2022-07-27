@@ -12,11 +12,11 @@ public static class NavigationManagerExtensions
     /// Initiates a logout operation by navigating to the log out endpoint.
     /// </summary>
     /// <remarks>
-    /// The navigation includes stated that is added to the browser history entry to
+    /// The navigation includes state that is added to the browser history entry to
     /// prevent logout operations performed from different contexts.
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
-    /// <param name="logoutPath">The path to navigate too.</param>
+    /// <param name="logoutPath">The path to navigate to.</param>
     public static void NavigateToLogout(this NavigationManager manager, string logoutPath) =>
         manager.NavigateToLogout(logoutPath, null);
 
@@ -52,7 +52,6 @@ public static class NavigationManagerExtensions
     {
         manager.NavigateTo(loginPath, new NavigationOptions
         {
-            ForceLoad = false,
             HistoryEntryState = request.ToState(),
         });
     }
