@@ -193,7 +193,14 @@ public class RateLimitingMiddlewareTests : LoggedTest
         var onRejectedInvoked = false;
         var options = CreateOptionsAccessor();
         var name = "myEndpoint";
-        options.Value.AddFixedWindowLimiter(name, new FixedWindowRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 0, TimeSpan.Zero, autoReplenishment: false));
+        options.Value.AddFixedWindowLimiter(name, new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = -1,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0,
+            Window = TimeSpan.Zero,
+            AutoReplenishment = false
+        });
         options.Value.OnRejected = (context, token) =>
         {
             onRejectedInvoked = true;
