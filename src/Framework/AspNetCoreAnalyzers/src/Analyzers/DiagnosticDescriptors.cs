@@ -109,8 +109,8 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor UseTopLevelRouteRegistrationsInsteadOfUseEndpoints = new(
         "ASP0014",
-        "Suggest using app.MapGet over of using app.UseEndpoints",
-        "Suggest using app.MapGet instead of {0}",
+        "Suggest using top level route registrations",
+        "Suggest using top level route registrations instead of {0}",
         "Usage",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
