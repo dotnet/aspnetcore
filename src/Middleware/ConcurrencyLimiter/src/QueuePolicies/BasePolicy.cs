@@ -32,7 +32,12 @@ internal class BasePolicy : IQueuePolicy, IDisposable
             throw new ArgumentException("The RequestQueueLimit cannot be a negative number.", nameof(options));
         }
 
-        _limiter = new Limiter(new LimiterOptions(permitLimit: maxConcurrentRequests, order, queueLimit: requestQueueLimit));
+        _limiter = new Limiter(new LimiterOptions
+        {
+            PermitLimit = maxConcurrentRequests,
+            QueueProcessingOrder = order,
+            QueueLimit = requestQueueLimit
+        });
     }
 
     public ValueTask<bool> TryEnterAsync()
