@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -57,13 +58,33 @@ internal sealed class ConsoleTable
                 .Select(x => x!.ToString()!.Length).Max())
             .ToList();
 
-        var equalColumnLengths = (Console.WindowWidth / _columns.Count);
+        var extraSpaceUsedByTableBorders = 4;
 
+        var equalColumnLengths = Math.Max((Console.WindowWidth / _columns.Count) - extraSpaceUsedByTableBorders, 5);
+
+        var excessLength = 0;
+        var numberOfColumnsThatNeedMoreLength = 0;
+
+        // Keep track of the excess length left behind by narrow columns and the number of columns that could use the extra length
         for (var i = 0; i < maxColumnLengths.Count; i++)
         {
-            if (maxColumnLengths[i] > equalColumnLengths)
+            if (maxColumnLengths[i] < equalColumnLengths)
             {
+                excessLength += equalColumnLengths - maxColumnLengths[i];
+            }
+            else
+            {
+                numberOfColumnsThatNeedMoreLength += 1;
                 maxColumnLengths[i] = equalColumnLengths;
+            }
+        }
+
+        // Share the excess length amongst the columns that could use it
+        for (var i = 0; i < maxColumnLengths.Count; i++)
+        {
+            if (maxColumnLengths[i] == equalColumnLengths)
+            {
+                maxColumnLengths[i] += excessLength / numberOfColumnsThatNeedMoreLength;
             }
         }
 
@@ -75,7 +96,6 @@ internal sealed class ConsoleTable
         var rowDivider = $" {new string('-', columnHeaders.Length - 1)} ";
 
         // Creates a nested list of items, each representing a single jwt
-
         var formattedRows = new List<List<string>>();
 
         foreach (var jwtObject in _rows)
