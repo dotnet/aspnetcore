@@ -71,13 +71,6 @@
           }
         },
         {
-          "condition": "(Hosted)",
-          "exclude": [
-            "Client/wwwroot/appsettings.Development.json",
-            "Client/wwwroot/appsettings.json"
-          ]
-        },
-        {
           "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
           "exclude": [
             "*.sln"
