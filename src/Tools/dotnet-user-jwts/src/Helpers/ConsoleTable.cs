@@ -155,7 +155,7 @@ internal sealed class ConsoleTable
                             outputRow = string.Concat(outputRow, currentItem.Substring(0, columnLengths[j]));
                             updatedRow[j] = currentItem.Substring(columnLengths[j]);
                         }
-                        // Check if there's something left to add to the output row
+                        // Check if there's something left to add to outputRow
                         if (currentItem.Length != 0)
                         {
                             wroteAnything = true;
