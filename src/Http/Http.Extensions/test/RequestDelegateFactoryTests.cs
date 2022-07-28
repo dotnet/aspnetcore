@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Buffers;
-using System.Data.Common;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -4586,12 +4585,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         [FromRoute]
         public int Value { get; set; }
-    }
-
-    private struct NonRequiredParameterListStruct
-    {
-        [FromRoute]
-        public int? Value { get; set; }
     }
 
     private struct ParameterListMutableStruct
