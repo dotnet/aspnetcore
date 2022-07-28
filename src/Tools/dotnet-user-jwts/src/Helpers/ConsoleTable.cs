@@ -133,12 +133,13 @@ internal sealed class ConsoleTable
             for (var i = 0; i < rows.Count; i++)
             {
                 var updatedRow = rows[i];
-
                 var status = true;
+
                 while (status)
                 {
                     var outputRow = "";
                     var wroteAnything = false;
+
                     for (var j = 0; j < updatedRow.Count; j++)
                     {
                         outputRow = string.Concat(outputRow, " | ");
