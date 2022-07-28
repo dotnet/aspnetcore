@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.CommandLineUtils;
 internal sealed class ConsoleTable
 {
     private readonly List<string> _columns = new();
-    private readonly List<object[]> _rows = new();
+    private readonly List<string[]> _rows = new();
     private readonly IReporter _reporter;
 
     public ConsoleTable(IReporter reporter)
@@ -25,7 +25,7 @@ internal sealed class ConsoleTable
         _columns.AddRange(names);
     }
 
-    public void AddRow(params object[] values)
+    public void AddRow(params string[] values)
     {
         if (values == null)
         {
@@ -96,81 +96,42 @@ internal sealed class ConsoleTable
         var columnHeaders = string.Format(CultureInfo.InvariantCulture, formatRow, _columns.ToArray());
         var rowDivider = $" {new string('-', columnHeaders.Length - 1)} ";
 
-        // Creates a nested list of items, each representing a single jwt.
-        var formattedRows = new List<List<string>>();
-
-        foreach (var jwtObject in _rows)
-        {
-            var stringListOfJwtItems = new List<string>();
-            var jwtList = jwtObject.ToList();
-
-            for (var i = 0; i < jwtList.Count; i++)
-            {
-                stringListOfJwtItems.Add(jwtList[i].ToString());
-            }
-            formattedRows.Add(stringListOfJwtItems);
-        }
-
         builder.AppendLine(rowDivider);
         builder.AppendLine(columnHeaders);
 
-        // Call buildString() on formattedRows to wrap the items that are way too long.
-        var newFormattedRows = WriteTableContent(formattedRows, maxColumnLengths, rowDivider);
+        WriteTableContent(_rows, maxColumnLengths, rowDivider, builder);
 
-        builder.AppendLine(rowDivider);
-
-        foreach (var formattedRow in newFormattedRows)
+        void WriteTableContent(List<string[]> rows, List<int> columnLengths, string divider, StringBuilder stringBuilder)
         {
-            builder.AppendLine(formattedRow);
-        }
+            stringBuilder.AppendLine(divider);
 
-        _reporter.Output(builder.ToString());
-
-        // Write each jwt into the table making sure that longer items are wrapped.
-        static List<string> WriteTableContent(List<List<string>> rows, List<int> columnLengths, string divider)
-        {
-            var listOfRows = new List<string>();
             for (var i = 0; i < rows.Count; i++)
             {
-                var updatedRow = rows[i];
-                var status = true;
-
-                while (status)
+                while (!rows[i].All(i => i == string.Empty))
                 {
-                    var outputRow = "";
-                    var wroteAnything = false;
+                    var outputRow = string.Empty;
 
-                    for (var j = 0; j < updatedRow.Count; j++)
+                    for (var j = 0; j < rows[i].Length; j++)
                     {
                         outputRow = string.Concat(outputRow, " | ");
-                        var currentItem = updatedRow[j];
 
-                        if (currentItem.Length <= columnLengths[j])
+                        if (rows[i][j].Length <= columnLengths[j])
                         {
-                            outputRow = string.Concat(outputRow, currentItem, new string(' ', columnLengths[j] - currentItem.Length));
-                            updatedRow[j] = string.Empty;
+                            outputRow = string.Concat(outputRow, rows[i][j], new string(' ', columnLengths[j] - rows[i][j].Length));
+                            rows[i][j] = string.Empty;
                         }
                         else
                         {
-                            outputRow = string.Concat(outputRow, currentItem.Substring(0, columnLengths[j]));
-                            updatedRow[j] = currentItem.Substring(columnLengths[j]);
+                            outputRow = string.Concat(outputRow, rows[i][j].Substring(0, columnLengths[j]));
+                            rows[i][j] = rows[i][j].Substring(columnLengths[j]);
                         }
-                        // Check if there's something left to add to outputRow
-                        if (currentItem.Length != 0)
-                        {
-                            wroteAnything = true;
-                        }
-                    }
-                    if (!wroteAnything)
-                    {
-                        break;
                     }
                     outputRow = string.Concat(outputRow, " |");
-                    listOfRows.Add(outputRow);
+                    stringBuilder.AppendLine(outputRow);
                 }
-                listOfRows.Add(divider);
+                stringBuilder.AppendLine(divider);
             }
-            return listOfRows;
+            _reporter.Output(builder.ToString());
         }
     }
 }
