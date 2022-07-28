@@ -71,30 +71,41 @@ export interface AuthorizeService {
     completeSignOut(url: string): Promise<AuthenticationResult>;
 }
 
+interface JavaScriptLoggingOptions {
+    debugEnabled: boolean;
+    traceEnabled: boolean;
+}
+
 export class ManagedLogger {
-    private debug: boolean;
-    private trace: boolean;
-    public constructor(private objectRef: any) {
-        this.debug = objectRef.invokeMethod('IsEnabled', LogLevel.Debug);
-        this.trace = objectRef.invokeMethod('IsEnabled', LogLevel.Trace);
+    public debug: boolean;
+    public trace: boolean;
+    public constructor(options: JavaScriptLoggingOptions) {
+        this.debug = options.debugEnabled;
+        this.trace = options.traceEnabled;
     }
 
     log(level: LogLevel, message: string): void {
         if ((level == LogLevel.Trace && this.trace) ||
             (level == LogLevel.Debug && this.debug)) {
-            return this.objectRef.invokeMethod('Log', level, message);
+            const levelString = level == LogLevel.Trace ? 'trce' : 'dbug';
+            console.debug(
+// Logs in the following format to keep consistency with the way ASP.NET Core logs to the console while avoiding the
+// additional overhead of passing the logger as a JSObjectReference
+// dbug: Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService[0]
+//       <<message>>         
+// trce: Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService[0]
+//       <<message>>
+`${levelString}: Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService[0]
+      ${message}`);
         }
     }
 }
 
-// These are the values for the .NET logger LogLevel
+// These are the values for the .NET logger LogLevel. 
+// We only use debug and trace
 export enum LogLevel {
     Trace = 0,
-    Debug = 1,
-    Information = 2,
-    Warning = 3,
-    Error = 4,
-    Critical = 5,
+    Debug = 1
 }
 
 class OidcAuthorizeService implements AuthorizeService {
@@ -384,7 +395,9 @@ export class AuthenticationService {
 
     private static async initializeCore(settings?: UserManagerSettings & AuthorizeServiceSettings, logger?: ManagedLogger) {
         const finalSettings = settings || AuthenticationService.resolveCachedSettings();
-        if (!settings && finalSettings) {
+        const cachedLoggerOptions = AuthenticationService.resolveCachedLoggerOptions();
+        const finalLogger = logger || (cachedLoggerOptions && new ManagedLogger(cachedLoggerOptions))
+        if (!settings && finalSettings && !logger && finalLogger) {
             const userManager = AuthenticationService.createUserManagerCore(finalSettings);
 
             if (window.parent !== window && !window.opener && (window.frameElement && userManager.settings.redirect_uri &&
@@ -392,7 +405,7 @@ export class AuthenticationService {
                 // If we are inside a hidden iframe, try completing the sign in early.
                 // This prevents loading the blazor app inside a hidden iframe, which speeds up the authentication operations
                 // and avoids wasting resources (CPU and memory from bootstrapping the Blazor app)
-                AuthenticationService.instance = new OidcAuthorizeService(userManager, logger);
+                AuthenticationService.instance = new OidcAuthorizeService(userManager, finalLogger);
 
                 // This makes sure that if the blazor app has time to load inside the hidden iframe,
                 // it is not able to perform another auth operation until this operation has completed.
@@ -401,9 +414,12 @@ export class AuthenticationService {
                     return;
                 })();
             }
-        } else if (settings) {
+        } else if (settings && logger) {
             const userManager = await AuthenticationService.createUserManager(settings);
             AuthenticationService.instance = new OidcAuthorizeService(userManager, logger);
+            window.sessionStorage.setItem(
+                `${AuthenticationService._infrastructureKey}.CachedJSLoggingOptions`,
+                JSON.stringify({debugEnabled: logger.debug, traceEnabled: logger.trace}));
         } else {
             // HandleCallback gets called unconditionally, so we do nothing for normal paths.
             // Cached settings are only used on handling the redirect_uri path and if the settings are not there
@@ -413,6 +429,11 @@ export class AuthenticationService {
 
     private static resolveCachedSettings(): UserManagerSettings | undefined {
         const cachedSettings = window.sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.CachedAuthSettings`);
+        return cachedSettings ? JSON.parse(cachedSettings) : undefined;
+    }
+
+    private static resolveCachedLoggerOptions(): JavaScriptLoggingOptions | undefined {
+        const cachedSettings = window.sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.CachedJSLoggingOptions`);
         return cachedSettings ? JSON.parse(cachedSettings) : undefined;
     }
 

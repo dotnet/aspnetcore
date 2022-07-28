@@ -22,7 +22,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.SignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -53,7 +54,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.SignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -80,7 +82,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.CompleteSignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -111,7 +114,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.CompleteSignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -138,7 +142,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.SignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -169,7 +174,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.SignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -196,7 +202,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.CompleteSignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -227,7 +234,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.CompleteSignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
@@ -254,7 +262,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -291,7 +300,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult(AccessTokenResultStatus.RequiresRedirect, null);
@@ -328,7 +338,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var state = new RemoteAuthenticationState();
         testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -369,7 +380,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+            new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         testJsRuntime.GetUserResult = default;
 
@@ -396,7 +408,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()));
+            new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var account = new CoolRoleAccount
         {
@@ -432,7 +445,8 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime,
             options,
             new TestNavigationManager(),
-            new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()));
+            new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()),
+            null);
 
         var account = new CoolRoleAccount
         {

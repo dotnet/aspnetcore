@@ -24,21 +24,18 @@ public class RemoteAuthenticationService<
 [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions> :
     AuthenticationStateProvider,
     IRemoteAuthenticationService<TRemoteAuthenticationState>,
-    IAccessTokenProvider,
-    IDisposable
+    IAccessTokenProvider
     where TRemoteAuthenticationState : RemoteAuthenticationState
     where TProviderOptions : new()
     where TAccount : RemoteUserAccount
 {
     private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
-    private readonly ILogger<RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>> _logger;
-    private readonly DotNetObjectReference<LoggerWrapper> _loggerObjectRef;
     private bool _initialized;
+    private readonly JavaScriptLoggingOptions _loggingOptions;
 
     // This defaults to 1/1/1970
     private DateTimeOffset _userLastCheck = DateTimeOffset.FromUnixTimeSeconds(0);
     private ClaimsPrincipal _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
-    private bool disposedValue;
 
     /// <summary>
     /// Gets the <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.
@@ -67,6 +64,7 @@ public class RemoteAuthenticationService<
     /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
     /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
     /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
+    [Obsolete("Use the constructor RemoteAuthenticationService(IJSRuntime,IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>>,NavigationManager,AccountClaimsPrincipalFactory<TAccount>,ILogger<RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>>) instead.")]
     public RemoteAuthenticationService(
         IJSRuntime jsRuntime,
         IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
@@ -95,8 +93,7 @@ public class RemoteAuthenticationService<
         Navigation = navigation;
         AccountClaimsPrincipalFactory = accountClaimsPrincipalFactory;
         Options = options.Value;
-        _logger = logger;        
-        _loggerObjectRef = DotNetObjectReference.Create(new LoggerWrapper(logger));
+        _loggingOptions = new JavaScriptLoggingOptions(logger?.IsEnabled(LogLevel.Debug) ?? false, logger?.IsEnabled(LogLevel.Trace) ?? false);
     }
 
     /// <inheritdoc />
@@ -213,7 +210,7 @@ public class RemoteAuthenticationService<
     {
         if (!_initialized)
         {
-            await JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions, _loggerObjectRef);
+            await JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions, _loggingOptions);
             _initialized = true;
         }
     }
@@ -234,47 +231,7 @@ public class RemoteAuthenticationService<
         static async Task<AuthenticationState> UpdateAuthenticationState(Task<ClaimsPrincipal> futureUser) => new AuthenticationState(await futureUser);
     }
 
-    /// <inheritdoc/>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                _loggerObjectRef?.Dispose();
-            }
-
-            disposedValue = true;
-        }
-    }
-
-    void IDisposable.Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    private class LoggerWrapper
-    {
-        private readonly ILogger _logger;
-
-        public LoggerWrapper(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        [JSInvokable]
-        public void Log(LogLevel level, string message)
-        {
-            _logger.Log(level, message);
-        }
-
-        [JSInvokable]
-        public void IsEnabled(LogLevel level)
-        {
-            _logger.IsEnabled(level);
-        }
-    }
+    private record JavaScriptLoggingOptions(bool DebugEnabled, bool TraceEnabled);
 }
 
 // Internal for testing purposes
