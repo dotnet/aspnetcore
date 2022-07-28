@@ -136,21 +136,23 @@ app./*MM4*/UseEndpoints(endpoints =>
     }
 
     [Fact]
-    public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_InMain()
+    public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_InMain_MapControllers()
     {
         //arrange
         var source = TestSource.Read(@"
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 public static class Program
 {
     public static void Main (string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddControllers();
         var app = builder.Build();
         app.UseRouting();
         app./*MM*/UseEndpoints(endpoints =>
         {
-            endpoints.MapGet(""/"", () => ""Hello World!"");
+            endpoints.MapControllers();
         });
     }
 }
@@ -166,7 +168,7 @@ public static class Program
     }
 
     [Fact]
-    public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_OnDifferentLine()
+    public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_OnDifferentLine_WithRouteParameters()
     {
         //arrange
         var source = TestSource.Read(@"
@@ -177,7 +179,8 @@ app.UseRouting();
 app.
     /*MM*/UseEndpoints(endpoints =>
 {
-    endpoints.MapGet(""/"", () => ""Hello World!"");
+    endpoints.MapGet(""/users/{userId}/books/{bookId}"", 
+        (int userId, int bookId) => $""The user id is {userId} and book id is {bookId}"");
 });
 ");
         //act
