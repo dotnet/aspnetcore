@@ -148,7 +148,6 @@ public class WebHostTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42967")]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade()
     {
         // Arrange
@@ -213,7 +212,6 @@ public class WebHostTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42967")]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade()
     {
         // Arrange
