@@ -258,6 +258,11 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         return false;
     }
 
+    internal QuicConnection GetInnerConnection()
+    {
+        return _connection;
+    }
+
     private void RemoveExpiredStreams()
     {
         lock (_poolLock)

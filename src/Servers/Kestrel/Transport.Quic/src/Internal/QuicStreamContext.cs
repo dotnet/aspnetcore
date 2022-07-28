@@ -82,7 +82,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         _stream = stream;
 
         _streamClosedTokenSource = null;
-        _onClosed?.Clear();
+        _onClosedRegistrations?.Clear();
 
         InitializeFeatures();
 
@@ -331,7 +331,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
             _streamClosed = true;
         }
 
-        var onClosed = _onClosed;
+        var onClosed = _onClosedRegistrations;
 
         if (onClosed != null)
         {

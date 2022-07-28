@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
+using System.Net.Security;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -1234,6 +1236,58 @@ public class Http3RequestTests : LoggedTest
                 w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.LoggingConnectionMiddleware" &&
                 w.Message.StartsWith("ReadAsync", StringComparison.Ordinal));
             Assert.True(hasReadLog);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task GET_UseHttpsCallback_ConnectionContextAvailable()
+    {
+        // Arrange
+        BaseConnectionContext connectionContext = null;
+        var builder = CreateHostBuilder(
+            context =>
+            {
+                return Task.CompletedTask;
+            },
+            configureKestrel: kestrel =>
+            {
+                kestrel.ListenLocalhost(5001, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(new TlsHandshakeCallbackOptions
+                    {
+                        OnConnection = context =>
+                        {
+                            connectionContext = context.Connection;
+                            return ValueTask.FromResult(new SslServerAuthenticationOptions
+                            {
+                                ServerCertificate = TestResources.GetTestCertificate()
+                            });
+                        }
+                    });
+                });
+            });
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            var port = 5001;
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+
+            // Assert
+            Assert.NotNull(connectionContext);
 
             await host.StopAsync();
         }

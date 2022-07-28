@@ -63,6 +63,18 @@ internal static class QuicTestHelpers
         return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
     }
 
+    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(TlsConnectionCallbackOptions tlsConnectionOptions, ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
+    {
+        var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
+
+        // Use ephemeral port 0. OS will assign unused port.
+        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+        var features = new FeatureCollection();
+        features.Set(tlsConnectionOptions);
+        return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
+    }
+
     public static FeatureCollection CreateBindAsyncFeatures(bool clientCertificateRequired = false)
     {
         var cert = TestResources.GetTestCertificate();
@@ -74,7 +86,11 @@ internal static class QuicTestHelpers
         sslServerAuthenticationOptions.ClientCertificateRequired = clientCertificateRequired;
 
         var features = new FeatureCollection();
-        features.Set(sslServerAuthenticationOptions);
+        features.Set(new TlsConnectionCallbackOptions
+        {
+            ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols,
+            OnConnection = (context, cancellationToken) => ValueTask.FromResult(sslServerAuthenticationOptions)
+        });
 
         return features;
     }
