@@ -1269,8 +1269,16 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromProperties(ParameterInfo parameter, FactoryContext factoryContext)
     {
+        var parameterType = parameter.ParameterType;
+        var isNullable = Nullable.GetUnderlyingType(parameterType) != null ||
+            factoryContext.NullabilityContext.Create(parameter)?.ReadState == NullabilityState.Nullable;
+
+        if (isNullable)
+        {
+            throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported.");
+        }
+
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-        var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
         var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameterType);
 
         Expression initExpression;
@@ -1318,11 +1326,6 @@ public static partial class RequestDelegateFactory
                 Expression.New(constructor);
 
             initExpression = Expression.MemberInit(newExpression, bindings);
-        }
-
-        if (parameterType != parameter.ParameterType)
-        {
-            initExpression = Expression.Convert(initExpression, parameter.ParameterType);
         }
 
         factoryContext.ParamCheckExpressions.Add(

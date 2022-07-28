@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Buffers;
+using System.Data.Common;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -4685,12 +4686,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListNullableStruct([AsParameters] ParameterListStruct? args)
-            {
-                var req = args!.Value;
-                req.HttpContext.Items.Add("input", req.Value);
-            }
-
             void TestParameterListMutableStruct([AsParameters] ParameterListMutableStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
@@ -4722,7 +4717,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                 new object[] { (Action<ParameterListRecordClass>)TestParameterListRecordClass },
                 new object[] { (Action<ParameterListRecordWithoutPositionalParameters>)TestParameterListRecordWithoutPositionalParameters },
                 new object[] { (Action<ParameterListStruct>)TestParameterListStruct },
-                new object[] { (Action<ParameterListStruct?>)TestParameterListNullableStruct },
                 new object[] { (Action<ParameterListMutableStruct>)TestParameterListMutableStruct },
                 new object[] { (Action<ParameterListStructWithParameterizedContructor>)TestParameterListStructWithParameterizedContructor },
                 new object[] { (Action<ParameterListStructWithMultipleParameterizedContructor>)TestParameterListStructWithMultipleParameterizedContructor },
@@ -4750,24 +4744,41 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesDefaultValueForNullableStructParameterList()
+    public static object[][] NullableFromParameterListActions
     {
-        NonRequiredParameterListStruct? boundArgs = null;
-
-        void TestParameterListNullableStruct([AsParameters] NonRequiredParameterListStruct? args)
+        get
         {
-            boundArgs = args;
-        }
+            void TestParameterListRecordStruct([AsParameters] ParameterListRecordStruct? args)
+            { }
 
+            void TestParameterListRecordClass([AsParameters] ParameterListRecordClass? args)
+            { }
+
+            void TestParameterListStruct([AsParameters] ParameterListStruct? args)
+            { }
+
+            void TestParameterListClass([AsParameters] ParameterListClass? args)
+            { }
+
+            return new[]
+            {
+                new object[] { (Action<ParameterListRecordStruct?>)TestParameterListRecordStruct },
+                new object[] { (Action<ParameterListRecordClass?>)TestParameterListRecordClass },
+                new object[] { (Action<ParameterListStruct?>)TestParameterListStruct },
+                new object[] { (Action<ParameterListClass?>)TestParameterListClass },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(NullableFromParameterListActions))]
+    public void RequestDelegateThrowsWhenNullableParameterList(Delegate action)
+    {
+        var parameter = action.Method.GetParameters()[0];
         var httpContext = CreateHttpContext();
 
-        var factoryResult = RequestDelegateFactory.Create(TestParameterListNullableStruct);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(default(NonRequiredParameterListStruct), boundArgs);
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+        Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported.", exception.Message);
     }
 
     private record struct SampleParameterList(int Foo);

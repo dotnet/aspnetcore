@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -81,14 +83,20 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
             if (parameters[i].CustomAttributes.Any(a => a.AttributeType == typeof(AsParametersAttribute)))
             {
-                var parameterType = Nullable.GetUnderlyingType(parameters[i].ParameterType) ?? parameters[i].ParameterType;
-
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering
                 flattenedParameters ??= new(parameters[0..i]);
                 nullabilityContext ??= new();
 
-                var (constructor, constructorParameters) = cache.FindConstructor(parameterType);
+                var isNullable = Nullable.GetUnderlyingType(parameters[i].ParameterType) != null ||
+                    nullabilityContext.Create(parameters[i])?.ReadState == NullabilityState.Nullable;
+
+                if (isNullable)
+                {
+                    throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameters[i].ParameterType, fullName: false)}' is not supported.");
+                }
+
+                var (constructor, constructorParameters) = cache.FindConstructor(parameters[i].ParameterType);
                 if (constructor is not null && constructorParameters is { Length: > 0 })
                 {
                     foreach (var constructorParameter in constructorParameters)
@@ -102,7 +110,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
                 }
                 else
                 {
-                    var properties = parameterType.GetProperties();
+                    var properties = parameters[i].ParameterType.GetProperties();
 
                     foreach (var property in properties)
                     {
