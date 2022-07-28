@@ -368,7 +368,10 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         Exception? shutdownReason = null;
         Exception? unexpectedError = null;
 
-        var sendCompletedTask = WaitForWritesCompleted();
+        // A client can abort a stream after it has finished sending data. We need a way to get that notification
+        // which is why we listen for a notification that the write-side of the stream is done.
+        // An exception can be thrown from the stream on client abort which will be captured and then wake up the output read.
+        _ = WaitForWritesCompleted();
 
         try
         {
@@ -465,7 +468,6 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         finally
         {
             ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
-            await sendCompletedTask;
 
             // Complete the output after completing stream sends
             Output.Complete(unexpectedError);
