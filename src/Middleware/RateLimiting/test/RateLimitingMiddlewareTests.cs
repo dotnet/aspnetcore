@@ -195,7 +195,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
         var name = "myEndpoint";
         options.Value.AddFixedWindowLimiter(name, new FixedWindowRateLimiterOptions
         {
-            PermitLimit = -1,
+            PermitLimit = 1,
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
             QueueLimit = 0,
             Window = TimeSpan.Zero,
