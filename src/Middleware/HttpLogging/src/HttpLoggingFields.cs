@@ -175,5 +175,8 @@ public enum HttpLoggingFields : long
     /// the entire request and response body up to the <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>
     /// and <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
+    /// <remarks>
+    /// This will not include <see cref="RequestQuery"/> as it may contain private information. 
+    /// </remarks>
     All = Request | Response
 }
