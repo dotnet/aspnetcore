@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Data;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -58,14 +57,16 @@ internal sealed class ConsoleTable
                 .Select(x => x!.ToString()!.Length).Max())
             .ToList();
 
-        var extraSpaceUsedByTableBorders = 4;
+        // The table borders constructed using "|" have whitespaces before and after.
+        // This number accounts for those spaces to ensure that the table width is not longer than the console window's width.
+        var EXCESS_LENGTH_CREATED_BY_BORDERS = 4;
 
-        var equalColumnLengths = Math.Max((Console.WindowWidth / _columns.Count) - extraSpaceUsedByTableBorders, 5);
+        var equalColumnLengths = Math.Max((Console.WindowWidth / _columns.Count) - EXCESS_LENGTH_CREATED_BY_BORDERS, 5);
 
         var excessLength = 0;
         var numberOfColumnsThatNeedMoreLength = 0;
 
-        // Keep track of the excess length left behind by narrow columns and the number of columns that could use the extra length
+        // Keep track of the excess length left behind by narrow columns and the number of columns that could use the extra length.
         for (var i = 0; i < maxColumnLengths.Count; i++)
         {
             if (maxColumnLengths[i] < equalColumnLengths)
@@ -79,7 +80,7 @@ internal sealed class ConsoleTable
             }
         }
 
-        // Share the excess length amongst the columns that could use it
+        // Share the excess length amongst the columns that could use it.
         for (var i = 0; i < maxColumnLengths.Count; i++)
         {
             if (maxColumnLengths[i] == equalColumnLengths)
@@ -95,7 +96,7 @@ internal sealed class ConsoleTable
         var columnHeaders = string.Format(CultureInfo.InvariantCulture, formatRow, _columns.ToArray());
         var rowDivider = $" {new string('-', columnHeaders.Length - 1)} ";
 
-        // Creates a nested list of items, each representing a single jwt
+        // Creates a nested list of items, each representing a single jwt.
         var formattedRows = new List<List<string>>();
 
         foreach (var jwtObject in _rows)
@@ -113,7 +114,7 @@ internal sealed class ConsoleTable
         builder.AppendLine(rowDivider);
         builder.AppendLine(columnHeaders);
 
-        // Call buildString() on formattedRows to wrap the items that are way too long
+        // Call buildString() on formattedRows to wrap the items that are way too long.
         var newFormattedRows = WriteTableContent(formattedRows, maxColumnLengths, rowDivider);
 
         builder.AppendLine(rowDivider);
@@ -133,11 +134,11 @@ internal sealed class ConsoleTable
             {
                 var updatedRow = rows[i];
 
-                bool status = true;
+                var status = true;
                 while (status)
                 {
                     var outputRow = "";
-
+                    var wroteAnything = false;
                     for (var j = 0; j < updatedRow.Count; j++)
                     {
                         outputRow = string.Concat(outputRow, " | ");
@@ -146,22 +147,25 @@ internal sealed class ConsoleTable
                         if (currentItem.Length <= columnLengths[j])
                         {
                             outputRow = string.Concat(outputRow, currentItem, new string(' ', columnLengths[j] - currentItem.Length));
-                            updatedRow[j] = "";
+                            updatedRow[j] = string.Empty;
                         }
                         else
                         {
                             outputRow = string.Concat(outputRow, currentItem.Substring(0, columnLengths[j]));
                             updatedRow[j] = currentItem.Substring(columnLengths[j]);
                         }
+                        // Check if there's something left to add to the output row
+                        if (currentItem.Length != 0)
+                        {
+                            wroteAnything = true;
+                        }
+                    }
+                    if (!wroteAnything)
+                    {
+                        break;
                     }
                     outputRow = string.Concat(outputRow, " |");
                     listOfRows.Add(outputRow);
-
-                    // Check if all items in updated row are set to an empty string
-                    if (updatedRow.All(item => item == ""))
-                    {
-                        status = false;
-                    }
                 }
                 listOfRows.Add(divider);
             }
