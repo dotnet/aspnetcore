@@ -241,19 +241,20 @@ public class IISDeployer : IISDeployerBase
             var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
             if (actualPath != contentRoot)
             {
+                UploadFileOnHelix(_applicationHostConfig, "wrongpath.applicationHost.config");
                 throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
             }
 
             if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
             {
                 var state = appPool.Start();
-                Logger.LogInformation($"Starting pool, state: {state.ToString()}");
+                Logger.LogInformation($"Starting pool, state: {state}");
             }
 
             if (site.State != ObjectState.Started && site.State != ObjectState.Starting)
             {
                 var state = site.Start();
-                Logger.LogInformation($"Starting site, state: {state.ToString()}");
+                Logger.LogInformation($"Starting site, state: {state}");
             }
 
             if (site.State != ObjectState.Started)
@@ -264,6 +265,7 @@ public class IISDeployer : IISDeployerBase
             var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
             if (workerProcess == null)
             {
+                UploadFileOnHelix(_applicationHostConfig, "noworkerprocess.applicationHost.config");
                 throw new InvalidOperationException("Site is started but no worker process found");
             }
 
@@ -305,6 +307,7 @@ public class IISDeployer : IISDeployerBase
 
                 serverManager.CommitChanges();
 
+                UploadFileOnHelix(_applicationHostConfig, "redirectionbetween.applicationHost.config");
                 throw new InvalidOperationException("Redirection is enabled between test runs.");
             }
 
@@ -361,9 +364,22 @@ public class IISDeployer : IISDeployerBase
         {
             RetryServerManagerAction(serverManager =>
             {
+                if (serverManager.Sites.Count > 1)
+                {
+                    UploadFileOnHelix(_applicationHostConfig, "moresites.applicationHost.config");
+                    throw new InvalidOperationException("More than one site not expected");
+                }
+
+                if (serverManager.ApplicationPools.Count > 1)
+                {
+                    UploadFileOnHelix(_applicationHostConfig, "moreapppool.applicationHost.config");
+                    throw new InvalidOperationException("More than one app pool not expected");
+                }
+
                 var site = serverManager.Sites.SingleOrDefault();
                 if (site == null)
                 {
+                    UploadFileOnHelix(_applicationHostConfig, "sitenotfound.applicationHost.config");
                     throw new InvalidOperationException("Site not found");
                 }
 
@@ -376,6 +392,7 @@ public class IISDeployer : IISDeployerBase
                 var appPool = serverManager.ApplicationPools.SingleOrDefault();
                 if (appPool == null)
                 {
+                    UploadFileOnHelix(_applicationHostConfig, "apppoolnotfound.applicationHost.config");
                     throw new InvalidOperationException("Application pool not found");
                 }
 
@@ -440,7 +457,7 @@ public class IISDeployer : IISDeployerBase
         }
     }
 
-    private static void RetryServerManagerAction(Action<ServerManager> action)
+    private void RetryServerManagerAction(Action<ServerManager> action)
     {
         List<Exception> exceptions = null;
         var sw = Stopwatch.StartNew();
@@ -473,6 +490,18 @@ public class IISDeployer : IISDeployerBase
             delay *= 1.5;
         }
 
+        // Try to upload the applicationHost config on helix to help debug
+        UploadFileOnHelix(_applicationHostConfig, "serverManagerRetryFailed.applicationHost.config");
+
         throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
+    }
+
+    private static void UploadFileOnHelix(string filePath, string uploadFileName)
+    {
+        var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+        if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
+        {
+            File.Copy(filePath, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName));
+        }
     }
 }
