@@ -7,7 +7,6 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
-using Serilog.Events;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
