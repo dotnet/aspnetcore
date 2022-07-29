@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
+using Serilog.Events;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
@@ -366,20 +367,20 @@ public class IISDeployer : IISDeployerBase
             {
                 if (serverManager.Sites.Count > 1)
                 {
-                    UploadFileOnHelix(_applicationHostConfig, "moresites.applicationHost.config");
+                    UploadConfigFiles("moresites");
                     throw new InvalidOperationException("More than one site not expected");
                 }
 
                 if (serverManager.ApplicationPools.Count > 1)
                 {
-                    UploadFileOnHelix(_applicationHostConfig, "moreapppool.applicationHost.config");
+                    UploadConfigFiles("moreapppool");
                     throw new InvalidOperationException("More than one app pool not expected");
                 }
 
                 var site = serverManager.Sites.SingleOrDefault();
                 if (site == null)
                 {
-                    UploadFileOnHelix(_applicationHostConfig, "sitenotfound.applicationHost.config");
+                    UploadConfigFiles("sitenotfound");
                     throw new InvalidOperationException("Site not found");
                 }
 
@@ -392,7 +393,7 @@ public class IISDeployer : IISDeployerBase
                 var appPool = serverManager.ApplicationPools.SingleOrDefault();
                 if (appPool == null)
                 {
-                    UploadFileOnHelix(_applicationHostConfig, "apppoolnotfound.applicationHost.config");
+                    UploadConfigFiles("apppoolnotfound");
                     throw new InvalidOperationException("Application pool not found");
                 }
 
@@ -491,7 +492,7 @@ public class IISDeployer : IISDeployerBase
         }
 
         // Try to upload the applicationHost config on helix to help debug
-        UploadFileOnHelix(_applicationHostConfig, "serverManagerRetryFailed.applicationHost.config");
+        UploadConfigFiles("serverManagerRetryFailed");
 
         throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
     }
@@ -499,9 +500,16 @@ public class IISDeployer : IISDeployerBase
     private static void UploadFileOnHelix(string filePath, string uploadFileName)
     {
         var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-        if (!string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
-        {
-            File.Copy(filePath, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName));
-        }
+        var uploadPath = string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT)
+            ? Path.Combine(Path.GetTempPath(), uploadFileName)
+            : Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName);
+        File.Copy(filePath, uploadPath, overwrite: true);
     }
+
+    private void UploadConfigFiles(string uploadFilePrefix)
+    {
+        UploadFileOnHelix(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), uploadFilePrefix+".web.config");
+        UploadFileOnHelix(_applicationHostConfig, uploadFilePrefix + ".applicationHost.config");
+    }
+
 }
