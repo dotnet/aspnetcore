@@ -499,7 +499,7 @@ public class IISDeployer : IISDeployerBase
     private static void UploadFileOnHelix(string filePath, string uploadFileName)
     {
         var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-        if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
+        if (!string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
         {
             File.Copy(filePath, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName));
         }
