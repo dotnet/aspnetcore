@@ -501,7 +501,7 @@ public class IISDeployer : IISDeployerBase
         var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
         if (!string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
         {
-            File.Copy(filePath, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName));
+            File.Copy(filePath, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName, overwrite: true));
         }
     }
 }
