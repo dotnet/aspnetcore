@@ -474,6 +474,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         catch (ChannelClosedException ex)
         {
             // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
+            Log.FailedStreaming(_logger, invocationId, descriptor.MethodExecutor.MethodInfo.Name, ex.InnerException ?? ex);
             error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex.InnerException ?? ex, _enableDetailedErrors);
         }
         catch (Exception ex)
@@ -481,6 +482,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
             if (!(ex is OperationCanceledException && streamCts.IsCancellationRequested))
             {
+                Log.FailedStreaming(_logger, invocationId, descriptor.MethodExecutor.MethodInfo.Name, ex);
                 error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex, _enableDetailedErrors);
             }
         }

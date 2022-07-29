@@ -31,11 +31,9 @@ public class WorkerTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/sdk/issues/12831")]
     [InlineData("C#", null)]
     [InlineData("C#", new [] { ArgConstants.UseProgramMain })]
     [InlineData("F#", null)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25404")]
     public async Task WorkerTemplateAsync(string language, string[] args)
     {
         var project = await ProjectFactory.CreateProject(Output);

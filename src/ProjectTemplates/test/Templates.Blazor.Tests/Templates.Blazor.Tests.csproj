@@ -1,26 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
+    <TestGroupName>ProjectTemplates.Blazor.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-
     <BaseOutputPath />
     <OutputPath />
+
+    <!-- https://github.com/dotnet/aspnetcore/issues/38818 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
 
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
-    <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
+    <RestoreFolderName>Blazor</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
-    <SkipHelixQueues>
-      $(HelixQueueArmDebian11);
-    </SkipHelixQueues>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,22 +27,28 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
     <Compile Include="..\..\Shared\**" LinkBase="Helpers" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
-    <Content Include="..\..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
+    <Content Include="playwrightSettings.*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>playwrightSettings.json</DependentUpon>
+    </Content>
+    <Content Include="playwrightSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <HelixContent Include="$(OutputPath)$(TargetFramework)Assets\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="AngleSharp" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
@@ -52,17 +56,19 @@
 
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
-    <ProjectReference Include="../../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj"
+    <ProjectReference Include="..\..\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</PreserveExistingLogsInOutput>
-    <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == ''">false</PreserveExistingLogsInOutput>
-  </PropertyGroup>
+  <!-- Shared testing infrastructure for running E2E template tests -->
+  <Import Project="..\..\TestInfrastructure\PrepareForTest.targets" />
 
-  <!-- Shared testing infrastructure for running E2E tests -->
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="..\..\TestInfrastructure\PrepareForTest.targets" />
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(OutputPath).playwright\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
+  </Target>
 </Project>

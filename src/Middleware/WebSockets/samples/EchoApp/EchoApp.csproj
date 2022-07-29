@@ -6,12 +6,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

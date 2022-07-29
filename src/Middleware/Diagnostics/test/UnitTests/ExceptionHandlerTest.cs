@@ -523,7 +523,8 @@ public class ExceptionHandlerTest
         // Assert
         Assert.Equal("An error occurred when configuring the exception handler middleware. " +
             "Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. " +
-            "Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options => { ... });'.",
+            "Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options => { ... });' " +
+            "or configure to generate a 'ProblemDetails' response in 'service.AddProblemDetails()'.",
             exception.Message);
     }
 

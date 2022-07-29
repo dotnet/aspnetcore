@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -19,6 +16,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 internal abstract class CertificateManager
 {
     internal const int CurrentAspNetCoreCertificateVersion = 2;
+
+    // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
     internal const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
 
@@ -78,7 +77,7 @@ internal abstract class CertificateManager
         {
             using var store = new X509Store(storeName, location);
             store.Open(OpenFlags.ReadOnly);
-            certificates.AddRange(store.Certificates.OfType<X509Certificate2>());
+            PopulateCertificatesFromStore(store, certificates);
             IEnumerable<X509Certificate2> matchingCertificates = certificates;
             matchingCertificates = matchingCertificates
                 .Where(c => HasOid(c, AspNetHttpsOid));
@@ -159,6 +158,11 @@ internal abstract class CertificateManager
             currentDate <= certificate.NotAfter &&
             (!requireExportable || IsExportable(certificate)) &&
             GetCertificateVersion(certificate) >= AspNetHttpsCertificateVersion;
+    }
+
+    protected virtual void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
+    {
+        certificates.AddRange(store.Certificates.OfType<X509Certificate2>());
     }
 
     public IList<X509Certificate2> GetHttpsCertificates() =>
@@ -340,6 +344,15 @@ internal abstract class CertificateManager
                 result = EnsureCertificateResult.FailedToTrustTheCertificate;
                 return result;
             }
+
+            if (result == EnsureCertificateResult.ValidCertificatePresent)
+            {
+                result = EnsureCertificateResult.ExistingHttpsCertificateTrusted;
+            }
+            else
+            {
+                result = EnsureCertificateResult.NewHttpsCertificateTrusted;
+            }
         }
 
         DisposeCertificates(!isNewCertificate ? certificates : certificates.Append(certificate));
@@ -411,13 +424,6 @@ internal abstract class CertificateManager
 
     public void CleanupHttpsCertificates()
     {
-        // On OS X we don't have a good way to manage trusted certificates in the system keychain
-        // so we do everything by invoking the native toolchain.
-        // This has some limitations, like for example not being able to identify our custom OID extension. For that
-        // matter, when we are cleaning up certificates on the machine, we start by removing the trusted certificates.
-        // To do this, we list the certificates that we can identify on the current user personal store and we invoke
-        // the native toolchain to remove them from the sytem keychain. Once we have removed the trusted certificates,
-        // we remove the certificates from the local user store to finish up the cleanup.
         var certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false);
         var filteredCertificates = certificates.Where(c => c.Subject == Subject);
 
@@ -430,6 +436,8 @@ internal abstract class CertificateManager
 
         foreach (var certificate in filteredCertificates)
         {
+            // RemoveLocations.All will first remove from the trusted roots (e.g. keychain on
+            // macOS) and then from the local user store.
             RemoveCertificate(certificate, RemoveLocations.All);
         }
     }
@@ -745,7 +753,7 @@ internal abstract class CertificateManager
         }
     }
 
-    private static void RemoveCertificateFromUserStore(X509Certificate2 certificate)
+    protected virtual void RemoveCertificateFromUserStore(X509Certificate2 certificate)
     {
         try
         {
@@ -753,14 +761,7 @@ internal abstract class CertificateManager
             {
                 Log.RemoveCertificateFromUserStoreStart(GetDescription(certificate));
             }
-            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
-            store.Open(OpenFlags.ReadWrite);
-            var matching = store.Certificates
-                .OfType<X509Certificate2>()
-                .Single(c => c.SerialNumber == certificate.SerialNumber);
-
-            store.Remove(matching);
-            store.Close();
+            RemoveCertificateFromUserStoreCore(certificate);
             Log.RemoveCertificateFromUserStoreEnd();
         }
         catch (Exception ex) when (Log.IsEnabled())
@@ -768,6 +769,17 @@ internal abstract class CertificateManager
             Log.RemoveCertificateFromUserStoreError(ex.ToString());
             throw;
         }
+    }
+
+    protected virtual void RemoveCertificateFromUserStoreCore(X509Certificate2 certificate)
+    {
+        using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadWrite);
+        var matching = store.Certificates
+            .OfType<X509Certificate2>()
+            .Single(c => c.SerialNumber == certificate.SerialNumber);
+
+        store.Remove(matching);
     }
 
     internal static string ToCertificateDescription(IEnumerable<X509Certificate2> certificates)
@@ -944,8 +956,8 @@ internal abstract class CertificateManager
         [Event(55, Level = EventLevel.Verbose, Message = "Finished importing the certificate to the keychain.")]
         internal void MacOSAddCertificateToKeyChainEnd() => WriteEvent(55);
 
-        [Event(56, Level = EventLevel.Error, Message = "An error has occurred while importing the certificate to the keychain: {0}.")]
-        internal void MacOSAddCertificateToKeyChainError(int exitCode) => WriteEvent(56, exitCode);
+        [Event(56, Level = EventLevel.Error, Message = "An error has occurred while importing the certificate to the keychain: {0}, {1}")]
+        internal void MacOSAddCertificateToKeyChainError(int exitCode, string output) => WriteEvent(56, exitCode, output);
 
         [Event(57, Level = EventLevel.Verbose, Message = "Writing the certificate to: {0}.")]
         public void WritePemKeyToDisk(string path) => WriteEvent(57, path);
@@ -970,6 +982,27 @@ internal abstract class CertificateManager
 
         [Event(64, Level = EventLevel.Error, Message = "The provided certificate '{0}' is not a valid ASP.NET Core HTTPS development certificate.")]
         internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, description);
+
+        [Event(65, Level = EventLevel.Verbose, Message = "The certificate is already trusted.")]
+        public void MacOSCertificateAlreadyTrusted() => WriteEvent(65);
+
+        [Event(66, Level = EventLevel.Verbose, Message = "Saving the certificate {1} to the user profile folder '{0}'.")]
+        internal void MacOSAddCertificateToUserProfileDirStart(string directory, string certificate) => WriteEvent(66, directory, certificate);
+
+        [Event(67, Level = EventLevel.Verbose, Message = "Finished saving the certificate to the user profile folder.")]
+        internal void MacOSAddCertificateToUserProfileDirEnd() => WriteEvent(67);
+
+        [Event(68, Level = EventLevel.Error, Message = "An error has occurred while saving certificate '{0}' in the user profile folder: {1}.")]
+        internal void MacOSAddCertificateToUserProfileDirError(string certificateThumbprint, string errorMessage) => WriteEvent(68, certificateThumbprint, errorMessage);
+
+        [Event(69, Level = EventLevel.Error, Message = "An error has occurred while removing certificate '{0}' from the user profile folder: {1}.")]
+        internal void MacOSRemoveCertificateFromUserProfileDirError(string certificateThumbprint, string errorMessage) => WriteEvent(69, certificateThumbprint, errorMessage);
+
+        [Event(70, Level = EventLevel.Error, Message = "The file '{0}' is not a valid certificate.")]
+        internal void MacOSFileIsNotAValidCertificate(string path) => WriteEvent(70, path);
+
+        [Event(71, Level = EventLevel.Warning, Message = "The on-disk store directory was not found.")]
+        internal void MacOSDiskStoreDoesNotExist() => WriteEvent(71);
     }
 
     internal sealed class UserCancelledTrustException : Exception

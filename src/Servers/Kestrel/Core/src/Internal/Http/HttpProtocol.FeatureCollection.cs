@@ -149,7 +149,7 @@ internal partial class HttpProtocol
 
     bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
-    bool IHttpExtendedConnectFeature.IsExtendedConnect => IsConnectRequest;
+    bool IHttpExtendedConnectFeature.IsExtendedConnect => IsExtendedConnectRequest;
 
     string? IHttpExtendedConnectFeature.Protocol => ConnectProtocol;
 
@@ -195,7 +195,7 @@ internal partial class HttpProtocol
         set => AllowSynchronousIO = value;
     }
 
-    bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || IsUpgraded;
+    bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || IsUpgraded || IsExtendedConnectRequest;
 
     long? IHttpMaxRequestBodySizeFeature.MaxRequestBodySize
     {
@@ -290,12 +290,12 @@ internal partial class HttpProtocol
 
     async ValueTask<Stream> IHttpExtendedConnectFeature.AcceptAsync()
     {
-        if (!IsConnectRequest)
+        if (!IsExtendedConnectRequest)
         {
             throw new InvalidOperationException(CoreStrings.CannotAcceptNonConnectRequest);
         }
 
-        if (IsUpgraded)
+        if (IsExtendedConnectAccepted)
         {
             throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
         }
@@ -305,7 +305,7 @@ internal partial class HttpProtocol
             throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe200);
         }
 
-        IsUpgraded = true;
+        IsExtendedConnectAccepted = true;
 
         await FlushAsync();
 
@@ -342,4 +342,12 @@ internal partial class HttpProtocol
     {
         return CompleteAsync();
     }
+
+#pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
+    public bool IsWebTransportRequest { get; set; }
+    public virtual ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+    {
+        throw new NotSupportedException();
+    }
+#pragma warning restore CA2252
 }

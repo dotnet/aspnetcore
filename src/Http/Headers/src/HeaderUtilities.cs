@@ -553,7 +553,7 @@ public static class HeaderUtilities
             return string.Create(31, dateTime, (span, dt) =>
             {
                 span[0] = span[30] = '"';
-                dt.TryFormat(span.Slice(1), out _, "r");
+                dt.TryFormat(span.Slice(1), out _, "r", CultureInfo.InvariantCulture);
             });
         }
 

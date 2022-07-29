@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
@@ -32,14 +31,14 @@ internal sealed class JsonConverterFactoryForWellKnownTypes : JsonConverterFacto
             return false;
         }
 
-        return WellKnownTypeNames.ContainsKey(descriptor.FullName);
+        return JsonConverterHelper.WellKnownTypeNames.ContainsKey(descriptor.FullName);
     }
 
     public override JsonConverter CreateConverter(
         Type typeToConvert, JsonSerializerOptions options)
     {
         var descriptor = JsonConverterHelper.GetMessageDescriptor(typeToConvert)!;
-        var converterType = WellKnownTypeNames[descriptor.FullName];
+        var converterType = JsonConverterHelper.WellKnownTypeNames[descriptor.FullName];
 
         var converter = (JsonConverter)Activator.CreateInstance(
             converterType.MakeGenericType(new Type[] { typeToConvert }),
@@ -50,15 +49,4 @@ internal sealed class JsonConverterFactoryForWellKnownTypes : JsonConverterFacto
 
         return converter;
     }
-
-    private static readonly Dictionary<string, Type> WellKnownTypeNames = new Dictionary<string, Type>
-    {
-        [Any.Descriptor.FullName] = typeof(AnyConverter<>),
-        [Duration.Descriptor.FullName] = typeof(DurationConverter<>),
-        [Timestamp.Descriptor.FullName] = typeof(TimestampConverter<>),
-        [FieldMask.Descriptor.FullName] = typeof(FieldMaskConverter<>),
-        [Struct.Descriptor.FullName] = typeof(StructConverter<>),
-        [ListValue.Descriptor.FullName] = typeof(ListValueConverter<>),
-        [Value.Descriptor.FullName] = typeof(ValueConverter<>),
-    };
 }

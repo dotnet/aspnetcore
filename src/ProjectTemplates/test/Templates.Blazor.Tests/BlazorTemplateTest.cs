@@ -2,42 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNetCore.BrowserTesting;
 using Templates.Test.Helpers;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Templates.Blazor.Test;
+namespace BlazorTemplates.Tests;
 
-public abstract class BlazorTemplateTest : LoggedTest
+public abstract class BlazorTemplateTest : BrowserTestBase
 {
+    public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
+
     public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
     {
         ProjectFactory = projectFactory;
     }
 
     public ProjectFactoryFixture ProjectFactory { get; set; }
-
-    private ITestOutputHelper _output;
-    public ITestOutputHelper Output
-    {
-        get
-        {
-            if (_output == null)
-            {
-                _output = new TestOutputLogger(Logger);
-            }
-            return _output;
-        }
-    }
 
     public abstract string ProjectType { get; }
 
@@ -52,23 +35,8 @@ public abstract class BlazorTemplateTest : LoggedTest
             project.TargetFramework = targetFramework;
         }
 
-        var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
+        var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
-
-        if (serverProject || auth is null)
-        {
-            // External auth mechanisms (which is any auth at all for Blazor WASM) require https to work and thus don't honor the --no-https flag
-            var requiresHttps = string.Equals(auth, "IndividualB2C", StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(auth, "SingleOrg", StringComparison.OrdinalIgnoreCase)
-                                || (!serverProject && auth is not null);
-            var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
-            var expectedLaunchProfileNames = requiresHttps
-                ? new[] { "https", "IIS Express" }
-                : noHttps
-                    ? new[] { "http", "IIS Express" }
-                    : new[] { "http", "https", "IIS Express" };
-            await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        }
 
         if (!onlyCreate)
         {
@@ -80,6 +48,13 @@ public abstract class BlazorTemplateTest : LoggedTest
 
             var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: false);
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", targetProject, publishResult));
+
+            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
+            // later, while the opposite is not true.
+
+            var buildResult = await targetProject.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", targetProject, buildResult));
         }
 
         return project;
@@ -102,5 +77,21 @@ public abstract class BlazorTemplateTest : LoggedTest
         };
 
         return subProject;
+    }
+
+    public static bool TryValidateBrowserRequired(BrowserKind browserKind, bool isRequired, out string error)
+    {
+        error = !isRequired ? null : $"Browser '{browserKind}' is required but not configured on '{RuntimeInformation.OSDescription}'";
+        return isRequired;
+    }
+
+    protected void EnsureBrowserAvailable(BrowserKind browserKind)
+    {
+        Assert.False(
+            TryValidateBrowserRequired(
+                browserKind,
+                isRequired: !BrowserManager.IsExplicitlyDisabled(browserKind),
+                out var errorMessage),
+            errorMessage);
     }
 }

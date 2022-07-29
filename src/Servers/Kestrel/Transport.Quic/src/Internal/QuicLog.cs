@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Security;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -151,7 +152,7 @@ internal static partial class QuicLog
         }
     }
 
-    [LoggerMessage(14, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read side aborted by application with error code {ErrorCode} because: ""{Reason}"".", SkipEnabledCheck = true)]
+    [LoggerMessage(14, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read side aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbortRead", SkipEnabledCheck = true)]
     private static partial void StreamAbortReadCore(ILogger logger, string connectionId, long errorCode, string reason);
 
     public static void StreamAbortRead(ILogger logger, QuicStreamContext streamContext, long errorCode, string reason)
@@ -162,7 +163,7 @@ internal static partial class QuicLog
         }
     }
 
-    [LoggerMessage(15, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write side aborted by application with error code {ErrorCode} because: ""{Reason}"".", SkipEnabledCheck = true)]
+    [LoggerMessage(15, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write side aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbortWrite", SkipEnabledCheck = true)]
     private static partial void StreamAbortWriteCore(ILogger logger, string connectionId, long errorCode, string reason);
 
     public static void StreamAbortWrite(ILogger logger, QuicStreamContext streamContext, long errorCode, string reason)
@@ -172,6 +173,35 @@ internal static partial class QuicLog
             StreamAbortWriteCore(logger, streamContext.ConnectionId, errorCode, reason);
         }
     }
+
+    [LoggerMessage(16, LogLevel.Trace, @"Stream id ""{ConnectionId}"" pooled for reuse.", EventName = "StreamPooled", SkipEnabledCheck = true)]
+    private static partial void StreamPooledCore(ILogger logger, string connectionId);
+
+    public static void StreamPooled(ILogger logger, QuicStreamContext streamContext)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            StreamPooledCore(logger, streamContext.ConnectionId);
+        }
+    }
+
+    [LoggerMessage(17, LogLevel.Trace, @"Stream id ""{ConnectionId}"" reused from pool.", EventName = "StreamReused", SkipEnabledCheck = true)]
+    private static partial void StreamReusedCore(ILogger logger, string connectionId);
+
+    public static void StreamReused(ILogger logger, QuicStreamContext streamContext)
+    {
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            StreamReusedCore(logger, streamContext.ConnectionId);
+        }
+    }
+
+    [LoggerMessage(18, LogLevel.Warning, $"{nameof(SslServerAuthenticationOptions)} must provide a server certificate using {nameof(SslServerAuthenticationOptions.ServerCertificate)}," +
+        $" {nameof(SslServerAuthenticationOptions.ServerCertificateContext)}, or {nameof(SslServerAuthenticationOptions.ServerCertificateSelectionCallback)}.", EventName = "ConnectionListenerCertificateNotSpecified")]
+    public static partial void ConnectionListenerCertificateNotSpecified(ILogger logger);
+
+    [LoggerMessage(19, LogLevel.Warning, $"{nameof(SslServerAuthenticationOptions)} must provide at least one application protocol using {nameof(SslServerAuthenticationOptions.ApplicationProtocols)}.", EventName = "ConnectionListenerApplicationProtocolsNotSpecified")]
+    public static partial void ConnectionListenerApplicationProtocolsNotSpecified(ILogger logger);
 
     private static StreamType GetStreamType(QuicStreamContext streamContext) =>
         streamContext.CanRead && streamContext.CanWrite

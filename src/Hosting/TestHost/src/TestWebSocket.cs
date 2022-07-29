@@ -172,10 +172,7 @@ internal sealed class TestWebSocket : WebSocket
 
     private void ThrowIfDisposed()
     {
-        if (_state >= WebSocketState.Closed) // or Aborted
-        {
-            throw new ObjectDisposedException(typeof(TestWebSocket).FullName);
-        }
+        ObjectDisposedException.ThrowIf(_state >= WebSocketState.Closed, typeof(TestWebSocket)); // or Aborted
     }
 
     private void ThrowIfOutputClosed()
@@ -282,10 +279,8 @@ internal sealed class TestWebSocket : WebSocket
         {
             lock (_messageQueue)
             {
-                if (_senderClosed)
-                {
-                    throw new ObjectDisposedException(typeof(TestWebSocket).FullName);
-                }
+                ObjectDisposedException.ThrowIf(_senderClosed, typeof(TestWebSocket));
+
                 if (_receiverClosed)
                 {
                     throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
@@ -335,14 +330,10 @@ internal sealed class TestWebSocket : WebSocket
 
         private void ThrowNoReceive()
         {
-            if (_receiverClosed)
-            {
-                throw new ObjectDisposedException(typeof(TestWebSocket).FullName);
-            }
-            else // _senderClosed
-            {
-                throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
-            }
+            ObjectDisposedException.ThrowIf(_receiverClosed, typeof(TestWebSocket));
+            
+            // _senderClosed must be true.
+            throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
         }
     }
 }

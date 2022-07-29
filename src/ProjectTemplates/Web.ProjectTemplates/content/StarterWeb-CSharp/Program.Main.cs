@@ -142,11 +142,6 @@ public class Program
 
         app.UseRouting();
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
-        #endif
-        app.UseAuthorization();
-
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");

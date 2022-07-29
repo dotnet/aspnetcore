@@ -74,6 +74,7 @@ public class RouteView : IComponent
     /// </summary>
     /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
     [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
         var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType

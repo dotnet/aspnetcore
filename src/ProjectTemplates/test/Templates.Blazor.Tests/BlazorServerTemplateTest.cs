@@ -3,16 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Playwright;
+using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
-namespace Templates.Blazor.Test;
+namespace BlazorTemplates.Tests;
 
 public class BlazorServerTemplateTest : BlazorTemplateTest
 {
@@ -23,71 +25,167 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver";
 
-    [Fact]
-    public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync();
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30761")]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync();
 
-    [Fact]
-    public Task BlazorServerTemplate_NoHttps_Works_NoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps });
+        await using var browser = BrowserManager.IsAvailable(browserKind) ?
+            await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
+            null;
 
-    [Fact]
-    public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain });
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-    [Fact]
-    public Task BlazorServerTemplate_NoHttps_Works_ProgamMainNoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps});
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-    [ConditionalTheory]
-    [InlineData("Individual", null)]
-    [InlineData("Individual", new [] { ArgConstants.UseProgramMain })]
+            if (BrowserManager.IsAvailable(browserKind))
+            {
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
+                await TestBasicNavigation(page);
+                await page.CloseAsync();
+            }
+            else
+            {
+                EnsureBrowserAvailable(browserKind);
+            }
+        }
+
+        using (var aspNetProcess = project.StartPublishedProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            if (BrowserManager.IsAvailable(browserKind))
+            {
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
+                await TestBasicNavigation(page);
+                await page.CloseAsync();
+            }
+            else
+            {
+                EnsureBrowserAvailable(browserKind);
+            }
+        }
+    }
+
+    public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
+            BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
+
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
+    [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-    public Task BlazorServerTemplateWorks_IndividualAuth(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
+    public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync();
 
-    [ConditionalTheory]
-    [InlineData("Individual", new[] { ArgConstants.NoHttps })]
-    [InlineData("Individual", new [] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-    public Task BlazorServerTemplateWorks_IndividualAuth_NoHttps(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
+        var browser = !BrowserManager.IsAvailable(browserKind) ?
+            null :
+            await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
 
-    [ConditionalTheory]
-    [InlineData("Individual", new [] { ArgConstants.UseLocalDb })]
-    [InlineData("Individual", new [] { ArgConstants.UseProgramMain, ArgConstants.UseLocalDb })]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
-    public Task BlazorServerTemplateWorks_IndividualAuth_LocalDb(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-    [ConditionalTheory]
-    [InlineData("Individual", new[] { ArgConstants.UseLocalDb, ArgConstants.NoHttps })]
-    [InlineData("Individual", new[] { ArgConstants.UseProgramMain, ArgConstants.UseLocalDb, ArgConstants.NoHttps })]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
-    public Task BlazorServerTemplateWorks_IndividualAuth_NoHttps_LocalDb(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            if (BrowserManager.IsAvailable(browserKind))
+            {
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
+                await TestBasicNavigation(page);
+                await page.CloseAsync();
+            }
+            else
+            {
+                EnsureBrowserAvailable(browserKind);
+            }
+        }
 
-    [Theory]
+        using (var aspNetProcess = project.StartPublishedProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            if (BrowserManager.IsAvailable(browserKind))
+            {
+                var page = await browser.NewPageAsync();
+                await aspNetProcess.VisitInBrowserAsync(page);
+                await TestBasicNavigation(page);
+                await page.CloseAsync();
+            }
+            else
+            {
+                EnsureBrowserAvailable(browserKind);
+            }
+        }
+    }
+
+    private async Task TestBasicNavigation(IPage page)
+    {
+        var socket = await page.WaitForWebSocketAsync();
+
+        var framesReceived = 0;
+        var framesSent = 0;
+
+        void FrameReceived(object sender, IWebSocketFrame frame) { framesReceived++; }
+        void FrameSent(object sender, IWebSocketFrame frame) { framesSent++; }
+
+        socket.FrameReceived += FrameReceived;
+        socket.FrameSent += FrameSent;
+
+        // Receive render batch
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 1 });
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 1 });
+
+        // JS interop call to intercept navigation
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 2 });
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 2 });
+
+        socket.FrameReceived -= FrameReceived;
+        socket.FrameSent -= FrameSent;
+
+        await page.WaitForSelectorAsync("nav");
+        // <title> element gets project ID injected into it during template execution
+        Assert.Equal("Index", (await page.TitleAsync()).Trim());
+
+        // Initially displays the home page
+        await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
+
+        // Can navigate to the counter page
+        await page.ClickAsync("a[href=counter] >> text=Counter");
+        await page.WaitForSelectorAsync("h1+p >> text=Current count: 0");
+
+        // Clicking the counter button works
+        await page.ClickAsync("p+button >> text=Click me");
+        await page.WaitForSelectorAsync("h1+p >> text=Current count: 1");
+
+        // Can navigate to the 'fetch data' page
+        await page.ClickAsync("a[href=fetchdata] >> text=Fetch data");
+        await page.WaitForSelectorAsync("h1 >> text=Weather forecast");
+
+        // Asynchronously loads and displays the table of weather forecasts
+        await page.WaitForSelectorAsync("table>tbody>tr");
+        Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
+    }
+
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
-    [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish_IndividualB2C(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
-
-    [Theory]
-    [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
-    [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish_IndividualB2C_NoHttps(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
-
-    [Theory]
+    [InlineData("IndividualB2C", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
-    [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
-    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
-    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish_SingleOrg(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
-
-    [Theory]
-    [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
-    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish_SingleOrg_NoHttps(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
+    [InlineData("SingleOrg", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("SingleOrg", new [] { "--calls-graph" })]
+    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
+        => CreateBuildPublishAsync(auth, args);
 }

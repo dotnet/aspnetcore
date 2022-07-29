@@ -4,21 +4,23 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal static class DevJwtCliHelpers
 {
-    public static string GetOrSetUserSecretsId(IReporter reporter, string projectFilePath)
+    public static string GetOrSetUserSecretsId(string projectFilePath)
     {
-        var resolver = new ProjectIdResolver(reporter, projectFilePath);
+        var resolver = new ProjectIdResolver(NullReporter.Singleton, projectFilePath);
         var id = resolver.Resolve(projectFilePath, configuration: null);
         if (string.IsNullOrEmpty(id))
         {
-            return UserSecretsCreator.CreateUserSecretsId(reporter, projectFilePath, projectFilePath);
+            return UserSecretsCreator.CreateUserSecretsId(NullReporter.Singleton, projectFilePath, projectFilePath);
         }
         return id;
     }
@@ -46,26 +48,26 @@ internal static class DevJwtCliHelpers
         userSecretsId = null;
         if (project == null)
         {
-            reporter.Error($"No project found at `-p|--project` path or current directory.");
+            reporter.Error(Resources.ProjectOption_ProjectNotFound);
             return false;
         }
 
-        userSecretsId = GetOrSetUserSecretsId(reporter, project);
+        userSecretsId = GetOrSetUserSecretsId(project);
         if (userSecretsId == null)
         {
-            reporter.Error($"Project does not contain a user secrets ID.");
+            reporter.Error(Resources.ProjectOption_SercretIdNotFound);
             return false;
         }
         return true;
     }
 
-    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId)
+    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer)
     {
         var projectConfiguration = new ConfigurationBuilder()
             .AddUserSecrets(userSecretsId)
             .Build();
 
-        var signingKeyMaterial = projectConfiguration[DevJwtsDefaults.SigningKeyConfigurationKey];
+        var signingKeyMaterial = projectConfiguration[GetSigningKeyPropertyName(schemeName, issuer)];
 
         var keyMaterial = new byte[DevJwtsDefaults.SigningKeyLength];
         if (signingKeyMaterial is not null && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten) && bytesWritten == DevJwtsDefaults.SigningKeyLength)
@@ -73,33 +75,34 @@ internal static class DevJwtCliHelpers
             return keyMaterial;
         }
 
-        return CreateSigningKeyMaterial(userSecretsId);
+        return CreateSigningKeyMaterial(userSecretsId, schemeName, issuer);
     }
 
-    public static byte[] CreateSigningKeyMaterial(string userSecretsId, bool reset = false)
+    public static byte[] CreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer, bool reset = false)
     {
         // Create signing material and save to user secrets
         var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(DevJwtsDefaults.SigningKeyLength);
         var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
         Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
 
-        IDictionary<string, string> secrets = null;
+        JsonObject secrets = null;
         if (File.Exists(secretsFilePath))
         {
             using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
             if (secretsFileStream.Length > 0)
             {
-                secrets = JsonSerializer.Deserialize<IDictionary<string, string>>(secretsFileStream) ?? new Dictionary<string, string>();
+                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream);
             }
         }
 
-        secrets ??= new Dictionary<string, string>();
+        secrets ??= new JsonObject();
+        var key = GetSigningKeyPropertyName(schemeName, issuer);
 
-        if (reset && secrets.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey))
+        if (reset && secrets.ContainsKey(key))
         {
-            secrets.Remove(DevJwtsDefaults.SigningKeyConfigurationKey);
+            secrets.Remove(key);
         }
-        secrets.Add(DevJwtsDefaults.SigningKeyConfigurationKey, Convert.ToBase64String(newKeyMaterial));
+        secrets.Add(key, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
 
         using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
         JsonSerializer.Serialize(secretsWriteStream, secrets);
@@ -107,54 +110,130 @@ internal static class DevJwtCliHelpers
         return newKeyMaterial;
     }
 
-    public static string[] GetAudienceCandidatesFromLaunchSettings(string project)
+    public static List<string> GetAudienceCandidatesFromLaunchSettings(string project)
     {
-        ArgumentException.ThrowIfNullOrEmpty(nameof(project));
+        if (string.IsNullOrEmpty(project))
+        {
+            return new List<string>();
+        }
 
         var launchSettingsFilePath = Path.Combine(Path.GetDirectoryName(project)!, "Properties", "launchSettings.json");
+        var applicationUrls = new HashSet<string>();
         if (File.Exists(launchSettingsFilePath))
         {
             using var launchSettingsFileStream = new FileStream(launchSettingsFilePath, FileMode.Open, FileAccess.Read);
             if (launchSettingsFileStream.Length > 0)
             {
                 var launchSettingsJson = JsonDocument.Parse(launchSettingsFileStream);
+
+                if (ExtractIISExpressUrlFromProfile(launchSettingsJson.RootElement) is { } iisUrls)
+                {
+                    applicationUrls.UnionWith(iisUrls);
+                }
+
                 if (launchSettingsJson.RootElement.TryGetProperty("profiles", out var profiles))
                 {
                     var profilesEnumerator = profiles.EnumerateObject();
                     foreach (var profile in profilesEnumerator)
                     {
-                        if (profile.Value.TryGetProperty("commandName", out var commandName))
+                        if (ExtractKestrelUrlsFromProfile(profile) is { } kestrelUrls)
                         {
-                            if (commandName.ValueEquals("Project"))
-                            {
-                                if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
-                                {
-                                    var value = applicationUrl.GetString();
-                                    if (value is { } applicationUrls)
-                                    {
-                                        return applicationUrls.Split(';');
-                                    }
-                                }
-                            }
+                            applicationUrls.UnionWith(kestrelUrls);
                         }
                     }
                 }
             }
         }
 
-        return null;
+        return applicationUrls.ToList();
+
+        static List<string> ExtractIISExpressUrlFromProfile(JsonElement rootElement)
+        {
+            if (rootElement.TryGetProperty("iisSettings", out var iisSettings))
+            {
+                if (iisSettings.TryGetProperty("iisExpress", out var iisExpress))
+                {
+                    List<string> iisUrls = new();
+                    if (iisExpress.TryGetProperty("applicationUrl", out var iisUrl))
+                    {
+                        iisUrls.Add(iisUrl.GetString());
+                    }
+
+                    if (iisExpress.TryGetProperty("sslPort", out var sslPort))
+                    {
+                        iisUrls.Add($"https://localhost:{sslPort.GetInt32()}");
+                    }
+
+                    return iisUrls;
+                }
+            }
+
+            return null;
+        }
+
+        static string[] ExtractKestrelUrlsFromProfile(JsonProperty profile)
+        {
+            if (profile.Value.TryGetProperty("commandName", out var commandName))
+            {
+                if (commandName.ValueEquals("Project"))
+                {
+                    if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
+                    {
+                        var value = applicationUrl.GetString();
+                        if (value is { } urls)
+                        {
+                            return urls.Split(';');
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
-    public static void PrintJwt(IReporter reporter, Jwt jwt, JwtSecurityToken fullToken = null)
+    public static void PrintJwt(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken = null)
     {
-        reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+        reporter.Output($"{Resources.JwtPrint_Id}: {jwt.Id}");
+        reporter.Output($"{Resources.JwtPrint_Name}: {jwt.Name}");
+        reporter.Output($"{Resources.JwtPrint_Scheme}: {jwt.Scheme}");
+        reporter.Output($"{Resources.JwtPrint_Audiences}: {jwt.Audience}");
+        reporter.Output($"{Resources.JwtPrint_NotBefore}: {jwt.NotBefore:O}");
+        reporter.Output($"{Resources.JwtPrint_ExpiresOn}: {jwt.Expires:O}");
+        reporter.Output($"{Resources.JwtPrint_IssuedOn}: {jwt.Issued:O}");
 
-        if (fullToken is not null)
+        if (!jwt.Scopes.IsNullOrEmpty() || showAll)
         {
-            reporter.Output($"Token Header: {fullToken.Header.SerializeToJson()}");
-            reporter.Output($"Token Payload: {fullToken.Payload.SerializeToJson()}");
+            var scopesValue = jwt.Scopes.IsNullOrEmpty()
+                ? "none"
+                : string.Join(", ", jwt.Scopes);
+            reporter.Output($"{Resources.JwtPrint_Scopes}: {scopesValue}");
         }
-        reporter.Output($"Compact Token: {jwt.Token}");
+
+        if (!jwt.Roles.IsNullOrEmpty() || showAll)
+        {
+            var rolesValue = jwt.Roles.IsNullOrEmpty()
+                ? "none"
+                : string.Join(", ", jwt.Roles);
+            reporter.Output($"{Resources.JwtPrint_Roles}: [{rolesValue}]");
+        }
+
+        if (!jwt.CustomClaims.IsNullOrEmpty() || showAll)
+        {
+            var customClaimsValue = jwt.CustomClaims.IsNullOrEmpty()
+                ? "none"
+                : string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            reporter.Output($"{Resources.JwtPrint_CustomClaims}: [{customClaimsValue}]");
+        }
+
+        if (showAll)
+        {
+            reporter.Output($"{Resources.JwtPrint_TokenHeader}: {fullToken.Header.SerializeToJson()}");
+            reporter.Output($"{Resources.JwtPrint_TokenPayload}: {fullToken.Payload.SerializeToJson()}");
+        }
+
+        var tokenValueFieldName = showAll ? Resources.JwtPrint_CompactToken : Resources.JwtPrint_Token;
+        reporter.Output($"{tokenValueFieldName}: {jwt.Token}");
     }
 
     public static bool TryParseClaims(List<string> input, out Dictionary<string, string> claims)
@@ -175,4 +254,7 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
+
+    public static string GetSigningKeyPropertyName(string scheme, string issuer)
+        => $"Authentication:Schemes:{scheme}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
 }
