@@ -105,7 +105,9 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     [Inject] internal AuthenticationStateProvider AuthenticationProvider { get; set; }
 
+#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
     [Inject] internal SignOutSessionStateManager SignOutManager { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
 
     [Inject] internal ILogger<RemoteAuthenticatorViewCore<TAuthenticationState>> Logger { get; set; }
 

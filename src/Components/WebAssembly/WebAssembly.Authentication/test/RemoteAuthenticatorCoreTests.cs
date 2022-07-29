@@ -709,7 +709,9 @@ public class RemoteAuthenticatorCoreTests
         }
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
     private class TestSignOutSessionStateManager : SignOutSessionStateManager
+#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
     {
         public TestSignOutSessionStateManager() : base(null)
         {
