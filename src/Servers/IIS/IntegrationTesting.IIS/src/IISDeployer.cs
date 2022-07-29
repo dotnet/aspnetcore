@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Net;
 using System.ServiceProcess;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
@@ -242,7 +243,7 @@ public class IISDeployer : IISDeployerBase
             var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
             if (actualPath != contentRoot)
             {
-                UploadFileOnHelix(_applicationHostConfig, "wrongpath.applicationHost.config");
+                UploadConfigFiles("wrongpath");
                 throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
             }
 
@@ -266,7 +267,7 @@ public class IISDeployer : IISDeployerBase
             var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
             if (workerProcess == null)
             {
-                UploadFileOnHelix(_applicationHostConfig, "noworkerprocess.applicationHost.config");
+                UploadConfigFiles("noworkerprocess");
                 throw new InvalidOperationException("Site is started but no worker process found");
             }
 
@@ -308,7 +309,7 @@ public class IISDeployer : IISDeployerBase
 
                 serverManager.CommitChanges();
 
-                UploadFileOnHelix(_applicationHostConfig, "redirectionbetween.applicationHost.config");
+                UploadConfigFiles("redirectionbetween");
                 throw new InvalidOperationException("Redirection is enabled between test runs.");
             }
 
@@ -497,6 +498,7 @@ public class IISDeployer : IISDeployerBase
         throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
     }
 
+    // This will put the files in your user temp folder when running locally
     private static void UploadFileOnHelix(string filePath, string uploadFileName)
     {
         var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
