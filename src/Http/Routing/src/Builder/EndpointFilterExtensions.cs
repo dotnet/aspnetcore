@@ -117,8 +117,7 @@ public static class EndpointFilterExtensions
                 return;
             }
 
-            routeEndpointBuilder.EndpointFilterFactories ??= new();
-            routeEndpointBuilder.EndpointFilterFactories.Add(filterFactory);
+            routeEndpointBuilder.RouteHandlerFilterFactories.Add(filterFactory);
         });
 
         return builder;

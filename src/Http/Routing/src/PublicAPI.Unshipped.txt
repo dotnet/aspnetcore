@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Http.EndpointFilterExtensions
 Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.Dispose() -> void
+Microsoft.AspNetCore.Routing.RouteEndpointBuilder.RouteHandlerFilterFactories.get -> System.Collections.Generic.IList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>!
 Microsoft.AspNetCore.Routing.RouteGroupBuilder
 Microsoft.AspNetCore.Routing.RouteGroupContext
 Microsoft.AspNetCore.Routing.RouteGroupContext.ApplicationServices.get -> System.IServiceProvider!
