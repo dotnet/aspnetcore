@@ -207,7 +207,7 @@ internal static partial class QuicLog
     [LoggerMessage(20, LogLevel.Debug, "QUIC listener starting with configured endpoint {listenEndPoint}.", EventName = "ConnectionListenerStarting")]
     public static partial void ConnectionListenerStarting(ILogger logger, IPEndPoint listenEndPoint);
 
-    [LoggerMessage(22, LogLevel.Debug, "QUIC listener aborted.", EventName = "ConnectionListenerAborted")]
+    [LoggerMessage(21, LogLevel.Debug, "QUIC listener aborted.", EventName = "ConnectionListenerAborted")]
     public static partial void ConnectionListenerAborted(ILogger logger, Exception exception);
 
     private static StreamType GetStreamType(QuicStreamContext streamContext) =>
