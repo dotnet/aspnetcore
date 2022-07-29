@@ -32,6 +32,16 @@ namespace Microsoft.AspNetCore.Tests
     public class WebApplicationTests
     {
         [Fact]
+        public async Task WebApplicationBuilder_New()
+        {
+            var builder = WebApplication.CreateBuilder(new string[] { "--urls", "http://localhost:5001" });
+
+            await using var app = builder.Build();
+            var newApp = (app as IApplicationBuilder).New();
+            Assert.NotNull(newApp.ServerFeatures);
+        }
+
+        [Fact]
         public async Task WebApplicationBuilderConfiguration_IncludesCommandLineArguments()
         {
             var builder = WebApplication.CreateBuilder(new string[] { "--urls", "http://localhost:5001" });
@@ -1696,13 +1706,13 @@ namespace Microsoft.AspNetCore.Tests
                 createdDirectory = true;
                 Directory.CreateDirectory(wwwroot);
             }
-    
+
             try
             {
                 var builder = WebApplication.CreateBuilder();
-    
+
                 builder.WebHost.ConfigureAppConfiguration((ctx, config) => { });
-    
+
                 using var app = builder.Build();
                 var hostEnv = app.Services.GetRequiredService<Hosting.IWebHostEnvironment>();
                 Assert.Equal(wwwroot, hostEnv.WebRootPath);
