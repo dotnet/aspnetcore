@@ -11,7 +11,7 @@
   "symbols/Framework/choices/net7.0/description": "Docelowe środowisko net7.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/NoHttps/description": "Określa, czy wyłączyć protokół HTTPS. Ta opcja ma zastosowanie tylko wtedy, gdy dla uwierzytelniania --auth nie są używane elementy Individual, IndividualB2C, SingleOrg lub MultiOrg.",
-  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
+  "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""

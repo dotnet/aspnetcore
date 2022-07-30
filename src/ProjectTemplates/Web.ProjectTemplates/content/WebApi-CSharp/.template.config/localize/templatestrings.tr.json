@@ -31,7 +31,7 @@
   "symbols/CallsMicrosoftGraph/description": "Web uygulamasının Microsoft Graph çağırıp çağırmadığını belirtir. Bu seçenek yalnızca --auth SingleOrg belirtilirse geçerlidir.",
   "symbols/CalledApiScopes/description": "Web uygulamasından API çağırma istek kapsamları. Bu seçenek yalnızca --auth SingleOrg veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/DisableOpenAPI/description": "OpenAPI (Swagger) desteğini devre dışı bırak",
-  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
+  "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"

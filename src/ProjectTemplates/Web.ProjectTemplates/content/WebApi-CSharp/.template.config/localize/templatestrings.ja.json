@@ -31,7 +31,7 @@
   "symbols/CallsMicrosoftGraph/description": "Web アプリが Microsoft Graph を呼び出すかどうかを指定します。このオプションは、--auth SingleOrg が指定されている場合にのみ適用されます。",
   "symbols/CalledApiScopes/description": "Web アプリから API を呼び出す要求へのスコープ。このオプションは、--auth SingleOrg または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/DisableOpenAPI/description": "OpenAPI (Swagger) サポートを無効にする",
-  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
+  "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",
   "symbols/UseProgramMain/description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
