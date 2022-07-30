@@ -84,10 +84,14 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
     {
         foreach (var issuer in issuers)
         {
-            var keyFromSecret = configuration[$"{issuer}:KeyMaterial"];
-            if (!string.IsNullOrEmpty(keyFromSecret))
+            var signingKeys = configuration.GetSection("SigningKeys")
+                .GetChildren()
+                .Where(key => key["Issuer"] == issuer)
+                .Select(key => key["Value"])
+                .OfType<string>();
+            foreach (var signingKey in signingKeys)
             {
-                yield return new SymmetricSecurityKey(Convert.FromBase64String(keyFromSecret));
+                yield return new SymmetricSecurityKey(Convert.FromBase64String(signingKey));
             }
         }
     }

@@ -61,67 +61,6 @@ internal static class DevJwtCliHelpers
         return true;
     }
 
-    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string schemeName)
-    {
-        var projectConfiguration = new ConfigurationBuilder()
-            .AddUserSecrets(userSecretsId)
-            .Build();
-
-        var signingKeyMaterial = projectConfiguration[GetSigningKeyValuePropertyName(schemeName)];
-        int signingKeyLength = int.TryParse(projectConfiguration[GetSigningKeyLengthPropertyName(schemeName)], out signingKeyLength)
-            ? signingKeyLength
-            : DevJwtsDefaults.SigningKeyLength;
-
-        var keyMaterial = new byte[signingKeyLength];
-        if (signingKeyMaterial is not null
-            && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten)
-            && bytesWritten == signingKeyLength)
-        {
-            return keyMaterial;
-        }
-
-        return CreateSigningKeyMaterial(userSecretsId, schemeName, signingKeyLength);
-    }
-
-    public static byte[] CreateSigningKeyMaterial(string userSecretsId, string schemeName, int signingKeyLength = 32, bool reset = false)
-    {
-        // Create signing material and save to user secrets
-        var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(signingKeyLength);
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
-        Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
-
-        JsonObject secrets = null;
-        if (File.Exists(secretsFilePath))
-        {
-            using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
-            if (secretsFileStream.Length > 0)
-            {
-                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream);
-            }
-        }
-
-        secrets ??= new JsonObject();
-        var signingKeyValueName = GetSigningKeyValuePropertyName(schemeName);
-        var signingKeyLengthName = GetSigningKeyLengthPropertyName(schemeName);
-
-        if (reset && secrets.ContainsKey(signingKeyValueName))
-        {
-            secrets.Remove(signingKeyValueName);
-        }
-        if (reset && secrets.ContainsKey(signingKeyLengthName))
-        {
-            secrets.Remove(signingKeyLengthName);
-        }
-
-        secrets.Add(signingKeyValueName, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
-        secrets.Add(signingKeyLengthName, JsonValue.Create(signingKeyLength));
-
-        using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
-        JsonSerializer.Serialize(secretsWriteStream, secrets);
-
-        return newKeyMaterial;
-    }
-
     public static List<string> GetAudienceCandidatesFromLaunchSettings(string project)
     {
         if (string.IsNullOrEmpty(project))
@@ -266,13 +205,4 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
-
-    public static string GetSigningKeyValuePropertyName(string scheme)
-        => $"{GetSigningKeyPropertyName(scheme)}:Value";
-
-    public static string GetSigningKeyLengthPropertyName(string scheme)
-        => $"{GetSigningKeyPropertyName(scheme)}:KeyLength";
-
-    public static string GetSigningKeyPropertyName(string scheme)
-        => $"Authentication:Schemes:{scheme}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
 }
