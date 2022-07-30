@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
@@ -122,13 +121,13 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         var order = isFallback ? int.MaxValue : 0;
         var displayName = pattern.RawText ?? pattern.DebuggerToString();
 
-        // Methods defined in a top-level program are generated as statics so the delegate target will be null.
-        // Inline lambdas are compiler generated method so they be filtered that way.
-        if (GeneratedNameParser.TryParseLocalFunctionName(handler.Method.Name, out var endpointName)
-            || !TypeHelper.IsCompilerGeneratedMethod(handler.Method))
+        // Don't include the method name for non-route-handlers because the name is just "Invoke" when built from
+        // ApplicationBuilder.Build(). This was observed in MapSignalRTests and is not very useful. Maybe if we come up
+        // with a better heuristic for what a useful method name is, we could use it for everything. Inline lambdas are
+        // compiler generated methods so they are filtered out even for route handlers.
+        if (isRouteHandler && TypeHelper.TryGetNonCompilerGeneratedMethodName(handler.Method, out var methodName))
         {
-            endpointName ??= handler.Method.Name;
-            displayName = $"{displayName} => {endpointName}";
+            displayName = $"{displayName} => {methodName}";
         }
 
         if (entry.HttpMethods is not null)
