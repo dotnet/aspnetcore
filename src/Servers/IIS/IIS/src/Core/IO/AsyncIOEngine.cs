@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal sealed partial class AsyncIOEngine : IAsyncIOEngine
 {
-    private const ushort responseMaxChunks = 65533;
+    private const ushort ResponseMaxChunks = 65533;
 
     private readonly IISHttpContext _context;
     private readonly NativeSafeHandle _handler;
@@ -64,45 +64,34 @@ internal sealed partial class AsyncIOEngine : IAsyncIOEngine
     */
     private async ValueTask<int> WriteDataOverChunksLimit(ReadOnlySequence<byte> data)
     {
-        var hr = 0;
         ushort segmentsCount = 0;
-        var start = 0;
         var length = 0;
-        int result;
+
+        // since the result is discarded in the only place it's used (IISHttpContext.WriteBody)
+        // we return the last result. If we start using the result there we should make sure we handle the value correctly here
+        var result = 0;
 
         foreach (var segment in data)
         {
             segmentsCount++;
             length += segment.Length;
 
-            if (segmentsCount == responseMaxChunks)
+            if (segmentsCount == ResponseMaxChunks)
             {
-                result = await WriteDataAsync(data.Slice(start, length));
+                result = await WriteDataAsync(data.Slice(0, length));
 
-                SaveResultIfError(result, ref hr);
-
+                data = data.Slice(length);
                 segmentsCount = 0;
-                start = length;
                 length = 0;
             }
         }
 
         if (segmentsCount > 0)
         {
-            result = await WriteDataAsync(data.Slice(start, length));
-
-            SaveResultIfError(result, ref hr);
+            result = await WriteDataAsync(data);
         }
 
-        return hr;
-
-        static void SaveResultIfError(int result, ref int hr)
-        {
-            if (result > 0)
-            {
-                hr = result;
-            }
-        }
+        return result;
     }
 
     private static bool SegmentsOverChunksLimit(in ReadOnlySequence<byte> data)
@@ -118,7 +107,7 @@ internal sealed partial class AsyncIOEngine : IAsyncIOEngine
         {
             count++;
 
-            if (count > responseMaxChunks)
+            if (count > ResponseMaxChunks)
             {
                 return true;
             }
