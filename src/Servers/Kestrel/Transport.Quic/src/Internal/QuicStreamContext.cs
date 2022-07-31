@@ -18,7 +18,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private static readonly ConnectionAbortedException SendGracefullyCompletedException = new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
 
     // Internal for testing.
-    internal Task _processingTask = Task.CompletedTask;
+    internal ValueTask _processingTask = ValueTask.CompletedTask;
 
     private QuicStream? _stream;
     private readonly QuicConnectionContext _connection;
@@ -142,10 +142,14 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     {
         Debug.Assert(_processingTask.IsCompletedSuccessfully);
 
+#pragma warning disable CA2012 // Use ValueTasks correctly
+        // The processing task is awaited in DisposeAsync.
         _processingTask = StartAsync();
+#pragma warning restore CA2012 // Use ValueTasks correctly
     }
 
-    private async Task StartAsync()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask StartAsync()
     {
         Debug.Assert(_stream != null);
 
@@ -178,7 +182,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
-    private async Task WaitForWritesCompleted()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask WaitForWritesClosedAsync()
     {
         Debug.Assert(_stream != null);
 
@@ -374,7 +379,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         // A client can abort a stream after it has finished sending data. We need a way to get that notification
         // which is why we listen for a notification that the write-side of the stream is done.
         // An exception can be thrown from the stream on client abort which will be captured and then wake up the output read.
-        _ = WaitForWritesCompleted();
+        var waitForWritesClosedTask = WaitForWritesClosedAsync();
 
         try
         {
@@ -471,6 +476,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         finally
         {
             ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
+
+            await waitForWritesClosedTask;
 
             // Complete the output after completing stream sends
             Output.Complete(unexpectedError);
