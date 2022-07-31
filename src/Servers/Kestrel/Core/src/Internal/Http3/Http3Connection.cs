@@ -332,12 +332,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Debug.Assert(streamDirectionFeature != null);
                     Debug.Assert(streamIdFeature != null);
 
-                    var context = CreateHttpStreamContext(streamContext);
-
                     // unidirectional stream
                     if (!streamDirectionFeature.CanWrite)
                     {
-                        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                        var context = CreateHttpStreamContext(streamContext);
+
+                        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
                             var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
@@ -369,8 +369,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     // bidirectional stream
                     else
                     {
-                        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
+                            var context = CreateHttpStreamContext(streamContext);
                             var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
                             _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
@@ -386,12 +387,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             }
                             else
                             {
-                                await CreateHttp3Stream(streamContext, context, application, streamIdFeature.StreamId);
+                                await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
                             }
                         }
                         else
                         {
-                            await CreateHttp3Stream(streamContext, context, application, streamIdFeature.StreamId);
+                            await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
                         }
                     }
                 }
@@ -512,7 +513,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private async Task CreateHttp3Stream<TContext>(ConnectionContext streamContext, Http3StreamContext context, IHttpApplication<TContext> application, long streamId) where TContext : notnull
+    private async Task CreateHttp3Stream<TContext>(ConnectionContext streamContext, IHttpApplication<TContext> application, long streamId) where TContext : notnull
     {
         // http request stream
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
@@ -538,7 +539,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         // A stream will only be cached if the transport stream itself is reused.
         if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
         {
-            stream = new Http3Stream<TContext>(application, context);
+            stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
             persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
         }
         else

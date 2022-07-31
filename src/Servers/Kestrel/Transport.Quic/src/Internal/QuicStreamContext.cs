@@ -566,15 +566,17 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 && !_serverAborted
                 && _shutdownReadReason == null
                 && _shutdownWriteReason == null;
-
-            if (!CanReuse)
-            {
-                DisposeCore();
-            }
-
-            _stream.Dispose();
-            _stream = null!;
         }
+
+        if (!CanReuse)
+        {
+            DisposeCore();
+        }
+
+        await _stream.DisposeAsync();
+
+        // QuicStream can't be reused. Don't hang onto it when QuicStreamContext it potentially cached.
+        _stream = null!;
     }
 
     public void Dispose()
