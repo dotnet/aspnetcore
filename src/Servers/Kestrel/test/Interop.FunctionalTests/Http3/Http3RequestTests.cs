@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
@@ -20,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
@@ -700,6 +702,54 @@ public class Http3RequestTests : LoggedTest
 
             // State persisted on first request was available on the second request
             Assert.Equal(1, secondRequestState);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task GET_MultipleRequests_RequestVersionOrHigher_UpgradeToHttp3()
+    {
+        // Arrange
+        var requestHeaders = new List<Dictionary<string, StringValues>>();
+
+        var builder = CreateHostBuilder(context =>
+        {
+            requestHeaders.Add(context.Request.Headers.ToDictionary(k => k.Key, k => k.Value, StringComparer.OrdinalIgnoreCase));
+            return Task.CompletedTask;
+        }, HttpProtocols.Http1AndHttp2AndHttp3);
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            // Act 1
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Headers.Add("id", "1");
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+            var request1Headers = requestHeaders.Single(i => i["id"] == "1");
+
+            // Assert 1
+            Assert.Equal(HttpVersion.Version20, response1.Version);
+            Assert.False(request1Headers.ContainsKey("alt-used"));
+
+            // Act 2
+            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request2.Headers.Add("id", "2");
+            request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
+            var response2 = await client.SendAsync(request2, CancellationToken.None);
+            response2.EnsureSuccessStatusCode();
+            var request2Headers = requestHeaders.Single(i => i["id"] == "2");
+
+            // Assert 2
+            Assert.Equal(HttpVersion.Version30, response2.Version);
+            Assert.True(request2Headers.ContainsKey("alt-used"));
 
             await host.StopAsync();
         }
