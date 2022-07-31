@@ -63,7 +63,7 @@ public static class HeaderNames
     public static readonly string AltSvc = "Alt-Svc";
 
     /// <summary>Gets the <c>Alt-Used</c> HTTP header name.</summary>
-    public static readonly string AltUsed = "Alt-Svc";
+    public static readonly string AltUsed = "Alt-Used";
 
     /// <summary>Gets the <c>:authority</c> HTTP header name.</summary>
     [Obsolete(PseudoHeaderNamesObsoletionMessage, false)]
