@@ -55,6 +55,9 @@ public partial interface IHeaderDictionary
     /// <summary>Gets or sets the <c>Alt-Svc</c> HTTP header.</summary>
     StringValues AltSvc { get => this[HeaderNames.AltSvc]; set => this[HeaderNames.AltSvc] = value; }
 
+    /// <summary>Gets or sets the <c>Alt-Used</c> HTTP header.</summary>
+    StringValues AltUsed { get => this[HeaderNames.AltUsed]; set => this[HeaderNames.AltUsed] = value; }
+
     /// <summary>Gets or sets the <c>Authorization</c> HTTP header.</summary>
     StringValues Authorization { get => this[HeaderNames.Authorization]; set => this[HeaderNames.Authorization] = value; }
 

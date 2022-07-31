@@ -152,6 +152,7 @@ public class KnownHeaders
             HeaderNames.TraceParent,
             HeaderNames.TraceState,
             HeaderNames.Baggage,
+            HeaderNames.AltUsed,
         })
         .Concat(corsRequestHeaders)
         .OrderBy(header => !requestPrimaryHeaders.Contains(header))

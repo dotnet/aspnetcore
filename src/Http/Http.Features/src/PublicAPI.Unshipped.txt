@@ -14,3 +14,5 @@ Microsoft.AspNetCore.Http.Features.IWebTransportSession.Abort(int errorCode) -> 
 Microsoft.AspNetCore.Http.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 Microsoft.AspNetCore.Http.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 Microsoft.AspNetCore.Http.Features.IWebTransportSession.SessionId.get -> long
+Microsoft.AspNetCore.Http.IHeaderDictionary.AltUsed.get -> Microsoft.Extensions.Primitives.StringValues
+Microsoft.AspNetCore.Http.IHeaderDictionary.AltUsed.set -> void
