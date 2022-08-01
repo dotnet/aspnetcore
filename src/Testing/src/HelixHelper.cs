@@ -12,7 +12,7 @@ public static class HelixHelper
 
     public static string GetTargetHelixQueue() => Environment.GetEnvironmentVariable("helix");
 
-    // Uploads the file on helix, or put the file in your user temp folder when running locally
+    // Uploads the file on helix, or puts the file in your user temp folder when running locally
     public static void PreserveFile(string filePath, string uploadFileName)
     {
         var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
