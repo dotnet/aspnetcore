@@ -176,7 +176,8 @@ public enum HttpLoggingFields : long
     /// and <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
     /// <remarks>
-    /// This will not include <see cref="RequestQuery"/> as it may contain private information. 
+    /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
+    /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
     /// </remarks>
     All = Request | Response
 }
