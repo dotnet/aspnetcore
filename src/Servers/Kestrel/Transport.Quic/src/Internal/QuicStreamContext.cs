@@ -18,7 +18,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private static readonly ConnectionAbortedException SendGracefullyCompletedException = new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
 
     // Internal for testing.
-    internal ValueTask _processingTask = ValueTask.CompletedTask;
+    internal Task _processingTask = Task.CompletedTask;
 
     private QuicStream? _stream;
     private readonly QuicConnectionContext _connection;
@@ -142,14 +142,10 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     {
         Debug.Assert(_processingTask.IsCompletedSuccessfully);
 
-#pragma warning disable CA2012 // Use ValueTasks correctly
-        // The processing task is awaited in DisposeAsync.
         _processingTask = StartAsync();
-#pragma warning restore CA2012 // Use ValueTasks correctly
     }
 
-    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
-    private async ValueTask StartAsync()
+    private async Task StartAsync()
     {
         Debug.Assert(_stream != null);
 
