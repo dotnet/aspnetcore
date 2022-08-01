@@ -21,5 +21,4 @@ public static class HelixHelper
             : Path.Combine(uploadRoot, uploadFileName);
         File.Copy(filePath, uploadPath, overwrite: true);
     }
-
 }
