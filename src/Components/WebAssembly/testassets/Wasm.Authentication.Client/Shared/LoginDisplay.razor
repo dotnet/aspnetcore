@@ -17,10 +17,7 @@
     public void LoginWithOtherUser()
     {
         var request = InteractiveRequestOptions.SignIn(Navigation.Uri);
-        request.AdditionalRequestParameters = new Dictionary<string, object>
-            {
-                ["prompt"] = "login"
-            };
+        request.TryAddAdditionalParameter("prompt", "login");
 
         Navigation.NavigateToLogin("authentication/login", request);
     }

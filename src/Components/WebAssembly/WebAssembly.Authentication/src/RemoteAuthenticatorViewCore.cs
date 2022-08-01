@@ -384,7 +384,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
             return _cachedRequest;
         }
 
-        if (Navigation.HistoryEntryState == null)
+        if (string.IsNullOrEmpty(Navigation.HistoryEntryState))
         {
             return null;
         }
