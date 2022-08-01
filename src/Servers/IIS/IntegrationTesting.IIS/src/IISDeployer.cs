@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
@@ -241,7 +242,7 @@ public class IISDeployer : IISDeployerBase
             var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
             if (actualPath != contentRoot)
             {
-                UploadConfigFiles("wrongpath");
+                PreserveConfigFiles("wrongpath");
                 throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
             }
 
@@ -265,7 +266,7 @@ public class IISDeployer : IISDeployerBase
             var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
             if (workerProcess == null)
             {
-                UploadConfigFiles("noworkerprocess");
+                PreserveConfigFiles("noworkerprocess");
                 throw new InvalidOperationException("Site is started but no worker process found");
             }
 
@@ -307,7 +308,7 @@ public class IISDeployer : IISDeployerBase
 
                 serverManager.CommitChanges();
 
-                UploadConfigFiles("redirectionbetween");
+                PreserveConfigFiles("redirectionbetween");
                 throw new InvalidOperationException("Redirection is enabled between test runs.");
             }
 
@@ -366,20 +367,20 @@ public class IISDeployer : IISDeployerBase
             {
                 if (serverManager.Sites.Count > 1)
                 {
-                    UploadConfigFiles("moresites");
+                    PreserveConfigFiles("moresites");
                     throw new InvalidOperationException("More than one site not expected");
                 }
 
                 if (serverManager.ApplicationPools.Count > 1)
                 {
-                    UploadConfigFiles("moreapppool");
+                    PreserveConfigFiles("moreapppool");
                     throw new InvalidOperationException("More than one app pool not expected");
                 }
 
                 var site = serverManager.Sites.SingleOrDefault();
                 if (site == null)
                 {
-                    UploadConfigFiles("sitenotfound");
+                    PreserveConfigFiles("sitenotfound");
                     throw new InvalidOperationException("Site not found");
                 }
 
@@ -392,7 +393,7 @@ public class IISDeployer : IISDeployerBase
                 var appPool = serverManager.ApplicationPools.SingleOrDefault();
                 if (appPool == null)
                 {
-                    UploadConfigFiles("apppoolnotfound");
+                    PreserveConfigFiles("apppoolnotfound");
                     throw new InvalidOperationException("Application pool not found");
                 }
 
@@ -491,24 +492,14 @@ public class IISDeployer : IISDeployerBase
         }
 
         // Try to upload the applicationHost config on helix to help debug
-        UploadConfigFiles("serverManagerRetryFailed");
+        PreserveConfigFiles("serverManagerRetryFailed");
 
         throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
     }
 
-    // This will put the files in your user temp folder when running locally
-    private static void UploadFileOnHelix(string filePath, string uploadFileName)
+    private void PreserveConfigFiles(string fileNamePrefix)
     {
-        var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-        var uploadPath = string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT)
-            ? Path.Combine(Path.GetTempPath(), uploadFileName)
-            : Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, uploadFileName);
-        File.Copy(filePath, uploadPath, overwrite: true);
-    }
-
-    private void UploadConfigFiles(string uploadFilePrefix)
-    {
-        UploadFileOnHelix(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), uploadFilePrefix+".web.config");
-        UploadFileOnHelix(_applicationHostConfig, uploadFilePrefix + ".applicationHost.config");
+        HelixHelper.PreserveFile(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), fileNamePrefix+".web.config");
+        HelixHelper.PreserveFile(_applicationHostConfig, fileNamePrefix + ".applicationHost.config");
     }
 }
