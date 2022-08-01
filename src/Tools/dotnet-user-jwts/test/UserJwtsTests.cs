@@ -16,6 +16,8 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
+using System.Numerics;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -374,7 +376,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
-        Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme)));
+        var signingKey = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme)].AsArray());
+        Assert.Equal(32, signingKey["Length"].GetValue<int>());
+        Assert.True(Convert.TryFromBase64String(signingKey["Value"].GetValue<string>(), new byte[32], out var _));
         Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
@@ -412,6 +416,8 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")));
         var signingKey = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")].AsArray());
+        Assert.Equal(32, signingKey["Length"].GetValue<int>());
+        Assert.True(Convert.TryFromBase64String(signingKey["Value"].GetValue<string>(), new byte[32], out var _));
         Assert.Equal("test-issuer", signingKey["Issuer"].GetValue<string>());
     }
 
@@ -452,12 +458,14 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-        Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")));
-        var signingKey1 = secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")].AsArray();
-        Assert.Equal("test-issuer", signingKey1[0]["Issuer"].GetValue<string>());
-        Assert.True(secretsJson.ContainsKey(SigningKeysHandler.GetSigningKeyPropertyName("test-scheme-2")));
-        var signingKey2 = secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme-2")].AsArray();
-        Assert.Equal("test-issuer", signingKey2[0]["Issuer"].GetValue<string>());
+        var signingKey1 = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme")].AsArray());
+        Assert.Equal("test-issuer", signingKey1["Issuer"].GetValue<string>());
+        Assert.Equal(32, signingKey1["Length"].GetValue<int>());
+        Assert.True(Convert.TryFromBase64String(signingKey1["Value"].GetValue<string>(), new byte[32], out var _));
+        var signingKey2 = Assert.Single(secretsJson[SigningKeysHandler.GetSigningKeyPropertyName("test-scheme-2")].AsArray());
+        Assert.Equal("test-issuer", signingKey2["Issuer"].GetValue<string>());
+        Assert.Equal(32, signingKey2["Length"].GetValue<int>());
+        Assert.True(Convert.TryFromBase64String(signingKey2["Value"].GetValue<string>(), new byte[32], out var _));
     }
 
     [Fact]
