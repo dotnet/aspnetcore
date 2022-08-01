@@ -501,5 +501,7 @@ public class IISDeployer : IISDeployerBase
     {
         HelixHelper.PreserveFile(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), fileNamePrefix+".web.config");
         HelixHelper.PreserveFile(_applicationHostConfig, fileNamePrefix + ".applicationHost.config");
+        HelixHelper.PreserveFile(Path.Combine(Environment.SystemDirectory, @"inetsrv\config\ApplicationHost.config"), fileNamePrefix + ".inetsrv.applicationHost.config");
+        HelixHelper.PreserveFile(Path.Combine(Environment.SystemDirectory, @"inetsrv\config\redirection.config"), fileNamePrefix + ".inetsrv.redirection.config");
     }
 }
