@@ -173,9 +173,8 @@ internal partial class IISHttpContext
 
                     if (!buffer.IsEmpty)
                     {
-                        // we ignore the result of the write operation
-                        // if we change this behaviour we should make sure to treat the
-                        // value correctly in AsyncIOEngine.WriteDataOverChunksLimit  
+                        // We are ignoring the result of the write operation here. If we fix this behavior,
+                        // we should also fix AsyncIOEngine.WriteDataOverChunksLimit.
                         await AsyncIO!.WriteAsync(buffer);
                     }
 
