@@ -158,6 +158,10 @@ public enum HttpLoggingFields : long
     /// Logging the request body has performance implications, as it requires buffering
     /// the entire request body up to <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>.
     /// </summary>
+    /// <remarks>
+    /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
+    /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
+    /// </remarks>
     Request = RequestPropertiesAndHeaders | RequestBody,
 
     /// <summary>
