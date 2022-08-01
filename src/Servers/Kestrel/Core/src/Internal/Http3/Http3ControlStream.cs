@@ -59,8 +59,8 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     private void OnStreamClosed()
     {
-        Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
-        _connectionClosed = true;
+        //Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.ClosedCriticalStream);
+        //_connectionClosed = true;
     }
 
     public PipeReader Input => _context.Transport.Input;
