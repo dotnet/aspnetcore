@@ -511,5 +511,4 @@ public class IISDeployer : IISDeployerBase
         UploadFileOnHelix(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), uploadFilePrefix+".web.config");
         UploadFileOnHelix(_applicationHostConfig, uploadFilePrefix + ".applicationHost.config");
     }
-
 }
