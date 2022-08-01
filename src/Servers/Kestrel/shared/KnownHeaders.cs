@@ -126,6 +126,7 @@ public class KnownHeaders
             HeaderNames.AcceptCharset,
             HeaderNames.AcceptEncoding,
             HeaderNames.AcceptLanguage,
+            HeaderNames.AltUsed,
             HeaderNames.Authorization,
             HeaderNames.Cookie,
             HeaderNames.Expect,
@@ -152,7 +153,6 @@ public class KnownHeaders
             HeaderNames.TraceParent,
             HeaderNames.TraceState,
             HeaderNames.Baggage,
-            HeaderNames.AltUsed,
         })
         .Concat(corsRequestHeaders)
         .OrderBy(header => !requestPrimaryHeaders.Contains(header))

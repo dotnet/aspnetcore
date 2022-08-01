@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Age,
         Allow,
         AltSvc,
+        AltUsed,
         Authority,
         Authorization,
         Baggage,
@@ -553,30 +554,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._Scheme = value; 
             }
         }
-        public StringValues HeaderAltSvc
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000L) != 0)
-                {
-                    value = _headers._AltSvc;
-                }
-                return value;
-            }
-            set
-            {
-                if (!StringValues.IsNullOrEmpty(value))
-                {
-                    _bits |= 0x4000L;
-                }
-                else
-                {
-                    _bits &= ~0x4000L;
-                }
-                _headers._AltSvc = value; 
-            }
-        }
         public StringValues HeaderTransferEncoding
         {
             get
@@ -870,11 +847,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
         }
-        StringValues IHeaderDictionary.AltSvc
+        StringValues IHeaderDictionary.AltUsed
         {
             get
             {
-                var value = _headers._AltSvc;
+                var value = _headers._AltUsed;
                 if ((_bits & 0x4000L) != 0)
                 {
                     return value;
@@ -889,12 +866,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (value.Count > 0)
                 {
                     _bits |= flag;
-                    _headers._AltSvc = value;
+                    _headers._AltUsed = value;
                 }
                 else
                 {
                     _bits &= ~flag;
-                    _headers._AltSvc = default;
+                    _headers._AltUsed = default;
                 }
             }
         }
@@ -2004,12 +1981,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 SetValueUnknown(HeaderNames.Allow, value);
             }
         }
-        StringValues IHeaderDictionary.AltUsed
+        StringValues IHeaderDictionary.AltSvc
         {
             get
             {
                 StringValues value = default;
-                if (!TryGetUnknown(HeaderNames.AltUsed, ref value))
+                if (!TryGetUnknown(HeaderNames.AltSvc, ref value))
                 {
                     value = default;
                 }
@@ -2018,7 +1995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
-                SetValueUnknown(HeaderNames.AltUsed, value);
+                SetValueUnknown(HeaderNames.AltSvc, value);
             }
         }
         StringValues IHeaderDictionary.ContentDisposition
@@ -2905,15 +2882,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(HeaderNames.AltSvc, key))
-                    {
-                        if ((_bits & 0x4000L) != 0)
-                        {
-                            value = _headers._AltSvc;
-                            return true;
-                        }
-                        return false;
-                    }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         if ((_bits & 0x10000L) != 0)
@@ -2969,15 +2937,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (HeaderNames.AltSvc.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if ((_bits & 0x4000L) != 0)
-                        {
-                            value = _headers._AltSvc;
-                            return true;
-                        }
-                        return false;
-                    }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x10000L) != 0)
@@ -3018,6 +2977,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 8:
                 {
+                    if (ReferenceEquals(HeaderNames.AltUsed, key))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            value = _headers._AltUsed;
+                            return true;
+                        }
+                        return false;
+                    }
                     if (ReferenceEquals(HeaderNames.IfMatch, key))
                     {
                         if ((_bits & 0x8000000L) != 0)
@@ -3037,6 +3005,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;
                     }
 
+                    if (HeaderNames.AltUsed.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            value = _headers._AltUsed;
+                            return true;
+                        }
+                        return false;
+                    }
                     if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x8000000L) != 0)
@@ -3836,12 +3813,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._Scheme = value;
                         return;
                     }
-                    if (ReferenceEquals(HeaderNames.AltSvc, key))
-                    {
-                        _bits |= 0x4000L;
-                        _headers._AltSvc = value;
-                        return;
-                    }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         _bits |= 0x10000L;
@@ -3879,12 +3850,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._Scheme = value;
                         return;
                     }
-                    if (HeaderNames.AltSvc.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _bits |= 0x4000L;
-                        _headers._AltSvc = value;
-                        return;
-                    }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         _bits |= 0x10000L;
@@ -3913,6 +3878,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 8:
                 {
+                    if (ReferenceEquals(HeaderNames.AltUsed, key))
+                    {
+                        _bits |= 0x4000L;
+                        _headers._AltUsed = value;
+                        return;
+                    }
                     if (ReferenceEquals(HeaderNames.IfMatch, key))
                     {
                         _bits |= 0x8000000L;
@@ -3926,6 +3897,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return;
                     }
 
+                    if (HeaderNames.AltUsed.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4000L;
+                        _headers._AltUsed = value;
+                        return;
+                    }
                     if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         _bits |= 0x8000000L;
@@ -4647,16 +4624,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(HeaderNames.AltSvc, key))
-                    {
-                        if ((_bits & 0x4000L) == 0)
-                        {
-                            _bits |= 0x4000L;
-                            _headers._AltSvc = value;
-                            return true;
-                        }
-                        return false;
-                    }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         if ((_bits & 0x10000L) == 0)
@@ -4718,16 +4685,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (HeaderNames.AltSvc.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if ((_bits & 0x4000L) == 0)
-                        {
-                            _bits |= 0x4000L;
-                            _headers._AltSvc = value;
-                            return true;
-                        }
-                        return false;
-                    }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x10000L) == 0)
@@ -4772,6 +4729,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 8:
                 {
+                    if (ReferenceEquals(HeaderNames.AltUsed, key))
+                    {
+                        if ((_bits & 0x4000L) == 0)
+                        {
+                            _bits |= 0x4000L;
+                            _headers._AltUsed = value;
+                            return true;
+                        }
+                        return false;
+                    }
                     if (ReferenceEquals(HeaderNames.IfMatch, key))
                     {
                         if ((_bits & 0x8000000L) == 0)
@@ -4793,6 +4760,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;
                     }
     
+                    if (HeaderNames.AltUsed.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) == 0)
+                        {
+                            _bits |= 0x4000L;
+                            _headers._AltUsed = value;
+                            return true;
+                        }
+                        return false;
+                    }
                     if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x8000000L) == 0)
@@ -5754,16 +5731,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(HeaderNames.AltSvc, key))
-                    {
-                        if ((_bits & 0x4000L) != 0)
-                        {
-                            _bits &= ~0x4000L;
-                            _headers._AltSvc = default(StringValues);
-                            return true;
-                        }
-                        return false;
-                    }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         if ((_bits & 0x10000L) != 0)
@@ -5825,16 +5792,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (HeaderNames.AltSvc.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if ((_bits & 0x4000L) != 0)
-                        {
-                            _bits &= ~0x4000L;
-                            _headers._AltSvc = default(StringValues);
-                            return true;
-                        }
-                        return false;
-                    }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x10000L) != 0)
@@ -5879,6 +5836,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 8:
                 {
+                    if (ReferenceEquals(HeaderNames.AltUsed, key))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            _bits &= ~0x4000L;
+                            _headers._AltUsed = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
                     if (ReferenceEquals(HeaderNames.IfMatch, key))
                     {
                         if ((_bits & 0x8000000L) != 0)
@@ -5900,6 +5867,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;
                     }
     
+                    if (HeaderNames.AltUsed.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            _bits &= ~0x4000L;
+                            _headers._AltUsed = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
                     if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x8000000L) != 0)
@@ -6715,7 +6692,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000L) != 0)
             {
-                _headers._AltSvc = default;
+                _headers._AltUsed = default;
                 if((tempBits & ~0x4000L) == 0)
                 {
                     return;
@@ -7204,7 +7181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AltSvc, _headers._AltSvc);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AltUsed, _headers._AltUsed);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000L) != 0)
@@ -7671,12 +7648,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         values = ref _headers._Scheme;
                         nameStr = PseudoHeaderNames.Scheme;
                     }
-                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xffdfdfdfu) == 0x2d544c41u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5653u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x43u))
-                    {
-                        flag = 0x4000L;
-                        values = ref _headers._AltSvc;
-                        nameStr = HeaderNames.AltSvc;
-                    }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x47474142u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x10000L;
@@ -7703,14 +7674,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 8:
-                    var firstTerm8 = (ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL);
-                    if ((firstTerm8 == 0x484354414d2d4649uL))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x444553552d544c41uL))
+                    {
+                        flag = 0x4000L;
+                        values = ref _headers._AltUsed;
+                        nameStr = HeaderNames.AltUsed;
+                    }
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x484354414d2d4649uL))
                     {
                         flag = 0x8000000L;
                         values = ref _headers._IfMatch;
                         nameStr = HeaderNames.IfMatch;
                     }
-                    else if ((firstTerm8 == 0x45474e41522d4649uL))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x45474e41522d4649uL))
                     {
                         flag = 0x40000000L;
                         values = ref _headers._IfRange;
@@ -8320,11 +8296,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._AccessControlRequestMethod;
                     nameStr = HeaderNames.AccessControlRequestMethod;
                     break;
-                case 83:
-                    flag = 0x4000L;
-                    values = ref _headers._AltSvc;
-                    nameStr = HeaderNames.AltSvc;
-                    break;
                 case 84:
                     flag = 0x8000L;
                     values = ref _headers._Authorization;
@@ -8413,7 +8384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _AcceptLanguage;
             public StringValues _AccessControlRequestHeaders;
             public StringValues _AccessControlRequestMethod;
-            public StringValues _AltSvc;
+            public StringValues _AltUsed;
             public StringValues _Authorization;
             public StringValues _Baggage;
             public StringValues _CacheControl;
@@ -8528,9 +8499,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _collection._headers._AccessControlRequestMethod);
                         _currentBits ^= 0x2000L;
                         break;
-                    case 14: // Header: "Alt-Svc"
+                    case 14: // Header: "Alt-Used"
                         Debug.Assert((_currentBits & 0x4000L) != 0);
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AltSvc, _collection._headers._AltSvc);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AltUsed, _collection._headers._AltUsed);
                         _currentBits ^= 0x4000L;
                         break;
                     case 15: // Header: "Authorization"
