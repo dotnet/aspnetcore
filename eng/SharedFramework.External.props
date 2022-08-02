@@ -42,6 +42,7 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesVersion)" />
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Threading.RateLimiting"                                Version="$(SystemThreadingRateLimitingVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly

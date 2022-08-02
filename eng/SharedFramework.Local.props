@@ -18,6 +18,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.RateLimiting" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
