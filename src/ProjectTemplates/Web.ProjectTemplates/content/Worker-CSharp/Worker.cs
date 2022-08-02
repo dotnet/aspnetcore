@@ -1,5 +1,3 @@
-namespace Company.Application1;
-
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
