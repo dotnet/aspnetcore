@@ -218,7 +218,8 @@ internal sealed class KestrelServerImpl : IServer
 
                 if (hasHttp3 && _multiplexedTransportFactory is not null)
                 {
-                    // The
+                    // Check if a previous transport has changed the endpoint. If it has then the endpoint is dynamic and we can't guarantee it will work for other transports.
+                    // For more details, see https://github.com/dotnet/aspnetcore/issues/42982
                     if (!configuredEndpoint.Equals(options.EndPoint))
                     {
                         Trace.LogError(CoreStrings.DynamicPortOnMultipleTransportsNotSupported);

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -128,6 +129,41 @@ public class WebHostTests : LoggedTest
                 Logger.LogError(ex, $"Error running test {i}.");
             }
         }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task Listen_Http3AndSocketsOnDynamicEndpoint_Http3Disabled()
+    {
+        // Arrange
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(o =>
+                    {
+                        o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                        {
+                            listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
+                            listenOptions.UseHttps(TestResources.GetTestCertificate());
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("hello, world");
+                        });
+                    });
+            })
+            .ConfigureServices(AddTestLogging);
+
+        using var host = builder.Build();
+        await host.StartAsync().DefaultTimeout();
+
+        Assert.Contains(TestSink.Writes, w => w.Message == CoreStrings.DynamicPortOnMultipleTransportsNotSupported);
+
+        await host.StopAsync().DefaultTimeout();
     }
 
     [ConditionalFact]
