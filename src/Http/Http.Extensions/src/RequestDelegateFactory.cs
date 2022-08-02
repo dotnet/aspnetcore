@@ -1275,7 +1275,7 @@ public static partial class RequestDelegateFactory
 
         if (isNullable)
         {
-            throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported.");
+            throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.");
         }
 
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");

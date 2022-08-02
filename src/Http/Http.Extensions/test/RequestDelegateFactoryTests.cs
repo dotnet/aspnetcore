@@ -4771,7 +4771,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
 
         var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
-        Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported.", exception.Message);
+        Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.", exception.Message);
     }
 
     private record struct SampleParameterList(int Foo);
