@@ -253,7 +253,7 @@ public class Http3TlsTests : LoggedTest
     [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
     public async Task OnAuthenticate_Available_Throws(HttpProtocols protocols)
     {
-        await HttpHelpers.BindPortsWithRetry(async port =>
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
         {
             var builder = CreateHostBuilder(async context =>
             {

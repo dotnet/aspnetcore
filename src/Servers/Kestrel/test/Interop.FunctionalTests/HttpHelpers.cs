@@ -86,32 +86,4 @@ internal static class HttpHelpers
                 }
             });
     }
-
-    public static async Task BindPortsWithRetry(Func<int, Task> retryFunc, ILogger logger)
-    {
-        var retryCount = 0;
-        while (true)
-        {
-            var randomPort = Random.Shared.Next(35000, 60000);
-
-            try
-            {
-                await retryFunc(randomPort);
-                break;
-            }
-            catch (Exception ex)
-            {
-                retryCount++;
-
-                if (retryCount >= 5)
-                {
-                    throw;
-                }
-                else
-                {
-                    logger.LogError(ex, $"Error running test {retryCount}. Retrying.");
-                }
-            }
-        }
-    }
 }

@@ -113,24 +113,6 @@ public class WebHostTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
-    private async Task BindPortsWithRetry(Func<int, Task> retryFunc)
-    {
-        for (var i = 0; i < 5; i++)
-        {
-            var randomPort = Random.Shared.Next(35000, 60000);
-
-            try
-            {
-                await retryFunc(randomPort);
-                break;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, $"Error running test {i}.");
-            }
-        }
-    }
-
     [ConditionalFact]
     [MsQuicSupported]
     public async Task Listen_Http3AndSocketsOnDynamicEndpoint_Http3Disabled()
@@ -170,7 +152,7 @@ public class WebHostTests : LoggedTest
     [MsQuicSupported]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_ClientSuccess()
     {
-        await BindPortsWithRetry(async port =>
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
         {
             // Arrange
             var builder = new HostBuilder()
@@ -201,14 +183,14 @@ public class WebHostTests : LoggedTest
             await CallHttp3AndHttp1EndpointsAsync(http3Port: port, http1Port: port);
 
             await host.StopAsync().DefaultTimeout();
-        });
+        }, Logger);
     }
 
     [ConditionalFact]
     [MsQuicSupported]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade()
     {
-        await BindPortsWithRetry(async port =>
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
         {
             // Arrange
             var builder = new HostBuilder()
@@ -268,14 +250,14 @@ public class WebHostTests : LoggedTest
             }
 
             await host.StopAsync().DefaultTimeout();
-        });
+        }, Logger);
     }
 
     [ConditionalFact]
     [MsQuicSupported]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade()
     {
-        await BindPortsWithRetry(async port =>
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
         {
             // Arrange
             var builder = new HostBuilder()
@@ -337,7 +319,7 @@ public class WebHostTests : LoggedTest
             }
 
             await host.StopAsync().DefaultTimeout();
-        });
+        }, Logger);
     }
 
     private static async Task CallHttp3AndHttp1EndpointsAsync(int http3Port, int http1Port)
