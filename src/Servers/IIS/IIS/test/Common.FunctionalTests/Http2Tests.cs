@@ -69,17 +69,17 @@ public class Http2Tests
 
                 var headers = new[]
                 {
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/Http2_MethodsRequestWithoutData_Success"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:443"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Path, "/Http2_MethodsRequestWithoutData_Success"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:443"),
                 };
 
                 await h2Connection.StartStreamAsync(1, headers, endStream: true);
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -106,17 +106,17 @@ public class Http2Tests
 
                 var headers = new[]
                 {
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:443"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:443"),
                 };
 
                 await h2Connection.StartStreamAsync(1, headers, endStream: true);
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("411", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("411", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -149,10 +149,10 @@ public class Http2Tests
 
                 var headers = new[]
                 {
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/Http2_RequestWithDataAndContentLength_Success"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:443"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Path, "/Http2_RequestWithDataAndContentLength_Success"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:443"),
                     new KeyValuePair<string, string>(HeaderNames.ContentLength, "11"),
                 };
 
@@ -169,7 +169,7 @@ public class Http2Tests
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -219,10 +219,10 @@ public class Http2Tests
 
                 var headers = new[]
                 {
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/Http2_RequestWithDataAndNoContentLength_Success"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                    new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:443"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Path, "/Http2_RequestWithDataAndNoContentLength_Success"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                    new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:443"),
                 };
 
                 await h2Connection.StartStreamAsync(1, headers, endStream: false);
@@ -238,7 +238,7 @@ public class Http2Tests
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -283,7 +283,7 @@ public class Http2Tests
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -339,7 +339,7 @@ public class Http2Tests
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("500", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("500", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -380,7 +380,7 @@ public class Http2Tests
     {
         var headers = Headers.ToList();
 
-        var kvp = new KeyValuePair<string, string>(PseudoHeaderNames.Path, path);
+        var kvp = new KeyValuePair<string, string>(InternalHeaderNames.Path, path);
         headers.Add(kvp);
         return headers;
     }
@@ -397,9 +397,9 @@ public class Http2Tests
 
     private static readonly IEnumerable<KeyValuePair<string, string>> Headers = new[]
     {
-        new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
-        new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-        new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:443"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:443"),
         new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
         new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
         new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
