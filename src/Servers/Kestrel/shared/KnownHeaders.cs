@@ -26,11 +26,11 @@ public class KnownHeaders
         HeaderNames.TransferEncoding,
         HeaderNames.ContentLength,
         HeaderNames.Connection,
-        PseudoHeaderNames.Scheme,
-        PseudoHeaderNames.Path,
-        PseudoHeaderNames.Protocol,
-        PseudoHeaderNames.Method,
-        PseudoHeaderNames.Authority,
+        InternalHeaderNames.Scheme,
+        InternalHeaderNames.Path,
+        InternalHeaderNames.Protocol,
+        InternalHeaderNames.Method,
+        InternalHeaderNames.Authority,
         HeaderNames.Host,
     };
 
@@ -40,24 +40,29 @@ public class KnownHeaders
         .Select(h => h.Name)
         .ToArray();
 
-    public static readonly string[] ObsoleteHeaderNames = new[]
+    // These headers are excluded from generated IHeadersDictionary implementaiton.
+    public static readonly string[] NonPublicHeaderNames = new[]
     {
         HeaderNames.DNT,
+        InternalHeaderNames.AltUsed
     };
 
-    public static readonly (string, string)[] FormattedPseudoHeaderNames = new[]
+    public record InternalHeader(string Identifier, string Name, bool IsPseudoHeader = false);
+
+    public static readonly InternalHeader[] FormattedInternalHeaderNames = new[]
     {
-        ("Authority", PseudoHeaderNames.Authority),
-        ("Method", PseudoHeaderNames.Method),
-        ("Path", PseudoHeaderNames.Path),
-        ("Scheme", PseudoHeaderNames.Scheme),
-        ("Status", PseudoHeaderNames.Status),
-        ("Protocol", PseudoHeaderNames.Protocol)
+        new InternalHeader("Authority", InternalHeaderNames.Authority, IsPseudoHeader: true),
+        new InternalHeader("Method", InternalHeaderNames.Method, IsPseudoHeader: true),
+        new InternalHeader("Path", InternalHeaderNames.Path, IsPseudoHeader: true),
+        new InternalHeader("Scheme", InternalHeaderNames.Scheme, IsPseudoHeader: true),
+        new InternalHeader("Status", InternalHeaderNames.Status, IsPseudoHeader: true),
+        new InternalHeader("Protocol", InternalHeaderNames.Protocol, IsPseudoHeader: true),
+        new InternalHeader("AltUsed", InternalHeaderNames.AltUsed)
     };
 
     public static readonly string[] NonApiHeaders =
-        ObsoleteHeaderNames
-        .Concat(FormattedPseudoHeaderNames.Select(x => x.Item1))
+        NonPublicHeaderNames
+        .Concat(FormattedInternalHeaderNames.Select(x => x.Identifier))
         .ToArray();
 
     public static readonly string[] ApiHeaderNames =
@@ -118,14 +123,15 @@ public class KnownHeaders
         };
         RequestHeaders = commonHeaders.Concat(new[]
         {
-            PseudoHeaderNames.Authority,
-            PseudoHeaderNames.Method,
-            PseudoHeaderNames.Path,
-            PseudoHeaderNames.Scheme,
+            InternalHeaderNames.Authority,
+            InternalHeaderNames.Method,
+            InternalHeaderNames.Path,
+            InternalHeaderNames.Scheme,
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
             HeaderNames.AcceptEncoding,
             HeaderNames.AcceptLanguage,
+            InternalHeaderNames.AltUsed,
             HeaderNames.Authorization,
             HeaderNames.Cookie,
             HeaderNames.Expect,
@@ -139,7 +145,7 @@ public class KnownHeaders
             HeaderNames.IfRange,
             HeaderNames.IfUnmodifiedSince,
             HeaderNames.MaxForwards,
-            PseudoHeaderNames.Protocol,
+            InternalHeaderNames.Protocol,
             HeaderNames.ProxyAuthorization,
             HeaderNames.Referer,
             HeaderNames.Range,
@@ -158,12 +164,12 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = FormattedPseudoHeaderNames.Select(x => x.Item2).Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
+            ClassName = FormattedInternalHeaderNames.Select(x => x.Name).Contains(header) ? "InternalHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             PrimaryHeader = requestPrimaryHeaders.Contains(header),
             ExistenceCheck = requestHeadersExistence.Contains(header),
-            FastCount = requestHeadersCount.Contains(header)
+            FastCount = requestHeadersCount.Contains(header),
         })
         .Concat(new[] { new KnownHeader
             {
@@ -229,7 +235,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = FormattedPseudoHeaderNames.Select(x => x.Item2).Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
+            ClassName = FormattedInternalHeaderNames.Select(x => x.Name).Contains(header) ? "InternalHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -256,7 +262,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = FormattedPseudoHeaderNames.Select(x => x.Item2).Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
+            ClassName = FormattedInternalHeaderNames.Select(x => x.Name).Contains(header) ? "InternalHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -280,7 +286,7 @@ public class KnownHeaders
             .Aggregate((a, b) => a | b);
 
         PseudoRequestHeadersBits = RequestHeaders
-            .Where(header => FormattedPseudoHeaderNames.Select(x => x.Item1).Contains(header.Identifier))
+            .Where(header => FormattedInternalHeaderNames.Where(x => x.IsPseudoHeader).Select(x => x.Identifier).Contains(header.Identifier))
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
     }
