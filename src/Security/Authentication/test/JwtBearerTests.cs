@@ -924,15 +924,17 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     public void CanReadMultipleIssuersFromConfig()
     {
         var services = new ServiceCollection().AddLogging();
+        var firstKey = "qPG6tDtfxFYZifHW3sEueQ==";
+        var secondKey = "6JPzXj6aOPdojlZdeLshaA==";
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:1", "dotnet-user-jwts-2"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Value", "qPG6tDtfxFYZifHW3sEueQ=="),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Value", firstKey),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Value", "6JPzXj6aOPdojlZdeLshaA=="),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Value", secondKey),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Length", "32"),
         }).Build();
         services.AddSingleton<IConfiguration>(config);
@@ -949,6 +951,8 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Equal(2, jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.Count());
+        Assert.Equal(firstKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().FirstOrDefault()?.Key));
+        Assert.Equal(secondKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().LastOrDefault()?.Key));
     }
 
     class InvalidTokenValidator : ISecurityTokenValidator

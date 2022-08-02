@@ -10,6 +10,25 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
+// This class manages signing keys for JWT tokens stored in user secrets.
+// These signing keys are stored under the following configuration scheme:
+//
+//   Authentication:
+//     Schemes:
+//          Bearer:
+//              SigningKeys: [{
+//                  Id: abcdefghi,
+//                  Value: somekeyhere,
+//                  Issuer: someissuer,
+//                  Length: 32
+//              },
+//              {
+//                  Id: ihgfedcba,
+//                  Value: somekeyhere,
+//                  Issuer: someissuer2,
+//                  Length: 32
+//              }]
+
 internal static class SigningKeysHandler
 {
     public static byte[] GetSigningKeyMaterial(string userSecretsId, string scheme, string issuer)
@@ -37,7 +56,7 @@ internal static class SigningKeysHandler
 
     public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string scheme, string issuer) =>
         GetSigningKeyMaterial(userSecretsId, scheme, issuer) ?? CreateSigningKeyMaterial(userSecretsId, scheme, issuer);
- 
+
 
     public static byte[] CreateSigningKeyMaterial(string userSecretsId, string scheme, string issuer, int signingKeyLength = 32, bool reset = false)
     {
