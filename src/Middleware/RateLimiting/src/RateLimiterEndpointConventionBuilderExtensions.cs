@@ -24,7 +24,25 @@ public static class RateLimiterEndpointConventionBuilderExtensions
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(new RateLimiterMetadata(policyName));
+            endpointBuilder.Metadata.Add(new EnableRateLimitingAttribute(policyName));
+        });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Disables rate limiting on the endpoint(s).
+    /// </summary>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    /// <remarks>Will skip both the global limiter, and any endpoint-specific limiters that apply to the endpoint(s).</remarks>
+    public static TBuilder DisableRateLimiting<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Add(endpointBuilder =>
+        {
+            endpointBuilder.Metadata.Add(new DisableRateLimitingAttribute());
         });
 
         return builder;

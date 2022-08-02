@@ -60,6 +60,13 @@ internal sealed partial class RateLimitingMiddleware
     /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
     public async Task Invoke(HttpContext context)
     {
+        var endpoint = context.GetEndpoint();
+        // If this endpoint has a DisableRateLimitingAttribute, don't apply any rate limits.
+        if (endpoint?.Metadata.GetMetadata<DisableRateLimitingAttribute>() is not null)
+        {
+            await _next(context);
+            return;
+        }
         using var leaseContext = await TryAcquireAsync(context);
         if (leaseContext.Lease.IsAcquired)
         {
@@ -77,7 +84,7 @@ internal sealed partial class RateLimitingMiddleware
             if (leaseContext.GlobalRejected == false)
             {
                 DefaultRateLimiterPolicy? policy;
-                var policyName = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
+                var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
                 if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
                 {
@@ -171,7 +178,7 @@ internal sealed partial class RateLimitingMiddleware
         // If we have a policy for this endpoint, use its partitioner. Else use a NoLimiter.
         return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
-            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
+            var name = context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
             if (name is not null)
             {
                 if (_policyMap.TryGetValue(name, out var policy))
