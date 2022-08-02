@@ -12,7 +12,7 @@ import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
+import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType, AssetEntry, ResourceRequest } from 'dotnet';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -20,7 +20,6 @@ export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
 export let IMPORTS: any = undefined as any;
 
-const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
@@ -145,13 +144,13 @@ export const monoPlatform: Platform = {
     return ((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
 
-  beginHeapLock: function() {
+  beginHeapLock: function () {
     assertHeapIsNotLocked();
     currentHeapLock = new MonoHeapLock();
     return currentHeapLock;
   },
 
-  invokeWhenHeapUnlocked: function(callback) {
+  invokeWhenHeapUnlocked: function (callback) {
     // This is somewhat like a sync context. If we're not locked, just pass through the call directly.
     if (!currentHeapLock) {
       callback();
@@ -251,24 +250,52 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   (moduleConfig as any).preloadPlugins = [];
 
   let resourcesLoaded = 0;
-  function setProgress(){
-      resourcesLoaded++;
-      const percentage = resourcesLoaded / totalResources.length * 100;
-      document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
-      document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+  function setProgress() {
+    resourcesLoaded++;
+    const percentage = resourcesLoaded / totalResources.length * 100;
+    document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
+    document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+  }
+
+  const typesMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
+    'assembly': 'assembly',
+    'pdb': 'pdb',
+    'icu': 'globalization',
+    'dotnetwasm': 'dotnetwasm',
+  };
+
+  // it would not `loadResource` on types for which there is no typesMap mapping
+  const downloadResource = (request: ResourceRequest): LoadingResource | undefined => {
+    const type = typesMap[request.behavior];
+    if (type !== undefined) {
+      const loaded = resourceLoader.loadResource(request.name, request.resolvedUrl!, request.hash!, type);
+      loaded.url = toAbsoluteUrl(loaded.url);
+      return loaded;
     }
+    return undefined;
+  };
+
+  const runtimeAssets = resourceLoader.bootConfig.resources.runtimeAssets;
+  // pass part of responsibility for asset loading to runtime
+  const assets: AssetEntry[] = Object.keys(runtimeAssets).map(name => {
+    const asset = runtimeAssets[name] as AssetEntry;
+    asset.name = name;
+    asset.resolvedUrl = `_framework/${name}`;
+    return asset;
+  });
+
+  // blazor could start downloading bit earlier than the runtime would
+  const assetsBeingLoaded = assets
+    .filter(asset => asset.behavior === 'dotnetwasm')
+    .map(asset => {
+      asset.pending = downloadResource(asset);
+      return asset.pending!;
+    });
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
-  const dotnetWasmResourceName = 'dotnet.wasm';
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
   const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
-  const wasmBeingLoaded = resourceLoader.loadResource(
-    /* name */ dotnetWasmResourceName,
-    /* url */ `_framework/${dotnetWasmResourceName}`,
-    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
-    /* type */ 'dotnetwasm'
-  );
-  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, wasmBeingLoaded);
+  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, assetsBeingLoaded);
   totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
@@ -306,22 +333,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     BINDING = binding;
     MONO = mono;
     IMPORTS = imports;
-
-    // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-    const instantiateWasm = (wasmImports, successCallback) => {
-      (async () => {
-        let compiledInstance: WebAssembly.Instance;
-        try {
-          const dotnetWasmResource = await wasmBeingLoaded;
-          compiledInstance = await compileWasmModule(dotnetWasmResource, wasmImports);
-        } catch (ex) {
-          printErr((ex as Error).toString());
-          throw ex;
-        }
-        successCallback(compiledInstance);
-      })();
-      return []; // No exports
-    };
 
     const onRuntimeInitialized = () => {
       if (!icuDataResource) {
@@ -479,7 +490,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       }
 
       // -1 enables debugging with logging disabled. 0 disables debugging entirely.
-      MONO.mono_wasm_load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
+      MONO.mono_wasm_load_runtime('unused', hasDebuggingEnabled() ? -1 : 0);
       MONO.mono_wasm_runtime_ready();
       try {
         BINDING.bind_static_method('invalid-fqn', '');
@@ -520,12 +531,16 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
     const dotnetModuleConfig: DotnetModuleConfig = {
       ...moduleConfig,
+      config: {
+        assets,
+        debug_level: hasDebuggingEnabled() ? 1 : 0,
+      },
+      downloadResource,
       disableDotnet6Compatibility: false,
       preRun: [preRun, ...existingPreRun],
       postRun: [postRun, ...existingPostRun],
       print,
       printErr,
-      instantiateWasm,
       onRuntimeInitialized,
     };
 
@@ -650,32 +665,6 @@ async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
   }
   Module.removeRunDependency(runDependencyId);
 }
-
-async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
-  const wasmResourceResponse = await wasmResource.response;
-
-  // The instantiateStreaming spec explicitly requires the following exact MIME type (with no trailing parameters, etc.)
-  // https://webassembly.github.io/spec/web-api/#dom-webassembly-instantiatestreaming
-  const hasWasmContentType = wasmResourceResponse.headers?.get('content-type') === 'application/wasm';
-
-  if (hasWasmContentType && typeof WebAssembly.instantiateStreaming === 'function') {
-    // We can use streaming compilation. We know this shouldn't fail due to the content-type header being wrong,
-    // as we already just checked that. So if this fails for some other reason we'll treat it as fatal.
-    const streamingResult = await WebAssembly.instantiateStreaming(wasmResourceResponse, imports);
-    return streamingResult.instance;
-  } else {
-    if (!hasWasmContentType) {
-      // In most cases the developer should fix this. It's unusual enough that we don't mind logging a warning each time.
-      console.warn('WebAssembly resource does not have the expected content type "application/wasm", so falling back to slower ArrayBuffer instantiation.');
-    }
-
-    // Fall back on ArrayBuffer instantiation.
-    const arrayBuffer = await wasmResourceResponse.arrayBuffer();
-    const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-    return arrayBufferResult.instance;  
-  }
-}
-
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
   const lastDotIndex = filename.lastIndexOf('.');
   if (lastDotIndex < 0) {

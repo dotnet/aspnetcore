@@ -33,7 +33,7 @@ export class BootConfigResult {
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
 
-    function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
+    function defaultLoadBlazorBootJson(url: string): Promise<Response> {
       return fetch(url, {
         method: 'GET',
         credentials: 'include',
@@ -69,9 +69,16 @@ export interface ResourceGroups {
   readonly satelliteResources?: { [cultureName: string]: ResourceList };
   readonly libraryInitializers?: ResourceList,
   readonly extensions?: BootJsonDataExtension
+  readonly runtimeAssets: ExtendedResourceList;
 }
 
 export type ResourceList = { [name: string]: string };
+export type ExtendedResourceList = {
+  [name: string]: {
+    hash: string,
+    behavior: string
+  }
+};
 
 export enum ICUDataMode {
   Sharded,
