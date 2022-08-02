@@ -195,6 +195,8 @@ internal sealed class KestrelServerImpl : IServer
                 // multiplexed transport factory, which happens if QUIC isn't supported.
                 var addAltSvcHeader = !options.DisableAltSvcHeader && _multiplexedTransportFactory != null;
 
+                var configuredEndpoint = options.EndPoint;
+
                 // Add the HTTP middleware as the terminal connection middleware
                 if (hasHttp1 || hasHttp2
                     || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
@@ -211,18 +213,26 @@ internal sealed class KestrelServerImpl : IServer
                     // Add the connection limit middleware
                     connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                    options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
+                    options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                 }
 
                 if (hasHttp3 && _multiplexedTransportFactory is not null)
                 {
-                    options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
-                    var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
+                    // The
+                    if (!configuredEndpoint.Equals(options.EndPoint))
+                    {
+                        Trace.LogError(CoreStrings.DynamicPortOnMultipleTransportsNotSupported);
+                    }
+                    else
+                    {
+                        options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
+                        var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
-                    // Add the connection limit middleware
-                    multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
+                        // Add the connection limit middleware
+                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                    options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
 

@@ -318,7 +318,7 @@ public class KestrelServerTests
         options.ApplicationServices = new ServiceCollection()
            .AddLogging()
            .BuildServiceProvider();
-        options.ListenAnyIP(0, options =>
+        options.ListenAnyIP(5000, options =>
         {
             options.UseHttps(TestResources.GetTestCertificate());
             options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;

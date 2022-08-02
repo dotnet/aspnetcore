@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog.Core;
 
 namespace Interop.FunctionalTests;
 
@@ -84,5 +85,33 @@ internal static class HttpHelpers
                     o.ShutdownTimeout = TimeSpan.FromSeconds(5);
                 }
             });
+    }
+
+    public static async Task BindPortsWithRetry(Func<int, Task> retryFunc, ILogger logger)
+    {
+        var retryCount = 0;
+        while (true)
+        {
+            var randomPort = Random.Shared.Next(35000, 60000);
+
+            try
+            {
+                await retryFunc(randomPort);
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+
+                if (retryCount >= 5)
+                {
+                    throw;
+                }
+                else
+                {
+                    logger.LogError(ex, $"Error running test {retryCount}. Retrying.");
+                }
+            }
+        }
     }
 }
