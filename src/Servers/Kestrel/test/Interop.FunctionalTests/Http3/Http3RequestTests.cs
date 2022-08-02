@@ -751,6 +751,24 @@ public class Http3RequestTests : LoggedTest
             Assert.Equal(HttpVersion.Version30, response2.Version);
             Assert.True(request2Headers.ContainsKey("alt-used"));
 
+            // Delay to ensure the stream has enough time to return to pool
+            await Task.Delay(100);
+
+            // Act 3
+            var request3 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request3.Headers.Add("id", "3");
+            request3.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
+            var response3 = await client.SendAsync(request3, CancellationToken.None);
+            response3.EnsureSuccessStatusCode();
+            var request3Headers = requestHeaders.Single(i => i["id"] == "3");
+
+            // Assert 3
+            Assert.Equal(HttpVersion.Version30, response3.Version);
+            Assert.True(request3Headers.ContainsKey("alt-used"));
+
+            Assert.Same((string)request2Headers["alt-used"], (string)request3Headers["alt-used"]);
+
             await host.StopAsync();
         }
     }

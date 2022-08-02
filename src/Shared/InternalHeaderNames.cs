@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1802:Use literals where appropriate", Justification = "So referenceEquals works")]
-internal static class PseudoHeaderNames
+internal static class InternalHeaderNames
 {
     /// <summary>Gets the <c>:authority</c> HTTP header name.</summary>
     public static readonly string Authority = ":authority";
@@ -23,4 +23,7 @@ internal static class PseudoHeaderNames
 
     /// <summary>Gets the <c>:protocol</c> HTTP header name.</summary>
     public static readonly string Protocol = ":protocol";
+
+    /// <summary>Gets the <c>Alt-Used</c> HTTP header name.</summary>
+    public static readonly string AltUsed = "Alt-Used";
 }
