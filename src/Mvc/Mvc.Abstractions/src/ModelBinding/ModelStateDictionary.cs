@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private readonly ModelStateNode _root;
         private int _maxAllowedErrors;
-        private int _maxRecursionDepth;
+        private int? _maxValidationDepth;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
@@ -44,9 +44,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
         /// </summary>
         public ModelStateDictionary(int maxAllowedErrors)
+            : this (maxAllowedErrors, DefaultMaxRecursionDepth)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
+        /// </summary>
+        private ModelStateDictionary(int maxAllowedErrors, int maxValidationDepth)
         {
             MaxAllowedErrors = maxAllowedErrors;
-            MaxRecursionDepth = DefaultMaxRecursionDepth;
+            MaxValidationDepth = maxValidationDepth;
             var emptySegment = new StringSegment(buffer: string.Empty);
             _root = new ModelStateNode(subKey: emptySegment)
             {
@@ -60,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="dictionary">The <see cref="ModelStateDictionary"/> to copy values from.</param>
         public ModelStateDictionary(ModelStateDictionary dictionary)
-            : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors)
+            : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors, dictionary?.MaxValidationDepth ?? DefaultMaxRecursionDepth)
         {
             if (dictionary == null)
             {
@@ -176,11 +184,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         // Flag that indicates if TooManyModelErrorException has already been added to this dictionary.
         private bool HasRecordedMaxModelError { get; set; }
 
-        internal int MaxRecursionDepth
+        internal int? MaxValidationDepth
         {
             get
             {
-                return _maxRecursionDepth;
+                return _maxValidationDepth;
             }
             set
             {
@@ -188,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
-                _maxRecursionDepth = value;
+                _maxValidationDepth = value;
             }
         }
 
@@ -682,7 +690,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private ModelValidationState? GetValidity(ModelStateNode node, int currentDepth)
         {
-            if (node == null || currentDepth >= MaxRecursionDepth)
+            if (node == null ||
+                (MaxValidationDepth != null && currentDepth >= MaxValidationDepth))
             {
                 return null;
             }

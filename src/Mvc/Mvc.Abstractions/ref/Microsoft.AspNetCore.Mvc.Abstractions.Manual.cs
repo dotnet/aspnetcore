@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public partial class ModelStateDictionary
     {
-        internal int MaxRecursionDepth { get; set; }
+        internal int? MaxValidationDepth { get; set; }
     }
 }

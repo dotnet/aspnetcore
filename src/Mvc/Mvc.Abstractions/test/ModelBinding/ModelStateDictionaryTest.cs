@@ -699,7 +699,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            var key = string.Join(".", Enumerable.Repeat("foo", dictionary.MaxRecursionDepth + 1));
+            var stackLimit = 32;
+            var key = string.Join(".", Enumerable.Repeat("foo", stackLimit + 1));
+            dictionary.MaxValidationDepth = stackLimit;
             dictionary.MarkFieldValid(key);
 
             // Act
