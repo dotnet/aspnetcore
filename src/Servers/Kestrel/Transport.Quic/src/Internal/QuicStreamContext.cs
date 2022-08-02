@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Quic;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -29,7 +30,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private readonly CompletionPipeReader _transportPipeReader;
     private readonly CompletionPipeWriter _transportPipeWriter;
     private readonly ILogger _log;
-    private CancellationTokenSource _streamClosedTokenSource = default!;
+    private CancellationTokenSource? _streamClosedTokenSource;
     private string? _connectionId;
     private const int MinAllocBufferSize = 4096;
     private volatile Exception? _shutdownReadReason;
@@ -39,7 +40,6 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private bool _streamClosed;
     private bool _serverAborted;
     private bool _clientAbort;
-    private TaskCompletionSource _waitForConnectionClosedTcs = default!;
     private readonly object _shutdownLock = new object();
 
     public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
@@ -82,12 +82,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
 
         _stream = stream;
 
-        if (!(_streamClosedTokenSource?.TryReset() ?? false))
-        {
-            _streamClosedTokenSource = new CancellationTokenSource();
-        }
-
-        ConnectionClosed = _streamClosedTokenSource.Token;
+        _streamClosedTokenSource = null;
+        _onClosedRegistrations?.Clear();
 
         InitializeFeatures();
 
@@ -109,8 +105,6 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         _streamClosed = false;
         _serverAborted = false;
         _clientAbort = false;
-        // TODO - resetable TCS
-        _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // Only reset pipes if the stream has been reused.
         if (CanReuse)
@@ -120,6 +114,20 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
 
         CanReuse = false;
+    }
+
+    public override CancellationToken ConnectionClosed
+    {
+        get
+        {
+            // Allocate CTS only if requested.
+            if (_streamClosedTokenSource == null)
+            {
+                _streamClosedTokenSource = new CancellationTokenSource();
+            }
+            return _streamClosedTokenSource.Token;
+        }
+        set => throw new NotSupportedException();
     }
 
     public override string ConnectionId
@@ -145,24 +153,24 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             // Spawn send and receive logic
             // Streams may or may not have reading/writing, so only start tasks accordingly
-            var receiveTask = Task.CompletedTask;
-            var sendTask = Task.CompletedTask;
+            var receiveTask = ValueTask.CompletedTask;
+            var sendTask = ValueTask.CompletedTask;
 
             if (_stream.CanRead)
             {
-                receiveTask = DoReceive();
+                receiveTask = DoReceiveAsync();
             }
 
             if (_stream.CanWrite)
             {
-                sendTask = DoSend();
+                sendTask = DoSendAsync();
             }
 
             // Now wait for both to complete
             await receiveTask;
             await sendTask;
 
-            await FireStreamClosedAsync();
+            FireStreamClosed();
         }
         catch (Exception ex)
         {
@@ -170,7 +178,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
-    private async Task WaitForWritesCompleted()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask WaitForWritesClosedAsync()
     {
         Debug.Assert(_stream != null);
 
@@ -189,7 +198,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
-    private async Task DoReceive()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask DoReceiveAsync()
     {
         Debug.Assert(_stream != null);
 
@@ -311,30 +321,39 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         return _shutdownReadReason ?? _shutdownReason ?? error;
     }
 
-    private Task FireStreamClosedAsync()
+    private void FireStreamClosed()
     {
         // Guard against scheduling this multiple times
-        if (_streamClosed)
+        lock (_shutdownLock)
         {
-            return Task.CompletedTask;
+            if (_streamClosed)
+            {
+                return;
+            }
+
+            _streamClosed = true;
         }
 
-        _streamClosed = true;
+        var onClosed = _onClosedRegistrations;
 
-        ThreadPool.UnsafeQueueUserWorkItem(state =>
+        if (onClosed != null)
         {
-            state.CancelConnectionClosedToken();
+            foreach (var closeAction in onClosed)
+            {
+                closeAction.Callback(closeAction.State);
+            }
+        }
 
-            state._waitForConnectionClosedTcs.TrySetResult();
-        },
-        this,
-        preferLocal: false);
-
-        return _waitForConnectionClosedTcs.Task;
+        if (_streamClosedTokenSource != null)
+        {
+            CancelConnectionClosedToken();
+        }
     }
 
     private void CancelConnectionClosedToken()
     {
+        Debug.Assert(_streamClosedTokenSource != null);
+
         try
         {
             _streamClosedTokenSource.Cancel();
@@ -345,14 +364,18 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
-    private async Task DoSend()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask DoSendAsync()
     {
         Debug.Assert(_stream != null);
 
         Exception? shutdownReason = null;
         Exception? unexpectedError = null;
 
-        var sendCompletedTask = WaitForWritesCompleted();
+        // A client can abort a stream after it has finished sending data. We need a way to get that notification
+        // which is why we listen for a notification that the write-side of the stream is done.
+        // An exception can be thrown from the stream on client abort which will be captured and then wake up the output read.
+        var waitForWritesClosedTask = WaitForWritesClosedAsync();
 
         try
         {
@@ -449,7 +472,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         finally
         {
             ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
-            await sendCompletedTask;
+
+            await waitForWritesClosedTask;
 
             // Complete the output after completing stream sends
             Output.Complete(unexpectedError);
@@ -514,6 +538,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
     public override async ValueTask DisposeAsync()
     {
         if (_stream == null)
@@ -567,6 +592,6 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     // Called when the stream is no longer reused.
     public void DisposeCore()
     {
-        _streamClosedTokenSource.Dispose();
+        _streamClosedTokenSource?.Dispose();
     }
 }

@@ -102,13 +102,6 @@ app.UseRouting();
 #if (IndividualLocalAuth)
 app.UseIdentityServer();
 #endif
-#if (OrganizationalAuth || IndividualAuth)
-app.UseAuthentication();
-#endif
-#if (!NoAuth)
-app.UseAuthorization();
-
-#endif
 
 app.MapRazorPages();
 app.MapControllers();

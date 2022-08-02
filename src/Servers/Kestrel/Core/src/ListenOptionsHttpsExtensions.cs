@@ -254,10 +254,6 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
     {
-        if (listenOptions.Protocols.HasFlag(HttpProtocols.Http3))
-        {
-            throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(ServerOptionsSelectionCallback)} is not supported with HTTP/3.");
-        }
         return listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
         {
             OnConnection = context => serverOptionsSelectionCallback(context.SslStream, context.ClientHelloInfo, context.State, context.CancellationToken),
@@ -285,18 +281,17 @@ public static class ListenOptionsHttpsExtensions
             throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
         }
 
-        if (listenOptions.Protocols.HasFlag(HttpProtocols.Http3))
-        {
-            throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(TlsHandshakeCallbackOptions)} is not supported with HTTP/3.");
-        }
-
         var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
         listenOptions.IsTls = true;
+        listenOptions.HttpsCallbackOptions = callbackOptions;
+
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
+            // Set the list of protocols from listen options.
+            // Set it inside Use delegate so Protocols and UseHttps can be called out of order.
             callbackOptions.HttpProtocols = listenOptions.Protocols;
+
             var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });

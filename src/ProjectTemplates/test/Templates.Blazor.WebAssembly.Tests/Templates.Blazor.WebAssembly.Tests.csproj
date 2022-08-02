@@ -6,7 +6,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>ProjectTemplates.Blazor.WebAssembly.Tests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
-    <HelixTimeout>01:00:00</HelixTimeout>
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>

@@ -246,9 +246,9 @@ public class Http2TimeoutTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(_appAbort);
 

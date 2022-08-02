@@ -119,7 +119,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
         var filterTag = new TagsAttribute("filter");
 
-        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilter(filterFactory: (routeHandlerContext, next) =>
+        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
         {
             routeHandlerContext.EndpointMetadata.Add(filterTag);
             return async invocationContext =>
@@ -155,7 +155,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
         var filterTag = new TagsAttribute("filter");
 
-        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilter((routeHandlerContext, next) =>
+        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory((routeHandlerContext, next) =>
         {
             routeHandlerContext.EndpointMetadata.Add(filterTag);
             return next;

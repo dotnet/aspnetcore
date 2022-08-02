@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31606.5
 MinimumVisualStudioVersion = 15.0.26124.0
@@ -1742,6 +1742,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalOpenIdConnectSample", "src\Security\Authentication\OpenIdConnect\samples\MinimalOpenIdConnectSample\MinimalOpenIdConnectSample.csproj", "{07FDBE0D-B7A1-43DE-B120-F699C30E7CEF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportInteractiveSampleApp", "src\Servers\Kestrel\samples\WebTransportInteractiveSampleApp\WebTransportInteractiveSampleApp.csproj", "{BA649043-EF2B-42DC-B422-A46127BE8296}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.WebAssembly.Auth.Tests", "src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Auth.Tests\Templates.Blazor.WebAssembly.Auth.Tests.csproj", "{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10472,6 +10474,22 @@ Global
 		{BA649043-EF2B-42DC-B422-A46127BE8296}.Release|x64.Build.0 = Release|Any CPU
 		{BA649043-EF2B-42DC-B422-A46127BE8296}.Release|x86.ActiveCfg = Release|Any CPU
 		{BA649043-EF2B-42DC-B422-A46127BE8296}.Release|x86.Build.0 = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|arm64.Build.0 = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|x64.Build.0 = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Debug|x86.Build.0 = Debug|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|arm64.ActiveCfg = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|arm64.Build.0 = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|x64.ActiveCfg = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|x64.Build.0 = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|x86.ActiveCfg = Release|Any CPU
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11333,6 +11351,7 @@ Global
 		{F4A9CC79-5FE3-4F2B-9CC3-7F42DEDB4853} = {7B976D8F-EA31-4C0B-97BD-DFD9B3CC86FB}
 		{07FDBE0D-B7A1-43DE-B120-F699C30E7CEF} = {E19E55A2-1562-47A7-8EA6-B51F2CA0CC4C}
 		{BA649043-EF2B-42DC-B422-A46127BE8296} = {7B976D8F-EA31-4C0B-97BD-DFD9B3CC86FB}
+		{3A6FD623-F7F3-404B-8A39-CAFB40CA6A08} = {08D53E58-4AAE-40C4-8497-63EC8664F304}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -111,5 +112,97 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
         await using var clientConnection = await QuicConnection.ConnectAsync(options);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_NoCertificateOrApplicationProtocol_Log()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            new TlsConnectionCallbackOptions
+            {
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                OnConnection = (context, cancellationToken) =>
+                {
+                    var options = new SslServerAuthenticationOptions();
+                    options.ApplicationProtocols = new List<SslApplicationProtocol>();
+                    return ValueTask.FromResult(options);
+                }
+            },
+            LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await Assert.ThrowsAsync<QuicException>(() => QuicConnection.ConnectAsync(options).AsTask());
+
+        // Assert
+        Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerCertificateNotSpecified");
+        Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerApplicationProtocolsNotSpecified");
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_NoApplicationProtocolsInCallback_DefaultToConnectionProtocols()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            new TlsConnectionCallbackOptions
+            {
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                OnConnection = (context, cancellationToken) =>
+                {
+                    var options = new SslServerAuthenticationOptions();
+                    options.ServerCertificate = TestResources.GetTestCertificate();
+                    return ValueTask.FromResult(options);
+                }
+            },
+            LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options).DefaultTimeout();
+
+        // Assert
+        Assert.Equal(SslApplicationProtocol.Http3, clientConnection.NegotiatedApplicationProtocol);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_TlsCallback_ConnectionContextInArguments()
+    {
+        // Arrange
+        BaseConnectionContext connectionContext = null;
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            new TlsConnectionCallbackOptions
+            {
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                OnConnection = (context, cancellationToken) =>
+                {
+                    var options = new SslServerAuthenticationOptions();
+                    options.ServerCertificate = TestResources.GetTestCertificate();
+
+                    connectionContext = context.Connection;
+
+                    return ValueTask.FromResult(options);
+                }
+            },
+            LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options).DefaultTimeout();
+
+        // Assert
+        Assert.NotNull(connectionContext);
     }
 }

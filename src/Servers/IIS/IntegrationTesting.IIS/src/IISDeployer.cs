@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
@@ -241,19 +242,20 @@ public class IISDeployer : IISDeployerBase
             var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
             if (actualPath != contentRoot)
             {
+                PreserveConfigFiles("wrongpath");
                 throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
             }
 
             if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
             {
                 var state = appPool.Start();
-                Logger.LogInformation($"Starting pool, state: {state.ToString()}");
+                Logger.LogInformation($"Starting pool, state: {state}");
             }
 
             if (site.State != ObjectState.Started && site.State != ObjectState.Starting)
             {
                 var state = site.Start();
-                Logger.LogInformation($"Starting site, state: {state.ToString()}");
+                Logger.LogInformation($"Starting site, state: {state}");
             }
 
             if (site.State != ObjectState.Started)
@@ -264,6 +266,7 @@ public class IISDeployer : IISDeployerBase
             var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
             if (workerProcess == null)
             {
+                PreserveConfigFiles("noworkerprocess");
                 throw new InvalidOperationException("Site is started but no worker process found");
             }
 
@@ -305,6 +308,7 @@ public class IISDeployer : IISDeployerBase
 
                 serverManager.CommitChanges();
 
+                PreserveConfigFiles("redirectionbetween");
                 throw new InvalidOperationException("Redirection is enabled between test runs.");
             }
 
@@ -361,9 +365,22 @@ public class IISDeployer : IISDeployerBase
         {
             RetryServerManagerAction(serverManager =>
             {
+                if (serverManager.Sites.Count > 1)
+                {
+                    PreserveConfigFiles("moresites");
+                    throw new InvalidOperationException("More than one site not expected");
+                }
+
+                if (serverManager.ApplicationPools.Count > 1)
+                {
+                    PreserveConfigFiles("moreapppool");
+                    throw new InvalidOperationException("More than one app pool not expected");
+                }
+
                 var site = serverManager.Sites.SingleOrDefault();
                 if (site == null)
                 {
+                    PreserveConfigFiles("sitenotfound");
                     throw new InvalidOperationException("Site not found");
                 }
 
@@ -376,6 +393,7 @@ public class IISDeployer : IISDeployerBase
                 var appPool = serverManager.ApplicationPools.SingleOrDefault();
                 if (appPool == null)
                 {
+                    PreserveConfigFiles("apppoolnotfound");
                     throw new InvalidOperationException("Application pool not found");
                 }
 
@@ -440,7 +458,7 @@ public class IISDeployer : IISDeployerBase
         }
     }
 
-    private static void RetryServerManagerAction(Action<ServerManager> action)
+    private void RetryServerManagerAction(Action<ServerManager> action)
     {
         List<Exception> exceptions = null;
         var sw = Stopwatch.StartNew();
@@ -473,6 +491,17 @@ public class IISDeployer : IISDeployerBase
             delay *= 1.5;
         }
 
+        // Try to upload the applicationHost config on helix to help debug
+        PreserveConfigFiles("serverManagerRetryFailed");
+
         throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
+    }
+
+    private void PreserveConfigFiles(string fileNamePrefix)
+    {
+        HelixHelper.PreserveFile(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), fileNamePrefix+".web.config");
+        HelixHelper.PreserveFile(_applicationHostConfig, fileNamePrefix + ".applicationHost.config");
+        HelixHelper.PreserveFile(Path.Combine(Environment.SystemDirectory, @"inetsrv\config\ApplicationHost.config"), fileNamePrefix + ".inetsrv.applicationHost.config");
+        HelixHelper.PreserveFile(Path.Combine(Environment.SystemDirectory, @"inetsrv\config\redirection.config"), fileNamePrefix + ".inetsrv.redirection.config");
     }
 }

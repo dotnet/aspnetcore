@@ -36,7 +36,7 @@
   "symbols/CalledApiUrl/description": "Adresa URL rozhraní API, která se má volat z webové aplikace. Tato možnost platí jenom v případě, že je zadáno --auth SingleOrg, --auth MultiOrg nebo --auth IndividualB2C a také je zadán hostitel ASP.NET Core.",
   "symbols/CallsMicrosoftGraph/description": "Určuje, jestli webová aplikace volá Microsoft Graph. Tato možnost platí pouze v případě, že je zadáno --auth SingleOrg nebo --auth MultiOrg.",
   "symbols/CalledApiScopes/description": "Obory, které se mají požádat žádat o volání rozhraní API z webové aplikace. Tato možnost platí jenom v případě, že je zadáno --auth SingleOrg, --auth MultiOrg nebo --auth IndividualB2C a také je zadán hostitel ASP.NET Core.",
-  "symbols/UseProgramMain/displayName": "Nepoužívat příkazy nejvyšší úrovně",
+  "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore",

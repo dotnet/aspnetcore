@@ -867,7 +867,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 });
 
             void WithFilterFactory(IEndpointConventionBuilder builder) =>
-                builder.AddEndpointFilter((routeHandlerContext, next) => async (context) =>
+                builder.AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
@@ -991,7 +991,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
         string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
-        routeHandlerBuilder.AddEndpointFilter((rhc, next) =>
+        routeHandlerBuilder.AddEndpointFilterFactory((rhc, next) =>
         {
             Assert.NotNull(rhc.ApplicationServices);
             var myService = rhc.ApplicationServices.GetRequiredService<MyService>();

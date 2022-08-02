@@ -5,7 +5,7 @@ set -e
 usage()
 {
     echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [llvmx[.y]] [--skipunmount] --rootfsdir <directory>]"
-    echo "BuildArch can be: arm(default), armel, arm64, x86, x64"
+    echo "BuildArch can be: arm(default), arm64, armel, armv6, ppc64le, riscv64, s390x, x64, x86"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine, alpine3.13 or alpine3.14. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
     echo "                              for FreeBSD can be: freebsd12, freebsd13"
     echo "                              for illumos can be: illumos."
@@ -18,7 +18,6 @@ usage()
 
 __CodeName=xenial
 __CrossDir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-__InitialDir=$PWD
 __BuildArch=arm
 __AlpineArch=armv7
 __FreeBSDArch=arm
@@ -43,7 +42,7 @@ __AlpinePackages+=" libedit"
 # symlinks fixer
 __UbuntuPackages+=" symlinks"
 
-# CoreCLR and CoreFX dependencies
+# runtime dependencies
 __UbuntuPackages+=" libicu-dev"
 __UbuntuPackages+=" liblttng-ust-dev"
 __UbuntuPackages+=" libunwind8-dev"
@@ -54,7 +53,7 @@ __AlpinePackages+=" libunwind-dev"
 __AlpinePackages+=" lttng-ust-dev"
 __AlpinePackages+=" compiler-rt-static"
 
-# CoreFX dependencies
+# runtime libraries' dependencies
 __UbuntuPackages+=" libcurl4-openssl-dev"
 __UbuntuPackages+=" libkrb5-dev"
 __UbuntuPackages+=" libssl-dev"
@@ -84,17 +83,18 @@ __IllumosPackages+=" zlib-1.2.11"
 __UbuntuPackages+=" libomp5"
 __UbuntuPackages+=" libomp-dev"
 
+__Keyring=
 __UseMirror=0
 
 __UnprocessedBuildArgs=
 while :; do
-    if [ $# -le 0 ]; then
+    if [[ "$#" -le 0 ]]; then
         break
     fi
 
-    lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
+    lowerI="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
     case $lowerI in
-        -?|-h|--help)
+        -\?|-h|--help)
             usage
             exit 1
             ;;
@@ -103,15 +103,6 @@ while :; do
             __UbuntuArch=armhf
             __AlpineArch=armv7
             __QEMUArch=arm
-            ;;
-        armv6)
-            __BuildArch=armv6
-            __UbuntuArch=armhf
-            __QEMUArch=arm
-            __UbuntuRepo="http://raspbian.raspberrypi.org/raspbian/"
-            __CodeName=buster
-            __LLDB_Package="liblldb-6.0-dev"
-            __Keyring="/usr/share/keyrings/raspbian-archive-keyring.gpg"
             ;;
         arm64)
             __BuildArch=arm64
@@ -127,6 +118,18 @@ while :; do
             __UbuntuRepo="http://ftp.debian.org/debian/"
             __CodeName=jessie
             ;;
+        armv6)
+            __BuildArch=armv6
+            __UbuntuArch=armhf
+            __QEMUArch=arm
+            __UbuntuRepo="http://raspbian.raspberrypi.org/raspbian/"
+            __CodeName=buster
+            __LLDB_Package="liblldb-6.0-dev"
+
+            if [[ -e "/usr/share/keyrings/raspbian-archive-keyring.gpg" ]]; then
+                __Keyring="--keyring /usr/share/keyrings/raspbian-archive-keyring.gpg"
+            fi
+            ;;
         ppc64le)
             __BuildArch=ppc64le
             __UbuntuArch=ppc64el
@@ -135,6 +138,18 @@ while :; do
             __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp-dev//')
             __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp5//')
             unset __LLDB_Package
+            ;;
+        riscv64)
+            __BuildArch=riscv64
+            __UbuntuArch=riscv64
+            __UbuntuRepo="http://deb.debian.org/debian-ports"
+            __CodeName=sid
+            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libunwind8-dev//')
+            unset __LLDB_Package
+
+            if [[ -e "/usr/share/keyrings/debian-ports-archive-keyring.gpg" ]]; then
+                __Keyring="--keyring /usr/share/keyrings/debian-ports-archive-keyring.gpg --include=debian-ports-archive-keyring"
+            fi
             ;;
         s390x)
             __BuildArch=s390x
@@ -189,17 +204,17 @@ while :; do
             fi
             ;;
         xenial) # Ubuntu 16.04
-            if [ "$__CodeName" != "jessie" ]; then
+            if [[ "$__CodeName" != "jessie" ]]; then
                 __CodeName=xenial
             fi
             ;;
         zesty) # Ubuntu 17.04
-            if [ "$__CodeName" != "jessie" ]; then
+            if [[ "$__CodeName" != "jessie" ]]; then
                 __CodeName=zesty
             fi
             ;;
         bionic) # Ubuntu 18.04
-            if [ "$__CodeName" != "jessie" ]; then
+            if [[ "$__CodeName" != "jessie" ]]; then
                 __CodeName=bionic
             fi
             ;;
@@ -253,7 +268,7 @@ while :; do
             ;;
         --rootfsdir|-rootfsdir)
             shift
-            __RootfsDir=$1
+            __RootfsDir="$1"
             ;;
         --use-mirror)
             __UseMirror=1
@@ -266,71 +281,66 @@ while :; do
     shift
 done
 
-if [ -e "$__Keyring" ]; then
-    __Keyring="--keyring=$__Keyring"
-else
-    __Keyring=""
-fi
-
-if [ "$__BuildArch" == "armel" ]; then
+if [[ "$__BuildArch" == "armel" ]]; then
     __LLDB_Package="lldb-3.5-dev"
 fi
+
 __UbuntuPackages+=" ${__LLDB_Package:-}"
 
-if [ ! -z "$__LLVM_MajorVersion" ]; then
+if [[ -n "$__LLVM_MajorVersion" ]]; then
     __UbuntuPackages+=" libclang-common-${__LLVM_MajorVersion}${__LLVM_MinorVersion:+.$__LLVM_MinorVersion}-dev"
 fi
 
-if [ -z "$__RootfsDir" ] && [ ! -z "$ROOTFS_DIR" ]; then
-    __RootfsDir=$ROOTFS_DIR
+if [[ -z "$__RootfsDir" && -n "$ROOTFS_DIR" ]]; then
+    __RootfsDir="$ROOTFS_DIR"
 fi
 
-if [ -z "$__RootfsDir" ]; then
+if [[ -z "$__RootfsDir" ]]; then
     __RootfsDir="$__CrossDir/../../../.tools/rootfs/$__BuildArch"
 fi
 
-if [ -d "$__RootfsDir" ]; then
-    if [ $__SkipUnmount == 0 ]; then
-        umount $__RootfsDir/* || true
+if [[ -d "$__RootfsDir" ]]; then
+    if [[ "$__SkipUnmount" == "0" ]]; then
+        umount "$__RootfsDir"/* || true
     fi
-    rm -rf $__RootfsDir
+    rm -rf "$__RootfsDir"
 fi
 
-mkdir -p $__RootfsDir
+mkdir -p "$__RootfsDir"
 __RootfsDir="$( cd "$__RootfsDir" && pwd )"
 
 if [[ "$__CodeName" == "alpine" ]]; then
     __ApkToolsVersion=2.9.1
-    __ApkToolsDir=$(mktemp -d)
-    wget https://github.com/alpinelinux/apk-tools/releases/download/v$__ApkToolsVersion/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz -P $__ApkToolsDir
-    tar -xf $__ApkToolsDir/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz -C $__ApkToolsDir
-    mkdir -p $__RootfsDir/usr/bin
-    cp -v /usr/bin/qemu-$__QEMUArch-static $__RootfsDir/usr/bin
+    __ApkToolsDir="$(mktemp -d)"
+    wget "https://github.com/alpinelinux/apk-tools/releases/download/v$__ApkToolsVersion/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz" -P "$__ApkToolsDir"
+    tar -xf "$__ApkToolsDir/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz" -C "$__ApkToolsDir"
+    mkdir -p "$__RootfsDir"/usr/bin
+    cp -v "/usr/bin/qemu-$__QEMUArch-static" "$__RootfsDir/usr/bin"
 
-    $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
-      -X http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/main \
-      -X http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/community \
-      -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
+    "$__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk" \
+      -X "http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/main" \
+      -X "http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/community" \
+      -U --allow-untrusted --root "$__RootfsDir" --arch "$__AlpineArch" --initdb \
       add $__AlpinePackages
 
-    rm -r $__ApkToolsDir
+    rm -r "$__ApkToolsDir"
 elif [[ "$__CodeName" == "freebsd" ]]; then
-    mkdir -p $__RootfsDir/usr/local/etc
+    mkdir -p "$__RootfsDir"/usr/local/etc
     JOBS="$(getconf _NPROCESSORS_ONLN)"
-    wget -O - https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz | tar -C $__RootfsDir -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
-    echo "ABI = \"FreeBSD:${__FreeBSDABI}:${__FreeBSDMachineArch}\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > ${__RootfsDir}/usr/local/etc/pkg.conf
-    echo "FreeBSD: { url: "pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"${__RootfsDir}/usr/share/keys/pkg\", enabled: yes }" > ${__RootfsDir}/etc/pkg/FreeBSD.conf
-    mkdir -p $__RootfsDir/tmp
+    wget -O - "https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz" | tar -C "$__RootfsDir" -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
+    echo "ABI = \"FreeBSD:${__FreeBSDABI}:${__FreeBSDMachineArch}\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > "${__RootfsDir}"/usr/local/etc/pkg.conf
+    echo "FreeBSD: { url: \"pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly\", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"${__RootfsDir}/usr/share/keys/pkg\", enabled: yes }" > "${__RootfsDir}"/etc/pkg/FreeBSD.conf
+    mkdir -p "$__RootfsDir"/tmp
     # get and build package manager
-    wget -O -  https://github.com/freebsd/pkg/archive/${__FreeBSDPkg}.tar.gz  |  tar -C $__RootfsDir/tmp -zxf -
-    cd $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
+    wget -O - "https://github.com/freebsd/pkg/archive/${__FreeBSDPkg}.tar.gz" | tar -C "$__RootfsDir"/tmp -zxf -
+    cd "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # needed for install to succeed
-    mkdir -p $__RootfsDir/host/etc
-    ./autogen.sh && ./configure --prefix=$__RootfsDir/host && make -j "$JOBS" && make install
-    rm -rf $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
+    mkdir -p "$__RootfsDir"/host/etc
+    ./autogen.sh && ./configure --prefix="$__RootfsDir"/host && make -j "$JOBS" && make install
+    rm -rf "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # install packages we need.
-    INSTALL_AS_USER=$(whoami) $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf update
-    INSTALL_AS_USER=$(whoami) $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
+    INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
+    INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
     pushd "$__RootfsDir/tmp"
@@ -358,7 +368,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     if [[ "$__UseMirror" == 1 ]]; then
         BaseUrl=http://pkgsrc.smartos.skylime.net
     fi
-    BaseUrl="$BaseUrl"/packages/SmartOS/2020Q1/${__illumosArch}/All
+    BaseUrl="$BaseUrl/packages/SmartOS/2020Q1/${__illumosArch}/All"
     echo "Downloading dependencies."
     read -ra array <<<"$__IllumosPackages"
     for package in "${array[@]}"; do
@@ -376,26 +386,26 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     wget -P "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/dlt.h
     wget -P "$__RootfsDir"/usr/include/netpacket https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/inet/sockmods/netpacket/packet.h
     wget -P "$__RootfsDir"/usr/include/sys https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/sys/sdt.h
-elif [[ -n $__CodeName ]]; then
-    qemu-debootstrap $__Keyring --arch $__UbuntuArch $__CodeName $__RootfsDir $__UbuntuRepo
-    cp $__CrossDir/$__BuildArch/sources.list.$__CodeName $__RootfsDir/etc/apt/sources.list
-    chroot $__RootfsDir apt-get update
-    chroot $__RootfsDir apt-get -f -y install
-    chroot $__RootfsDir apt-get -y install $__UbuntuPackages
-    chroot $__RootfsDir symlinks -cr /usr
-    chroot $__RootfsDir apt-get clean
+elif [[ -n "$__CodeName" ]]; then
+    qemu-debootstrap $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
+    cp "$__CrossDir/$__BuildArch/sources.list.$__CodeName" "$__RootfsDir/etc/apt/sources.list"
+    chroot "$__RootfsDir" apt-get update
+    chroot "$__RootfsDir" apt-get -f -y install
+    chroot "$__RootfsDir" apt-get -y install $__UbuntuPackages
+    chroot "$__RootfsDir" symlinks -cr /usr
+    chroot "$__RootfsDir" apt-get clean
 
-    if [ $__SkipUnmount == 0 ]; then
-        umount $__RootfsDir/* || true
+    if [[ "$__SkipUnmount" == "0" ]]; then
+        umount "$__RootfsDir"/* || true
     fi
 
     if [[ "$__BuildArch" == "armel" && "$__CodeName" == "jessie" ]]; then
-        pushd $__RootfsDir
-        patch -p1 < $__CrossDir/$__BuildArch/armel.jessie.patch
+        pushd "$__RootfsDir"
+        patch -p1 < "$__CrossDir/$__BuildArch/armel.jessie.patch"
         popd
     fi
 elif [[ "$__Tizen" == "tizen" ]]; then
-    ROOTFS_DIR=$__RootfsDir $__CrossDir/$__BuildArch/tizen-build-rootfs.sh
+    ROOTFS_DIR="$__RootfsDir" "$__CrossDir/$__BuildArch/tizen-build-rootfs.sh"
 else
     echo "Unsupported target platform."
     usage;

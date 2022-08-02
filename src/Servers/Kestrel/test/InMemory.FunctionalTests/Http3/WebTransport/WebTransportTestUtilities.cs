@@ -59,11 +59,11 @@ internal class WebTransportTestUtilities
 
         var requestStream = await inMemory.CreateRequestStream(new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "CONNECT"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Protocol, "webtransport"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
             new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
         });

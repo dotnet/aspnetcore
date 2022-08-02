@@ -7,10 +7,19 @@ using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
-internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature
+internal sealed partial class QuicStreamContext :
+    IPersistentStateFeature,
+    IStreamDirectionFeature,
+    IProtocolErrorCodeFeature,
+    IStreamIdFeature,
+    IStreamAbortFeature,
+    IStreamClosedFeature
 {
+    private readonly record struct OnCloseRegistration(Action<object?> Callback, object? State);
+
     private IDictionary<object, object?>? _persistentState;
     private long? _error;
+    private List<OnCloseRegistration>? _onClosedRegistrations;
 
     public bool CanRead { get; private set; }
     public bool CanWrite { get; private set; }
@@ -72,6 +81,25 @@ internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStre
         }
     }
 
+    void IStreamClosedFeature.OnClosed(Action<object?> callback, object? state)
+    {
+        lock (_shutdownLock)
+        {
+            if (!_streamClosed)
+            {
+                if (_onClosedRegistrations == null)
+                {
+                    _onClosedRegistrations = new List<OnCloseRegistration>();
+                }
+                _onClosedRegistrations.Add(new OnCloseRegistration(callback, state));
+                return;
+            }
+        }
+
+        // Stream has already closed. Execute callback inline.
+        callback(state);
+    }
+
     private void InitializeFeatures()
     {
         _currentIPersistentStateFeature = this;
@@ -79,5 +107,6 @@ internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStre
         _currentIProtocolErrorCodeFeature = this;
         _currentIStreamIdFeature = this;
         _currentIStreamAbortFeature = this;
+        _currentIStreamClosedFeature = this;
     }
 }

@@ -2,11 +2,17 @@
   "solution": {
     "path": "..\\..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
+      "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
+      "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
+      "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
       "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Extensions\\Features\\test\\Microsoft.Extensions.Features.Tests.csproj",
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "src\\Http\\Authentication.Abstractions\\src\\Microsoft.AspNetCore.Authentication.Abstractions.csproj",
+      "src\\Http\\Authentication.Core\\src\\Microsoft.AspNetCore.Authentication.Core.csproj",
       "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
@@ -21,8 +27,12 @@
       "src\\Middleware\\HostFiltering\\src\\Microsoft.AspNetCore.HostFiltering.csproj",
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
+      "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
+      "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Core\\test\\Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
@@ -47,7 +57,8 @@
       "src\\Servers\\Kestrel\\test\\Sockets.BindTests\\Sockets.BindTests.csproj",
       "src\\Servers\\Kestrel\\test\\Sockets.FunctionalTests\\Sockets.FunctionalTests.csproj",
       "src\\Servers\\Kestrel\\tools\\CodeGenerator\\CodeGenerator.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }
 }
