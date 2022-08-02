@@ -498,18 +498,17 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         var resolvedErrorCode = _error ?? 0;
         QuicLog.StreamAbort(_log, this, resolvedErrorCode, abortReason.Message);
 
-        lock (_shutdownLock)
+        // Make local copy of reference to avoid possibility of race with stream being set to null in dispose.
+        var stream = _stream;
+        if (stream != null)
         {
-            if (_stream != null)
+            if (stream.CanRead)
             {
-                if (_stream.CanRead)
-                {
-                    _stream.Abort(QuicAbortDirection.Read, resolvedErrorCode);
-                }
-                if (_stream.CanWrite)
-                {
-                    _stream.Abort(QuicAbortDirection.Write, resolvedErrorCode);
-                }
+                stream.Abort(QuicAbortDirection.Read, resolvedErrorCode);
+            }
+            if (stream.CanWrite)
+            {
+                stream.Abort(QuicAbortDirection.Write, resolvedErrorCode);
             }
         }
 
