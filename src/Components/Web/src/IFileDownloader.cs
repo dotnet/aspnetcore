@@ -12,11 +12,11 @@ public interface IFileDownloader
     /// Takes in a byte[] representing file data and converts it into a MemoryStream.
     /// </summary>
     /// <param name="fileName">A <see cref="string"/> that contains the specified file name.</param>
-    /// <param name="data"> The <see cref="byte[]"/> data that will be converted into a <see cref="MemoryStream"/>.</param>
+    /// <param name="data"> The <see cref="byte"/>[] data that will be converted into a <see cref="MemoryStream"/>.</param>
     Task SaveAs(string fileName, byte[] data);
 
     /// <summary>
-    /// Takes in a Stream representing file data, converts it into a DotNetStreamReference, and invokes JS to save the file to the specified file name..
+    /// Takes in a Stream representing file data, converts it into a DotNetStreamReference, and invokes JS to save the file to the specified file name.
     /// </summary>
     /// <param name="fileName">A <see cref="string"/> that contains the specified file name.</param>
     /// <param name="data"> The <see cref="Stream"/> data that is converted and streamed to the client.</param>
