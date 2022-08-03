@@ -60,7 +60,6 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                 // Create the connection context inside the callback because it's passed
                 // to the connection callback. The field is then read once AcceptConnectionAsync
                 // finishes awaiting.
-                this._log.LogWarning("IN CALLBACK");
                 var currentAcceptingConnection = new QuicConnectionContext(connection, _context);
                 _pendingConnections.Add(connection, currentAcceptingConnection);
 
