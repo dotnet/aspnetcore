@@ -31,9 +31,33 @@ public static class HealthChecksBuilderAddCheckExtensions
         string name,
         IHealthCheck instance,
         HealthStatus? failureStatus,
-        IEnumerable<string> tags)
+        IEnumerable<string>? tags)
     {
-        return AddCheck(builder, name, instance, failureStatus, tags, default);
+        return AddCheck(builder, name, instance, failureStatus, tags, default, default);
+    }
+
+    /// <summary>
+    /// Adds a new health check with the specified name and implementation.
+    /// </summary>
+    /// <param name="builder">The <see cref="IHealthChecksBuilder"/>.</param>
+    /// <param name="name">The name of the health check.</param>
+    /// <param name="instance">An <see cref="IHealthCheck"/> instance.</param>
+    /// <param name="failureStatus">
+    /// The <see cref="HealthStatus"/> that should be reported when the health check reports a failure. If the provided value
+    /// is <c>null</c>, then <see cref="HealthStatus.Unhealthy"/> will be reported.
+    /// </param>
+    /// <param name="tags">A list of tags that can be used to filter health checks.</param>
+    /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+    public static IHealthChecksBuilder AddCheck(
+        this IHealthChecksBuilder builder,
+        string name,
+        IHealthCheck instance,
+        HealthStatus? failureStatus,
+        IEnumerable<string>? tags,
+        TimeSpan? timeout)
+    {
+        return AddCheck(builder, name, instance, failureStatus, tags, timeout, default);
     }
 
     /// <summary>
@@ -50,14 +74,15 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
     /// <param name="options">An optional <see cref="HealthCheckOptions"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck(
         this IHealthChecksBuilder builder,
         string name,
         IHealthCheck instance,
-        HealthStatus? failureStatus = null,
-        IEnumerable<string>? tags = null,
-        TimeSpan? timeout = null,
-        HealthCheckOptions? options = null)
+        HealthStatus? failureStatus = default,
+        IEnumerable<string>? tags = default,
+        TimeSpan? timeout = default,
+        HealthCheckOptions? options = default)
     {
         if (builder == null)
         {
@@ -100,9 +125,38 @@ public static class HealthChecksBuilderAddCheckExtensions
         this IHealthChecksBuilder builder,
         string name,
         HealthStatus? failureStatus,
-        IEnumerable<string> tags) where T : class, IHealthCheck
+        IEnumerable<string>? tags) where T : class, IHealthCheck
     {
-        return AddCheck<T>(builder, name, failureStatus, tags, default);
+        return AddCheck<T>(builder, name, failureStatus, tags, default, default);
+    }
+
+    /// <summary>
+    /// Adds a new health check with the specified name and implementation.
+    /// </summary>
+    /// <typeparam name="T">The health check implementation type.</typeparam>
+    /// <param name="builder">The <see cref="IHealthChecksBuilder"/>.</param>
+    /// <param name="name">The name of the health check.</param>
+    /// <param name="failureStatus">
+    /// The <see cref="HealthStatus"/> that should be reported when the health check reports a failure. If the provided value
+    /// is <c>null</c>, then <see cref="HealthStatus.Unhealthy"/> will be reported.
+    /// </param>
+    /// <param name="tags">A list of tags that can be used to filter health checks.</param>
+    /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+    /// <remarks>
+    /// This method will use <see cref="ActivatorUtilities.GetServiceOrCreateInstance{T}(IServiceProvider)"/> to create the health check
+    /// instance when needed. If a service of type <typeparamref name="T"/> is registered in the dependency injection container
+    /// with any lifetime it will be used. Otherwise an instance of type <typeparamref name="T"/> will be constructed with
+    /// access to services from the dependency injection container.
+    /// </remarks>
+    public static IHealthChecksBuilder AddCheck<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+        this IHealthChecksBuilder builder,
+        string name,
+        HealthStatus? failureStatus,
+        IEnumerable<string>? tags,
+        TimeSpan? timeout) where T : class, IHealthCheck
+    {
+        return AddCheck<T>(builder, name, failureStatus, tags, timeout, default);
     }
 
     /// <summary>
@@ -125,14 +179,13 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// with any lifetime it will be used. Otherwise an instance of type <typeparamref name="T"/> will be constructed with
     /// access to services from the dependency injection container.
     /// </remarks>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
         this IHealthChecksBuilder builder,
         string name,
-        HealthStatus? failureStatus = null,
-        IEnumerable<string>? tags = null,
-        TimeSpan? timeout = null,
-        HealthCheckOptions? options = null) where T : class, IHealthCheck
+        HealthStatus? failureStatus = default,
+        IEnumerable<string>? tags = default,
+        TimeSpan? timeout = default,
+        HealthCheckOptions? options = default) where T : class, IHealthCheck
     {
         if (builder == null)
         {
@@ -171,17 +224,7 @@ public static class HealthChecksBuilderAddCheckExtensions
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
         this IHealthChecksBuilder builder, string name, params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        return AddTypeActivatedCheck<T>(builder, name, failureStatus: null, tags: null, args);
+        return AddTypeActivatedCheck<T>(builder, name, failureStatus: default, tags: default, args);
     }
 
     /// <summary>
@@ -207,17 +250,7 @@ public static class HealthChecksBuilderAddCheckExtensions
         HealthStatus? failureStatus,
         params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: null, args);
+        return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: default, timeout: default, options: default, args);
     }
 
     /// <summary>
@@ -245,22 +278,7 @@ public static class HealthChecksBuilderAddCheckExtensions
         IEnumerable<string>? tags,
         params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        return builder.Add(new HealthCheckRegistration(name, CreateInstance, failureStatus, tags));
-
-        [UnconditionalSuppressMessage("Trimming", "IL2091",
-           Justification = "DynamicallyAccessedMemberTypes.PublicConstructors is enforced by calling method.")]
-        T CreateInstance(IServiceProvider serviceProvider) =>
-            ActivatorUtilities.CreateInstance<T>(serviceProvider, args);
+        return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: tags, timeout: default, options: default, args);
     }
 
     /// <summary>
@@ -286,25 +304,11 @@ public static class HealthChecksBuilderAddCheckExtensions
         this IHealthChecksBuilder builder,
         string name,
         HealthStatus? failureStatus,
-        IEnumerable<string> tags,
-        TimeSpan timeout,
+        IEnumerable<string>? tags,
+        TimeSpan? timeout,
         params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        return builder.Add(new HealthCheckRegistration(name, CreateInstance, failureStatus, tags, timeout));
-
-        [UnconditionalSuppressMessage("Trimming", "IL2091",
-            Justification = "DynamicallyAccessedMemberTypes.PublicConstructors is enforced by calling method.")]
-        T CreateInstance(IServiceProvider serviceProvider) => ActivatorUtilities.CreateInstance<T>(serviceProvider, args);
+        return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: tags, timeout: timeout, options: default, args);
     }
 
     /// <summary>
@@ -331,9 +335,9 @@ public static class HealthChecksBuilderAddCheckExtensions
         this IHealthChecksBuilder builder,
         string name,
         HealthStatus? failureStatus,
-        IEnumerable<string> tags,
-        TimeSpan timeout,
-        HealthCheckOptions options,
+        IEnumerable<string>? tags,
+        TimeSpan? timeout,
+        HealthCheckOptions? options,
         params object[] args) where T : class, IHealthCheck
     {
         if (builder == null)
