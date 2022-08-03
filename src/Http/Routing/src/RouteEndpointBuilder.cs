@@ -91,7 +91,6 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
         if (metadata is { Count: > 0 })
         {
             var hasCorsMetadata = false;
-            var lastHttpMethodMetadataIndex = -1;
             HttpMethodMetadata? httpMethodMetadata = null;
 
             // Before create the final collection we
@@ -101,9 +100,8 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
             {
                 if (metadata[i] is HttpMethodMetadata methodMetadata)
                 {
-                    // Storing only the last index
+                    // Storing only the last entry
                     // since the last metadata is the most significant.
-                    lastHttpMethodMetadataIndex = i;
                     httpMethodMetadata = methodMetadata;
                 }
                 else if (!hasCorsMetadata && metadata[i] is ICorsMetadata)
@@ -114,12 +112,11 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
                 }
             }
 
-            if (hasCorsMetadata && lastHttpMethodMetadataIndex > -1)
+            if (hasCorsMetadata && httpMethodMetadata is not null)
             {
                 // Since we found a CORS metadata we will update it
                 // to make sure the acceptCorsPreflight is set to true.
-                httpMethodMetadata!.AcceptCorsPreflight = true;
-                metadata[lastHttpMethodMetadataIndex] = httpMethodMetadata;
+                httpMethodMetadata.AcceptCorsPreflight = true;
             }
         }
 
