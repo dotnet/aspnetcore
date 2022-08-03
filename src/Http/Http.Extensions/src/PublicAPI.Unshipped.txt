@@ -38,8 +38,6 @@ Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
@@ -54,6 +52,8 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void (forwarded, contained 
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointFilterFactories.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.get -> System.Collections.Generic.IList<object!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.init -> void
 Microsoft.Extensions.DependencyInjection.HttpJsonServiceExtensions

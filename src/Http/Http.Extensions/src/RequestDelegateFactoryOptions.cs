@@ -36,7 +36,7 @@ public sealed class RequestDelegateFactoryOptions
     /// <summary>
     /// The list of filters that must run in the pipeline for a given route handler.
     /// </summary>
-    public IList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
+    public IReadOnlyList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>? EndpointFilterFactories { get; init; }
 
     /// <summary>
     /// The mutable initial endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>. In most cases,

@@ -141,11 +141,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             displayName = $"Fallback {displayName}";
         }
 
-        // If we're not a route handler, we started with a fully realized (although unfiltered) RequestDelegate, so we can just redirect to that
-        // while running any conventions. We'll put the original back if it remains unfiltered right before building the endpoint.
-        RequestDelegate? factoryCreatedRequestDelegate = isRouteHandler ? null : (RequestDelegate)entry.RouteHandler;
-
-        // Let existing conventions capture and call into builder.RequestDelegate as long as they do so after it has been created.
+        RequestDelegate? factoryCreatedRequestDelegate = null;
         RequestDelegate redirectRequestDelegate = context =>
         {
             if (factoryCreatedRequestDelegate is null)
@@ -156,15 +152,25 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             return factoryCreatedRequestDelegate(context);
         };
 
-        // Add MethodInfo and HttpMethodMetadata (if any) as first metadata items as they are intrinsic to the route much like
-        // the pattern or default display name. This gives visibility to conventions like WithOpenApi() to intrinsic route details
-        // (namely the MethodInfo) even when applied early as group conventions.
         RouteEndpointBuilder builder = new(redirectRequestDelegate, pattern, order)
         {
             DisplayName = displayName,
             ApplicationServices = _applicationServices,
-            Metadata = { handler.Method },
         };
+
+        if (isRouteHandler)
+        {
+            // Add MethodInfo and HttpMethodMetadata (if any) as first metadata items as they are intrinsic to the route much like
+            // the pattern or default display name. This gives visibility to conventions like WithOpenApi() to intrinsic route details
+            // (namely the MethodInfo) even when applied early as group conventions.
+            builder.Metadata.Add(handler.Method);
+        }
+        else
+        {
+            // If we're not a route handler, we started with a fully realized (although unfiltered) RequestDelegate, so we can just redirect to that
+            // while running any conventions. We'll put the original back if it remains unfiltered right before building the endpoint.
+            factoryCreatedRequestDelegate = (RequestDelegate)entry.RouteHandler;
+        }
 
         if (entry.HttpMethods is not null)
         {
@@ -196,7 +202,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             entrySpecificConvention(builder);
         }
 
-        if (isRouteHandler || builder.RouteHandlerFilterFactories.Count > 0)
+        if (isRouteHandler || builder.EndpointFilterFactories is { Count: > 0})
         {
             var routeParamNames = new List<string>(pattern.Parameters.Count);
             foreach (var parameter in pattern.Parameters)
@@ -211,7 +217,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
                 ThrowOnBadRequest = _throwOnBadRequest,
                 DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
                 EndpointMetadata = builder.Metadata,
-                RouteHandlerFilterFactories = builder.RouteHandlerFilterFactories,
+                EndpointFilterFactories = builder.EndpointFilterFactories,
             };
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.

@@ -208,7 +208,7 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
-            FilterFactories = options?.RouteHandlerFilterFactories?.ToList(),
+            FilterFactories = options?.EndpointFilterFactories?.ToList(),
             Metadata = options?.EndpointMetadata ?? new List<object>(),
         };
     }
