@@ -21,11 +21,7 @@ public sealed class FileDownloader : IFileDownloader
         JS = JSRuntime;
     }
 
-    /// <summary>
-    /// Takes in a byte[] representing file data and converts it into a MemoryStream.
-    /// </summary>
-    /// <param name="fileName">A <see cref="string"/> that contains the specified file name.</param>
-    /// <param name="data"> The <see cref="byte"/>[] data that will be converted into a <see cref="MemoryStream"/>.</param>
+    /// <inheritdoc />
     public Task SaveAs(string fileName, byte[] data)
     {
         var fileStream = new MemoryStream(data);
