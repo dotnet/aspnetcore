@@ -1,7 +1,8 @@
 #nullable enable
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Delay.get -> System.TimeSpan
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Delay.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, System.TimeSpan? delay, System.TimeSpan? period) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, System.TimeSpan? delay, System.TimeSpan? period) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.get -> System.TimeSpan
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.set -> void
+Microsoft.Extensions.DependencyInjection.HealthCheckOptions
+Microsoft.Extensions.DependencyInjection.HealthCheckOptions.Delay.get -> System.TimeSpan?
+Microsoft.Extensions.DependencyInjection.HealthCheckOptions.HealthCheckOptions(System.TimeSpan? delay = null, System.TimeSpan? period = null) -> void
+Microsoft.Extensions.DependencyInjection.HealthCheckOptions.Period.get -> System.TimeSpan?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, Microsoft.Extensions.DependencyInjection.HealthCheckOptions? options) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, Microsoft.Extensions.DependencyInjection.HealthCheckOptions? options) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Options.get -> Microsoft.Extensions.DependencyInjection.HealthCheckOptions?

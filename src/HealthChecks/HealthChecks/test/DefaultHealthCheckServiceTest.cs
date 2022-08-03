@@ -140,7 +140,7 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncIndividualCheck("HealthyCheck", _ =>
+            b.AddAsyncCheck("HealthyCheck", _ =>
             {
                 if (!healthyCheckInsideCheck.Task.IsCompleted)
                 {
@@ -150,9 +150,9 @@ public class DefaultHealthCheckServiceTest
                 return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
             },
                 healthyCheckTags,
-                period: TimeSpan.FromSeconds(2));
+                options: new HealthCheckOptions(period: TimeSpan.FromSeconds(2)));
 
-            b.AddAsyncIndividualCheck("DegradedCheck", _ =>
+            b.AddAsyncCheck("DegradedCheck", _ =>
             {
                 if (!degradedCheckInsideCheck.Task.IsCompleted)
                 {
@@ -162,9 +162,9 @@ public class DefaultHealthCheckServiceTest
                 return Task.FromResult(HealthCheckResult.Degraded(DegradedMessage));
             },
                 degradedCheckTags,
-                period: TimeSpan.FromSeconds(3));
+                options: new HealthCheckOptions(period: TimeSpan.FromSeconds(3)));
 
-            b.AddAsyncIndividualCheck("UnhealthyCheck", _ =>
+            b.AddAsyncCheck("UnhealthyCheck", _ =>
                 {
                     if (!unhealthyCheckInsideCheck.Task.IsCompleted)
                     {
@@ -174,7 +174,7 @@ public class DefaultHealthCheckServiceTest
 
                 },
                 unhealthyCheckTags,
-                period: TimeSpan.FromSeconds(5));
+                options: new HealthCheckOptions(period: TimeSpan.FromSeconds(5)));
         });
 
         // Act
@@ -259,7 +259,7 @@ public class DefaultHealthCheckServiceTest
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
                 });
 
-                b.AddAsyncIndividualCheck("Check3Period2", _ =>
+                b.AddAsyncCheck("Check3Period2", _ =>
                 {
                     if (!check3Period2InsideCheck.Task.IsCompleted)
                     {
@@ -267,9 +267,10 @@ public class DefaultHealthCheckServiceTest
                     }
 
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
-                }, period: TimeSpan.FromSeconds(2));
+                },
+                options: new HealthCheckOptions(period: TimeSpan.FromSeconds(2)));
 
-                b.AddAsyncIndividualCheck("Check4Period5", _ =>
+                b.AddAsyncCheck("Check4Period5", _ =>
                 {
                     if (!check4Period5InsideCheck.Task.IsCompleted)
                     {
@@ -277,9 +278,9 @@ public class DefaultHealthCheckServiceTest
                     }
 
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
-                }, period: TimeSpan.FromSeconds(5));
+                }, options: new HealthCheckOptions(period: TimeSpan.FromSeconds(5)));
 
-                b.AddAsyncIndividualCheck("Check5Period7", _ =>
+                b.AddAsyncCheck("Check5Period7", _ =>
                 {
                     if (!check5Period7InsideCheck.Task.IsCompleted)
                     {
@@ -287,7 +288,7 @@ public class DefaultHealthCheckServiceTest
                     }
 
                     return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
-                }, period: TimeSpan.FromSeconds(7));
+                }, options: new HealthCheckOptions(period: TimeSpan.FromSeconds(7)));
             },
             options =>
             {
@@ -848,11 +849,11 @@ public class DefaultHealthCheckServiceTest
         // Arrange
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncIndividualCheck("test", async () =>
+            b.AddAsyncCheck("test", async () =>
             {
                 await Task.Delay(10).ConfigureAwait(false);
                 return HealthCheckResult.Healthy();
-            }, period: TimeSpan.FromSeconds(4));
+            }, options: new HealthCheckOptions(period: TimeSpan.FromSeconds(4)));
         });
 
         var hangs = true;

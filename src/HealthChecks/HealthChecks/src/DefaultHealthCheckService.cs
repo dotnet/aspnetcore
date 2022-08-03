@@ -46,13 +46,13 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         // Group healthcheck registrations by delay and period, to build a Dictionary<(TimeSpan, TimeSpan), List<HealthCheckRegistration>>
         _individualHealthChecksMap = (from r in _healthCheckServiceOptions.Value.Registrations
                                       where !IsDefaultHealthCheck(r)  // Skip default HCs initiated with publisher
-                                      group r by (r.Delay, r.Period)).ToDictionary(g => g.Key, g => g.ToList());
+                                      group r by (r.Options?.Delay ?? _healthCheckPublisherOptions.Value.Delay, r.Options?.Period ?? _healthCheckPublisherOptions.Value.Period)).ToDictionary(g => g.Key, g => g.ToList());
 
         // Aggregate Timers for HealthCheckRegistration having the same delay and period
         _ = CreateTimers(_individualHealthChecksMap);
     }
 
-    private static bool IsDefaultHealthCheck(HealthCheckRegistration registration) => registration.Delay == Timeout.InfiniteTimeSpan && registration.Period == default;
+    private static bool IsDefaultHealthCheck(HealthCheckRegistration registration) => registration.Options == default;
 
     private Dictionary<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> periodHealthChecksMap, CancellationToken cancellationToken = default)
     {
@@ -74,8 +74,8 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
                 }
             },
             null,
-            dueTime: delay == Timeout.InfiniteTimeSpan ? _healthCheckPublisherOptions.Value.Delay : delay, // Default to publisher Delay
-            period: period == default ? _healthCheckPublisherOptions.Value.Period : period) // Default to publisher Period
+            dueTime: delay, // Default to publisher Delay
+            period: period) // Default to publisher Period
         );
     }
 
