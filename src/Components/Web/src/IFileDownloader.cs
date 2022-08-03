@@ -16,9 +16,9 @@ public interface IFileDownloader
     Task SaveAs(string fileName, byte[] data);
 
     /// <summary>
-    /// Takes in a Stream representing file data, converts it into a DotNetStreamReference, and invokes JS to save the file to the specified file name.
+    /// Takes in a <see cref="Stream"/> representing file data and triggers the file download on the client.
     /// </summary>
-    /// <param name="fileName">A <see cref="string"/> that contains the specified file name.</param>
-    /// <param name="data"> The <see cref="Stream"/> data that is converted and streamed to the client.</param>
+    /// <param name="fileName">A <see cref="string"/> that represents the default name of the file that will be downloaded.</param>
+    /// <param name="data"> The <see cref="Stream"/> data that will be downloaded by the client.</param>
     Task SaveAs(string fileName, Stream data);
 }
