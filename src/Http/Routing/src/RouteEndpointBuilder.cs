@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -79,9 +80,55 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
             requestDelegate,
             RoutePattern,
             Order,
-            new EndpointMetadataCollection(Metadata),
+            CreateMetadataCollection(Metadata),
             DisplayName);
 
         return routeEndpoint;
+    }
+
+    private static EndpointMetadataCollection CreateMetadataCollection(IList<object> metadata)
+    {
+        if (metadata is { Count: > 0 })
+        {
+            var hasCorsMetadata = false;
+            IHttpMethodMetadata? httpMethodMetadata = null;
+
+            // Before create the final collection we
+            // need to update the IHttpMethodMetadata if
+            // a CORS metadata is present
+            for (var i = 0; i < metadata.Count; i++)
+            {
+                // Checking if metadata is present using the interfaces, instead the concrete type,
+                // allowing custom metadata implementations to work. That is the reason why not using an else if
+                // since a metadata could implement both interfaces.
+
+                if (metadata[i] is IHttpMethodMetadata methodMetadata)
+                {
+                    // Storing only the last entry
+                    // since the last metadata is the most significant.
+                    httpMethodMetadata = methodMetadata;
+                }
+
+                if (!hasCorsMetadata && metadata[i] is ICorsMetadata)
+                {
+                    // IEnableCorsAttribute, IDisableCorsAttribute and ICorsPolicyMetadata
+                    // are ICorsMetadata
+                    hasCorsMetadata = true;
+                }
+            }
+
+            if (hasCorsMetadata && httpMethodMetadata is not null)
+            {
+                // Since we found a CORS metadata we will recreate it
+                // to make sure the acceptCorsPreflight is set to true.
+
+                // A new HttpMethodMedata is added, instead updating the found metadata (how MVC works),
+                // to avoid replace a custom IHttpMethodMetadata implementation that could implement
+                // more interfaces.
+                metadata.Add(new HttpMethodMetadata(httpMethodMetadata!.HttpMethods, acceptCorsPreflight: true));
+            }
+        }
+
+        return new EndpointMetadataCollection(metadata);
     }
 }
