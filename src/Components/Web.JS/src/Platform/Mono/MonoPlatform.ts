@@ -257,7 +257,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
   }
 
-  const typesMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
+  const monoToBlazorAssetTypeMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
     'assembly': 'assembly',
     'pdb': 'pdb',
     'icu': 'globalization',
@@ -266,11 +266,9 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
   // it would not `loadResource` on types for which there is no typesMap mapping
   const downloadResource = (request: ResourceRequest): LoadingResource | undefined => {
-    const type = typesMap[request.behavior];
+    const type = monoToBlazorAssetTypeMap[request.behavior];
     if (type !== undefined) {
-      const loaded = resourceLoader.loadResource(request.name, request.resolvedUrl!, request.hash!, type);
-      loaded.url = toAbsoluteUrl(loaded.url);
-      return loaded;
+      return resourceLoader.loadResource(request.name, request.resolvedUrl!, request.hash!, type);
     }
     return undefined;
   };
@@ -520,7 +518,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
         const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress as any, data.length);
         heapMemory.set(data);
         MONO.mono_wasm_add_assembly(loadAsName, heapAddress, data.length);
-        MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
+        MONO.loaded_files.push(dependency.url);
       } catch (errorInfo) {
         runtimeReadyReject(errorInfo);
         return;
@@ -548,12 +546,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   });
 
   return await runtimeReady;
-}
-
-const anchorTagForAbsoluteUrlConversions = document.createElement('a');
-function toAbsoluteUrl(possiblyRelativeUrl: string) {
-  anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
-  return anchorTagForAbsoluteUrlConversions.href;
 }
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
