@@ -401,7 +401,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(42, httpContext.Items["input"]);
     }
-    
+
     [Fact]
     public async Task RequestDelegatePopulatesFromNullableNullOptionalParameter()
     {
@@ -4992,6 +4992,43 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
     }
 
+    public static object[][] NullableFromParameterListActions
+    {
+        get
+        {
+            void TestParameterListRecordStruct([AsParameters] ParameterListRecordStruct? args)
+            { }
+
+            void TestParameterListRecordClass([AsParameters] ParameterListRecordClass? args)
+            { }
+
+            void TestParameterListStruct([AsParameters] ParameterListStruct? args)
+            { }
+
+            void TestParameterListClass([AsParameters] ParameterListClass? args)
+            { }
+
+            return new[]
+            {
+                new object[] { (Action<ParameterListRecordStruct?>)TestParameterListRecordStruct },
+                new object[] { (Action<ParameterListRecordClass?>)TestParameterListRecordClass },
+                new object[] { (Action<ParameterListStruct?>)TestParameterListStruct },
+                new object[] { (Action<ParameterListClass?>)TestParameterListClass },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(NullableFromParameterListActions))]
+    public void RequestDelegateThrowsWhenNullableParameterList(Delegate action)
+    {
+        var parameter = action.Method.GetParameters()[0];
+        var httpContext = CreateHttpContext();
+
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+        Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.", exception.Message);
+    }
+
     private record struct SampleParameterList(int Foo);
     private record struct AdditionalSampleParameterList(int Bar);
 
@@ -5188,7 +5225,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
-        
+
         Assert.Equal(200, httpContext.Response.StatusCode);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal("Hello, TestName!", decodedResponseBody);
