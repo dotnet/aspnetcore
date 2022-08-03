@@ -265,6 +265,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<ComponentStatePersistenceManager>();
+        Services.AddSingleton<IFileDownloader, FileDownloader>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddLogging(builder =>

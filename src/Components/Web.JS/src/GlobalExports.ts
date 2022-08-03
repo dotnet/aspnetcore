@@ -16,6 +16,7 @@ import { Platform, Pointer, System_String, System_Array, System_Object, System_B
 import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
+import { downloadFile } from './FileDownloader';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -63,6 +64,7 @@ interface IBlazor {
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
     receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,
     attachWebRendererInterop?: typeof attachWebRendererInterop,
+    downloadFile?: (data: any, fileName: string) => Promise<void>,
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void,
@@ -85,6 +87,7 @@ export const Blazor: IBlazor = {
     getJSDataStreamChunk: getNextChunk,
     receiveDotNetDataStream: receiveDotNetDataStream,
     attachWebRendererInterop,
+    downloadFile: downloadFile,
   },
 };
 
