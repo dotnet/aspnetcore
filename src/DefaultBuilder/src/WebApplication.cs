@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
         internal WebApplication(IHost host)
         {
             _host = host;
-            ApplicationBuilder = new ApplicationBuilder(host.Services);
+            ApplicationBuilder = new ApplicationBuilder(host.Services, ServerFeatures);
             Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
 
             Properties[GlobalEndpointRouteBuilderKey] = this;
