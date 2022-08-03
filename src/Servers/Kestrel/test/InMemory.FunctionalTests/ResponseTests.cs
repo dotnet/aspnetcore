@@ -591,6 +591,123 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    public static IEnumerable<object[]> Get1xxAnd204MethodCombinations()
+    {
+        // Status codes to test
+        var statusCodes = new int[] {
+                StatusCodes.Status100Continue,
+                StatusCodes.Status101SwitchingProtocols,
+                StatusCodes.Status102Processing,
+                StatusCodes.Status204NoContent,
+            };
+
+        // HTTP methods to test
+        var methods = new string[] {
+                HttpMethods.Connect,
+                HttpMethods.Delete,
+                HttpMethods.Get,
+                HttpMethods.Head,
+                HttpMethods.Options,
+                HttpMethods.Patch,
+                HttpMethods.Post,
+                HttpMethods.Put,
+                HttpMethods.Trace
+            };
+
+        foreach (var statusCode in statusCodes)
+        {
+            foreach (var method in methods)
+            {
+                yield return new object[] { statusCode, method };
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Get1xxAnd204MethodCombinations))]
+    public async Task AttemptingToWriteContentLengthFailsFor1xxAnd204Responses(int statusCode, string method)
+    {
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.Headers.ContentLength = 0;
+
+            try
+            {
+                await httpContext.Response.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                responseWriteTcs.TrySetException(ex);
+                throw;
+            }
+
+            responseWriteTcs.TrySetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    $"{method} / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                Assert.Equal(CoreStrings.FormatHeaderNotAllowedOnResponse("Content-Length", statusCode), ex.Message);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(StatusCodes.Status200OK)]
+    [InlineData(StatusCodes.Status201Created)]
+    [InlineData(StatusCodes.Status202Accepted)]
+    [InlineData(StatusCodes.Status203NonAuthoritative)]
+    [InlineData(StatusCodes.Status204NoContent)]
+    [InlineData(StatusCodes.Status205ResetContent)]
+    [InlineData(StatusCodes.Status206PartialContent)]
+    [InlineData(StatusCodes.Status207MultiStatus)]
+    [InlineData(StatusCodes.Status208AlreadyReported)]
+    [InlineData(StatusCodes.Status226IMUsed)]
+    public async Task AttemptingToWriteContentLengthFailsFor2xxResponsesOnConnect(int statusCode)
+    {
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.Headers.ContentLength = 0;
+
+            try
+            {
+                await httpContext.Response.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                responseWriteTcs.TrySetException(ex);
+                throw;
+            }
+
+            responseWriteTcs.TrySetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "CONNECT / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                Assert.Equal(CoreStrings.FormatHeaderNotAllowedOnResponse("Content-Length", statusCode), ex.Message);
+            }
+        }
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status204NoContent)]
     [InlineData(StatusCodes.Status304NotModified)]

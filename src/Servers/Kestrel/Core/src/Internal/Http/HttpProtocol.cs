@@ -1147,7 +1147,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         if (!_canWriteResponseBody && hasTransferEncoding)
         {
-            RejectNonBodyTransferEncodingResponse(appCompleted);
+            RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.TransferEncoding);
+        }
+        else if (!CanIncludeResponseContentLengthHeader() && responseHeaders.ContentLength.HasValue)
+        {
+            RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.ContentLength);
         }
         else if (StatusCode == StatusCodes.Status101SwitchingProtocols)
         {
@@ -1219,6 +1223,28 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         return responseHeaders;
     }
 
+    private bool CanIncludeResponseContentLengthHeader()
+    {
+        // Section 4.3.6 of RFC7231
+        if (Is1xxCode(StatusCode) || StatusCode == StatusCodes.Status204NoContent)
+        {
+            // A server MUST NOT send a Content-Length header field in any response
+            // with a status code of 1xx (Informational) or 204 (No Content).
+            return false;
+        }
+        else if (Method == HttpMethod.Connect && Is2xxCode(StatusCode))
+        {
+            // A server MUST NOT send a Content-Length header field in any 2xx
+            // (Successful) response to a CONNECT request.
+            return false;
+        }
+
+        return true;
+
+        static bool Is1xxCode(int code) => code >= StatusCodes.Status100Continue && code < StatusCodes.Status200OK;
+        static bool Is2xxCode(int code) => code >= StatusCodes.Status200OK && code < StatusCodes.Status300MultipleChoices;
+    }
+
     private bool CanWriteResponseBody()
     {
         // List of status codes taken from Microsoft.Net.Http.Server.Response
@@ -1240,9 +1266,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(value));
     }
 
-    private void RejectNonBodyTransferEncodingResponse(bool appCompleted)
+    private void RejectInvalidHeaderForNonBodyResponse(bool appCompleted, string headerName)
     {
-        var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse("Transfer-Encoding", StatusCode));
+        var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse(headerName, StatusCode));
         if (!appCompleted)
         {
             // Back out of header creation surface exception in user code
