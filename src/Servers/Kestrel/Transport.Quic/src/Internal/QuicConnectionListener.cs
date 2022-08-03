@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
     private readonly QuicListenerOptions _quicListenerOptions;
     private bool _disposed;
     private QuicListener? _listener;
-    private QuicConnectionContext? _currentAcceptingConnection;
+    private ConditionalWeakTable<QuicConnection, QuicConnectionContext> _pendingConnections;
 
     public QuicConnectionListener(
         QuicTransportOptions options,
@@ -45,6 +46,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
             throw new InvalidOperationException("No application protocols specified.");
         }
 
+        _pendingConnections = new ConditionalWeakTable<QuicConnection, QuicConnectionContext>();
         _log = log;
         _tlsConnectionCallbackOptions = tlsConnectionCallbackOptions;
         _context = new QuicTransportContext(_log, options);
@@ -58,13 +60,15 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                 // Create the connection context inside the callback because it's passed
                 // to the connection callback. The field is then read once AcceptConnectionAsync
                 // finishes awaiting.
-                _currentAcceptingConnection = new QuicConnectionContext(connection, _context);
+                this._log.LogWarning("IN CALLBACK");
+                var currentAcceptingConnection = new QuicConnectionContext(connection, _context);
+                _pendingConnections.Add(connection, currentAcceptingConnection);
 
                 var context = new TlsConnectionCallbackContext
                 {
                     ClientHelloInfo = helloInfo,
                     State = _tlsConnectionCallbackOptions.OnConnectionState,
-                    Connection = _currentAcceptingConnection,
+                    Connection = currentAcceptingConnection,
                 };
                 var serverAuthenticationOptions = await _tlsConnectionCallbackOptions.OnConnection(context, cancellationToken);
 
@@ -134,8 +138,10 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         {
             var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
 
-            // _currentAcceptingConnection is set inside ConnectionOptionsCallback.
-            var connectionContext = _currentAcceptingConnection;
+            if (!_pendingConnections.TryGetValue(quicConnection, out var connectionContext))
+            {
+                throw new InvalidOperationException("Couldn't find ConnectionContext for QuicConnection.");
+            }
 
             // Verify the connection context was created and set correctly.
             Debug.Assert(connectionContext != null);
