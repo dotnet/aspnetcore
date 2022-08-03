@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
+using System.Net.Security;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -194,6 +196,19 @@ internal static partial class QuicLog
             StreamReusedCore(logger, streamContext.ConnectionId);
         }
     }
+
+    [LoggerMessage(18, LogLevel.Warning, $"{nameof(SslServerAuthenticationOptions)} must provide a server certificate using {nameof(SslServerAuthenticationOptions.ServerCertificate)}," +
+        $" {nameof(SslServerAuthenticationOptions.ServerCertificateContext)}, or {nameof(SslServerAuthenticationOptions.ServerCertificateSelectionCallback)}.", EventName = "ConnectionListenerCertificateNotSpecified")]
+    public static partial void ConnectionListenerCertificateNotSpecified(ILogger logger);
+
+    [LoggerMessage(19, LogLevel.Warning, $"{nameof(SslServerAuthenticationOptions)} must provide at least one application protocol using {nameof(SslServerAuthenticationOptions.ApplicationProtocols)}.", EventName = "ConnectionListenerApplicationProtocolsNotSpecified")]
+    public static partial void ConnectionListenerApplicationProtocolsNotSpecified(ILogger logger);
+
+    [LoggerMessage(20, LogLevel.Debug, "QUIC listener starting with configured endpoint {listenEndPoint}.", EventName = "ConnectionListenerStarting")]
+    public static partial void ConnectionListenerStarting(ILogger logger, IPEndPoint listenEndPoint);
+
+    [LoggerMessage(21, LogLevel.Debug, "QUIC listener aborted.", EventName = "ConnectionListenerAborted")]
+    public static partial void ConnectionListenerAborted(ILogger logger, Exception exception);
 
     private static StreamType GetStreamType(QuicStreamContext streamContext) =>
         streamContext.CanRead && streamContext.CanWrite

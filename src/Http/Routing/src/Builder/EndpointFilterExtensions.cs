@@ -21,7 +21,7 @@ public static class EndpointFilterExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static TBuilder AddEndpointFilter<TBuilder>(this TBuilder builder, IEndpointFilter filter) where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
+        builder.AddEndpointFilterFactory((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
 
     /// <summary>
     /// Registers a filter of type <typeparamref name="TFilterType"/> onto the route handler.
@@ -47,7 +47,7 @@ public static class EndpointFilterExtensions
             filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), Type.EmptyTypes);
         }
 
-        builder.AddEndpointFilter((routeHandlerContext, next) =>
+        builder.AddEndpointFilterFactory((routeHandlerContext, next) =>
         {
             var invokeArguments = new[] { routeHandlerContext };
             return (context) =>
@@ -97,7 +97,7 @@ public static class EndpointFilterExtensions
     public static TBuilder AddEndpointFilter<TBuilder>(this TBuilder builder, Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> routeHandlerFilter)
         where TBuilder : IEndpointConventionBuilder
     {
-        return builder.AddEndpointFilter((routeHandlerContext, next) => (context) => routeHandlerFilter(context, next));
+        return builder.AddEndpointFilterFactory((routeHandlerContext, next) => (context) => routeHandlerFilter(context, next));
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public static class EndpointFilterExtensions
     /// <param name="filterFactory">A method representing the logic for constructing the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
-    public static TBuilder AddEndpointFilter<TBuilder>(this TBuilder builder, Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> filterFactory)
+    public static TBuilder AddEndpointFilterFactory<TBuilder>(this TBuilder builder, Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> filterFactory)
         where TBuilder : IEndpointConventionBuilder
     {
         builder.Add(endpointBuilder =>
