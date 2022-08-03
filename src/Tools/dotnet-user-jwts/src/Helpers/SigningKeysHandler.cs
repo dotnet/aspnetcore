@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 //                  Issuer: someissuer2,
 //                  Length: 32
 //              }]
-
 internal static class SigningKeysHandler
 {
     public static byte[] GetSigningKeyMaterial(string userSecretsId, string scheme, string issuer)
@@ -56,7 +55,6 @@ internal static class SigningKeysHandler
 
     public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string scheme, string issuer) =>
         GetSigningKeyMaterial(userSecretsId, scheme, issuer) ?? CreateSigningKeyMaterial(userSecretsId, scheme, issuer);
-
 
     public static byte[] CreateSigningKeyMaterial(string userSecretsId, string scheme, string issuer, int signingKeyLength = 32, bool reset = false)
     {
