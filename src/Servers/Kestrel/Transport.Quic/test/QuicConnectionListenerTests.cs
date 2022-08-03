@@ -146,6 +146,21 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task BindAsync_ListenersSharePort_ThrowAddressInUse()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+        // Act & Assert
+        var port = ((IPEndPoint)connectionListener.EndPoint).Port;
+
+        // TODO - update to check for AddressInUseException when System.Net.Quic is updated to throw a descriptive error.
+        // See https://github.com/dotnet/aspnetcore/issues/43061
+        await Assert.ThrowsAsync<QuicException>(() => QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, port: port));
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task AcceptAsync_NoApplicationProtocolsInCallback_DefaultToConnectionProtocols()
     {
         // Arrange

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -26,9 +25,18 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         var httpContext = context.HttpContext;
         var acceptHeader = httpContext.Request.Headers.Accept.GetList<MediaTypeHeaderValue>();
 
-        if (acceptHeader?.Any(h => _jsonMediaType.IsSubsetOf(h) || _problemDetailsJsonMediaType.IsSubsetOf(h)) == true)
+        if (acceptHeader is { Count: > 0 })
         {
-            return true;
+            for (var i = 0; i < acceptHeader.Count; i++)
+            {
+                var acceptHeaderValue = acceptHeader[i];
+
+                if (_jsonMediaType.IsSubsetOf(acceptHeaderValue) ||
+                    _problemDetailsJsonMediaType.IsSubsetOf(acceptHeaderValue))
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
