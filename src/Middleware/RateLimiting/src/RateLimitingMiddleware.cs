@@ -111,13 +111,13 @@ internal sealed partial class RateLimitingMiddleware
         {
             if (_globalLimiter is not null)
             {
-                globalLease = _globalLimiter.Acquire(context);
+                globalLease = _globalLimiter.AttemptAcquire(context);
                 if (!globalLease.IsAcquired)
                 {
                     return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
                 }
             }
-            endpointLease = _endpointLimiter.Acquire(context);
+            endpointLease = _endpointLimiter.AttemptAcquire(context);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
@@ -142,13 +142,13 @@ internal sealed partial class RateLimitingMiddleware
         {
             if (_globalLimiter is not null)
             {
-                globalLease = await _globalLimiter.WaitAndAcquireAsync(context, cancellationToken: cancellationToken);
+                globalLease = await _globalLimiter.AcquireAsync(context, cancellationToken: cancellationToken);
                 if (!globalLease.IsAcquired)
                 {
                     return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
                 }
             }
-            endpointLease = await _endpointLimiter.WaitAndAcquireAsync(context, cancellationToken: cancellationToken);
+            endpointLease = await _endpointLimiter.AcquireAsync(context, cancellationToken: cancellationToken);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
