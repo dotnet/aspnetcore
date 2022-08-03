@@ -112,7 +112,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
                 // We shouldn't ever reach this since exceptions thrown from handlers are handled in HandleLocationChangingHandlerException.
                 // But if some other exception gets thrown, we still want to know about it.
                 Log.NavigationFailed(_logger, uri, ex);
-                UnhandledException.Invoke(this, ex);
+                UnhandledException?.Invoke(this, ex);
             }
         }
     }
