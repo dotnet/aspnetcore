@@ -33,13 +33,13 @@ internal static class TypeHelper
     /// </summary>
     /// <param name="method">The method to evaluate.</param>
     /// <returns><see langword="true" /> if <paramref name="method"/> is compiler generated.</returns>
-    internal static bool IsCompilerGeneratedMethod(MethodInfo method)
+    private static bool IsCompilerGeneratedMethod(MethodInfo method)
     {
         return Attribute.IsDefined(method, typeof(CompilerGeneratedAttribute)) || IsCompilerGeneratedType(method.DeclaringType);
     }
 
     /// <summary>
-    /// Tries to get non-compiler-generaged name of function. This parses generated local function names out of a generated method name if possible.
+    /// Tries to get non-compiler-generated name of function. This parses generated local function names out of a generated method name if possible.
     /// </summary>
     internal static bool TryGetNonCompilerGeneratedMethodName(MethodInfo method, [NotNullWhen(true)] out string? originalName)
     {
