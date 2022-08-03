@@ -21,9 +21,9 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
     private readonly TlsConnectionCallbackOptions _tlsConnectionCallbackOptions;
     private readonly QuicTransportContext _context;
     private readonly QuicListenerOptions _quicListenerOptions;
+    private readonly ConditionalWeakTable<QuicConnection, QuicConnectionContext> _pendingConnections;
     private bool _disposed;
     private QuicListener? _listener;
-    private ConditionalWeakTable<QuicConnection, QuicConnectionContext> _pendingConnections;
 
     public QuicConnectionListener(
         QuicTransportOptions options,
