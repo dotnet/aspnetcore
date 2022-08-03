@@ -283,7 +283,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   });
 
   // blazor could start downloading bit earlier than the runtime would
-  const assetsBeingLoaded = assets
+  const runtimeAssetsBeingLoaded = assets
     .filter(asset => asset.behavior === 'dotnetwasm')
     .map(asset => {
       asset.pending = downloadResource(asset);
@@ -293,7 +293,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
   const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
-  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, assetsBeingLoaded);
+  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, runtimeAssetsBeingLoaded);
   totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
