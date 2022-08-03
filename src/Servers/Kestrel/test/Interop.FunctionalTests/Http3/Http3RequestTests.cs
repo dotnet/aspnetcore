@@ -709,6 +709,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43069")]
     public async Task GET_MultipleRequests_RequestVersionOrHigher_UpgradeToHttp3()
     {
         // Arrange
