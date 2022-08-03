@@ -42,7 +42,7 @@ internal static class TypeHelper
     /// Parses generated local function name out of a generated method name. This code is a stop-gap and exists to address the issues with extracting
     /// original method names from generated local functions. See https://github.com/dotnet/roslyn/issues/55651 for more info.
     /// </summary>
-    internal static bool TryParseLocalFunctionName(string generatedName, [NotNullWhen(true)] out string? originalName)
+    private static bool TryParseLocalFunctionName(string generatedName, [NotNullWhen(true)] out string? originalName)
     {
         originalName = null;
 
