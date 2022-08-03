@@ -27,6 +27,7 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
+        services.TryAddScoped<IFileDownloader, FileDownloader>();
         return services;
     }
 }

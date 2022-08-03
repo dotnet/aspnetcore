@@ -1,11 +1,11 @@
-@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components
 
-@inject IFileDownloader FileDownload;
+@inject IFileDownloader FileDownload
 
 <h1>File configuration</h1>
 File name:
 <br />
-@* Bind to fileName field *@
+
 <input type="text" @bind-value="@fileName" />
 <br />
 
@@ -14,13 +14,12 @@ File name:
 <button @onclick="SaveFile"> Save </button>
 
 @code {
-    private string fileName = "text.txt";
+    private string fileName = "file.txt";
 
-    // Create file of random data from a new byte[] array
     private Stream GetFileStream()
     {
-        var randomBinaryData = new byte[50 * 1024];
-        var fileStream = new MemoryStream(randomBinaryData);
+        byte[] Data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        var fileStream = new MemoryStream(Data);
 
         return fileStream;
     }

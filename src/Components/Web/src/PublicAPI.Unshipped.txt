@@ -16,7 +16,3 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
 Microsoft.AspNetCore.Components.IFileDownloader
 Microsoft.AspNetCore.Components.IFileDownloader.SaveAs(string! fileName, byte[]! data) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IFileDownloader.SaveAs(string! fileName, System.IO.Stream! data) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.FileDownloader
-Microsoft.AspNetCore.Components.FileDownloader.FileDownloader(Microsoft.JSInterop.IJSRuntime! JSRuntime) -> void
-Microsoft.AspNetCore.Components.FileDownloader.SaveAs(string! fileName, byte[]! data) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.FileDownloader.SaveAs(string! fileName, System.IO.Stream! data) -> System.Threading.Tasks.Task!

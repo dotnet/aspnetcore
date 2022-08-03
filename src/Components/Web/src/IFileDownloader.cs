@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// Represents the file data from a <see cref="FileDownloader"/> component.
+/// Facilitates triggering a file download on the client using data from .NET.
 /// </summary>
 public interface IFileDownloader
 {

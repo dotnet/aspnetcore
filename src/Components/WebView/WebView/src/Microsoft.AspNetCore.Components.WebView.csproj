@@ -25,6 +25,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\FileDownloader.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)StaticWebAssets\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
