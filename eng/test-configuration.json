@@ -1,6 +1,6 @@
 {
   "version" : 1,
-  "defaultOnFailure": "fail",
+  "defaultOnFailure": "retry",
   "localRerunCount" : 3,
   "retryOnRules": [
     {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
