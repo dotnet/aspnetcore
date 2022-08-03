@@ -22,7 +22,7 @@
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
-    <Compile Include="$(SharedSourceRoot)PseudoHeaderNames.cs" Linkbase="shared"/>
+    <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Linkbase="shared"/>
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />

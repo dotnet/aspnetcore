@@ -253,27 +253,30 @@ public class Http3TlsTests : LoggedTest
     [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
     public async Task OnAuthenticate_Available_Throws(HttpProtocols protocols)
     {
-        var builder = CreateHostBuilder(async context =>
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
         {
-            await context.Response.WriteAsync("Hello World");
-        }, configureKestrel: kestrelOptions =>
-        {
-            kestrelOptions.ListenAnyIP(0, listenOptions =>
+            var builder = CreateHostBuilder(async context =>
             {
-                listenOptions.Protocols = protocols;
-                listenOptions.UseHttps(httpsOptions =>
+                await context.Response.WriteAsync("Hello World");
+            }, configureKestrel: kestrelOptions =>
+            {
+                kestrelOptions.ListenAnyIP(port, listenOptions =>
                 {
-                    httpsOptions.OnAuthenticate = (_, _) => { };
+                    listenOptions.Protocols = protocols;
+                    listenOptions.UseHttps(httpsOptions =>
+                    {
+                        httpsOptions.OnAuthenticate = (_, _) => { };
+                    });
                 });
             });
-        });
 
-        using var host = builder.Build();
-        using var client = HttpHelpers.CreateClient();
+            using var host = builder.Build();
+            using var client = HttpHelpers.CreateClient();
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
-            host.StartAsync().DefaultTimeout());
-        Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
+                host.StartAsync().DefaultTimeout());
+            Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
+        }, Logger);
     }
 
     [ConditionalFact]

@@ -29,7 +29,7 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
-    <Compile Include="$(SharedSourceRoot)PseudoHeaderNames.cs" Link="Shared\" />
+    <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Link="Shared\" />
   </ItemGroup>
 
   <ItemGroup>

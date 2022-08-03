@@ -11,7 +11,7 @@
   "symbols/Framework/choices/net7.0/description": "Cílový net7.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/NoHttps/description": "Určuje, jestli se má protokol HTTPS vypnout. Tato možnost platí jenom v případě, že se pro --auth nepoužívají Individual, IndividualB2C, SingleOrg ani MultiOrg.",
-  "symbols/UseProgramMain/displayName": "Nepoužívat příkazy nejvyšší úrovně",
+  "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
