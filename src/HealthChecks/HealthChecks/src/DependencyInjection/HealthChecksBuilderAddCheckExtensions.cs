@@ -179,6 +179,7 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// with any lifetime it will be used. Otherwise an instance of type <typeparamref name="T"/> will be constructed with
     /// access to services from the dependency injection container.
     /// </remarks>
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
         this IHealthChecksBuilder builder,
         string name,
