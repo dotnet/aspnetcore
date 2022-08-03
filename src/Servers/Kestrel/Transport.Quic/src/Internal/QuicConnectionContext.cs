@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Net.Quic;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -87,6 +88,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         }
     }
 
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
     public override async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
         try

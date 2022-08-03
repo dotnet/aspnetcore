@@ -652,24 +652,28 @@ async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
 }
 
 async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
-  // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
-  // it doesn't provide any method for supplying a custom response provider, and we want to integrate
-  // with our resource loader cache.
+  const wasmResourceResponse = await wasmResource.response;
 
-  if (typeof WebAssembly['instantiateStreaming'] === 'function') {
-    try {
-      const streamingResult = await WebAssembly['instantiateStreaming'](wasmResource.response, imports);
-      return streamingResult.instance;
-    } catch (ex) {
-      console.info('Streaming compilation failed. Falling back to ArrayBuffer instantiation. ', ex);
+  // The instantiateStreaming spec explicitly requires the following exact MIME type (with no trailing parameters, etc.)
+  // https://webassembly.github.io/spec/web-api/#dom-webassembly-instantiatestreaming
+  const hasWasmContentType = wasmResourceResponse.headers?.get('content-type') === 'application/wasm';
+
+  if (hasWasmContentType && typeof WebAssembly.instantiateStreaming === 'function') {
+    // We can use streaming compilation. We know this shouldn't fail due to the content-type header being wrong,
+    // as we already just checked that. So if this fails for some other reason we'll treat it as fatal.
+    const streamingResult = await WebAssembly.instantiateStreaming(wasmResourceResponse, imports);
+    return streamingResult.instance;
+  } else {
+    if (!hasWasmContentType) {
+      // In most cases the developer should fix this. It's unusual enough that we don't mind logging a warning each time.
+      console.warn('WebAssembly resource does not have the expected content type "application/wasm", so falling back to slower ArrayBuffer instantiation.');
     }
-  }
 
-  // If that's not available or fails (e.g., due to incorrect content-type header),
-  // fall back to ArrayBuffer instantiation
-  const arrayBuffer = await wasmResource.response.then(r => r.arrayBuffer());
-  const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-  return arrayBufferResult.instance;
+    // Fall back on ArrayBuffer instantiation.
+    const arrayBuffer = await wasmResourceResponse.arrayBuffer();
+    const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
+    return arrayBufferResult.instance;  
+  }
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {

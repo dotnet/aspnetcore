@@ -62,7 +62,28 @@ steps:
         c
         i
     condition: succeededOrFailed()
+
   - publish: $(Agent.BuildDirectory)/.gdn
     artifact: GuardianConfiguration
     displayName: Publish GuardianConfiguration
+    condition: succeededOrFailed()
+
+  # Publish the SARIF files in a container named CodeAnalysisLogs to enable integration
+  # with the "SARIF SAST Scans Tab" Azure DevOps extension
+  - task: CopyFiles@2
+    displayName: Copy SARIF files
+    inputs:
+      flattenFolders: true
+      sourceFolder:  $(Agent.BuildDirectory)/.gdn/rc/
+      contents: '**/*.sarif'
+      targetFolder: $(Build.SourcesDirectory)/CodeAnalysisLogs
+    condition: succeededOrFailed()
+
+  # Use PublishBuildArtifacts because the SARIF extension only checks this case
+  # see microsoft/sarif-azuredevops-extension#4
+  - task: PublishBuildArtifacts@1
+    displayName: Publish SARIF files to CodeAnalysisLogs container
+    inputs:
+      pathToPublish:  $(Build.SourcesDirectory)/CodeAnalysisLogs
+      artifactName: CodeAnalysisLogs
     condition: succeededOrFailed()

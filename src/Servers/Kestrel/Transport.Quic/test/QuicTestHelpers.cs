@@ -49,26 +49,29 @@ internal static class QuicTestHelpers
         ILoggerFactory loggerFactory = null,
         ISystemClock systemClock = null,
         bool clientCertificateRequired = false,
-        long defaultCloseErrorCode = 0)
+        long defaultCloseErrorCode = 0,
+        int port = 0)
     {
         var transportFactory = CreateTransportFactory(
             loggerFactory,
             systemClock,
             defaultCloseErrorCode: defaultCloseErrorCode);
 
-        // Use ephemeral port 0. OS will assign unused port.
-        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
 
         var features = CreateBindAsyncFeatures(clientCertificateRequired);
         return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
     }
 
-    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(TlsConnectionCallbackOptions tlsConnectionOptions, ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
+    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(
+        TlsConnectionCallbackOptions tlsConnectionOptions,
+        ILoggerFactory loggerFactory = null,
+        ISystemClock systemClock = null,
+        int port = 0)
     {
         var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
 
-        // Use ephemeral port 0. OS will assign unused port.
-        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var endpoint = new IPEndPoint(IPAddress.Loopback, port);
 
         var features = new FeatureCollection();
         features.Set(tlsConnectionOptions);

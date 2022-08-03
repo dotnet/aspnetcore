@@ -115,7 +115,16 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
 
     public async ValueTask CreateListenerAsync()
     {
-        _listener = await QuicListener.ListenAsync(_quicListenerOptions);
+        QuicLog.ConnectionListenerStarting(_log, _quicListenerOptions.ListenEndPoint);
+
+        try
+        {
+            _listener = await QuicListener.ListenAsync(_quicListenerOptions);
+        }
+        catch (QuicException ex) when (ex.QuicError == QuicError.AddressInUse)
+        {
+            throw new AddressInUseException(ex.Message, ex);
+        }
 
         // EndPoint could be configured with an ephemeral port of 0.
         // Listener endpoint will resolve an ephemeral port, e.g. 127.0.0.1:0, into the actual port
@@ -147,7 +156,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         }
         catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
-            _log.LogDebug("Listener has aborted with exception: {Message}", ex.Message);
+            QuicLog.ConnectionListenerAborted(_log, ex);
         }
         return null;
     }

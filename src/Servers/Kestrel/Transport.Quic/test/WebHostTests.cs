@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
@@ -113,42 +115,7 @@ public class WebHostTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_ClientSuccess()
-    {
-        // Arrange
-        var builder = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                    .UseKestrel(o =>
-                    {
-                        o.Listen(IPAddress.Parse("127.0.0.1"), 5005, listenOptions =>
-                        {
-                            listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
-                            listenOptions.UseHttps(TestResources.GetTestCertificate());
-                        });
-                    })
-                    .Configure(app =>
-                    {
-                        app.Run(async context =>
-                        {
-                            await context.Response.WriteAsync("hello, world");
-                        });
-                    });
-            })
-            .ConfigureServices(AddTestLogging);
-
-        using var host = builder.Build();
-        await host.StartAsync().DefaultTimeout();
-
-        await CallHttp3AndHttp1EndpointsAsync(http3Port: 5005, http1Port: 5005);
-
-        await host.StopAsync().DefaultTimeout();
-    }
-
-    [ConditionalFact]
-    [MsQuicSupported]
-    public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade()
+    public async Task Listen_Http3AndSocketsOnDynamicEndpoint_Http3Disabled()
     {
         // Arrange
         var builder = new HostBuilder()
@@ -176,46 +143,124 @@ public class WebHostTests : LoggedTest
         using var host = builder.Build();
         await host.StartAsync().DefaultTimeout();
 
-        using (var client = CreateClient())
-        {
-            // Act
-            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
-            request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            var response1 = await client.SendAsync(request1).DefaultTimeout();
-
-            // Assert
-            response1.EnsureSuccessStatusCode();
-            Assert.Equal(HttpVersion.Version20, response1.Version);
-            var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
-            Assert.Equal("hello, world", responseText1);
-
-            Assert.True(response1.Headers.TryGetValues("alt-svc", out var altSvcValues1));
-            Assert.Single(altSvcValues1, @$"h3="":{host.GetPort()}""");
-
-            // Act
-            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
-            request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            var response2 = await client.SendAsync(request2).DefaultTimeout();
-
-            // Assert
-            response2.EnsureSuccessStatusCode();
-            Assert.Equal(HttpVersion.Version30, response2.Version);
-            var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
-            Assert.Equal("hello, world", responseText2);
-
-            Assert.True(response2.Headers.TryGetValues("alt-svc", out var altSvcValues2));
-            Assert.Single(altSvcValues2, @$"h3="":{host.GetPort()}""");
-        }
+        Assert.Contains(TestSink.Writes, w => w.Message == CoreStrings.DynamicPortOnMultipleTransportsNotSupported);
 
         await host.StopAsync().DefaultTimeout();
     }
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_ClientSuccess()
+    {
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
+        {
+            // Arrange
+            var builder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(o =>
+                        {
+                            o.Listen(IPAddress.Parse("127.0.0.1"), port, listenOptions =>
+                            {
+                                listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                await context.Response.WriteAsync("hello, world");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
+
+            using var host = builder.Build();
+            await host.StartAsync().DefaultTimeout();
+
+            await CallHttp3AndHttp1EndpointsAsync(http3Port: port, http1Port: port);
+
+            await host.StopAsync().DefaultTimeout();
+        }, Logger);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade()
+    {
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
+        {
+            // Arrange
+            var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(o =>
+                    {
+                        o.Listen(IPAddress.Parse("127.0.0.1"), port, listenOptions =>
+                        {
+                            listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
+                            listenOptions.UseHttps(TestResources.GetTestCertificate());
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("hello, world");
+                        });
+                    });
+            })
+            .ConfigureServices(AddTestLogging);
+
+            using var host = builder.Build();
+            await host.StartAsync().DefaultTimeout();
+
+            using (var client = CreateClient())
+            {
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                var response1 = await client.SendAsync(request1).DefaultTimeout();
+
+                // Assert
+                response1.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version20, response1.Version);
+                var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText1);
+
+                Assert.True(response1.Headers.TryGetValues("alt-svc", out var altSvcValues1));
+                Assert.Single(altSvcValues1, @$"h3="":{host.GetPort()}""");
+
+                // Act
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                var response2 = await client.SendAsync(request2).DefaultTimeout();
+
+                // Assert
+                response2.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version30, response2.Version);
+                var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText2);
+
+                Assert.True(response2.Headers.TryGetValues("alt-svc", out var altSvcValues2));
+                Assert.Single(altSvcValues2, @$"h3="":{host.GetPort()}""");
+            }
+
+            await host.StopAsync().DefaultTimeout();
+        }, Logger);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade()
     {
-        // Arrange
-        var builder = new HostBuilder()
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
+        {
+            // Arrange
+            var builder = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -225,7 +270,7 @@ public class WebHostTests : LoggedTest
                         {
                             listenOptions.DisableAltSvcHeader = true;
                         });
-                        o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                        o.Listen(IPAddress.Parse("127.0.0.1"), port, listenOptions =>
                         {
                             listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
                             listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -241,39 +286,40 @@ public class WebHostTests : LoggedTest
             })
             .ConfigureServices(AddTestLogging);
 
-        using var host = builder.Build();
-        await host.StartAsync().DefaultTimeout();
+            using var host = builder.Build();
+            await host.StartAsync().DefaultTimeout();
 
-        using (var client = CreateClient())
-        {
-            // Act
-            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
-            request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            var response1 = await client.SendAsync(request1).DefaultTimeout();
+            using (var client = CreateClient())
+            {
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                var response1 = await client.SendAsync(request1).DefaultTimeout();
 
-            // Assert
-            response1.EnsureSuccessStatusCode();
-            Assert.Equal(HttpVersion.Version20, response1.Version);
-            var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
-            Assert.Equal("hello, world", responseText1);
+                // Assert
+                response1.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version20, response1.Version);
+                var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText1);
 
-            Assert.False(response1.Headers.Contains("alt-svc"));
+                Assert.False(response1.Headers.Contains("alt-svc"));
 
-            // Act
-            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
-            request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            var response2 = await client.SendAsync(request2).DefaultTimeout();
+                // Act
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                var response2 = await client.SendAsync(request2).DefaultTimeout();
 
-            // Assert
-            response2.EnsureSuccessStatusCode();
-            Assert.Equal(HttpVersion.Version20, response2.Version);
-            var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
-            Assert.Equal("hello, world", responseText2);
+                // Assert
+                response2.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version20, response2.Version);
+                var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText2);
 
-            Assert.False(response2.Headers.Contains("alt-svc"));
-        }
+                Assert.False(response2.Headers.Contains("alt-svc"));
+            }
 
-        await host.StopAsync().DefaultTimeout();
+            await host.StopAsync().DefaultTimeout();
+        }, Logger);
     }
 
     private static async Task CallHttp3AndHttp1EndpointsAsync(int http3Port, int http1Port)
