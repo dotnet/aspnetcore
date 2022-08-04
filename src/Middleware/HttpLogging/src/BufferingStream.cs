@@ -60,7 +60,7 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
             if (encoding == null)
             {
                 // This method is used only for the response body
-                _logger.ResponseUnrecognizedMediaType();
+                _logger.UnrecognizedMediaType("response");
                 return "";
             }
 

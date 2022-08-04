@@ -29,9 +29,6 @@ internal static partial class HttpLoggingExtensions
     [LoggerMessage(5, LogLevel.Debug, "Decode failure while converting body.", EventName = "DecodeFailure")]
     public static partial void DecodeFailure(this ILogger logger, Exception ex);
 
-    [LoggerMessage(6, LogLevel.Debug, "Unrecognized Content-Type for request body.", EventName = "RequestUnrecognizedMediaType")]
-    public static partial void RequestUnrecognizedMediaType(this ILogger logger);
-    
-    [LoggerMessage(7, LogLevel.Debug, "Unrecognized Content-Type for response body.", EventName = "ResponseUnrecognizedMediaType")]
-    public static partial void ResponseUnrecognizedMediaType(this ILogger logger);
+    [LoggerMessage(6, LogLevel.Debug, "Unrecognized Content-Type for {Name} body.", EventName = "UnrecognizedMediaType")]
+    public static partial void UnrecognizedMediaType(this ILogger logger, string name);
 }
