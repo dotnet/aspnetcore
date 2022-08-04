@@ -51,6 +51,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43087")]
     public async Task FrameworkNotFoundExceptionLogged_File()
     {
         var deploymentParameters =
