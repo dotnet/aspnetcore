@@ -281,7 +281,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                     return new CancellationToken(false);
                 }
 
-                if (_connectionAborted)
+                if (_connectionAborted && _abortedCts == null)
                 {
                     return new CancellationToken(true);
                 }
@@ -465,7 +465,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 if (_abortedCts != null && !_preventRequestAbortedCancellation)
                 {
                     localAbortCts = _abortedCts;
-                    _abortedCts = null;
                 }
             }
 
