@@ -21,7 +21,10 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
     private readonly TlsConnectionCallbackOptions _tlsConnectionCallbackOptions;
     private readonly QuicTransportContext _context;
     private readonly QuicListenerOptions _quicListenerOptions;
-    private readonly ConditionalWeakTable<QuicConnection, QuicConnectionContext> _pendingConnections;
+    // Use a CWT to associate QuicConnectionContext with QuicConnection in the callback because there are some situations
+    // where the QuicConnection won't be returned and we can't manually remove the item. e.g. invalid connection options.
+    // Internal for unit testing.
+    internal readonly ConditionalWeakTable<QuicConnection, QuicConnectionContext> _pendingConnections;
     private bool _disposed;
     private QuicListener? _listener;
 
@@ -140,6 +143,10 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
             if (!_pendingConnections.TryGetValue(quicConnection, out var connectionContext))
             {
                 throw new InvalidOperationException("Couldn't find ConnectionContext for QuicConnection.");
+            }
+            else
+            {
+                _pendingConnections.Remove(quicConnection);
             }
 
             // Verify the connection context was created and set correctly.
