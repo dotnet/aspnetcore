@@ -31,11 +31,11 @@ public class DefaultHealthCheckServiceTest
         serviceCollection.AddLogging();
         serviceCollection.AddOptions();
         serviceCollection.AddHealthChecks()
-            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
+            .AddCheck("Foo", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Foo", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Bar", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())));
 
         var services = serviceCollection.BuildServiceProvider();
 
@@ -72,9 +72,9 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-            b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
-            b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
+            b.AddAsyncCheck("HealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
+            b.AddAsyncCheck("DegradedCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
+            b.AddAsyncCheck("UnhealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
         });
 
         // Act
@@ -147,7 +147,7 @@ public class DefaultHealthCheckServiceTest
                     healthyCheckInsideCheck.SetResult(null);
                 }
 
-                return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data));
             },
                 healthyCheckTags,
                 options: new HealthCheckOptions(period: TimeSpan.FromSeconds(2)));
@@ -159,7 +159,7 @@ public class DefaultHealthCheckServiceTest
                     degradedCheckInsideCheck.SetResult(null);
                 }
 
-                return Task.FromResult(HealthCheckResult.Degraded(DegradedMessage));
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Degraded(DegradedMessage));
             },
                 degradedCheckTags,
                 options: new HealthCheckOptions(period: TimeSpan.FromSeconds(3)));
@@ -170,7 +170,7 @@ public class DefaultHealthCheckServiceTest
                     {
                         unhealthyCheckInsideCheck.SetResult(null);
                     }
-                    return Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception));
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Unhealthy(UnhealthyMessage, exception));
 
                 },
                 unhealthyCheckTags,
@@ -246,7 +246,7 @@ public class DefaultHealthCheckServiceTest
                         check1PeriodDefaultInsideCheck.SetResult(null);
                     }
 
-                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data));
                 });
 
                 b.AddAsyncCheck("Check2PeriodDefault", _ =>
@@ -256,7 +256,7 @@ public class DefaultHealthCheckServiceTest
                         check2PeriodDefaultInsideCheck.SetResult(null);
                     }
 
-                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data));
                 });
 
                 b.AddAsyncCheck("Check3Period2", _ =>
@@ -266,7 +266,7 @@ public class DefaultHealthCheckServiceTest
                         check3Period2InsideCheck.SetResult(null);
                     }
 
-                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data));
                 },
                 options: new HealthCheckOptions(period: TimeSpan.FromSeconds(2)));
 
@@ -277,7 +277,7 @@ public class DefaultHealthCheckServiceTest
                         check4Period5InsideCheck.SetResult(null);
                     }
 
-                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data));
                 }, options: new HealthCheckOptions(period: TimeSpan.FromSeconds(5)));
 
                 b.AddAsyncCheck("Check5Period7", _ =>
@@ -287,7 +287,7 @@ public class DefaultHealthCheckServiceTest
                         check5Period7InsideCheck.SetResult(null);
                     }
 
-                    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data));
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data));
                 }, options: new HealthCheckOptions(period: TimeSpan.FromSeconds(7)));
             },
             options =>
@@ -424,9 +424,9 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
-            b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
-            b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
+            b.AddAsyncCheck("HealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data)));
+            b.AddAsyncCheck("DegradedCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Degraded(DegradedMessage)));
+            b.AddAsyncCheck("UnhealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
         });
 
         // Act
@@ -530,8 +530,8 @@ public class DefaultHealthCheckServiceTest
         var service = CreateHealthChecksService(b =>
         {
             b.AddAsyncCheck("Throws", ct => throw thrownException);
-            b.AddAsyncCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException));
-            b.AddAsyncCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy()));
+            b.AddAsyncCheck("Faults", ct => new ValueTask<HealthCheckResult>(Task.FromException<HealthCheckResult>(faultedException)));
+            b.AddAsyncCheck("Succeeds", ct => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy()));
         });
 
         // Act
@@ -581,7 +581,7 @@ public class DefaultHealthCheckServiceTest
                             Assert.Equal("TestScope", item.Value);
                         });
                 });
-            return Task.FromResult(HealthCheckResult.Healthy());
+            return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy());
         });
 
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);

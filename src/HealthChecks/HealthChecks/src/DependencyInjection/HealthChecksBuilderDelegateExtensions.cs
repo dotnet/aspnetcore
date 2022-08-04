@@ -86,7 +86,7 @@ public static class HealthChecksBuilderDelegateExtensions
             throw new ArgumentNullException(nameof(check));
         }
 
-        var instance = new DelegateHealthCheck((ct) => Task.FromResult(check()));
+        var instance = new DelegateHealthCheck((ct) => new ValueTask<HealthCheckResult>(check()));
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: default, tags, timeout, options));
     }
 
@@ -161,7 +161,7 @@ public static class HealthChecksBuilderDelegateExtensions
             throw new ArgumentNullException(nameof(check));
         }
 
-        var instance = new DelegateHealthCheck((ct) => Task.FromResult(check(ct)));
+        var instance = new DelegateHealthCheck((ct) => new ValueTask<HealthCheckResult>(check(ct)));
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: default, tags, timeout, options));
     }
 
@@ -177,7 +177,7 @@ public static class HealthChecksBuilderDelegateExtensions
     public static IHealthChecksBuilder AddAsyncCheck(
         this IHealthChecksBuilder builder,
         string name,
-        Func<Task<HealthCheckResult>> check,
+        Func<ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags)
     {
         return AddAsyncCheck(builder, name, check, tags, default, default);
@@ -195,7 +195,7 @@ public static class HealthChecksBuilderDelegateExtensions
     public static IHealthChecksBuilder AddAsyncCheck(
         this IHealthChecksBuilder builder,
         string name,
-        Func<Task<HealthCheckResult>> check,
+        Func<ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags,
         TimeSpan? timeout)
     {
@@ -216,7 +216,7 @@ public static class HealthChecksBuilderDelegateExtensions
     public static IHealthChecksBuilder AddAsyncCheck(
         this IHealthChecksBuilder builder,
         string name,
-        Func<Task<HealthCheckResult>> check,
+        Func<ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags = default,
         TimeSpan? timeout = default,
         HealthCheckOptions? options = default)
@@ -252,7 +252,7 @@ public static class HealthChecksBuilderDelegateExtensions
     public static IHealthChecksBuilder AddAsyncCheck(
         this IHealthChecksBuilder builder,
         string name,
-        Func<CancellationToken, Task<HealthCheckResult>> check,
+        Func<CancellationToken, ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags)
     {
         return AddAsyncCheck(builder, name, check, tags, default, default);
@@ -270,7 +270,7 @@ public static class HealthChecksBuilderDelegateExtensions
     public static IHealthChecksBuilder AddAsyncCheck(
         this IHealthChecksBuilder builder,
         string name,
-        Func<CancellationToken, Task<HealthCheckResult>> check,
+        Func<CancellationToken, ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags,
         TimeSpan? timeout)
     {
@@ -291,7 +291,7 @@ public static class HealthChecksBuilderDelegateExtensions
     public static IHealthChecksBuilder AddAsyncCheck(
         this IHealthChecksBuilder builder,
         string name,
-        Func<CancellationToken, Task<HealthCheckResult>> check,
+        Func<CancellationToken, ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default,
         HealthCheckOptions? options = default)
