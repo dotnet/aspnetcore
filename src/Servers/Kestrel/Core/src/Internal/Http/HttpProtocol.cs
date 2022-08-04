@@ -1149,9 +1149,19 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.TransferEncoding);
         }
-        else if (!CanIncludeResponseContentLengthHeader() && responseHeaders.ContentLength.HasValue)
+        else if (responseHeaders.ContentLength.HasValue)
         {
-            RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.ContentLength);
+            if (!CanIncludeResponseContentLengthHeader())
+            {
+                RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.ContentLength);
+            }
+            else if (StatusCode == StatusCodes.Status205ResetContent && responseHeaders.ContentLength.Value != 0)
+            {
+                // It is valid for a 205 response to have a Content-Length but it must be 0
+                // since 205 implies that no additional content will be provided.
+                // https://httpwg.org/specs/rfc7231.html#rfc.section.6.3.6
+                RejectNonzeroContentLengthOn205Response(appCompleted);
+            }
         }
         else if (StatusCode == StatusCodes.Status101SwitchingProtocols)
         {
@@ -1267,8 +1277,14 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     }
 
     private void RejectInvalidHeaderForNonBodyResponse(bool appCompleted, string headerName)
+        => RejectInvalidResponse(appCompleted, CoreStrings.FormatHeaderNotAllowedOnResponse(headerName, StatusCode));
+
+    private void RejectNonzeroContentLengthOn205Response(bool appCompleted)
+        => RejectInvalidResponse(appCompleted, CoreStrings.NonzeroContentLengthNotAllowedOn205);
+
+    private void RejectInvalidResponse(bool appCompleted, string message)
     {
-        var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse(headerName, StatusCode));
+        var ex = new InvalidOperationException(message);
         if (!appCompleted)
         {
             // Back out of header creation surface exception in user code

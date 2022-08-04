@@ -708,6 +708,43 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    [Fact]
+    public async Task AttemptingToWriteNonzeroContentLengthFailsFor205Response()
+    {
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.StatusCode = 205;
+            httpContext.Response.Headers.ContentLength = 1;
+
+            try
+            {
+                await httpContext.Response.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                responseWriteTcs.TrySetException(ex);
+                throw;
+            }
+
+            responseWriteTcs.TrySetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                Assert.Equal(CoreStrings.NonzeroContentLengthNotAllowedOn205, ex.Message);
+            }
+        }
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status204NoContent)]
     [InlineData(StatusCodes.Status304NotModified)]
