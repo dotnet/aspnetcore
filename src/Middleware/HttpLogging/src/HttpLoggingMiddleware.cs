@@ -119,7 +119,7 @@ internal sealed class HttpLoggingMiddleware
                 }
                 else
                 {
-                    _logger.UnrecognizedMediaType();
+                    _logger.RequestUnrecognizedMediaType();
                 }
             }
 
