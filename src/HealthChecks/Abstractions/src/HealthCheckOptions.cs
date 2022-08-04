@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 /// <summary>
 /// Represent the individual health check options associated with an <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration"/>.
 /// </summary>
-public class HealthCheckOptions
+public class HealthCheckOptions : IEquatable<HealthCheckOptions?>
 {
 
     /// <summary>
@@ -34,4 +35,27 @@ public class HealthCheckOptions
     /// Gets or sets the individual period used for the check.
     /// </summary>
     public TimeSpan? Period { get; }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as HealthCheckOptions);
+    }
+
+    /// <inheritdoc/>
+    public bool Equals(HealthCheckOptions? other)
+    {
+        return other is not null &&
+               EqualityComparer<TimeSpan?>.Default.Equals(Delay, other.Delay) &&
+               EqualityComparer<TimeSpan?>.Default.Equals(Period, other.Period);
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        var hashCode = -1368980644;
+        hashCode = hashCode * -1521134295 + Delay.GetHashCode();
+        hashCode = hashCode * -1521134295 + Period.GetHashCode();
+        return hashCode;
+    }
 }

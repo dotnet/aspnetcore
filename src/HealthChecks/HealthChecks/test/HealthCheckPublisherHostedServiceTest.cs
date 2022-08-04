@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 #nullable enable
@@ -34,6 +35,56 @@ public class HealthCheckPublisherHostedServiceTest
         public static readonly EventId HealthCheckPublisherEnd = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherEndId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherEndName);
         public static readonly EventId HealthCheckPublisherError = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherErrorId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherErrorName);
         public static readonly EventId HealthCheckPublisherTimeout = new EventId(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherTimeoutId, HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherTimeoutName);
+    }
+
+    [Fact]
+    public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
+    {
+        // Arrange
+        //
+        // Doing this the old fashioned way so we can verify that the exception comes
+        // from the constructor.
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddOptions();
+        serviceCollection.AddLogging();
+        serviceCollection.AddHealthChecks()
+            .AddCheck("Foo", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Foo", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Bar", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())));
+
+        // Choosing big values for tests to make sure that we're not dependent on the defaults.
+        // All of the tests that rely on the timer will set their own values for speed.
+        serviceCollection.Configure<HealthCheckPublisherOptions>(options =>
+        {
+            options.Delay = TimeSpan.FromMinutes(5);
+            options.Period = TimeSpan.FromMinutes(5);
+            options.Timeout = TimeSpan.FromMinutes(5);
+        });
+
+        var services = serviceCollection.BuildServiceProvider();
+
+        var healthCheckService = services.GetRequiredService<HealthCheckService>();
+        var healthCheckServiceOptions = services.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+        var healthCheckPublisherOptions = services.GetRequiredService<IOptions<HealthCheckPublisherOptions>>();
+        var logger = services.GetRequiredService<ILogger<HealthCheckPublisherHostedService>>();
+
+        var publishers = new IHealthCheckPublisher[]
+        {
+        };
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => new HealthCheckPublisherHostedService(
+            healthCheckService,
+            healthCheckServiceOptions,
+            healthCheckPublisherOptions,
+            logger,
+            publishers));
+
+        // Assert
+        Assert.StartsWith($"Duplicate health checks were registered with the name(s): Foo, Baz", exception.Message);
     }
 
     [Fact]
