@@ -17,10 +17,12 @@ public class HealthCheckOptions : IEquatable<HealthCheckOptions?>
     /// </summary>
     /// <param name="delay">An optional <see cref="TimeSpan"/> representing the initial delay applied after the application starts before executing the check.</param>
     /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
-    public HealthCheckOptions(TimeSpan? delay = default, TimeSpan? period = default)
+    /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the individual timeout of the check.</param>
+    public HealthCheckOptions(TimeSpan? delay = default, TimeSpan? period = default, TimeSpan? timeout = default)
     {
         Delay = delay;
         Period = period;
+        Timeout = timeout;
     }
 
     /// <summary>
@@ -32,9 +34,15 @@ public class HealthCheckOptions : IEquatable<HealthCheckOptions?>
     public TimeSpan? Delay { get; }
 
     /// <summary>
-    /// Gets or sets the individual period used for the check.
+    /// Gets the individual period used for the check.
     /// </summary>
     public TimeSpan? Period { get; }
+
+    /// <summary>
+    /// Gets the timeout for executing the health check.
+    /// Use <see cref="System.Threading.Timeout.InfiniteTimeSpan"/> to execute with no timeout.
+    /// </summary>
+    public TimeSpan? Timeout { get; }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj)
@@ -47,15 +55,17 @@ public class HealthCheckOptions : IEquatable<HealthCheckOptions?>
     {
         return other is not null &&
                EqualityComparer<TimeSpan?>.Default.Equals(Delay, other.Delay) &&
-               EqualityComparer<TimeSpan?>.Default.Equals(Period, other.Period);
+               EqualityComparer<TimeSpan?>.Default.Equals(Period, other.Period) &&
+               EqualityComparer<TimeSpan?>.Default.Equals(Timeout, other.Timeout);
     }
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        var hashCode = -1368980644;
+        var hashCode = 251827172;
         hashCode = hashCode * -1521134295 + Delay.GetHashCode();
         hashCode = hashCode * -1521134295 + Period.GetHashCode();
+        hashCode = hashCode * -1521134295 + Timeout.GetHashCode();
         return hashCode;
     }
 }

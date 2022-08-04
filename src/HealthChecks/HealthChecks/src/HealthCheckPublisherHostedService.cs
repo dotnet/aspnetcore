@@ -168,7 +168,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         CancellationTokenSource? cancellation = null;
         try
         {
-            var timeout = _healthCheckPublisherOptions.Value.Timeout;
+            var timeout = healthCheckOptions.Timeout ?? _healthCheckPublisherOptions.Value.Timeout;
 
             cancellation = CancellationTokenSource.CreateLinkedTokenSource(_stopping.Token);
             _runTokenSource = cancellation;
