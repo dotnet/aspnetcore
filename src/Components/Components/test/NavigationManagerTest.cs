@@ -756,6 +756,54 @@ public class NavigationManagerTest
     }
 
     [Fact]
+    public async Task LocationChangingAsync_Throws_WithoutHandleLocationChangingHandlerOverride_WhenALocationChangingHandlerThrows_WhenOneHandlerIsRegistered()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var exceptionMessage = "Thrown from a test handler";
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
+        Assert.StartsWith("To support navigation locks", ex.Message);
+
+        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException(exceptionMessage);
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingAsync_Throws_WithoutHandleLocationChangingHandlerOverride_WhenALocationChangingHandlerThrows_WhenMultipleHandlersAreRegistered()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var exceptionMessage = "Thrown from a test handler";
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
+        Assert.StartsWith("To support navigation locks", ex.Message);
+
+        async ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
+        {
+            await Task.Yield();
+        }
+
+        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException(exceptionMessage);
+        }
+    }
+
+    [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
         // Arrange

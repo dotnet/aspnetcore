@@ -317,6 +317,12 @@ public abstract class NavigationManager
             {
                 var handlerTask = InvokeLocationChangingHandlerAsync(_locationChangingHandlers[0], context);
 
+                if (handlerTask.IsFaulted)
+                {
+                    await handlerTask;
+                    return false; // Unreachable because the previous line will throw.
+                }
+
                 if (context.DidPreventNavigation)
                 {
                     return false;
@@ -341,6 +347,12 @@ public abstract class NavigationManager
                     {
                         var handlerTask = InvokeLocationChangingHandlerAsync(locationChangingHandlersCopy[i], context);
 
+                        if (handlerTask.IsFaulted)
+                        {
+                            await handlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
+
                         if (context.DidPreventNavigation)
                         {
                             return false;
@@ -352,6 +364,12 @@ public abstract class NavigationManager
                     while (locationChangingTasks.Count != 0)
                     {
                         var completedHandlerTask = await Task.WhenAny(locationChangingTasks).WaitAsync(cancellationToken);
+
+                        if (completedHandlerTask.IsFaulted)
+                        {
+                            await completedHandlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
 
                         if (context.DidPreventNavigation)
                         {
@@ -414,8 +432,7 @@ public abstract class NavigationManager
     /// <param name="ex">The exception to handle.</param>
     /// <param name="context">The context passed to the handler.</param>
     protected virtual void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
-    {
-    }
+        => throw new InvalidOperationException($"To support navigation locks, {GetType().Name} must override {nameof(HandleLocationChangingHandlerException)}");
 
     /// <summary>
     /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
@@ -430,6 +447,7 @@ public abstract class NavigationManager
     /// Registers a handler to process incoming navigation events.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
+    /// <returns>An <see cref="IDisposable"/> that can be disposed to unregister the location changing handler.</returns>
     public IDisposable RegisterLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
