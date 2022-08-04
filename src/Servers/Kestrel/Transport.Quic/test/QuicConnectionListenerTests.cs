@@ -178,14 +178,112 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
             LoggerFactory);
 
         // Act
-        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync();
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
         await using var clientConnection = await QuicConnection.ConnectAsync(options).DefaultTimeout();
+        await using var serverConnection = await acceptTask.DefaultTimeout();
 
         // Assert
         Assert.Equal(SslApplicationProtocol.Http3, clientConnection.NegotiatedApplicationProtocol);
+        Assert.NotNull(serverConnection);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_Success_RemovedFromPendingConnections()
+    {
+        // Arrange
+        var syncPoint = new SyncPoint();
+
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            new TlsConnectionCallbackOptions
+            {
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                OnConnection = async (context, cancellationToken) =>
+                {
+                    await syncPoint.WaitToContinue();
+
+                    var options = new SslServerAuthenticationOptions();
+                    options.ServerCertificate = TestResources.GetTestCertificate();
+                    return options;
+                }
+            },
+            LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        var clientConnectionTask = QuicConnection.ConnectAsync(options);
+
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+        Assert.Single(connectionListener._pendingConnections);
+
+        syncPoint.Continue();
+
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+        await using var clientConnection = await clientConnectionTask.DefaultTimeout();
+
+        // Assert
+        Assert.NotNull(serverConnection);
+        Assert.NotNull(clientConnection);
+        Assert.Empty(connectionListener._pendingConnections);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_NoCertificateCallback_RemovedFromPendingConnections()
+    {
+        // Arrange
+        var syncPoint = new SyncPoint();
+
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            new TlsConnectionCallbackOptions
+            {
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                OnConnection = async (context, cancellationToken) =>
+                {
+                    await syncPoint.WaitToContinue();
+
+                    // Options are invalid and S.N.Q will throw an error from AcceptConnectionAsync.
+                    return new SslServerAuthenticationOptions();
+                }
+            },
+            LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+        var clientConnectionTask = QuicConnection.ConnectAsync(options);
+
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+        Assert.Single(connectionListener._pendingConnections);
+
+        syncPoint.Continue();
+
+        await Assert.ThrowsAsync<ArgumentException>(() => acceptTask.AsTask()).DefaultTimeout();
+        await Assert.ThrowsAsync<QuicException>(() => clientConnectionTask.AsTask()).DefaultTimeout();
+
+        // Assert
+        for (var i = 0; i < 20; i++)
+        {
+            // Wait until msquic and S.N.Q have finished with QuicConnection and verify it's removed from CWT.
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            if (connectionListener._pendingConnections.Count() == 0)
+            {
+                return;
+            }
+
+            await Task.Delay(100 * i);
+        }
+
+        throw new Exception("Connection not removed from CWT.");
     }
 
     [ConditionalFact]
