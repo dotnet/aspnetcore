@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.ServiceProcess;
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
@@ -236,16 +238,14 @@ public class IISDeployer : IISDeployerBase
 
         RetryServerManagerAction(serverManager =>
         {
-            var site = serverManager.Sites.Single();
-            var appPool = serverManager.ApplicationPools.Single();
-
-            var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
-            if (actualPath != contentRoot)
+            var site = FindSite(serverManager, contentRoot);
+            if (site == null)
             {
-                PreserveConfigFiles("wrongpath");
-                throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
+                PreserveConfigFiles("nositetostart");
+                throw new InvalidOperationException($"Can't find site for: {contentRoot} to start.");
             }
 
+            var appPool = serverManager.ApplicationPools.Single();
             if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
             {
                 var state = appPool.Start();
@@ -281,6 +281,19 @@ public class IISDeployer : IISDeployerBase
 
             Logger.LogInformation("Site has started.");
         });
+    }
+
+    private static Site FindSite(ServerManager serverManager, string contentRoot)
+    {
+        foreach (var site in serverManager.Sites)
+        {
+            var app = site.Applications.FirstOrDefault();
+            if (app != null && app.VirtualDirectories.FirstOrDefault()?.PhysicalPath == contentRoot)
+            {
+                return site;
+            }
+        }
+        return null;
     }
 
     private void AddTemporaryAppHostConfig(string contentRoot, int port)
@@ -365,59 +378,47 @@ public class IISDeployer : IISDeployerBase
         {
             RetryServerManagerAction(serverManager =>
             {
-                if (serverManager.Sites.Count > 1)
+                // Stop all sites
+                foreach (var site in serverManager.Sites)
                 {
-                    PreserveConfigFiles("moresites");
-                    throw new InvalidOperationException("More than one site not expected");
+                    if (site.State != ObjectState.Stopped && site.State != ObjectState.Stopping)
+                    {
+                        var state = site.Stop();
+                        Logger.LogInformation($"Stopping site, state: {state}");
+                    }
                 }
 
-                if (serverManager.ApplicationPools.Count > 1)
+                // Stop all app pools
+                foreach (var appPool in serverManager.ApplicationPools)
                 {
-                    PreserveConfigFiles("moreapppool");
-                    throw new InvalidOperationException("More than one app pool not expected");
+                    if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
+                    {
+                        var state = appPool.Stop();
+                        Logger.LogInformation($"Stopping pool, state: {state}");
+                    }
                 }
 
-                var site = serverManager.Sites.SingleOrDefault();
-                if (site == null)
+                // Make sure all sites are stopped
+                foreach (var site in serverManager.Sites)
                 {
-                    PreserveConfigFiles("sitenotfound");
-                    throw new InvalidOperationException("Site not found");
-                }
-
-                if (site.State != ObjectState.Stopped && site.State != ObjectState.Stopping)
-                {
-                    var state = site.Stop();
-                    Logger.LogInformation($"Stopping site, state: {state}");
-                }
-
-                var appPool = serverManager.ApplicationPools.SingleOrDefault();
-                if (appPool == null)
-                {
-                    PreserveConfigFiles("apppoolnotfound");
-                    throw new InvalidOperationException("Application pool not found");
-                }
-
-                if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
-                {
-                    var state = appPool.Stop();
-                    Logger.LogInformation($"Stopping pool, state: {state}");
-                }
-
-                if (site.State != ObjectState.Stopped)
-                {
-                    throw new InvalidOperationException($"Site {site.Name} not stopped yet");
+                    if (site.State != ObjectState.Stopped)
+                    {
+                        throw new InvalidOperationException($"Site {site.Name} not stopped yet");
+                    }
                 }
 
                 try
                 {
-                    if (appPool.WorkerProcesses != null &&
-                        appPool.WorkerProcesses.Any(wp =>
-                            wp.State == WorkerProcessState.Running ||
-                            wp.State == WorkerProcessState.Stopping))
+                    foreach (var appPool in serverManager.ApplicationPools)
                     {
-                        throw new InvalidOperationException("WorkerProcess not stopped yet");
+                        if (appPool.WorkerProcesses != null &&
+                            appPool.WorkerProcesses.Any(wp =>
+                                wp.State == WorkerProcessState.Running ||
+                                wp.State == WorkerProcessState.Stopping))
+                        {
+                            throw new InvalidOperationException("WorkerProcess not stopped yet");
+                        }
                     }
-
                 }
                 // If WAS was stopped for some reason appPool.WorkerProcesses
                 // would throw UnauthorizedAccessException.
@@ -494,14 +495,34 @@ public class IISDeployer : IISDeployerBase
         // Try to upload the applicationHost config on helix to help debug
         PreserveConfigFiles("serverManagerRetryFailed");
 
-        throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
+        throw new AggregateException($"Operation did not succeed after {retryCount} retries, serverManagerConfig: {DumpServerManagerConfig()}", exceptions.ToArray());
     }
 
     private void PreserveConfigFiles(string fileNamePrefix)
     {
         HelixHelper.PreserveFile(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "web.config"), fileNamePrefix+".web.config");
-        HelixHelper.PreserveFile(_applicationHostConfig, fileNamePrefix + ".applicationHost.config");
+        HelixHelper.PreserveFile(Path.Combine(_configPath, "applicationHost.config"), fileNamePrefix + ".applicationHost.config");
         HelixHelper.PreserveFile(Path.Combine(Environment.SystemDirectory, @"inetsrv\config\ApplicationHost.config"), fileNamePrefix + ".inetsrv.applicationHost.config");
         HelixHelper.PreserveFile(Path.Combine(Environment.SystemDirectory, @"inetsrv\config\redirection.config"), fileNamePrefix + ".inetsrv.redirection.config");
+        var tmpFile = Path.GetRandomFileName();
+        File.WriteAllText(tmpFile, DumpServerManagerConfig());
+        HelixHelper.PreserveFile(tmpFile, fileNamePrefix + ".serverManager.dump.txt");
+    }
+
+    private static string DumpServerManagerConfig()
+    {
+        var configDump = new StringBuilder();
+        using (var serverManager = new ServerManager())
+        {
+            foreach (var site in serverManager.Sites)
+            {
+                configDump.AppendLine(CultureInfo.InvariantCulture, $"Site Name:{site.Name} Id:{site.Id} State:{site.State}");
+            }
+            foreach (var appPool in serverManager.ApplicationPools)
+            {
+                configDump.AppendLine(CultureInfo.InvariantCulture, $"AppPool Name:{appPool.Name} Id:{appPool.ProcessModel} State:{appPool.State}");
+            }
+        }
+        return configDump.ToString();
     }
 }
