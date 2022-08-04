@@ -91,20 +91,24 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
         if (metadata is { Count: > 0 })
         {
             var hasCorsMetadata = false;
-            HttpMethodMetadata? httpMethodMetadata = null;
+            IHttpMethodMetadata? httpMethodMetadata = null;
 
             // Before create the final collection we
             // need to update the IHttpMethodMetadata if
             // a CORS metadata is present
             for (var i = 0; i < metadata.Count; i++)
             {
-                if (metadata[i] is HttpMethodMetadata methodMetadata)
+                // Not using else if since a metadata could have both
+                // interfaces.
+
+                if (metadata[i] is IHttpMethodMetadata methodMetadata)
                 {
                     // Storing only the last entry
                     // since the last metadata is the most significant.
                     httpMethodMetadata = methodMetadata;
                 }
-                else if (!hasCorsMetadata && metadata[i] is ICorsMetadata)
+
+                if (!hasCorsMetadata && metadata[i] is ICorsMetadata)
                 {
                     // IEnableCorsAttribute, IDisableCorsAttribute and ICorsPolicyMetadata
                     // are ICorsMetadata
