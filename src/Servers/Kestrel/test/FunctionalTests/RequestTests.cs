@@ -508,6 +508,8 @@ public class RequestTests : LoggedTest
             beforeAbort = context.RequestAborted;
 
             context.Abort();
+
+            // Abort doesn't happen inline. Need to wait for it to complete before reading token again.
             await abortedTcs.Task;
 
             afterAbort = context.RequestAborted;
