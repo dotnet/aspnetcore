@@ -836,7 +836,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
         await middleware.Invoke(httpContext);
 
-        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for request body."));
     }
 
     [Fact]
