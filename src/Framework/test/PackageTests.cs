@@ -32,7 +32,7 @@ public class PackageTests
         _output = output;
         _packageLayoutRoot = SkipOnHelixAttribute.OnHelix() ?
             Path.Combine(
-                Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+                Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"),
                 "Packages.Layout") :
             TestData.GetPackageLayoutRoot();
         var packageRoot = SkipOnHelixAttribute.OnHelix() ?
