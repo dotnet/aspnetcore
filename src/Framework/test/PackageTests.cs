@@ -22,7 +22,8 @@ public class PackageTests
 
     public PackageTests(ITestOutputHelper output)
     {
-        // In official builds, only run this test on Helix. The test will work locally so long as we're building w/ shipping versions.
+        // In official builds, only run this test on Helix. The test will work locally so long as you're building w/
+        // shipping versions i.e., include `/p:DotNetUseShippingVersions=true` on a full build command.
         if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnHelixAttribute.OnHelix())
         {
             return;
