@@ -166,6 +166,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             {
                 endpointBuilder.Metadata.Add(data);
             }
+            endpointBuilder.Metadata.Add(new AuthorizationPolicyCache());
         });
     }
 

@@ -47,7 +47,6 @@ public class AuthorizationMiddleware
         }
 
         var endpoint = context.GetEndpoint();
-
         if (endpoint != null)
         {
             // EndpointRoutingMiddleware uses this flag to check if the Authorization middleware processed auth metadata on the endpoint.
@@ -55,12 +54,24 @@ public class AuthorizationMiddleware
             context.Items[AuthorizationMiddlewareInvokedWithEndpointKey] = AuthorizationMiddlewareWithEndpointInvokedValue;
         }
 
-        // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
-        var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+        // Use the computed policy for this endpoint if we can
+        var computedPolicy = endpoint?.Metadata.GetMetadata<AuthorizationPolicyCache>();
+        var policy = computedPolicy?.Policy;
+        if (policy == null)
+        {
+            // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
+            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
 
-        var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
+            var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
 
-        var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
+            policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
+
+            // Cache the computed policy in the endpoint metadata if available
+            if (computedPolicy != null)
+            {
+                computedPolicy.Policy = policy;
+            }
+        }
 
         if (policy == null)
         {
