@@ -71,7 +71,7 @@ public class PackageTests
 
         foreach (var packageDir in Directory.GetDirectories(_packageLayoutRoot))
         {
-            // Don't test the Shared Framework or Ref pack
+            // Don't test the Shared Framework or Ref pack; assembly versions in those packages are checked elsewhere.
             if (packageDir.Contains("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
