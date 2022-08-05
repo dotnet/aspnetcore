@@ -43,7 +43,15 @@ public static class TestResources
 
     public static X509Certificate2 GetTestCertificateWithKey(string certName, string keyName)
     {
-        return X509Certificate2.CreateFromPemFile(GetCertPath(certName), GetCertPath(keyName));
+        var cert = X509Certificate2.CreateFromPemFile(GetCertPath(certName), GetCertPath(keyName));
+        if (OperatingSystem.IsWindows())
+        {
+            using (cert)
+            {
+                return new X509Certificate2(cert.Export(X509ContentType.Pkcs12));
+            }
+        }
+        return cert;
     }
 
     public static X509Certificate2Collection GetTestChain(string certName = "leaf.com.crt")

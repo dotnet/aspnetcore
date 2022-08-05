@@ -1,18 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -35,6 +28,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
     private static readonly X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
+    private static readonly X509Certificate2Collection _testChain = TestResources.GetTestChain();
 
     [Fact]
     public async Task CanReadAndWriteWithHttpsConnectionMiddleware()
@@ -253,6 +247,26 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                 var stream = OpenSslStream(connection.Stream);
                 await stream.AuthenticateAsClientAsync("localhost");
                 Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UsesProvidedServerCertificateAndChain()
+    {
+        var testCert = TestResources.GetTestCertificateWithKey("acert.crt", "acert.key");
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = testCert, ServerCertificateChain = _testChain });
+        };
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                var stream = OpenSslStream(connection.Stream);
+                await stream.AuthenticateAsClientAsync("localhost");
+                Assert.True(stream.RemoteCertificate.Equals(testCert));
             }
         }
     }
