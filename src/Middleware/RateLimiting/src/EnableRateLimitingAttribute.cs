@@ -15,11 +15,23 @@ public sealed class EnableRateLimitingAttribute : Attribute
     /// <param name="policyName">The name of the policy which needs to be applied.</param>
     public EnableRateLimitingAttribute(string policyName)
     {
+        ArgumentNullException.ThrowIfNull(policyName);
+
         PolicyName = policyName;
+    }
+
+    internal EnableRateLimitingAttribute(DefaultRateLimiterPolicy policy)
+    {
+        Policy = policy;
     }
 
     /// <summary>
     /// The name of the policy which needs to be applied.
     /// </summary>
-    public string PolicyName { get; }
+    public string? PolicyName { get; }
+
+    /// <summary>
+    /// The policy which needs to be applied, if present.
+    /// </summary>
+    internal DefaultRateLimiterPolicy? Policy { get; }
 }

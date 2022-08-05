@@ -93,11 +93,19 @@ internal sealed partial class RateLimitingMiddleware
             if (leaseContext.GlobalRejected == false)
             {
                 DefaultRateLimiterPolicy? policy;
-                var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
-                if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
+                policy = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.Policy;
+                if (policy is not null)
                 {
                     thisRequestOnRejected = policy.OnRejected;
+                }
+                else
+                {
+                    var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+                    if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
+                    {
+                        thisRequestOnRejected = policy.OnRejected;
+                    }
                 }
             }
             if (thisRequestOnRejected is not null)
@@ -187,10 +195,21 @@ internal sealed partial class RateLimitingMiddleware
         // If we have a policy for this endpoint, use its partitioner. Else use a NoLimiter.
         return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
-            var name = context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+            DefaultRateLimiterPolicy? policy;
+            var enableRateLimitingAttribute = context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>();
+            if (enableRateLimitingAttribute is null)
+            {
+                return RateLimitPartition.GetNoLimiter<DefaultKeyType>(_defaultPolicyKey);
+            }
+            policy = enableRateLimitingAttribute.Policy;
+            if (policy is not null)
+            {
+                return policy.GetPartition(context);
+            }
+            var name = enableRateLimitingAttribute.PolicyName;
             if (name is not null)
             {
-                if (_policyMap.TryGetValue(name, out var policy))
+                if (_policyMap.TryGetValue(name, out policy))
                 {
                     return policy.GetPartition(context);
                 }
