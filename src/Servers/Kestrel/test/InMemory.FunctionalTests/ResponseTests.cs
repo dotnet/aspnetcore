@@ -626,7 +626,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Theory]
     [MemberData(nameof(Get1xxAnd204MethodCombinations))]
     public async Task AttemptingToWriteContentLengthFailsFor1xxAnd204Responses(int statusCode, HttpMethod method)
-        => await AttemptingToWriteContentLengthFails(statusCode, method, contentLength: 0).ConfigureAwait(true);
+        => await AttemptingToWriteContentLengthFails(statusCode, method).ConfigureAwait(true);
 
     [Theory]
     [InlineData(StatusCodes.Status200OK)]
@@ -640,16 +640,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [InlineData(StatusCodes.Status208AlreadyReported)]
     [InlineData(StatusCodes.Status226IMUsed)]
     public async Task AttemptingToWriteContentLengthFailsFor2xxResponsesOnConnect(int statusCode)
-        => await AttemptingToWriteContentLengthFails(statusCode, HttpMethod.Connect, contentLength: 0).ConfigureAwait(true);
+        => await AttemptingToWriteContentLengthFails(statusCode, HttpMethod.Connect).ConfigureAwait(true);
 
-    private async Task AttemptingToWriteContentLengthFails(int statusCode, HttpMethod method, long contentLength)
+    private async Task AttemptingToWriteContentLengthFails(int statusCode, HttpMethod method)
     {
         var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
         {
             httpContext.Response.StatusCode = statusCode;
-            httpContext.Response.Headers.ContentLength = contentLength;
+            httpContext.Response.Headers.ContentLength = 0;
 
             try
             {
