@@ -153,6 +153,11 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             {
                 endpointBuilder.Metadata.Add(new AuthorizeAttribute());
             }
+            // Only add an policy cache if there isn't one
+            if (!endpointBuilder.Metadata.Any(meta => meta is AuthorizationPolicyCache))
+            {
+                endpointBuilder.Metadata.Add(new AuthorizationPolicyCache());
+            }
             endpointBuilder.Metadata.Add(policy);
         });
     }
