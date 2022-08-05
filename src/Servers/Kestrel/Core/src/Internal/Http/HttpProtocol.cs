@@ -1171,7 +1171,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
             {
-                // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
                 if (CanAutoSetContentLengthZeroResponseHeader())
                 {
                     // Since the app has completed writing or cannot write to the response, we can safely set the Content-Length to 0.
@@ -1266,9 +1265,12 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     private bool CanAutoSetContentLengthZeroResponseHeader()
     {
-        return Method != HttpMethod.Head &&
-               StatusCode != StatusCodes.Status204NoContent &&
-               StatusCode != StatusCodes.Status304NotModified;
+        return CanIncludeResponseContentLengthHeader() &&
+            // Responses to HEAD may omit Content-Length (Section 4.3.6 of RFC7231).
+            Method != HttpMethod.Head &&
+            // 304s should only include specific fields, of which Content-Length is
+            // not one (Section 4.1 of RFC7232).
+            StatusCode != StatusCodes.Status304NotModified;
     }
 
     private static void ThrowResponseAlreadyStartedException(string value)
