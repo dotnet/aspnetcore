@@ -19,14 +19,13 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddTokenBucketLimiter(this RateLimiterOptions options, string policyName, Action<TokenBucketRateLimiterOptions> configureOptions)
     {
-        if (configureOptions is null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var key = new PolicyNameKey() { PolicyName = policyName };
         var tokenBucketRateLimiterOptions = new TokenBucketRateLimiterOptions();
         configureOptions.Invoke(tokenBucketRateLimiterOptions);
+        // Saves an allocation in GetTokenBucketLimiter, which would have created a new set of options if this was true.
+        tokenBucketRateLimiterOptions.AutoReplenishment = false;
         return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.GetTokenBucketLimiter(key,
@@ -43,14 +42,13 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddFixedWindowLimiter(this RateLimiterOptions options, string policyName, Action<FixedWindowRateLimiterOptions> configureOptions)
     {
-        if (configureOptions is null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var key = new PolicyNameKey() { PolicyName = policyName };
         var fixedWindowRateLimiterOptions = new FixedWindowRateLimiterOptions();
         configureOptions.Invoke(fixedWindowRateLimiterOptions);
+        // Saves an allocation in GetFixedWindowLimiter, which would have created a new set of options if this was true.
+        fixedWindowRateLimiterOptions.AutoReplenishment = false;
         return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.GetFixedWindowLimiter(key,
@@ -67,14 +65,13 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddSlidingWindowLimiter(this RateLimiterOptions options, string policyName, Action<SlidingWindowRateLimiterOptions> configureOptions)
     {
-        if (configureOptions is null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var key = new PolicyNameKey() { PolicyName = policyName };
         var slidingWindowRateLimiterOptions = new SlidingWindowRateLimiterOptions();
         configureOptions.Invoke(slidingWindowRateLimiterOptions);
+        // Saves an allocation in GetSlidingWindowLimiter, which would have created a new set of options if this was true.
+        slidingWindowRateLimiterOptions.AutoReplenishment = false;
         return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.GetSlidingWindowLimiter(key,
@@ -91,10 +88,7 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddConcurrencyLimiter(this RateLimiterOptions options, string policyName, Action<ConcurrencyLimiterOptions> configureOptions)
     {
-        if (configureOptions is null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var key = new PolicyNameKey() { PolicyName = policyName };
         var concurrencyLimiterOptions = new ConcurrencyLimiterOptions();

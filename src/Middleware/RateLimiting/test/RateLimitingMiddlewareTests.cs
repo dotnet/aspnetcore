@@ -529,8 +529,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
         await middleware.Invoke(context).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
 
-        Assert.NotEqual(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
-        Assert.NotEqual(StatusCodes.Status404NotFound, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
     }
 
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());

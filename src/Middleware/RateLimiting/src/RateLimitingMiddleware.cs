@@ -58,15 +58,24 @@ internal sealed partial class RateLimitingMiddleware
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
-    public async Task Invoke(HttpContext context)
+    public Task Invoke(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
         // If this endpoint has a DisableRateLimitingAttribute, don't apply any rate limits.
         if (endpoint?.Metadata.GetMetadata<DisableRateLimitingAttribute>() is not null)
         {
-            await _next(context);
-            return;
+            return _next(context);
         }
+        // If this endpoint has no EnableRateLimitingAttribute & there's no global limiter, don't apply any rate limits.
+        if (endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>() is null && _globalLimiter is null)
+        {
+            return _next(context);
+        }
+        return InvokeInternal(context, endpoint);
+    }
+
+    private async Task InvokeInternal(HttpContext context, Endpoint? endpoint)
+    {
         using var leaseContext = await TryAcquireAsync(context);
         if (leaseContext.Lease.IsAcquired)
         {

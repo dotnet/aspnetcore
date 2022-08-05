@@ -42,7 +42,7 @@ public static class RateLimiterEndpointConventionBuilderExtensions
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(new DisableRateLimitingAttribute());
+            endpointBuilder.Metadata.Add(DisableRateLimitingAttribute.Instance);
         });
 
         return builder;
