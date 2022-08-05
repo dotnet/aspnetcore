@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +18,8 @@ namespace Microsoft.AspNetCore.Builder;
 public sealed class WebApplicationBuilder
 {
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+    private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
+    private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
@@ -163,6 +167,29 @@ public sealed class WebApplicationBuilder
             {
                 // UseEndpoints will be looking for the RouteBuilder so make sure it's set
                 app.Properties[EndpointRouteBuilderKey] = localRouteBuilder;
+            }
+        }
+
+        // Process authorization and authentication middlewares independently to avoid
+        // registering middlewares for services that do not exist
+        if (_builtApplication.Services.GetService<IAuthenticationSchemeProvider>() is not null)
+        {
+            // Don't add more than one instance of the middleware
+            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+            {
+                // The Use invocations will set the property on the outer pipeline,
+                // but we want to set it on the inner pipeline as well.
+                _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
+                app.UseAuthentication();
+            }
+        }
+
+        if (_builtApplication.Services.GetService<IAuthorizationHandlerProvider>() is not null)
+        {
+            if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
+            {
+                _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
+                app.UseAuthorization();
             }
         }
 

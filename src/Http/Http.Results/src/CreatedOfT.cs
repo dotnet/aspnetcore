@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with status code Created (201) and Location header.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class Created<TValue> : IResult, IEndpointMetadataProvider
+public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Created"/> class with the values
@@ -58,10 +58,14 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider
     /// </summary>
     public TValue? Value { get; }
 
+    object? IValueHttpResult.Value => Value;
+
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public string? Location { get; }

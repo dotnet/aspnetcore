@@ -41,7 +41,7 @@ public class NotFoundResultTests
         // Arrange
         NotFound MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<NotFound>(context);
@@ -67,6 +67,14 @@ public class NotFoundResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<NotFound>(null));
+    }
+
+    [Fact]
+    public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new NotFound());
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

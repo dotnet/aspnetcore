@@ -151,21 +151,7 @@ internal sealed class AddressBinder
             context.ServerOptions.ApplyEndpointDefaults(httpDefault);
             await httpDefault.BindAsync(context, cancellationToken).ConfigureAwait(false);
 
-            // Conditional https default, only if a cert is available
-            var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out _);
-            context.ServerOptions.ApplyEndpointDefaults(httpsDefault);
-
-            if (httpsDefault.IsTls || httpsDefault.TryUseHttps())
-            {
-                await httpsDefault.BindAsync(context, cancellationToken).ConfigureAwait(false);
-                context.Logger.LogDebug(CoreStrings.BindingToDefaultAddresses,
-                    Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress);
-            }
-            else
-            {
-                // No default cert is available, do not bind to the https endpoint.
-                context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
-            }
+            context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
         }
     }
 

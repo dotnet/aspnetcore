@@ -6,15 +6,24 @@ These are project templates which are used in .NET Core for creating ASP.NET Cor
 
 The following contains a description of each sub-directory in the `ProjectTemplates` directory.
 
-- `BlazorTemplates.Tests`: Contains the source files for the Blazor template tests, these are currently split out due to not being Helix ready yet.
 - `Shared`: Contains a collection of shared constants and helper methods/classes including the infrastructure for managing dotnet processes to create, build, run template tests.
 - `Web.Client.ItemTemplates`: Contains the Web Client-Side File templates, includes things like less, scss, and typescript
 - `Web.ItemTemplates`: Contains the Web File templates, includes things like: protobuf, razor component, razor page, view import and start pages
 - `Web.ProjectTemplates`: Contains the ASP.NET Core Web Template pack, including Blazor Server, WASM, Empty, Grpc, Razor Class Library, RazorPages, MVC, WebApi.
 - `migrations`: Contains migration related scripts.
 - `scripts`: Contains a collection of scripts that help running tests locally that avoid having to install the templates to the machine.
-- `test`: Contains the end to end template tests.
+- `test`: Contains the template tests.
+  - `Templates.Blazor.Tests`: Contains the Blazor template tests. These are currently split out due to not being Helix ready yet.
 - `testassets`: Contains assets used by the tests, like a dotnet tools installer
+
+## Submitting pull requests
+
+You can submit changes for templates in this repo by submitting a pull request. If you make changes to any
+`content/*/.template.config/template.json` files, build locally (see below) and include any
+`content/*/.template.config/localize/` changes in your pull request. (Your build may update the strings in those
+files for later localization.)
+
+## Building locally
 
 ### Build
 

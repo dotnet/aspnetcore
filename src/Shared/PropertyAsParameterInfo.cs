@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -61,8 +62,8 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "PropertyAsParameterInfo.Flatten requires unreferenced code.")]
     public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
-        ArgumentNullException.ThrowIfNull(nameof(parameters));
-        ArgumentNullException.ThrowIfNull(nameof(cache));
+        ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentNullException.ThrowIfNull(cache);
 
         if (parameters.Length == 0)
         {
@@ -85,6 +86,14 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
                 // to keep the same parameter ordering
                 flattenedParameters ??= new(parameters[0..i]);
                 nullabilityContext ??= new();
+
+                var isNullable = Nullable.GetUnderlyingType(parameters[i].ParameterType) != null ||
+                    nullabilityContext.Create(parameters[i])?.ReadState == NullabilityState.Nullable;
+
+                if (isNullable)
+                {
+                    throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameters[i].ParameterType, fullName: false)}' is not supported.");
+                }
 
                 var (constructor, constructorParameters) = cache.FindConstructor(parameters[i].ParameterType);
                 if (constructor is not null && constructorParameters is { Length: > 0 })

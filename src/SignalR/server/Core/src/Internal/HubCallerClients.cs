@@ -10,6 +10,11 @@ internal sealed class HubCallerClients : IHubCallerClients
     private readonly string[] _currentConnectionId;
     private readonly bool _parallelEnabled;
 
+    // Client results don't work in OnConnectedAsync
+    // This property is set by the hub dispatcher when those methods are being called
+    // so we can prevent users from making blocking client calls by returning a custom ISingleClientProxy instance
+    internal bool InvokeAllowed { get; set; }
+
     public HubCallerClients(IHubClients hubClients, string connectionId, bool parallelEnabled)
     {
         _connectionId = connectionId;
@@ -18,36 +23,22 @@ internal sealed class HubCallerClients : IHubCallerClients
         _parallelEnabled = parallelEnabled;
     }
 
-    private sealed class NotParallelSingleClientProxy : ISingleClientProxy
+    IClientProxy IHubCallerClients<IClientProxy>.Caller => Caller;
+    public ISingleClientProxy Caller
     {
-        private readonly ISingleClientProxy _proxy;
-
-        public NotParallelSingleClientProxy(ISingleClientProxy hubClients)
+        get
         {
-            _proxy = hubClients;
-        }
-
-        public Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default)
-        {
-            throw new InvalidOperationException("Client results inside a Hub method requires HubOptions.MaximumParallelInvocationsPerClient to be greater than 1.");
-        }
-
-        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
-        {
-            return _proxy.SendCoreAsync(method, args, cancellationToken);
+            if (!_parallelEnabled)
+            {
+                return new NotParallelSingleClientProxy(_hubClients.Client(_connectionId));
+            }
+            if (!InvokeAllowed)
+            {
+                return new NoInvokeSingleClientProxy(_hubClients.Client(_connectionId));
+            }
+            return _hubClients.Client(_connectionId);
         }
     }
-
-    public ISingleClientProxy Single(string connectionId)
-    {
-        if (!_parallelEnabled)
-        {
-            return new NotParallelSingleClientProxy(_hubClients.Single(connectionId));
-        }
-        return _hubClients.Single(connectionId);
-    }
-
-    public IClientProxy Caller => _hubClients.Client(_connectionId);
 
     public IClientProxy Others => _hubClients.AllExcept(_currentConnectionId);
 
@@ -58,8 +49,17 @@ internal sealed class HubCallerClients : IHubCallerClients
         return _hubClients.AllExcept(excludedConnectionIds);
     }
 
-    public IClientProxy Client(string connectionId)
+    IClientProxy IHubClients<IClientProxy>.Client(string connectionId) => Client(connectionId);
+    public ISingleClientProxy Client(string connectionId)
     {
+        if (!_parallelEnabled)
+        {
+            return new NotParallelSingleClientProxy(_hubClients.Client(connectionId));
+        }
+        if (!InvokeAllowed)
+        {
+            return new NoInvokeSingleClientProxy(_hubClients.Client(_connectionId));
+        }
         return _hubClients.Client(connectionId);
     }
 
@@ -96,5 +96,45 @@ internal sealed class HubCallerClients : IHubCallerClients
     public IClientProxy Users(IReadOnlyList<string> userIds)
     {
         return _hubClients.Users(userIds);
+    }
+
+    private sealed class NotParallelSingleClientProxy : ISingleClientProxy
+    {
+        private readonly ISingleClientProxy _proxy;
+
+        public NotParallelSingleClientProxy(ISingleClientProxy hubClients)
+        {
+            _proxy = hubClients;
+        }
+
+        public Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("Client results inside a Hub method requires HubOptions.MaximumParallelInvocationsPerClient to be greater than 1.");
+        }
+
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
+        {
+            return _proxy.SendCoreAsync(method, args, cancellationToken);
+        }
+    }
+
+    private sealed class NoInvokeSingleClientProxy : ISingleClientProxy
+    {
+        private readonly ISingleClientProxy _proxy;
+
+        public NoInvokeSingleClientProxy(ISingleClientProxy hubClients)
+        {
+            _proxy = hubClients;
+        }
+
+        public Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("Client results inside OnConnectedAsync Hub methods are not allowed.");
+        }
+
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
+        {
+            return _proxy.SendCoreAsync(method, args, cancellationToken);
+        }
     }
 }

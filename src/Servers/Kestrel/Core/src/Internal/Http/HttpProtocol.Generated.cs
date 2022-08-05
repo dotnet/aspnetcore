@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IEndpointFeature,
                                           IHttpRequestIdentifierFeature,
                                           IHttpRequestTrailersFeature,
+                                          IHttpExtendedConnectFeature,
                                           IHttpUpgradeFeature,
                                           IRequestBodyPipeFeature,
                                           IHttpConnectionFeature,
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
                                           IHttpRequestBodyDetectionFeature,
+                                          IHttpWebTransportFeature,
                                           IBadRequestExceptionFeature
     {
         // Implemented features
@@ -40,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IEndpointFeature? _currentIEndpointFeature;
         internal protected IHttpRequestIdentifierFeature? _currentIHttpRequestIdentifierFeature;
         internal protected IHttpRequestTrailersFeature? _currentIHttpRequestTrailersFeature;
+        internal protected IHttpExtendedConnectFeature? _currentIHttpExtendedConnectFeature;
         internal protected IHttpUpgradeFeature? _currentIHttpUpgradeFeature;
         internal protected IRequestBodyPipeFeature? _currentIRequestBodyPipeFeature;
         internal protected IHttpConnectionFeature? _currentIHttpConnectionFeature;
@@ -47,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
         internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
         internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
+        internal protected IHttpWebTransportFeature? _currentIHttpWebTransportFeature;
         internal protected IBadRequestExceptionFeature? _currentIBadRequestExceptionFeature;
 
         // Other reserved feature slots
@@ -80,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIEndpointFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestTrailersFeature = this;
+            _currentIHttpExtendedConnectFeature = this;
             _currentIHttpUpgradeFeature = this;
             _currentIRequestBodyPipeFeature = this;
             _currentIHttpConnectionFeature = this;
@@ -87,6 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpBodyControlFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpRequestBodyDetectionFeature = this;
+            _currentIHttpWebTransportFeature = this;
             _currentIBadRequestExceptionFeature = this;
 
             _currentIServiceProvidersFeature = null;
@@ -252,6 +258,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentITlsConnectionFeature;
                 }
+                else if (key == typeof(IHttpExtendedConnectFeature))
+                {
+                    feature = _currentIHttpExtendedConnectFeature;
+                }
                 else if (key == typeof(IHttpUpgradeFeature))
                 {
                     feature = _currentIHttpUpgradeFeature;
@@ -259,6 +269,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpWebSocketFeature))
                 {
                     feature = _currentIHttpWebSocketFeature;
+                }
+                else if (key == typeof(IHttpWebTransportFeature))
+                {
+                    feature = _currentIHttpWebTransportFeature;
                 }
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
@@ -388,6 +402,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
                 }
+                else if (key == typeof(IHttpExtendedConnectFeature))
+                {
+                    _currentIHttpExtendedConnectFeature = (IHttpExtendedConnectFeature?)value;
+                }
                 else if (key == typeof(IHttpUpgradeFeature))
                 {
                     _currentIHttpUpgradeFeature = (IHttpUpgradeFeature?)value;
@@ -395,6 +413,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpWebSocketFeature))
                 {
                     _currentIHttpWebSocketFeature = (IHttpWebSocketFeature?)value;
+                }
+                else if (key == typeof(IHttpWebTransportFeature))
+                {
+                    _currentIHttpWebTransportFeature = (IHttpWebTransportFeature?)value;
                 }
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
@@ -526,6 +548,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
             }
+            else if (typeof(TFeature) == typeof(IHttpExtendedConnectFeature))
+            {
+                feature = Unsafe.As<IHttpExtendedConnectFeature?, TFeature?>(ref _currentIHttpExtendedConnectFeature);
+            }
             else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
             {
                 feature = Unsafe.As<IHttpUpgradeFeature?, TFeature?>(ref _currentIHttpUpgradeFeature);
@@ -533,6 +559,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
             {
                 feature = Unsafe.As<IHttpWebSocketFeature?, TFeature?>(ref _currentIHttpWebSocketFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpWebTransportFeature))
+            {
+                feature = Unsafe.As<IHttpWebTransportFeature?, TFeature?>(ref _currentIHttpWebTransportFeature);
             }
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
@@ -670,6 +700,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpExtendedConnectFeature))
+            {
+                _currentIHttpExtendedConnectFeature = Unsafe.As<TFeature?, IHttpExtendedConnectFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
             {
                 _currentIHttpUpgradeFeature = Unsafe.As<TFeature?, IHttpUpgradeFeature?>(ref feature);
@@ -677,6 +711,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
             {
                 _currentIHttpWebSocketFeature = Unsafe.As<TFeature?, IHttpWebSocketFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpWebTransportFeature))
+            {
+                _currentIHttpWebTransportFeature = Unsafe.As<TFeature?, IHttpWebTransportFeature?>(ref feature);
             }
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
@@ -802,6 +840,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
             }
+            if (_currentIHttpExtendedConnectFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpExtendedConnectFeature), _currentIHttpExtendedConnectFeature);
+            }
             if (_currentIHttpUpgradeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpUpgradeFeature), _currentIHttpUpgradeFeature);
@@ -809,6 +851,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpWebSocketFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), _currentIHttpWebSocketFeature);
+            }
+            if (_currentIHttpWebTransportFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpWebTransportFeature), _currentIHttpWebTransportFeature);
             }
             if (_currentIBadRequestExceptionFeature != null)
             {

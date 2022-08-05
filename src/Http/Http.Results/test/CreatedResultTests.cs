@@ -63,7 +63,7 @@ public class CreatedResultTests
         // Arrange
         Created MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Created>(context);
@@ -89,6 +89,17 @@ public class CreatedResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Created>(null));
+    }
+
+    [Fact]
+    public void CreatedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var location = "/test/";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Created(location));
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

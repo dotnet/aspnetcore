@@ -35,6 +35,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1);
     private readonly IHubProtocolResolver _hubProtocolResolver;
     private readonly ClientResultsManager _clientResultsManager = new();
+    private bool _redisConnectErrorLogged;
 
     private readonly AckHandler _ackHandler;
     private int _internalAckId;
@@ -90,6 +91,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     public override async Task OnConnectedAsync(HubConnectionContext connection)
     {
         await EnsureRedisServerConnection();
+
         var feature = new RedisFeature();
         connection.Features.Set<IRedisFeature>(feature);
 
@@ -112,11 +114,17 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         _connections.Remove(connection);
 
-        var tasks = new List<Task>();
+        // If the bus is null then the Redis connection failed to be established and none of the other connection setup ran
+        if (_bus is null)
+        {
+            return Task.CompletedTask;
+        }
 
         var connectionChannel = _channels.Connection(connection.ConnectionId);
+        var tasks = new List<Task>();
+
         RedisLog.Unsubscribe(_logger, connectionChannel);
-        tasks.Add(_bus!.UnsubscribeAsync(connectionChannel));
+        tasks.Add(_bus.UnsubscribeAsync(connectionChannel));
 
         var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
         var groupNames = feature.Groups;
@@ -346,10 +354,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         var groupChannel = _channels.Group(groupName);
 
-        await _groups.RemoveSubscriptionAsync(groupChannel, connection, channelName =>
+        await _groups.RemoveSubscriptionAsync(groupChannel, connection, this, static (state, channelName) =>
         {
-            RedisLog.Unsubscribe(_logger, channelName);
-            return _bus!.UnsubscribeAsync(channelName);
+            var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
+            RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
+            return lifetimeManager._bus!.UnsubscribeAsync(channelName);
         });
 
         var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
@@ -378,10 +387,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         var userChannel = _channels.User(connection.UserIdentifier!);
 
-        return _users.RemoveSubscriptionAsync(userChannel, connection, channelName =>
+        return _users.RemoveSubscriptionAsync(userChannel, connection, this, static (state, channelName) =>
         {
-            RedisLog.Unsubscribe(_logger, channelName);
-            return _bus!.UnsubscribeAsync(channelName);
+            var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
+            RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
+            return lifetimeManager._bus!.UnsubscribeAsync(channelName);
         });
     }
 
@@ -704,7 +714,21 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 if (_redisServerConnection == null)
                 {
                     var writer = new LoggerTextWriter(_logger);
-                    _redisServerConnection = await _options.ConnectAsync(writer);
+                    try
+                    {
+                        _redisServerConnection = await _options.ConnectAsync(writer);
+                    }
+                    catch (Exception ex)
+                    {
+                        // If the connection hasn't been established yet we shouldn't keep logging the same error over and over
+                        // for every new client connection.
+                        if (!_redisConnectErrorLogged)
+                        {
+                            RedisLog.ErrorConnecting(_logger, ex);
+                            _redisConnectErrorLogged = true;
+                        }
+                        throw;
+                    }
                     _bus = _redisServerConnection.GetSubscriber();
 
                     _redisServerConnection.ConnectionRestored += (_, e) =>

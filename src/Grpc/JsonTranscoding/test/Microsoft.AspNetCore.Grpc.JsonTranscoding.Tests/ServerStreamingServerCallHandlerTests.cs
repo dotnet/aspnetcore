@@ -5,6 +5,8 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
+using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
@@ -55,6 +57,9 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         var callTask = callHandler.HandleCallAsync(httpContext);
 
         // Assert
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
+
         var line1 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
         using var responseJson1 = JsonDocument.Parse(line1!);
         Assert.Equal("Hello TestName! 1", responseJson1.RootElement.GetProperty("message").GetString());
@@ -141,6 +146,62 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         await callTask.DefaultTimeout();
     }
 
+    [Fact]
+    public async Task HandleCallAsync_HttpBody_WriteMultipleMessages_Returned()
+    {
+        // Arrange
+        var syncPoint = new SyncPoint();
+
+        ServerStreamingServerMethod<JsonTranscodingGreeterService, HelloRequest, HttpBody> invoker = async (s, r, w, c) =>
+        {
+            await w.WriteAsync(new HttpBody
+            {
+                ContentType = "application/xml",
+                Data = ByteString.CopyFrom(Encoding.UTF8.GetBytes($"<message>Hello {r.Name} 1</message>"))
+            });
+            await syncPoint.WaitToContinue();
+            await w.WriteAsync(new HttpBody
+            {
+                ContentType = "application/xml",
+                Data = ByteString.CopyFrom(Encoding.UTF8.GetBytes($"<message>Hello {r.Name} 2</message>"))
+            });
+        };
+
+        var pipe = new Pipe();
+
+        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        {
+            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var callHandler = CreateCallHandler(
+            invoker,
+            CreateServiceMethod("HttpResponseBody", HelloRequest.Parser, HttpBody.Parser),
+            descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext(bodyStream: pipe.Writer.AsStream());
+        httpContext.Request.RouteValues["name"] = "TestName!";
+
+        // Act
+        var callTask = callHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal("application/xml", httpContext.Response.ContentType);
+
+        var line1 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
+        var responseXml1 = XDocument.Parse(line1!);
+        Assert.Equal("Hello TestName! 1", (string)responseXml1.Element("message")!);
+
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+        syncPoint.Continue();
+
+        var line2 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
+        var responseXml2 = XDocument.Parse(line2!);
+        Assert.Equal("Hello TestName! 2", (string)responseXml2.Element("message")!);
+
+        await callTask.DefaultTimeout();
+    }
+
     public async Task<string?> ReadLineAsync(PipeReader pipeReader)
     {
         string? str;
@@ -187,8 +248,27 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         ServerStreamingServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker,
         CallHandlerDescriptorInfo? descriptorInfo = null,
         List<(Type Type, object[] Args)>? interceptors = null,
-        GrpcJsonTranscodingOptions? JsonTranscodingOptions = null,
+        GrpcJsonTranscodingOptions? jsonTranscodingOptions = null,
         GrpcServiceOptions? serviceOptions = null)
+    {
+        return CreateCallHandler(
+            invoker,
+            CreateServiceMethod("TestMethodName", HelloRequest.Parser, HelloReply.Parser),
+            descriptorInfo,
+            interceptors,
+            jsonTranscodingOptions,
+            serviceOptions);
+    }
+
+    private ServerStreamingServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse> CreateCallHandler<TRequest, TResponse>(
+        ServerStreamingServerMethod<JsonTranscodingGreeterService, TRequest, TResponse> invoker,
+        Method<TRequest, TResponse> method,
+        CallHandlerDescriptorInfo? descriptorInfo = null,
+        List<(Type Type, object[] Args)>? interceptors = null,
+        GrpcJsonTranscodingOptions? jsonTranscodingOptions = null,
+        GrpcServiceOptions? serviceOptions = null)
+        where TRequest : class, IMessage<TRequest>
+        where TResponse : class, IMessage<TResponse>
     {
         serviceOptions ??= new GrpcServiceOptions();
         if (interceptors != null)
@@ -199,16 +279,16 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
             }
         }
 
-        var callInvoker = new ServerStreamingServerMethodInvoker<JsonTranscodingGreeterService, HelloRequest, HelloReply>(
+        var callInvoker = new ServerStreamingServerMethodInvoker<JsonTranscodingGreeterService, TRequest, TResponse>(
             invoker,
-            CreateServiceMethod<HelloRequest, HelloReply>("TestMethodName", HelloRequest.Parser, HelloReply.Parser),
+            method,
             MethodOptions.Create(new[] { serviceOptions }),
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
-        var jsonSettings = JsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
-        var jsonContext = new JsonContext(jsonSettings, JsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty);
+        var jsonSettings = jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
+        var jsonContext = new JsonContext(jsonSettings, jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty);
 
-        return new ServerStreamingServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply>(
+        return new ServerStreamingServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse>(
             callInvoker,
             LoggerFactory,
             descriptorInfo ?? TestHelpers.CreateDescriptorInfo(),

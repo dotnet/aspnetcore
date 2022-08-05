@@ -404,12 +404,10 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         return new Endpoint(
             (context) =>
             {
-                context.Response.StatusCode = 405;
-
                 // Prevent ArgumentException from duplicate key if header already added, such as when the
                 // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
                 context.Response.Headers.Allow = allow;
-
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 return Task.CompletedTask;
             },
             EndpointMetadataCollection.Empty,

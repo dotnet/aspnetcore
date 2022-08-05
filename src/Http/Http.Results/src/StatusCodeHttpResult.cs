@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the given response status code.
 /// </summary>
-public sealed partial class StatusCodeHttpResult : IResult
+public sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusCodeHttpResult"/> class
@@ -26,6 +26,8 @@ public sealed partial class StatusCodeHttpResult : IResult
     /// Gets the HTTP status code.
     /// </summary>
     public int StatusCode { get; }
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <summary>
     /// Sets the status code on the HTTP response.

@@ -40,11 +40,12 @@ public class HttpProtocolSelectionTests : TestApplicationErrorLoggerLoggedTest
         // Expect a SETTINGS frame with default settings then a connection-level WINDOW_UPDATE frame.
         var expected = new byte[]
         {
-                0x00, 0x00, 0x12, // Payload Length (6 * settings count)
+                0x00, 0x00, 0x18, // Payload Length (6 * settings count)
                 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, // SETTINGS frame (type 0x04)
                 0x00, 0x03, 0x00, 0x00, 0x00, 0x64, // Connection limit (100)
                 0x00, 0x04, 0x00, 0x01, 0x80, 0x00, // Initial stream window size (96 KiB)
                 0x00, 0x06, 0x00, 0x00, 0x80, 0x00, // Header size limit (32 KiB)
+                0x00, 0x08, 0x00, 0x00, 0x00, 0x01, // CONNECT enabled
                 0x00, 0x00, 0x04, // Payload Length (4)
                 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, // WINDOW_UPDATE frame (type 0x08)
                 0x00, 0x01, 0x00, 0x01, // Diff between configured and protocol default (128 KiB - 0XFFFF)

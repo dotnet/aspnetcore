@@ -418,9 +418,6 @@ internal sealed partial class HttpSysListener : IDisposable
 
     private void CheckDisposed()
     {
-        if (_state == State.Disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
     }
 }

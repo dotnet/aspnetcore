@@ -10,6 +10,8 @@ namespace Microsoft.Net.Http.Headers;
 // Please do not open PRs without first opening an issue to discuss a specific item.
 public static class HeaderNames
 {
+    private const string PseudoHeaderNamesObsoletionMessage = "This is obsolete and will be removed in a future version. Header dictionaries do not contain this key.";
+
     // Use readonly statics rather than constants so ReferenceEquals works
 
     /// <summary>Gets the <c>Accept</c> HTTP header name.</summary>
@@ -61,6 +63,7 @@ public static class HeaderNames
     public static readonly string AltSvc = "Alt-Svc";
 
     /// <summary>Gets the <c>:authority</c> HTTP header name.</summary>
+    [Obsolete(PseudoHeaderNamesObsoletionMessage, false)]
     public static readonly string Authority = ":authority";
 
     /// <summary>Gets the <c>Authorization</c> HTTP header name.</summary>
@@ -178,12 +181,14 @@ public static class HeaderNames
     public static readonly string MaxForwards = "Max-Forwards";
 
     /// <summary>Gets the <c>:method</c> HTTP header name.</summary>
+    [Obsolete(PseudoHeaderNamesObsoletionMessage, false)]
     public static readonly string Method = ":method";
 
     /// <summary>Gets the <c>Origin</c> HTTP header name.</summary>
     public static readonly string Origin = "Origin";
 
     /// <summary>Gets the <c>:path</c> HTTP header name.</summary>
+    [Obsolete(PseudoHeaderNamesObsoletionMessage, false)]
     public static readonly string Path = ":path";
 
     /// <summary>Gets the <c>Pragma</c> HTTP header name.</summary>
@@ -211,6 +216,7 @@ public static class HeaderNames
     public static readonly string RequestId = "Request-Id";
 
     /// <summary>Gets the <c>:scheme</c> HTTP header name.</summary>
+    [Obsolete(PseudoHeaderNamesObsoletionMessage, false)]
     public static readonly string Scheme = ":scheme";
 
     /// <summary>Gets the <c>Sec-WebSocket-Accept</c> HTTP header name.</summary>
@@ -235,6 +241,7 @@ public static class HeaderNames
     public static readonly string SetCookie = "Set-Cookie";
 
     /// <summary>Gets the <c>:status</c> HTTP header name.</summary>
+    [Obsolete(PseudoHeaderNamesObsoletionMessage, false)]
     public static readonly string Status = ":status";
 
     /// <summary>Gets the <c>Strict-Transport-Security</c> HTTP header name.</summary>

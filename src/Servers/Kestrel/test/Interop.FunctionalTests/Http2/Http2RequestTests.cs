@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Interop.FunctionalTests.Http2;
 
+[Collection(nameof(NoParallelCollection))]
 public class Http2RequestTests : LoggedTest
 {
     [Fact]

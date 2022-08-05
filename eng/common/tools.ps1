@@ -573,7 +573,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp3.1' }
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net7.0' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -634,6 +634,10 @@ function InitializeNativeTools() {
       $nativeArgs = @{
         InstallDirectory = "$ToolsDir"
       }
+    }
+    if ($env:NativeToolsOnMachine) {
+      Write-Host "Variable NativeToolsOnMachine detected, enabling native tool path promotion..."
+      $nativeArgs += @{ PathPromotion = $true }
     }
     & "$PSScriptRoot/init-tools-native.ps1" @nativeArgs
   }

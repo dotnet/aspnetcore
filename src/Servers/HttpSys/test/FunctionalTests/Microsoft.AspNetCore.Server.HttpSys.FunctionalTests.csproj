@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>HttpSys.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +22,7 @@
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
+    <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Linkbase="shared"/>
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />

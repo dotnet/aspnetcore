@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
-public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProvider
+public sealed class Results<TResult1, TResult2> : IResult, INestedHttpResult, IEndpointMetadataProvider
     where TResult1 : IResult
     where TResult2 : IResult
 {
@@ -36,7 +36,7 @@ public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProv
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -80,7 +80,7 @@ public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProv
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
-public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMetadataProvider
+public sealed class Results<TResult1, TResult2, TResult3> : IResult, INestedHttpResult, IEndpointMetadataProvider
     where TResult1 : IResult
     where TResult2 : IResult
     where TResult3 : IResult
@@ -99,7 +99,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMe
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -151,7 +151,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMe
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
 /// <typeparam name="TResult4">The fourth result type.</typeparam>
-public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, IEndpointMetadataProvider
+public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, INestedHttpResult, IEndpointMetadataProvider
     where TResult1 : IResult
     where TResult2 : IResult
     where TResult3 : IResult
@@ -171,7 +171,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, I
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -231,7 +231,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, I
 /// <typeparam name="TResult3">The third result type.</typeparam>
 /// <typeparam name="TResult4">The fourth result type.</typeparam>
 /// <typeparam name="TResult5">The fifth result type.</typeparam>
-public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : IResult, IEndpointMetadataProvider
+public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : IResult, INestedHttpResult, IEndpointMetadataProvider
     where TResult1 : IResult
     where TResult2 : IResult
     where TResult3 : IResult
@@ -252,7 +252,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -320,7 +320,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
 /// <typeparam name="TResult4">The fourth result type.</typeparam>
 /// <typeparam name="TResult5">The fifth result type.</typeparam>
 /// <typeparam name="TResult6">The sixth result type.</typeparam>
-public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6> : IResult, IEndpointMetadataProvider
+public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6> : IResult, INestedHttpResult, IEndpointMetadataProvider
     where TResult1 : IResult
     where TResult2 : IResult
     where TResult3 : IResult
@@ -342,7 +342,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {

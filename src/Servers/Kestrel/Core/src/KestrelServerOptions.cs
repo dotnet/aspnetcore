@@ -158,6 +158,24 @@ public class KestrelServerOptions
     internal bool IsDevCertLoaded { get; set; }
 
     /// <summary>
+    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
+    /// </summary>
+    private bool? _enableWebTransportAndH3Datagrams;
+    internal bool EnableWebTransportAndH3Datagrams
+    {
+        get
+        {
+            if (!_enableWebTransportAndH3Datagrams.HasValue)
+            {
+                _enableWebTransportAndH3Datagrams = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var enabled) && enabled;
+            }
+
+            return _enableWebTransportAndH3Datagrams.Value;
+        }
+        set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
     /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
     /// the prior action.
     /// </summary>
@@ -267,16 +285,13 @@ public class KestrelServerOptions
                         Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
                         logger.DeveloperCertificateFirstRun(status.FailureMessage);
 
-                        // Now that we've displayed a warning in the logs so that the user gets a notification that a prompt might appear, try
-                        // and access the certificate key, which might trigger a prompt.
-                        status = CertificateManager.Instance.CheckCertificateState(DefaultCertificate, interactive: true);
-                        if (!status.Success)
-                        {
-                            logger.BadDeveloperCertificateState();
-                        }
+                        // Prevent binding to HTTPS if the certificate is not valid (avoid the prompt)
+                        DefaultCertificate = null;
                     }
-
-                    logger.LocatedDevelopmentCertificate(DefaultCertificate);
+                    else if (!CertificateManager.Instance.IsTrusted(DefaultCertificate))
+                    {
+                        logger.DeveloperCertificateNotTrusted();
+                    }
                 }
                 else
                 {

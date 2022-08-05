@@ -72,6 +72,7 @@ internal sealed class LocalhostListenOptions : ListenOptions
             DisableAltSvcHeader = DisableAltSvcHeader,
             IsTls = IsTls,
             HttpsOptions = HttpsOptions,
+            HttpsCallbackOptions = HttpsCallbackOptions,
             EndpointConfig = EndpointConfig
         };
 

@@ -15,6 +15,9 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
 
+REM Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
+set ASPNETCORE_ENVIRONMENT=
+
 set "PATH=%HELIX_WORKITEM_ROOT%;%PATH%;%HELIX_WORKITEM_ROOT%\node\bin"
 echo Set path to: "%PATH%"
 echo.

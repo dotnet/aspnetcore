@@ -121,7 +121,7 @@ if (!app.Environment.IsDevelopment())
 #endif
 {
     app.UseExceptionHandler("/Error");
-#if (RequiresHttps)
+#if (HasHttpsProfile)
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -133,11 +133,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-app.UseAuthentication();
-#endif
-app.UseAuthorization();
 
 app.MapRazorPages();
 #if (IndividualB2CAuth || OrganizationalAuth)

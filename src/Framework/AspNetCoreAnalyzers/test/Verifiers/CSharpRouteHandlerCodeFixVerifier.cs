@@ -64,8 +64,8 @@ public static class CSharpRouteHandlerCodeFixVerifier<TAnalyzer, TCodeFix>
         {
             // We populate the ReferenceAssemblies used in the tests with the locally-built AspNetCore
             // assemblies that are referenced in a minimal app to ensure that there are no reference
-            // errors during the build.
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net60.AddAssemblies(ImmutableArray.Create(
+            // errors during the build. The value used here should be updated on each TFM change.
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net70.AddAssemblies(ImmutableArray.Create(
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.WebApplication).Assembly.Location),
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions).Assembly.Location),
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.IApplicationBuilder).Assembly.Location),

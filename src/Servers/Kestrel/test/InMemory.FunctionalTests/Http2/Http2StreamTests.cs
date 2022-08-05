@@ -34,10 +34,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>("TestHeader", headerValue),
         };
         await InitializeConnectionAsync(_noopApplication);
@@ -52,10 +52,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, ""),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, ""),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             };
         await InitializeConnectionAsync(_noopApplication);
 
@@ -71,10 +71,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Hello,World"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "Hello,World"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             };
         await InitializeConnectionAsync(_noopApplication);
 
@@ -96,10 +96,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, method),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             };
         await InitializeConnectionAsync(_echoMethodNoBody);
 
@@ -115,7 +115,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal(method, _decodedHeaders["Method"]);
         _decodedHeaders.Clear();
@@ -134,7 +134,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal(method, _decodedHeaders["Method"]);
         _decodedHeaders.Clear();
@@ -147,10 +147,10 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "HEAD"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "HEAD"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             };
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
@@ -165,7 +165,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("HEAD", _decodedHeaders["Method"]);
     }
 
@@ -180,10 +180,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, method),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "11"),
             };
         await InitializeConnectionAsync(context =>
@@ -217,7 +217,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
     }
 
@@ -232,10 +232,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, method),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             };
         await InitializeConnectionAsync(context =>
         {
@@ -268,7 +268,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
     }
 
@@ -278,11 +278,11 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(_echoMethodNoBody);
 
         // :path and :scheme are not allowed, :authority is optional
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT") };
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "CONNECT") };
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-            withLength: 52,
+            withLength: 48,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
@@ -290,11 +290,10 @@ public class Http2StreamTests : Http2TestBase
 
         _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
-        Assert.Equal(4, _decodedHeaders.Count);
+        Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("CONNECT", _decodedHeaders["Method"]);
-        Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
     [Fact]
@@ -303,9 +302,9 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(_echoPath);
 
         // :path and :scheme are not allowed, :authority is optional
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "OPTIONS"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "*")};
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "OPTIONS"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "*")};
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
@@ -319,7 +318,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(5, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("", _decodedHeaders["path"]);
         Assert.Equal("*", _decodedHeaders["rawtarget"]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
@@ -331,9 +330,9 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(_echoPath);
 
         // :path and :scheme are not allowed, :authority is optional
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "OPTIONS"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/")};
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "OPTIONS"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/")};
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
@@ -347,7 +346,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(5, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("/", _decodedHeaders["path"]);
         Assert.Equal("/", _decodedHeaders["rawtarget"]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
@@ -365,9 +364,9 @@ public class Http2StreamTests : Http2TestBase
         });
 
         // :path and :scheme are not allowed, :authority is optional
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/a/path?a&que%35ry")};
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/a/path?a&que%35ry")};
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
@@ -381,7 +380,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(6, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("/a/path", _decodedHeaders["path"]);
         Assert.Equal("?a&que%35ry", _decodedHeaders["query"]);
         Assert.Equal("/a/path?a&que%35ry", _decodedHeaders["rawtarget"]);
@@ -407,9 +406,9 @@ public class Http2StreamTests : Http2TestBase
         });
 
         // :path and :scheme are not allowed, :authority is optional
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Path, input)};
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, input)};
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
@@ -423,7 +422,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
@@ -435,7 +434,7 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(_noopApplication);
 
         // :path and :scheme are not allowed, :authority is optional
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "CONNECT"),
                 new KeyValuePair<string, string>(headerName, value) };
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
@@ -451,9 +450,9 @@ public class Http2StreamTests : Http2TestBase
     {
         await InitializeConnectionAsync(_noopApplication);
 
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, scheme) }; // Not the expected "http"
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR,
@@ -472,13 +471,13 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(context =>
         {
             Assert.Equal(scheme, context.Request.Scheme);
-            Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Scheme));
+            Assert.False(context.Request.Headers.ContainsKey(InternalHeaderNames.Scheme));
             return Task.CompletedTask;
         });
 
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, scheme) }; // Not the expected "http"
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
@@ -492,7 +491,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -505,9 +504,9 @@ public class Http2StreamTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication);
 
-        var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, scheme) }; // Not the expected "http"
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, scheme) }; // Not the expected "http"
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR,
@@ -521,9 +520,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(_noopApplication);
 
@@ -540,7 +539,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
@@ -549,10 +548,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, ""),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, ""),
             };
         await InitializeConnectionAsync(_noopApplication);
 
@@ -569,7 +568,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
@@ -578,9 +577,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
         await InitializeConnectionAsync(_echoHost);
@@ -598,7 +597,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
     }
@@ -608,10 +607,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, ""),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, ""),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
         await InitializeConnectionAsync(_echoHost);
@@ -629,7 +628,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
     }
@@ -639,10 +638,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "def"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "def"),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
         await InitializeConnectionAsync(_echoHost);
@@ -660,7 +659,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
     }
@@ -670,10 +669,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "def"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "def"),
                 new KeyValuePair<string, string>("Host", "a=bc"),
             };
         await InitializeConnectionAsync(_echoHost);
@@ -691,7 +690,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
     }
@@ -701,10 +700,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "local=host:80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "local=host:80"),
             };
         await InitializeConnectionAsync(_noopApplication);
 
@@ -721,10 +720,10 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "d=ef"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "d=ef"),
                 new KeyValuePair<string, string>("Host", "abc"),
             };
         await InitializeConnectionAsync(_echoHost);
@@ -742,9 +741,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("Host", "host1"),
                 new KeyValuePair<string, string>("Host", "host2"),
             };
@@ -766,10 +765,10 @@ public class Http2StreamTests : Http2TestBase
         // https://github.com/aspnet/KestrelHttpServer/issues/2872
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET" + new string('a', 1024 * 3)),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/Hello/How/Are/You/" + new string('a', 1024 * 3)),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost" + new string('a', 1024 * 3) + ":80"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET" + new string('a', 1024 * 3)),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/Hello/How/Are/You/" + new string('a', 1024 * 3)),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost" + new string('a', 1024 * 3) + ":80"),
             };
         await InitializeConnectionAsync(_noopApplication);
 
@@ -785,9 +784,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -813,7 +812,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -831,9 +830,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("a", _4kHeaderValue),
                 new KeyValuePair<string, string>("b", _4kHeaderValue),
                 new KeyValuePair<string, string>("c", _4kHeaderValue),
@@ -854,7 +853,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -863,9 +862,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -897,7 +896,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -906,9 +905,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -940,7 +939,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -950,9 +949,9 @@ public class Http2StreamTests : Http2TestBase
         var tcs = new TaskCompletionSource();
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -993,7 +992,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1002,9 +1001,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
 
@@ -1031,9 +1030,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("a", _4kHeaderValue),
                 new KeyValuePair<string, string>("b", _4kHeaderValue),
                 new KeyValuePair<string, string>("c", _4kHeaderValue),
@@ -1056,9 +1055,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -1091,9 +1090,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -1126,9 +1125,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -1162,9 +1161,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -1212,9 +1211,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>("a", _4kHeaderValue),
                 new KeyValuePair<string, string>("b", _4kHeaderValue),
                 new KeyValuePair<string, string>("c", _4kHeaderValue),
@@ -1235,7 +1234,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1244,9 +1243,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1273,7 +1272,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1282,9 +1281,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1312,7 +1311,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1321,9 +1320,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(context =>
         {
@@ -1346,7 +1345,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("500", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1355,9 +1354,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1381,7 +1380,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -1389,9 +1388,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1416,7 +1415,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1427,9 +1426,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1456,7 +1455,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -1465,9 +1464,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1492,7 +1491,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -1502,9 +1501,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1540,7 +1539,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -1550,9 +1549,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1580,7 +1579,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -1589,9 +1588,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1617,7 +1616,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1626,9 +1625,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1659,7 +1658,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -1669,9 +1668,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1695,7 +1694,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1704,9 +1703,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1729,7 +1728,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -1737,9 +1736,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(context =>
         {
@@ -1766,7 +1765,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1776,9 +1775,9 @@ public class Http2StreamTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -1804,7 +1803,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1817,9 +1816,9 @@ public class Http2StreamTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
         await InitializeConnectionAsync(async context =>
@@ -1851,7 +1850,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("413", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("413", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
 
         Assert.NotNull(exception);
@@ -1863,9 +1862,9 @@ public class Http2StreamTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1890,7 +1889,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -1903,9 +1902,9 @@ public class Http2StreamTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -1938,7 +1937,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("413", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("413", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
 
         Assert.NotNull(exception);
@@ -1955,9 +1954,9 @@ public class Http2StreamTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 20;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         if (includeContentLength)
         {
@@ -2001,7 +2000,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("413", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("413", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
 
         Assert.NotNull(exception);
@@ -2015,9 +2014,9 @@ public class Http2StreamTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         if (includeContentLength)
         {
@@ -2052,7 +2051,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -2091,7 +2090,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -2132,7 +2131,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("Custom 你好 Type", _decodedHeaders[HeaderNames.ContentType]);
         Assert.Equal("Custom 你好 Value", _decodedHeaders["CustomName"]);
     }
@@ -2182,7 +2181,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
 
         _decodedHeaders.Clear();
@@ -2215,7 +2214,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("500", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -2303,7 +2302,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         _decodedHeaders.Clear();
 
@@ -2358,7 +2357,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         _decodedHeaders.Clear();
 
@@ -2416,7 +2415,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -2459,7 +2458,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         _decodedHeaders.Clear();
 
@@ -2500,7 +2499,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
     }
@@ -2548,9 +2547,9 @@ public class Http2StreamTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -2600,7 +2599,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         _decodedHeaders.Clear();
         _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
@@ -2614,9 +2613,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -2652,7 +2651,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         _decodedHeaders.Clear();
         _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
@@ -2666,9 +2665,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(context =>
         {
@@ -2690,7 +2689,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("500", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -2699,9 +2698,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -2728,7 +2727,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -3125,9 +3124,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -3149,7 +3148,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -3160,9 +3159,9 @@ public class Http2StreamTests : Http2TestBase
         var writeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -3198,7 +3197,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -3206,9 +3205,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
          {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(httpContext =>
         {
@@ -3242,7 +3241,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -3252,9 +3251,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
          {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3288,7 +3287,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -3298,9 +3297,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
          {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3341,7 +3340,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal(Encoding.ASCII.GetBytes(new string('a', 4102)), dataFrame.PayloadSequence.ToArray());
     }
 
@@ -3350,9 +3349,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3394,7 +3393,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal(Encoding.ASCII.GetBytes(new string('a', 4102)), dataFrame.PayloadSequence.ToArray());
     }
 
@@ -3403,9 +3402,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3440,7 +3439,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
 
@@ -3449,9 +3448,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3490,7 +3489,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
 
@@ -3499,9 +3498,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3535,7 +3534,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
 
@@ -3544,9 +3543,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
 {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3578,7 +3577,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -3586,9 +3585,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3616,7 +3615,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -3626,9 +3625,9 @@ public class Http2StreamTests : Http2TestBase
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3661,9 +3660,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3703,9 +3702,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3759,7 +3758,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -3767,9 +3766,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3809,7 +3808,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("12", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -3818,9 +3817,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(httpContext =>
         {
@@ -3855,7 +3854,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("12", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -3864,9 +3863,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3895,7 +3894,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("12", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -3904,9 +3903,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -3959,7 +3958,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("54", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -3968,9 +3967,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -3991,7 +3990,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 
     [Fact]
@@ -4000,9 +3999,9 @@ public class Http2StreamTests : Http2TestBase
         InvalidOperationException writeEx = null;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4024,7 +4023,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.NotNull(writeEx);
     }
 
@@ -4034,9 +4033,9 @@ public class Http2StreamTests : Http2TestBase
         var expectedException = new Exception();
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4057,7 +4056,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("500", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Id == 13 && w.LogLevel == LogLevel.Error
                    && w.Exception is ConnectionAbortedException && w.Exception.InnerException == expectedException);
@@ -4071,9 +4070,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4112,7 +4111,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
@@ -4124,9 +4123,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4172,7 +4171,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
 
         _decodedHeaders.Clear();
@@ -4190,9 +4189,9 @@ public class Http2StreamTests : Http2TestBase
         var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4233,7 +4232,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("500", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -4245,9 +4244,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4298,7 +4297,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
     }
@@ -4311,9 +4310,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4355,7 +4354,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
@@ -4367,9 +4366,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4422,7 +4421,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
     }
@@ -4433,9 +4432,9 @@ public class Http2StreamTests : Http2TestBase
         var tcs = new TaskCompletionSource();
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4467,7 +4466,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
 
         await tcs.Task.DefaultTimeout();
@@ -4481,9 +4480,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4540,7 +4539,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
 
@@ -4560,9 +4559,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4614,7 +4613,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
 
@@ -4634,9 +4633,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4690,7 +4689,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("25", _decodedHeaders[HeaderNames.ContentLength]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
@@ -4704,9 +4703,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
 
         await InitializeConnectionAsync(async context =>
@@ -4761,7 +4760,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("25", _decodedHeaders[HeaderNames.ContentLength]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
@@ -4775,10 +4774,10 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(async context =>
         {
             try
@@ -4823,7 +4822,8 @@ public class Http2StreamTests : Http2TestBase
             withLength: 25,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
-        await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null);
+        // Stream should return an INTERNAL_ERROR. If there is an unexpected exception from app TCS instead, then throw it here to avoid timeout waiting for the stream error.
+        await Task.WhenAny(WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null), appTcs.Task).Unwrap();
 
         clientTcs.SetResult();
         await appTcs.Task;
@@ -4834,7 +4834,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
 
@@ -4854,9 +4854,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -4918,7 +4918,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
 
@@ -4938,9 +4938,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -5000,7 +5000,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
 
@@ -5020,9 +5020,9 @@ public class Http2StreamTests : Http2TestBase
         var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async context =>
         {
@@ -5087,7 +5087,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
 
@@ -5134,7 +5134,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
@@ -5207,7 +5207,7 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
 
@@ -5222,9 +5222,9 @@ public class Http2StreamTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(async httpContext =>
         {
@@ -5259,6 +5259,6 @@ public class Http2StreamTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
 }

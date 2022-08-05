@@ -72,15 +72,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 #endif
-#if (RequiresHttps)
+#if (HasHttpsProfile)
 
 app.UseHttpsRedirection();
 #endif
-
-#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-app.UseAuthentication();
-#endif
-app.UseAuthorization();
 
 app.MapControllers();
 

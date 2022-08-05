@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -13,6 +14,7 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 
+[ExportCodeFixProvider(LanguageNames.CSharp), Shared]
 public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DiagnosticDescriptors.DetectMismatchedParameterOptionality.Id);
@@ -35,7 +37,6 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
 
     private static async Task<Document> FixMismatchedParameterOptionality(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
     {
-        DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken);
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
         if (root == null)
@@ -47,9 +48,9 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         if (param is ParameterSyntax { Type: { } parameterType } parameterSyntax)
         {
             var newParam = parameterSyntax.WithType(SyntaxFactory.NullableType(parameterType));
-            editor.ReplaceNode(parameterSyntax, newParam);
+            return document.WithSyntaxRoot(root.ReplaceNode(parameterSyntax, newParam));
         }
 
-        return editor.GetChangedDocument();
+        return document;
     }
 }
