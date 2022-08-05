@@ -23,13 +23,13 @@ var helloName = "helloPolicy";
 builder.Services.AddRateLimiter(options =>
 {
     // Define endpoint limiters and a global limiter.
-    options.AddTokenBucketLimiter(todoName, new TokenBucketRateLimiterOptions
+    options.AddTokenBucketLimiter(todoName, options =>
     {
-        TokenLimit = 1,
-        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-        QueueLimit = 1,
-        ReplenishmentPeriod = TimeSpan.FromSeconds(10),
-        TokensPerPeriod = 1
+        options.TokenLimit = 1;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 1;
+        options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+        options.TokensPerPeriod = 1;
     })
     .AddPolicy<string>(completeName, new SampleRateLimiterPolicy(NullLogger<SampleRateLimiterPolicy>.Instance))
     .AddPolicy<string, SampleRateLimiterPolicy>(helloName);
