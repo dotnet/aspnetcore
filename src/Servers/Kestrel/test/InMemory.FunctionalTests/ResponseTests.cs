@@ -602,16 +602,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             };
 
         // HTTP methods to test
-        var methods = new string[] {
-                HttpMethods.Connect,
-                HttpMethods.Delete,
-                HttpMethods.Get,
-                HttpMethods.Head,
-                HttpMethods.Options,
-                HttpMethods.Patch,
-                HttpMethods.Post,
-                HttpMethods.Put,
-                HttpMethods.Trace
+        var methods = new HttpMethod[] {
+                HttpMethod.Connect,
+                HttpMethod.Delete,
+                HttpMethod.Get,
+                HttpMethod.Head,
+                HttpMethod.Options,
+                HttpMethod.Patch,
+                HttpMethod.Post,
+                HttpMethod.Put,
+                HttpMethod.Trace
             };
 
         foreach (var statusCode in statusCodes)
@@ -625,41 +625,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
     [Theory]
     [MemberData(nameof(Get1xxAnd204MethodCombinations))]
-    public async Task AttemptingToWriteContentLengthFailsFor1xxAnd204Responses(int statusCode, string method)
-    {
-        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        await using (var server = new TestServer(async httpContext =>
-        {
-            httpContext.Response.StatusCode = statusCode;
-            httpContext.Response.Headers.ContentLength = 0;
-
-            try
-            {
-                await httpContext.Response.StartAsync();
-            }
-            catch (Exception ex)
-            {
-                responseWriteTcs.TrySetException(ex);
-                throw;
-            }
-
-            responseWriteTcs.TrySetResult();
-        }, new TestServiceContext(LoggerFactory)))
-        {
-            using (var connection = server.CreateConnection())
-            {
-                await connection.Send(
-                    $"{method} / HTTP/1.1",
-                    "Host:",
-                    "",
-                    "");
-
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
-                Assert.Equal(CoreStrings.FormatHeaderNotAllowedOnResponse("Content-Length", statusCode), ex.Message);
-            }
-        }
-    }
+    public async Task AttemptingToWriteContentLengthFailsFor1xxAnd204Responses(int statusCode, HttpMethod method)
+        => await AttemptingToWriteContentLengthFails(statusCode, method, contentLength: 0).ConfigureAwait(true);
 
     [Theory]
     [InlineData(StatusCodes.Status200OK)]
@@ -673,13 +640,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [InlineData(StatusCodes.Status208AlreadyReported)]
     [InlineData(StatusCodes.Status226IMUsed)]
     public async Task AttemptingToWriteContentLengthFailsFor2xxResponsesOnConnect(int statusCode)
+        => await AttemptingToWriteContentLengthFails(statusCode, HttpMethod.Connect, contentLength: 0).ConfigureAwait(true);
+
+    private async Task AttemptingToWriteContentLengthFails(int statusCode, HttpMethod method, long contentLength)
     {
         var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
         {
             httpContext.Response.StatusCode = statusCode;
-            httpContext.Response.Headers.ContentLength = 0;
+            httpContext.Response.Headers.ContentLength = contentLength;
 
             try
             {
@@ -697,7 +667,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             using (var connection = server.CreateConnection())
             {
                 await connection.Send(
-                    "CONNECT / HTTP/1.1",
+                    $"{HttpUtilities.MethodToString(method)} / HTTP/1.1",
                     "Host:",
                     "",
                     "");
