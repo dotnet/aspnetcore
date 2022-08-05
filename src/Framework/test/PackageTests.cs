@@ -24,7 +24,7 @@ public class PackageTests
     {
         // In official builds, only run this test on Helix. The test will work locally so long as you're building w/
         // shipping versions i.e., include `/p:DotNetUseShippingVersions=true` on a full build command.
-        if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnHelixAttribute.OnHelix())
+        if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnCIAttribute.OnCI())
         {
             return;
         }
