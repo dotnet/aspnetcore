@@ -110,9 +110,6 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         {
             InitializeHub(hub, connection);
 
-            // OnDisonnectedAsync is being called, we don't want to allow client results to be used (ISingleClientProxy.InvokeAsync)
-            connection.HubCallerClients.InvokeAllowed = false;
-
             if (_onDisconnectedMiddleware != null)
             {
                 var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);

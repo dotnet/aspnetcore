@@ -10,7 +10,7 @@ internal sealed class HubCallerClients : IHubCallerClients
     private readonly string[] _currentConnectionId;
     private readonly bool _parallelEnabled;
 
-    // Client results don't work in OnConnectedAsync and OnDisconnectedAsync
+    // Client results don't work in OnConnectedAsync
     // This property is set by the hub dispatcher when those methods are being called
     // so we can prevent users from making blocking client calls by returning a custom ISingleClientProxy instance
     internal bool InvokeAllowed { get; set; }
@@ -129,7 +129,7 @@ internal sealed class HubCallerClients : IHubCallerClients
 
         public Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default)
         {
-            throw new InvalidOperationException("Client results inside OnConnectedAsync or OnDisconnectedAsync Hub methods are not allowed.");
+            throw new InvalidOperationException("Client results inside OnConnectedAsync Hub methods are not allowed.");
         }
 
         public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
