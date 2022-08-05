@@ -191,8 +191,6 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         endpointModel.Metadata.Add(authorize);
         convention(endpointModel);
 
-        Assert.Single(endpointModel.Metadata.Where(t => t is AuthorizationPolicyCache));
-
         // Confirm that we don't add another authorize if one already exists
         Assert.Equal(3, endpointModel.Metadata.Count);
         Assert.Equal(authorize, endpointModel.Metadata[0]);
@@ -219,7 +217,6 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         endpointModel.Metadata.Add(authorize);
         convention(endpointModel);
-
 
         // Confirm that we don't add another authorize if one already exists
         Assert.Equal(3, endpointModel.Metadata.Count);
