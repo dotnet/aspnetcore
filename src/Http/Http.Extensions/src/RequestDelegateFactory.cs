@@ -1280,8 +1280,19 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromProperties(ParameterInfo parameter, FactoryContext factoryContext)
     {
+        var parameterType = parameter.ParameterType;
+        var isNullable = Nullable.GetUnderlyingType(parameterType) != null ||
+            factoryContext.NullabilityContext.Create(parameter)?.ReadState == NullabilityState.Nullable;
+
+        if (isNullable)
+        {
+            throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.");
+        }
+
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
+        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameterType);
+
+        Expression initExpression;
 
         if (constructor is not null && parameters is { Length: > 0 })
         {
@@ -1297,10 +1308,7 @@ public static partial class RequestDelegateFactory
                 factoryContext.Parameters.Add(parameterInfo);
             }
 
-            factoryContext.ParamCheckExpressions.Add(
-                Expression.Assign(
-                    argumentExpression,
-                    Expression.New(constructor, constructorArguments)));
+            initExpression = Expression.New(constructor, constructorArguments);
         }
         else
         {
@@ -1310,7 +1318,7 @@ public static partial class RequestDelegateFactory
             //      arg_local.Property[n] = expression[n],
             //  }
 
-            var properties = parameter.ParameterType.GetProperties();
+            var properties = parameterType.GetProperties();
             var bindings = new List<MemberBinding>(properties.Length);
 
             for (var i = 0; i < properties.Length; i++)
@@ -1325,14 +1333,14 @@ public static partial class RequestDelegateFactory
             }
 
             var newExpression = constructor is null ?
-                Expression.New(parameter.ParameterType) :
+                Expression.New(parameterType) :
                 Expression.New(constructor);
 
-            factoryContext.ParamCheckExpressions.Add(
-                Expression.Assign(
-                    argumentExpression,
-                    Expression.MemberInit(newExpression, bindings)));
+            initExpression = Expression.MemberInit(newExpression, bindings);
         }
+
+        factoryContext.ParamCheckExpressions.Add(
+            Expression.Assign(argumentExpression, initExpression));
 
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.PropertyAsParameter);
         factoryContext.ExtraLocals.Add(argumentExpression);

@@ -2,6 +2,7 @@
 # See https://help.github.com/articles/about-code-owners/
 
 *                                                                                 @Pilchie
+/**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review
 /global.json                                                                      @dotnet/aspnet-build @dougbu @wtgodbe
 /.azure/                                                                          @dotnet/aspnet-build @dougbu @wtgodbe
 /.azuredevops/                                                                    @dotnet/aspnet-build @dougbu @wtgodbe

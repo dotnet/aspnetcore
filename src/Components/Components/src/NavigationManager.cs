@@ -303,13 +303,25 @@ public abstract class NavigationManager
         _locationChangingCts = cts;
 
         var cancellationToken = cts.Token;
-        var context = new LocationChangingContext(uri, state, isNavigationIntercepted, cancellationToken);
+        var context = new LocationChangingContext
+        {
+            TargetLocation = uri,
+            HistoryEntryState = state,
+            IsNavigationIntercepted = isNavigationIntercepted,
+            CancellationToken = cancellationToken,
+        };
 
         try
         {
             if (handlerCount == 1)
             {
                 var handlerTask = InvokeLocationChangingHandlerAsync(_locationChangingHandlers[0], context);
+
+                if (handlerTask.IsFaulted)
+                {
+                    await handlerTask;
+                    return false; // Unreachable because the previous line will throw.
+                }
 
                 if (context.DidPreventNavigation)
                 {
@@ -398,17 +410,29 @@ public abstract class NavigationManager
         }
     }
 
+    private async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+    {
+        try
+        {
+            await handler(context);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        catch (Exception ex)
+        {
+            HandleLocationChangingHandlerException(ex, context);
+        }
+    }
+
     /// <summary>
-    /// Invokes the provided <paramref name="handler"/>, passing it the given <paramref name="context"/>.
-    /// This method can be overridden to analyze the state of the handler task even after
-    /// <see cref="NotifyLocationChangingAsync(string, string?, bool)"/> completes. For example, this can be useful for
-    /// processing exceptions thrown from handlers that continue running after the navigation ends.
+    /// Handles exceptions thrown in location changing handlers.
     /// </summary>
-    /// <param name="handler">The handler to invoke.</param>
-    /// <param name="context">The context to pass to the handler.</param>
-    /// <returns></returns>
-    protected virtual ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
-        => handler(context);
+    /// <param name="ex">The exception to handle.</param>
+    /// <param name="context">The context passed to the handler.</param>
+    protected virtual void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
+        => throw new InvalidOperationException($"To support navigation locks, {GetType().Name} must override {nameof(HandleLocationChangingHandlerException)}");
 
     /// <summary>
     /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
@@ -420,10 +444,11 @@ public abstract class NavigationManager
         => throw new NotSupportedException($"To support navigation locks, {GetType().Name} must override {nameof(SetNavigationLockState)}");
 
     /// <summary>
-    /// Adds a handler to process incoming navigation events.
+    /// Registers a handler to process incoming navigation events.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
-    public void AddLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
+    /// <returns>An <see cref="IDisposable"/> that can be disposed to unregister the location changing handler.</returns>
+    public IDisposable RegisterLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
 
@@ -435,13 +460,11 @@ public abstract class NavigationManager
         {
             SetNavigationLockState(true);
         }
+
+        return new LocationChangingRegistration(locationChangingHandler, this);
     }
 
-    /// <summary>
-    /// Removes a previously-added location changing handler.
-    /// </summary>
-    /// <param name="locationChangingHandler">The handler to remove.</param>
-    public void RemoveLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
+    private void RemoveLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
 
@@ -503,6 +526,23 @@ public abstract class NavigationManager
         {
             var message = $"The URI '{uri}' is not contained by the base URI '{baseUri}'.";
             throw new ArgumentException(message);
+        }
+    }
+
+    private sealed class LocationChangingRegistration : IDisposable
+    {
+        private readonly Func<LocationChangingContext, ValueTask> _handler;
+        private readonly NavigationManager _navigationManager;
+
+        public LocationChangingRegistration(Func<LocationChangingContext, ValueTask> handler, NavigationManager navigationManager)
+        {
+            _handler = handler;
+            _navigationManager = navigationManager;
+        }
+
+        public void Dispose()
+        {
+            _navigationManager.RemoveLocationChangingHandler(_handler);
         }
     }
 }

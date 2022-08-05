@@ -485,32 +485,38 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
 
     public override void Abort(ConnectionAbortedException abortReason)
     {
-        // This abort is called twice, make sure that doesn't happen.
-        // Don't call _stream.Shutdown and _stream.Abort at the same time.
-        if (_serverAborted)
-        {
-            return;
-        }
+        // Make local copy of reference to avoid possibility of race with stream being set to null in dispose.
+        var stream = _stream;
 
-        _serverAborted = true;
-        _shutdownReason = abortReason;
+        lock (_shutdownLock)
+        {
+            // Abort called after dispose. Stream is set to null in dispose.
+            if (stream == null)
+            {
+                return;
+            }
+
+            // This abort is called twice, make sure that doesn't happen.
+            // Don't call _stream.Shutdown and _stream.Abort at the same time.
+            if (_serverAborted)
+            {
+                return;
+            }
+
+            _serverAborted = true;
+            _shutdownReason = abortReason;
+        }
 
         var resolvedErrorCode = _error ?? 0;
         QuicLog.StreamAbort(_log, this, resolvedErrorCode, abortReason.Message);
 
-        lock (_shutdownLock)
+        if (stream.CanRead)
         {
-            if (_stream != null)
-            {
-                if (_stream.CanRead)
-                {
-                    _stream.Abort(QuicAbortDirection.Read, resolvedErrorCode);
-                }
-                if (_stream.CanWrite)
-                {
-                    _stream.Abort(QuicAbortDirection.Write, resolvedErrorCode);
-                }
-            }
+            stream.Abort(QuicAbortDirection.Read, resolvedErrorCode);
+        }
+        if (stream.CanWrite)
+        {
+            stream.Abort(QuicAbortDirection.Write, resolvedErrorCode);
         }
 
         // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
@@ -551,6 +557,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
 
         await _processingTask;
 
+        await _stream.DisposeAsync();
+
         lock (_shutdownLock)
         {
             // CanReuse must not be calculated while draining stream. It is possible for
@@ -559,7 +567,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
             //
             // Be conservative about what can be pooled.
             // Only pool bidirectional streams whose pipes have completed successfully and haven't been aborted.
-            CanReuse = _stream.CanRead && _stream.CanWrite
+            CanReuse = CanRead && CanWrite
                 && _transportPipeReader.IsCompletedSuccessfully
                 && _transportPipeWriter.IsCompletedSuccessfully
                 && !_clientAbort
@@ -572,7 +580,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 DisposeCore();
             }
 
-            _stream.Dispose();
+            // QuicStream can't be reused. Don't hang onto it when QuicStreamContext it potentially cached.
             _stream = null!;
         }
     }
