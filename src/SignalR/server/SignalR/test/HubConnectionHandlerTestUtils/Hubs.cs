@@ -537,6 +537,8 @@ public interface ITest
     Task Broadcast(string message);
 
     Task<int> GetClientResult(int value);
+
+    Task<int> GetClientResultWithCancellation(int value, CancellationToken cancellationToken);
 }
 
 public record ClientResults(int ClientResult, int CallerResult);

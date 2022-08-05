@@ -242,7 +242,7 @@ public partial class HubConnectionHandlerTests
             }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
 
-            using var client = new TestClient(invocationBinder: new GetClientResultThreeWaysInvocationBinder());
+            using var client = new TestClient(invocationBinder: new GetClientResultTwoWaysInvocationBinder());
 
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
@@ -266,7 +266,97 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    private class GetClientResultThreeWaysInvocationBinder : IInvocationBinder
+    [Fact]
+    public async Task CanCancelClientResultsWithIHubContextT()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
+
+            using var client = new TestClient();
+            var connectionId = client.Connection.ConnectionId;
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            // Wait for a connection, or for the endpoint to fail.
+            await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+            var context = serviceProvider.GetRequiredService<IHubContext<HubT, ITest>>();
+
+            var cts = new CancellationTokenSource();
+            var resultTask = context.Clients.Client(connectionId).GetClientResultWithCancellation(1, cts.Token);
+
+            var message = await client.ReadAsync().DefaultTimeout();
+            var invocation = Assert.IsType<InvocationMessage>(message);
+
+            Assert.Single(invocation.Arguments);
+            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal("GetClientResultWithCancellation", invocation.Target);
+
+            cts.Cancel();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            Assert.Equal("Invocation canceled by the server.", ex.Message);
+
+            // Sending result after the server is no longer expecting one results in a log and no-ops
+            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+
+            // Send another message from the client and get a result back to make sure the connection is still active.
+            // Regression test for when sending a client result after it was canceled would close the connection
+            var completion = await client.InvokeAsync("Echo", "test").DefaultTimeout();
+            Assert.Equal("test", completion.Result);
+
+            Assert.Contains(TestSink.Writes, c => c.EventId.Name == "UnexpectedCompletion");
+        }
+    }
+
+    [Fact]
+    public async Task CanCancelClientResultsWithIHubContext()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using var client = new TestClient();
+            var connectionId = client.Connection.ConnectionId;
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            // Wait for a connection, or for the endpoint to fail.
+            await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+            var context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+
+            var cts = new CancellationTokenSource();
+            var resultTask = context.Clients.Client(connectionId).InvokeAsync<int>(nameof(MethodHub.GetClientResult), 1, cts.Token);
+
+            var message = await client.ReadAsync().DefaultTimeout();
+            var invocation = Assert.IsType<InvocationMessage>(message);
+
+            Assert.Single(invocation.Arguments);
+            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal("GetClientResult", invocation.Target);
+
+            cts.Cancel();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            Assert.Equal("Invocation canceled by the server.", ex.Message);
+
+            // Sending result after the server is no longer expecting one results in a log and no-ops
+            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+
+            // Send another message from the client and get a result back to make sure the connection is still active.
+            // Regression test for when sending a client result after it was canceled would close the connection
+            var completion = await client.InvokeAsync("Echo", "test").DefaultTimeout();
+            Assert.Equal("test", completion.Result);
+
+            Assert.Contains(TestSink.Writes, c => c.EventId.Name == "UnexpectedCompletion");
+        }
+    }
+
+    private class GetClientResultTwoWaysInvocationBinder : IInvocationBinder
     {
         public IReadOnlyList<Type> GetParameterTypes(string methodName) => new[] { typeof(int) };
         public Type GetReturnType(string invocationId) => typeof(ClientResults);

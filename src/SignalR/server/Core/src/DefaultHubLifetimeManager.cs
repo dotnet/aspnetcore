@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// </summary>
 public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where THub : Hub
 {
+    private static readonly CancellationTokenSourcePool _cancellationTokenSourcePool = new();
     private readonly HubConnectionStore _connections = new HubConnectionStore();
     private readonly HubGroupList _groups = new HubGroupList();
     private readonly ILogger _logger;
@@ -341,7 +343,18 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
-        using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
+
+        CancellationTokenSource? cts = null;
+        // Add a default timeout if one isn't provided
+        if (!cancellationToken.CanBeCanceled)
+        {
+            cts = _cancellationTokenSourcePool.Rent();
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
+            cancellationToken = cts.Token;
+        }
+
+        using var _ = cts;
+        using var __ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection.ConnectionAborted, out var linkedToken);
         var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);
 

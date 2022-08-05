@@ -27,7 +27,9 @@ internal sealed class HubConnectionBinder<THub> : IInvocationBinder where THub :
         {
             return type;
         }
-        throw new InvalidOperationException($"Unknown invocation ID '{invocationId}'.");
+        // If the id isn't found then it's possible the server canceled the request for a result but the client still sent the result.
+        // Return typeof(object) so the HubProtocol can still proceed (without throwing and closing the connection) and the hub dispatcher will log that the completion message is not expected.
+        return typeof(object);
     }
 
     public Type GetStreamItemType(string streamId)
