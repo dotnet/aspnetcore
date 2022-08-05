@@ -156,11 +156,10 @@ public class Http3StreamTests : Http3TestBase
 
         var responseHeaders = await requestStream.ExpectHeadersAsync();
 
-        Assert.Equal(4, responseHeaders.Count);
+        Assert.Equal(3, responseHeaders.Count);
         Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
         Assert.Equal("CONNECT", responseHeaders["Method"]);
-        Assert.Equal("0", responseHeaders["content-length"]);
     }
 
     [Fact]
