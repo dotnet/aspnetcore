@@ -2671,7 +2671,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         await ExpectAsync(Http2FrameType.HEADERS,
-            withLength: 36,
+            withLength: 32,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
@@ -4574,7 +4574,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.END_HEADERS);
 
         await ExpectAsync(Http2FrameType.HEADERS,
-            withLength: 36,
+            withLength: 32,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
