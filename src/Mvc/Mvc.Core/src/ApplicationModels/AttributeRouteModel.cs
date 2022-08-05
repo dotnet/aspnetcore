@@ -255,7 +255,7 @@ public class AttributeRouteModel
     /// <param name="template">The template.</param>
     /// <param name="values">The token values to use.</param>
     /// <returns>A new string with the replaced values.</returns>
-    public static string ReplaceTokens(string template, IDictionary<string, string?> values)
+    public static string ReplaceTokens([StringSyntax("Route")] string template, IDictionary<string, string?> values)
     {
         return ReplaceTokens(template, values, routeTokenTransformer: null);
     }

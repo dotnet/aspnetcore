@@ -21,6 +21,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
