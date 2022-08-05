@@ -319,12 +319,12 @@ internal class TestOutputCache : IOutputCacheStore
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
 
-    public ValueTask EvictByTagAsync(string tag, CancellationToken token)
+    public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<byte[]?> GetAsync(string? key, CancellationToken token)
+    public ValueTask<byte[]?> GetAsync(string? key, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -339,7 +339,7 @@ internal class TestOutputCache : IOutputCacheStore
         }
     }
 
-    public ValueTask SetAsync(string key, byte[] entry, string[]? tags, TimeSpan validFor, CancellationToken token)
+    public ValueTask SetAsync(string key, byte[] entry, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
         SetCount++;
         _storage[key] = entry;
