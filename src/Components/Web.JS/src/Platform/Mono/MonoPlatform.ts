@@ -12,13 +12,13 @@ import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType, AssetEntry, ResourceRequest } from 'dotnet';
+import { DotnetPublicAPI, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, AssetEntry, ResourceRequest } from 'dotnet';
+import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
-export let IMPORTS: any = undefined as any;
 
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -144,13 +144,13 @@ export const monoPlatform: Platform = {
     return ((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
 
-  beginHeapLock: function () {
+  beginHeapLock: function() {
     assertHeapIsNotLocked();
     currentHeapLock = new MonoHeapLock();
     return currentHeapLock;
   },
 
-  invokeWhenHeapUnlocked: function (callback) {
+  invokeWhenHeapUnlocked: function(callback) {
     // This is somewhat like a sync context. If we're not locked, just pass through the call directly.
     if (!currentHeapLock) {
       callback();
@@ -245,8 +245,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     console.error(line);
     showErrorNotification();
   };
-  const existingPreRun = moduleConfig.preRun || [];
-  const existingPostRun = moduleConfig.postRun || [];
+  const existingPreRun = moduleConfig.preRun || [] as any;
+  const existingPostRun = moduleConfig.postRun || [] as any;
   (moduleConfig as any).preloadPlugins = [];
 
   let resourcesLoaded = 0;
@@ -326,11 +326,10 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
-    const { MONO: mono, BINDING: binding, Module: module, IMPORTS: imports } = api;
+    const { MONO: mono, BINDING: binding, Module: module, setModuleImports } = api;
     Module = module;
     BINDING = binding;
     MONO = mono;
-    IMPORTS = imports;
 
     const onRuntimeInitialized = () => {
       if (!icuDataResource) {
@@ -497,8 +496,10 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
         // this would always throw, but it will initialize runtime interop as side-effect
       }
 
-      // makes Blazor._internal visible to [JSImport]
-      IMPORTS.Blazor = { _internal: Blazor._internal };
+      // makes Blazor._internal visible to [JSImport] as "blazor-internal" module
+      setModuleImports('blazor-internal', {
+        Blazor: { _internal: Blazor._internal },
+      });
 
       attachInteropInvoker();
       runtimeReadyResolve(api);
@@ -531,7 +532,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       ...moduleConfig,
       config: {
         assets,
-        debug_level: hasDebuggingEnabled() ? 1 : 0,
+        debugLevel: hasDebuggingEnabled() ? 1 : 0,
       },
       downloadResource,
       disableDotnet6Compatibility: false,
