@@ -86,6 +86,5 @@ static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExte
 static Microsoft.Extensions.DependencyInjection.OutputCacheServiceCollectionExtensions.AddOutputCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OutputCacheServiceCollectionExtensions.AddOutputCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCacheOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.CacheVaryByRules.get -> Microsoft.AspNetCore.OutputCaching.CacheVaryByRules!
-Microsoft.AspNetCore.OutputCaching.OutputCacheContext.CacheVaryByRules.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.Tags.get -> System.Collections.Generic.HashSet<string!>!
