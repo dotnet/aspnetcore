@@ -43,17 +43,6 @@ public static class CertHelper
         return true;
     }
 
-    //public static (SslStream ClientStream, SslStream ServerStream) GetConnectedSslStreams()
-    //{
-    //    (Stream clientStream, Stream serverStream) = GetConnectedStreams();
-    //    return (new SslStream(clientStream), new SslStream(serverStream));
-    //}
-
-    //public static (Stream ClientStream, Stream ServerStream) GetConnectedStreams()
-    //{
-    //    return ConnectedStreams.CreateBidirectional(initialBufferSize: 4096, maxBufferSize: int.MaxValue);
-    //}
-
     internal static (NetworkStream ClientStream, NetworkStream ServerStream) GetConnectedTcpStreams()
     {
         using (Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -62,7 +51,7 @@ public static class CertHelper
             listener.Listen(1);
 
             var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            clientSocket.Connect(listener.LocalEndPoint);
+            clientSocket.Connect(listener.LocalEndPoint!);
             Socket serverSocket = listener.Accept();
 
             serverSocket.NoDelay = true;
@@ -71,25 +60,6 @@ public static class CertHelper
             return (new NetworkStream(clientSocket, ownsSocket: true), new NetworkStream(serverSocket, ownsSocket: true));
         }
     }
-
-    //internal static async Task<(NetworkStream ClientStream, NetworkStream ServerStream)> GetConnectedTcpStreamsAsync()
-    //{
-    //    using (Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-    //    {
-    //        listener.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-    //        listener.Listen(1);
-
-    //        var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-    //        Task<Socket> acceptTask = listener.AcceptAsync(CancellationToken.None).AsTask();
-    //        await clientSocket.ConnectAsync(listener.LocalEndPoint).WaitAsync(TestConfiguration.PassingTestTimeout);
-    //        Socket serverSocket = await acceptTask.WaitAsync(TestConfiguration.PassingTestTimeout);
-
-    //        serverSocket.NoDelay = true;
-    //        clientSocket.NoDelay = true;
-
-    //        return (new NetworkStream(clientSocket, ownsSocket: true), new NetworkStream(serverSocket, ownsSocket: true));
-    //    }
-    //}
 
     internal static void CleanupCertificates([CallerMemberName] string? testName = null)
     {
