@@ -769,11 +769,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                     so.ClientCertificateRequired = true;
                     so.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                     {
-                        foreach (var c in clientChain)
-                        {
-                            Assert.Contains(c, chain.ChainPolicy.ExtraStore);
-                        }
-
                         Assert.Equal(clientChain.Count - 1, chain.ChainPolicy.ExtraStore.Count);
                         Assert.Contains(clientChain[0], chain.ChainPolicy.ExtraStore);
                         return true;
@@ -789,7 +784,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         {
             using (var connection = server.CreateConnection())
             {
-                var stream = OpenSslStream(connection.Stream);
+                var stream = OpenSslStreamWithCert(connection.Stream, clientCertificate);
                 await stream.AuthenticateAsClientAsync("localhost");
                 await AssertConnectionResult(stream, true);
             }
