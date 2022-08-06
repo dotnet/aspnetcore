@@ -252,26 +252,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    public async Task UsesProvidedServerCertificateAndChain()
-    {
-        var testCert = TestResources.GetTestCertificateWithKey("acert.crt", "acert.key");
-        void ConfigureListenOptions(ListenOptions listenOptions)
-        {
-            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = testCert, ServerCertificateChain = _testChain });
-        };
-
-        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
-        {
-            using (var connection = server.CreateConnection())
-            {
-                var stream = OpenSslStream(connection.Stream);
-                await stream.AuthenticateAsClientAsync("localhost");
-                Assert.True(stream.RemoteCertificate.Equals(testCert));
-            }
-        }
-    }
-
-    [Fact]
     public async Task UsesProvidedServerCertificateSelector()
     {
         var selectorCalled = 0;
