@@ -64,5 +64,6 @@ public class RouteEndpointBuilderTest
 
         Assert.Equal(0, endpointFilterCallCount);
         Assert.Equal(0, invocationFilterCallCount);
+        Assert.Equal(1, invocationCallCount);
     }
 }
