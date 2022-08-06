@@ -668,7 +668,7 @@ public class MiddlewareTests
 
         var response = await server.CreateClient().GetStringAsync("foo");
 
-        Assert.Equal("/foo HTTP: GET from /foos", response);
+        Assert.Equal("HTTP: GET /foo from /foos", response);
     }
 
     [Fact]
