@@ -13,7 +13,7 @@ public interface IHttpMethodMetadata
     /// </summary>
     bool AcceptCorsPreflight
     {
-        get => throw new NotImplementedException();
+        get => false;
         set => throw new NotImplementedException();
     }
 
