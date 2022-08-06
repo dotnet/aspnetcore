@@ -731,6 +731,86 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    public async Task ServerCertificateChainInExtraStore()
+    {
+        var streams = new List<SslStream>();
+        CertHelper.CleanupCertificates();
+        (var clientCertificate, var clientChain) = CertHelper.GenerateCertificates("SslStream_ClinetCertificate_SendsChain", serverCertificate: false);
+
+        using (var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser))
+        {
+            // add chain certificate so we can construct chain since there is no way how to pass intermediates directly.
+            store.Open(OpenFlags.ReadWrite);
+            store.AddRange(clientChain);
+            store.Close();
+        }
+
+        using (var chain = new X509Chain())
+        {
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            chain.ChainPolicy.DisableCertificateDownloads = false;
+            var chainStatus = chain.Build(clientCertificate);
+            // Verify we can construct full chain
+            if (chain.ChainElements.Count < clientChain.Count)
+            {
+                throw new InvalidOperationException($"chain cannot be built {chain.ChainElements.Count}");
+            }
+        }
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                ServerCertificateChain = clientChain,
+                OnAuthenticate = (con, so) =>
+                {
+                    so.ClientCertificateRequired = true;
+                    so.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                    {
+                        foreach (var c in clientChain)
+                        {
+                            Assert.Contains(c, chain.ChainPolicy.ExtraStore);
+                        }
+
+                        Assert.Equal(clientChain.Count - 1, chain.ChainPolicy.ExtraStore.Count);
+                        Assert.Contains(clientChain[0], chain.ChainPolicy.ExtraStore);
+                        return true;
+                    };
+                    so.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+                }
+            });
+        }
+
+        await using (var server = new TestServer(
+            context => context.Response.WriteAsync("hello world"),
+            new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                var stream = OpenSslStream(connection.Stream);
+                await stream.AuthenticateAsClientAsync("localhost");
+                await AssertConnectionResult(stream, true);
+            }
+        }
+
+        CertHelper.CleanupCertificates();
+        clientCertificate.Dispose();
+        var list = (System.Collections.IList)clientChain;
+        for (var i = 0; i < list.Count; i++)
+        {
+            var c = (X509Certificate)list[i];
+            c.Dispose();
+        }
+
+        foreach (var s in streams)
+        {
+            s.Dispose();
+        }
+    }
+
+    [ConditionalFact]
     // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
     // then the connection is aborted.
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]

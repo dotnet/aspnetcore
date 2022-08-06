@@ -45,9 +45,6 @@ namespace Microsoft.AspNetCore.Testing
         private static readonly X509BasicConstraintsExtension s_eeConstraints =
             new X509BasicConstraintsExtension(false, false, 0, false);
 
-        public static readonly byte[] s_ping = "PING"u8.ToArray();
-        public static readonly byte[] s_pong = "PONG"u8.ToArray();
-
         public static bool AllowAnyServerCertificate(object sender, X509Certificate certificate, X509Chain chain)
         {
             return true;
@@ -207,34 +204,6 @@ namespace Microsoft.AspNetCore.Testing
             }
 
             return (endEntity, chain);
-        }
-
-        internal static async Task PingPong(SslStream client, SslStream server, CancellationToken cancellationToken = default)
-        {
-            byte[] buffer = new byte[s_ping.Length];
-            ValueTask t = client.WriteAsync(s_ping, cancellationToken);
-
-            int remains = s_ping.Length;
-            while (remains > 0)
-            {
-                int readLength = await server.ReadAsync(buffer, buffer.Length - remains, remains, cancellationToken);
-                Assert.True(readLength > 0);
-                remains -= readLength;
-            }
-            Assert.Equal(s_ping, buffer);
-            await t;
-
-            t = server.WriteAsync(s_pong, cancellationToken);
-            remains = s_pong.Length;
-            while (remains > 0)
-            {
-                int readLength = await client.ReadAsync(buffer, buffer.Length - remains, remains, cancellationToken);
-                Assert.True(readLength > 0);
-                remains -= readLength;
-            }
-
-            Assert.Equal(s_pong, buffer);
-            await t;
         }
 
         internal static string GetTestSNIName(string testMethodName, params SslProtocols?[] protocols)
