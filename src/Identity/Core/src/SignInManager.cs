@@ -616,7 +616,19 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication.</param>
     /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
     /// for the sign-in attempt.</returns>
-    public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
+    public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor) =>
+      ExternalLoginSignInAsync(loginProvider, providerKey, bypassTwoFactor, new AuthenticationProperties { IsPersistent = isPersistent });
+
+    /// <summary>
+    /// Signs in a user via a previously registered third party login, as an asynchronous operation.
+    /// </summary>
+    /// <param name="loginProvider">The login provider to use.</param>
+    /// <param name="providerKey">The unique provider identifier for the user.</param>
+    /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication.</param>
+    /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
+    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// for the sign-in attempt.</returns>
+    public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool bypassTwoFactor, AuthenticationProperties properties = null)
     {
         var user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
         if (user == null)
@@ -629,7 +641,7 @@ public class SignInManager<TUser> where TUser : class
         {
             return error;
         }
-        return await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
+        return await SignInOrTwoFactorAsync(user, loginProvider, bypassTwoFactor, properties);
     }
 
     /// <summary>
@@ -781,7 +793,19 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="loginProvider">The login provider to use. Default is null</param>
     /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication. Default is false</param>
     /// <returns>Returns a <see cref="SignInResult"/></returns>
-    protected virtual async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string? loginProvider = null, bool bypassTwoFactor = false)
+    protected virtual async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string? loginProvider = null, bool bypassTwoFactor = false) =>
+      SignInOrTwoFactorAsync(user, loginProvider, bypassTwoFactor, new AuthenticationProperties { IsPersistent = isPersistent });
+
+    /// <summary>
+    /// Signs in the specified <paramref name="user"/> if <paramref name="bypassTwoFactor"/> is set to false.
+    /// Otherwise stores the <paramref name="user"/> for use after a two factor check.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="loginProvider">The login provider to use. Default is null</param>
+    /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication. Default is false</param>
+    /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
+    /// <returns>Returns a <see cref="SignInResult"/></returns>
+    protected virtual async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, string? loginProvider = null, bool bypassTwoFactor = false, AuthenticationProperties properties = null)
     {
         if (!bypassTwoFactor && await IsTfaEnabled(user))
         {
@@ -800,11 +824,11 @@ public class SignInManager<TUser> where TUser : class
         }
         if (loginProvider == null)
         {
-            await SignInWithClaimsAsync(user, isPersistent, new Claim[] { new Claim("amr", "pwd") });
+            await SignInWithClaimsAsync(user, properties, new Claim[] { new Claim("amr", "pwd") });
         }
         else
         {
-            await SignInAsync(user, isPersistent, loginProvider);
+            await SignInAsync(user, properties, loginProvider);
         }
         return SignInResult.Success;
     }
