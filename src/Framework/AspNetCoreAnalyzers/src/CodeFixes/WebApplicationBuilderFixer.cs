@@ -75,38 +75,29 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             return document;
         }
 
-        //whole invocation starting from "builder"
+        // builder.Host.ConfigureLogging(builder => builder.AddJsonConsole());
         var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan); 
 
-        if (diagnosticTarget is InvocationExpressionSyntax originalInvocation)
+        if (diagnosticTarget is InvocationExpressionSyntax invocation)
         {
-            // if builder.{Host or WebHost}.{method_name} or builder.{Host or WebHost}
-            // is not of type MemberAccessExpressionSyntax, return original code
-            if (originalInvocation.Expression is not MemberAccessExpressionSyntax hostBasedInvocationMethodExpr
-                || hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax subExpression)
+            // No modification are made if the invocation isn't accessing a method on `builder.Host` or `builder.WebHost`.
+            if (invocation.Expression is not MemberAccessExpressionSyntax hostBasedInvocationMethodExpr
+                || hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax configureMethodOnHostAccessExpr)
             {
                 return document;
             }
 
-            subExpression = subExpression.WithName(identifierMethod);
+            configureMethodOnHostAccessExpr = configureMethodOnHostAccessExpr.WithName(identifierMethod);
             var indentation = hostBasedInvocationMethodExpr.GetLeadingTrivia();
-            // replace Host/WebHost with identifierMethod
-            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression)
+
+            // builder.Host.ConfigureLogging => builder.Logging
+            // builder.WebHost.ConfigureServices => builder.Services
+            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(configureMethodOnHostAccessExpr)
                 .NormalizeWhitespace().WithLeadingTrivia(indentation); 
 
-            if (originalInvocation.ArgumentList.Arguments.Count == 0)
-            {
-                return document;
-            }
+            var initArgumentExpr = invocation.ArgumentList.Arguments.SingleOrDefault().Expression;   // builder => { }
 
-            var initArgumentExpr = originalInvocation.ArgumentList.Arguments.SingleOrDefault().Expression;   // builder => { }
-
-            if (initArgumentExpr == null)
-            {
-                return document;
-            }
-
-            if (initArgumentExpr is not LambdaExpressionSyntax lambdaExpr)
+            if (initArgumentExpr == null || initArgumentExpr is not LambdaExpressionSyntax lambdaExpr || invocation.ArgumentList.Arguments.Count == 0)
             {
                 return document;
             }
@@ -133,12 +124,12 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     var method = bodyExpression.Name; // method_name
 
                     hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method);
-                    originalInvocation = originalInvocation.Update(hostBasedInvocationMethodExpr, argument);
-                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(originalInvocation);
+                    invocation = invocation.Update(hostBasedInvocationMethodExpr, argument);
+                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(invocation);
                 }
             }
-
-            else if (lambdaExpr.ExpressionBody != null)
+            //if lambdaExpr.ExpressionBody != null
+            else
             {
                 if (lambdaExpr.ExpressionBody is not InvocationExpressionSyntax body)
                 {
@@ -155,14 +146,9 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                 var method = bodyExpression.Name;
 
                 hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method);
-                originalInvocation = originalInvocation.WithExpression(hostBasedInvocationMethodExpr).WithArgumentList(arguments);
+                invocation = invocation.WithExpression(hostBasedInvocationMethodExpr).WithArgumentList(arguments);
             }
-            else
-            {
-                return document;
-            }
-
-            return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, originalInvocation));
+            return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, invocation));
         }
         return document;
     }
