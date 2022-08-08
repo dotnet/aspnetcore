@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Editing;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.Fixers;
 
@@ -68,7 +68,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
     private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, IdentifierNameSyntax identifierMethod)
     {
-        var editor = await DocumentEditor.CreateAsync(document, cancellationToken);
+        //var editor = await DocumentEditor.CreateAsync(document, cancellationToken);
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
         if (root == null)
@@ -86,7 +86,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             if (originalInvocation.Expression is not MemberAccessExpressionSyntax hostBasedInvocationMethodExpr
                 || hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax subExpression)
             {
-                return editor.OriginalDocument;
+                return document;
             }
 
             subExpression = subExpression.WithName(identifierMethod);
@@ -97,14 +97,14 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
             if (originalInvocation.ArgumentList.Arguments.Count == 0)
             {
-                return editor.OriginalDocument;
+                return document;
             }
 
-            var initArgumentExpr = originalInvocation.ArgumentList.Arguments[0].Expression; // builder => { }
+            var initArgumentExpr = originalInvocation.ArgumentList.Arguments.SingleOrDefault().Expression; // builder => { }
 
             if (initArgumentExpr is not LambdaExpressionSyntax lambdaExpr)
             {
-                return editor.OriginalDocument;
+                return document;
             }
 
             if (lambdaExpr.Block != null)
@@ -115,7 +115,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     if (statement is not ExpressionStatementSyntax currentStatement
                         || currentStatement.Expression is not InvocationExpressionSyntax expr)
                     {
-                        return editor.OriginalDocument;
+                        return document;
                     }
 
                     // arguments of builder.{method_name}({arguments})
@@ -123,7 +123,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
                     if (expr.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.{method_name} 
                     {
-                        return editor.OriginalDocument;
+                        return document;
                     }
 
                     var method = bodyExpression.Name; // method_name
@@ -138,14 +138,14 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             {
                 if (lambdaExpr.ExpressionBody is not InvocationExpressionSyntax body)
                 {
-                    return editor.OriginalDocument;
+                    return document;
                 }
 
                 var arguments = body.ArgumentList;
 
                 if (body.Expression is not MemberAccessExpressionSyntax bodyExpression)
                 {
-                    return editor.OriginalDocument;
+                    return document;
                 }
 
                 var method = bodyExpression.Name;
@@ -155,7 +155,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             }
             else
             {
-                return editor.OriginalDocument;
+                return document;
             }
 
             return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, originalInvocation));
