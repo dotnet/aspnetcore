@@ -259,8 +259,6 @@ internal sealed class ActionEndpointFactory
             route.Conventions[i](builder);
         }
 
-        builder.FilterFactories.Clear();
-
         endpoints.Add((RouteEndpoint)builder.Build());
     }
 
