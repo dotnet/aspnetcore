@@ -24,7 +24,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseHostConfigureServices,
         DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
         DiagnosticDescriptors.UseTopLevelRouteRegistrationsInsteadOfUseEndpoints
-    });
+    );
 
     public override void Initialize(AnalysisContext context)
     {
