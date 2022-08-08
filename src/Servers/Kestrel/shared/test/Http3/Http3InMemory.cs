@@ -1077,8 +1077,10 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
     }
 }
 
-internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature, IDisposable
+internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature, IDisposable, IStreamClosedFeature
 {
+    private readonly record struct CloseAction(Action<object> Callback, object State);
+
     private readonly Http3InMemory _testBase;
 
     internal DuplexPipePair _pair;
@@ -1096,6 +1098,7 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
     private TaskCompletionSource _disposingTcs;
     private TaskCompletionSource _disposedTcs;
     internal long? _error;
+    private List<CloseAction> _onClosed;
 
     public TestStreamContext(bool canRead, bool canWrite, Http3InMemory testBase)
     {
@@ -1143,6 +1146,7 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
         Features.Set<IStreamAbortFeature>(this);
         Features.Set<IProtocolErrorCodeFeature>(this);
         Features.Set<IPersistentStateFeature>(this);
+        Features.Set<IStreamClosedFeature>(this);
 
         StreamId = streamId;
         _testBase.Logger.LogInformation($"Initializing stream {streamId}");
@@ -1263,5 +1267,14 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
     void IStreamAbortFeature.AbortWrite(long errorCode, ConnectionAbortedException abortReason)
     {
         AbortWriteException = abortReason;
+    }
+
+    public void OnClosed(Action<object> callback, object state)
+    {
+        if (_onClosed == null)
+        {
+            _onClosed = new List<CloseAction>();
+        }
+        _onClosed.Add(new CloseAction(callback, state));
     }
 }

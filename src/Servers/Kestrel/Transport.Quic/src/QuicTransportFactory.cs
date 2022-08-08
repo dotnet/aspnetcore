@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Security;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
@@ -50,22 +49,18 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
             throw new ArgumentNullException(nameof(endpoint));
         }
 
-        var sslServerAuthenticationOptions = features?.Get<SslServerAuthenticationOptions>();
+        var tlsConnectionOptions = features?.Get<TlsConnectionCallbackOptions>();
 
-        if (sslServerAuthenticationOptions == null)
+        if (tlsConnectionOptions == null)
         {
             throw new InvalidOperationException("Couldn't find HTTPS configuration for QUIC transport.");
         }
-        if (sslServerAuthenticationOptions.ServerCertificate == null
-            && sslServerAuthenticationOptions.ServerCertificateContext == null
-            && sslServerAuthenticationOptions.ServerCertificateSelectionCallback == null)
+        if (tlsConnectionOptions.ApplicationProtocols == null || tlsConnectionOptions.ApplicationProtocols.Count == 0)
         {
-            var message = $"{nameof(SslServerAuthenticationOptions)} must provide a server certificate using {nameof(SslServerAuthenticationOptions.ServerCertificate)},"
-                + $" {nameof(SslServerAuthenticationOptions.ServerCertificateContext)}, or {nameof(SslServerAuthenticationOptions.ServerCertificateSelectionCallback)}.";
-            throw new InvalidOperationException(message);
+            throw new InvalidOperationException("No application protocols specified for QUIC transport.");
         }
 
-        var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions);
+        var transport = new QuicConnectionListener(_options, _log, endpoint, tlsConnectionOptions);
         await transport.CreateListenerAsync();
 
         return transport;

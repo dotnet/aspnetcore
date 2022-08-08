@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Net.Quic;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -55,7 +56,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             lock (_shutdownLock)
             {
-                _closeTask ??= _connection.CloseAsync(errorCode: 0).AsTask();
+                _closeTask ??= _connection.CloseAsync(errorCode: _context.Options.DefaultCloseErrorCode).AsTask();
             }
 
             await _closeTask;
@@ -87,6 +88,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         }
     }
 
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
     public override async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -256,6 +258,11 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         }
 
         return false;
+    }
+
+    internal QuicConnection GetInnerConnection()
+    {
+        return _connection;
     }
 
     private void RemoveExpiredStreams()

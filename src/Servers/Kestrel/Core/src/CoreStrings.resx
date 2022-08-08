@@ -707,4 +707,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="WebTransportIsDisabled" xml:space="preserve">
     <value>WebTransport is disabled. Please enable it before starting a session.</value>
   </data>
+  <data name="DynamicPortOnMultipleTransportsNotSupported" xml:space="preserve">
+    <value>Dynamic port binding is not supported when binding multiple transports. HTTP/3 not enabled. A port must be specified to support TCP based HTTP/1.1 and HTTP/2, and QUIC based HTTP/3 with the same endpoint.</value>
+  </data>
+  <data name="NonzeroContentLengthNotAllowedOn205" xml:space="preserve">
+    <value>Responses with status code 205 cannot have a non-zero Content-Length value.</value>
+  </data>
 </root>

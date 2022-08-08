@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -117,6 +116,19 @@ internal sealed class CreateCommand
         var isValid = true;
         var project = DevJwtCliHelpers.GetProject(projectOption.Value());
 
+        if (project == null)
+        {
+            reporter.Error(Resources.ProjectOption_ProjectNotFound);
+            isValid = false;
+            // Break out early if we haven't been able to resolve a project
+            // since we depend on it for the managing of JWT tokens
+            return (
+                null,
+                isValid,
+                string.Empty
+            );
+        }
+
         var scheme = schemeNameOption.HasValue() ? schemeNameOption.Value() : "Bearer";
         var optionsString = schemeNameOption.HasValue() ? $"{Resources.JwtPrint_Scheme}: {scheme}{Environment.NewLine}" : string.Empty;
 
@@ -221,7 +233,7 @@ internal sealed class CreateCommand
         {
             return 1;
         }
-        var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId, options.Scheme, options.Issuer);
+        var keyMaterial = SigningKeysHandler.GetOrCreateSigningKeyMaterial(userSecretsId, options.Scheme, options.Issuer);
 
         var jwtIssuer = new JwtIssuer(options.Issuer, keyMaterial);
         var jwtToken = jwtIssuer.Create(options);

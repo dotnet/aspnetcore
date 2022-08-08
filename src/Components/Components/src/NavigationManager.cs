@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
@@ -30,6 +31,10 @@ public abstract class NavigationManager
     }
 
     private EventHandler<LocationChangedEventArgs>? _locationChanged;
+
+    private readonly List<Func<LocationChangingContext, ValueTask>> _locationChangingHandlers = new();
+
+    private CancellationTokenSource? _locationChangingCts;
 
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
@@ -274,6 +279,201 @@ public abstract class NavigationManager
         }
     }
 
+    /// <summary>
+    /// Notifies the registered handlers of the current location change.
+    /// </summary>
+    /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
+    /// <param name="state">The state associated with the target history entry.</param>
+    /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
+    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation. If the result is <see langword="true"/>, the navigation should continue.</returns>
+    protected async ValueTask<bool> NotifyLocationChangingAsync(string uri, string? state, bool isNavigationIntercepted)
+    {
+        _locationChangingCts?.Cancel();
+        _locationChangingCts = null;
+
+        var handlerCount = _locationChangingHandlers.Count;
+
+        if (handlerCount == 0)
+        {
+            return true;
+        }
+
+        var cts = new CancellationTokenSource();
+
+        _locationChangingCts = cts;
+
+        var cancellationToken = cts.Token;
+        var context = new LocationChangingContext
+        {
+            TargetLocation = uri,
+            HistoryEntryState = state,
+            IsNavigationIntercepted = isNavigationIntercepted,
+            CancellationToken = cancellationToken,
+        };
+
+        try
+        {
+            if (handlerCount == 1)
+            {
+                var handlerTask = InvokeLocationChangingHandlerAsync(_locationChangingHandlers[0], context);
+
+                if (handlerTask.IsFaulted)
+                {
+                    await handlerTask;
+                    return false; // Unreachable because the previous line will throw.
+                }
+
+                if (context.DidPreventNavigation)
+                {
+                    return false;
+                }
+
+                if (!handlerTask.IsCompletedSuccessfully)
+                {
+                    await handlerTask.AsTask().WaitAsync(cancellationToken);
+                }
+            }
+            else
+            {
+                var locationChangingHandlersCopy = ArrayPool<Func<LocationChangingContext, ValueTask>>.Shared.Rent(handlerCount);
+
+                try
+                {
+                    _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
+
+                    var locationChangingTasks = new HashSet<Task>();
+
+                    for (var i = 0; i < handlerCount; i++)
+                    {
+                        var handlerTask = InvokeLocationChangingHandlerAsync(locationChangingHandlersCopy[i], context);
+
+                        if (handlerTask.IsFaulted)
+                        {
+                            await handlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
+
+                        if (context.DidPreventNavigation)
+                        {
+                            return false;
+                        }
+
+                        locationChangingTasks.Add(handlerTask.AsTask());
+                    }
+
+                    while (locationChangingTasks.Count != 0)
+                    {
+                        var completedHandlerTask = await Task.WhenAny(locationChangingTasks).WaitAsync(cancellationToken);
+
+                        if (completedHandlerTask.IsFaulted)
+                        {
+                            await completedHandlerTask;
+                            return false; // Unreachable because the previous line will throw.
+                        }
+
+                        if (context.DidPreventNavigation)
+                        {
+                            return false;
+                        }
+
+                        locationChangingTasks.Remove(completedHandlerTask);
+                    }
+                }
+                finally
+                {
+                    ArrayPool<Func<LocationChangingContext, ValueTask>>.Shared.Return(locationChangingHandlersCopy);
+                }
+            }
+
+            return !context.DidPreventNavigation;
+        }
+        catch (TaskCanceledException ex)
+        {
+            if (ex.CancellationToken == cancellationToken)
+            {
+                // This navigation was in progress when a successive navigation occurred.
+                // We treat this as a canceled navigation.
+                return false;
+            }
+
+            throw;
+        }
+        finally
+        {
+            cts.Cancel();
+            cts.Dispose();
+
+            if (_locationChangingCts == cts)
+            {
+                _locationChangingCts = null;
+            }
+        }
+    }
+
+    private async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+    {
+        try
+        {
+            await handler(context);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        catch (Exception ex)
+        {
+            HandleLocationChangingHandlerException(ex, context);
+        }
+    }
+
+    /// <summary>
+    /// Handles exceptions thrown in location changing handlers.
+    /// </summary>
+    /// <param name="ex">The exception to handle.</param>
+    /// <param name="context">The context passed to the handler.</param>
+    protected virtual void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
+        => throw new InvalidOperationException($"To support navigation locks, {GetType().Name} must override {nameof(HandleLocationChangingHandlerException)}");
+
+    /// <summary>
+    /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
+    /// <see cref="NotifyLocationChanged(bool)"/> until they have first confirmed the navigation by calling
+    /// <see cref="NotifyLocationChangingAsync(string, string?, bool)"/>.
+    /// </summary>
+    /// <param name="value">Whether navigation is currently locked.</param>
+    protected virtual void SetNavigationLockState(bool value)
+        => throw new NotSupportedException($"To support navigation locks, {GetType().Name} must override {nameof(SetNavigationLockState)}");
+
+    /// <summary>
+    /// Registers a handler to process incoming navigation events.
+    /// </summary>
+    /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
+    /// <returns>An <see cref="IDisposable"/> that can be disposed to unregister the location changing handler.</returns>
+    public IDisposable RegisterLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
+    {
+        AssertInitialized();
+
+        var isFirstHandler = _locationChangingHandlers.Count == 0;
+
+        _locationChangingHandlers.Add(locationChangingHandler);
+
+        if (isFirstHandler)
+        {
+            SetNavigationLockState(true);
+        }
+
+        return new LocationChangingRegistration(locationChangingHandler, this);
+    }
+
+    private void RemoveLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
+    {
+        AssertInitialized();
+
+        if (_locationChangingHandlers.Remove(locationChangingHandler) && _locationChangingHandlers.Count == 0)
+        {
+            SetNavigationLockState(false);
+        }
+    }
+
     private void AssertInitialized()
     {
         if (!_isInitialized)
@@ -326,6 +526,23 @@ public abstract class NavigationManager
         {
             var message = $"The URI '{uri}' is not contained by the base URI '{baseUri}'.";
             throw new ArgumentException(message);
+        }
+    }
+
+    private sealed class LocationChangingRegistration : IDisposable
+    {
+        private readonly Func<LocationChangingContext, ValueTask> _handler;
+        private readonly NavigationManager _navigationManager;
+
+        public LocationChangingRegistration(Func<LocationChangingContext, ValueTask> handler, NavigationManager navigationManager)
+        {
+            _handler = handler;
+            _navigationManager = navigationManager;
+        }
+
+        public void Dispose()
+        {
+            _navigationManager.RemoveLocationChangingHandler(_handler);
         }
     }
 }

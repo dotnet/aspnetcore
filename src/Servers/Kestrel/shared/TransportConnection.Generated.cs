@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IStreamDirectionFeature? _currentIStreamDirectionFeature;
         internal protected IStreamIdFeature? _currentIStreamIdFeature;
         internal protected IStreamAbortFeature? _currentIStreamAbortFeature;
+        internal protected IStreamClosedFeature? _currentIStreamClosedFeature;
 
         private int _featureRevision;
 
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIStreamDirectionFeature = null;
             _currentIStreamIdFeature = null;
             _currentIStreamAbortFeature = null;
+            _currentIStreamClosedFeature = null;
         }
 
         // Internal for testing
@@ -168,6 +170,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIStreamAbortFeature;
                 }
+                else if (key == typeof(IStreamClosedFeature))
+                {
+                    feature = _currentIStreamClosedFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -223,6 +229,10 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IStreamAbortFeature))
                 {
                     _currentIStreamAbortFeature = (IStreamAbortFeature?)value;
+                }
+                else if (key == typeof(IStreamClosedFeature))
+                {
+                    _currentIStreamClosedFeature = (IStreamClosedFeature?)value;
                 }
                 else
                 {
@@ -281,6 +291,10 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IStreamAbortFeature))
             {
                 feature = Unsafe.As<IStreamAbortFeature?, TFeature?>(ref _currentIStreamAbortFeature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamClosedFeature))
+            {
+                feature = Unsafe.As<IStreamClosedFeature?, TFeature?>(ref _currentIStreamClosedFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -346,6 +360,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIStreamAbortFeature = Unsafe.As<TFeature?, IStreamAbortFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IStreamClosedFeature))
+            {
+                _currentIStreamClosedFeature = Unsafe.As<TFeature?, IStreamClosedFeature?>(ref feature);
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -397,6 +415,10 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIStreamAbortFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IStreamAbortFeature), _currentIStreamAbortFeature);
+            }
+            if (_currentIStreamClosedFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IStreamClosedFeature), _currentIStreamClosedFeature);
             }
 
             if (MaybeExtra != null)

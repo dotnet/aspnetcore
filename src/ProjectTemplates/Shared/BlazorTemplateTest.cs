@@ -103,4 +103,13 @@ public abstract class BlazorTemplateTest : LoggedTest
 
         return subProject;
     }
+
+    protected static string ReadFile(string basePath, string path)
+    {
+        var fullPath = Path.Combine(basePath, path);
+        var doesExist = File.Exists(fullPath);
+
+        Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
+        return File.ReadAllText(Path.Combine(basePath, path));
+    }
 }

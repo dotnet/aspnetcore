@@ -127,10 +127,10 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
             Logger.FoundNoValueInRequest(bindingContext);
 
             // If we failed to find data for a top-level model, then generate a
-            // default 'empty' model (or use existing Model) and return it.
+            // default 'empty' model (or use existing Model when not null or a default value is available) and return it.
             if (bindingContext.IsTopLevelObject)
             {
-                if (model == null)
+                if (model == null && !bindingContext.ModelMetadata.HasDefaultValue)
                 {
                     model = CreateEmptyCollection(bindingContext.ModelType);
                 }

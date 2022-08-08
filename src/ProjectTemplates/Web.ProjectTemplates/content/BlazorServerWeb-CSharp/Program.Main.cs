@@ -153,11 +153,6 @@ public class Program
 
         app.UseRouting();
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
-        app.UseAuthorization();
-
-        #endif
         #if (OrganizationalAuth || IndividualAuth)
         app.MapControllers();
         #endif

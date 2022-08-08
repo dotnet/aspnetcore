@@ -49,7 +49,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -80,17 +80,17 @@ public class Http2Tests : LoggedTest
 
                 var headers = new[]
                 {
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
                 };
 
                 await h2Connection.StartStreamAsync(1, headers, endStream: true);
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("411", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("411", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -130,17 +130,17 @@ public class Http2Tests : LoggedTest
 
                 var headers = new[]
                 {
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
                 };
 
                 await h2Connection.StartStreamAsync(1, headers, endStream: true);
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -180,10 +180,10 @@ public class Http2Tests : LoggedTest
 
                 var headers = new[]
                 {
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
                         new KeyValuePair<string, string>(HeaderNames.ContentLength, "11"),
                 };
 
@@ -200,7 +200,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -245,10 +245,10 @@ public class Http2Tests : LoggedTest
 
                 var headers = new[]
                 {
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Method, method),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "https"),
-                        new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+                        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
                 };
 
                 await h2Connection.StartStreamAsync(1, headers, endStream: false);
@@ -264,7 +264,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -299,7 +299,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -337,7 +337,7 @@ public class Http2Tests : LoggedTest
                 {
                     // HTTP/2 filters out the connection header
                     Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 // Send and receive a second request to ensure there is no GoAway frame on the wire yet.
@@ -348,7 +348,7 @@ public class Http2Tests : LoggedTest
                 {
                     // HTTP/2 filters out the connection header
                     Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 await h2Connection.StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -384,7 +384,7 @@ public class Http2Tests : LoggedTest
                 {
                     // HTTP/2 filters out the connection header
                     Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -423,7 +423,7 @@ public class Http2Tests : LoggedTest
                 {
                     // HTTP/2 filters out the connection header
                     Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -463,7 +463,7 @@ public class Http2Tests : LoggedTest
                 {
                     // HTTP/2 filters out the connection header
                     Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -480,7 +480,7 @@ public class Http2Tests : LoggedTest
                     {
                         // HTTP/2 filters out the connection header
                         Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                        Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                        Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                     });
 
                     dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -499,7 +499,7 @@ public class Http2Tests : LoggedTest
                 {
                     // HTTP/2 filters out the connection header
                     Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -530,7 +530,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("500", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("500", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -563,7 +563,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
@@ -595,7 +595,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var frame = await h2Connection.ReceiveFrameAsync();
@@ -724,7 +724,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
@@ -771,7 +771,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -823,7 +823,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -976,7 +976,7 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[PseudoHeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();

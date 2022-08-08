@@ -87,6 +87,16 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       state,
       intercepted
     );
+  }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+    const shouldContinueNavigation = await DotNet.invokeMethodAsync<boolean>(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChangingAsync',
+      uri,
+      state,
+      intercepted
+    );
+
+    Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });
 
   const candidateOptions = options ?? {};
