@@ -23,7 +23,7 @@ public sealed class CacheVaryByRules
     /// <summary>
     /// Gets or sets the list of headers to vary by.
     /// </summary>
-    public StringValues Headers { get; set; }
+    public StringValues HeaderNames { get; set; }
 
     /// <summary>
     /// Gets or sets the list of query string keys to vary by.

@@ -2,8 +2,8 @@
 Microsoft.AspNetCore.Builder.OutputCacheApplicationBuilderExtensions
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.CacheVaryByRules() -> void
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.Headers.get -> Microsoft.Extensions.Primitives.StringValues
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.Headers.set -> void
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.HeaderNames.get -> Microsoft.Extensions.Primitives.StringValues
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.HeaderNames.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByCustom.get -> System.Collections.Generic.IDictionary<string!, string!>!
@@ -27,8 +27,8 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.NoStore.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.OutputCacheAttribute() -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.PolicyName.get -> string?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.PolicyName.init -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaders.get -> string![]?
-Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaders.init -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaderNames.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaderNames.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.get -> bool
@@ -47,7 +47,7 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Expire(System.TimeSp
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.NoCache() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.OutputCachePolicyBuilder() -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Tag(params string![]! tags) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headers) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headerNames) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByQuery(params string![]! queryKeys) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Collections.Generic.KeyValuePair<string!, string!>>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!

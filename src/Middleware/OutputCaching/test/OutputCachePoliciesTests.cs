@@ -165,7 +165,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Empty(context.CacheVaryByRules.Headers);
+        Assert.Empty(context.CacheVaryByRules.HeaderNames);
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(header, context.CacheVaryByRules.Headers);
+        Assert.Equal(header, context.CacheVaryByRules.HeaderNames);
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(headers, context.CacheVaryByRules.Headers);
+        Assert.Equal(headers, context.CacheVaryByRules.HeaderNames);
     }
 
     [Fact]

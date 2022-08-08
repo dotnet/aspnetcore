@@ -98,12 +98,12 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to vary the cached responses by header.
     /// </summary>
-    /// <param name="headers">The headers to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByHeader(params string[] headers)
+    /// <param name="headerNames">The headers to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder VaryByHeader(params string[] headerNames)
     {
-        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(headerNames);
 
-        return AddPolicy(new VaryByHeaderPolicy(headers));
+        return AddPolicy(new VaryByHeaderPolicy(headerNames));
     }
 
     /// <summary>

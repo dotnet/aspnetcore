@@ -47,7 +47,7 @@ public sealed class OutputCacheAttribute : Attribute
     /// <summary>
     /// Gets or sets the headers to vary by.
     /// </summary>
-    public string[]? VaryByHeaders { get; init; }
+    public string[]? VaryByHeaderNames { get; init; }
 
     /// <summary>
     /// Gets or sets the value of the cache policy name.

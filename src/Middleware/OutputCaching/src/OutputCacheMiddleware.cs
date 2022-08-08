@@ -341,7 +341,7 @@ internal sealed class OutputCacheMiddleware
             return;
         }
 
-        var varyHeaders = context.CacheVaryByRules.Headers;
+        var varyHeaders = context.CacheVaryByRules.HeaderNames;
         var varyQueryKeys = context.CacheVaryByRules.QueryKeys;
         var varyByCustomKeys = context.CacheVaryByRules.VaryByCustom;
         var varyByPrefix = context.CacheVaryByRules.VaryByPrefix;
@@ -358,7 +358,7 @@ internal sealed class OutputCacheMiddleware
             context.CacheVaryByRules = new CacheVaryByRules
             {
                 VaryByPrefix = varyByPrefix + normalizedVaryByCustom,
-                Headers = normalizedVaryHeaders,
+                HeaderNames = normalizedVaryHeaders,
                 QueryKeys = normalizedVaryQueryKeys
             };
 

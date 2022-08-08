@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
 {
-    private readonly StringValues _headers;
+    private readonly StringValues _headerNames;
 
     /// <summary>
     /// Creates a policy that doesn't vary the cached content based on headers.
@@ -26,30 +26,30 @@ internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
     {
         ArgumentNullException.ThrowIfNull(header);
 
-        _headers = header;
+        _headerNames = header;
     }
 
     /// <summary>
     /// Creates a policy that varies the cached content based on the specified query string keys.
     /// </summary>
-    public VaryByHeaderPolicy(params string[] headers)
+    public VaryByHeaderPolicy(params string[] headerNames)
     {
-        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(headerNames);
 
-        _headers = headers;
+        _headerNames = headerNames;
     }
 
     /// <inheritdoc />
     ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         // No vary by header?
-        if (_headers.Count == 0)
+        if (_headerNames.Count == 0)
         {
-            context.CacheVaryByRules.Headers = _headers;
+            context.CacheVaryByRules.HeaderNames = _headerNames;
             return ValueTask.CompletedTask;
         }
 
-        context.CacheVaryByRules.Headers = StringValues.Concat(context.CacheVaryByRules.Headers, _headers);
+        context.CacheVaryByRules.HeaderNames = StringValues.Concat(context.CacheVaryByRules.HeaderNames, _headerNames);
 
         return ValueTask.CompletedTask;
     }

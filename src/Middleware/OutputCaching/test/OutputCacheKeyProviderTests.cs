@@ -56,7 +56,6 @@ public class OutputCacheKeyProviderTests
     [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_VaryByRulesIsotNull()
     {
-        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
 
         Assert.NotNull(context.CacheVaryByRules);
@@ -84,7 +83,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
         context.CacheVaryByRules = new CacheVaryByRules()
         {
-            Headers = new string[] { "HeaderA", "HeaderC" }
+            HeaderNames = new string[] { "HeaderA", "HeaderC" }
         };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=",
@@ -100,7 +99,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
         context.CacheVaryByRules = new CacheVaryByRules()
         {
-            Headers = new string[] { "HeaderA", "HeaderC" }
+            HeaderNames = new string[] { "HeaderA", "HeaderC" }
         };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueAValueB{KeyDelimiter}HeaderC=",
@@ -204,7 +203,7 @@ public class OutputCacheKeyProviderTests
         context.CacheVaryByRules = new CacheVaryByRules()
         {
             VaryByPrefix = Guid.NewGuid().ToString("n"),
-            Headers = new string[] { "HeaderA", "HeaderC" },
+            HeaderNames = new string[] { "HeaderA", "HeaderC" },
             QueryKeys = new string[] { "QueryA", "QueryC" }
         };
 

@@ -80,7 +80,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
             }
 
             // Vary by headers
-            var headersCount = varyByRules?.Headers.Count ?? 0;
+            var headersCount = varyByRules?.HeaderNames.Count ?? 0;
             if (headersCount > 0)
             {
                 // Append a group separator for the header segment of the cache key
@@ -90,7 +90,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 var requestHeaders = context.HttpContext.Request.Headers;
                 for (var i = 0; i < headersCount; i++)
                 {
-                    var header = varyByRules!.Headers[i] ?? string.Empty;
+                    var header = varyByRules!.HeaderNames[i] ?? string.Empty;
                     var headerValues = requestHeaders[header];
                     builder.Append(KeyDelimiter)
                         .Append(header)
