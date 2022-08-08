@@ -68,7 +68,6 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
     private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, IdentifierNameSyntax identifierMethod)
     {
-        //var editor = await DocumentEditor.CreateAsync(document, cancellationToken);
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
         if (root == null)
@@ -100,7 +99,12 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                 return document;
             }
 
-            var initArgumentExpr = originalInvocation.ArgumentList.Arguments.SingleOrDefault().Expression; // builder => { }
+            var initArgumentExpr = originalInvocation.ArgumentList.Arguments.SingleOrDefault().Expression;   // builder => { }
+
+            if (initArgumentExpr == null)
+            {
+                return document;
+            }
 
             if (initArgumentExpr is not LambdaExpressionSyntax lambdaExpr)
             {
@@ -119,7 +123,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     }
 
                     // arguments of builder.{method_name}({arguments})
-                    var argument = expr.ArgumentList; 
+                    var argument = expr.ArgumentList;
 
                     if (expr.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.{method_name} 
                     {
