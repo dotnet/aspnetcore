@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
@@ -733,7 +734,15 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             // Verify we can construct full chain
             if (chain.ChainElements.Count < clientChain.Count)
             {
-                throw new InvalidOperationException($"chain cannot be built {chain.ChainElements.Count}");
+                // dump the chain
+                var dump = new StringBuilder();
+                foreach (var chainElement in chain.ChainElements)
+                {
+                    var status = string.Join(';', chainElement.ChainElementStatus);
+                    dump.AppendLine(CultureInfo.InvariantCulture, $"Thumb: {chainElement.Certificate.Thumbprint} Status: {status}");
+                }
+
+                throw new InvalidOperationException($"chain cannot be built {dump}");
             }
         }
 
