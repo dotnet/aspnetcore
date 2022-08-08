@@ -209,7 +209,7 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Enables caching for the current request if not already enabled.
     /// </summary>
-    public OutputCachePolicyBuilder Enable()
+    public OutputCachePolicyBuilder Cache()
     {
         // If no custom policy is added, the DefaultPolicy is already "enabled".
         if (_policies.Count != 1 || _policies[0] != DefaultPolicy.Instance)
