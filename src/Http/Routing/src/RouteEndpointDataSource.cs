@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
@@ -25,24 +24,50 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         _throwOnBadRequest = throwOnBadRequest;
     }
 
-    public ICollection<Action<EndpointBuilder>> AddEndpoint(
+    public RouteHandlerBuilder AddRequestDelegate(
+        RoutePattern pattern,
+        RequestDelegate requestDelegate,
+        IEnumerable<string>? httpMethods)
+    {
+
+        var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
+
+        _routeEntries.Add(new()
+        {
+            RoutePattern = pattern,
+            RouteHandler = requestDelegate,
+            HttpMethods = httpMethods,
+            RouteAttributes = RouteAttributes.None,
+            Conventions = conventions,
+        });
+
+        return new RouteHandlerBuilder(conventions);
+    }
+
+    public RouteHandlerBuilder AddRouteHandler(
         RoutePattern pattern,
         Delegate routeHandler,
         IEnumerable<string>? httpMethods,
         bool isFallback)
     {
-        RouteEntry entry = new()
+        var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
+
+        var routeAttributes = RouteAttributes.RouteHandler;
+        if (isFallback)
+        {
+            routeAttributes |= RouteAttributes.Fallback;
+        }    
+
+        _routeEntries.Add(new()
         {
             RoutePattern = pattern,
             RouteHandler = routeHandler,
             HttpMethods = httpMethods,
-            IsFallback = isFallback,
-            Conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection(),
-        };
+            RouteAttributes = routeAttributes,
+            Conventions = conventions,
+        });
 
-        _routeEntries.Add(entry);
-
-        return entry.Conventions;
+        return new RouteHandlerBuilder(conventions);
     }
 
     public override IReadOnlyList<RouteEndpoint> Endpoints
@@ -88,15 +113,21 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
         var pattern = RoutePatternFactory.Combine(groupPrefix, entry.RoutePattern);
         var handler = entry.RouteHandler;
+        var isRouteHandler = (entry.RouteAttributes & RouteAttributes.RouteHandler) == RouteAttributes.RouteHandler;
+        var isFallback = (entry.RouteAttributes & RouteAttributes.Fallback) == RouteAttributes.Fallback;
+
+        // The Map methods don't support customizing the order apart from using int.MaxValue to give MapFallback the lowest priority.
+        // Otherwise, we always use the default of 0 unless a convention changes it later.
+        var order = isFallback ? int.MaxValue : 0;
         var displayName = pattern.RawText ?? pattern.DebuggerToString();
 
-        // Methods defined in a top-level program are generated as statics so the delegate target will be null.
-        // Inline lambdas are compiler generated method so they be filtered that way.
-        if (GeneratedNameParser.TryParseLocalFunctionName(handler.Method.Name, out var endpointName)
-            || !TypeHelper.IsCompilerGeneratedMethod(handler.Method))
+        // Don't include the method name for non-route-handlers because the name is just "Invoke" when built from
+        // ApplicationBuilder.Build(). This was observed in MapSignalRTests and is not very useful. Maybe if we come up
+        // with a better heuristic for what a useful method name is, we could use it for everything. Inline lambdas are
+        // compiler generated methods so they are filtered out even for route handlers.
+        if (isRouteHandler && TypeHelper.TryGetNonCompilerGeneratedMethodName(handler.Method, out var methodName))
         {
-            endpointName ??= handler.Method.Name;
-            displayName = $"{displayName} => {endpointName}";
+            displayName = $"{displayName} => {methodName}";
         }
 
         if (entry.HttpMethods is not null)
@@ -105,13 +136,17 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             displayName = $"HTTP: {string.Join(", ", entry.HttpMethods)} {displayName}";
         }
 
-        if (entry.IsFallback)
+        if (isFallback)
         {
             displayName = $"Fallback {displayName}";
         }
 
-        RequestDelegate? factoryCreatedRequestDelegate = null;
-        RequestDelegate redirectedRequestDelegate = context =>
+        // If we're not a route handler, we started with a fully realized (although unfiltered) RequestDelegate, so we can just redirect to that
+        // while running any conventions. We'll put the original back if it remains unfiltered right before building the endpoint.
+        RequestDelegate? factoryCreatedRequestDelegate = isRouteHandler ? null : (RequestDelegate)entry.RouteHandler;
+
+        // Let existing conventions capture and call into builder.RequestDelegate as long as they do so after it has been created.
+        RequestDelegate redirectRequestDelegate = context =>
         {
             if (factoryCreatedRequestDelegate is null)
             {
@@ -121,20 +156,15 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             return factoryCreatedRequestDelegate(context);
         };
 
-        // The Map methods don't support customizing the order apart from using int.MaxValue to give MapFallback the lowest priority.
-        // Otherwise, we always use the default of 0 unless a convention changes it later.
-        var order = entry.IsFallback ? int.MaxValue : 0;
-
-        RouteEndpointBuilder builder = new(redirectedRequestDelegate, pattern, order)
-        {
-            DisplayName = displayName,
-            ApplicationServices = _applicationServices,
-        };
-
         // Add MethodInfo and HttpMethodMetadata (if any) as first metadata items as they are intrinsic to the route much like
         // the pattern or default display name. This gives visibility to conventions like WithOpenApi() to intrinsic route details
         // (namely the MethodInfo) even when applied early as group conventions.
-        builder.Metadata.Add(handler.Method);
+        RouteEndpointBuilder builder = new(redirectRequestDelegate, pattern, order)
+        {
+            DisplayName = displayName,
+            ApplicationServices = _applicationServices,
+            Metadata = { handler.Method },
+        };
 
         if (entry.HttpMethods is not null)
         {
@@ -166,29 +196,29 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             entrySpecificConvention(builder);
         }
 
-        var routeParamNames = new List<string>(pattern.Parameters.Count);
-        foreach (var parameter in pattern.Parameters)
+        if (isRouteHandler || builder.EndpointFilterFactories is { Count: > 0})
         {
-            routeParamNames.Add(parameter.Name);
+            var routeParamNames = new List<string>(pattern.Parameters.Count);
+            foreach (var parameter in pattern.Parameters)
+            {
+                routeParamNames.Add(parameter.Name);
+            }
+
+            RequestDelegateFactoryOptions factoryOptions = new()
+            {
+                ServiceProvider = _applicationServices,
+                RouteParameterNames = routeParamNames,
+                ThrowOnBadRequest = _throwOnBadRequest,
+                DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
+                EndpointMetadata = builder.Metadata,
+                EndpointFilterFactories = builder.EndpointFilterFactories,
+            };
+
+            // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
+            factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
         }
 
-        RequestDelegateFactoryOptions factoryOptions = new()
-        {
-            ServiceProvider = _applicationServices,
-            RouteParameterNames = routeParamNames,
-            ThrowOnBadRequest = _throwOnBadRequest,
-            DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
-            EndpointMetadata = builder.Metadata,
-            EndpointFilterFactories = builder.EndpointFilterFactories,
-        };
-
-        // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
-        factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
-
-        // Clear out any filters so they don't get rerun in Build(). We can rethink how we do this later when exposed as public API.
-        builder.EndpointFilterFactories = null;
-
-        if (ReferenceEquals(builder.RequestDelegate, redirectedRequestDelegate))
+        if (ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate))
         {
             // No convention has changed builder.RequestDelegate, so we can just replace it with the final version as an optimization.
             // We still set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
@@ -233,8 +263,19 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public RoutePattern RoutePattern { get; init; }
         public Delegate RouteHandler { get; init; }
         public IEnumerable<string>? HttpMethods { get; init; }
-        public bool IsFallback { get; init; }
+        public RouteAttributes RouteAttributes { get; init; }
         public ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
+    }
+
+    [Flags]
+    private enum RouteAttributes
+    {
+        // The endpoint was defined by a RequestDelegate, RequestDelegateFactory.Create() should be skipped unless there are endpoint filters.
+        None = 0,
+        // This was added as Delegate route handler, so RequestDelegateFactory.Create() should always be called.
+        RouteHandler = 1,
+        // This was added by MapFallback.
+        Fallback = 2,
     }
 
     // This private class is only exposed to internal code via ICollection<Action<EndpointBuilder>> in RouteEndpointBuilder where only Add is called.

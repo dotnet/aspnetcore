@@ -316,7 +316,11 @@ public static class TestData
 
     public static string GetPackagesFolder() => GetTestDataValue("PackagesFolder");
 
+    public static string GetPackageLayoutRoot() => GetTestDataValue("PackageLayoutRoot");
+
     public static bool VerifyAncmBinary() => string.Equals(GetTestDataValue("VerifyAncmBinary"), "true", StringComparison.OrdinalIgnoreCase);
+
+    public static bool VerifyPackageAssemblyVersions() => string.Equals(GetTestDataValue("VerifyPackageAssemblyVersions"), "true", StringComparison.OrdinalIgnoreCase);
 
     private static string GetTestDataValue(string key)
          => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
