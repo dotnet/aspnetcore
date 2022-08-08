@@ -70,7 +70,7 @@ internal sealed class SniOptionsSelector
             {
                 // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                 // made to the server
-                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: fullChain, offline: fullChain != null);
+                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: fullChain);
             }
 
             if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
