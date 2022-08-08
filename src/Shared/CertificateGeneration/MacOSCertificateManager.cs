@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
         private const string MacOSFindCertificateCommandLine = "security";
-        private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p \"" + MacOSSystemKeyChain +"\"";
+        private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p \"" + MacOSSystemKeyChain + "\"";
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
         private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
         private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "security remove-trusted-cert -d \"{0}\"";
