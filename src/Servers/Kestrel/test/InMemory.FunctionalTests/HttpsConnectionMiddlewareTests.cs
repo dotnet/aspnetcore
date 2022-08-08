@@ -28,7 +28,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
     private static readonly X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
-    private static readonly X509Certificate2Collection _testChain = TestResources.GetTestChain();
 
     [Fact]
     public async Task CanReadAndWriteWithHttpsConnectionMiddleware()
