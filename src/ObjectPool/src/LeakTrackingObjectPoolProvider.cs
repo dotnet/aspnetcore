@@ -9,7 +9,8 @@ namespace Microsoft.Extensions.ObjectPool;
 /// An <see cref="ObjectPoolProvider"/> that produces instances of
 /// <see cref="LeakTrackingObjectPool{T}"/>.
 /// </summary>
-[Obsolete("LeakTrackingObjectPoolProvider was only intended for use in diagnostic builds and may be removed in a future release.")]
+[Obsolete("LeakTrackingObjectPoolProvider was only intended for use in diagnostic builds of .NET. It does not "+
+    "function in any publicly shipped .NET versions and may be removed in a future release.")]
 public class LeakTrackingObjectPoolProvider : ObjectPoolProvider
 {
     private readonly ObjectPoolProvider _inner;
