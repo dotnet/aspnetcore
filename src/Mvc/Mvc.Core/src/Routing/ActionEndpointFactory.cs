@@ -422,9 +422,9 @@ internal sealed class ActionEndpointFactory
             perRouteConventions[i](builder);
         }
 
-        if (builder is { FilterFactories.Count: > 0 } reb && action is ControllerActionDescriptor cad)
+        if (builder.FilterFactories.Count > 0 && action is ControllerActionDescriptor cad)
         {
-            var routeHandlerFilters = reb.FilterFactories;
+            var routeHandlerFilters = builder.FilterFactories;
 
             EndpointFilterDelegate del = static invocationContext =>
             {

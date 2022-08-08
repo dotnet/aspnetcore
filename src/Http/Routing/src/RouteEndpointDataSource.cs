@@ -56,7 +56,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         if (isFallback)
         {
             routeAttributes |= RouteAttributes.Fallback;
-        }    
+        }
 
         _routeEntries.Add(new()
         {
@@ -196,7 +196,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             entrySpecificConvention(builder);
         }
 
-        if (isRouteHandler || builder.EndpointFilterFactories is { Count: > 0})
+        if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
             var routeParamNames = new List<string>(pattern.Parameters.Count);
             foreach (var parameter in pattern.Parameters)
@@ -211,7 +211,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
                 ThrowOnBadRequest = _throwOnBadRequest,
                 DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
                 EndpointMetadata = builder.Metadata,
-                EndpointFilterFactories = builder.EndpointFilterFactories,
+                EndpointFilterFactories = builder.FilterFactories.AsReadOnly(),
             };
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
