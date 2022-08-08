@@ -241,14 +241,14 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                 //app.UseRouting();
                 //app.UseEndpoints(x => {})
                 if (IsDisallowedMethod(
-                        operationAnalysisContext,
+                        context,
                         invocation,
                         targetMethod,
                         wellKnownTypes.WebApplicationBuilder,
                         "UseEndpoints",
                         useEndpointTypes))
                 {
-                    operationAnalysisContext.ReportDiagnostic(
+                    context.ReportDiagnostic(
                         CreateDiagnostic(
                             DiagnosticDescriptors.UseTopLevelRouteRegistrationsInsteadOfUseEndpoints,
                             invocation));
