@@ -163,14 +163,14 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
     {
-        IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
+        var requestHeaders = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-                new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
 
         await InitializeConnectionAsync(_readHeadersApplication);
 
@@ -214,7 +214,7 @@ public class Http2ConnectionTests : Http2TestBase
     {
         const BindingFlags privateFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
-        IEnumerable<KeyValuePair<string, string>> requestHeaders1 = new[]
+        var requestHeaders1 = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
@@ -224,7 +224,7 @@ public class Http2ConnectionTests : Http2TestBase
         };
 
         // Note: No content-type
-        IEnumerable<KeyValuePair<string, string>> requestHeaders2 = new[]
+        var requestHeaders2 = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
@@ -307,14 +307,14 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task ResponseTrailers_MultipleStreams_Reset()
     {
-        IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
+        var requestHeaders = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-                new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
 
         var requestCount = 0;
         IHeaderDictionary trailersFirst = null;
@@ -2632,11 +2632,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(":unknown", "0"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(":unknown", "0"),
+        };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorUnknownPseudoHeaderField);
     }
@@ -2646,11 +2646,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Status, "200"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Status, "200"),
+        };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorResponsePseudoHeaderField);
     }
@@ -2723,18 +2723,18 @@ public class Http2ConnectionTests : Http2TestBase
         // > 32kb
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("a", _4kHeaderValue),
-                new KeyValuePair<string, string>("b", _4kHeaderValue),
-                new KeyValuePair<string, string>("c", _4kHeaderValue),
-                new KeyValuePair<string, string>("d", _4kHeaderValue),
-                new KeyValuePair<string, string>("e", _4kHeaderValue),
-                new KeyValuePair<string, string>("f", _4kHeaderValue),
-                new KeyValuePair<string, string>("g", _4kHeaderValue),
-                new KeyValuePair<string, string>("h", _4kHeaderValue),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("a", _4kHeaderValue),
+            new KeyValuePair<string, string>("b", _4kHeaderValue),
+            new KeyValuePair<string, string>("c", _4kHeaderValue),
+            new KeyValuePair<string, string>("d", _4kHeaderValue),
+            new KeyValuePair<string, string>("e", _4kHeaderValue),
+            new KeyValuePair<string, string>("f", _4kHeaderValue),
+            new KeyValuePair<string, string>("g", _4kHeaderValue),
+            new KeyValuePair<string, string>("h", _4kHeaderValue),
+        };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize);
     }
@@ -2746,10 +2746,10 @@ public class Http2ConnectionTests : Http2TestBase
         var headers = new List<KeyValuePair<string, string>>();
         headers.AddRange(new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            });
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        });
         for (var i = 0; i < 100; i++)
         {
             headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
@@ -2763,11 +2763,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("Custom", "val\0ue"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("Custom", "val\0ue"),
+        };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
     }
@@ -2777,11 +2777,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("connection", "keep-alive")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("connection", "keep-alive")
+        };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
     }
@@ -2791,11 +2791,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("te", "trailers, deflate")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("te", "trailers, deflate")
+        };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
     }
@@ -2805,11 +2805,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>("te", "trailers")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("te", "trailers")
+        };
 
         await InitializeConnectionAsync(_noopApplication);
 
@@ -2828,10 +2828,10 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, new string('A', 8192 / 2)),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/" + new string('A', 8192 / 2)),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, new string('A', 8192 / 2)),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/" + new string('A', 8192 / 2)),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http")
+        };
 
         await InitializeConnectionAsync(_noopApplication);
         await StartStreamAsync(1, headers, endStream: true);
@@ -2846,13 +2846,13 @@ public class Http2ConnectionTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
-                new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
-                new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
+            new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
+            new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
+        };
 
         await InitializeConnectionAsync(_readHeadersApplication);
 
@@ -3263,10 +3263,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(context => tcs.Task);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -3287,10 +3287,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(context => tcs.Task);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -3311,10 +3311,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(context => tcs.Task);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -3333,10 +3333,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(context => tcs.Task);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -4926,10 +4926,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(_noopApplication);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -4977,10 +4977,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(_appAbort);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -5021,10 +5021,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(_appReset);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -5091,10 +5091,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
 
         await StartStreamAsync(1, headers, endStream: false);
 
@@ -5171,10 +5171,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
 
         // This mimics gRPC, sending headers and data close together before receiving a reset.
         await StartStreamAsync(1, headers, endStream: false);
@@ -5222,10 +5222,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
 
         await InitializeConnectionAsync(async context =>
         {
@@ -5262,10 +5262,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(_appAbort);
 
         await StartStreamAsync(1, headers, endStream: false);
@@ -5336,10 +5336,10 @@ public class Http2ConnectionTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(_appAbort);
 
         await StartStreamAsync(1, headers, endStream: false);
