@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 export async function downloadFile(data: any, fileName: string) {
-    // For Chromium browsers, show "Save As" dialog and then stream the data into the file without buffering it all in membey
-    if (typeof (window as any).showSaveFilePicker() === 'function')
+    // For Chromium browsers, show "Save As" dialog and then stream the data into the file without buffering it all in memory
+    if (typeof (window as any).showSaveFilePicker === 'function')
     {
         // Show the "Save As" dialog
         let fileWriter;
@@ -16,7 +16,8 @@ export async function downloadFile(data: any, fileName: string) {
             return;
         }
 
-        const reader = data.getReader();
+        var dataStream = new ReadableStream(data);
+        const reader = dataStream.getReader();
         while (true) {
             const readResult = await reader.read();
             if (readResult.done) {
