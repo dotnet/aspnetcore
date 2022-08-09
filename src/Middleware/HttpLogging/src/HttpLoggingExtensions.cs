@@ -31,4 +31,7 @@ internal static partial class HttpLoggingExtensions
 
     [LoggerMessage(6, LogLevel.Debug, "Unrecognized Content-Type for {Name} body.", EventName = "UnrecognizedMediaType")]
     public static partial void UnrecognizedMediaType(this ILogger logger, string name);
+
+    [LoggerMessage(7, LogLevel.Debug, "No Content-Type header for {Name} body.", EventName = "NoMediaType")]
+    public static partial void NoMediaType(this ILogger logger, string name);
 }
