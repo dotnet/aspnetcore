@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
+using System.Threading.Tasks;
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
@@ -809,5 +812,97 @@ public class OutputCacheMiddlewareTests
         var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
 
         Assert.Equal(originalStrings, normalizedStrings);
+    }
+
+    [Fact]
+    public async Task Locking_PreventsConcurrentRequests()
+    {
+        var timeout = TimeSpan.FromSeconds(1);
+        var responseCounter = 0;
+
+        var task1Executing = new ManualResetEventSlim(false);
+        var task2Executing = new ManualResetEventSlim(false);
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
+        {
+            responseCounter++;
+            task1Executing.Set();
+
+            // Wait for the second request to be processed before processing the first one
+            task2Executing.Wait();
+
+            c.Response.Write("Hello" + responseCounter);
+            return Task.CompletedTask;
+        });
+
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for the first request to be processed before sending a second one
+        task1Executing.Wait(timeout);
+
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        task2Executing.Set();
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Equal(1, responseCounter);
+    }
+
+    [Fact]
+    public async Task Locking_ExecuteAllRequestsWhenDisabled()
+    {
+        var timeout = TimeSpan.FromSeconds(1);
+        var responseCounter = 0;
+
+        var task1Executing = new ManualResetEventSlim(false);
+        var task2Executing = new ManualResetEventSlim(false);
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache().AllowLocking(false));
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
+        {
+            responseCounter++;
+            task1Executing.Set();
+
+            // Wait for the second request to be processed before processing the first one
+            task2Executing.Wait();
+
+            c.Response.Write("Hello" + responseCounter);
+            return Task.CompletedTask;
+        });
+
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for the first request to be processed before sending a second one
+        task1Executing.Wait(timeout);
+
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        task2Executing.Set();
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Equal(2, responseCounter);
     }
 }

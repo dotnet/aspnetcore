@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
@@ -211,6 +212,64 @@ public class OutputCachePolicyBuilderTests
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.NoCache().Cache().Build();
         await policy.CacheRequestAsync(context, cancellation: default);
+
+        Assert.True(context.EnableOutputCaching);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1, 2)]
+    [InlineData(2, 3)]
+    public async Task BuildPolicy_ChecksWithPredicate(int source, int expected)
+    {
+        // Each predicate should override the duration from the first base policy
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Expire(TimeSpan.FromSeconds(1)));
+        options.AddBasePolicy(build => build.With(c => source == 1).Expire(TimeSpan.FromSeconds(2)));
+        options.AddBasePolicy(build => build.With(c => source == 2).Expire(TimeSpan.FromSeconds(3)));
+
+        var context = TestUtils.CreateUninitializedContext(options: options);
+
+        foreach (var policy in options.BasePolicies)
+        {
+            await policy.CacheRequestAsync(context, default);
+        }
+
+        Assert.True(context.EnableOutputCaching);
+        Assert.Equal(expected, context.ResponseExpirationTimeSpan?.TotalSeconds);
+    }
+
+    [Fact]
+    public async Task BuildPolicy_NoDefaultWithFalsePredicate()
+    {
+        // Each predicate should override the duration from the first base policy
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.With(c => false).Expire(TimeSpan.FromSeconds(2)));
+
+        var context = TestUtils.CreateUninitializedContext(options: options);
+
+        foreach (var policy in options.BasePolicies)
+        {
+            await policy.CacheRequestAsync(context, default);
+        }
+
+        Assert.False(context.EnableOutputCaching);
+        Assert.NotEqual(2, context.ResponseExpirationTimeSpan?.TotalSeconds);
+    }
+
+    [Fact]
+    public async Task BuildPolicy_CacheReturnsDefault()
+    {
+        // Each predicate should override the duration from the first base policy
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var context = TestUtils.CreateUninitializedContext(options: options);
+
+        foreach (var policy in options.BasePolicies)
+        {
+            await policy.CacheRequestAsync(context, default);
+        }
 
         Assert.True(context.EnableOutputCaching);
     }
