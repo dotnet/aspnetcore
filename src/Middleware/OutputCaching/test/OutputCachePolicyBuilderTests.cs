@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -21,7 +19,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesExpirePolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
         var duration = 42;
 
         var builder = new OutputCachePolicyBuilder();
@@ -35,7 +33,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesNoStorePolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.NoCache().Build();
@@ -52,7 +50,7 @@ public class OutputCachePolicyBuilderTests
         var duration = 42;
         options.AddPolicy(name, b => b.Expire(TimeSpan.FromSeconds(duration)));
 
-        var context = CreateTestContext(options: options);
+        var context = TestUtils.CreateUninitializedContext(options: options);
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.AddPolicy(new NamedPolicy(name)).Build();
@@ -65,7 +63,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesVaryByHeaderPolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
         context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
         context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
 
@@ -82,7 +80,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesVaryByQueryPolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
 
         var builder = new OutputCachePolicyBuilder();
@@ -98,7 +96,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesVaryByRoutePolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
         context.HttpContext.Request.RouteValues = new Routing.RouteValueDictionary()
         {
             ["RouteA"] = "ValueA",
@@ -118,7 +116,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesVaryByValuePolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.VaryByValue(context => new KeyValuePair<string, string>("color", "blue")).Build();
@@ -131,7 +129,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_CreatesTagPolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.Tag("tag1", "tag2").Build();
@@ -145,7 +143,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_AllowsLocking()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.Build();
@@ -157,8 +155,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_EnablesLocking()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.AllowLocking(true).Build();
@@ -170,7 +167,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_DisablesLocking()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.AllowLocking(false).Build();
@@ -182,7 +179,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_ClearsDefaultPolicy()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.Clear().Build();
@@ -197,7 +194,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_DisablesCache()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.NoCache().Build();
@@ -209,19 +206,12 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public async Task BuildPolicy_EnablesCache()
     {
-        var context = CreateTestContext();
+        var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
         var policy = builder.NoCache().Cache().Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
-    }
-
-    private static OutputCacheContext CreateTestContext(IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
-    {
-        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
-        {
-        };
     }
 }

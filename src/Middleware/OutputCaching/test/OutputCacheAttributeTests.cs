@@ -11,8 +11,7 @@ public class OutputCacheAttributeTests
     [Fact]
     public void Attribute_CreatesDefaultPolicy()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
 
         var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.Default));
         var policy = attribute.BuildPolicy();
@@ -23,8 +22,7 @@ public class OutputCacheAttributeTests
     [Fact]
     public async Task Attribute_CreatesExpirePolicy()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
 
         var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.Duration));
         await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
@@ -36,8 +34,7 @@ public class OutputCacheAttributeTests
     [Fact]
     public async Task Attribute_CreatesNoStorePolicy()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
 
         var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.NoStore));
         await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
@@ -48,11 +45,10 @@ public class OutputCacheAttributeTests
     [Fact]
     public async Task Attribute_CreatesNamedPolicy()
     {
-        var cache = new TestOutputCache();
         var options = new OutputCacheOptions();
         options.AddPolicy("MyPolicy", b => b.Expire(TimeSpan.FromSeconds(42)));
 
-        var context = TestUtils.CreateTestContext(cache, options);
+        var context = TestUtils.CreateTestContext(options: options);
 
         var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.PolicyName));
         await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
@@ -64,8 +60,7 @@ public class OutputCacheAttributeTests
     [Fact]
     public async Task Attribute_CreatesVaryByHeaderPolicy()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
         context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
         context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
 
@@ -81,8 +76,7 @@ public class OutputCacheAttributeTests
     [Fact]
     public async Task Attribute_CreatesVaryByQueryPolicy()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
 
         var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.VaryByQueryKeys));
@@ -97,8 +91,7 @@ public class OutputCacheAttributeTests
     [Fact]
     public async Task Attribute_CreatesVaryByRoutePolicy()
     {
-        var cache = new TestOutputCache();
-        var context = TestUtils.CreateTestContext(cache);
+        var context = TestUtils.CreateUninitializedContext();
         context.HttpContext.Request.RouteValues = new Routing.RouteValueDictionary()
         {
             ["RouteA"] = "ValueA",

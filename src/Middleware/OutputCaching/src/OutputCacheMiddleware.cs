@@ -92,7 +92,7 @@ internal sealed class OutputCacheMiddleware
 
     private async Task InvokeAwaited(HttpContext httpContext, IReadOnlyList<IOutputCachePolicy> policies)
     {
-        var context = new OutputCacheContext(httpContext, _store, _options, _logger);
+        var context = new OutputCacheContext { HttpContext = httpContext };
 
         // Add IOutputCacheFeature
         AddOutputCacheFeature(context);
@@ -247,7 +247,7 @@ internal sealed class OutputCacheMiddleware
         // Validate expiration
         if (context.CachedEntryAge <= TimeSpan.Zero)
         {
-            context.Logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
+            _logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
             context.IsCacheEntryFresh = false;
         }
 
@@ -316,7 +316,7 @@ internal sealed class OutputCacheMiddleware
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
 
-        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, cacheContext, static async (key, cacheContext) => await OutputCacheEntryFormatter.GetAsync(key, cacheContext.Store, cacheContext.HttpContext.RequestAborted));
+        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted));
 
         if (await TryServeCachedResponseAsync(cacheContext, cacheEntry, policies))
         {
@@ -519,7 +519,7 @@ internal sealed class OutputCacheMiddleware
         RemoveOutputCacheFeature(context.HttpContext);
     }
 
-    internal static bool ContentIsNotModified(OutputCacheContext context)
+    internal bool ContentIsNotModified(OutputCacheContext context)
     {
         var cachedResponseHeaders = context.CachedResponse.Headers;
         var ifNoneMatchHeader = context.HttpContext.Request.Headers.IfNoneMatch;
@@ -528,7 +528,7 @@ internal sealed class OutputCacheMiddleware
         {
             if (ifNoneMatchHeader.Count == 1 && StringSegment.Equals(ifNoneMatchHeader[0], EntityTagHeaderValue.Any.Tag, StringComparison.OrdinalIgnoreCase))
             {
-                context.Logger.NotModifiedIfNoneMatchStar();
+                _logger.NotModifiedIfNoneMatchStar();
                 return true;
             }
 
@@ -541,7 +541,7 @@ internal sealed class OutputCacheMiddleware
                     var requestETag = ifNoneMatchEtags[i];
                     if (eTag.Compare(requestETag, useStrongComparison: false))
                     {
-                        context.Logger.NotModifiedIfNoneMatchMatched(requestETag);
+                        _logger.NotModifiedIfNoneMatchMatched(requestETag);
                         return true;
                     }
                 }
@@ -561,7 +561,7 @@ internal sealed class OutputCacheMiddleware
                 if (HeaderUtilities.TryParseDate(ifModifiedSince.ToString(), out var modifiedSince) &&
                     modified <= modifiedSince)
                 {
-                    context.Logger.NotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
+                    _logger.NotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
                     return true;
                 }
             }

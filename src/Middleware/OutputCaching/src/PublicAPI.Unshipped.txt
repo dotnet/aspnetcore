@@ -37,6 +37,9 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValues.get ->
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValues.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.get -> bool
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.set -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheContext.HttpContext.init -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheContext.OutputCacheContext() -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheContext.ResponseTime.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddBasePolicy(Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy! policy) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddBasePolicy(System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddPolicy(string! name, Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy! policy) -> void

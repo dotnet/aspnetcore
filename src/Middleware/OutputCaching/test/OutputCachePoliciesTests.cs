@@ -126,9 +126,10 @@ public class OutputCachePoliciesTests
     [Fact]
     public async Task ProfilePolicy_UsesNamedProfile()
     {
-        var context = TestUtils.CreateUninitializedContext();
-        context.Options.AddPolicy("enabled", EnableCachePolicy.Enabled);
-        context.Options.AddPolicy("disabled", EnableCachePolicy.Disabled);
+        var options = new OutputCacheOptions();
+        options.AddPolicy("enabled", EnableCachePolicy.Enabled);
+        options.AddPolicy("disabled", EnableCachePolicy.Disabled);
+        var context = TestUtils.CreateUninitializedContext(options: options);
 
         IOutputCachePolicy policy = new NamedPolicy("enabled");
 
