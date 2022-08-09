@@ -74,6 +74,7 @@ public static class TestData
                 "Microsoft.AspNetCore.Mvc.TagHelpers",
                 "Microsoft.AspNetCore.Mvc.ViewFeatures",
                 "Microsoft.AspNetCore.OutputCaching",
+                "Microsoft.AspNetCore.RateLimiting",
                 "Microsoft.AspNetCore.Razor",
                 "Microsoft.AspNetCore.Razor.Runtime",
                 "Microsoft.AspNetCore.RequestDecompression",
@@ -149,6 +150,7 @@ public static class TestData
                 "System.IO.Pipelines",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
+                "System.Threading.RateLimiting",
             };
 
         ListedTargetingPackAssemblies = new SortedDictionary<string, string>
@@ -211,6 +213,7 @@ public static class TestData
                 { "Microsoft.AspNetCore.Mvc.TagHelpers", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Mvc.ViewFeatures", "7.0.0.0" },
                 { "Microsoft.AspNetCore.OutputCaching", "7.0.0.0" },
+                { "Microsoft.AspNetCore.RateLimiting", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Razor", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Razor.Runtime", "7.0.0.0" },
                 { "Microsoft.AspNetCore.RequestDecompression", "7.0.0.0" },
@@ -284,6 +287,7 @@ public static class TestData
                 { "System.Diagnostics.EventLog", "7.0.0.0" },
                 { "System.IO.Pipelines", "7.0.0.0" },
                 { "System.Security.Cryptography.Xml", "7.0.0.0" },
+                { "System.Threading.RateLimiting", "7.0.0.0" },
             };
 
         if (!VerifyAncmBinary())
