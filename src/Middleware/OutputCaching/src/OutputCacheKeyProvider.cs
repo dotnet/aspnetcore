@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.ObjectPool;
@@ -28,7 +29,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         _options = options.Value;
     }
 
-    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>R<delimiter>RouteName1=RouteValue1<subdelimiter>RouteName2=RouteValue2
     public string CreateStorageKey(OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
@@ -163,6 +164,29 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                             builder.Append(queryValueArray[j]);
                         }
                     }
+                }
+            }
+
+            // Vary by route values
+            var routeValuesCount = varyByRules?.RouteValues.Count ?? 0;
+            if (routeValuesCount > 0)
+            {
+                // Append a group separator for the query key segment of the cache key
+                builder.Append(KeyDelimiter)
+                    .Append('R');
+
+                for (var i = 0; i < routeValuesCount; i++)
+                {
+                    // The lookup key can't be null
+                    var routeValueName = varyByRules!.RouteValues[i] ?? string.Empty;
+
+                    // RouteValues returns null if the key doesn't exist
+                    var routeValueValue = context.HttpContext.Request.RouteValues[routeValueName];
+
+                    builder.Append(KeyDelimiter)
+                        .Append(routeValueName)
+                        .Append('=')
+                        .Append(Convert.ToString(routeValueValue, CultureInfo.InvariantCulture));
                 }
             }
 

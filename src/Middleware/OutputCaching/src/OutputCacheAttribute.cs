@@ -45,9 +45,14 @@ public sealed class OutputCacheAttribute : Attribute
     public string[]? VaryByQueryKeys { get; init; }
 
     /// <summary>
-    /// Gets or sets the headers to vary by.
+    /// Gets or sets the header names to vary by.
     /// </summary>
     public string[]? VaryByHeaderNames { get; init; }
+
+    /// <summary>
+    /// Gets or sets the route value names to vary by.
+    /// </summary>
+    public string[]? VaryByRouteValues { get; init; }
 
     /// <summary>
     /// Gets or sets the value of the cache policy name.
@@ -76,6 +81,16 @@ public sealed class OutputCacheAttribute : Attribute
         if (VaryByQueryKeys != null)
         {
             builder.VaryByQuery(VaryByQueryKeys);
+        }
+
+        if (VaryByHeaderNames != null)
+        {
+            builder.VaryByHeader(VaryByHeaderNames);
+        }
+
+        if (VaryByRouteValues != null)
+        {
+            builder.VaryByRouteValue(VaryByRouteValues);
         }
 
         if (_duration != null)

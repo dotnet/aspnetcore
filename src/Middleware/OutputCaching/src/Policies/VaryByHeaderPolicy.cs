@@ -20,7 +20,7 @@ internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
     }
 
     /// <summary>
-    /// Creates a policy that varies the cached content based on the specified header.
+    /// Creates a policy that varies the cached content based on the specified header name.
     /// </summary>
     public VaryByHeaderPolicy(string header)
     {
@@ -30,7 +30,7 @@ internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
     }
 
     /// <summary>
-    /// Creates a policy that varies the cached content based on the specified query string keys.
+    /// Creates a policy that varies the cached content based on the specified header names.
     /// </summary>
     public VaryByHeaderPolicy(params string[] headerNames)
     {

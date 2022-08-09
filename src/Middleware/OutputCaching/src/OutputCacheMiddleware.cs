@@ -341,16 +341,18 @@ internal sealed class OutputCacheMiddleware
             return;
         }
 
-        var varyHeaders = context.CacheVaryByRules.HeaderNames;
+        var varyHeaderNames = context.CacheVaryByRules.HeaderNames;
+        var varyRouteValues = context.CacheVaryByRules.RouteValues;
         var varyQueryKeys = context.CacheVaryByRules.QueryKeys;
-        var varyByCustomKeys = context.CacheVaryByRules.VaryByCustom;
+        var varyByCustomKeys = context.CacheVaryByRules.HasVaryByCustom ? context.CacheVaryByRules.VaryByCustom : null;
         var varyByPrefix = context.CacheVaryByRules.VaryByPrefix;
 
         // Check if any vary rules exist
-        if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
+        if (!StringValues.IsNullOrEmpty(varyHeaderNames) || !StringValues.IsNullOrEmpty(varyRouteValues) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
         {
             // Normalize order and casing of vary by rules
-            var normalizedVaryHeaders = GetOrderCasingNormalizedStringValues(varyHeaders);
+            var normalizedVaryHeaderNames = GetOrderCasingNormalizedStringValues(varyHeaderNames);
+            var normalizedVaryRouteValues = GetOrderCasingNormalizedStringValues(varyRouteValues);
             var normalizedVaryQueryKeys = GetOrderCasingNormalizedStringValues(varyQueryKeys);
             var normalizedVaryByCustom = GetOrderCasingNormalizedDictionary(varyByCustomKeys);
 
@@ -358,7 +360,8 @@ internal sealed class OutputCacheMiddleware
             context.CacheVaryByRules = new CacheVaryByRules
             {
                 VaryByPrefix = varyByPrefix + normalizedVaryByCustom,
-                HeaderNames = normalizedVaryHeaders,
+                HeaderNames = normalizedVaryHeaderNames,
+                RouteValues = normalizedVaryRouteValues,
                 QueryKeys = normalizedVaryQueryKeys
             };
 
@@ -366,7 +369,7 @@ internal sealed class OutputCacheMiddleware
             // Always overwrite the CachedVaryByRules to update the expiry information
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.VaryByRulesUpdated(normalizedVaryHeaders.ToString(), normalizedVaryQueryKeys.ToString());
+                _logger.VaryByRulesUpdated(normalizedVaryHeaderNames.ToString(), normalizedVaryQueryKeys.ToString(), normalizedVaryRouteValues.ToString());
             }
         }
 

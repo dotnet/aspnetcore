@@ -79,7 +79,10 @@ public sealed class OutputCacheContext
     internal Stream OriginalResponseStream { get; set; } = default!;
 
     internal OutputCacheStream OutputCacheStream { get; set; } = default!;
+
     internal ILogger Logger { get; }
+
     internal OutputCacheOptions Options { get; }
+
     internal IOutputCacheStore Store { get; }
 }
