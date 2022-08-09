@@ -49,7 +49,7 @@ END
 // HTML
 //
 
-OUT_OF_PROCESS_RH_STATIC_HTML               HTML                    "OutOfProcessRhStaticHtml.htm"
+ANCM_ERROR_PAGE               HTML                    "..\\..\\AspNetCoreModuleV2\\AspNetCore\\ancm_error_page.htm"
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
