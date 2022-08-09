@@ -158,7 +158,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
             @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Diagnostics.EventLog'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.IO.Pipelines'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Security.Cryptography.Pkcs'));
-            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Security.Cryptography.Xml'))" />
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Security.Cryptography.Xml'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Threading.RateLimiting'))"/>
 
       <AspNetCoreReferenceAssemblyPath
           Include="@(_ReferencedRuntimeRefAssemblies->'$(RuntimeTransportReferenceDirectory)%(FileName)%(Extension)')" />

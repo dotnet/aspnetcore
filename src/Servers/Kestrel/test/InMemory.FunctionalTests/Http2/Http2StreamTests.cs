@@ -282,7 +282,7 @@ public class Http2StreamTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-            withLength: 52,
+            withLength: 48,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
@@ -290,11 +290,10 @@ public class Http2StreamTests : Http2TestBase
 
         _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
-        Assert.Equal(4, _decodedHeaders.Count);
+        Assert.Equal(3, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("CONNECT", _decodedHeaders["Method"]);
-        Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
     [Fact]

@@ -48,6 +48,18 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string EndpointRoutingApplicationBuilderExtensions = "Microsoft.AspNetCore.Builder.EndpointRoutingApplicationBuilderExtensions";
+        if (compilation.GetTypeByMetadataName(EndpointRoutingApplicationBuilderExtensions) is not { } endpointRoutingApplicationBuilderExtensions)
+        {
+            return false;
+        }
+
+        const string WebApplicationBuilder = "Microsoft.AspNetCore.Builder.WebApplication";
+        if (compilation.GetTypeByMetadataName(WebApplicationBuilder) is not { } webApplicationBuilder)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             ConfigureHostBuilder = configureHostBuilder,
@@ -55,7 +67,9 @@ internal sealed class WellKnownTypes
             GenericHostWebHostBuilderExtensions = genericHostWebHostBuilderExtensions,
             HostingAbstractionsWebHostBuilderExtensions = hostingAbstractionsWebHostBuilderExtensions,
             WebHostBuilderExtensions = webHostBuilderExtensions,
-            HostingHostBuilderExtensions = hostingHostBuilderExtensions
+            HostingHostBuilderExtensions = hostingHostBuilderExtensions,
+            EndpointRoutingApplicationBuilderExtensions = endpointRoutingApplicationBuilderExtensions,
+            WebApplicationBuilder = webApplicationBuilder
         };
 
         return true;
@@ -67,4 +81,6 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol HostingAbstractionsWebHostBuilderExtensions { get; private init; }
     public INamedTypeSymbol WebHostBuilderExtensions { get; private init; }
     public INamedTypeSymbol HostingHostBuilderExtensions { get; private init; }
+    public INamedTypeSymbol EndpointRoutingApplicationBuilderExtensions { get; private init; }
+    public INamedTypeSymbol WebApplicationBuilder { get; private init; }
 }

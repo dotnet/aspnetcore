@@ -652,6 +652,70 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task GET_ConnectionsMakingMultipleRequests_AllSuccess()
+    {
+        // Arrange
+        var requestCount = 0;
+
+        var builder = CreateHostBuilder(context =>
+        {
+            requestCount++;
+            return Task.CompletedTask;
+        });
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+
+            var address = $"https://127.0.0.1:{host.GetPort()}/";
+
+            // Act
+            var connectionRequestTasks = new List<Task<int>>();
+
+            for (var i = 0; i < 10; i++)
+            {
+                connectionRequestTasks.Add(RunConnection(address));
+            }
+
+            var calls = (await Task.WhenAll(connectionRequestTasks)).Sum();
+
+            // Assert
+            Assert.Equal(1000, calls);
+            Assert.Equal(1000, requestCount);
+
+            await host.StopAsync();
+        }
+
+        static async Task<int> RunConnection(string address)
+        {
+            using (var client = HttpHelpers.CreateClient())
+            {
+                var requestTasks = new List<Task>();
+
+                for (var j = 0; j < 100; j++)
+                {
+                    requestTasks.Add(MakeRequest(client, address, j));
+                }
+
+                await Task.WhenAll(requestTasks);
+
+                return requestTasks.Count;
+            }
+        }
+
+        static async Task MakeRequest(HttpMessageInvoker client, string address, int count)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, address);
+            request.Version = HttpVersion.Version30;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response = await client.SendAsync(request, CancellationToken.None);
+            response.EnsureSuccessStatusCode();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task GET_MultipleRequestsInSequence_ReusedState()
     {
         // Arrange

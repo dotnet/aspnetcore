@@ -28,4 +28,42 @@ public class RouteEndpointBuilderTest
         Assert.Equal("/", endpoint.RoutePattern.RawText);
         Assert.Equal(metadata, Assert.Single(endpoint.Metadata));
     }
+
+    [Fact]
+    public async void Build_DoesNot_RunFilters()
+    {
+        var endpointFilterCallCount = 0;
+        var invocationFilterCallCount = 0;
+        var invocationCallCount = 0;
+
+        const int defaultOrder = 0;
+        RequestDelegate requestDelegate = (d) =>
+        {
+            invocationCallCount++;
+            return Task.CompletedTask;
+        };
+
+        var builder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder);
+
+        builder.EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>();
+        builder.EndpointFilterFactories.Add((endopintContext, next) =>
+        {
+            endpointFilterCallCount++;
+
+            return invocationContext =>
+            {
+                invocationFilterCallCount++;
+
+                return next(invocationContext);
+            };
+        });
+
+        var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
+
+        await endpoint.RequestDelegate(new DefaultHttpContext());
+
+        Assert.Equal(0, endpointFilterCallCount);
+        Assert.Equal(0, invocationFilterCallCount);
+        Assert.Equal(1, invocationCallCount);
+    }
 }

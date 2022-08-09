@@ -21,12 +21,12 @@ internal class TestRateLimiter : RateLimiter
         throw new NotImplementedException();
     }
 
-    protected override RateLimitLease AcquireCore(int permitCount)
+    protected override RateLimitLease AttemptAcquireCore(int permitCount)
     {
         return new TestRateLimitLease(_alwaysAccept, null);
     }
 
-    protected override ValueTask<RateLimitLease> WaitAndAcquireAsyncCore(int permitCount, CancellationToken cancellationToken)
+    protected override ValueTask<RateLimitLease> AcquireAsyncCore(int permitCount, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return new ValueTask<RateLimitLease>(new TestRateLimitLease(_alwaysAccept, null));
