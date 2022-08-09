@@ -738,7 +738,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                 var dump = new StringBuilder();
                 foreach (var chainElement in chain.ChainElements)
                 {
-                    var status = string.Join(';', chainElement.ChainElementStatus);
+                    var status = string.Join(';', chainElement.ChainElementStatus.Select(s => s.StatusInformation));
                     dump.AppendLine(CultureInfo.InvariantCulture, $"Thumb: {chainElement.Certificate.Thumbprint} Status: {status}");
                 }
 

@@ -43,7 +43,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
             if (certInfo.KeyPath != null)
             {
                 var certificateKeyPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.KeyPath);
-                var certificate = GetCertificate(certificatePath);
+                var certificate = fullChain.Count > 0 ? fullChain[0] : null;
 
                 if (certificate != null)
                 {
@@ -56,6 +56,8 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
 
                 if (certificate != null)
                 {
+                    // Remove the cert from the full chain to be slightly faster
+                    fullChain.Remove(certificate);
                     if (OperatingSystem.IsWindows())
                     {
                         return (PersistKey(certificate), fullChain);
