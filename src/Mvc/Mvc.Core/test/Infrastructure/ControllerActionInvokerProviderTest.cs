@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 Mock.Of<IControllerFactoryProvider>(),
                 Options.Create(mvcOptions));
 
-            return new(
+            return new ControllerActionInvokerProvider(
                 cache,
                 Options.Create(mvcOptions),
                 NullLoggerFactory.Instance,
