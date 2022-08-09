@@ -43,7 +43,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
             if (certInfo.KeyPath != null)
             {
                 var certificateKeyPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.KeyPath);
-                var certificate = fullChain.Count > 0 ? fullChain[0] : null;
+                var certificate = GetCertificate(certificatePath);
 
                 if (certificate != null)
                 {
@@ -56,8 +56,6 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
 
                 if (certificate != null)
                 {
-                    // Remove the cert from the full chain to be slightly faster
-                    fullChain.Remove(certificate);
                     if (OperatingSystem.IsWindows())
                     {
                         return (PersistKey(certificate), fullChain);
@@ -152,6 +150,16 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
     private static InvalidOperationException CreateErrorGettingPrivateKeyException(string keyPath, Exception ex)
     {
         return new InvalidOperationException($"Error getting private key from '{keyPath}'.", ex);
+    }
+
+    private static X509Certificate2? GetCertificate(string certificatePath)
+    {
+        if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
+        {
+            return new X509Certificate2(certificatePath);
+        }
+
+        return null;
     }
 
     private static void ImportKeyFromFile(AsymmetricAlgorithm asymmetricAlgorithm, string keyText, string? password)
