@@ -218,7 +218,11 @@ internal sealed partial class RateLimitingMiddleware
                     throw new InvalidOperationException($"This endpoint requires a rate limiting policy with name {name}, but no such policy exists.");
                 }
             }
-            return RateLimitPartition.GetNoLimiter<DefaultKeyType>(_defaultPolicyKey);
+            // Should be impossible for both name & policy to be null, but throw in that scenario just in case.
+            else
+            {
+                throw new InvalidOperationException("This endpoint requested a rate limiting policy with a null name.");
+            }
         }, new DefaultKeyTypeEqualityComparer());
     }
 

@@ -6,6 +6,10 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Metadata that provides endpoint-specific request rate limiting.
 /// </summary>
+/// <remarks>
+/// Replaces any policies currently applied to the endpoint.
+/// The global limiter will still run on endpoints with this attribute applied.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class EnableRateLimitingAttribute : Attribute
 {

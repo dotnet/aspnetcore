@@ -6,6 +6,9 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Metadata that disables request rate limiting on an endpoint.
 /// </summary>
+/// <remarks>
+/// Completely disables the rate limiting middleware from applying to this endpoint.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class DisableRateLimitingAttribute : Attribute
 {
