@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -75,6 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 NullLoggerFactory.Instance);
 
             var cache = new ControllerActionInvokerCache(
+                Mock.Of<IActionDescriptorCollectionProvider>(c => c.ActionDescriptors == new ActionDescriptorCollection(new List<ActionDescriptor>(), 1)),
                 parameterBinder,
                 modelBinderFactory,
                 modelMetadataProvider,
