@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -25,7 +26,8 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     internal const int DefaultMaxModelBindingCollectionSize = FormReader.DefaultValueCountLimit;
     internal const int DefaultMaxModelBindingRecursionDepth = 32;
 
-    private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
+    private readonly CompatibilitySwitch<bool> _allowCultureInvariantFormModelBinding;
+    private readonly IReadOnlyList<ICompatibilitySwitch> _switches;
 
     private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
     private int _maxModelBindingCollectionSize = DefaultMaxModelBindingCollectionSize;
@@ -48,6 +50,13 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
         ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
         ModelValidatorProviders = new List<IModelValidatorProvider>();
         ValueProviderFactories = new List<IValueProviderFactory>();
+
+        _allowCultureInvariantFormModelBinding = new(nameof(AllowCultureInvariantFormModelBinding));
+
+        _switches = new ICompatibilitySwitch[]
+        {
+            _allowCultureInvariantFormModelBinding,
+        };
     }
 
     /// <summary>
@@ -378,6 +387,22 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     /// </summary>
     /// <value>Defaults to <c>8192</c>.</value>
     public int MaxIAsyncEnumerableBufferLimit { get; set; } = 8192;
+
+    /// <summary>
+    /// Gets or sets whether form values may be formatted and parsed using <see cref="CultureInfo.InvariantCulture"/>
+    /// when appropriate.
+    /// </summary>
+    /// <remarks>
+    /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are
+    /// directly entered by the user. However, other inputs (e.g., &lt;input type="number"/&gt;) use culture-invariant
+    /// formatting both in the HTML source and in the form request. Setting this property to <see langword="true"/>
+    /// ensures that the correct formatting will be applied for each type of form element.
+    /// </remarks>
+    public bool AllowCultureInvariantFormModelBinding
+    {
+        get => _allowCultureInvariantFormModelBinding.Value;
+        set => _allowCultureInvariantFormModelBinding.Value = value;
+    }
 
     IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 

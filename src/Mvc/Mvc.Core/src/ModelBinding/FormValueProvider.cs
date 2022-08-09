@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
 {
     private readonly IFormCollection _values;
+    private readonly HashSet<string?>? _invariantValueKeys;
     private PrefixContainer? _prefixContainer;
 
     /// <summary>
@@ -22,10 +23,12 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
     /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
     /// <param name="values">The key value pairs to wrap.</param>
     /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
+    /// <param name="options">The <see cref="MvcOptions"/> options.</param>
     public FormValueProvider(
         BindingSource bindingSource,
         IFormCollection values,
-        CultureInfo? culture)
+        CultureInfo? culture,
+        MvcOptions? options)
         : base(bindingSource)
     {
         if (bindingSource == null)
@@ -39,7 +42,27 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         }
 
         _values = values;
+
+        if (options?.AllowCultureInvariantFormModelBinding == true && _values.TryGetValue(FormModelBindingHelper.CultureInvariantFieldName, out var invariantKeys))
+        {
+            _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
+        }
+
         Culture = culture;
+    }
+
+    /// <summary>
+    /// Creates a value provider for <see cref="IFormCollection"/>.
+    /// </summary>
+    /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
+    /// <param name="values">The key value pairs to wrap.</param>
+    /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
+    public FormValueProvider(
+        BindingSource bindingSource,
+        IFormCollection values,
+        CultureInfo? culture)
+        : this(bindingSource, values, culture, options: null)
+    {
     }
 
     /// <summary>
@@ -104,7 +127,8 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         }
         else
         {
-            return new ValueProviderResult(values, Culture);
+            var culture = _invariantValueKeys?.Contains(key) == true ? CultureInfo.InvariantCulture : Culture;
+            return new ValueProviderResult(values, culture);
         }
     }
 }

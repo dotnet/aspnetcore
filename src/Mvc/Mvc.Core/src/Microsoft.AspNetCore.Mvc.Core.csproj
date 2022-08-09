@@ -31,6 +31,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)ProblemDetails\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ModelBinding\FormModelBindingHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
   </ItemGroup>
 

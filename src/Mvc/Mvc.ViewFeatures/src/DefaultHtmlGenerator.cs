@@ -40,6 +40,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     private readonly IUrlHelperFactory _urlHelperFactory;
     private readonly HtmlEncoder _htmlEncoder;
     private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
+    private readonly bool _allowCultureInvariantFormModelBinding;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -51,9 +52,11 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
     /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
     /// <param name="validationAttributeProvider">The <see cref="ValidationHtmlAttributeProvider"/>.</param>
+    /// <param name="mvcOptionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
     public DefaultHtmlGenerator(
         IAntiforgery antiforgery,
         IOptions<MvcViewOptions> optionsAccessor,
+        IOptions<MvcOptions> mvcOptionsAccessor,
         IModelMetadataProvider metadataProvider,
         IUrlHelperFactory urlHelperFactory,
         HtmlEncoder htmlEncoder,
@@ -94,6 +97,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         _urlHelperFactory = urlHelperFactory;
         _htmlEncoder = htmlEncoder;
         _validationAttributeProvider = validationAttributeProvider;
+        _allowCultureInvariantFormModelBinding = mvcOptionsAccessor?.Value.AllowCultureInvariantFormModelBinding ?? false;
 
         // Underscores are fine characters in id's.
         IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -134,7 +138,12 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <inheritdoc />
     public string FormatValue(object value, string format)
     {
-        return ViewDataDictionary.FormatValue(value, format);
+        return ViewDataDictionary.FormatValue(value, format, CultureInfo.CurrentCulture);
+    }
+
+    private static string FormatValue(object value, string format, IFormatProvider formatProvider)
+    {
+        return ViewDataDictionary.FormatValue(value, format, formatProvider);
     }
 
     /// <inheritdoc />
@@ -1282,7 +1291,10 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
         }
 
-        var valueParameter = FormatValue(value, format);
+        var culture = _allowCultureInvariantFormModelBinding && FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(suppliedTypeString)
+            ? CultureInfo.InvariantCulture
+            : CultureInfo.CurrentCulture;
+        var valueParameter = FormatValue(value, format, culture);
         var usedModelState = false;
         switch (inputType)
         {
@@ -1329,27 +1341,15 @@ public class DefaultHtmlGenerator : IHtmlGenerator
 
             case InputType.Text:
             default:
-                var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
-                if (attributeValue == null)
+                if (string.Equals(suppliedTypeString, "file", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(suppliedTypeString, "image", StringComparison.OrdinalIgnoreCase))
                 {
-                    attributeValue = useViewData ? EvalString(viewContext, expression, format) : valueParameter;
+                    // 'value' attribute is not needed for 'file' and 'image' input types.
                 }
-
-                var addValue = true;
-                object typeAttributeValue;
-                if (htmlAttributes != null && htmlAttributes.TryGetValue("type", out typeAttributeValue))
+                else
                 {
-                    var typeAttributeString = typeAttributeValue.ToString();
-                    if (string.Equals(typeAttributeString, "file", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(typeAttributeString, "image", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // 'value' attribute is not needed for 'file' and 'image' input types.
-                        addValue = false;
-                    }
-                }
-
-                if (addValue)
-                {
+                    var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
+                    attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
                     tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
                 }
 
