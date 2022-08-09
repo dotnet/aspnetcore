@@ -93,11 +93,10 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             // builder.Host.ConfigureLogging => builder.Logging
             // builder.WebHost.ConfigureServices => builder.Services
             hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(configureMethodOnHostAccessExpr)
-                .NormalizeWhitespace().WithLeadingTrivia(indentation); 
+                .NormalizeWhitespace().WithLeadingTrivia(indentation);       
 
-            var initArgumentExpr = invocation.ArgumentList.Arguments.SingleOrDefault().Expression;   // builder => { }
-
-            if (initArgumentExpr == null || initArgumentExpr is not LambdaExpressionSyntax lambdaExpr || invocation.ArgumentList.Arguments.Count == 0)
+            if (invocation.ArgumentList.Arguments.SingleOrDefault() is not { } initArgument
+                || initArgument.Expression is not LambdaExpressionSyntax lambdaExpr)
             {
                 return document;
             }
@@ -128,7 +127,6 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(invocation);
                 }
             }
-            //if lambdaExpr.ExpressionBody != null
             else
             {
                 if (lambdaExpr.ExpressionBody is not InvocationExpressionSyntax body)
