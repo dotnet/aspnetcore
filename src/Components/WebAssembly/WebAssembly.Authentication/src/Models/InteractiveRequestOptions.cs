@@ -15,76 +15,19 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 public sealed class InteractiveRequestOptions
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="InteractiveRequestOptions"/>.
+    /// Gets the request type.
     /// </summary>
-    public InteractiveRequestOptions()
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="InteractiveRequestOptions"/> for signing in with the given return url and scopes.
-    /// </summary>
-    /// <param name="returnUrl">The URL to return to after the interactive operation.</param>
-    /// <param name="scopes">The scopes to request interactively.</param>
-    /// <returns>An <see cref="InteractiveRequestOptions"/> configured for signing in.</returns>
-    public static InteractiveRequestOptions SignIn(string returnUrl, IEnumerable<string> scopes = null)
-    {
-        return new InteractiveRequestOptions()
-        {
-            Interaction = InteractionType.SignIn,
-            ReturnUrl = returnUrl,
-            Scopes = scopes
-        };
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="InteractiveRequestOptions"/> for signing out with the given return url.
-    /// </summary>
-    /// <param name="returnUrl">The URL to return to after the interactive operation.</param>
-    /// <returns>An <see cref="InteractiveRequestOptions"/> configured for signing out.</returns>
-    public static InteractiveRequestOptions SignOut(string returnUrl)
-    {
-        return new InteractiveRequestOptions
-        {
-            Interaction = InteractionType.SignOut,
-            ReturnUrl = returnUrl,
-            Scopes = null
-        };
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="InteractiveRequestOptions"/> for signing in with the given return url and scopes.
-    /// </summary>
-    /// <param name="returnUrl">The URL to return to after the interactive operation.</param>
-    /// <param name="scopes">The scopes to request interactively.</param>
-    /// <returns>An <see cref="InteractiveRequestOptions"/> configured for requesting a token interactively.</returns>
-    public static InteractiveRequestOptions GetToken(string returnUrl, IEnumerable<string> scopes = null)
-    {
-        return new InteractiveRequestOptions
-        {
-            Interaction = InteractionType.GetToken,
-            ReturnUrl = returnUrl,
-            Scopes = scopes
-        };
-    }
+    public required InteractionType Interaction { get; init; }
 
     /// <summary>
     /// Gets the redirect URL this request must return to upon successful completion.
     /// </summary>
-    [JsonInclude]
-    public string ReturnUrl { get; init; }
+    public required string ReturnUrl { get; init; }
 
     /// <summary>
     /// Gets the scopes this request must use in the operation.
     /// </summary>
-    [JsonInclude]
     public IEnumerable<string> Scopes { get; init; }
-
-    /// <summary>
-    /// Gets the request type.
-    /// </summary>
-    [JsonInclude]
-    public InteractionType Interaction { get; init; }
 
     private Dictionary<string, object> AdditionalRequestParameters { get; set; }
 
@@ -106,7 +49,7 @@ public sealed class InteractiveRequestOptions
     /// <summary>
     /// Tries to remove an existing additional parameter.
     /// </summary>
-    public bool TryRemoveAdditionalParameter<TValue>(string name)
+    public bool TryRemoveAdditionalParameter(string name)
     {
         ArgumentNullException.ThrowIfNull(name, nameof(name));
         return AdditionalRequestParameters != null && AdditionalRequestParameters.Remove(name);
@@ -136,23 +79,24 @@ public sealed class InteractiveRequestOptions
             return true;
         }
 
-        [UnconditionalSuppressMessageAttribute(
+
+        [UnconditionalSuppressMessage(
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "All the types serialized and deserialized have annotated APIs on the parent method that ensure the members are preserved.")]
+            Justification = "The types this method deserializes are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out as part of 'TryAddAdditionalParameter'.")]
         static TValue Deserialize(JsonElement element) => element.Deserialize<TValue>();
     }
 
     [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Serializes 'InteractiveAuthenticationRequest' into a string")]
+    "Trimming",
+    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+    Justification = "The type this method is serializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
     internal string ToState() => JsonSerializer.Serialize(this);
 
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Deserializes InteractiveAuthenticationRequest")]
+        Justification = "The type this method is deserializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
     internal static InteractiveRequestOptions FromState(string state) => JsonSerializer.Deserialize<InteractiveRequestOptions>(state);
 
     internal class Converter : JsonConverter<InteractiveRequestOptions>
@@ -160,7 +104,7 @@ public sealed class InteractiveRequestOptions
         [UnconditionalSuppressMessage(
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "Serializes InteractiveAuthenticationRequest")]
+            Justification = "The type this method is deserializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
         public override InteractiveRequestOptions Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var requestOptions = JsonSerializer.Deserialize<Options>(ref reader, options);
@@ -177,12 +121,13 @@ public sealed class InteractiveRequestOptions
         [UnconditionalSuppressMessage(
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "Serializes InteractiveAuthenticationRequest")]
+            Justification = "The type this method is serializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
         public override void Write(Utf8JsonWriter writer, InteractiveRequestOptions value, JsonSerializerOptions options)
         {
             JsonSerializer.Serialize(writer, new Options(value.ReturnUrl, value.Scopes, value.Interaction, value.AdditionalRequestParameters), options);
         }
 
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         internal record struct Options(
             [property: JsonInclude] string ReturnUrl,
             [property: JsonInclude] IEnumerable<string> Scopes,

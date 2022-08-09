@@ -16,6 +16,7 @@ public class AccessTokenResult
     /// <param name="status">The status of the result.</param>
     /// <param name="token">The <see cref="AccessToken"/> in case it was successful.</param>
     /// <param name="redirectUrl">The redirect uri to go to for provisioning the token.</param>
+    [Obsolete("Use the AccessTokenResult(AccessTokenResultStatus, AccessToken, string, InteractiveRequestOptions)")]
     public AccessTokenResult(AccessTokenResultStatus status, AccessToken token, string redirectUrl)
     {
         Status = status;

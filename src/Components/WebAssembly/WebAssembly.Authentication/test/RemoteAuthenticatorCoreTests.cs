@@ -43,7 +43,7 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             "https://www.example.com/base/authentication/login",
-            InteractiveRequestOptions.SignIn("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         authServiceMock.SignInCallback = _ => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
         {
@@ -70,7 +70,7 @@ public class RemoteAuthenticatorCoreTests
         var originalUrl = "https://www.example.com/base/authentication/login";
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             originalUrl,
-            InteractiveRequestOptions.SignIn("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         authServiceMock.SignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
         {
@@ -97,7 +97,7 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             "https://www.example.com/base/authentication/login",
-            InteractiveRequestOptions.SignIn("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         authServiceMock.SignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
         {
@@ -166,7 +166,6 @@ public class RemoteAuthenticatorCoreTests
 
         // Assert
         Assert.Equal(originalUrl, remoteAuthenticator.Navigation.Uri);
-
     }
 
     [Fact]
@@ -201,7 +200,6 @@ public class RemoteAuthenticatorCoreTests
         // Assert
         Assert.Equal(fetchDataUrl, remoteAuthenticator.Navigation.Uri);
         Assert.True(loggingSucceededCalled);
-
     }
 
     [Fact]
@@ -244,7 +242,7 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             "https://www.example.com/base/authentication/logout",
-            InteractiveRequestOptions.SignOut("https://www.example.com/base/").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignOut, ReturnUrl = "https://www.example.com/base/" }.ToState());
 
         authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
@@ -300,7 +298,7 @@ public class RemoteAuthenticatorCoreTests
         var originalUrl = "https://www.example.com/base/authentication/login";
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             originalUrl,
-            InteractiveRequestOptions.SignOut("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignOut, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
@@ -329,7 +327,7 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             "https://www.example.com/base/authentication/logout",
-            InteractiveRequestOptions.SignIn("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         if (remoteAuthenticator.SignOutManager is TestSignOutSessionStateManager testManager)
         {
@@ -360,7 +358,7 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             "https://www.example.com/base/authentication/logout",
-            InteractiveRequestOptions.SignIn("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
@@ -388,7 +386,7 @@ public class RemoteAuthenticatorCoreTests
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
             "https://www.example.com/base/authentication/logout-callback",
-            InteractiveRequestOptions.SignIn("https://www.example.com/base/fetchData").ToState());
+            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {

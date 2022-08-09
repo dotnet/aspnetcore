@@ -34,7 +34,11 @@ public static class NavigationManagerExtensions
     {
         manager.NavigateTo(logoutPath, new NavigationOptions
         {
-            HistoryEntryState = InteractiveRequestOptions.SignOut(returnUrl).ToState()
+            HistoryEntryState = new InteractiveRequestOptions
+            {
+                Interaction = InteractionType.SignOut,
+                ReturnUrl = returnUrl
+            }.ToState()
         });
     }
 
@@ -67,6 +71,12 @@ public static class NavigationManagerExtensions
     /// <param name="loginPath">The path to the login url.</param>
     public static void NavigateToLogin(this NavigationManager manager, string loginPath)
     {
-        manager.NavigateToLogin(loginPath, InteractiveRequestOptions.SignIn(manager.Uri));
+        manager.NavigateToLogin(
+            loginPath,
+            new InteractiveRequestOptions
+            {
+                Interaction = InteractionType.SignIn,
+                ReturnUrl = manager.Uri
+            });
     }
 }
