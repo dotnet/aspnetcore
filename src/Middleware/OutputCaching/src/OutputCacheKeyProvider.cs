@@ -171,7 +171,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
             var routeValuesCount = varyByRules?.RouteValues.Count ?? 0;
             if (routeValuesCount > 0)
             {
-                // Append a group separator for the query key segment of the cache key
+                // Append a group separator for the route values segment of the cache key
                 builder.Append(KeyDelimiter)
                     .Append('R');
 
