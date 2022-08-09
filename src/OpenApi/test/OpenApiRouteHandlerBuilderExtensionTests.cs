@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -116,7 +117,31 @@ public class OpenApiRouteHandlerBuilderExtensionTests
     }
 
     [Fact]
-    public void WithOpenApi_GroupMetadataCanBeSeenByAndOverriddenByMoreLocalMetadata()
+    public void WithOpenApi_WorksWithMapGroupAndEndpointAnnotations()
+    {
+        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiOperationGeneratorTests) };
+        var serviceProviderIsService = new ServiceProviderIsService();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
+            .AddSingleton<IHostEnvironment>(hostEnvironment)
+            .BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        string GetString() => "Foo";
+        var myGroup = builder.MapGroup("/group");
+        myGroup.WithOpenApi();
+        myGroup.MapDelete("/a", GetString).Produces<string>(201);
+
+        // The RotueGroupBuilder adds a single EndpointDataSource.
+        var groupDataSource = Assert.Single(builder.DataSources);
+        var endpoint = Assert.Single(groupDataSource.Endpoints);
+        var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
+        Assert.NotNull(operation);
+        Assert.Equal("201", operation.Responses.Keys.SingleOrDefault());
+    }
+
+    [Fact]
+    public void WithOpenApi_GroupMetadataCanExamineAndExtendMoreLocalMetadata()
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiOperationGeneratorTests) };
         var serviceProviderIsService = new ServiceProviderIsService();
@@ -132,7 +157,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         {
             builder.WithOpenApi(operation =>
             {
-                operation.Summary += $" | Local Summary | 200 Status Response Content-Type: {operation.Responses["200"].Content.Keys.Single()}";
+                operation.Summary = $"| Local Summary | 200 Status Response Content-Type: {operation.Responses["200"].Content.Keys.Single()}";
                 return operation;
             });
         }
@@ -147,7 +172,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         // The order WithOpenApi() is relative to the MapDelete() methods does not matter.
         outerGroup.WithOpenApi(operation =>
         {
-            operation.Summary = "Outer Group Summary";
+            operation.Summary = $"Outer Group Summary {operation.Summary}";
             return operation;
         });
 
@@ -156,7 +181,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
 
         innerGroup.WithOpenApi(operation =>
         {
-            operation.Summary += " | Inner Group Summary";
+            operation.Summary = $"| Inner Group Summary {operation.Summary}";
             return operation;
         });
 
@@ -170,7 +195,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
 
         Assert.Equal(5, summaries.Count);
 
-        Assert.Equal(" | Local Summary | 200 Status Response Content-Type: text/plain",
+        Assert.Equal("| Local Summary | 200 Status Response Content-Type: text/plain",
             summaries["/root"]);
 
         Assert.Equal("Outer Group Summary | Local Summary | 200 Status Response Content-Type: text/plain",

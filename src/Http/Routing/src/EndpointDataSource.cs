@@ -73,6 +73,11 @@ public abstract class EndpointDataSource
                 routeEndpointBuilder.Metadata.Add(metadata);
             }
 
+            for (var idx = context.FinallyConvnentions.Count - 1; idx >= 0; idx--)
+            {
+                context.FinallyConvnentions[idx](routeEndpointBuilder);
+            }
+
             // The RoutePattern, RequestDelegate, Order and DisplayName can all be overridden by non-group-aware conventions.
             // Unlike with metadata, if a convention is applied to a group that changes any of these, I would expect these
             // to be overridden as there's no reasonable way to merge these properties.

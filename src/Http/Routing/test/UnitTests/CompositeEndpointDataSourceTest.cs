@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -41,9 +42,16 @@ public class CompositeEndpointDataSourceTest
 
         var prefix = RoutePatternFactory.Parse("/");
         var conventions = Array.Empty<Action<EndpointBuilder>>();
+        var finallyConventions = Array.Empty<Action<EndpointBuilder>>();
         var applicationServices = new ServiceCollection().BuildServiceProvider();
 
-        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(new RouteGroupContext(prefix, conventions, applicationServices));
+        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(new RouteGroupContext
+        {
+            Prefix = prefix,
+            Conventions = conventions,
+            FinallyConvnentions = finallyConventions,
+            ApplicationServices = applicationServices
+        });
 
         var resolvedGroupEndpoints = Assert.Single(dataSource.ResolvedGroupedEndpoints);
         Assert.NotSame(groupedEndpoints, resolvedGroupEndpoints);
@@ -178,7 +186,7 @@ public class CompositeEndpointDataSourceTest
 
         var endpoint2 = CreateEndpoint("/b");
 
-        // Update ObservableCollection with a new DynamicEndpointDataSource 
+        // Update ObservableCollection with a new DynamicEndpointDataSource
         var dataSource2 = new DynamicEndpointDataSource(endpoint2);
         observableCollection.Add(dataSource2);
 
@@ -188,7 +196,7 @@ public class CompositeEndpointDataSourceTest
         token = Assert.IsType<CancellationChangeToken>(changeToken2);
         Assert.False(token.HasChanged);
 
-        // Update the newly added DynamicEndpointDataSource 
+        // Update the newly added DynamicEndpointDataSource
         var endpoint3 = CreateEndpoint("/c");
         dataSource2.AddEndpoint(endpoint3);
 
@@ -262,8 +270,15 @@ public class CompositeEndpointDataSourceTest
         {
             b => b.Metadata.Add(metadata),
         };
+        var finallyConventions = Array.Empty<Action<EndpointBuilder>>();
 
-        var context = new RouteGroupContext(prefix, conventions, applicationServices);
+        var context = new RouteGroupContext
+        {
+            Prefix = prefix,
+            Conventions = conventions,
+            FinallyConvnentions = finallyConventions,
+            ApplicationServices = applicationServices
+        };
         var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
 
         var receivedContext = Assert.Single(dataSource.ReceivedRouteGroupContexts);
@@ -275,17 +290,129 @@ public class CompositeEndpointDataSourceTest
         Assert.Same(metadata, resolvedMetadata);
     }
 
+    [Fact]
+    public void GetGroupedEndpoints_GroupFinallyConventionsApplyToAllEndpoints()
+    {
+        var endpointMetadata = new EndpointMetadataCollection(new object[]
+        {
+            "initial-metadata"
+        });
+        var endpoint1 = CreateEndpoint("/a", metadata: endpointMetadata);
+        var endpoint2 = CreateEndpoint("/b", metadata: endpointMetadata);
+        var dataSource = new TestGroupDataSource(new RouteEndpoint[] { endpoint1, endpoint2 });
+        var compositeDataSource = new CompositeEndpointDataSource(new[] { dataSource });
+
+        var prefix = RoutePatternFactory.Parse("/prefix");
+        var applicationServices = new ServiceCollection().BuildServiceProvider();
+        var metadata = new EndpointNameMetadata("name");
+        var finallyConventions = new Action<EndpointBuilder>[]
+        {
+            b =>
+            {
+                if (b.Metadata.OfType<string>().SingleOrDefault() == "initial-metadata")
+                {
+                    b.Metadata.Add(metadata);
+                }
+            }
+        };
+        var conventions = Array.Empty<Action<EndpointBuilder>>();
+
+        var context = new RouteGroupContext
+        {
+            Prefix = prefix,
+            Conventions = conventions,
+            FinallyConvnentions = finallyConventions,
+            ApplicationServices = applicationServices
+        };
+        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
+
+        var receivedContext = Assert.Single(dataSource.ReceivedRouteGroupContexts);
+        Assert.Same(context, receivedContext);
+
+        Assert.Collection(groupedEndpoints,
+            endpoint1 =>
+            {
+                var endpoint = Assert.IsType<RouteEndpoint>(endpoint1);
+                Assert.Equal("/prefix/a", endpoint.RoutePattern.RawText);
+                Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
+                Assert.Equal("initial-metadata", endpoint.Metadata.GetMetadata<string>());
+            },
+            endpoint2 =>
+            {
+                var endpoint = Assert.IsType<RouteEndpoint>(endpoint2);
+                Assert.Equal("/prefix/b", endpoint.RoutePattern.RawText);
+                Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
+                Assert.Equal("initial-metadata", endpoint.Metadata.GetMetadata<string>());
+            });
+    }
+
+    [Fact]
+    public void GetGroupedEndpoints_GroupFinallyConventionsCanExamineRegularConventions()
+    {
+        var endpoint1 = CreateEndpoint("/a");
+        var endpoint2 = CreateEndpoint("/b");
+        var dataSource = new TestGroupDataSource(new RouteEndpoint[] { endpoint1, endpoint2 });
+        var compositeDataSource = new CompositeEndpointDataSource(new[] { dataSource });
+
+        var prefix = RoutePatternFactory.Parse("/prefix");
+        var applicationServices = new ServiceCollection().BuildServiceProvider();
+        var metadata = new EndpointNameMetadata("name");
+        var conventions = new Action<EndpointBuilder>[]
+        {
+            b => b.Metadata.Add("initial-metadata")
+        };
+        var finallyConventions = new Action<EndpointBuilder>[]
+        {
+            b =>
+            {
+                if (b.Metadata.OfType<string>().SingleOrDefault() == "initial-metadata")
+                {
+                    b.Metadata.Add(metadata);
+                }
+            }
+        };
+
+        var context = new RouteGroupContext
+        {
+            Prefix = prefix,
+            Conventions = conventions,
+            FinallyConvnentions = finallyConventions,
+            ApplicationServices = applicationServices
+        };
+        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
+
+        var receivedContext = Assert.Single(dataSource.ReceivedRouteGroupContexts);
+        Assert.Same(context, receivedContext);
+
+        Assert.Collection(groupedEndpoints,
+            endpoint1 =>
+            {
+                var endpoint = Assert.IsType<RouteEndpoint>(endpoint1);
+                Assert.Equal("/prefix/a", endpoint.RoutePattern.RawText);
+                Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
+                Assert.Equal("initial-metadata", endpoint.Metadata.GetMetadata<string>());
+            },
+            endpoint2 =>
+            {
+                var endpoint = Assert.IsType<RouteEndpoint>(endpoint2);
+                Assert.Equal("/prefix/b", endpoint.RoutePattern.RawText);
+                Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
+                Assert.Equal("initial-metadata", endpoint.Metadata.GetMetadata<string>());
+            });
+    }
+
     private RouteEndpoint CreateEndpoint(
         string template,
         object defaults = null,
         int order = 0,
+        EndpointMetadataCollection metadata = null,
         string routeName = null)
     {
         return new RouteEndpoint(
             TestConstants.EmptyRequestDelegate,
             RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
             order,
-            EndpointMetadataCollection.Empty,
+            metadata ?? EndpointMetadataCollection.Empty,
             null);
     }
 

@@ -1026,6 +1026,58 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Throws<ArgumentNullException>("applicationServices", () => new EndpointFilterFactoryContext(handler.Method, new List<object>(), null!));
     }
 
+    [Fact]
+    public void FinallyOnGroup_CanExamineFinallyOnEndpoint()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        ((IEndpointConventionBuilder)group).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint"))
+            {
+                b.Metadata.Add("added-from-group");
+            }
+        });
+            
+        group.MapGet("/endpoint", () => { }).Finally(b => b.Metadata.Add("added-from-endpoint"));
+
+        var endpoint = Assert.Single(builder.DataSources
+            .SelectMany(ds => ds.Endpoints));
+
+        Assert.Equal(new[] { "added-from-endpoint", "added-from-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+    }
+
+    [Fact]
+    public void FinallyONestednGroups_CanExamineFinallyInLIFOOrder()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        var outerGroup = builder.MapGroup("/group");
+        var innerGroup = outerGroup.MapGroup("/");
+        ((IEndpointConventionBuilder)innerGroup).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint"))
+            {
+                b.Metadata.Add("added-from-inner-group");
+            }
+        });
+        ((IEndpointConventionBuilder)outerGroup).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-inner-group"))
+            {
+                b.Metadata.Add("added-from-outer-group");
+            }
+        });
+
+        innerGroup.MapGet("/endpoint", () => { }).Finally(b => b.Metadata.Add("added-from-endpoint"));
+
+        var endpoint = Assert.Single(builder.DataSources
+            .SelectMany(ds => ds.Endpoints));
+
+        Assert.Equal(new[] { "added-from-endpoint", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+    }
+
     class MyService { }
 
     class ServiceAccessingEndpointFilter : IEndpointFilter

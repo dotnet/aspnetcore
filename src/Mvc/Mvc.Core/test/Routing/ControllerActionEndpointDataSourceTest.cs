@@ -424,7 +424,12 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
         };
         var sp = Mock.Of<IServiceProvider>();
         var groupPattern = RoutePatternFactory.Parse("/group1");
-        var endpoints = dataSource.GetGroupedEndpoints(new RouteGroupContext(groupPattern, groupConventions, sp));
+        var endpoints = dataSource.GetGroupedEndpoints(new RouteGroupContext
+        {
+            Prefix = groupPattern,
+            Conventions = groupConventions,
+            ApplicationServices = sp
+        });
 
         // Assert
         Assert.Collection(
@@ -471,9 +476,72 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
             });
     }
 
-    private class GroupMetadata
+    [Fact]
+    public void Endpoints_AppliesFinallyConventions_InLIFOOrder()
     {
+        // Arrange
+        var actions = new List<ActionDescriptor>
+            {
+                new ControllerActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = "/test",
+                    },
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Test" },
+                        { "controller", "Test" },
+                    },
+                },
+                new ControllerActionDescriptor
+                {
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Index" },
+                        { "controller", "Home" },
+                    },
+                }
+            };
+
+        var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+        mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
+
+        var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
+        var builder1 = dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null);
+        builder1.Finally(b => b.Metadata.Add("A1"));
+        builder1.Finally(b => b.Metadata.Add("A2"));
+        var builder2 = dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null);
+        builder2.Finally(b => b.Metadata.Add("B1"));
+        builder2.Finally(b => b.Metadata.Add("B2"));
+
+        dataSource.DefaultBuilder.Finally(b => b.Metadata.Add("C1"));
+        dataSource.DefaultBuilder.Finally(b => b.Metadata.Add("C2"));
+
+        // Act
+        var endpoints = dataSource.Endpoints;
+
+        // Assert
+        Assert.Collection(
+            endpoints.OfType<RouteEndpoint>().Where(e => SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+            e =>
+            {
+                Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                Assert.Equal(new[] { "A2", "A1", "C2", "C1" }, e.Metadata.GetOrderedMetadata<string>());
+            },
+            e =>
+            {
+                Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                Assert.Equal(new[] { "B2", "B1", "C2", "C1" }, e.Metadata.GetOrderedMetadata<string>());
+            },
+            e =>
+            {
+                Assert.Equal("/test", e.RoutePattern.RawText);
+                Assert.Equal(new[] { "C2", "C1" }, e.Metadata.GetOrderedMetadata<string>()); ;
+            });
     }
+
+    private class GroupMetadata { }
 
     private static bool SupportsLinkGeneration(RouteEndpoint endpoint)
     {

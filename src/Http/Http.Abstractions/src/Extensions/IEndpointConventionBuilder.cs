@@ -16,4 +16,10 @@ public interface IEndpointConventionBuilder
     /// </summary>
     /// <param name="convention">The convention to add to the builder.</param>
     void Add(Action<EndpointBuilder> convention);
+
+    /// <summary>
+    /// Registers the specified convention for execution after the target builder has been built.
+    /// </summary>
+    /// <param name="finalConvention">The final convention to add to the builder.</param>
+    void Finally(Action<EndpointBuilder> finalConvention) => throw new NotImplementedException();
 }

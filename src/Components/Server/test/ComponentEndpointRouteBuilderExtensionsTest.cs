@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -50,6 +51,75 @@ public class ComponentEndpointRouteBuilderExtensionsTest
 
         // Assert
         Assert.True(called);
+    }
+
+    [Fact]
+    public void MapBlazorHub_AppliesFinalConventionToEachBuilder()
+    {
+        // Arrange
+        var applicationBuilder = CreateAppBuilder();
+        var buildersAffected = new List<string>();
+        var called = false;
+
+        // Act
+        var app = applicationBuilder
+            .UseRouting()
+            .UseEndpoints(endpoints =>
+            {
+                endpoints
+                .MapBlazorHub(dispatchOptions => called = true)
+                .WithMetadata("initial-md")
+                .Finally(builder =>
+                {
+                    if (builder.Metadata.Any(md => md is string smd && smd == "initial-md"))
+                    {
+                        buildersAffected.Add(builder.DisplayName);
+                    }
+                });
+            }).Build();
+
+        // Trigger endpoint construction
+        app.Invoke(new DefaultHttpContext());
+
+        // Assert
+        Assert.True(called);
+        // Final conventions are applied to each of the builders
+        // in the Blazor component hub
+        Assert.Equal(4, buildersAffected.Count);
+        Assert.Contains("/_blazor/negotiate", buildersAffected);
+        Assert.Contains("/_blazor", buildersAffected);
+        Assert.Contains("Blazor disconnect", buildersAffected);
+        Assert.Contains("Blazor initializers", buildersAffected);
+    }
+
+    [Fact]
+    public void MapBlazorHub_AppliesFinalConventionsInLIFOOrder()
+    {
+        // Arrange
+        var applicationBuilder = CreateAppBuilder();
+        var called = false;
+        var populatedMetadata = Array.Empty<string>();
+
+        // Act
+        var app = applicationBuilder
+            .UseRouting()
+            .UseEndpoints(endpoints =>
+            {
+                var builder = endpoints.MapBlazorHub(dispatchOptions => called = true);
+                builder.Finally(b =>
+                {
+                    populatedMetadata = b.Metadata.OfType<string>().ToArray();
+                });
+                builder.Finally(b => b.Metadata.Add("first-in"));
+                builder.Finally(b => b.Metadata.Add("last-in"));
+            }).Build();
+
+        // Trigger endpoint construction
+        app.Invoke(new DefaultHttpContext());
+
+        // Assert
+        Assert.True(called);
+        Assert.Equal(new[] { "last-in", "first-in" }, populatedMetadata);
     }
 
     private IApplicationBuilder CreateAppBuilder()

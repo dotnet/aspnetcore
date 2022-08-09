@@ -1,12 +1,18 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.RouteHandlerBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
 Microsoft.AspNetCore.Http.EndpointFilterExtensions
 Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.Dispose() -> void
 Microsoft.AspNetCore.Routing.RouteGroupBuilder
 Microsoft.AspNetCore.Routing.RouteGroupContext
 Microsoft.AspNetCore.Routing.RouteGroupContext.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Routing.RouteGroupContext.ApplicationServices.init -> void
 Microsoft.AspNetCore.Routing.RouteGroupContext.Conventions.get -> System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>!>!
+Microsoft.AspNetCore.Routing.RouteGroupContext.Conventions.init -> void
+Microsoft.AspNetCore.Routing.RouteGroupContext.FinallyConvnentions.get -> System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>!>!
+Microsoft.AspNetCore.Routing.RouteGroupContext.FinallyConvnentions.init -> void
 Microsoft.AspNetCore.Routing.RouteGroupContext.Prefix.get -> Microsoft.AspNetCore.Routing.Patterns.RoutePattern!
-Microsoft.AspNetCore.Routing.RouteGroupContext.RouteGroupContext(Microsoft.AspNetCore.Routing.Patterns.RoutePattern! prefix, System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>!>! conventions, System.IServiceProvider! applicationServices) -> void
+Microsoft.AspNetCore.Routing.RouteGroupContext.Prefix.init -> void
+Microsoft.AspNetCore.Routing.RouteGroupContext.RouteGroupContext() -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy(string! token, System.Type! type) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy<T>(string! token) -> void
 override Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.GetGroupedEndpoints(Microsoft.AspNetCore.Routing.RouteGroupContext! context) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>!
