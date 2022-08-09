@@ -154,16 +154,6 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         return new InvalidOperationException($"Error getting private key from '{keyPath}'.", ex);
     }
 
-    private static X509Certificate2? GetCertificate(string certificatePath)
-    {
-        if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
-        {
-            return new X509Certificate2(certificatePath);
-        }
-
-        return null;
-    }
-
     private static void ImportKeyFromFile(AsymmetricAlgorithm asymmetricAlgorithm, string keyText, string? password)
     {
         if (password == null)
