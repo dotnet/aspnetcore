@@ -18,10 +18,8 @@ public class AuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResu
         {
             return next(context);
         }
-        else
-        {
-            return Handle();
-        }
+
+        return Handle();
 
         async Task Handle()
         {
