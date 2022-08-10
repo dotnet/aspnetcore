@@ -13,9 +13,9 @@ internal static class RerouteHelper
 
     internal static RequestDelegate Reroute(IApplicationBuilder app, object routeBuilder, RequestDelegate next)
     {
-        var builder = app.New();
-        if (builder.Properties.TryGetValue(UseRoutingKey, out var useRouting) && useRouting is Func<IApplicationBuilder, IApplicationBuilder> useRoutingFunc)
+        if (app.Properties.TryGetValue(UseRoutingKey, out var useRouting) && useRouting is Func<IApplicationBuilder, IApplicationBuilder> useRoutingFunc)
         {
+            var builder = app.New();
             // use the old routing pipeline if it exists so we preserve all the routes and matching logic
             // ((IApplicationBuilder)WebApplication).New() does not copy GlobalRouteBuilderKey automatically like it does for all other properties.
             builder.Properties[GlobalRouteBuilderKey] = routeBuilder;
