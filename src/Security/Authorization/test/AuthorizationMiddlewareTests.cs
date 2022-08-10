@@ -5,8 +5,11 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization.Test.TestObjects;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
@@ -658,6 +661,27 @@ public class AuthorizationMiddlewareTests
         Assert.Same(authenticateResult, authenticateResultFeature.AuthenticateResult);
     }
 
+    // Validation for https://github.com/dotnet/aspnetcore/issues/43188
+    [Fact]
+    public async Task WebApplicationBuilder_CanRegisterAuthzMiddlewareWithScopedService()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddAuthorization();
+        builder.Services.AddScoped<IAuthorizationHandler, TestAuthorizationHandler>();
+        using var app = builder.Build();
+
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+
+        await app.StartAsync();
+
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+    }
+
     private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null)
     {
         requestDelegate = requestDelegate ?? ((context) => Task.CompletedTask);
@@ -722,6 +746,11 @@ public class AuthorizationMiddlewareTests
         }
 
         return httpContext;
+    }
+
+    public class TestAuthorizationHandler : IAuthorizationHandler
+    {
+        public Task HandleAsync(AuthorizationHandlerContext context) => Task.CompletedTask;
     }
 
     private class TestRequestDelegate
