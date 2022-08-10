@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -13,8 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
-using Xunit;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -82,6 +76,36 @@ public class HttpParserTests : LoggedTest
     [Theory]
     [MemberData(nameof(RequestLineInvalidData))]
     public void ParseRequestLineThrowsOnInvalidRequestLine(string requestLine)
+    {
+        // These should fail with or without quirk mode
+
+        var parser = CreateParser(CreateEnabledTrace());
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
+
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequestLineInvalidDataLineFeedTerminator))]
+    public void ParseRequestSucceedsOnInvalidRequestLineLineFeedTerminator(string requestLine)
+    {
+        var parser = CreateParser(CreateEnabledTrace(), allowLineFeedTerminator: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
+        var requestHandler = new RequestHandler();
+
+        Assert.True(ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
+    }
+
+    [Theory]
+    [MemberData(nameof(RequestLineInvalidDataLineFeedTerminator))]
+    public void ParseRequestLineThrowsOnInvalidRequestLineLineFeedTerminator(string requestLine)
     {
         var parser = CreateParser(CreateEnabledTrace());
         var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
@@ -224,6 +248,8 @@ public class HttpParserTests : LoggedTest
     [InlineData("Cookie:\r\nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
     [InlineData("Connection: close\r\nCookie: \r\n\r\n", "Connection", "close", "Cookie", "")]
     [InlineData("Connection: close\r\nCookie:\r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("a:b\r\n\r\n", "a", "b", null, null)]
+    [InlineData("a: b\r\n\r\n", "a", "b", null, null)]
     public void ParseHeadersCanParseEmptyHeaderValues(
         string rawHeaders,
         string expectedHeaderName1,
@@ -239,6 +265,115 @@ public class HttpParserTests : LoggedTest
             : new[] { expectedHeaderValue1, expectedHeaderValue2 };
 
         VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues);
+    }
+
+    [Theory]
+    [InlineData("Cookie: \n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie:\n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie: \nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie: \r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Connection: close\nCookie: \r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie: \n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\nCookie:\r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie:\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("a:b\n\r\n", "a", "b", null, null)]
+    [InlineData("a: b\n\r\n", "a", "b", null, null)]
+    [InlineData("a:b\n\n", "a", "b", null, null)]
+    [InlineData("a: b\n\n", "a", "b", null, null)]
+    public void ParseHeadersCantParseSingleLineFeedWihtoutLineFeedTerminatorEnabled(
+        string rawHeaders,
+        string expectedHeaderName1,
+        string expectedHeaderValue1,
+        string expectedHeaderName2,
+        string expectedHeaderValue2)
+    {
+        var expectedHeaderNames = expectedHeaderName2 == null
+            ? new[] { expectedHeaderName1 }
+            : new[] { expectedHeaderName1, expectedHeaderName2 };
+        var expectedHeaderValues = expectedHeaderValue2 == null
+            ? new[] { expectedHeaderValue1 }
+            : new[] { expectedHeaderValue1, expectedHeaderValue2 };
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() => VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+    [Theory]
+    [InlineData("Cookie: \n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie:\n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie: \nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie: \r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Connection: close\nCookie: \r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie: \n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\nCookie:\r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie:\n\r\n", "Connection", "close", "Cookie", "")]
+    public void ParseHeadersCanParseSingleLineFeedWithLineFeedTerminatorEnabled(
+        string rawHeaders,
+        string expectedHeaderName1,
+        string expectedHeaderValue1,
+        string expectedHeaderName2,
+        string expectedHeaderValue2)
+    {
+        var expectedHeaderNames = expectedHeaderName2 == null
+            ? new[] { expectedHeaderName1 }
+            : new[] { expectedHeaderName1, expectedHeaderName2 };
+        var expectedHeaderValues = expectedHeaderValue2 == null
+            ? new[] { expectedHeaderValue1 }
+            : new[] { expectedHeaderValue1, expectedHeaderValue2 };
+
+        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues, allowLineFeedTerminator: true);
+    }
+
+    [Theory]
+    [InlineData("a: b\r\n\n", "a", "b", null, null)]
+    [InlineData("a: b\n\n", "a", "b", null, null)]
+    [InlineData("a: b\nc: d\r\n\n", "a", "b", "c", "d")]
+    [InlineData("a: b\nc: d\n\n", "a", "b", "c", "d")]
+    public void ParseHeadersCantEndWithLineFeedTerminator(
+        string rawHeaders,
+        string expectedHeaderName1,
+        string expectedHeaderValue1,
+        string expectedHeaderName2,
+        string expectedHeaderValue2)
+    {
+        var expectedHeaderNames = expectedHeaderName2 == null
+            ? new[] { expectedHeaderName1 }
+            : new[] { expectedHeaderName1, expectedHeaderName2 };
+        var expectedHeaderValues = expectedHeaderValue2 == null
+            ? new[] { expectedHeaderValue1 }
+            : new[] { expectedHeaderValue1, expectedHeaderValue2 };
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() => VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+    [Theory]
+    [InlineData("a:b\n\r\n", "a", "b", null, null)]
+    [InlineData("a: b\n\r\n", "a", "b", null, null)]
+    [InlineData("a: b\nc: d\n\r\n", "a", "b", "c", "d")]
+    [InlineData("a: b\nc: d\n\n", "a", "b", "c", "d")]
+    [InlineData("a: b\n\n", "a", "b", null, null)]
+    public void ParseHeadersCanEndAfterLineFeedTerminator(
+                string rawHeaders,
+                string expectedHeaderName1,
+                string expectedHeaderValue1,
+                string expectedHeaderName2,
+                string expectedHeaderValue2)
+    {
+        var expectedHeaderNames = expectedHeaderName2 == null
+            ? new[] { expectedHeaderName1 }
+            : new[] { expectedHeaderName1, expectedHeaderName2 };
+        var expectedHeaderValues = expectedHeaderValue2 == null
+            ? new[] { expectedHeaderValue1 }
+            : new[] { expectedHeaderValue1, expectedHeaderValue2 };
+
+        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues, allowLineFeedTerminator: true);
     }
 
     [Theory]
@@ -311,6 +446,26 @@ public class HttpParserTests : LoggedTest
     [Theory]
     [MemberData(nameof(RequestHeaderInvalidData))]
     public void ParseHeadersThrowsOnInvalidRequestHeaders(string rawHeaders, string expectedExceptionMessage)
+    {
+        var parser = CreateParser(CreateEnabledTrace());
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(expectedExceptionMessage, exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequestHeaderInvalidDataLineFeedTerminator))]
+    public void ParseHeadersThrowsOnInvalidRequestHeadersLineFeedTerminator(string rawHeaders, string expectedExceptionMessage)
     {
         var parser = CreateParser(CreateEnabledTrace());
         var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
@@ -426,11 +581,33 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
-    [Fact]
-    public void ParseHeadersWithGratuitouslySplitBuffers()
+    [Theory]
+    [MemberData(nameof(RequestHeaderInvalidDataLineFeedTerminator))]
+    public void ParseHeadersThrowsOnInvalidRequestHeadersWithGratuitouslySplitBuffersLineFeedTerminator(string rawHeaders, string expectedExceptionMessage)
+    {
+        var parser = CreateParser(CreateEnabledTrace());
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(rawHeaders);
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(expectedExceptionMessage, exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("Host:\r\nConnection: keep-alive\r\n\r\n")]
+    [InlineData("A:B\r\nB: C\r\n\r\n")]
+    public void ParseHeadersWithGratuitouslySplitBuffers(string headers)
     {
         var parser = CreateParser(_nullTrace);
-        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent("Host:\r\nConnection: keep-alive\r\n\r\n");
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
 
         var requestHandler = new RequestHandler();
         var reader = new SequenceReader<byte>(buffer);
@@ -439,11 +616,15 @@ public class HttpParserTests : LoggedTest
         Assert.True(result);
     }
 
-    [Fact]
-    public void ParseHeadersWithGratuitouslySplitBuffers2()
+    [Theory]
+    [InlineData("Host:\nConnection: keep-alive\r\n\r\n")]
+    [InlineData("Host:\r\nConnection: keep-alive\n\r\n")]
+    [InlineData("A:B\nB: C\r\n\r\n")]
+    [InlineData("A:B\r\nB: C\n\r\n")]
+    public void ParseHeadersWithGratuitouslySplitBuffersQuirkMode(string headers)
     {
-        var parser = CreateParser(_nullTrace);
-        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent("A:B\r\nB: C\r\n\r\n");
+        var parser = CreateParser(_nullTrace, allowLineFeedTerminator: true);
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
 
         var requestHandler = new RequestHandler();
         var reader = new SequenceReader<byte>(buffer);
@@ -488,11 +669,11 @@ public class HttpParserTests : LoggedTest
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
     }
 
-    private void VerifyRawHeaders(string rawHeaders, IEnumerable<string> expectedHeaderNames, IEnumerable<string> expectedHeaderValues)
+    private void VerifyRawHeaders(string rawHeaders, IEnumerable<string> expectedHeaderNames, IEnumerable<string> expectedHeaderValues, bool allowLineFeedTerminator = false)
     {
         Assert.True(expectedHeaderNames.Count() == expectedHeaderValues.Count(), $"{nameof(expectedHeaderNames)} and {nameof(expectedHeaderValues)} sizes must match");
 
-        var parser = CreateParser(_nullTrace);
+        var parser = CreateParser(_nullTrace, allowLineFeedTerminator);
         var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
 
         var requestHandler = new RequestHandler();
@@ -507,11 +688,13 @@ public class HttpParserTests : LoggedTest
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
     }
 
-    private IHttpParser<RequestHandler> CreateParser(KestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information));
+    private IHttpParser<RequestHandler> CreateParser(KestrelTrace log, bool allowLineFeedTerminator = false) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), allowLineFeedTerminator);
 
     public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 
     public static IEnumerable<object[]> RequestLineIncompleteData => HttpParsingData.RequestLineIncompleteData.Select(requestLine => new[] { requestLine });
+
+    public static IEnumerable<object[]> RequestLineInvalidDataLineFeedTerminator => HttpParsingData.RequestLineInvalidDataLineFeedTerminator.Select(requestLine => new[] { requestLine });
 
     public static IEnumerable<object[]> RequestLineInvalidData => HttpParsingData.RequestLineInvalidData.Select(requestLine => new[] { requestLine });
 
@@ -520,6 +703,8 @@ public class HttpParserTests : LoggedTest
     public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
 
     public static IEnumerable<object[]> RequestHeaderInvalidData => HttpParsingData.RequestHeaderInvalidData;
+
+    public static IEnumerable<object[]> RequestHeaderInvalidDataLineFeedTerminator => HttpParsingData.RequestHeaderInvalidDataLineFeedTerminator;
 
     private class RequestHandler : IHttpRequestLineHandler, IHttpHeadersHandler
     {

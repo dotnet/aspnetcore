@@ -92,6 +92,15 @@ public class KestrelServerOptions
     public bool DisableStringReuse { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that controls whether the request lines
+    /// can end with LF only instead of CR/LF.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to false.
+    /// </remarks>
+    public bool AllowLineFeedTerminator { get; set; }
+
+    /// <summary>
     /// Controls whether to return the "Alt-Svc" header from an HTTP/2 or lower response for HTTP/3.
     /// </summary>
     /// <remarks>
