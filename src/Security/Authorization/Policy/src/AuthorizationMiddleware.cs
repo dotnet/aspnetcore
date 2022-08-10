@@ -23,6 +23,7 @@ public class AuthorizationMiddleware
 
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
+    private readonly bool _cacheCombinedPolicy;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
@@ -33,6 +34,9 @@ public class AuthorizationMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
+
+        // Only try to cache combined policies for the default policy provider
+        _cacheCombinedPolicy = _policyProvider is DefaultAuthorizationPolicyProvider;
     }
 
     /// <summary>
@@ -55,7 +59,10 @@ public class AuthorizationMiddleware
         }
 
         // Use the computed policy for this endpoint if we can
-        var computedPolicy = endpoint?.Metadata.GetMetadata<AuthorizationPolicyCache>();
+        var computedPolicy = _cacheCombinedPolicy
+            ? endpoint?.Metadata.GetMetadata<AuthorizationPolicyCache>()
+            : null;
+
         var policy = computedPolicy?.Policy;
         if (policy == null)
         {
