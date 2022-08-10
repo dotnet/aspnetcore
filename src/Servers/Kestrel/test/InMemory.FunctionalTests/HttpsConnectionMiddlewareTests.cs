@@ -711,6 +711,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Chain fails to build on mac osx.")]
     public async Task ServerCertificateChainInExtraStore()
     {
         var streams = new List<SslStream>();
