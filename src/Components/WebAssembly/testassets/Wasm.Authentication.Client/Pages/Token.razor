@@ -52,7 +52,7 @@ else
 
         if (!accessTokenResult.TryGetToken(out var token))
         {
-            Navigation.NavigateToLogin(accessTokenResult.InteractiveRequestUrl, accessTokenResult.InteractiveRequest);
+            Navigation.NavigateToLogin(accessTokenResult.InteractiveRequestUrl, accessTokenResult.InteractionOptions);
             return;
         }
 

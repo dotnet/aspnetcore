@@ -323,8 +323,8 @@ public class RemoteAuthenticationServiceTests
         Assert.Null(token);
         Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
         Assert.Equal("login", result.InteractiveRequestUrl);
-        Assert.Equal("https://www.example.com/base/add-product", result.InteractiveRequest.ReturnUrl);
-        Assert.Equal(new[] { "something" }, result.InteractiveRequest.Scopes);
+        Assert.Equal("https://www.example.com/base/add-product", result.InteractionOptions.ReturnUrl);
+        Assert.Equal(new[] { "something" }, result.InteractionOptions.Scopes);
         Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
     }
 
@@ -365,8 +365,8 @@ public class RemoteAuthenticationServiceTests
         Assert.Null(token);
         Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
         Assert.Equal("login", result.InteractiveRequestUrl);
-        Assert.Equal("https://www.example.com/base/add-saved-product/123413241234", result.InteractiveRequest.ReturnUrl);
-        Assert.Equal(new[] { "something" }, result.InteractiveRequest.Scopes);
+        Assert.Equal("https://www.example.com/base/add-saved-product/123413241234", result.InteractionOptions.ReturnUrl);
+        Assert.Equal(new[] { "something" }, result.InteractionOptions.Scopes);
         Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
     }
 

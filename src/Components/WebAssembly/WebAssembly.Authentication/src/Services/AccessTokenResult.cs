@@ -36,7 +36,7 @@ public class AccessTokenResult
         Status = status;
         _token = token;
         InteractiveRequestUrl = interactiveRequestUrl;
-        InteractiveRequest = interactiveRequest;
+        InteractionOptions = interactiveRequest;
     }
 
     /// <summary>
@@ -47,6 +47,7 @@ public class AccessTokenResult
     /// <summary>
     /// Gets the URL to redirect to if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
     /// </summary>
+    [Obsolete("Use 'InteractiveRequestUrl' and 'InteractiveRequest' instead.")]
     public string RedirectUrl { get; }
 
     /// <summary>
@@ -58,7 +59,7 @@ public class AccessTokenResult
     /// <summary>
     /// Gets the <see cref="InteractiveRequestOptions"/> to use if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
     /// </summary>
-    public InteractiveRequestOptions InteractiveRequest { get; }
+    public InteractiveRequestOptions InteractionOptions { get; }
 
     /// <summary>
     /// Determines whether the token request was successful and makes the <see cref="AccessToken"/> available for use when it is.

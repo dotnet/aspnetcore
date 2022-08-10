@@ -180,8 +180,8 @@ public class RemoteAuthenticationService<
             result.Status == AccessTokenResultStatus.RequiresRedirect ? new InteractiveRequestOptions
             {
                 Interaction = InteractionType.GetToken,
-                ReturnUrl = GetReturnUrl(null),
-                Scopes = options.Scopes
+                ReturnUrl = GetReturnUrl(options.ReturnUrl),
+                Scopes = options.Scopes ?? Array.Empty<string>(),
             } : null);
     }
 

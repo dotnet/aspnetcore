@@ -30,26 +30,31 @@ public class AccessTokenNotAvailableException : Exception
     }
 
     /// <summary>
-    /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
+    /// Navigates to <see cref="AccessTokenResult.InteractiveRequestUrl"/> using the given <see cref="AccessTokenResult.InteractionOptions"/>
+    /// to allow refreshing the access token.
     /// </summary>
     public void Redirect()
     {
-        if (_tokenResult.InteractiveRequest != null && _tokenResult.InteractiveRequestUrl != null)
+        if (_tokenResult.InteractionOptions != null && _tokenResult.InteractiveRequestUrl != null)
         {
-            _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractiveRequest);
+            _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractionOptions);
         }
         else
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             _navigation.NavigateTo(_tokenResult.RedirectUrl);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
     /// <summary>
-    /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
+    /// Navigates to <see cref="AccessTokenResult.InteractiveRequestUrl"/> using the given <see cref="AccessTokenResult.InteractionOptions"/>
+    /// to allow refreshing the access token.
     /// </summary>
     public void Redirect(Action<InteractiveRequestOptions> request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractiveRequest);
+        request(_tokenResult.InteractionOptions);
+        _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractionOptions);
     }
 }
