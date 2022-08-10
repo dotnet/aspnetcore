@@ -86,27 +86,17 @@ public sealed class InteractiveRequestOptions
         static TValue Deserialize(JsonElement element) => element.Deserialize<TValue>();
     }
 
-    [UnconditionalSuppressMessage(
-    "Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "The type this method is serializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
-    internal string ToState() => JsonSerializer.Serialize(this);
+    internal string ToState() => JsonSerializer.Serialize(this, InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions);
 
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "The type this method is deserializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
-    internal static InteractiveRequestOptions FromState(string state) => JsonSerializer.Deserialize<InteractiveRequestOptions>(state);
+    internal static InteractiveRequestOptions FromState(string state) => JsonSerializer.Deserialize(
+        state,
+        InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions);
 
     internal class Converter : JsonConverter<InteractiveRequestOptions>
     {
-        [UnconditionalSuppressMessage(
-            "Trimming",
-            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "The type this method is deserializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
         public override InteractiveRequestOptions Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var requestOptions = JsonSerializer.Deserialize<Options>(ref reader, options);
+            var requestOptions = JsonSerializer.Deserialize(ref reader, InteractiveRequestOptionsSerializerContext.Default.OptionsRecord);
 
             return new InteractiveRequestOptions
             {
@@ -117,20 +107,25 @@ public sealed class InteractiveRequestOptions
             };
         }
 
-        [UnconditionalSuppressMessage(
-            "Trimming",
-            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-            Justification = "The type this method is serializing are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out.")]
         public override void Write(Utf8JsonWriter writer, InteractiveRequestOptions value, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize(writer, new Options(value.ReturnUrl, value.Scopes, value.Interaction, value.AdditionalRequestParameters), options);
+            JsonSerializer.Serialize(
+                writer,
+                new OptionsRecord(value.ReturnUrl, value.Scopes, value.Interaction, value.AdditionalRequestParameters),
+                InteractiveRequestOptionsSerializerContext.Default.OptionsRecord);
         }
 
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-        internal record struct Options(
+        internal record struct OptionsRecord(
             [property: JsonInclude] string ReturnUrl,
             [property: JsonInclude] IEnumerable<string> Scopes,
             [property: JsonInclude] InteractionType Interaction,
             [property: JsonInclude] Dictionary<string, object> AdditionalRequestParameters);
     }
+
+}
+
+[JsonSerializable(typeof(InteractiveRequestOptions))]
+[JsonSerializable(typeof(InteractiveRequestOptions.Converter.OptionsRecord))]
+internal partial class InteractiveRequestOptionsSerializerContext : JsonSerializerContext
+{
 }
