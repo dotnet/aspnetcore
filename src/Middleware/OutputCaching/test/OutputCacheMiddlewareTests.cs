@@ -817,7 +817,6 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task Locking_PreventsConcurrentRequests()
     {
-        var timeout = TimeSpan.FromSeconds(1);
         var responseCounter = 0;
 
         var task1Executing = new ManualResetEventSlim(false);
@@ -849,7 +848,7 @@ public class OutputCacheMiddlewareTests
         var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
 
         // Wait for the first request to be processed before sending a second one
-        task1Executing.Wait(timeout);
+        task1Executing.Wait();
 
         var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
 
@@ -863,7 +862,6 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task Locking_ExecuteAllRequestsWhenDisabled()
     {
-        var timeout = TimeSpan.FromSeconds(1);
         var responseCounter = 0;
 
         var task1Executing = new ManualResetEventSlim(false);
@@ -895,7 +893,7 @@ public class OutputCacheMiddlewareTests
         var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
 
         // Wait for the first request to be processed before sending a second one
-        task1Executing.Wait(timeout);
+        task1Executing.Wait();
 
         var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
 
