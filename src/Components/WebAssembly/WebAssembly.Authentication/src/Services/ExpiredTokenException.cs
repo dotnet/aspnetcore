@@ -51,10 +51,11 @@ public class AccessTokenNotAvailableException : Exception
     /// Navigates to <see cref="AccessTokenResult.InteractiveRequestUrl"/> using the given <see cref="AccessTokenResult.InteractionOptions"/>
     /// to allow refreshing the access token.
     /// </summary>
-    public void Redirect(Action<InteractiveRequestOptions> request)
+    /// <param name="configureInteractionOptions">A callback to further configure the initial set of options to be passed during the interactive token adquisition flow.</param>
+    public void Redirect(Action<InteractiveRequestOptions> configureInteractionOptions)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        request(_tokenResult.InteractionOptions);
+        ArgumentNullException.ThrowIfNull(configureInteractionOptions);
+        configureInteractionOptions(_tokenResult.InteractionOptions);
         _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractionOptions);
     }
 }
