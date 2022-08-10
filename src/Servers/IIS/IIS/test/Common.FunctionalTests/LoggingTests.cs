@@ -1,12 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
+using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -60,15 +65,18 @@ public class LoggingTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
         deploymentParameters.EnableLogging(LogFolderPath);
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            await Helpers.AssertStarts(deploymentResult, path);
-            StopServer();
-            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
-            Assert.Contains("TEST MESSAGE", contents);
-            Assert.DoesNotContain("\r\n\r\n", contents);
-            Assert.Contains("\r\n", contents);
-        });
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await Helpers.AssertStarts(deploymentResult, path);
+
+        StopServer();
+
+        var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
+
+        Assert.Contains("TEST MESSAGE", contents);
+        Assert.DoesNotContain("\r\n\r\n", contents);
+        Assert.Contains("\r\n", contents);
     }
 
     // Move to separate file
@@ -77,20 +85,22 @@ public class LoggingTests : IISFunctionalTestBase
     public async Task InvalidFilePathForLogs_ServerStillRuns(TestVariant variant)
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
+
         deploymentParameters.WebConfigActionList.Add(
             WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
         deploymentParameters.WebConfigActionList.Add(
             WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogFile", Path.Combine("Q:", "std")));
-        await RunTest(deploymentParameters, async deploymentResult =>
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await Helpers.AssertStarts(deploymentResult, "HelloWorld");
+
+        StopServer();
+        if (variant.HostingModel == HostingModel.InProcess)
         {
-            await Helpers.AssertStarts(deploymentResult, "HelloWorld");
-            StopServer();
-            if (variant.HostingModel == HostingModel.InProcess)
-            {
-                // Error is getting logged twice, from shim and handler
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), Logger, allowMultiple: true);
-            }
-        });
+            // Error is getting logged twice, from shim and handler
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), Logger, allowMultiple: true);
+        }
     }
 
     [ConditionalTheory]
@@ -101,11 +111,12 @@ public class LoggingTests : IISFunctionalTestBase
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
         deploymentParameters.HandlerSettings["debugLevel"] = "file";
         deploymentParameters.HandlerSettings["debugFile"] = "subdirectory\\debug.txt";
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            await deploymentResult.HttpClient.GetAsync("/");
-            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "subdirectory", "debug.txt"));
-        });
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await deploymentResult.HttpClient.GetAsync("/");
+
+        AssertLogs(Path.Combine(deploymentResult.ContentRoot, "subdirectory", "debug.txt"));
     }
 
     [ConditionalTheory]
@@ -114,11 +125,12 @@ public class LoggingTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
         deploymentParameters.HandlerSettings["debugLevel"] = "file";
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            await deploymentResult.HttpClient.GetAsync("/");
-            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
-        });
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await deploymentResult.HttpClient.GetAsync("/");
+
+        AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
     }
 
     [ConditionalTheory]
@@ -130,11 +142,11 @@ public class LoggingTests : IISFunctionalTestBase
         deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG"] = "file";
         // Add empty debugFile handler setting to prevent IIS deployer from overriding debug settings
         deploymentParameters.HandlerSettings["debugFile"] = "";
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            await deploymentResult.HttpClient.GetAsync("/");
-            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await deploymentResult.HttpClient.GetAsync("/");
+
+        AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
     }
 
     [ConditionalTheory]
@@ -150,17 +162,17 @@ public class LoggingTests : IISFunctionalTestBase
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = firstTempFile;
             deploymentParameters.AddDebugLogToWebConfig(secondTempFile);
-            await RunTest(deploymentParameters, async deploymentResult =>
-            {
-                var response = await deploymentResult.HttpClient.GetAsync("/");
 
-                StopServer();
-                var logContents = Helpers.ReadAllTextFromFile(firstTempFile, Logger);
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
-                Assert.Contains("Switching debug log files to", logContents);
+            var response = await deploymentResult.HttpClient.GetAsync("/");
 
-                AssertLogs(secondTempFile);
-            });
+            StopServer();
+            var logContents = Helpers.ReadAllTextFromFile(firstTempFile, Logger);
+
+            Assert.Contains("Switching debug log files to", logContents);
+
+            AssertLogs(secondTempFile);
         }
         finally
         {
@@ -193,15 +205,17 @@ public class LoggingTests : IISFunctionalTestBase
         var logFolderPath = LogFolderPath + "\\彡⾔";
         deploymentParameters.EnableLogging(logFolderPath);
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync(path);
-            Assert.False(response.IsSuccessStatusCode);
-            StopServer();
-            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, logFolderPath), Logger);
-            Assert.Contains("彡⾔", contents);
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync(path);
+
+        Assert.False(response.IsSuccessStatusCode);
+
+        StopServer();
+
+        var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, logFolderPath), Logger);
+        Assert.Contains("彡⾔", contents);
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
     }
 
     [ConditionalTheory]
@@ -209,13 +223,15 @@ public class LoggingTests : IISFunctionalTestBase
     public async Task OnlyOneFileCreatedWithProcessStartTime(TestVariant variant)
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
+
         deploymentParameters.EnableLogging(LogFolderPath);
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            await Helpers.AssertStarts(deploymentResult, "ConsoleWrite");
-            StopServer();
-            Assert.Single(Directory.GetFiles(LogFolderPath), Helpers.GetExpectedLogName(deploymentResult, LogFolderPath));
-        });
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+        await Helpers.AssertStarts(deploymentResult, "ConsoleWrite");
+
+        StopServer();
+
+        Assert.Single(Directory.GetFiles(LogFolderPath), Helpers.GetExpectedLogName(deploymentResult, LogFolderPath));
     }
 
     [ConditionalFact]
@@ -223,12 +239,13 @@ public class LoggingTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync("Test");
-            StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+        StopServer();
+
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
     }
 
     [ConditionalFact]
@@ -238,12 +255,13 @@ public class LoggingTests : IISFunctionalTestBase
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         deploymentParameters.HandlerSettings["enableOutOfProcessConsoleRedirection"] = "false";
         deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync("Test");
-            StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+        StopServer();
+
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
     }
 
     [ConditionalFact]
@@ -251,12 +269,13 @@ public class LoggingTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWrite30Kb");
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync("Test");
-            StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, new string('a', 30000)), Logger);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+        StopServer();
+
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, new string('a', 30000)), Logger);
     }
 
     [ConditionalTheory]
@@ -265,18 +284,22 @@ public class LoggingTests : IISFunctionalTestBase
     public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
         var firstWriteString = "TEST MESSAGE";
+
         deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
-        await RunTest(deploymentParameters, async deploymentResult =>
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await Helpers.AssertStarts(deploymentResult);
+
+        StopServer();
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
         {
-            await Helpers.AssertStarts(deploymentResult);
-            StopServer();
-            if (deploymentParameters.ServerType == ServerType.IISExpress)
-            {
-                // We can't read stdout logs from IIS as they aren't redirected.
-                Assert.Contains(TestSink.Writes, context => context.Message.Contains(firstWriteString));
-            }
-        });
+            // We can't read stdout logs from IIS as they aren't redirected.
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(firstWriteString));
+        }
     }
 
     [ConditionalFact]
@@ -284,29 +307,28 @@ public class LoggingTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
-        await RunTest(deploymentParameters, async deploymentResult =>
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        await Helpers.AssertStarts(deploymentResult);
+
+        StopServer();
+
+        var aspnetcorev2Log = TestSink.Writes.First(w => w.Message.Contains("Description: IIS ASP.NET Core Module V2. Commit:"));
+        var aspnetcoreHandlerLog = TestSink.Writes.First(w => w.Message.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:"));
+
+        var processIdPattern = new Regex("Process Id: (\\d+)\\.", RegexOptions.Singleline);
+        var processIdMatch = processIdPattern.Match(aspnetcorev2Log.Message);
+        Assert.True(processIdMatch.Success, $"'{processIdPattern}' did not match '{aspnetcorev2Log}'");
+        var processId = int.Parse(processIdMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+
+        if (DeployerSelector.HasNewShim)
         {
-            await Helpers.AssertStarts(deploymentResult);
-
-            StopServer();
-
-            var aspnetcorev2Log = TestSink.Writes.First(w => w.Message.Contains("Description: IIS ASP.NET Core Module V2. Commit:"));
-            var aspnetcoreHandlerLog = TestSink.Writes.First(w => w.Message.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:"));
-
-            var processIdPattern = new Regex("Process Id: (\\d+)\\.", RegexOptions.Singleline);
-            var processIdMatch = processIdPattern.Match(aspnetcorev2Log.Message);
-            Assert.True(processIdMatch.Success, $"'{processIdPattern}' did not match '{aspnetcorev2Log}'");
-            var processId = int.Parse(processIdMatch.Groups[1].Value, CultureInfo.InvariantCulture);
-
-            if (DeployerSelector.HasNewShim)
-            {
-                AssertTimestampAndPIDPrefix(processId, aspnetcorev2Log.Message);
-            }
-            if (DeployerSelector.HasNewHandler)
-            {
-                AssertTimestampAndPIDPrefix(processId, aspnetcoreHandlerLog.Message);
-            }
-        });
+            AssertTimestampAndPIDPrefix(processId, aspnetcorev2Log.Message);
+        }
+        if (DeployerSelector.HasNewHandler)
+        {
+            AssertTimestampAndPIDPrefix(processId, aspnetcoreHandlerLog.Message);
+        }
     }
 
     private static string ReadLogs(string logPath)

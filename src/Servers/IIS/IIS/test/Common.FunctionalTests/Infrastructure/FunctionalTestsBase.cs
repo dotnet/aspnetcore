@@ -29,14 +29,6 @@ public class FunctionalTestsBase : LoggedTest
         return IISApplicationDeployerFactory.Create(parameters, LoggerFactory);
     }
 
-    protected virtual async Task RunTest(IISDeploymentParameters deploymentParameters, Action<IISDeploymentResult> testCode)
-    {
-        using (var deploymentResult = await DeployAsync(deploymentParameters))
-        {
-            testCode(deploymentResult);
-        }
-    }
-
     protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
     {
         _deployer = (IISDeployerBase)CreateDeployer(parameters);

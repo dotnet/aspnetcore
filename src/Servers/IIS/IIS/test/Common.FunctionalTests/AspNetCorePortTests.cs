@@ -1,9 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
@@ -53,11 +58,11 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         var port = GetUnusedRandomPort();
         deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port.ToString(CultureInfo.InvariantCulture);
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
-            Assert.Equal(port, new Uri(responseText).Port);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
+
+        Assert.Equal(port, new Uri(responseText).Port);
     }
 
     [ConditionalTheory]
@@ -68,13 +73,12 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
         deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = string.Empty;
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            // If env var is empty, ANCM should assign a random port (same as no env var)
-            Assert.InRange(new Uri(responseText).Port, _minPort, _maxPort);
-        });
+        var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
+
+        // If env var is empty, ANCM should assign a random port (same as no env var)
+        Assert.InRange(new Uri(responseText).Port, _minPort, _maxPort);
     }
 
     [ConditionalTheory]
@@ -85,11 +89,11 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
         deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port;
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync("/ServerAddresses");
-            Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync("/ServerAddresses");
+
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
     }
 
     [ConditionalTheory]
@@ -100,46 +104,45 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         // Must publish to set env vars in web.config
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
-        await RunTest(deploymentParameters, async deploymentResult =>
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        // Shutdown once
+        var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
+
+        // Wait for server to start again.
+        int i;
+        for (i = 0; i < 10; i++)
         {
-            // Shutdown once
-            var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
-
-            // Wait for server to start again.
-            int i;
-            for (i = 0; i < 10; i++)
+            // ANCM should eventually recover from being shutdown multiple times.
+            response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            if (response.IsSuccessStatusCode)
             {
-                // ANCM should eventually recover from being shutdown multiple times.
-                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-                if (response.IsSuccessStatusCode)
-                {
-                    break;
-                }
+                break;
             }
+        }
 
-            if (i == 10)
-            {
-                // Didn't restart after 10 retries
-                Assert.False(true);
-            }
-
-            // Shutdown again
-            response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
-
-            // return if server starts again.
-            for (i = 0; i < 10; i++)
-            {
-                // ANCM should eventually recover from being shutdown multiple times.
-                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-                if (response.IsSuccessStatusCode)
-                {
-                    return;
-                }
-            }
-
-            // Test failure if this happens.
+        if (i == 10)
+        {
+            // Didn't restart after 10 retries
             Assert.False(true);
-        });
+        }
+
+        // Shutdown again
+        response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
+
+        // return if server starts again.
+        for (i = 0; i < 10; i++)
+        {
+            // ANCM should eventually recover from being shutdown multiple times.
+            response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+        }
+
+        // Test failure if this happens.
+        Assert.False(true);
     }
 
     private static int GetUnusedRandomPort()

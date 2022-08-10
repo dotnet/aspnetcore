@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting;
 /// <summary>
 /// Result of a deployment.
 /// </summary>
-public class DeploymentResult : IDisposable
+public class DeploymentResult
 {
     private readonly ILoggerFactory _loggerFactory;
 
@@ -67,6 +67,4 @@ public class DeploymentResult : IDisposable
             BaseAddress = new Uri(ApplicationBaseUri),
             Timeout = TimeSpan.FromSeconds(200),
         };
-
-    public void Dispose() => HttpClient.Dispose();
 }
