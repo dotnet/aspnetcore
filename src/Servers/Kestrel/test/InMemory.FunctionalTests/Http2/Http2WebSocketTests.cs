@@ -69,7 +69,7 @@ public class Http2WebSocketTests : Http2TestBase
         await SendDataAsync(1, Array.Empty<byte>(), endStream: true);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-            withLength: 36,
+            withLength: 32,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
@@ -77,10 +77,9 @@ public class Http2WebSocketTests : Http2TestBase
 
         _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
-        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
-        Assert.Equal("0", _decodedHeaders["content-length"]);
     }
 
     [Fact]

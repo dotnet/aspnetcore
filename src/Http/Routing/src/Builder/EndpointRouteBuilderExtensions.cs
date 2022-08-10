@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -152,10 +150,7 @@ public static class EndpointRouteBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(httpMethods);
 
-        var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), requestDelegate);
-        builder.WithDisplayName($"{pattern} HTTP: {string.Join(", ", httpMethods)}");
-        builder.WithMetadata(new HttpMethodMetadata(httpMethods));
-        return builder;
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), requestDelegate, httpMethods);
     }
 
     /// <summary>
@@ -187,40 +182,20 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         RequestDelegate requestDelegate)
     {
+        return Map(endpoints, pattern, requestDelegate, httpMethods: null);
+    }
+
+    private static IEndpointConventionBuilder Map(
+        this IEndpointRouteBuilder endpoints,
+        RoutePattern pattern,
+        RequestDelegate requestDelegate,
+        IEnumerable<string>? httpMethods)
+    {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(requestDelegate);
 
-        const int defaultOrder = 0;
-
-        var builder = new RouteEndpointBuilder(
-            requestDelegate,
-            pattern,
-            defaultOrder)
-        {
-            DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
-        };
-
-        // Add delegate attributes as metadata
-        var attributes = requestDelegate.Method.GetCustomAttributes();
-
-        // This can be null if the delegate is a dynamic method or compiled from an expression tree
-        if (attributes != null)
-        {
-            foreach (var attribute in attributes)
-            {
-                builder.Metadata.Add(attribute);
-            }
-        }
-
-        var dataSource = endpoints.DataSources.OfType<ModelEndpointDataSource>().FirstOrDefault();
-        if (dataSource == null)
-        {
-            dataSource = new ModelEndpointDataSource();
-            endpoints.DataSources.Add(dataSource);
-        }
-
-        return dataSource.AddEndpointBuilder(builder);
+        return endpoints.GetOrAddRouteEndpointDataSource().AddRequestDelegate(pattern, requestDelegate, httpMethods);
     }
 
     /// <summary>
@@ -429,18 +404,38 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(handler);
 
-        var dataSource = endpoints.DataSources.OfType<RouteEndpointDataSource>().FirstOrDefault();
-        if (dataSource is null)
-        {
-            var routeHandlerOptions = endpoints.ServiceProvider.GetService<IOptions<RouteHandlerOptions>>();
-            var throwOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false;
+        return endpoints.GetOrAddRouteEndpointDataSource().AddRouteHandler(pattern, handler, httpMethods, isFallback);
+    }
 
-            dataSource = new RouteEndpointDataSource(endpoints.ServiceProvider, throwOnBadRequest);
-            endpoints.DataSources.Add(dataSource);
+    private static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)
+    {
+        RouteEndpointDataSource? routeEndpointDataSource = null;
+
+        foreach (var dataSource in endpoints.DataSources)
+        {
+            if (dataSource is RouteEndpointDataSource foundDataSource)
+            {
+                routeEndpointDataSource = foundDataSource;
+                break;
+            }
         }
 
-        var conventions = dataSource.AddEndpoint(pattern, handler, httpMethods, isFallback);
+        if (routeEndpointDataSource is null)
+        {
+            // ServiceProvider isn't nullable, but it is being called by methods that historically did not access this property, so we null check anyway.
+            var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
+            var throwOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false;
 
-        return new RouteHandlerBuilder(conventions);
+            routeEndpointDataSource = new RouteEndpointDataSource(endpoints.ServiceProvider ?? EmptyServiceProvider.Instance, throwOnBadRequest);
+            endpoints.DataSources.Add(routeEndpointDataSource);
+        }
+
+        return routeEndpointDataSource;
+    }
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
+        public object? GetService(Type serviceType) => null;
     }
 }

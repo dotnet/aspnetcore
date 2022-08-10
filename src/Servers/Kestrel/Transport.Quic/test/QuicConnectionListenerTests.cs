@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -137,7 +138,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        await Assert.ThrowsAsync<QuicException>(() => QuicConnection.ConnectAsync(options).AsTask());
+        await Assert.ThrowsAsync<AuthenticationException>(() => QuicConnection.ConnectAsync(options).AsTask());
 
         // Assert
         Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerCertificateNotSpecified");
@@ -266,7 +267,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         syncPoint.Continue();
 
         await Assert.ThrowsAsync<ArgumentException>(() => acceptTask.AsTask()).DefaultTimeout();
-        await Assert.ThrowsAsync<QuicException>(() => clientConnectionTask.AsTask()).DefaultTimeout();
+        await Assert.ThrowsAsync<AuthenticationException>(() => clientConnectionTask.AsTask()).DefaultTimeout();
 
         // Assert
         for (var i = 0; i < 20; i++)
