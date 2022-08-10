@@ -244,8 +244,7 @@ public class InputTagHelper : TagHelper
         if (!ViewContext.SuppressCultureInvariantFormElementValueFormatting &&
             FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(inputType))
         {
-            var invariantCultureMetadataTag = GenerateInvariantCultureMetadata(For.Name);
-            output.PostElement.AppendHtml(invariantCultureMetadataTag);
+            GenerateInvariantCultureMetadata(For.Name, output.PostElement);
         }
 
         if (tagBuilder != null)
@@ -417,15 +416,13 @@ public class InputTagHelper : TagHelper
             htmlAttributes);
     }
 
-    private static TagBuilder GenerateInvariantCultureMetadata(string propertyName)
-    {
-        var tagBuilder = new TagBuilder("input");
-        tagBuilder.Attributes["name"] = FormModelBindingHelper.CultureInvariantFieldName;
-        tagBuilder.Attributes["type"] = "hidden";
-        tagBuilder.Attributes["value"] = propertyName;
-
-        return tagBuilder;
-    }
+    private static void GenerateInvariantCultureMetadata(string propertyName, TagHelperContent builder)
+        => builder
+            .AppendHtml("<input name=\"")
+            .Append(FormModelBindingHelper.CultureInvariantFieldName)
+            .AppendHtml("\" type=\"hidden\" value=\"")
+            .Append(propertyName)
+            .AppendHtml("\" />");
 
     // Imitate Generator.GenerateHidden() using Generator.GenerateTextBox(). This adds support for asp-format that
     // is not available in Generator.GenerateHidden().
