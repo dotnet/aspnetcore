@@ -210,7 +210,6 @@ internal static partial class QuicLog
     [LoggerMessage(21, LogLevel.Debug, "QUIC listener aborted.", EventName = "ConnectionListenerAborted")]
     public static partial void ConnectionListenerAborted(ILogger logger, Exception exception);
 
-
     [LoggerMessage(22, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read timed out.", EventName = "StreamTimeoutRead", SkipEnabledCheck = true)]
     private static partial void StreamTimeoutReadCore(ILogger logger, string connectionId);
 
