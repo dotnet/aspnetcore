@@ -559,7 +559,7 @@ public class Http3RequestTests : LoggedTest
             await host.StartAsync().DefaultTimeout();
 
             for (var i = 0; i < 1000; i++)
-			{
+            {
                 Logger.LogInformation($"Client sending request {i}");
 
                 var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
