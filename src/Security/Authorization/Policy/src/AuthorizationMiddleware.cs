@@ -36,7 +36,7 @@ public class AuthorizationMiddleware
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
 
         // Only try to cache combined policies for the default policy provider
-        _cacheCombinedPolicy = _policyProvider is DefaultAuthorizationPolicyProvider;
+        _cacheCombinedPolicy = _policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider);
     }
 
     /// <summary>
