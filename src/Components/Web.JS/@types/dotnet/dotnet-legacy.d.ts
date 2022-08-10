@@ -15,16 +15,16 @@ declare interface VoidPtr extends NativePointer {
     __brand: "VoidPtr";
 }
 
-export interface MonoObject extends ManagedPointer {
+interface MonoObject extends ManagedPointer {
     __brandMonoObject: "MonoObject";
 }
-export interface MonoString extends MonoObject {
+interface MonoString extends MonoObject {
     __brand: "MonoString";
 }
-export interface MonoArray extends MonoObject {
+interface MonoArray extends MonoObject {
     __brand: "MonoArray";
 }
-export interface MonoObjectRef extends ManagedPointer {
+interface MonoObjectRef extends ManagedPointer {
     __brandMonoObjectRef: "MonoObjectRef";
 }
 declare type MemOffset = number | VoidPtr | NativePointer | ManagedPointer;
@@ -304,4 +304,4 @@ declare type MONOType = {
     getF64: (offset: MemOffset) => number;
 };
 
-export { BINDINGType, MONOType };
+export { BINDINGType, MONOType, MonoArray, MonoObject, MonoString };

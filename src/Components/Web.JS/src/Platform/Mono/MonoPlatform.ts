@@ -326,7 +326,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
-    const { MONO: mono, BINDING: binding, Module: module, setModuleImports } = api;
+    const { MONO: mono, BINDING: binding, Module: module } = api;
     Module = module;
     BINDING = binding;
     MONO = mono;
@@ -497,7 +497,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       }
 
       // makes Blazor._internal visible to [JSImport] as "blazor-internal" module
-      setModuleImports('blazor-internal', {
+      api.setModuleImports('blazor-internal', {
         Blazor: { _internal: Blazor._internal },
       });
 
