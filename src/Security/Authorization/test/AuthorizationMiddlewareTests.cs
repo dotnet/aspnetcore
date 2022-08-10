@@ -232,7 +232,7 @@ public class AuthorizationMiddlewareTests
     }
 
     [Fact]
-    public async Task OnAuthorizationAsync_WillNotCallDefaultPolicyProviderWithCache()
+    public async Task OnAuthorizationAsync_WillCallDerviedDefaultPolicyProviderWithCache()
     {
         // Arrange
         var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
@@ -248,12 +248,12 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(1, next.CalledCount);
 
         await middleware.Invoke(context);
-        Assert.Equal(1, policyProvider.GetPolicyCount);
+        Assert.Equal(2, policyProvider.GetPolicyCount);
         Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
         Assert.Equal(2, next.CalledCount);
 
         await middleware.Invoke(context);
-        Assert.Equal(1, policyProvider.GetPolicyCount);
+        Assert.Equal(3, policyProvider.GetPolicyCount);
         Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
         Assert.Equal(3, next.CalledCount);
     }
