@@ -534,7 +534,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
 
         // DisableRateLimitingAttribute first
         context = new DefaultHttpContext();
-        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new DisableRateLimitingAttribute()), new EnableRateLimitingAttribute(name), "Test endpoint"));
+        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new DisableRateLimitingAttribute(), new EnableRateLimitingAttribute(name)), "Test endpoint"));
         await middleware.Invoke(context).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
 
