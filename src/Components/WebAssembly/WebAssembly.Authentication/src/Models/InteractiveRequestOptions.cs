@@ -79,7 +79,6 @@ public sealed class InteractiveRequestOptions
             return true;
         }
 
-
         [UnconditionalSuppressMessage(
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
