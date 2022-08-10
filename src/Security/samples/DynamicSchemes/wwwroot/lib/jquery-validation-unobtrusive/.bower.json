@@ -23,7 +23,7 @@
   "authors": [
     "Microsoft"
   ],
-  "license": "http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/jquery-validation-unobtrusive.git"
