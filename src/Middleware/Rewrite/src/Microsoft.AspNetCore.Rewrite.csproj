@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ReRoute.cs" />
+    <Compile Include="$(SharedSourceRoot)Reroute.cs" />
   </ItemGroup>
 
 </Project>

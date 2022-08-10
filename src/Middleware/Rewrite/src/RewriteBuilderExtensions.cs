@@ -54,9 +54,8 @@ public static class RewriteBuilderExtensions
 
     private static IApplicationBuilder AddRewriteMiddleware(IApplicationBuilder app, IOptions<RewriteOptions>? options)
     {
-        const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         // Only use this path if there's a global router (in the 'WebApplication' case).
-        if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>
             {
@@ -68,7 +67,7 @@ public static class RewriteBuilderExtensions
                 var webHostEnv = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
 
-                var newNext = ReRouteHelper.ReRoute(app, routeBuilder, next);
+                var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                 options.Value.BranchedNext = newNext;
 
                 return new RewriteMiddleware(next, webHostEnv, loggerFactory, options).Invoke;
