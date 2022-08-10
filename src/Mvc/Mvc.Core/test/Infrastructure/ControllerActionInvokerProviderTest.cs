@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var actionDescriptor = new ControllerActionDescriptor
             {
                 MethodInfo = method,
+                Parameters = Array.Empty<ParameterDescriptor>(),
+                BoundProperties = Array.Empty<ParameterDescriptor>(),
                 FilterDescriptors = new List<FilterDescriptor>(),
                 ControllerTypeInfo = typeof(TestActions).GetTypeInfo(),
             };
