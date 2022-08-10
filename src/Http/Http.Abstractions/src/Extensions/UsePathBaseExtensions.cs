@@ -32,13 +32,12 @@ public static class UsePathBaseExtensions
             return app;
         }
 
-        const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         // Only use this path if there's a global router (in the 'WebApplication' case).
-        if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>
             {
-                var newNext = ReRouteHelper.ReRoute(app, routeBuilder, next);
+                var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                 return new UsePathBaseMiddleware(newNext, pathBase).Invoke;
             });
         }

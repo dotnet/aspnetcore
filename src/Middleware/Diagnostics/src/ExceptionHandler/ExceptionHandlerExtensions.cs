@@ -104,13 +104,12 @@ public static class ExceptionHandlerExtensions
 
     private static IApplicationBuilder SetExceptionHandlerMiddleware(IApplicationBuilder app, IOptions<ExceptionHandlerOptions>? options)
     {
-        const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         var problemDetailsService = app.ApplicationServices.GetService<IProblemDetailsService>();
 
         app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware";
 
         // Only use this path if there's a global router (in the 'WebApplication' case).
-        if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>
             {
@@ -124,7 +123,7 @@ public static class ExceptionHandlerExtensions
 
                 if (!string.IsNullOrEmpty(options.Value.ExceptionHandlingPath) && options.Value.ExceptionHandler is null)
                 {
-                    var newNext = ReRouteHelper.ReRoute(app, routeBuilder, next);
+                    var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                     // store the pipeline for the error case
                     options.Value.ExceptionHandler = newNext;
                 }
