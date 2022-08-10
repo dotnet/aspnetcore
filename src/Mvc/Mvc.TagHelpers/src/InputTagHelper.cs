@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
@@ -63,27 +62,13 @@ public class InputTagHelper : TagHelper
             { "time", @"{0:HH\:mm\:ss.fff}" },
         };
 
-    private readonly bool _allowCultureInvariantFormModelBinding;
-
-    /// <summary>
-    /// Creates a new <see cref="InputTagHelper"/>.
-    /// </summary>
-    /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
-    /// <param name="optionsAccessor">The accessor for the <see cref="MvcOptions"/>.</param>
-    public InputTagHelper(IHtmlGenerator generator, IOptions<MvcOptions> optionsAccessor)
-    {
-        _allowCultureInvariantFormModelBinding = optionsAccessor?.Value.AllowCultureInvariantFormModelBinding ?? false;
-
-        Generator = generator;
-    }
-
     /// <summary>
     /// Creates a new <see cref="InputTagHelper"/>.
     /// </summary>
     /// <param name="generator">The <see cref="IHtmlGenerator"/>.</param>
     public InputTagHelper(IHtmlGenerator generator)
-        : this(generator, optionsAccessor: null)
     {
+        Generator = generator;
     }
 
     /// <inheritdoc />
@@ -256,7 +241,8 @@ public class InputTagHelper : TagHelper
                 break;
         }
 
-        if (_allowCultureInvariantFormModelBinding && FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(inputType))
+        if (!ViewContext.SuppressCultureInvariantFormElementValueFormatting &&
+            FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(inputType))
         {
             var invariantCultureMetadataTag = GenerateInvariantCultureMetadata(For.Name);
             output.PostElement.AppendHtml(invariantCultureMetadataTag);

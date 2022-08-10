@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -93,6 +94,7 @@ public class ViewContext : ActionContext
         ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
         ValidationMessageElement = htmlHelperOptions.ValidationMessageElement;
         CheckBoxHiddenInputRenderMode = htmlHelperOptions.CheckBoxHiddenInputRenderMode;
+        SuppressCultureInvariantFormElementValueFormatting = htmlHelperOptions.SuppressCultureInvariantFormValueFormatting;
     }
 
     /// <summary>
@@ -136,6 +138,7 @@ public class ViewContext : ActionContext
         ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
         ValidationMessageElement = viewContext.ValidationMessageElement;
         CheckBoxHiddenInputRenderMode = viewContext.CheckBoxHiddenInputRenderMode;
+        SuppressCultureInvariantFormElementValueFormatting = viewContext.SuppressCultureInvariantFormElementValueFormatting;
 
         ExecutingFilePath = viewContext.ExecutingFilePath;
         View = view;
@@ -194,6 +197,19 @@ public class ViewContext : ActionContext
     /// Gets or sets the way hidden inputs are rendered for checkbox tag helpers and html helpers.
     /// </summary>
     public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that determines if form element values are disallowed to be
+    /// formatted using <see cref="CultureInfo.InvariantCulture"/>.
+    /// </summary>
+    /// <remarks>
+    /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are
+    /// directly entered by the user. However, other inputs (e.g., &lt;input type="number"/&gt;) use culture-invariant
+    /// formatting both in the HTML source and in the form request. Setting this property to <see langword="true"/>
+    /// will result in <see cref="CultureInfo.CurrentCulture"/> always being used to format form element values. This may result in
+    /// invalid HTML being generated.
+    /// </remarks>
+    public bool SuppressCultureInvariantFormElementValueFormatting { get; set; }
 
     /// <summary>
     /// Gets the dynamic view bag.

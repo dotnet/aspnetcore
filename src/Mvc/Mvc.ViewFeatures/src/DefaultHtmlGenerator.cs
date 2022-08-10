@@ -40,7 +40,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     private readonly IUrlHelperFactory _urlHelperFactory;
     private readonly HtmlEncoder _htmlEncoder;
     private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
-    private readonly bool _allowCultureInvariantFormModelBinding;
+    private readonly bool _suppressCultureInvariantFormatting;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -52,11 +52,9 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
     /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
     /// <param name="validationAttributeProvider">The <see cref="ValidationHtmlAttributeProvider"/>.</param>
-    /// <param name="mvcOptionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
     public DefaultHtmlGenerator(
         IAntiforgery antiforgery,
         IOptions<MvcViewOptions> optionsAccessor,
-        IOptions<MvcOptions> mvcOptionsAccessor,
         IModelMetadataProvider metadataProvider,
         IUrlHelperFactory urlHelperFactory,
         HtmlEncoder htmlEncoder,
@@ -97,7 +95,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         _urlHelperFactory = urlHelperFactory;
         _htmlEncoder = htmlEncoder;
         _validationAttributeProvider = validationAttributeProvider;
-        _allowCultureInvariantFormModelBinding = mvcOptionsAccessor?.Value.AllowCultureInvariantFormModelBinding ?? false;
+        _suppressCultureInvariantFormatting = optionsAccessor.Value.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting;
 
         // Underscores are fine characters in id's.
         IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -1291,7 +1289,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
         }
 
-        var culture = _allowCultureInvariantFormModelBinding && FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(suppliedTypeString)
+        var culture = !_suppressCultureInvariantFormatting && FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(suppliedTypeString)
             ? CultureInfo.InvariantCulture
             : CultureInfo.CurrentCulture;
         var valueParameter = FormatValue(value, format, culture);

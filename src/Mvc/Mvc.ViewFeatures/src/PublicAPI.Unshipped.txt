@@ -1,5 +1,8 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel?
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormElementValueFormatting.get -> bool
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormElementValueFormatting.set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting.get -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel
 static Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.FormatValue(object? value, string? format, System.IFormatProvider! formatProvider) -> string?
-~Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator.DefaultHtmlGenerator(Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> optionsAccessor, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> mvcOptionsAccessor, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider validationAttributeProvider) -> void

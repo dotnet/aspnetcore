@@ -43,7 +43,8 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
 
         _values = values;
 
-        if (options?.AllowCultureInvariantFormModelBinding == true && _values.TryGetValue(FormModelBindingHelper.CultureInvariantFieldName, out var invariantKeys))
+        var suppressCultureInvariantFormModelBinding = options?.SuppressCultureInvariantFormModelBinding == true;
+        if (!suppressCultureInvariantFormModelBinding && _values.TryGetValue(FormModelBindingHelper.CultureInvariantFieldName, out var invariantKeys))
         {
             _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
         }
