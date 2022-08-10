@@ -391,10 +391,13 @@ public class IISDeployer : IISDeployerBase
                 // Stop all app pools
                 foreach (var appPool in serverManager.ApplicationPools)
                 {
-                    var state = site.Stop();
-                    Logger.LogInformation($"Stopping site, state: {state.ToString()}");
+                    if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
+                    {
+                        var state = appPool.Stop();
+                        Logger.LogInformation($"Stopping pool, state: {state}");
+                    }
                 }
-
+                
                 // Make sure all sites are stopped
                 foreach (var site in serverManager.Sites)
                 {
