@@ -357,13 +357,11 @@ internal sealed class OutputCacheMiddleware
             var normalizedVaryByCustom = GetOrderCasingNormalizedDictionary(varyByCustomKeys);
 
             // Update vary rules with normalized values
-            context.CacheVaryByRules = new CacheVaryByRules
-            {
-                VaryByPrefix = varyByPrefix + normalizedVaryByCustom,
-                HeaderNames = normalizedVaryHeaderNames,
-                RouteValueNames = normalizedVaryRouteValueNames,
-                QueryKeys = normalizedVaryQueryKeys
-            };
+            context.CacheVaryByRules.VaryByCustom.Clear();
+            context.CacheVaryByRules.VaryByPrefix = varyByPrefix + normalizedVaryByCustom;
+            context.CacheVaryByRules.HeaderNames = normalizedVaryHeaderNames;
+            context.CacheVaryByRules.RouteValueNames = normalizedVaryRouteValueNames;
+            context.CacheVaryByRules.QueryKeys = normalizedVaryQueryKeys;
 
             // TODO: Add same condition on LogLevel in Response Caching
             // Always overwrite the CachedVaryByRules to update the expiry information

@@ -47,7 +47,7 @@ public sealed class OutputCacheContext
     /// <summary>
     /// Gets the <see cref="CacheVaryByRules"/> instance.
     /// </summary>
-    public CacheVaryByRules CacheVaryByRules { get; internal set; } = new();
+    public CacheVaryByRules CacheVaryByRules { get; } = new();
 
     /// <summary>
     /// Gets the tags of the cached response.
