@@ -91,6 +91,7 @@ public class RouteEndpointBuilderTest
         Assert.False(httpMethodMetadata.AcceptCorsPreflight);
     }
 
+    [Fact]
     public async void Build_DoesNot_RunFilters()
     {
         var endpointFilterCallCount = 0;
