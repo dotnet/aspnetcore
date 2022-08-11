@@ -392,6 +392,7 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
                     { "action", "Test" },
                     { "controller", "Test" },
                 },
+                EndpointMetadata = new[] { "A" },
             },
             new ControllerActionDescriptor
             {
@@ -449,6 +450,7 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
             {
                 Assert.Equal("/group1/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                 Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                // Group conventions are applied first, then endpoint specific metadata, then normal conventions, then per route conventions
                 Assert.Equal(new[] { "group", "Hi there", "A" }, e.Metadata.GetOrderedMetadata<string>());
                 Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
             },
@@ -463,7 +465,8 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
             {
                 Assert.Equal("/group1/test", e.RoutePattern.RawText);
                 Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
-                Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                // Group conventions are applied first, then endpoint specific metadata, then normal conventions
+                Assert.Equal(new[] { "group", "A", "Hi there" }, e.Metadata.GetOrderedMetadata<string>());
                 Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
             });
     }

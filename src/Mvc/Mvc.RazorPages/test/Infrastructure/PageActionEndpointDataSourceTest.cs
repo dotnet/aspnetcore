@@ -150,14 +150,14 @@ public class PageActionEndpointDataSourceTest : ActionEndpointDataSourceBaseTest
             {
                 Assert.Equal("/group1/test", e.RoutePattern.RawText);
                 Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
-                Assert.Equal(new[] { "A", "group", "Hi there" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.Equal(new[] { "group", "A", "Hi there" }, e.Metadata.GetOrderedMetadata<string>());
                 Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
             },
             e =>
             {
                 Assert.Equal("/group1/test2", e.RoutePattern.RawText);
                 Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
-                Assert.Equal(new[] { "B", "group", "Hi there" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.Equal(new[] { "group", "B", "Hi there" }, e.Metadata.GetOrderedMetadata<string>());
                 Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
             });
     }
