@@ -62,8 +62,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
-    private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
-    private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
+    public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
     public long? InputRemaining { get; internal set; }
@@ -1230,16 +1230,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Status = 0x10,
         Protocol = 0x20,
         Unknown = 0x40000000
-    }
-
-    [Flags]
-    private enum StreamCompletionFlags
-    {
-        None = 0,
-        EndStreamReceived = 1,
-        AbortedRead = 2,
-        Aborted = 4,
-        Completed = 8,
     }
 
     private static class GracefulCloseInitiator

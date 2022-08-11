@@ -29,9 +29,14 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private volatile int _isClosed;
     private long _headerType;
     private int _gracefulCloseInitiator;
-    private bool _connectionClosed;
+    private readonly object _completionLock = new();
 
     private bool _haveReceivedSettingsFrame;
+    private StreamCompletionFlags _completionState;
+
+    public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
+    public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public long StreamId => _streamIdFeature.StreamId;
 
@@ -59,11 +64,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     private void OnStreamClosed()
     {
-        _connectionClosed = true;
-        _connectionClosed = false;
-
-        //Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.ClosedCriticalStream);
-        //_connectionClosed = true;
+        ApplyCompletionFlag(StreamCompletionFlags.Completed);
     }
 
     public PipeReader Input => _context.Transport.Input;
@@ -77,15 +78,27 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
     {
-        // TODO - Should there be a check here to track abort state to avoid
-        // running twice for a request?
+        lock (_completionLock)
+        {
+            if (IsCompleted || IsAborted)
+            {
+                return;
+            }
 
-        Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-        _errorCodeFeature.Error = (long)errorCode;
-        _frameWriter.Abort(abortReason);
+            if (oldState == newState)
+            {
+                return;
+            }
 
-        Input.Complete(abortReason);
+            Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+
+            _errorCodeFeature.Error = (long)errorCode;
+            _frameWriter.Abort(abortReason);
+
+            Input.Complete(abortReason);
+        }
     }
 
     public void OnInputOrOutputCompleted()
@@ -102,6 +115,17 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
 
         return false;
+    }
+
+    private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)
+    {
+        lock (_completionLock)
+        {
+            var oldCompletionState = _completionState;
+            _completionState |= completionState;
+
+            return (oldCompletionState, _completionState);
+        }
     }
 
     internal async ValueTask SendStreamIdAsync(long id)
@@ -215,6 +239,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
         finally
         {
+            ApplyCompletionFlag(StreamCompletionFlags.Completed);
             _context.StreamLifetimeHandler.OnStreamCompleted(this);
         }
     }
@@ -244,12 +269,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
                 if (result.IsCompleted)
                 {
-                    if (!_connectionClosed)
-                    {
-                        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1-2
-                        throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClientClosedInbound, Http3ErrorCode.ClosedCriticalStream);
-                    }
-
                     return;
                 }
             }

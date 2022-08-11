@@ -198,7 +198,49 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             return;
         }
 
+        ValidateOpenControlStreams(now);
         UpdateStreamTimeouts(now);
+    }
+
+    private void ValidateOpenControlStreams(DateTimeOffset now)
+    {
+        var ticks = now.Ticks;
+
+        // This method validates that a connnection's control streams are open.
+        //
+        // They're checked on a delayed timer because when a connection is aborted or timed out, notifications are sent to open streams
+        // and the connection simultaneously. This is a problem because when a control stream is closed the connection should be aborted
+        // with the H3_CLOSED_CRITICAL_STREAM status. There is a race between the connection closing for the real reason, and control
+        // streams closing the connection with H3_CLOSED_CRITICAL_STREAM.
+        //
+        // Realistically, control streams are never closed except when the connection is. A small delay in aborting the connection in the
+        // unlikely situation where a control stream is incorrectly closed should be fine.
+        ValidateOpenControlStream(OutboundControlStream, this, ticks);
+        ValidateOpenControlStream(ControlStream, this, ticks);
+        ValidateOpenControlStream(EncoderStream, this, ticks);
+        ValidateOpenControlStream(DecoderStream, this, ticks);
+
+        static void ValidateOpenControlStream(Http3ControlStream? stream, Http3Connection connection, long ticks)
+        {
+            if (stream != null)
+            {
+                if (stream.IsCompleted || stream.IsAborted || stream.EndStreamReceived)
+                {
+                    // If a control stream is no longer active then set a timeout so that the connection is aborted next tick.
+                    if (stream.StreamTimeoutTicks == default)
+                    {
+                        // On overflow, use max value.
+                        var connectionCloseTicks = ticks + (TimeSpan.TicksPerSecond / 2);
+                        stream.StreamTimeoutTicks = connectionCloseTicks >= 0 ? connectionCloseTicks : long.MaxValue;
+                    }
+
+                    if (stream.StreamTimeoutTicks < ticks)
+                    {
+                        connection.Abort(new ConnectionAbortedException("A control stream used by the connection was closed or reset."), Http3ErrorCode.ClosedCriticalStream);
+                    }
+                }
+            }
+        }
     }
 
     private void UpdateStreamTimeouts(DateTimeOffset now)

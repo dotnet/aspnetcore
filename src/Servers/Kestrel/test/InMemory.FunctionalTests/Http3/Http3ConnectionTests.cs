@@ -287,12 +287,20 @@ public class Http3ConnectionTests : Http3TestBase
     [Fact]
     public async Task ControlStream_ClientToServer_ClientCloses_ConnectionError()
     {
+        var now = _serviceContext.MockSystemClock.UtcNow;
+
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
         var controlStream = await Http3Api.CreateControlStream(id: 0);
         await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
 
         await controlStream.EndStreamAsync();
+
+        // Wait for control stream to finish processing and exit.
+        await controlStream.OnStreamCompletedTask.DefaultTimeout();
+
+        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick(now + TimeSpan.FromSeconds(1));
 
         await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
             ignoreNonGoAwayFrames: true,
