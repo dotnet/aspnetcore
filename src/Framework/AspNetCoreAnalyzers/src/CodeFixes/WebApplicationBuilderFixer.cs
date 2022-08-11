@@ -57,10 +57,8 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
 
             if (!CanFixWebApplicationBuilder(diagnostic, SyntaxFactory.IdentifierName(identifierMethod), root, out var invocation))
             {
-                return null;
+                continue;
             }
-
-            var cancellationToken = context.CancellationToken;
 
             context.RegisterCodeFix(
                         CodeAction.Create(

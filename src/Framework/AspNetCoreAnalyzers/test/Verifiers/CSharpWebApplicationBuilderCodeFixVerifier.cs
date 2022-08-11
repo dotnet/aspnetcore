@@ -21,9 +21,7 @@ public static class CSharpWebApplicationBuilderCodeFixVerifier
 
     public static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new CSharpWebApplicationBuilderAnalyzerVerifier.Test { TestCode = source };
-        test.ExpectedDiagnostics.AddRange(expected);
-        return test.RunAsync();
+        return VerifyCodeFixAsync(source, expected, source);
     }
 
     public static Task VerifyCodeFixAsync(string source, string fixedSource)
