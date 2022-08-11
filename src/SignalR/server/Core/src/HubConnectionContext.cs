@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -79,12 +80,11 @@ public partial class HubConnectionContext
         _systemClock = contextOptions.SystemClock ?? new SystemClock();
         _lastSendTick = _systemClock.CurrentTicks;
 
-        // We'll be avoiding using the semaphore when the limit is set to 1, so no need to allocate it
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
-        if (maxInvokeLimit != 1)
+        ActiveInvocationLimit = Channel.CreateBounded<int>(maxInvokeLimit);
+        for (var i = 0; i < maxInvokeLimit; i++)
         {
-            // Don't specify max count, this is so InvokeAsync inside hub methods will not be able to soft-lock a connection if it's run on a separate thread from the hub method, or just not awaited
-            ActiveInvocationLimit = new SemaphoreSlim(maxInvokeLimit);
+            ActiveInvocationLimit.Writer.TryWrite(1);
         }
     }
 
@@ -107,7 +107,7 @@ public partial class HubConnectionContext
 
     internal Exception? CloseException { get; private set; }
 
-    internal SemaphoreSlim? ActiveInvocationLimit { get; }
+    internal Channel<int> ActiveInvocationLimit { get; }
 
     /// <summary>
     /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

@@ -256,13 +256,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         else
         {
             bool isStreamCall = descriptor.StreamingParameters != null;
-            if (connection.ActiveInvocationLimit != null && !isStreamCall && !isStreamResponse)
+            if (!isStreamCall && !isStreamResponse)
             {
                 return connection.ActiveInvocationLimit.RunAsync(static state =>
                 {
                     var (dispatcher, descriptor, connection, invocationMessage) = state;
                     return dispatcher.Invoke(descriptor, connection, invocationMessage, isStreamResponse: false, isStreamCall: false);
-                }, (this, descriptor, connection, hubMethodInvocationMessage));
+                }, (this, descriptor, connection, hubMethodInvocationMessage)).AsTask();
             }
             else
             {
