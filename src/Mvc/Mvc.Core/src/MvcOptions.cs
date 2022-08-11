@@ -381,8 +381,8 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     public int MaxIAsyncEnumerableBufferLimit { get; set; } = 8192;
 
     /// <summary>
-    /// Gets or sets a value that determines if form values are disallowed to be
-    /// parsed using <see cref="CultureInfo.InvariantCulture"/>.
+    /// Gets or sets a value that determines if <see cref="CultureInfo.CurrentCulture"/> should always
+    /// be used to parse form values.
     /// </summary>
     /// <remarks>
     /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are

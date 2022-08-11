@@ -19,18 +19,18 @@ public class FormValueProviderFactory : IValueProviderFactory
     /// <summary>
     /// Creates a new <see cref="FormValueProviderFactory"/>.
     /// </summary>
-    /// <param name="options">The <see cref="MvcOptions"/> options.</param>
-    public FormValueProviderFactory(MvcOptions? options)
+    public FormValueProviderFactory()
+        : this(options: null)
     {
-        _options = options;
     }
 
     /// <summary>
     /// Creates a new <see cref="FormValueProviderFactory"/>.
     /// </summary>
-    public FormValueProviderFactory()
-        : this(options: null)
+    /// <param name="options">The <see cref="MvcOptions"/> options.</param>
+    public FormValueProviderFactory(MvcOptions? options)
     {
+        _options = options;
     }
 
     /// <inheritdoc />

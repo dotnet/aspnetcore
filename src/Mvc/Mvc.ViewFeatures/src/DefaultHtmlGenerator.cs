@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -1289,9 +1290,17 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
         }
 
-        var culture = !_suppressCultureInvariantFormatting && FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(suppliedTypeString)
-            ? CultureInfo.InvariantCulture
-            : CultureInfo.CurrentCulture;
+        CultureInfo culture;
+        if (ShouldUseInvariantFormattingForInputType(suppliedTypeString, viewContext.Html5DateRenderingMode))
+        {
+            culture = CultureInfo.InvariantCulture;
+            viewContext.FormContext.InvariantField(fullName, true);
+        }
+        else
+        {
+            culture = CultureInfo.CurrentCulture;
+        }
+
         var valueParameter = FormatValue(value, format, culture);
         var usedModelState = false;
         switch (inputType)
@@ -1552,6 +1561,38 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             default:
                 return "text";
         }
+    }
+
+    private bool ShouldUseInvariantFormattingForInputType(string inputType, Html5DateRenderingMode dateRenderingMode)
+    {
+        if (!_suppressCultureInvariantFormatting)
+        {
+            var isNumberInput =
+                string.Equals(inputType, "number", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(inputType, "range", StringComparison.OrdinalIgnoreCase);
+
+            if (isNumberInput)
+            {
+                return true;
+            }
+
+            if (dateRenderingMode != Html5DateRenderingMode.CurrentCulture)
+            {
+                var isDateInput =
+                    string.Equals(inputType, "date", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "datetime-local", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "month", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "time", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "week", StringComparison.OrdinalIgnoreCase);
+
+                if (isDateInput)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static IEnumerable<SelectListItem> GetSelectListItems(

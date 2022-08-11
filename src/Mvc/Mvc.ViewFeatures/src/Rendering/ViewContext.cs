@@ -199,8 +199,8 @@ public class ViewContext : ActionContext
     public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that determines if form element values are disallowed to be
-    /// formatted using <see cref="CultureInfo.InvariantCulture"/>.
+    /// Gets or sets a value that determines if form element values are always
+    /// formatted using <see cref="CultureInfo.CurrentCulture"/>.
     /// </summary>
     /// <remarks>
     /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are

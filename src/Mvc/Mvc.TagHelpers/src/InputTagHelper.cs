@@ -241,16 +241,17 @@ public class InputTagHelper : TagHelper
                 break;
         }
 
-        if (!ViewContext.SuppressCultureInvariantFormElementValueFormatting &&
-            FormModelBindingHelper.InputTypeUsesCultureInvariantFormatting(inputType))
-        {
-            GenerateInvariantCultureMetadata(For.Name, output.PostElement);
-        }
-
         if (tagBuilder != null)
         {
             // This TagBuilder contains the one <input/> element of interest.
             output.MergeAttributes(tagBuilder);
+
+            if (tagBuilder.Attributes.TryGetValue("name", out var fullName) &&
+                ViewContext.FormContext.InvariantField(fullName))
+            {
+                GenerateInvariantCultureMetadata(fullName, output.PostElement);
+            }
+
             if (tagBuilder.HasInnerHtml)
             {
                 // Since this is not the "checkbox" special-case, no guarantee that output is a self-closing
@@ -419,7 +420,7 @@ public class InputTagHelper : TagHelper
     private static void GenerateInvariantCultureMetadata(string propertyName, TagHelperContent builder)
         => builder
             .AppendHtml("<input name=\"")
-            .Append(FormModelBindingHelper.CultureInvariantFieldName)
+            .Append(FormValueProvider.CultureInvariantFieldName)
             .AppendHtml("\" type=\"hidden\" value=\"")
             .Append(propertyName)
             .AppendHtml("\" />");

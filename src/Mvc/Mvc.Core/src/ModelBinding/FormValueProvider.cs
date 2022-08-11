@@ -13,9 +13,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
 {
+    internal const string CultureInvariantFieldName = "__Invariant";
+
     private readonly IFormCollection _values;
     private readonly HashSet<string?>? _invariantValueKeys;
     private PrefixContainer? _prefixContainer;
+
+    /// <summary>
+    /// Creates a value provider for <see cref="IFormCollection"/>.
+    /// </summary>
+    /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
+    /// <param name="values">The key value pairs to wrap.</param>
+    /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
+    public FormValueProvider(
+        BindingSource bindingSource,
+        IFormCollection values,
+        CultureInfo? culture)
+        : this(bindingSource, values, culture, options: null)
+    {
+    }
 
     /// <summary>
     /// Creates a value provider for <see cref="IFormCollection"/>.
@@ -44,26 +60,12 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         _values = values;
 
         var suppressCultureInvariantFormModelBinding = options?.SuppressCultureInvariantFormModelBinding == true;
-        if (!suppressCultureInvariantFormModelBinding && _values.TryGetValue(FormModelBindingHelper.CultureInvariantFieldName, out var invariantKeys))
+        if (!suppressCultureInvariantFormModelBinding && _values.TryGetValue(CultureInvariantFieldName, out var invariantKeys))
         {
             _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
         }
 
         Culture = culture;
-    }
-
-    /// <summary>
-    /// Creates a value provider for <see cref="IFormCollection"/>.
-    /// </summary>
-    /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
-    /// <param name="values">The key value pairs to wrap.</param>
-    /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-    public FormValueProvider(
-        BindingSource bindingSource,
-        IFormCollection values,
-        CultureInfo? culture)
-        : this(bindingSource, values, culture, options: null)
-    {
     }
 
     /// <summary>
