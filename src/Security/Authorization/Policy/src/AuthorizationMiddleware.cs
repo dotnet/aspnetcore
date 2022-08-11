@@ -60,7 +60,7 @@ public class AuthorizationMiddleware
         }
 
         // Use the computed policy for this endpoint if we can
-        var computedPolicy = _cacheCombinedPolicy
+        var computedPolicy = CacheCombinedPolicy
             ? endpoint?.Metadata.GetMetadata<AuthorizationPolicyCache>()
             : null;
 

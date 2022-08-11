@@ -225,6 +225,7 @@ public class AuthorizationMiddlewareTests
             .Callback(() => getFallbackPolicyCount++);
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        middleware.CacheCombinedPolicy = true;
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
 
         // Act & Assert
