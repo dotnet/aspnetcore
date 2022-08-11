@@ -119,6 +119,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.37' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Abstractions;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
