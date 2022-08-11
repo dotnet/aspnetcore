@@ -211,6 +211,39 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
+    [Fact]
+    public async Task OnAuthorizationAsync_WillNotCallPolicyProviderWithCache()
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getPolicyCount = 0;
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetPolicyAsync(It.IsAny<string>())).ReturnsAsync(policy)
+            .Callback(() => getPolicyCount++);
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
+            .Callback(() => getFallbackPolicyCount++);
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(1, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(2, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(3, next.CalledCount);
+    }
+
     private class TestDefaultPolicyProvider : DefaultAuthorizationPolicyProvider
     {
         public int GetFallbackPolicyCount;
