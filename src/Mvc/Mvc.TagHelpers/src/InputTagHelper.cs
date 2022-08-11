@@ -243,12 +243,15 @@ public class InputTagHelper : TagHelper
 
         if (tagBuilder != null)
         {
-            // This TagBuilder contains the one <input/> element of interest.
+            // This TagBuilder contains the primary <input/> element of interest.
             output.MergeAttributes(tagBuilder);
 
             if (tagBuilder.Attributes.TryGetValue("name", out var fullName) &&
                 ViewContext.FormContext.InvariantField(fullName))
             {
+                // If the value attribute used culture-invariant formatting, output a hidden
+                // <input/> element so the form submission includes an entry indicating such.
+                // This lets the model binding logic decide which CultureInfo to use when parsing form entries.
                 GenerateInvariantCultureMetadata(fullName, output.PostElement);
             }
 
