@@ -11,19 +11,17 @@ using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
-public static class CSharpWebApplicationBuilderCodeFixVerifier<TAnalyzer, TCodeFix>
-    where TAnalyzer : WebApplicationBuilderAnalyzer, new()
-    where TCodeFix : WebApplicationBuilderFixer, new()
+public static class CSharpWebApplicationBuilderCodeFixVerifier
 {
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
-        => CSharpCodeFixVerifier<TAnalyzer, TCodeFix, XUnitVerifier>.Diagnostic(diagnosticId);
+        => CSharpCodeFixVerifier<WebApplicationBuilderAnalyzer, WebApplicationBuilderFixer, XUnitVerifier>.Diagnostic(diagnosticId);
 
     public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
         => new DiagnosticResult(descriptor);
 
     public static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new CSharpWebApplicationBuilderAnalyzerVerifier<TAnalyzer>.Test { TestCode = source };
+        var test = new CSharpWebApplicationBuilderAnalyzerVerifier.Test { TestCode = source };
         test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
     }
@@ -59,7 +57,7 @@ public static class CSharpWebApplicationBuilderCodeFixVerifier<TAnalyzer, TCodeF
         return test.RunAsync();
     }
 
-    public class WebApplicationBuilderAnalyzerTest : CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
+    public class WebApplicationBuilderAnalyzerTest : CSharpCodeFixTest<WebApplicationBuilderAnalyzer, WebApplicationBuilderFixer, XUnitVerifier>
     {
         public WebApplicationBuilderAnalyzerTest()
         {

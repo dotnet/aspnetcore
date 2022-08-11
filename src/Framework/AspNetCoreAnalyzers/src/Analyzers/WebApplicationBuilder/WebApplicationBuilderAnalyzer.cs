@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
+public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {

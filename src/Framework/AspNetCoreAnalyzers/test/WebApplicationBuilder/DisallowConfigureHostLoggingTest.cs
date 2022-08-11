@@ -3,9 +3,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebApplicationBuilderCodeFixVerifier<
-    Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.WebApplicationBuilderAnalyzer,
-    Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.Fixers.WebApplicationBuilderFixer>;
+using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebApplicationBuilderCodeFixVerifier;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureHostLoggingTest
@@ -76,7 +74,7 @@ builder.Logging.AddJsonConsole();
 
         var expectedDiagnosis = new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureLogging).WithArguments("ConfigureLogging").WithLocation(0);
 
-        await VerifyCS.VerifyCodeFixAsync(source,expectedDiagnosis, fixedSource);
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
     [Fact]
@@ -305,5 +303,52 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
+    [Fact]
+    public async Task WarnsWhenConfigureLoggingIsCalledWhenChainedWithCreateBuilder()
+    {
+        //arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+WebApplication.CreateBuilder(args).Host.{|#0:ConfigureLogging(logging => logging.AddJsonConsole())|};
+";
+        var fixedSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+WebApplication.CreateBuilder(args).Logging.AddJsonConsole();
+";
+        var expectedDiagnosis = new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureLogging).WithArguments("ConfigureLogging").WithLocation(0);
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
+    }
+
+    [Fact]
+    public async Task WarnsWhenConfigureLoggingIsCalledAsAnArgument()
+    {
+        //arrange
+        var source = @"
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+var builder = WebApplication.CreateBuilder(args);
+Console.WriteLine(builder.Host.{|#0:ConfigureLogging(logging => logging.AddJsonConsole())|});
+";
+        var fixedSource = @"
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+var builder = WebApplication.CreateBuilder(args);
+Console.WriteLine(builder.Logging.AddJsonConsole());
+";
+        var expectedDiagnosis = new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureLogging).WithArguments("ConfigureLogging").WithLocation(0);
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
+    }
 }
 

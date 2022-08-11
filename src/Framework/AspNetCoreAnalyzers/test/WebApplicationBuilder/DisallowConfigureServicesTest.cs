@@ -9,9 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebApplicationBuilderCodeFixVerifier<
-    Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.WebApplicationBuilderAnalyzer,
-    Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.Fixers.WebApplicationBuilderFixer>;
+using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebApplicationBuilderCodeFixVerifier;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureServicesTest

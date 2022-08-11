@@ -8,11 +8,10 @@ using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
-public static class CSharpWebApplicationBuilderAnalyzerVerifier<TAnalyzer>
-    where TAnalyzer : WebApplicationBuilderAnalyzer, new()
+public static class CSharpWebApplicationBuilderAnalyzerVerifier
 {
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
-        => CSharpWebApplicationBuilderAnalyzerVerifier<WebApplicationBuilderAnalyzer>.Diagnostic(diagnosticId);
+        => CSharpWebApplicationBuilderAnalyzerVerifier.Diagnostic(diagnosticId);
 
     public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
         => new DiagnosticResult(descriptor);
@@ -25,5 +24,5 @@ public static class CSharpWebApplicationBuilderAnalyzerVerifier<TAnalyzer>
 
     }
 
-    public class Test : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier> { }
+    public class Test : CSharpCodeFixTest<WebApplicationBuilderAnalyzer, EmptyCodeFixProvider, XUnitVerifier> { }
 }

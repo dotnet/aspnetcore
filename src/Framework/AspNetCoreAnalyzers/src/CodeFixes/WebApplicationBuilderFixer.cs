@@ -10,10 +10,12 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
+using System.Composition;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.Fixers;
 
-public class WebApplicationBuilderFixer : CodeFixProvider
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(WebApplicationBuilderFixer)), Shared]
+public sealed class WebApplicationBuilderFixer : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
         // Add other diagnostic descriptor id's
@@ -29,54 +31,69 @@ public class WebApplicationBuilderFixer : CodeFixProvider
         foreach (var diagnostic in context.Diagnostics)
         {
             string id = diagnostic.Id;
+
+            string message = string.Empty;
+            string identifierMethod = string.Empty;
+
             switch (id)
             {
                 case string when id == DiagnosticDescriptors.DoNotUseHostConfigureLogging.Id:
-                    context.RegisterCodeFix(
-                        CodeAction.Create(
-                            "Fix references to Logging properties on WebApplicationBuilder",
-                            cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, cancellationToken, SyntaxFactory.IdentifierName("Logging")),
-                            equivalenceKey:
-                            DiagnosticDescriptors.DoNotUseHostConfigureLogging.Id),
-                            diagnostic);
+                    message = "Fix references to Logging properties on WebApplicationBuilder";
+                    identifierMethod = "Logging";
                     break;
 
                 case string when id == DiagnosticDescriptors.DoNotUseHostConfigureServices.Id:
-                    context.RegisterCodeFix(
-                        CodeAction.Create(
-                            "Fix references to Services properties on WebApplicationBuilder",
-                            cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, cancellationToken, SyntaxFactory.IdentifierName("Services")),
-                            equivalenceKey:
-                            DiagnosticDescriptors.DoNotUseHostConfigureServices.Id),
-                            diagnostic);
+                    message = "Fix references to Services properties on WebApplicationBuilder";
+                    identifierMethod = "Services";
                     break;
 
                 case string when id == DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id:
-                    context.RegisterCodeFix(
-                        CodeAction.Create(
-                            "Fix references to Configuration properties on WebApplicationBuilder",
-                            cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, cancellationToken, SyntaxFactory.IdentifierName("Configuration")),
-                            equivalenceKey:
-                            DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id),
-                            diagnostic);
+                    message = "Fix references to Configuration properties on WebApplicationBuilder";
+                    identifierMethod = "Configuration";
                     break;
             }
+
+            context.Document.TryGetSyntaxRoot(out var root);
+
+            if (!CanFixWebApplicationBuilder(diagnostic, SyntaxFactory.IdentifierName(identifierMethod), root, out var invocation))
+            {
+                return null;
+            }
+
+            var cancellationToken = context.CancellationToken;
+
+            context.RegisterCodeFix(
+                        CodeAction.Create(
+                            message,
+                            cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, invocation, cancellationToken),
+                            equivalenceKey:
+                            id),
+                            diagnostic);
         }
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, IdentifierNameSyntax identifierMethod)
+    private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+
+        return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, invocation));
+    }
+
+    private static bool CanFixWebApplicationBuilder(Diagnostic diagnostic, IdentifierNameSyntax identifierMethod, SyntaxNode root, out InvocationExpressionSyntax invocationName)
+    {
+        invocationName = null;
+
         if (root == null)
         {
-            return document;
+            return false;
         }
 
         // builder.Host.ConfigureLogging(builder => builder.AddJsonConsole());
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan); 
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true); 
 
         if (diagnosticTarget is InvocationExpressionSyntax invocation)
         {
@@ -84,7 +101,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             if (invocation.Expression is not MemberAccessExpressionSyntax hostBasedInvocationMethodExpr
                 || hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax configureMethodOnHostAccessExpr)
             {
-                return document;
+                return false;
             }
 
             configureMethodOnHostAccessExpr = configureMethodOnHostAccessExpr.WithName(identifierMethod);
@@ -98,7 +115,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             if (invocation.ArgumentList.Arguments.SingleOrDefault() is not { } initArgument
                 || initArgument.Expression is not LambdaExpressionSyntax lambdaExpr)
             {
-                return document;
+                return false;
             }
 
             if (lambdaExpr.Block != null)
@@ -109,7 +126,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     if (statement is not ExpressionStatementSyntax currentStatement
                         || currentStatement.Expression is not InvocationExpressionSyntax expr)
                     {
-                        return document;
+                        return false;
                     }
 
                     // arguments of builder.{method_name}({arguments})
@@ -117,7 +134,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
                     if (expr.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.{method_name} 
                     {
-                        return document;
+                        return false;
                     }
 
                     var method = bodyExpression.Name; // method_name
@@ -131,14 +148,14 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             {
                 if (lambdaExpr.ExpressionBody is not InvocationExpressionSyntax body)
                 {
-                    return document;
+                    return false;
                 }
 
                 var arguments = body.ArgumentList;
 
                 if (body.Expression is not MemberAccessExpressionSyntax bodyExpression)
                 {
-                    return document;
+                    return false;
                 }
 
                 var method = bodyExpression.Name;
@@ -146,8 +163,9 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                 hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method);
                 invocation = invocation.WithExpression(hostBasedInvocationMethodExpr).WithArgumentList(arguments);
             }
-            return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, invocation));
+            invocationName = invocation;
+            return true;
         }
-        return document;
+        return false;
     }
 }
