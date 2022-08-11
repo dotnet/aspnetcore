@@ -8,14 +8,5 @@ internal static class FormModelBindingHelper
     public const string CultureInvariantFieldName = "__Invariant";
 
     public static bool InputTypeUsesCultureInvariantFormatting(string? inputType)
-        => inputType
-        is "number"
-        or "color"
-        or "date"
-        or "datetime-local"
-        or "month"
-        or "range"
-        or "time"
-        or "url"
-        or "week";
+        => inputType is "number" or "range";
 }
