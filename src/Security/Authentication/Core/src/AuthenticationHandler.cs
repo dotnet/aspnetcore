@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -214,7 +215,10 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
         }
         else
         {
-            Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Scheme.Name, result.Failure.Message);
+            if (Context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() is null)
+            {
+                Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Scheme.Name, result.Failure.Message);
+            }
         }
         return result;
     }
