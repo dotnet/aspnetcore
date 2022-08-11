@@ -272,17 +272,25 @@ describe("LongPollingTransport", () => {
     it("removes Authorization header when accessTokenFactory returns empty", async () => {
         await VerifyLogger.run(async (logger) => {
             let firstPoll = true;
+            let secondPoll = false;
             let firstAuthHeader = "";
             let secondAuthHeader = "";
             let deleteAuthHeader = "";
             const pollingPromiseSource = new PromiseSource();
+            const readyToStopPromiseSource = new PromiseSource();
             const httpClient = new TestHttpClient()
                 .on("GET", async (r) => {
                     if (firstPoll) {
                         firstPoll = false;
+                        secondPoll = true;
                         firstAuthHeader = r.headers!.Authorization;
                         return new HttpResponse(200);
+                    } else if (secondPoll) {
+                        secondPoll = false;
+                        // force a retry so the access token factory is called again
+                        return new HttpResponse(401);
                     } else {
+                        readyToStopPromiseSource.resolve();
                         secondAuthHeader = r.headers!.Authorization;
                         await pollingPromiseSource.promise;
                         return new HttpResponse(204);
@@ -301,6 +309,8 @@ describe("LongPollingTransport", () => {
             }, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            await readyToStopPromiseSource.promise;
 
             // Begin stopping transport
             const stopPromise = transport.stop();

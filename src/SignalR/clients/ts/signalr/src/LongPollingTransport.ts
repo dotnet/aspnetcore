@@ -23,6 +23,7 @@ export class LongPollingTransport implements ITransport {
     private _running: boolean;
     private _receiving?: Promise<void>;
     private _closeError?: Error;
+    private _token?: string;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
@@ -74,7 +75,7 @@ export class LongPollingTransport implements ITransport {
             pollOptions.responseType = "arraybuffer";
         }
 
-        await this._updateHeaderToken(pollOptions);
+        await this._updateHeaderToken(pollOptions, false);
 
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
@@ -94,14 +95,16 @@ export class LongPollingTransport implements ITransport {
         this._receiving = this._poll(this._url, pollOptions);
     }
 
-    private async _updateHeaderToken(request: HttpRequest): Promise<void> {
+    private async _updateHeaderToken(request: HttpRequest, isRetry: boolean): Promise<void> {
         if (!request.headers) {
             request.headers = {};
         }
         if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                request.headers[HeaderNames.Authorization] = `Bearer ${token}`
+            if (isRetry || !this._token) {
+                this._token = await this._accessTokenFactory();
+            }
+            if (this._token) {
+                request.headers[HeaderNames.Authorization] = `Bearer ${this._token}`
             } else {
                 if (request.headers[HeaderNames.Authorization]) {
                     delete request.headers[HeaderNames.Authorization];
@@ -112,9 +115,12 @@ export class LongPollingTransport implements ITransport {
 
     private async _poll(url: string, pollOptions: HttpRequest): Promise<void> {
         try {
+            let isRetry = false;
             while (this._running) {
-                // We have to get the access token on each poll, in case it changes
-                await this._updateHeaderToken(pollOptions);
+                if (isRetry) {
+                    // Only get an access token on auth failure, to see if a new one is available
+                    await this._updateHeaderToken(pollOptions, isRetry);
+                }
 
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
@@ -125,13 +131,23 @@ export class LongPollingTransport implements ITransport {
                         this._logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server.");
 
                         this._running = false;
-                    } else if (response.statusCode !== 200) {
+                        continue;
+                    } else if (response.statusCode === 401) {
+                        if (!isRetry) {
+                            isRetry = true;
+                            continue;
+                        }
+                        // if request is already a retry fallback to normal failure below
+                    }
+
+                    if (response.statusCode !== 200) {
                         this._logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}.`);
 
                         // Unexpected status code
                         this._closeError = new HttpError(response.statusText || "", response.statusCode);
                         this._running = false;
                     } else {
+                        isRetry = false;
                         // Process the response
                         if (response.content) {
                             this._logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this._options.logMessageContent!)}.`);
@@ -199,8 +215,12 @@ export class LongPollingTransport implements ITransport {
                 timeout: this._options.timeout,
                 withCredentials: this._options.withCredentials,
             };
-            await this._updateHeaderToken(deleteOptions);
-            await this._httpClient.delete(this._url!, deleteOptions);
+            await this._updateHeaderToken(deleteOptions, false);
+            const response = await this._httpClient.delete(this._url!, deleteOptions);
+            if (response.statusCode === 401) {
+                await this._updateHeaderToken(deleteOptions, true);
+                await this._httpClient.delete(this._url!, deleteOptions);
+            }
 
             this._logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request sent.");
         } finally {
