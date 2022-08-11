@@ -11,10 +11,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies;
 /// </summary>
 public class CookieAuthenticationEvents
 {
+    private static readonly Func<CookieValidatePrincipalContext, Task> _onValidatePrincipal = _ => Task.CompletedTask;
+
     /// <summary>
     /// Invoked to validate the principal.
     /// </summary>
-    public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => Task.CompletedTask;
+    public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = _onValidatePrincipal;
 
     /// <summary>
     /// Invoked to check if the cookie should be renewed.
@@ -161,4 +163,10 @@ public class CookieAuthenticationEvents
     /// </summary>
     /// <param name="context">The <see cref="RedirectContext{TOptions}"/>.</param>
     public virtual Task RedirectToAccessDenied(RedirectContext<CookieAuthenticationOptions> context) => OnRedirectToAccessDenied(context);
+
+    internal bool ShouldRunValidatePrincipal()
+    {
+        return GetType() != typeof(CookieAuthenticationEvents)
+            || OnValidatePrincipal != _onValidatePrincipal;
+    }
 }

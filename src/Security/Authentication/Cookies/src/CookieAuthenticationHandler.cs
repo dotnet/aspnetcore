@@ -199,20 +199,32 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         await CheckForRefreshAsync(result.Ticket);
 
         Debug.Assert(result.Ticket != null);
-        var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);
-        await Events.ValidatePrincipal(context);
 
-        if (context.Principal == null)
+        var principal = result.Ticket.Principal;
+        var shouldRenew = false;
+        var properties = result.Ticket.Properties;
+
+        if (Events.ShouldRunValidatePrincipal())
+        {
+            var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);
+            await Events.ValidatePrincipal(context);
+
+            principal = context.Principal;
+            shouldRenew = context.ShouldRenew;
+            properties = context.Properties;
+        }
+
+        if (principal == null)
         {
             return AuthenticateResult.Fail("No principal.");
         }
 
-        if (context.ShouldRenew)
+        if (shouldRenew)
         {
-            RequestRefresh(result.Ticket, context.Principal);
+            RequestRefresh(result.Ticket, principal);
         }
 
-        return AuthenticateResult.Success(new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name));
+        return AuthenticateResult.Success(new AuthenticationTicket(principal, properties, Scheme.Name));
     }
 
     private CookieOptions BuildCookieOptions()
