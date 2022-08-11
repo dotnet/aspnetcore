@@ -286,8 +286,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const runtimeAssetsBeingLoaded = assets
     .filter(asset => asset.behavior === 'dotnetwasm')
     .map(asset => {
-      asset.pending = downloadResource(asset);
-      return asset.pending!;
+      asset.pendingDownload = downloadResource(asset);
+      return asset.pendingDownload!;
     });
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.

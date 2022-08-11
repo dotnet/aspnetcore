@@ -88,13 +88,38 @@ interface ResourceRequest {
     resolvedUrl?: string;
     hash?: string;
 }
+interface LoadingResource {
+    name: string;
+    url: string;
+    response: Promise<Response>;
+}
 interface AssetEntry extends ResourceRequest {
+    /**
+     * If specified, overrides the path of the asset in the virtual filesystem and similar data structures once downloaded.
+     */
     virtualPath?: string;
+    /**
+     * Culture code
+     */
     culture?: string;
+    /**
+     * If true, an attempt will be made to load the asset from each location in MonoConfig.remoteSources.
+     */
     loadRemote?: boolean;
+    /**
+     * If true, the runtime startup would not fail if the asset download was not successful.
+     */
     isOptional?: boolean;
+    /**
+     * If provided, runtime doesn't have to fetch the data.
+     * Runtime would set the buffer to null after instantiation to free the memory.
+     */
     buffer?: ArrayBuffer;
-    pending?: LoadingResource;
+    /**
+     * It's metadata + fetch-like Promise<Response>
+     * If provided, the runtime doesn't have to initiate the download. It would just await the response.
+     */
+    pendingDownload?: LoadingResource;
 }
 declare type AssetBehaviours = "resource" | "assembly" | "pdb" | "heap" | "icu" | "vfs" | "dotnetwasm" | "js-module-crypto" | "js-module-threads";
 declare type GlobalizationMode = "icu" | // load ICU globalization data from any runtime assets with behavior "icu".
@@ -118,11 +143,6 @@ declare type DotnetModuleConfig = {
     exports?: string[];
     downloadResource?: (request: ResourceRequest) => LoadingResource | undefined;
 } & Partial<EmscriptenModule>;
-interface LoadingResource {
-    name: string;
-    url: string;
-    response: Promise<Response>;
-}
 
 declare type APIType = {
     runMain: (mainAssemblyName: string, args: string[]) => Promise<number>;
