@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -20,8 +21,11 @@ internal sealed class ActionEndpointFactory
     private readonly RoutePatternTransformer _routePatternTransformer;
     private readonly RequestDelegate _requestDelegate;
     private readonly IRequestDelegateFactory[] _requestDelegateFactories;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ActionEndpointFactory(RoutePatternTransformer routePatternTransformer, IEnumerable<IRequestDelegateFactory> requestDelegateFactories)
+    public ActionEndpointFactory(RoutePatternTransformer routePatternTransformer,
+                                IEnumerable<IRequestDelegateFactory> requestDelegateFactories,
+                                IServiceProvider serviceProvider)
     {
         if (routePatternTransformer == null)
         {
@@ -31,6 +35,7 @@ internal sealed class ActionEndpointFactory
         _routePatternTransformer = routePatternTransformer;
         _requestDelegate = CreateRequestDelegate();
         _requestDelegateFactories = requestDelegateFactories.ToArray();
+        _serviceProvider = serviceProvider;
     }
 
     public void AddEndpoints(
@@ -38,8 +43,10 @@ internal sealed class ActionEndpointFactory
         HashSet<string> routeNames,
         ActionDescriptor action,
         IReadOnlyList<ConventionalRouteEntry> routes,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
-        bool createInertEndpoints)
+        bool createInertEndpoints,
+        RoutePattern? groupPrefix = null)
     {
         if (endpoints == null)
         {
@@ -81,8 +88,9 @@ internal sealed class ActionEndpointFactory
                 dataTokens: null,
                 suppressLinkGeneration: false,
                 suppressPathMatching: false,
-                conventions,
-                Array.Empty<Action<EndpointBuilder>>());
+                groupConventions: groupConventions,
+                conventions: conventions,
+                perRouteConventions: Array.Empty<Action<EndpointBuilder>>());
             endpoints.Add(builder.Build());
         }
 
@@ -102,6 +110,8 @@ internal sealed class ActionEndpointFactory
                     continue;
                 }
 
+                updatedRoutePattern = RoutePatternFactory.Combine(groupPrefix, updatedRoutePattern);
+
                 var requestDelegate = CreateRequestDelegate(action, route.DataTokens) ?? _requestDelegate;
 
                 // We suppress link generation for each conventionally routed endpoint. We generate a single endpoint per-route
@@ -118,8 +128,9 @@ internal sealed class ActionEndpointFactory
                     route.DataTokens,
                     suppressLinkGeneration: true,
                     suppressPathMatching: false,
-                    conventions,
-                    route.Conventions);
+                    groupConventions: groupConventions,
+                    conventions: conventions,
+                    perRouteConventions: route.Conventions);
                 endpoints.Add(builder.Build());
             }
         }
@@ -145,6 +156,8 @@ internal sealed class ActionEndpointFactory
                     "To fix this error, choose a different parameter name.");
             }
 
+            updatedRoutePattern = RoutePatternFactory.Combine(groupPrefix, updatedRoutePattern);
+
             var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)
             {
                 DisplayName = action.DisplayName,
@@ -157,7 +170,8 @@ internal sealed class ActionEndpointFactory
                 dataTokens: null,
                 action.AttributeRouteInfo.SuppressLinkGeneration,
                 action.AttributeRouteInfo.SuppressPathMatching,
-                conventions,
+                groupConventions: groupConventions,
+                conventions: conventions,
                 perRouteConventions: Array.Empty<Action<EndpointBuilder>>());
             endpoints.Add(builder.Build());
         }
@@ -168,7 +182,9 @@ internal sealed class ActionEndpointFactory
         HashSet<string> routeNames,
         HashSet<string> keys,
         ConventionalRouteEntry route,
-        IReadOnlyList<Action<EndpointBuilder>> conventions)
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
+        IReadOnlyList<Action<EndpointBuilder>> conventions,
+        RoutePattern? groupPrefix = null)
     {
         if (endpoints == null)
         {
@@ -212,13 +228,15 @@ internal sealed class ActionEndpointFactory
             throw new InvalidOperationException("Failed to create a conventional route for pattern: " + route.Pattern);
         }
 
+        pattern = RoutePatternFactory.Combine(groupPrefix, pattern);
+
         var builder = new RouteEndpointBuilder(context => Task.CompletedTask, pattern, route.Order)
         {
             DisplayName = "Route: " + route.Pattern.RawText,
             Metadata =
-                {
-                    new SuppressMatchingMetadata(),
-                },
+            {
+                new SuppressMatchingMetadata(),
+            },
         };
 
         if (route.RouteName != null)
@@ -234,6 +252,11 @@ internal sealed class ActionEndpointFactory
         if (route.RouteName != null && routeNames.Add(route.RouteName))
         {
             builder.Metadata.Add(new EndpointNameMetadata(route.RouteName));
+        }
+
+        for (var i = 0; i < groupConventions.Count; i++)
+        {
+            groupConventions[i](builder);
         }
 
         for (var i = 0; i < conventions.Count; i++)
@@ -301,7 +324,7 @@ internal sealed class ActionEndpointFactory
         return (attributeRoutePattern, resolvedRequiredValues ?? action.RouteValues);
     }
 
-    private static void AddActionDataToBuilder(
+    private void AddActionDataToBuilder(
         EndpointBuilder builder,
         HashSet<string> routeNames,
         ActionDescriptor action,
@@ -309,9 +332,19 @@ internal sealed class ActionEndpointFactory
         RouteValueDictionary? dataTokens,
         bool suppressLinkGeneration,
         bool suppressPathMatching,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> perRouteConventions)
     {
+        // REVIEW: The RouteEndpointDataSource adds HttpMethodMetadata before running group conventions
+        // do we need to do the same here?
+
+        // Group metadata has the lowest precedence.
+        for (var i = 0; i < groupConventions.Count; i++)
+        {
+            groupConventions[i](builder);
+        }
+
         // Add action metadata first so it has a low precedence
         if (action.EndpointMetadata != null)
         {
@@ -405,6 +438,30 @@ internal sealed class ActionEndpointFactory
         for (var i = 0; i < perRouteConventions.Count; i++)
         {
             perRouteConventions[i](builder);
+        }
+
+        if (builder.FilterFactories.Count > 0 && action is ControllerActionDescriptor cad)
+        {
+            var routeHandlerFilters = builder.FilterFactories;
+
+            EndpointFilterDelegate del = static invocationContext =>
+            {
+                // By the time this is called, we have the cache entry
+                var controllerInvocationContext = (ControllerEndpointFilterInvocationContext)invocationContext;
+                return controllerInvocationContext.ActionDescriptor.CacheEntry!.InnerActionMethodExecutor.Execute(controllerInvocationContext);
+            };
+
+            var context = new EndpointFilterFactoryContext(cad.MethodInfo, builder.Metadata, _serviceProvider);
+
+            var initialFilteredInvocation = del;
+
+            for (var i = routeHandlerFilters.Count - 1; i >= 0; i--)
+            {
+                var filterFactory = routeHandlerFilters[i];
+                del = filterFactory(context, del);
+            }
+
+            cad.FilterDelegate = ReferenceEquals(del, initialFilteredInvocation) ? null : del;
         }
     }
 
