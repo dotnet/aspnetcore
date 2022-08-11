@@ -9,9 +9,11 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that can be used to intercept navigation events. 
 /// </summary>
-public class NavigationLock : IComponent, IAsyncDisposable
+public sealed class NavigationLock : IComponent, IAsyncDisposable
 {
     private readonly string _id = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
+
+    private IDisposable? _locationChangingRegistration;
 
     private bool HasOnBeforeInternalNavigationCallback => OnBeforeInternalNavigation.HasDelegate;
 
@@ -48,14 +50,10 @@ public class NavigationLock : IComponent, IAsyncDisposable
         var hasOnBeforeInternalNavigationCallback = HasOnBeforeInternalNavigationCallback;
         if (hasOnBeforeInternalNavigationCallback != lastHasOnBeforeInternalNavigationCallback)
         {
-            if (hasOnBeforeInternalNavigationCallback)
-            {
-                NavigationManager.AddLocationChangingHandler(OnLocationChanging);
-            }
-            else
-            {
-                NavigationManager.RemoveLocationChangingHandler(OnLocationChanging);
-            }
+            _locationChangingRegistration?.Dispose();
+            _locationChangingRegistration = hasOnBeforeInternalNavigationCallback
+                ? NavigationManager.RegisterLocationChangingHandler(OnLocationChanging)
+                : null;
         }
 
         var confirmExternalNavigation = ConfirmExternalNavigation;
@@ -79,7 +77,7 @@ public class NavigationLock : IComponent, IAsyncDisposable
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        NavigationManager.RemoveLocationChangingHandler(OnLocationChanging);
+        _locationChangingRegistration?.Dispose();
         await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
     }
 }

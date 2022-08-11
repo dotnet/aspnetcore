@@ -64,11 +64,11 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, null).DefaultTimeout();
 
@@ -143,11 +143,11 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -288,11 +288,11 @@ public class Http3TimeoutTests : Http3TestBase
 
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
-                new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-            }, null, true, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        }, null, true, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
 
         await requestStream.OnDisposingTask.DefaultTimeout();
 
@@ -626,5 +626,4 @@ public class Http3TimeoutTests : Http3TestBase
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
-
 }

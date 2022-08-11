@@ -2,7 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by HtmlResponses.rc
 //
-#define OUT_OF_PROCESS_RH_STATIC_HTML                       101
+#define ANCM_ERROR_PAGE                 101
 
 // Next default values for new objects
 //

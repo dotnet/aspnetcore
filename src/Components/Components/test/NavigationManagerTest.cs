@@ -221,7 +221,7 @@ public class NavigationManagerTest
         // Arrange
         var baseUri = "scheme://host/";
         var navigationManager = new TestNavigationManager(baseUri);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -248,7 +248,7 @@ public class NavigationManagerTest
         // Act
         for (var i = 0; i < initialHandlerCount; i++)
         {
-            navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+            navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
         }
 
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -272,7 +272,7 @@ public class NavigationManagerTest
         var baseUri = "scheme://host/";
         var navigationManager = new TestNavigationManager(baseUri);
         var tcs = new TaskCompletionSource();
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -301,7 +301,7 @@ public class NavigationManagerTest
         // Act
         for (var i = 0; i < initialHandlerCount; i++)
         {
-            navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+            navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
         }
 
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -326,7 +326,7 @@ public class NavigationManagerTest
         var baseUri = "scheme://host/";
         var navigationManager = new TestNavigationManager(baseUri);
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -353,9 +353,9 @@ public class NavigationManagerTest
         // The first two handlers run, but the third doesn't because the navigation gets prevented after the second.
         var expectedInvokedHandlerCount = 2; 
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_PreventNavigation);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_PreventNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -389,7 +389,7 @@ public class NavigationManagerTest
         var isHandlerCompleted = false;
         LocationChangingContext currentContext = null;
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -425,8 +425,8 @@ public class NavigationManagerTest
         var isSecondHandlerCompleted = false;
         LocationChangingContext currentContext = null;
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_PreventNavigation);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_PreventNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -466,7 +466,7 @@ public class NavigationManagerTest
         var baseUri = "scheme://host/";
         var navigationManager = new TestNavigationManager(baseUri);
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -495,10 +495,10 @@ public class NavigationManagerTest
 
         for (var i = 0; i < blockNavigationHandlerCount; i++)
         {
-            navigationManager.AddLocationChangingHandler(HandleLocationChanging_BlockNavigation);
+            navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_BlockNavigation);
         }
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_PreventNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_PreventNavigation);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -553,9 +553,9 @@ public class NavigationManagerTest
         var tcs = new TaskCompletionSource();
 
         // Act
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        var locationChangingRegistration = navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
-        navigationManager.RemoveLocationChangingHandler(HandleLocationChanging);
+        locationChangingRegistration.Dispose();
         var navigation2 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir2", null, false);
 
         await tcs.Task.WaitAsync(Timeout);
@@ -596,12 +596,13 @@ public class NavigationManagerTest
         var expectedCanceledHandlerCount = 6; // 3 handlers canceled 2 times
         var canceledHandlerCount = 0;
         var completedHandlerCount = 0;
+        var locationChangingRegistrations = new IDisposable[initialHandlerCount];
         var tcs = new TaskCompletionSource();
 
         // Act
         for (var i = 0; i < initialHandlerCount; i++)
         {
-            navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+            locationChangingRegistrations[i] = navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
         }
 
         // These two navigations get canceled
@@ -610,7 +611,7 @@ public class NavigationManagerTest
 
         for (var i = 0; i < initialHandlerCount; i++)
         {
-            navigationManager.RemoveLocationChangingHandler(HandleLocationChanging);
+            locationChangingRegistrations[i].Dispose();
         }
 
         // This navigation continues without getting canceled
@@ -659,109 +660,6 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public async Task LocationChangingHandlers_CanBubbleUpExceptionsSynchronously_WhenOneHandlerIsRegistered()
-    {
-        // Arrange
-        var baseUri = "scheme://host/";
-        var navigationManager = new TestNavigationManager(baseUri);
-        var exceptionMessage = "Thrown from a test handler";
-
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
-
-        // Act/Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
-        Assert.Equal(exceptionMessage, ex.Message);
-
-        ValueTask HandleLocationChanging(LocationChangingContext context)
-        {
-            throw new InvalidOperationException(exceptionMessage);
-        }
-    }
-
-    [Fact]
-    public async Task LocationChangingHandlers_CanBubbleUpExceptionsSynchronously_WhenMultipleHandlersAreRegistered()
-    {
-        // Arrange
-        var baseUri = "scheme://host/";
-        var navigationManager = new TestNavigationManager(baseUri);
-        var exceptionMessage = "Thrown from a test handler";
-        var invokedHandlerCount = 0;
-
-        // An exception is thrown in the second handler, the third is never invoked
-        var expectedInvokedHandlerCount = 2;
-
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_ThrowException);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
-
-        // Act/Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
-        Assert.Equal(exceptionMessage, ex.Message);
-        Assert.Equal(expectedInvokedHandlerCount, invokedHandlerCount);
-
-        ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
-        {
-            invokedHandlerCount++;
-            return ValueTask.CompletedTask;
-        }
-
-        ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
-        {
-            invokedHandlerCount++;
-            throw new InvalidOperationException(exceptionMessage);
-        }
-    }
-
-    [Fact]
-    public async Task LocationChangingHandlers_CanBubbleUpExceptionsAsynchronously_WhenOneHandlerIsRegistered()
-    {
-        // Arrange
-        var baseUri = "scheme://host/";
-        var navigationManager = new TestNavigationManager(baseUri);
-        var exceptionMessage = "Thrown from a test handler";
-
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
-
-        // Act/Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
-        Assert.Equal(exceptionMessage, ex.Message);
-
-        async ValueTask HandleLocationChanging(LocationChangingContext context)
-        {
-            await Task.Yield();
-            throw new InvalidOperationException(exceptionMessage);
-        }
-    }
-
-    [Fact]
-    public async Task LocationChangingHandlers_CanBubbleUpExceptionsAsynchronously_WhenMultipleHandlersAreRegistered()
-    {
-        // Arrange
-        var baseUri = "scheme://host/";
-        var navigationManager = new TestNavigationManager(baseUri);
-        var exceptionMessage = "Thrown from a test handler";
-
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_ThrowException);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_AllowNavigation);
-
-        // Act/Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
-        Assert.Equal(exceptionMessage, ex.Message);
-
-        async ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
-        {
-            await Task.Yield();
-        }
-
-        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
-        {
-            await Task.Yield();
-            throw new InvalidOperationException(exceptionMessage);
-        }
-    }
-
-    [Fact]
     public async Task LocationChangingHandlers_CanThrowCatchableExceptionsAsynchronously_AfterNavigationEnds()
     {
         // Arrange
@@ -771,8 +669,8 @@ public class NavigationManagerTest
         var preventNavigationTcs = new TaskCompletionSource();
         var throwExceptionTcs = new TaskCompletionSource();
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_PreventNavigation);
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging_ThrowException);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_PreventNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -802,6 +700,110 @@ public class NavigationManagerTest
     }
 
     [Fact]
+    public async Task LocationChangingHandlers_DoNotBubbleExceptionsThroughNotifyLocationChangingAsync_WhenOneHandlerIsRegistered()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManagerWithLocationChangingExceptionTracking(baseUri);
+        var exceptionMessage = "Thrown from a test handler";
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        // Act
+        var navigation1Result = await navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
+
+        // Assert
+        Assert.True(navigation1Result);
+        var ex = Assert.Single(navigationManager.ExceptionsThrownFromLocationChangingHandlers);
+        Assert.Equal(exceptionMessage, ex.Message);
+
+        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException(exceptionMessage);
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingHandlers_DoNotBubbleExceptionsThroughNotifyLocationChangingAsync_WhenMultipleHandlersAreRegistered()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManagerWithLocationChangingExceptionTracking(baseUri);
+        var exceptionMessage = "Thrown from a test handler";
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        // Act
+        var navigation1Result = await navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
+
+        // Assert
+        Assert.True(navigation1Result);
+        var ex = Assert.Single(navigationManager.ExceptionsThrownFromLocationChangingHandlers);
+        Assert.Equal(exceptionMessage, ex.Message);
+
+        async ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
+        {
+            await Task.Yield();
+        }
+
+        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException(exceptionMessage);
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingAsync_Throws_WithoutHandleLocationChangingHandlerOverride_WhenALocationChangingHandlerThrows_WhenOneHandlerIsRegistered()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var exceptionMessage = "Thrown from a test handler";
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
+        Assert.StartsWith("To support navigation locks", ex.Message);
+
+        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException(exceptionMessage);
+        }
+    }
+
+    [Fact]
+    public async Task LocationChangingAsync_Throws_WithoutHandleLocationChangingHandlerOverride_WhenALocationChangingHandlerThrows_WhenMultipleHandlersAreRegistered()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var navigationManager = new TestNavigationManager(baseUri);
+        var exceptionMessage = "Thrown from a test handler";
+
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_AllowNavigation);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging_ThrowException);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false));
+        Assert.StartsWith("To support navigation locks", ex.Message);
+
+        async ValueTask HandleLocationChanging_AllowNavigation(LocationChangingContext context)
+        {
+            await Task.Yield();
+        }
+
+        async ValueTask HandleLocationChanging_ThrowException(LocationChangingContext context)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException(exceptionMessage);
+        }
+    }
+
+    [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
         // Arrange
@@ -811,7 +813,7 @@ public class NavigationManagerTest
         var completeHandlerTcs = new TaskCompletionSource();
         LocationChangingContext currentContext = null;
 
-        navigationManager.AddLocationChangingHandler(HandleLocationChanging);
+        navigationManager.RegisterLocationChangingHandler(HandleLocationChanging);
 
         // Act/Assert
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
@@ -886,20 +888,9 @@ public class NavigationManagerTest
         {
         }
 
-        protected override async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+        protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
         {
-            try
-            {
-                await handler(context);
-            }
-            catch (OperationCanceledException)
-            {
-                // Ignore exceptions caused by cancellations
-            }
-            catch (Exception ex)
-            {
-                _exceptionsThrownFromLocationChangingHandlers.Add(ex);
-            }
+            _exceptionsThrownFromLocationChangingHandlers.Add(ex);
         }
     }
 }

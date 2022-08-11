@@ -90,6 +90,9 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             {
                 await hub.OnConnectedAsync();
             }
+
+            // OnConnectedAsync is finished, allow hub methods to use client results (ISingleClientProxy.InvokeAsync)
+            connection.HubCallerClients.InvokeAllowed = true;
         }
         finally
         {

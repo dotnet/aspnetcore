@@ -14,9 +14,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         in OperationAnalysisContext context,
         WellKnownTypes wellKnownTypes,
         IInvocationOperation invocationOperation,
-        IAnonymousFunctionOperation anonymousFunction)
+        IAnonymousFunctionOperation anonymousFunction,
+        SyntaxNode nodeForError)
     {
-        DisallowReturningActionResultFromMapMethods(in context, wellKnownTypes, invocationOperation, anonymousFunction.Symbol, anonymousFunction.Body);
+        DisallowReturningActionResultFromMapMethods(in context, wellKnownTypes, invocationOperation, anonymousFunction.Symbol, anonymousFunction.Body, nodeForError);
     }
 
     private static void DisallowReturningActionResultFromMapMethods(
@@ -24,7 +25,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         WellKnownTypes wellKnownTypes,
         IInvocationOperation invocationOperation,
         IMethodSymbol methodSymbol,
-        IBlockOperation? methodBody)
+        IBlockOperation? methodBody,
+        SyntaxNode nodeForError)
     {
         var returnType = UnwrapPossibleAsyncReturnType(methodSymbol.ReturnType);
 
@@ -41,7 +43,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             // if we don't have a method body, and the action is IResult or ActionResult<T> returning, produce diagnostics for the entire method.
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
-                invocationOperation.Arguments[2].Syntax.GetLocation(),
+                nodeForError.GetLocation(),
                 invocationOperation.TargetMethod.Name));
             return;
         }

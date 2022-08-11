@@ -108,6 +108,10 @@ public class Program
         #if (IndividualLocalAuth)
         app.UseIdentityServer();
         #endif
+        #if (!NoAuth)
+        app.UseAuthorization();
+
+        #endif
 
         app.MapRazorPages();
         app.MapControllers();
