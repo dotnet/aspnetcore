@@ -35,8 +35,8 @@ internal static partial class LoggerExtensions
     [LoggerMessage(7, LogLevel.Information, "No cached response available for this request.", EventName = "NoResponseServed")]
     internal static partial void NoResponseServed(this ILogger logger);
 
-    [LoggerMessage(8, LogLevel.Debug, "Vary by rules were updated. Headers: {HeaderNames}, Query keys: {QueryKeys}, Route values: {RouteValues}", EventName = "VaryByRulesUpdated")]
-    internal static partial void VaryByRulesUpdated(this ILogger logger, string headerNames, string queryKeys, string routeValues);
+    [LoggerMessage(8, LogLevel.Debug, "Vary by rules were updated. Header names: {HeaderNames}, Query keys: {QueryKeys}, Route value names: {RouteValueNames}", EventName = "VaryByRulesUpdated")]
+    internal static partial void VaryByRulesUpdated(this ILogger logger, string headerNames, string queryKeys, string routeValueNames);
 
     [LoggerMessage(9, LogLevel.Information, "The response has been cached.", EventName = "ResponseCached")]
     internal static partial void ResponseCached(this ILogger logger);

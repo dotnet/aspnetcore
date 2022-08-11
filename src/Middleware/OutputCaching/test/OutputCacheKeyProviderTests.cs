@@ -84,7 +84,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.RouteValues["RouteB"] = "ValueB";
         context.CacheVaryByRules = new CacheVaryByRules()
         {
-            RouteValues = new string[] { "RouteA", "RouteC" }
+            RouteValueNames = new string[] { "RouteA", "RouteC" }
         };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}R{KeyDelimiter}RouteA=ValueA{KeyDelimiter}RouteC=",
@@ -99,7 +99,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.RouteValues["RouteA"] = 123.456;
         context.CacheVaryByRules = new CacheVaryByRules()
         {
-            RouteValues = new string[] { "RouteA", "RouteC" }
+            RouteValueNames = new string[] { "RouteA", "RouteC" }
         };
 
         var culture = Thread.CurrentThread.CurrentCulture;
@@ -248,7 +248,7 @@ public class OutputCacheKeyProviderTests
             VaryByPrefix = Guid.NewGuid().ToString("n"),
             HeaderNames = new string[] { "HeaderA", "HeaderC" },
             QueryKeys = new string[] { "QueryA", "QueryC" },
-            RouteValues = new string[] { "RouteA", "RouteC" },
+            RouteValueNames = new string[] { "RouteA", "RouteC" },
         };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC={KeyDelimiter}R{KeyDelimiter}RouteA=ValueA{KeyDelimiter}RouteC=",

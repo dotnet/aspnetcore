@@ -109,9 +109,9 @@ public class OutputCachePolicyBuilderTests
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
-        Assert.Contains("RouteA", (IEnumerable<string>)context.CacheVaryByRules.RouteValues);
-        Assert.Contains("RouteC", (IEnumerable<string>)context.CacheVaryByRules.RouteValues);
-        Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValues);
+        Assert.Contains("RouteA", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.Contains("RouteC", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
     [Fact]

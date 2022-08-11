@@ -45,11 +45,11 @@ internal sealed class VaryByRouteValuePolicy : IOutputCachePolicy
         // No vary by route value?
         if (_routeValueNames.Count == 0)
         {
-            context.CacheVaryByRules.RouteValues = _routeValueNames;
+            context.CacheVaryByRules.RouteValueNames = _routeValueNames;
             return ValueTask.CompletedTask;
         }
 
-        context.CacheVaryByRules.RouteValues = StringValues.Concat(context.CacheVaryByRules.RouteValues, _routeValueNames);
+        context.CacheVaryByRules.RouteValueNames = StringValues.Concat(context.CacheVaryByRules.RouteValueNames, _routeValueNames);
 
         return ValueTask.CompletedTask;
     }

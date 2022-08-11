@@ -98,13 +98,13 @@ public class OutputCacheAttributeTests
             ["RouteB"] = 123.456,
         };
 
-        var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.VaryByRouteValues));
+        var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.VaryByRouteValueNames));
         await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
-        Assert.Contains("RouteA", (IEnumerable<string>)context.CacheVaryByRules.RouteValues);
-        Assert.Contains("RouteC", (IEnumerable<string>)context.CacheVaryByRules.RouteValues);
-        Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValues);
+        Assert.Contains("RouteA", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.Contains("RouteC", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
     private class OutputCacheMethods
@@ -132,7 +132,7 @@ public class OutputCacheAttributeTests
         [OutputCache(VaryByQueryKeys = new[] { "QueryA", "QueryC" })]
         public static void VaryByQueryKeys() { }
 
-        [OutputCache(VaryByRouteValues = new[] { "RouteA", "RouteC" })]
-        public static void VaryByRouteValues() { }
+        [OutputCache(VaryByRouteValueNames = new[] { "RouteA", "RouteC" })]
+        public static void VaryByRouteValueNames() { }
     }
 }

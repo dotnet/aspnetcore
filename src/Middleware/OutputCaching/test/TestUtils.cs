@@ -311,6 +311,7 @@ internal class TestOutputCache : IOutputCacheStore
     private readonly Dictionary<string, byte[]?> _storage = new();
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
+    private readonly object synLock = new();
 
     public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
@@ -321,23 +322,29 @@ internal class TestOutputCache : IOutputCacheStore
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        GetCount++;
-        try
+        lock (synLock)
         {
-            return ValueTask.FromResult(_storage[key]);
-        }
-        catch
-        {
-            return ValueTask.FromResult(default(byte[]));
+            GetCount++;
+            try
+            {
+                return ValueTask.FromResult(_storage[key]);
+            }
+            catch
+            {
+                return ValueTask.FromResult(default(byte[]));
+            }
         }
     }
 
     public ValueTask SetAsync(string key, byte[] entry, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
-        SetCount++;
-        _storage[key] = entry;
+        lock (synLock)
+        {
+            SetCount++;
+            _storage[key] = entry;
 
-        return ValueTask.CompletedTask;
+            return ValueTask.CompletedTask;
+        }
     }
 }
 

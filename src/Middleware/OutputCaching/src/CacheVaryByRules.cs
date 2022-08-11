@@ -21,12 +21,12 @@ public sealed class CacheVaryByRules
     public IDictionary<string, string> VaryByCustom => _varyByCustom ??= new();
 
     /// <summary>
-    /// Gets or sets the list of route values to vary by.
+    /// Gets or sets the list of route value names to vary by.
     /// </summary>
-    public StringValues RouteValues { get; set; }
+    public StringValues RouteValueNames { get; set; }
 
     /// <summary>
-    /// Gets or sets the list of headers to vary by.
+    /// Gets or sets the list of header names to vary by.
     /// </summary>
     public StringValues HeaderNames { get; set; }
 

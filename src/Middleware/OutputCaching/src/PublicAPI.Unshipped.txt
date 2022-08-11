@@ -6,8 +6,8 @@ Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.HeaderNames.get -> Microsoft
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.HeaderNames.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.set -> void
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValues.get -> Microsoft.Extensions.Primitives.StringValues
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValues.set -> void
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.get -> Microsoft.Extensions.Primitives.StringValues
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByCustom.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByPrefix.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByPrefix.set -> void
@@ -33,8 +33,8 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaderNames.get ->
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaderNames.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.init -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValues.get -> string![]?
-Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValues.init -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValueNames.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValueNames.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.get -> bool
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.HttpContext.init -> void

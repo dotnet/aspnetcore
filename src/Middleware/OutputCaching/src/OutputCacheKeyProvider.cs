@@ -80,7 +80,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 }
             }
 
-            // Vary by headers
+            // Vary by header names
             var headersCount = varyByRules?.HeaderNames.Count ?? 0;
             if (headersCount > 0)
             {
@@ -167,20 +167,20 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 }
             }
 
-            // Vary by route values
-            var routeValuesCount = varyByRules?.RouteValues.Count ?? 0;
-            if (routeValuesCount > 0)
+            // Vary by route value names
+            var routeValueNamesCount = varyByRules?.RouteValueNames.Count ?? 0;
+            if (routeValueNamesCount > 0)
             {
                 // Append a group separator for the route values segment of the cache key
                 builder.Append(KeyDelimiter)
                     .Append('R');
 
-                for (var i = 0; i < routeValuesCount; i++)
+                for (var i = 0; i < routeValueNamesCount; i++)
                 {
                     // The lookup key can't be null
-                    var routeValueName = varyByRules!.RouteValues[i] ?? string.Empty;
+                    var routeValueName = varyByRules!.RouteValueNames[i] ?? string.Empty;
 
-                    // RouteValues returns null if the key doesn't exist
+                    // RouteValueNames returns null if the key doesn't exist
                     var routeValueValue = context.HttpContext.Request.RouteValues[routeValueName];
 
                     builder.Append(KeyDelimiter)
