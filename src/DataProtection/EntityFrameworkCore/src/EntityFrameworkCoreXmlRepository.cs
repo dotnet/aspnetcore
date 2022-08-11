@@ -33,6 +33,10 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
 
         _logger = loggerFactory.CreateLogger<EntityFrameworkCoreXmlRepository<TContext>>();
         _services = services ?? throw new ArgumentNullException(nameof(services));
+
+        // Access DataProtectionKey properties dynamically to trigger DynamicallyAccessedMembers on the type
+        // and preserve the unused DataProtectionKey.Id property.
+        _ = typeof(DataProtectionKey).GetProperties();
     }
 
     /// <inheritdoc />
