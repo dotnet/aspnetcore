@@ -41,7 +41,11 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
     // selection. Set to true by builder methods that do dynamic/fallback selection.
     public bool CreateInertEndpoints { get; set; }
 
-    protected override List<Endpoint> CreateEndpoints(RoutePattern? groupPrefix, IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
+    protected override List<Endpoint> CreateEndpoints(
+        RoutePattern? groupPrefix,
+        IReadOnlyList<ActionDescriptor> actions,
+        IReadOnlyList<Action<EndpointBuilder>> conventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions)
     {
         var endpoints = new List<Endpoint>();
         var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -49,7 +53,14 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
         {
             if (actions[i] is PageActionDescriptor action)
             {
-                _endpointFactory.AddEndpoints(endpoints, routeNames, action, Array.Empty<ConventionalRouteEntry>(), conventions, CreateInertEndpoints, groupPrefix);
+                _endpointFactory.AddEndpoints(endpoints,
+                    routeNames,
+                    action,
+                    Array.Empty<ConventionalRouteEntry>(),
+                    groupConventions: groupConventions,
+                    conventions: conventions,
+                    CreateInertEndpoints,
+                    groupPrefix);
             }
         }
 

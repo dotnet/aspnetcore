@@ -269,7 +269,7 @@ public class ActionEndpointFactoryTest
         var factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), new[] { requestDelegateFactory.Object }, Services);
 
         var endpoints = new List<Endpoint>();
-        factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+        factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
 
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
@@ -366,7 +366,7 @@ public class ActionEndpointFactoryTest
     private RouteEndpoint CreateAttributeRoutedEndpoint(ActionDescriptor action)
     {
         var endpoints = new List<Endpoint>();
-        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
         return Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
     }
 
@@ -380,7 +380,7 @@ public class ActionEndpointFactoryTest
         Assert.NotNull(action.RouteValues);
 
         var endpoints = new List<Endpoint>();
-        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
         // This should be true for all conventional-routed actions.
@@ -397,7 +397,7 @@ public class ActionEndpointFactoryTest
     private IReadOnlyList<Endpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<ConventionalRouteEntry> routes, bool createInertEndpoints = false)
     {
         var endpoints = new List<Endpoint>();
-        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, routes, Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints);
+        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, routes, Array.Empty<Action<EndpointBuilder>>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints);
         return endpoints.ToList();
     }
 

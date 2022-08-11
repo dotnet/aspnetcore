@@ -43,6 +43,7 @@ internal sealed class ActionEndpointFactory
         HashSet<string> routeNames,
         ActionDescriptor action,
         IReadOnlyList<ConventionalRouteEntry> routes,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         bool createInertEndpoints,
         RoutePattern? groupPrefix = null)
@@ -87,8 +88,9 @@ internal sealed class ActionEndpointFactory
                 dataTokens: null,
                 suppressLinkGeneration: false,
                 suppressPathMatching: false,
-                conventions,
-                Array.Empty<Action<EndpointBuilder>>());
+                groupConventions: groupConventions,
+                conventions: conventions,
+                perRouteConventions: Array.Empty<Action<EndpointBuilder>>());
             endpoints.Add(builder.Build());
         }
 
@@ -126,8 +128,9 @@ internal sealed class ActionEndpointFactory
                     route.DataTokens,
                     suppressLinkGeneration: true,
                     suppressPathMatching: false,
-                    conventions,
-                    route.Conventions);
+                    groupConventions: groupConventions,
+                    conventions: conventions,
+                    perRouteConventions: route.Conventions);
                 endpoints.Add(builder.Build());
             }
         }
@@ -167,7 +170,8 @@ internal sealed class ActionEndpointFactory
                 dataTokens: null,
                 action.AttributeRouteInfo.SuppressLinkGeneration,
                 action.AttributeRouteInfo.SuppressPathMatching,
-                conventions,
+                groupConventions: groupConventions,
+                conventions: conventions,
                 perRouteConventions: Array.Empty<Action<EndpointBuilder>>());
             endpoints.Add(builder.Build());
         }
@@ -178,6 +182,7 @@ internal sealed class ActionEndpointFactory
         HashSet<string> routeNames,
         HashSet<string> keys,
         ConventionalRouteEntry route,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         RoutePattern? groupPrefix = null)
     {
@@ -247,6 +252,11 @@ internal sealed class ActionEndpointFactory
         if (route.RouteName != null && routeNames.Add(route.RouteName))
         {
             builder.Metadata.Add(new EndpointNameMetadata(route.RouteName));
+        }
+
+        for (var i = 0; i < groupConventions.Count; i++)
+        {
+            groupConventions[i](builder);
         }
 
         for (var i = 0; i < conventions.Count; i++)
@@ -322,9 +332,19 @@ internal sealed class ActionEndpointFactory
         RouteValueDictionary? dataTokens,
         bool suppressLinkGeneration,
         bool suppressPathMatching,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> perRouteConventions)
     {
+        // REVIEW: The RouteEndpointDataSource adds HttpMethodMetadata before running group conventions
+        // do we need to do the same here?
+
+        // Group metadata has the lowest precedence.
+        for (var i = 0; i < groupConventions.Count; i++)
+        {
+            groupConventions[i](builder);
+        }
+
         // Add action metadata first so it has a low precedence
         if (action.EndpointMetadata != null)
         {
