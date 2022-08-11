@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "7.0.100-rc.1.22410.4"
+    "version": "7.0.100-rc.1.22404.18"
   },
   "tools": {
-    "dotnet": "7.0.100-rc.1.22410.4",
+    "dotnet": "7.0.100-rc.1.22404.18",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
