@@ -453,13 +453,15 @@ internal sealed class ActionEndpointFactory
 
             var context = new EndpointFilterFactoryContext(cad.MethodInfo, builder.Metadata, _serviceProvider);
 
+            var initialFilteredInvocation = del;
+
             for (var i = routeHandlerFilters.Count - 1; i >= 0; i--)
             {
                 var filterFactory = routeHandlerFilters[i];
                 del = filterFactory(context, del);
             }
 
-            cad.FilterDelegate = del;
+            cad.FilterDelegate = ReferenceEquals(del, initialFilteredInvocation) ? null : del;
         }
     }
 
