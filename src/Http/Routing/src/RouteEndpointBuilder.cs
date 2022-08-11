@@ -61,7 +61,7 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
 
     private static EndpointMetadataCollection CreateMetadataCollection(IList<object> metadata)
     {
-        if (metadata is { Count: > 0 })
+        if (metadata.Count > 0)
         {
             var hasCorsMetadata = false;
             IHttpMethodMetadata? httpMethodMetadata = null;
@@ -89,7 +89,7 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
                 }
             }
 
-            if (hasCorsMetadata && httpMethodMetadata is not null)
+            if (hasCorsMetadata && httpMethodMetadata is not null && !httpMethodMetadata.AcceptCorsPreflight)
             {
                 // Since we found a CORS metadata we will update it
                 // to make sure the acceptCorsPreflight is set to true.
