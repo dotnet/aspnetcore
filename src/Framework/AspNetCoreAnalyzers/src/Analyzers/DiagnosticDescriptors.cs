@@ -100,7 +100,7 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor DisallowConfigureAppConfigureHostBuilder = new(
         "ASP0013",
-        "Suggest using WebApplicationBuilder.Configuration over Configure methods",
+        "Suggest switching from using Configure methods to WebApplicationBuilder.Configuration",
         "Suggest using WebApplicationBuilder.Configuration instead of {0}",
         "Usage",
         DiagnosticSeverity.Warning,
