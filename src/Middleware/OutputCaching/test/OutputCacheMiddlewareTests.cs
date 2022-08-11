@@ -825,16 +825,18 @@ public class OutputCacheMiddlewareTests
         var options = new OutputCacheOptions();
         options.AddBasePolicy(build => build.Cache());
 
-        var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: async c =>
         {
             responseCounter++;
             task1Executing.Set();
 
-            // Wait for the second request to be processed before processing the first one
+            // Wait for the second request to start before processing the first one
             task2Executing.Wait();
 
+            // Simluate some delay to allow for the second request to run while this one is pending
+            await Task.Delay(500);
+
             c.Response.Write("Hello" + responseCounter);
-            return Task.CompletedTask;
         });
 
         var context1 = TestUtils.CreateTestContext();
@@ -873,11 +875,19 @@ public class OutputCacheMiddlewareTests
         var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
         {
             responseCounter++;
-            task1Executing.Set();
 
-            // Wait for the second request to be processed before processing the first one
-            task2Executing.Wait();
-
+            switch (responseCounter)
+            {
+                case 1:
+                    task1Executing.Set();
+                    task2Executing.Wait();
+                    break;
+                case 2:
+                    task1Executing.Wait();
+                    task2Executing.Set();
+                    break;
+            }
+            
             c.Response.Write("Hello" + responseCounter);
             return Task.CompletedTask;
         });
@@ -892,12 +902,7 @@ public class OutputCacheMiddlewareTests
 
         var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
 
-        // Wait for the first request to be processed before sending a second one
-        task1Executing.Wait();
-
         var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
-
-        task2Executing.Set();
 
         await Task.WhenAll(task1, task2);
 
