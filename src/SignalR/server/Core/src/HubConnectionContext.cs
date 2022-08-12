@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -81,11 +80,7 @@ public partial class HubConnectionContext
         _lastSendTick = _systemClock.CurrentTicks;
 
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
-        ActiveInvocationLimit = Channel.CreateBounded<int>(maxInvokeLimit);
-        for (var i = 0; i < maxInvokeLimit; i++)
-        {
-            ActiveInvocationLimit.Writer.TryWrite(1);
-        }
+        ActiveInvocationLimit = new ChannelBasedSemaphore(maxInvokeLimit);
     }
 
     internal StreamTracker StreamTracker
@@ -107,7 +102,7 @@ public partial class HubConnectionContext
 
     internal Exception? CloseException { get; private set; }
 
-    internal Channel<int> ActiveInvocationLimit { get; }
+    internal ChannelBasedSemaphore ActiveInvocationLimit { get; }
 
     /// <summary>
     /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

@@ -1,30 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Channels;
-
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal static class ChannelExtensions
 {
-    public static ValueTask RunAsync<TState>(this Channel<int> semaphoreSlim, Func<TState, Task> callback, TState state)
+    public static ValueTask RunAsync<TState>(this ChannelBasedSemaphore channelSemaphore, Func<TState, Task> callback, TState state)
     {
-        if (semaphoreSlim.Reader.TryRead(out _))
+        if (channelSemaphore.AttemptWait())
         {
-            _ = RunTask(callback, semaphoreSlim, state);
+            _ = RunTask(callback, channelSemaphore, state);
             return ValueTask.CompletedTask;
         }
 
-        return RunSlowAsync(semaphoreSlim, callback, state);
+        return RunSlowAsync(channelSemaphore, callback, state);
     }
 
-    private static async ValueTask RunSlowAsync<TState>(this Channel<int> semaphoreSlim, Func<TState, Task> callback, TState state)
+    private static async ValueTask RunSlowAsync<TState>(this ChannelBasedSemaphore channelSemaphore, Func<TState, Task> callback, TState state)
     {
-        _ = await semaphoreSlim.Reader.ReadAsync();
-        _ = RunTask(callback, semaphoreSlim, state);
+        _ = await channelSemaphore.WaitAsync();
+        _ = RunTask(callback, channelSemaphore, state);
     }
 
-    static async Task RunTask<TState>(Func<TState, Task> callback, Channel<int> semaphoreSlim, TState state)
+    static async Task RunTask<TState>(Func<TState, Task> callback, ChannelBasedSemaphore channelSemaphore, TState state)
     {
         try
         {
@@ -32,7 +30,7 @@ internal static class ChannelExtensions
         }
         finally
         {
-            await semaphoreSlim.Writer.WriteAsync(1);
+            await channelSemaphore.ReleaseAsync();
         }
     }
 }

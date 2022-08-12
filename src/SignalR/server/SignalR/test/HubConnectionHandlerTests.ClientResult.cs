@@ -258,19 +258,18 @@ public partial class HubConnectionHandlerTests
                 Assert.NotNull(invocationMessage3.InvocationId);
                 var res = 4 + ((long)invocationMessage.Arguments[0]);
                 await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
-                res = 5 + ((long)invocationMessage2.Arguments[0]);
-                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage2.InvocationId, res)).DefaultTimeout();
-                res = 6 + ((long)invocationMessage3.Arguments[0]);
-                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage3.InvocationId, res)).DefaultTimeout();
-
                 var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
                 Assert.Equal(9L, completion.Result);
                 Assert.Equal(invocationId, completion.InvocationId);
 
+                res = 5 + ((long)invocationMessage2.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage2.InvocationId, res)).DefaultTimeout();
                 completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
                 Assert.Equal(10L, completion.Result);
                 Assert.Equal(invocationId2, completion.InvocationId);
 
+                res = 6 + ((long)invocationMessage3.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage3.InvocationId, res)).DefaultTimeout();
                 completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
                 Assert.Equal(11L, completion.Result);
                 Assert.Equal(invocationId3, completion.InvocationId);

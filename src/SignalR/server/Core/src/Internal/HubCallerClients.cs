@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Channels;
-
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed class HubCallerClients : IHubCallerClients
@@ -10,14 +8,14 @@ internal sealed class HubCallerClients : IHubCallerClients
     private readonly string _connectionId;
     private readonly IHubClients _hubClients;
     private readonly string[] _currentConnectionId;
-    private readonly Channel<int> _parallelInvokes;
+    private readonly ChannelBasedSemaphore _parallelInvokes;
 
     // Client results don't work in OnConnectedAsync
     // This property is set by the hub dispatcher when those methods are being called
     // so we can prevent users from making blocking client calls by returning a custom ISingleClientProxy instance
     internal bool InvokeAllowed { get; set; }
 
-    public HubCallerClients(IHubClients hubClients, string connectionId, Channel<int> parallelInvokes)
+    public HubCallerClients(IHubClients hubClients, string connectionId, ChannelBasedSemaphore parallelInvokes)
     {
         _connectionId = connectionId;
         _hubClients = hubClients;
@@ -115,9 +113,9 @@ internal sealed class HubCallerClients : IHubCallerClients
     private sealed class SingleClientProxy : ISingleClientProxy
     {
         private readonly ISingleClientProxy _proxy;
-        private readonly Channel<int> _parallelInvokes;
+        private readonly ChannelBasedSemaphore _parallelInvokes;
 
-        public SingleClientProxy(ISingleClientProxy hubClients, Channel<int> parallelInvokes)
+        public SingleClientProxy(ISingleClientProxy hubClients, ChannelBasedSemaphore parallelInvokes)
         {
             _proxy = hubClients;
             _parallelInvokes = parallelInvokes;
@@ -127,7 +125,7 @@ internal sealed class HubCallerClients : IHubCallerClients
         {
             // Releases the Channel that is blocking pending invokes, which in turn can block the receive loop.
             // Because we are waiting for a result from the client we need to let the receive loop run otherwise we'll be blocked forever
-            await _parallelInvokes.Writer.WriteAsync(1, cancellationToken);
+            await _parallelInvokes.ReleaseAsync(cancellationToken);
             try
             {
                 var result = await _proxy.InvokeCoreAsync<T>(method, args, cancellationToken);
@@ -135,8 +133,8 @@ internal sealed class HubCallerClients : IHubCallerClients
             }
             finally
             {
-                // Re-read from the channel, this is because when the hub method completes it will release (write an entry) which we already did above, so we need to reset the state
-                _ = await _parallelInvokes.Reader.ReadAsync(CancellationToken.None);
+                // Re-wait, this is because when the hub method completes it will release which we already did above, so we need to reset the state
+                _ = await _parallelInvokes.WaitAsync(CancellationToken.None);
             }
         }
 

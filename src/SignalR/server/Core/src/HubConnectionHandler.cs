@@ -201,7 +201,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         await connection.AbortAsync();
 
         // If a client result is requested in OnDisconnectedAsync we want to make sure it isn't blocked by the ActiveInvocationLimit
-        _ = connection.ActiveInvocationLimit.Reader.TryRead(out _);
+        _ = connection.ActiveInvocationLimit.AttemptWait();
 
         try
         {
