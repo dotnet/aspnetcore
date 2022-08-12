@@ -166,6 +166,38 @@ public class JsonResultTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_UsesDefaults_HttpStatusCodesWithoutTypes()
+    {
+        // Arrange
+        var details = new ProblemDetails()
+        {
+            Status = StatusCodes.Status418ImATeapot,
+        };
+
+        var result = new ProblemHttpResult(details);
+        var stream = new MemoryStream();
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices(),
+            Response =
+                {
+                    Body = stream,
+                },
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status418ImATeapot, httpContext.Response.StatusCode);
+        stream.Position = 0;
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
+        Assert.Null(responseDetails.Type);
+        Assert.Equal("I'm a teapot", responseDetails.Title);
+        Assert.Equal(StatusCodes.Status418ImATeapot, responseDetails.Status);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_SetsProblemDetailsStatus_ForValidationProblemDetails()
     {
         // Arrange

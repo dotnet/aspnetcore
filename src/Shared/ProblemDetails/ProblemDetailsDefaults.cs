@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -89,10 +90,15 @@ internal static class ProblemDetailsDefaults
             }
         }
 
-        if (Defaults.TryGetValue(problemDetails.Status.Value, out var defaults))
+        var status = problemDetails.Status.GetValueOrDefault();
+        if (Defaults.TryGetValue(status, out var defaults))
         {
             problemDetails.Title ??= defaults.Title;
             problemDetails.Type ??= defaults.Type;
+        }
+        else if (problemDetails.Title is null && ReasonPhrases.GetReasonPhrase(status) is { } reasonPhrase)
+        {
+            problemDetails.Title = reasonPhrase;
         }
     }
 }

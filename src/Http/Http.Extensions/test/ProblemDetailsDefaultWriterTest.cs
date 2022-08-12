@@ -138,8 +138,13 @@ public class DefaultProblemDetailsWriterTest
         Assert.Contains("new-extension", problemDetails.Extensions);
     }
 
-    [Fact]
-    public async Task WriteAsync_UsesStatusCode_FromProblemDetails_WhenSpecified()
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc7231#section-6.5.1")]
+    [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
+    public async Task WriteAsync_UsesStatusCode_FromProblemDetails_WhenSpecified(
+        int statusCode,
+        string title,
+        string type)
     {
         // Arrange
         var writer = GetWriter();
@@ -150,16 +155,16 @@ public class DefaultProblemDetailsWriterTest
         await writer.WriteAsync(new ProblemDetailsContext()
         {
             HttpContext = context,
-            ProblemDetails = { Status = StatusCodes.Status400BadRequest }
+            ProblemDetails = { Status = statusCode }
         });
 
         //Assert
         stream.Position = 0;
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
         Assert.NotNull(problemDetails);
-        Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
-        Assert.Equal("Bad Request", problemDetails.Title);
+        Assert.Equal(statusCode, problemDetails.Status);
+        Assert.Equal(type, problemDetails.Type);
+        Assert.Equal(title, problemDetails.Title);
     }
 
     [Theory]

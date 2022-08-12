@@ -931,6 +931,28 @@ public class ResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc7231#section-6.5.1")]
+    [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
+    public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
+        int statusCode,
+        string title,
+        string type)
+    {
+        // Act
+        var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;
+
+        // Assert
+        Assert.Null(result.ProblemDetails.Detail);
+        Assert.Null(result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.NotNull(result.ProblemDetails.Extensions);
+        Assert.Empty(result.ProblemDetails.Extensions);
+    }
+
     [Fact]
     public void Problem_WithNoArgs_ResultHasCorrectValues()
     {
