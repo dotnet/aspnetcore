@@ -140,12 +140,11 @@ CreateApplication(
             auto content = !g_errorPageContent.empty() ?
                 g_errorPageContent :
                 FILE_UTILITY::GetHtml(g_hServerModule,
-                    IN_PROCESS_RH_STATIC_HTML,
+                    ANCM_ERROR_PAGE,
                     errorContext.statusCode,
                     errorContext.subStatusCode,
                     errorContext.generalErrorType,
-                    errorContext.errorReason,
-                    "");
+                    errorContext.errorReason);
 
             auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
                 *pHttpApplication,

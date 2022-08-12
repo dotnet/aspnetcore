@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <summary>
 /// Handles CSRF protection for the logout endpoint.
 /// </summary>
+[Obsolete("Use 'Microsoft.AspNetCore.Components.Webassembly.Authentication.NavigationManagerExtensions.NavigateToLogout' instead.")]
 public class SignOutSessionStateManager
 {
     private readonly IJSRuntime _jsRuntime;

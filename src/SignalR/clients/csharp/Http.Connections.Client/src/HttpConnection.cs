@@ -32,7 +32,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 
-    private readonly ILogger _logger;
+    internal readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
     private bool _started;
@@ -463,6 +463,12 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             {
                 // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
                 request.Version = new Version(1, 1);
+
+#if NET5_0_OR_GREATER
+                request.Options.Set(new HttpRequestOptionsKey<bool>("IsNegotiate"), true);
+#else
+                request.Properties.Add("IsNegotiate", true);
+#endif
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.

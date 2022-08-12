@@ -397,7 +397,7 @@ public class IISDeployer : IISDeployerBase
                         Logger.LogInformation($"Stopping pool, state: {state}");
                     }
                 }
-
+                
                 // Make sure all sites are stopped
                 foreach (var site in serverManager.Sites)
                 {
