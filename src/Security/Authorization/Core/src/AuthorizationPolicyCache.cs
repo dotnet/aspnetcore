@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Authorization;
 /// <summary>
 /// Represents a cache for an AuthorizationPolicy instance
 /// </summary>
-public class AuthorizationPolicyCache
+internal class AuthorizationPolicyCache
 {
     /// <summary>
     /// The cached policy.
