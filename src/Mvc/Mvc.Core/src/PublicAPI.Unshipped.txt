@@ -7,10 +7,6 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.I
 *REMOVED*Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object!>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider! valueProvider, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
-Microsoft.AspNetCore.Mvc.ModelBinding.FormValueProvider.FormValueProvider(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource! bindingSource, Microsoft.AspNetCore.Http.IFormCollection! values, System.Globalization.CultureInfo? culture, Microsoft.AspNetCore.Mvc.MvcOptions? options) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.FormValueProviderFactory.FormValueProviderFactory(Microsoft.AspNetCore.Mvc.MvcOptions? options) -> void
-Microsoft.AspNetCore.Mvc.MvcOptions.SuppressCultureInvariantFormModelBinding.get -> bool
-Microsoft.AspNetCore.Mvc.MvcOptions.SuppressCultureInvariantFormModelBinding.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)

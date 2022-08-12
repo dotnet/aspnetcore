@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -379,19 +378,6 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     /// </summary>
     /// <value>Defaults to <c>8192</c>.</value>
     public int MaxIAsyncEnumerableBufferLimit { get; set; } = 8192;
-
-    /// <summary>
-    /// Gets or sets a value that determines if <see cref="CultureInfo.CurrentCulture"/> should always
-    /// be used to parse form values.
-    /// </summary>
-    /// <remarks>
-    /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are
-    /// directly entered by the user. However, other inputs (e.g., &lt;input type="number"/&gt;) use culture-invariant
-    /// formatting both in the HTML source and in the form request. Setting this property to <see langword="true"/>
-    /// will result in <see cref="CultureInfo.CurrentCulture"/> always being used to parse form values regardless of
-    /// their original format.
-    /// </remarks>
-    public bool SuppressCultureInvariantFormModelBinding { get; set; }
 
     IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 

@@ -29,22 +29,6 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         BindingSource bindingSource,
         IFormCollection values,
         CultureInfo? culture)
-        : this(bindingSource, values, culture, options: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a value provider for <see cref="IFormCollection"/>.
-    /// </summary>
-    /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
-    /// <param name="values">The key value pairs to wrap.</param>
-    /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-    /// <param name="options">The <see cref="MvcOptions"/> options.</param>
-    public FormValueProvider(
-        BindingSource bindingSource,
-        IFormCollection values,
-        CultureInfo? culture,
-        MvcOptions? options)
         : base(bindingSource)
     {
         if (bindingSource == null)
@@ -59,8 +43,7 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
 
         _values = values;
 
-        var suppressCultureInvariantFormModelBinding = options?.SuppressCultureInvariantFormModelBinding == true;
-        if (!suppressCultureInvariantFormModelBinding && _values.TryGetValue(CultureInvariantFieldName, out var invariantKeys))
+        if (_values.TryGetValue(CultureInvariantFieldName, out var invariantKeys) && invariantKeys.Count > 0)
         {
             _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
         }

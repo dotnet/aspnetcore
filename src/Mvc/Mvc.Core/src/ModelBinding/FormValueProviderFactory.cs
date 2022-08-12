@@ -14,25 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class FormValueProviderFactory : IValueProviderFactory
 {
-    private readonly MvcOptions? _options;
-
-    /// <summary>
-    /// Creates a new <see cref="FormValueProviderFactory"/>.
-    /// </summary>
-    public FormValueProviderFactory()
-        : this(options: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="FormValueProviderFactory"/>.
-    /// </summary>
-    /// <param name="options">The <see cref="MvcOptions"/> options.</param>
-    public FormValueProviderFactory(MvcOptions? options)
-    {
-        _options = options;
-    }
-
     /// <inheritdoc />
     public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
     {
@@ -45,13 +26,13 @@ public class FormValueProviderFactory : IValueProviderFactory
         if (request.HasFormContentType)
         {
             // Allocating a Task only when the body is form data.
-            return AddValueProviderAsync(context, _options);
+            return AddValueProviderAsync(context);
         }
 
         return Task.CompletedTask;
     }
 
-    private static async Task AddValueProviderAsync(ValueProviderFactoryContext context, MvcOptions? options)
+    private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)
     {
         var request = context.ActionContext.HttpContext.Request;
         IFormCollection form;
@@ -76,8 +57,7 @@ public class FormValueProviderFactory : IValueProviderFactory
         var valueProvider = new FormValueProvider(
             BindingSource.Form,
             form,
-            CultureInfo.CurrentCulture,
-            options);
+            CultureInfo.CurrentCulture);
 
         context.ValueProviders.Add(valueProvider);
     }

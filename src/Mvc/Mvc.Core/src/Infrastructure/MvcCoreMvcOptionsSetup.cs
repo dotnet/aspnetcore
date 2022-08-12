@@ -93,7 +93,7 @@ internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IP
         options.OutputFormatters.Add(jsonOutputFormatter);
 
         // Set up ValueProviders
-        options.ValueProviderFactories.Add(new FormValueProviderFactory(options));
+        options.ValueProviderFactories.Add(new FormValueProviderFactory());
         options.ValueProviderFactories.Add(new RouteValueProviderFactory());
         options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
         options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
