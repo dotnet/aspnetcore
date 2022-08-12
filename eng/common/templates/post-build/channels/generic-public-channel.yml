@@ -25,7 +25,8 @@ stages:
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
-      vmImage: 'windows-2019'
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019
     steps:
       - task: DownloadBuildArtifacts@0
         displayName: Download Blob Artifacts
@@ -74,7 +75,8 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
     condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
     pool:
-      vmImage: 'windows-2019'
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019
     steps:
       - task: DownloadBuildArtifacts@0
         displayName: Download Package Artifacts
