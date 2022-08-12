@@ -405,16 +405,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     public static string? FormatValue(object? value, string? format)
         => FormatValue(value, format, CultureInfo.CurrentCulture);
 
-    /// <summary>
-    /// Formats the given <paramref name="value"/> using the given <paramref name="format"/> and <paramref name="formatProvider"/>.
-    /// </summary>
-    /// <param name="value">The value to format.</param>
-    /// <param name="format">
-    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>).
-    /// </param>
-    /// <param name="formatProvider">The <see cref="IFormatProvider"/> used to format the value.</param>
-    /// <returns>The formatted <see cref="string"/>.</returns>
-    public static string? FormatValue(object? value, string? format, IFormatProvider formatProvider)
+    internal static string? FormatValue(object? value, string? format, IFormatProvider formatProvider)
     {
         if (value == null)
         {

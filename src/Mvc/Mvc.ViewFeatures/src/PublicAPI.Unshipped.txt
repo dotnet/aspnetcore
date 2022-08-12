@@ -5,4 +5,3 @@ Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormEleme
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting.get -> bool
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel
-static Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.FormatValue(object? value, string? format, System.IFormatProvider! formatProvider) -> string?
