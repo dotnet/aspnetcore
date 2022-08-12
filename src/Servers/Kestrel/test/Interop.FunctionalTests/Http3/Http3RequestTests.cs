@@ -558,7 +558,7 @@ public class Http3RequestTests : LoggedTest
         {
             await host.StartAsync().DefaultTimeout();
 
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 100; i++)
             {
                 Logger.LogInformation($"Client sending request {i}");
 
