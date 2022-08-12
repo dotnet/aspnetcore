@@ -35,7 +35,7 @@ public class ProblemResultTests
         Assert.Equal(StatusCodes.Status500InternalServerError, httpContext.Response.StatusCode);
         stream.Position = 0;
         var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", responseDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", responseDetails.Type);
         Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
     }
@@ -64,7 +64,7 @@ public class ProblemResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
         var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", responseDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
         Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
     }

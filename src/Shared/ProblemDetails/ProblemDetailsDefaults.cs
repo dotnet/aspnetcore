@@ -12,61 +12,61 @@ internal static class ProblemDetailsDefaults
     {
         [400] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.1",
             "Bad Request"
         ),
 
         [401] =
         (
-            "https://tools.ietf.org/html/rfc7235#section-3.1",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.2",
             "Unauthorized"
         ),
 
         [403] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.4",
             "Forbidden"
         ),
 
         [404] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.5",
             "Not Found"
         ),
 
         [405] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.6",
             "Method Not Allowed"
         ),
 
         [406] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.6",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.7",
             "Not Acceptable"
         ),
 
         [409] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.8",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.10",
             "Conflict"
         ),
 
         [415] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.5.13",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.16",
             "Unsupported Media Type"
         ),
 
         [422] =
         (
-            "https://tools.ietf.org/html/rfc4918#section-11.2",
+            "https://tools.ietf.org/html/rfc9110#section-15.5.21",
             "Unprocessable Entity"
         ),
 
         [500] =
         (
-            "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            "https://tools.ietf.org/html/rfc9110#section-15.6.1",
             "An error occurred while processing your request."
         ),
     };

@@ -24,7 +24,7 @@ public class DefaultProblemDetailsWriterTest
             Detail = "Custom Bad Request",
             Instance = "Custom Bad Request",
             Status = StatusCodes.Status400BadRequest,
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
             Title = "Custom Bad Request",
         };
         var problemDetailsContext = new ProblemDetailsContext()
@@ -100,7 +100,7 @@ public class DefaultProblemDetailsWriterTest
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status500InternalServerError, problemDetails.Status);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
     }
 
@@ -133,13 +133,13 @@ public class DefaultProblemDetailsWriterTest
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status406NotAcceptable, problemDetails.Status);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal("Custom Title", problemDetails.Title);
         Assert.Contains("new-extension", problemDetails.Extensions);
     }
 
     [Theory]
-    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc7231#section-6.5.1")]
+    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
     public async Task WriteAsync_UsesStatusCode_FromProblemDetails_WhenSpecified(
         int statusCode,

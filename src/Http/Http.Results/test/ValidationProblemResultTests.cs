@@ -37,7 +37,7 @@ public class ValidationProblemResultTests
         Assert.Equal(details, result.ProblemDetails);
         stream.Position = 0;
         var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", responseDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
         Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
     }
