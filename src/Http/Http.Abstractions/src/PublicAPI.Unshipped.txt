@@ -14,10 +14,11 @@ Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointFilterDelegate
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointFilterFactoryContext(System.Reflection.MethodInfo! methodInfo, System.Collections.Generic.IList<object!>! endpointMetadata, System.IServiceProvider! applicationServices) -> void
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointBuilder.get -> Microsoft.AspNetCore.Builder.EndpointBuilder!
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointBuilder.init -> void
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointFilterFactoryContext() -> void
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.MethodInfo.get -> System.Reflection.MethodInfo!
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.MethodInfo.init -> void
 Microsoft.AspNetCore.Http.EndpointFilterInvocationContext
 Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.EndpointFilterInvocationContext() -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!

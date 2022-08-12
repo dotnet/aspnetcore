@@ -115,7 +115,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
         {
-            routeHandlerContext.EndpointMetadata.Add(filterTag);
+            routeHandlerContext.EndpointBuilder.Metadata.Add(filterTag);
             return async invocationContext =>
             {
                 Assert.IsAssignableFrom<HttpContext>(Assert.Single(invocationContext.Arguments));
@@ -151,7 +151,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory((routeHandlerContext, next) =>
         {
-            routeHandlerContext.EndpointMetadata.Add(filterTag);
+            routeHandlerContext.EndpointBuilder.Metadata.Add(filterTag);
             return next;
         });
 

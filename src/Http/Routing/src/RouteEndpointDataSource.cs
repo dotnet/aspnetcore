@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -196,6 +197,12 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             entrySpecificConvention(builder);
         }
 
+        // If no convention has modified builder.RequestDelegate, we can use the RequestDelegate returned by the RequestDelegateFactory directly.
+        var conventionOverriddenRequestDelegate = ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate) ? null : builder.RequestDelegate;
+
+        // Now that we're done running conventions, we no longer need the redirect RequestDelegate. The RequestDelegateFactory prevents it being set ahead of time.
+        builder.RequestDelegate = null;
+
         if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
             var routeParamNames = new List<string>(pattern.Parameters.Count);
@@ -210,20 +217,19 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
                 RouteParameterNames = routeParamNames,
                 ThrowOnBadRequest = _throwOnBadRequest,
                 DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
-                EndpointMetadata = builder.Metadata,
-                EndpointFilterFactories = builder.FilterFactories.AsReadOnly(),
+                EndpointBuilder = builder,
             };
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
+            // We always set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
             factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
         }
 
-        if (ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate))
-        {
-            // No convention has changed builder.RequestDelegate, so we can just replace it with the final version as an optimization.
-            // We still set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
-            builder.RequestDelegate = factoryCreatedRequestDelegate;
-        }
+        Debug.Assert(factoryCreatedRequestDelegate is not null);
+
+        // Use the overridden RequestDelegate if it exists. If the overridden RequestDelegate is merely wrapping the final RequestDelegate,
+        // it will still work because of the redirectRequestDelegate.
+        builder.RequestDelegate = conventionOverriddenRequestDelegate ?? factoryCreatedRequestDelegate;
 
         return builder;
     }

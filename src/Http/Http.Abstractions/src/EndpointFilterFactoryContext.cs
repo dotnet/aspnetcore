@@ -13,34 +13,15 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class EndpointFilterFactoryContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="EndpointFilterFactoryContext"/>.
+    /// The <see cref="MethodInfo"/> associated with the current route handler, <see cref="RequestDelegate"/> or MVC action.
     /// </summary>
-    /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the current request.</param>
-    /// <param name="endpointMetadata">The <see cref="EndpointBuilder.Metadata"/> associated with the endpoint the filter is targeting.</param>
-    /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access the application services.</param>
-    public EndpointFilterFactoryContext(MethodInfo methodInfo, IList<object> endpointMetadata, IServiceProvider applicationServices)
-    {
-        ArgumentNullException.ThrowIfNull(methodInfo);
-        ArgumentNullException.ThrowIfNull(endpointMetadata);
-        ArgumentNullException.ThrowIfNull(applicationServices);
-
-        MethodInfo = methodInfo;
-        EndpointMetadata = endpointMetadata;
-        ApplicationServices = applicationServices;
-    }
+    /// <remarks>
+    /// In the future this could support more endpoint types.
+    /// </remarks>
+    public required MethodInfo MethodInfo { get; init; }
 
     /// <summary>
-    /// The <see cref="MethodInfo"/> associated with the current route handler.
+    /// The <see cref="EndpointBuilder"/> associated with the current endpoint being filtered.
     /// </summary>
-    public MethodInfo MethodInfo { get; }
-
-    /// <summary>
-    /// The <see cref="EndpointMetadataCollection"/> associated with the current endpoint.
-    /// </summary>
-    public IList<object> EndpointMetadata { get; }
-
-    /// <summary>
-    /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
-    /// </summary>
-    public IServiceProvider ApplicationServices { get; }
+    public required EndpointBuilder EndpointBuilder { get; init; }
 }

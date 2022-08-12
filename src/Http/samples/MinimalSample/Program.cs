@@ -23,7 +23,7 @@ var inner = outer.MapGroup("/inner");
 
 inner.AddEndpointFilterFactory((routeContext, next) =>
 {
-    var tags = routeContext.EndpointMetadata.OfType<ITagsMetadata>().FirstOrDefault();
+    var tags = routeContext.EndpointBuilder.Metadata.OfType<ITagsMetadata>().FirstOrDefault();
 
     return async invocationContext =>
     {
