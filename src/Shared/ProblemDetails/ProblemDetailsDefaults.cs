@@ -46,10 +46,22 @@ internal static class ProblemDetailsDefaults
             "Not Acceptable"
         ),
 
+        [408] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.9",
+            "Request Timeout"
+        ),
+
         [409] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.5.10",
             "Conflict"
+        ),
+
+        [412] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.13",
+            "Precondition Failed"
         ),
 
         [415] =
@@ -64,10 +76,34 @@ internal static class ProblemDetailsDefaults
             "Unprocessable Entity"
         ),
 
+        [426] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.22",
+            "Upgrade Required"
+        ),
+
         [500] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.6.1",
             "An error occurred while processing your request."
+        ),
+
+        [502] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.6.3",
+            "Bad Gateway"
+        ),
+
+        [503] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.6.4",
+            "Service Unavailable"
+        ),
+
+        [504] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.6.5",
+            "Gateway Timeout"
         ),
     };
 
