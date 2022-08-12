@@ -20,6 +20,7 @@ public sealed class WebApplicationBuilder
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
+    private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
@@ -162,6 +163,8 @@ public sealed class WebApplicationBuilder
             if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
             {
                 app.UseRouting();
+                // Middleware the needs to re-route will use this property to call UseRouting()
+                _builtApplication.Properties[UseRoutingKey] = app.Properties[UseRoutingKey];
             }
             else
             {
