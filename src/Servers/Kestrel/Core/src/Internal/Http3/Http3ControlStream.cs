@@ -128,20 +128,22 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
     }
 
-    internal async ValueTask SendStreamIdAsync(long id)
+    internal async ValueTask ProcessOutboundSendsAsync(long id)
     {
+        _streamClosedFeature.OnClosed(static state =>
+        {
+            var stream = (Http3ControlStream)state!;
+            stream.OnStreamClosed();
+        }, this);
+
         await _frameWriter.WriteStreamIdAsync(id);
+        await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
 
     internal ValueTask<FlushResult> SendGoAway(long id)
     {
         Log.Http3GoAwayStreamId(_context.ConnectionId, id);
         return _frameWriter.WriteGoAway(id);
-    }
-
-    internal async ValueTask SendSettingsFrameAsync()
-    {
-        await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
 
     private async ValueTask<long> TryReadStreamHeaderAsync()

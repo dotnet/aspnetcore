@@ -174,7 +174,7 @@ internal class Http3InMemory
         }
     }
 
-    internal void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage) where TException : Exception
+    private void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage) where TException : Exception
     {
         var currentError = (Http3ErrorCode)MultiplexedConnectionContext.Error;
         if (currentError != expectedErrorCode)
@@ -1276,5 +1276,16 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
             _onClosed = new List<CloseAction>();
         }
         _onClosed.Add(new CloseAction(callback, state));
+    }
+
+    public void Close()
+    {
+        if (_onClosed != null)
+        {
+            foreach (var onClose in _onClosed)
+            {
+                onClose.Callback(onClose.State);
+            }
+        }
     }
 }

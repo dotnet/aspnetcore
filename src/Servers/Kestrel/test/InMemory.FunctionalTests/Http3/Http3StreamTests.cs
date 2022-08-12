@@ -2105,6 +2105,7 @@ public class Http3StreamTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 4,
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(Http3Formatting.ToFormattedType(f)));
     }
 

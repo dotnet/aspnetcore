@@ -229,14 +229,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     // If a control stream is no longer active then set a timeout so that the connection is aborted next tick.
                     if (stream.StreamTimeoutTicks == default)
                     {
-                        // On overflow, use max value.
-                        var connectionCloseTicks = ticks + (TimeSpan.TicksPerSecond / 2);
-                        stream.StreamTimeoutTicks = connectionCloseTicks >= 0 ? connectionCloseTicks : long.MaxValue;
+                        stream.StreamTimeoutTicks = ticks;
                     }
 
                     if (stream.StreamTimeoutTicks < ticks)
                     {
-                        connection.Abort(new ConnectionAbortedException("A control stream used by the connection was closed or reset."), Http3ErrorCode.ClosedCriticalStream);
+                        connection.OnStreamConnectionError(new Http3ConnectionErrorException("A control stream used by the connection was closed or reset.", Http3ErrorCode.ClosedCriticalStream));
                     }
                 }
             }
@@ -693,8 +691,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     {
         try
         {
-            await controlStream.SendStreamIdAsync(id: 0);
-            await controlStream.SendSettingsFrameAsync();
+            await controlStream.ProcessOutboundSendsAsync(id: 0);
         }
         catch (Exception ex)
         {
@@ -820,6 +817,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     }
 
     void IHttp3StreamLifetimeHandler.OnStreamConnectionError(Http3ConnectionErrorException ex)
+    {
+        OnStreamConnectionError(ex);
+    }
+
+    private void OnStreamConnectionError(Http3ConnectionErrorException ex)
     {
         Log.Http3ConnectionError(ConnectionId, ex);
         Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);

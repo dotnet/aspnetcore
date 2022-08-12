@@ -243,6 +243,7 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.SettingsError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
     }
 
@@ -261,6 +262,7 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.StreamCreationError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
     }
 
@@ -281,11 +283,12 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(f)));
     }
 
     [Fact]
-    public async Task ControlStream_ClientToServer_ClientCloses_ConnectionError()
+    public async Task ControlStream_ClientToServer_Completes_ConnectionError()
     {
         var now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -294,7 +297,7 @@ public class Http3ConnectionTests : Http3TestBase
         var controlStream = await Http3Api.CreateControlStream(id: 0);
         await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
 
-        await controlStream.EndStreamAsync();
+        await controlStream.EndStreamAsync().DefaultTimeout();
 
         // Wait for control stream to finish processing and exit.
         await controlStream.OnStreamCompletedTask.DefaultTimeout();
@@ -306,27 +309,30 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
-            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
     }
 
     [Fact]
-    public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
+    public async Task ControlStream_ServerToClient_Closes_ConnectionError()
     {
-        Http3Api.OnCreateServerControlStream = testStreamContext =>
-        {
-            var controlStream = new Microsoft.AspNetCore.Testing.Http3ControlStream(Http3Api, testStreamContext);
-
-            // Make server connection error when trying to write to control stream.
-            controlStream.StreamContext.Transport.Output.Complete();
-
-            return controlStream;
-        };
+        var now = _serviceContext.MockSystemClock.UtcNow;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
-        Http3Api.AssertConnectionError<Http3ConnectionErrorException>(
+        var controlStream = await Http3Api.GetInboundControlStream();
+
+        controlStream.StreamContext.Close();
+
+        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick(now + TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
-            expectedErrorMessage: CoreStrings.Http3ControlStreamErrorInitializingOutbound);
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
     }
 
     [Fact]

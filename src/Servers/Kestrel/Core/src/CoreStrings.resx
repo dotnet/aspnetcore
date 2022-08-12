@@ -713,4 +713,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="NonzeroContentLengthNotAllowedOn205" xml:space="preserve">
     <value>Responses with status code 205 cannot have a non-zero Content-Length value.</value>
   </data>
+  <data name="Http3ErrorControlStreamClosed" xml:space="preserve">
+    <value>A control stream used by the connection was closed or reset.</value>
+  </data>
 </root>
