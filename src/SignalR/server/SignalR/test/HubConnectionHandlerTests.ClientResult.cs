@@ -266,15 +266,48 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
-    public async Task CanCancelClientResultsWithIHubContextT()
+    private class TestBinder : IInvocationBinder
     {
+        public IReadOnlyList<Type> GetParameterTypes(string methodName)
+        {
+            return new Type[] { typeof(int) };
+        }
+
+        public Type GetReturnType(string invocationId)
+        {
+            return typeof(string);
+        }
+
+        public Type GetStreamItemType(string streamId)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [Theory]
+    [InlineData("MessagePack")]
+    [InlineData("Json")]
+    public async Task CanCancelClientResultsWithIHubContextT(string protocol)
+    {
+        IHubProtocol hubProtocol;
+        if (string.Equals(protocol, "MessagePack"))
+        {
+            hubProtocol = new MessagePackHubProtocol();
+        }
+        else if (string.Equals(protocol, "Json"))
+        {
+            hubProtocol = new JsonHubProtocol();
+        }
+        else
+        {
+            throw new Exception($"Protocol {protocol} not handled by test.");
+        }
         using (StartVerifiableLog())
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
 
-            using var client = new TestClient();
+            using var client = new TestClient(hubProtocol, new TestBinder());
             var connectionId = client.Connection.ConnectionId;
 
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
@@ -291,7 +324,7 @@ public partial class HubConnectionHandlerTests
             var invocation = Assert.IsType<InvocationMessage>(message);
 
             Assert.Single(invocation.Arguments);
-            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal(1, invocation.Arguments[0]);
             Assert.Equal("GetClientResultWithCancellation", invocation.Target);
 
             cts.Cancel();
@@ -304,7 +337,7 @@ public partial class HubConnectionHandlerTests
 
             // Send another message from the client and get a result back to make sure the connection is still active.
             // Regression test for when sending a client result after it was canceled would close the connection
-            var completion = await client.InvokeAsync("Echo", "test").DefaultTimeout();
+            var completion = await client.InvokeAsync(nameof(HubT.Echo), "test").DefaultTimeout();
             Assert.Equal("test", completion.Result);
 
             Assert.Contains(TestSink.Writes, c => c.EventId.Name == "UnexpectedCompletion");

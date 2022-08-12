@@ -230,8 +230,27 @@ public sealed class JsonHubProtocol : IHubProtocol
                             else
                             {
                                 // If we have an invocation id already we can parse the end result
-                                var returnType = binder.GetReturnType(invocationId);
-                                result = BindType(ref reader, input, returnType);
+                                Type? returnType;
+                                try
+                                {
+                                    returnType = binder.GetReturnType(invocationId);
+                                }
+                                // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
+                                // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
+                                // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
+                                catch (Exception)
+                                {
+                                    returnType = null;
+                                }
+                                if (returnType is null)
+                                {
+                                    reader.Skip();
+                                    result = null;
+                                }
+                                else
+                                {
+                                    result = BindType(ref reader, input, returnType);
+                                }
                             }
                         }
                         else if (reader.ValueTextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
@@ -408,8 +427,26 @@ public sealed class JsonHubProtocol : IHubProtocol
 
                     if (hasResultToken)
                     {
-                        var returnType = binder.GetReturnType(invocationId);
-                        result = BindType(ref resultToken, input, returnType);
+                        Type? returnType;
+                        try
+                        {
+                            returnType = binder.GetReturnType(invocationId);
+                        }
+                        // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
+                        // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
+                        // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
+                        catch (Exception)
+                        {
+                            returnType = null;
+                        }
+                        if (returnType is null)
+                        {
+                            result = null;
+                        }
+                        else
+                        {
+                            result = BindType(ref resultToken, input, returnType);
+                        }
                     }
 
                     message = BindCompletionMessage(invocationId, error, result, hasResult);

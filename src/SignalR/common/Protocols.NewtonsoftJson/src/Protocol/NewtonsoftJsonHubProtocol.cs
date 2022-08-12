@@ -209,21 +209,40 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     else
                                     {
                                         // If we have an invocation id already we can parse the end result
-                                        var returnType = binder.GetReturnType(invocationId);
-
-                                        if (!JsonUtils.ReadForType(reader, returnType))
+                                        Type? returnType;
+                                        try
                                         {
-                                            throw new JsonReaderException("Unexpected end when reading JSON");
+                                            returnType = binder.GetReturnType(invocationId);
                                         }
-
-                                        if (returnType == typeof(RawResult))
+                                        // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
+                                        // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
+                                        // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
+                                        catch (Exception)
                                         {
-                                            var token = JToken.Load(reader);
-                                            result = GetRawResult(token);
+                                            returnType = null;
+                                        }
+                                        if (returnType is null)
+                                        {
+                                            reader.Skip();
+                                            result = null;
                                         }
                                         else
                                         {
-                                            result = PayloadSerializer.Deserialize(reader, returnType);
+
+                                            if (!JsonUtils.ReadForType(reader, returnType))
+                                            {
+                                                throw new JsonReaderException("Unexpected end when reading JSON");
+                                            }
+
+                                            if (returnType == typeof(RawResult))
+                                            {
+                                                var token = JToken.Load(reader);
+                                                result = GetRawResult(token);
+                                            }
+                                            else
+                                            {
+                                                result = PayloadSerializer.Deserialize(reader, returnType);
+                                            }
                                         }
                                     }
                                     break;
@@ -397,14 +416,32 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                     if (resultToken != null)
                     {
-                        var returnType = binder.GetReturnType(invocationId);
-                        if (returnType == typeof(RawResult))
+                        Type? returnType;
+                        try
                         {
-                            result = GetRawResult(resultToken);
+                            returnType = binder.GetReturnType(invocationId);
+                        }
+                        // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
+                        // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
+                        // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
+                        catch (Exception)
+                        {
+                            returnType = null;
+                        }
+                        if (returnType is null)
+                        {
+                            result = null;
                         }
                         else
                         {
-                            result = resultToken.ToObject(returnType, PayloadSerializer);
+                            if (returnType == typeof(RawResult))
+                            {
+                                result = GetRawResult(resultToken);
+                            }
+                            else
+                            {
+                                result = resultToken.ToObject(returnType, PayloadSerializer);
+                            }
                         }
                     }
 
