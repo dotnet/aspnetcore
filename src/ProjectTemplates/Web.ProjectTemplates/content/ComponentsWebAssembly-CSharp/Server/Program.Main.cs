@@ -115,6 +115,8 @@ public class Program
 
         app.MapRazorPages();
         app.MapControllers();
+
+        // Some client-side features require cross-origin isolation. To enable this, see https://aka.ms/blazor-cross-origin-isolation
         app.MapFallbackToFile("index.html");
 
         app.Run();
