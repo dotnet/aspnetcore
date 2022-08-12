@@ -715,7 +715,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         var streams = new List<SslStream>();
         CertHelper.CleanupCertificates(nameof(ServerCertificateChainInExtraStore));
-        (var clientCertificate, var clientChain) = CertHelper.GenerateCertificates(nameof(ServerCertificateChainInExtraStore), serverCertificate: false);
+        (var clientCertificate, var clientChain) = CertHelper.GenerateCertificates(nameof(ServerCertificateChainInExtraStore), longChain: true, serverCertificate: false);
 
         using (var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser))
         {
