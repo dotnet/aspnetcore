@@ -741,7 +741,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                 foreach (var chainElement in chain.ChainElements)
                 {
                     var status = string.Join(';', chainElement.ChainElementStatus.Select(s => s.StatusInformation));
-                    dump.AppendLine(CultureInfo.InvariantCulture, $"Thumb: {chainElement.Certificate.Thumbprint} Status: {status}");
+                    dump.AppendLine(CultureInfo.InvariantCulture, $"Subject: {chainElement.Certificate.Subject} Issuer: {chainElement.Certificate.Issuer} Status: {status}");
                 }
 
                 throw new InvalidOperationException($"chain cannot be built {dump}");
