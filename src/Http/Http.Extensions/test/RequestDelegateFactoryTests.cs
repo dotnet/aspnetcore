@@ -18,10 +18,12 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -5164,14 +5166,14 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     context.Arguments[0] = context.Arguments[0] != null ? $"{((string)context.Arguments[0]!)}Prefix" : "NULL";
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5196,13 +5198,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create((string name) => $"Hello, {name}!", new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5238,13 +5240,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(methodInfo!, null, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5281,13 +5283,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         };
         var factoryResult = RequestDelegateFactory.Create(methodInfo!, targetFactory, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5318,7 +5320,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>() {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>() {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     if (context.HttpContext.Response.StatusCode == 400)
@@ -5327,7 +5329,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     }
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5364,7 +5366,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5379,7 +5381,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     }
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5412,7 +5414,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) =>
                 {
@@ -5428,7 +5430,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                         return "Is not an int.";
                     };
                 },
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5467,11 +5469,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) =>
                 {
-                    var acceptsMetadata = routeHandlerContext.EndpointMetadata.OfType<IAcceptsMetadata>();
+                    var acceptsMetadata = routeHandlerContext.EndpointBuilder.Metadata.OfType<IAcceptsMetadata>();
                     var contentType = acceptsMetadata.SingleOrDefault()?.ContentTypes.SingleOrDefault();
 
                     return async (context) =>
@@ -5483,7 +5485,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                         return await next(context);
                     };
                 },
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5518,7 +5520,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(PrintTodo, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5527,7 +5529,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     context.Arguments[0] = originalTodo;
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5559,7 +5561,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5570,7 +5572,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     }
                     return previousResult;
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5602,7 +5604,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5619,7 +5621,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     context.Arguments[0] = newValue;
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5671,13 +5673,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5729,13 +5731,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5794,13 +5796,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5828,13 +5830,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HandlerWithTaskAwait, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
 
         var requestDelegate = factoryResult.RequestDelegate;
@@ -5895,13 +5897,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5931,7 +5933,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5939,7 +5941,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     Assert.Equal(11, context.Arguments.Count);
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5962,7 +5964,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
@@ -5970,7 +5972,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     Assert.Equal(0, context.Arguments.Count);
                     return await next(context);
                 }
-            }
+            }),
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -5996,7 +5998,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Arrange
         var @delegate = (AddsCustomParameterMetadataBindable param1) => { };
         var customMetadata = new CustomEndpointMetadata();
-        var options = new RequestDelegateFactoryOptions { EndpointMetadata = new List<object> { customMetadata } };
+        var options = new RequestDelegateFactoryOptions { EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object> { customMetadata }) };
 
         // Act
         var result = RequestDelegateFactory.Create(@delegate, options);
@@ -6097,10 +6099,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6119,10 +6121,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => Task.FromResult(new CountsDefaultEndpointMetadataResult());
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6141,10 +6143,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult());
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6163,10 +6165,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6184,10 +6186,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6205,10 +6207,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6228,10 +6230,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointMetadata = new List<object>
+            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }
+            }),
         };
 
         // Act
@@ -6356,19 +6358,19 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         RequestDelegateFactoryOptions options = new()
         {
-            EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
             {
                 (routeHandlerContext, next) =>
                 {
-                    routeHandlerContext.EndpointMetadata.Add(filter1Tag);
+                    routeHandlerContext.EndpointBuilder.Metadata.Add(filter1Tag);
                     return next;
                 },
                 (routeHandlerContext, next) =>
                 {
-                    routeHandlerContext.EndpointMetadata.Add(filter2Tag);
+                    routeHandlerContext.EndpointBuilder.Metadata.Add(filter2Tag);
                     return next;
                 },
-            }
+            }),
         };
 
         var result = RequestDelegateFactory.Create(initialRequestDelegate, options);
@@ -6376,6 +6378,37 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Collection(result.EndpointMetadata,
             m => Assert.Same(filter2Tag, m),
             m => Assert.Same(filter1Tag, m));
+    }
+
+    [Fact]
+    public void Create_Rejects_EndpointBuilderWithNonNullRequestDelegate()
+    {
+        RequestDelegate requestDelegate = static context => Task.CompletedTask;
+
+        RequestDelegateFactoryOptions options = new()
+        {
+            EndpointBuilder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), order: 0),
+        };
+
+        var ex = Assert.Throws<ArgumentException>(() => RequestDelegateFactory.Create(requestDelegate, options));
+
+        Assert.Equal("options", ex.ParamName);
+    }
+
+    [Fact]
+    public void Create_Populates_EndpointBuilderWithRequestDelegateAndMetadata()
+    {
+        RequestDelegate requestDelegate = static context => Task.CompletedTask;
+
+        RequestDelegateFactoryOptions options = new()
+        {
+            EndpointBuilder = new RouteEndpointBuilder(null, RoutePatternFactory.Parse("/"), order: 0),
+        };
+
+        var result = RequestDelegateFactory.Create(requestDelegate, options);
+
+        Assert.Same(options.EndpointBuilder.RequestDelegate, result.RequestDelegate);
+        Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
     }
 
     private DefaultHttpContext CreateHttpContext()
@@ -6392,6 +6425,20 @@ public class RequestDelegateFactoryTests : LoggedTest
                     [typeof(IHttpRequestLifetimeFeature)] = new TestHttpRequestLifetimeFeature(),
                 }
         };
+    }
+
+    private EndpointBuilder CreateEndpointBuilderFromMetadata(IEnumerable<object> metadata)
+    {
+        var builder = new RouteEndpointBuilder(null, RoutePatternFactory.Parse("/"), 0);
+        ((List<object>)builder.Metadata).AddRange(metadata);
+        return builder;
+    }
+
+    private EndpointBuilder CreateEndpointBuilderFromFilterFactories(IEnumerable<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>> filterFactories)
+    {
+        var builder = new RouteEndpointBuilder(null, RoutePatternFactory.Parse("/"), 0);
+        ((List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>)builder.FilterFactories).AddRange(filterFactories);
+        return builder;
     }
 
     private record MetadataService;

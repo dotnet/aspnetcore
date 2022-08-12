@@ -30,10 +30,12 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
     /// <param name="routePattern">The <see cref="RoutePattern"/> to use in URL matching.</param>
     /// <param name="order">The order assigned to the endpoint.</param>
     public RouteEndpointBuilder(
-       RequestDelegate requestDelegate,
+       RequestDelegate? requestDelegate,
        RoutePattern routePattern,
        int order)
     {
+        ArgumentNullException.ThrowIfNull(routePattern);
+
         RequestDelegate = requestDelegate;
         RoutePattern = routePattern;
         Order = order;

@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -872,7 +873,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
-                    Assert.NotNull(routeHandlerContext.ApplicationServices);
+                    Assert.NotNull(routeHandlerContext.EndpointBuilder.ApplicationServices);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
                     context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
@@ -982,7 +983,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public void RequestDelegateFactory_ProvidesAppServiceProvider_ToFilterFactory()
+    public void RequestDelegateFactory_ProvidesRouteEndpointBuilder_ToFilterFactory()
     {
         var appServiceCollection = new ServiceCollection();
         var appService = new MyService();
@@ -992,39 +993,31 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
         string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
+
+        var customDisplayName = "MyFilterFactory";
+        var customRoutePattern = RoutePatternFactory.Parse("/MyFilteredPattern");
+
         routeHandlerBuilder.AddEndpointFilterFactory((rhc, next) =>
         {
-            Assert.NotNull(rhc.ApplicationServices);
-            var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
+            Assert.NotNull(rhc.EndpointBuilder.ApplicationServices);
+            var myService = rhc.EndpointBuilder.ApplicationServices.GetRequiredService<MyService>();
             Assert.Equal(appService, myService);
+
+            rhc.EndpointBuilder.DisplayName = customDisplayName;
+            ((RouteEndpointBuilder)rhc.EndpointBuilder).RoutePattern = customRoutePattern;
+
             filterFactoryRan = true;
             return next;
         });
 
         var dataSource = GetBuilderEndpointDataSource(builder);
         // Trigger Endpoint build by calling getter.
-        Assert.Single(dataSource.Endpoints);
+        var routeEndpoint = Assert.Single(dataSource.Endpoints);
+        Assert.Equal(customDisplayName, routeEndpoint.DisplayName);
+        Assert.Equal(customRoutePattern, routeEndpoint.RoutePattern);
         Assert.True(filterFactoryRan);
     }
 
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
-    {
-        Assert.Throws<ArgumentNullException>("methodInfo", () => new EndpointFilterFactoryContext(null!, new List<object>(), new ServiceCollection().BuildServiceProvider()));
-    }
-
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
-    {
-        var handler = () => { };
-        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new EndpointFilterFactoryContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
-    }
-
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
-    {
-        var handler = () => { };
-        Assert.Throws<ArgumentNullException>("applicationServices", () => new EndpointFilterFactoryContext(handler.Method, new List<object>(), null!));
     }
 
     [Fact]
@@ -1081,8 +1074,6 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             .SelectMany(ds => ds.Endpoints));
 
         Assert.Equal(new[] { "added-from-endpoint-1", "added-from-endpoint-2", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
-    }
-
     class MyService { }
 
     class ServiceAccessingEndpointFilter : IEndpointFilter

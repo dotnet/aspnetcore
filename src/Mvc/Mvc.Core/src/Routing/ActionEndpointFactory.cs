@@ -336,7 +336,7 @@ internal sealed class ActionEndpointFactory
         return (attributeRoutePattern, resolvedRequiredValues ?? action.RouteValues);
     }
 
-    private void AddActionDataToBuilder(
+    private static void AddActionDataToBuilder(
         EndpointBuilder builder,
         HashSet<string> routeNames,
         ActionDescriptor action,
@@ -466,7 +466,11 @@ internal sealed class ActionEndpointFactory
                 return controllerInvocationContext.ActionDescriptor.CacheEntry!.InnerActionMethodExecutor.Execute(controllerInvocationContext);
             };
 
-            var context = new EndpointFilterFactoryContext(cad.MethodInfo, builder.Metadata, _serviceProvider);
+            var context = new EndpointFilterFactoryContext
+            {
+                MethodInfo = cad.MethodInfo,
+                EndpointBuilder = builder,
+            };
 
             var initialFilteredInvocation = del;
 

@@ -38,6 +38,8 @@ Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointBuilder.get -> Microsoft.AspNetCore.Builder.EndpointBuilder?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointBuilder.init -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
@@ -52,10 +54,6 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void (forwarded, contained 
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointFilterFactories.init -> void
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.get -> System.Collections.Generic.IList<object!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.init -> void
 Microsoft.Extensions.DependencyInjection.HttpJsonServiceExtensions
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TValue?>
