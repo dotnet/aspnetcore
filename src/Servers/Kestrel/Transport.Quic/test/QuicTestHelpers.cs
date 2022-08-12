@@ -33,7 +33,6 @@ internal static class QuicTestHelpers
         long defaultCloseErrorCode = 0)
     {
         var quicTransportOptions = new QuicTransportOptions();
-        quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
         quicTransportOptions.MaxBidirectionalStreamCount = 200;
         quicTransportOptions.MaxUnidirectionalStreamCount = 200;
         quicTransportOptions.DefaultCloseErrorCode = defaultCloseErrorCode;
