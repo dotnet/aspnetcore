@@ -56,7 +56,6 @@ public class HubConnection implements AutoCloseable {
     // Private property, modified for testing
     private long tickRate = 1000;
 
-
     // Holds all mutable state other than user-defined handlers and settable properties.
     private final ReconnectingConnectionState state;
 
@@ -1297,24 +1296,67 @@ public class HubConnection implements AutoCloseable {
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
 
-    public <TResult> Subscription on(String target, Function<TResult> callback) {
-        FunctionBase action = args -> Single.just(callback.invoke());
-        return registerHandler(target, action);
-    }
-
-    public <TResult> Subscription on(String target, FunctionSingle<TResult> callback) {
+    public <TResult> Subscription onWithResult(String target, FunctionSingle<TResult> callback) {
         FunctionBase action = args -> callback.invoke().cast(Object.class);
         return registerHandler(target, action);
     }
 
-    public <T1, TResult> Subscription on(String target, Function1<T1, TResult> callback, Class<T1> param1) {
-        FunctionBase action = params -> Single.just(callback.invoke(Utils.<T1>cast(param1, params[0])));
-        return registerHandler(target, action);
+    public <T1, TResult> Subscription onWithResult(String target, Function1Single<T1, TResult> callback, Class<T1> param1) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0])).cast(Object.class);
+        return registerHandler(target, action, param1);
     }
 
-    public <T1, TResult> Subscription on(String target, Function1Single<T1, TResult> callback, Class<T1> param1) {
-        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0])).cast(Object.class);
-        return registerHandler(target, action);
+    public <T1, T2, TResult> Subscription onWithResult(String target, Function2Single<T1, T2, TResult> callback,
+                                             Class<T1> param1, Class<T2> param2) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]),
+            Utils.<T2>cast(param2, params[1])).cast(Object.class);
+        return registerHandler(target, action, param1, param2);
+    }
+
+    public <T1, T2, T3, TResult> Subscription onWithResult(String target, Function3Single<T1, T2, T3, TResult> callback,
+                                                 Class<T1> param1, Class<T2> param2, Class<T3> param3) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]),
+            Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2])).cast(Object.class);
+        return registerHandler(target, action, param1, param2, param3);
+    }
+
+    public <T1, T2, T3, T4, TResult> Subscription onWithResult(String target, Function4Single<T1, T2, T3, T4, TResult> callback,
+                                                     Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]),
+            Utils.<T3>cast(param3, params[2]), Utils.<T4>cast(param4, params[3])).cast(Object.class);
+        return registerHandler(target, action, param1, param2, param3, param4);
+    }
+
+    public <T1, T2, T3, T4, T5, TResult> Subscription onWithResult(String target, Function5Single<T1, T2, T3, T4, T5, TResult> callback,
+                                                         Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]),
+            Utils.<T3>cast(param3, params[2]), Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4])).cast(Object.class);
+        return registerHandler(target, action, param1, param2, param3, param4, param5);
+    }
+
+    public <T1, T2, T3, T4, T5, T6, TResult> Subscription onWithResult(String target, Function6Single<T1, T2, T3, T4, T5, T6, TResult> callback,
+                                                             Class<T1> param1, Class<T2> param2, Class<T3> param3,
+                                                             Class<T4> param4, Class<T5> param5, Class<T6> param6) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
+            Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5])).cast(Object.class);
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
+    }
+
+    public <T1, T2, T3, T4, T5, T6, T7, TResult> Subscription onWithResult(String target, Function7Single<T1, T2, T3, T4, T5, T6, T7, TResult> callback,
+                                                                 Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4,
+                                                                 Class<T5> param5, Class<T6> param6, Class<T7> param7) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
+            Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6])).cast(Object.class);
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
+    }
+
+    public <T1, T2, T3, T4, T5, T6, T7, T8, TResult> Subscription onWithResult(String target, Function8Single<T1, T2, T3, T4, T5, T6, T7, T8, TResult> callback,
+                                                                     Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5,
+                                                                     Class<T6> param6, Class<T7> param7, Class<T8> param8) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]),
+            Utils.<T3>cast(param3, params[2]), Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]),
+            Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]), Utils.<T8>cast(param8, params[7])).cast(Object.class);
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
 
     private Subscription registerHandler(String target, Object action, Type... types) {
@@ -1493,7 +1535,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         private void handleInvocations() {
-            messages.observeOn(Schedulers.computation()).subscribe(invocationMessage -> {
+            messages.observeOn(Schedulers.io()).subscribe(invocationMessage -> {
                 List<InvocationHandler> handlers = this.connection.handlers.get(invocationMessage.getTarget());
                 boolean expectsResult = invocationMessage.getInvocationId() != null;
                 if (handlers == null) {
@@ -1543,6 +1585,7 @@ public class HubConnection implements AutoCloseable {
                     logger.warn("Result given for '{}' method but server is not expecting a result.", invocationMessage.getTarget());
                 }
             }, (e) -> {
+                stop(e.getMessage());
             }, () -> {
             });
         }
