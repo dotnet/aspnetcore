@@ -459,6 +459,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData("\n")]
         [InlineData("\r\n")]
         [InlineData("\n\r")]
+        [InlineData("\n\n")]
         [InlineData("\r\n\r\n")]
         [InlineData("\r\r\r\r\r")]
         public async Task ExtraLinesAtEndOfConnectionIgnored(string extraLines)
