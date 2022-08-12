@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
     {
+        private const byte ByteCR = (byte)'\r';
+        private const byte ByteLF = (byte)'\n';
         private const byte ByteAsterisk = (byte)'*';
         private const byte ByteForwardSlash = (byte)'/';
         private const string Asterisk = "*";
@@ -146,6 +148,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (_requestProcessingStatus)
             {
                 case RequestProcessingStatus.RequestPending:
+                    // Skip any empty lines (\r or \n) between requests.
+                    // Peek first as a minor performance optimization; it's a quick inlined check.
+                    if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
+                    {
+                        reader.AdvancePastAny(ByteCR, ByteLF);
+                    }
+
                     if (reader.End)
                     {
                         break;

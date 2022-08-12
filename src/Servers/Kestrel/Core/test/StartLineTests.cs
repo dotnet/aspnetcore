@@ -517,55 +517,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             DifferentFormsWorkTogether();
         }
 
-        public static IEnumerable<object[]> GetCrLfAndMethodCombinations()
-        {
-            // HTTP methods to test
-            var methods = new string[] {
-                HttpMethods.Connect,
-                HttpMethods.Delete,
-                HttpMethods.Get,
-                HttpMethods.Head,
-                HttpMethods.Options,
-                HttpMethods.Patch,
-                HttpMethods.Post,
-                HttpMethods.Put,
-                HttpMethods.Trace
-            };
-
-            // Prefixes to test
-            var crLfPrefixes = new string[] {
-                "\r",
-                "\n",
-                "\r\r\r\r\r",
-                "\r\n",
-                "\n\r"
-            };
-
-            foreach (var method in methods)
-            {
-                foreach (var prefix in crLfPrefixes)
-                {
-                    yield return new object[] { prefix, method };
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(GetCrLfAndMethodCombinations))]
-        public void LeadingCrLfAreAllowed(string startOfRequestLine, string httpMethod)
-        {
-            var rawTarget = "http://localhost/path1?q=123&w=xyzw";
-            Http1Connection.Reset();
-            // RawTarget, Path, QueryString are null after reset
-            Assert.Null(Http1Connection.RawTarget);
-            Assert.Null(Http1Connection.Path);
-            Assert.Null(Http1Connection.QueryString);
-
-            var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"{startOfRequestLine}{httpMethod} {rawTarget} HTTP/1.1\r\n"));
-            var reader = new SequenceReader<byte>(ros);
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
-        }
-
         public StartLineTests()
         {
             MemoryPool = PinnedBlockMemoryPoolFactory.Create();
