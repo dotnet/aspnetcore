@@ -66,15 +66,16 @@ internal sealed partial class RateLimitingMiddleware
         {
             return _next(context);
         }
+        var enableRateLimitingAttribute = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>();
         // If this endpoint has no EnableRateLimitingAttribute & there's no global limiter, don't apply any rate limits.
-        if (endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>() is null && _globalLimiter is null)
+        if (enableRateLimitingAttribute is null && _globalLimiter is null)
         {
             return _next(context);
         }
-        return InvokeInternal(context, endpoint);
+        return InvokeInternal(context, enableRateLimitingAttribute);
     }
 
-    private async Task InvokeInternal(HttpContext context, Endpoint? endpoint)
+    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         using var leaseContext = await TryAcquireAsync(context);
         if (leaseContext.Lease.IsAcquired)
@@ -94,14 +95,14 @@ internal sealed partial class RateLimitingMiddleware
             {
                 DefaultRateLimiterPolicy? policy;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
-                policy = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.Policy;
+                policy = enableRateLimitingAttribute?.Policy;
                 if (policy is not null)
                 {
                     thisRequestOnRejected = policy.OnRejected;
                 }
                 else
                 {
-                    var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+                    var policyName = enableRateLimitingAttribute?.PolicyName;
                     if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
                     {
                         thisRequestOnRejected = policy.OnRejected;
