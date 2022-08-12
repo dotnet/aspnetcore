@@ -132,7 +132,9 @@ internal static class ProblemDetailsDefaults
             problemDetails.Title ??= defaults.Title;
             problemDetails.Type ??= defaults.Type;
         }
-        else if (problemDetails.Title is null && ReasonPhrases.GetReasonPhrase(status) is { } reasonPhrase)
+        else if (problemDetails.Title is null &&
+                 ReasonPhrases.GetReasonPhrase(status) is { } reasonPhrase &&
+                 !string.IsNullOrEmpty(reasonPhrase))
         {
             problemDetails.Title = reasonPhrase;
         }

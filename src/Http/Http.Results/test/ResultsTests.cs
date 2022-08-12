@@ -934,6 +934,7 @@ public class ResultsTests
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
+    [InlineData(499, null, null)]
     public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
         int statusCode,
         string title,
