@@ -621,6 +621,7 @@ public class HttpParserTests : LoggedTest
     [InlineData("Host:\r\nConnection: keep-alive\n\r\n")]
     [InlineData("A:B\nB: C\r\n\r\n")]
     [InlineData("A:B\r\nB: C\n\r\n")]
+    [InlineData("Host:\r\nConnection: keep-alive\n\n")]
     public void ParseHeadersWithGratuitouslySplitBuffersQuirkMode(string headers)
     {
         var parser = CreateParser(_nullTrace, allowLineFeedTerminator: true);
