@@ -711,7 +711,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Chain fails to build on mac osx.")]
     public async Task ServerCertificateChainInExtraStore()
     {
         var streams = new List<SslStream>();
@@ -730,13 +729,15 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         {
             chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
             chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-            chain.ChainPolicy.DisableCertificateDownloads = false;
+            chain.ChainPolicy.DisableCertificateDownloads = true;
             var chainStatus = chain.Build(clientCertificate);
             // Verify we can construct full chain
             if (chain.ChainElements.Count < clientChain.Count)
             {
                 // dump the chain
                 var dump = new StringBuilder();
+                var cStatus = string.Join(';', chain.ChainStatus.Select(s => s.StatusInformation));
+                dump.AppendLine(CultureInfo.InvariantCulture, $"ChainStatus: {cStatus}");
                 foreach (var chainElement in chain.ChainElements)
                 {
                     var status = string.Join(';', chainElement.ChainElementStatus.Select(s => s.StatusInformation));
