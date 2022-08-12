@@ -209,7 +209,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     reader.Advance(crIndex + 1);
 
                     var foundCrlf = false;
-                    if (span.Length > crIndex + 1 && span[crIndex + 1] == ByteLF)
+                    if ((uint)span.Length > (uint)(crIndex + 1) && span[crIndex + 1] == ByteLF)
                     {
                         // CR/LF in the same span (common case)
                         span = span.Slice(0, crIndex);
