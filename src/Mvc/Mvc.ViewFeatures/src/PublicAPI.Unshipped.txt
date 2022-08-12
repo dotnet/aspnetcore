@@ -1,7 +1,7 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel?
-Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormElementValueFormatting.get -> bool
-Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormElementValueFormatting.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormValueFormatting.get -> bool
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.SuppressCultureInvariantFormValueFormatting.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting.get -> bool
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel

@@ -94,7 +94,7 @@ public class ViewContext : ActionContext
         ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
         ValidationMessageElement = htmlHelperOptions.ValidationMessageElement;
         CheckBoxHiddenInputRenderMode = htmlHelperOptions.CheckBoxHiddenInputRenderMode;
-        SuppressCultureInvariantFormElementValueFormatting = htmlHelperOptions.SuppressCultureInvariantFormValueFormatting;
+        SuppressCultureInvariantFormValueFormatting = htmlHelperOptions.SuppressCultureInvariantFormValueFormatting;
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ public class ViewContext : ActionContext
         ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
         ValidationMessageElement = viewContext.ValidationMessageElement;
         CheckBoxHiddenInputRenderMode = viewContext.CheckBoxHiddenInputRenderMode;
-        SuppressCultureInvariantFormElementValueFormatting = viewContext.SuppressCultureInvariantFormElementValueFormatting;
+        SuppressCultureInvariantFormValueFormatting = viewContext.SuppressCultureInvariantFormValueFormatting;
 
         ExecutingFilePath = viewContext.ExecutingFilePath;
         View = view;
@@ -209,7 +209,7 @@ public class ViewContext : ActionContext
     /// will result in <see cref="CultureInfo.CurrentCulture"/> always being used to format form element values. This may result in
     /// invalid HTML being generated.
     /// </remarks>
-    public bool SuppressCultureInvariantFormElementValueFormatting { get; set; }
+    public bool SuppressCultureInvariantFormValueFormatting { get; set; }
 
     /// <summary>
     /// Gets the dynamic view bag.
