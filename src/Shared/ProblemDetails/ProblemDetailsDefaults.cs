@@ -72,7 +72,7 @@ internal static class ProblemDetailsDefaults
 
         [422] =
         (
-            "https://tools.ietf.org/html/rfc9110#section-15.5.21",
+            "https://tools.ietf.org/html/rfc4918#section-11.2",
             "Unprocessable Entity"
         ),
 
