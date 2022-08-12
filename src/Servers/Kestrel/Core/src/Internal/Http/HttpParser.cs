@@ -308,16 +308,16 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
     private static byte[] AppendEndOfLine(ReadOnlySpan<byte> span, bool lineFeedOnly)
     {
+        Debug.Assert(!span.IsEmpty);
+
         var array = new byte[span.Length + (lineFeedOnly ? 1 : 2)];
 
-        span.CopyTo(array);
+        Debug.Assert(array.Length >= 2);
+
+        array[^2] = ByteCR;
         array[^1] = ByteLF;
 
-        if (!lineFeedOnly)
-        {
-            array[^2] = ByteCR;
-        }
-
+        span.CopyTo(array);
         return array;
     }
 
