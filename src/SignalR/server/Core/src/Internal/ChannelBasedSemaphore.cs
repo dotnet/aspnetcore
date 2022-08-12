@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 // Use a Channel instead of a SemaphoreSlim so that we can potentially save task allocations (ValueTask!)
 // Additionally initial perf results show faster RPS when using Channel instead of SemaphoreSlim
-internal class ChannelBasedSemaphore
+internal sealed class ChannelBasedSemaphore
 {
     internal readonly Channel<int> _channel;
 
