@@ -88,6 +88,7 @@ internal static partial class SendUtils
         Log.SendStopped(logger);
     }
 
+    // AccessTokenHttpMessageHandler relies on this being reusable
     private sealed class ReadOnlySequenceContent : HttpContent
     {
         private readonly ReadOnlySequence<byte> _buffer;

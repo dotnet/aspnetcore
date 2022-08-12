@@ -107,8 +107,7 @@ public class RouteEndpointBuilderTest
 
         var builder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder);
 
-        builder.EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>();
-        builder.EndpointFilterFactories.Add((endpointContext, next) =>
+        builder.FilterFactories.Add((endopintContext, next) =>
         {
             endpointFilterCallCount++;
 

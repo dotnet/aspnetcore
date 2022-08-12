@@ -35,7 +35,7 @@ public class DefaultPageLoaderTest
         var compilerProvider = GetCompilerProvider();
 
         var mvcOptions = Options.Create(new MvcOptions());
-        var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), Mock.Of<IServiceProvider>());
 
         var provider1 = new Mock<IPageApplicationModelProvider>();
         var provider2 = new Mock<IPageApplicationModelProvider>();
@@ -118,7 +118,7 @@ public class DefaultPageLoaderTest
         var compilerProvider = GetCompilerProvider();
 
         var mvcOptions = Options.Create(new MvcOptions());
-        var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>(), Mock.Of<IServiceProvider>());
 
         var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -158,7 +158,7 @@ public class DefaultPageLoaderTest
         var descriptor = new PageActionDescriptor();
         var compilerProvider = GetCompilerProvider();
         var mvcOptions = Options.Create(new MvcOptions());
-        var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), Mock.Of<IServiceProvider>());
 
         var provider1 = new Mock<IPageApplicationModelProvider>();
         provider1.SetupGet(p => p.Order).Returns(10);
@@ -235,7 +235,7 @@ public class DefaultPageLoaderTest
         var compilerProvider = GetCompilerProvider();
 
         var mvcOptions = Options.Create(new MvcOptions());
-        var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>(), Mock.Of<IServiceProvider>());
 
         var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -297,7 +297,7 @@ public class DefaultPageLoaderTest
         var compilerProvider = GetCompilerProvider();
 
         var mvcOptions = Options.Create(new MvcOptions());
-        var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(transformer.Object, Enumerable.Empty<IRequestDelegateFactory>(), Mock.Of<IServiceProvider>());
 
         var provider = new Mock<IPageApplicationModelProvider>();
 
@@ -334,7 +334,7 @@ public class DefaultPageLoaderTest
     {
         // Arrange
         var mvcOptions = Options.Create(new MvcOptions());
-        var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), Mock.Of<IServiceProvider>());
         var loader = new DefaultPageLoader(
             new[] { Mock.Of<IPageApplicationModelProvider>() },
             Mock.Of<IViewCompilerProvider>(),
