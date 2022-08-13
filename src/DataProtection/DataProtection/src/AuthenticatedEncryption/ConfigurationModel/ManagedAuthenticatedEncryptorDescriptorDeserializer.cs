@@ -34,44 +34,14 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
         var configuration = new ManagedAuthenticatedEncryptorConfiguration();
 
         var encryptionElement = element.Element("encryption")!;
-        configuration.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm")!);
+        configuration.EncryptionAlgorithmType = ManagedAlgorithmHelpers.FriendlyNameToType((string)encryptionElement.Attribute("algorithm")!);
         configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength")!;
 
         var validationElement = element.Element("validation")!;
-        configuration.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm")!);
+        configuration.ValidationAlgorithmType = ManagedAlgorithmHelpers.FriendlyNameToType((string)validationElement.Attribute("algorithm")!);
 
         Secret masterKey = ((string)element.Element("masterKey")!).ToSecret();
 
         return new ManagedAuthenticatedEncryptorDescriptor(configuration, masterKey);
-    }
-
-    // Any changes to this method should also be be reflected
-    // in ManagedAuthenticatedEncryptorDescriptor.TypeToFriendlyName.
-    private static Type FriendlyNameToType(string typeName)
-    {
-        if (typeName == nameof(Aes))
-        {
-            return typeof(Aes);
-        }
-        else if (typeName == nameof(HMACSHA1))
-        {
-            return typeof(HMACSHA1);
-        }
-        else if (typeName == nameof(HMACSHA256))
-        {
-            return typeof(HMACSHA256);
-        }
-        else if (typeName == nameof(HMACSHA384))
-        {
-            return typeof(HMACSHA384);
-        }
-        else if (typeName == nameof(HMACSHA512))
-        {
-            return typeof(HMACSHA512);
-        }
-        else
-        {
-            return TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(typeName);
-        }
     }
 }
