@@ -71,7 +71,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
                 foreach (var claim in context.User.Claims)
                 {
                     if (string.Equals(claim.Type, requirement.ClaimType, StringComparison.OrdinalIgnoreCase)
-                        && requirement.AllowedValues.Contains(claim.Value, StringComparer.Ordinal))
+                        && requirement.AllowedValues!.Contains(claim.Value, StringComparer.Ordinal))
                     {
                         found = true;
                         break;
@@ -91,7 +91,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     {
         var value = (_emptyAllowedValues)
             ? string.Empty
-            : $" and Claim.Value is one of the following values: ({string.Join("|", AllowedValues)})";
+            : $" and Claim.Value is one of the following values: ({string.Join("|", AllowedValues!)})";
 
         return $"{nameof(ClaimsAuthorizationRequirement)}:Claim.Type={ClaimType}{value}";
     }

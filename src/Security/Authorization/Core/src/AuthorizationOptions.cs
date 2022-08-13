@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationOptions
 {
-    private static readonly Task<AuthorizationPolicy?> _nullPolicyTask = Task.FromResult<AuthorizationPolicy>(null);
+    private static readonly Task<AuthorizationPolicy?> _nullPolicyTask = Task.FromResult<AuthorizationPolicy?>(null);
 
     private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
-    private Dictionary<string, Task<AuthorizationPolicy>> PolicyTaskMap { get; } = new Dictionary<string, Task<AuthorizationPolicy>>(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, Task<AuthorizationPolicy?>> PolicyTaskMap { get; } = new Dictionary<string, Task<AuthorizationPolicy?>>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Determines whether authorization handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
@@ -59,7 +59,7 @@ public class AuthorizationOptions
         }
 
         PolicyMap[name] = policy;
-        PolicyTaskMap[name] = Task.FromResult(policy);
+        PolicyTaskMap[name] = Task.FromResult<AuthorizationPolicy?>(policy);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public class AuthorizationOptions
         configurePolicy(policyBuilder);
         var policy = policyBuilder.Build();
         PolicyMap[name] = policy;
-        PolicyTaskMap[name] = Task.FromResult(policy);
+        PolicyTaskMap[name] = Task.FromResult<AuthorizationPolicy?>(policy);
     }
 
     /// <summary>
