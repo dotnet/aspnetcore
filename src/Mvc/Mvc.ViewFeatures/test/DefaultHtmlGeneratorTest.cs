@@ -389,7 +389,7 @@ public class DefaultHtmlGeneratorTest
         var htmlHelperOptions = new HtmlHelperOptions()
         {
             Html5DateRenderingMode = dateRenderingMode,
-            SuppressCultureInvariantFormValueFormatting = true,
+            FormInputRenderMode = FormInputRenderMode.AlwaysUseCurrentCulture,
         };
         var htmlGenerator = GetGenerator(metadataProvider, new() { HtmlHelperOptions = htmlHelperOptions });
         var viewContext = GetViewContext<Model>(model: null, metadataProvider, htmlHelperOptions);

@@ -40,7 +40,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     private readonly IUrlHelperFactory _urlHelperFactory;
     private readonly HtmlEncoder _htmlEncoder;
     private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
-    private readonly bool _suppressCultureInvariantFormatting;
+    private readonly FormInputRenderMode _formInputRenderMode;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -95,7 +95,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         _urlHelperFactory = urlHelperFactory;
         _htmlEncoder = htmlEncoder;
         _validationAttributeProvider = validationAttributeProvider;
-        _suppressCultureInvariantFormatting = optionsAccessor.Value.HtmlHelperOptions.SuppressCultureInvariantFormValueFormatting;
+        _formInputRenderMode = optionsAccessor.Value.HtmlHelperOptions.FormInputRenderMode;
 
         // Underscores are fine characters in id's.
         IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -1564,7 +1564,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
 
     private bool ShouldUseInvariantFormattingForInputType(string inputType, Html5DateRenderingMode dateRenderingMode)
     {
-        if (!_suppressCultureInvariantFormatting)
+        if (_formInputRenderMode == FormInputRenderMode.DetectCultureFromInputType)
         {
             var isNumberInput =
                 string.Equals(inputType, "number", StringComparison.OrdinalIgnoreCase) ||

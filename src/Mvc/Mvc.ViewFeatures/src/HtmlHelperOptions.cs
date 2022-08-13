@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -63,15 +62,12 @@ public class HtmlHelperOptions
     public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; } = CheckBoxHiddenInputRenderMode.EndOfForm;
 
     /// <summary>
-    /// Gets or sets a value that determines if form element values are always
-    /// formatted using <see cref="CultureInfo.CurrentCulture"/>.
+    /// Gets or sets a value that determines how form &lt;input/&gt; elements are rendered.
     /// </summary>
     /// <remarks>
     /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are
     /// directly entered by the user. However, other inputs (e.g., &lt;input type="number"/&gt;) use culture-invariant
-    /// formatting both in the HTML source and in the form request. Setting this property to <see langword="true"/>
-    /// will result in <see cref="CultureInfo.CurrentCulture"/> always being used to format form element values. This may result in
-    /// invalid HTML being generated.
+    /// formatting both in the HTML source and in the form request.
     /// </remarks>
-    public bool SuppressCultureInvariantFormValueFormatting { get; set; }
+    public FormInputRenderMode FormInputRenderMode { get; set; }
 }
