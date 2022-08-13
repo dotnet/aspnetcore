@@ -163,6 +163,7 @@ public sealed class AuthenticatedEncryptorFactory : IAuthenticatedEncryptorFacto
         }
     }
 
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     private static Type GetManagedTypeFromEncryptionAlgorithm(EncryptionAlgorithm algorithm)
     {
         switch (algorithm)
