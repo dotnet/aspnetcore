@@ -731,21 +731,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
             chain.ChainPolicy.DisableCertificateDownloads = true;
             var chainStatus = chain.Build(clientCertificate);
-            // Verify we can construct full chain
-            if (chain.ChainElements.Count < clientChain.Count)
-            {
-                // dump the chain
-                var dump = new StringBuilder();
-                var cStatus = string.Join(';', chain.ChainStatus.Select(s => s.StatusInformation));
-                dump.AppendLine(CultureInfo.InvariantCulture, $"ChainStatus: {cStatus}");
-                foreach (var chainElement in chain.ChainElements)
-                {
-                    var status = string.Join(';', chainElement.ChainElementStatus.Select(s => s.StatusInformation));
-                    dump.AppendLine(CultureInfo.InvariantCulture, $"Subject: {chainElement.Certificate.Subject} Issuer: {chainElement.Certificate.Issuer} Status: {status}");
-                }
-
-                throw new InvalidOperationException($"chain cannot be built {dump}");
-            }
         }
 
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -759,7 +744,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                     so.ClientCertificateRequired = true;
                     so.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                     {
-                        Assert.Equal(clientChain.Count - 1, chain.ChainPolicy.ExtraStore.Count);
+                        Assert.NotEmpty(chain.ChainPolicy.ExtraStore);
                         Assert.Contains(clientChain[0], chain.ChainPolicy.ExtraStore);
                         return true;
                     };
