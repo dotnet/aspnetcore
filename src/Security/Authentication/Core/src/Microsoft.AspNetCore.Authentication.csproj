@@ -18,7 +18,6 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Metadata" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
