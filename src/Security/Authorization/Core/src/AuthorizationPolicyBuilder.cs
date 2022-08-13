@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationPolicyBuilder
 {
+    private static readonly DenyAnonymousAuthorizationRequirement _denyAnonymousAuthorizationRequirement = new();
+
     /// <summary>
     /// Creates a new instance of <see cref="AuthorizationPolicyBuilder"/>
     /// </summary>
@@ -201,7 +203,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireAuthenticatedUser()
     {
-        Requirements.Add(new DenyAnonymousAuthorizationRequirement());
+        Requirements.Add(_denyAnonymousAuthorizationRequirement);
         return this;
     }
 

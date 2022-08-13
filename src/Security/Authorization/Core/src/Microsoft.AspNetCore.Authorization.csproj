@@ -18,6 +18,7 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
     <Reference Include="Microsoft.AspNetCore.Metadata" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.ValueTuple" />
   </ItemGroup>
 
 </Project>

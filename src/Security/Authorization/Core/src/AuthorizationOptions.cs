@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -11,7 +12,9 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationOptions
 {
-    private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
+    private static readonly Task<AuthorizationPolicy?> _nullPolicyTask = Task.FromResult<AuthorizationPolicy>(null);
+
+    private Dictionary<string, (AuthorizationPolicy policy, Task<AuthorizationPolicy> policyTask)> PolicyMap { get; } = new Dictionary<string, (AuthorizationPolicy, Task<AuthorizationPolicy>)>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Determines whether authorization handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
@@ -54,7 +57,7 @@ public class AuthorizationOptions
             throw new ArgumentNullException(nameof(policy));
         }
 
-        PolicyMap[name] = policy;
+        PolicyMap[name] = (policy, Task.FromResult(policy));
     }
 
     /// <summary>
@@ -76,7 +79,8 @@ public class AuthorizationOptions
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);
-        PolicyMap[name] = policyBuilder.Build();
+        var policy = policyBuilder.Build();
+        PolicyMap[name] = (policy, Task.FromResult(policy));
     }
 
     /// <summary>
@@ -93,9 +97,24 @@ public class AuthorizationOptions
 
         if (PolicyMap.TryGetValue(name, out var value))
         {
-            return value;
+            return value.policy;
         }
 
         return null;
+    }
+
+    internal Task<AuthorizationPolicy?> GetPolicyTask(string name)
+    {
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        if (PolicyMap.TryGetValue(name, out var value))
+        {
+            return value.policyTask;
+        }
+
+        return _nullPolicyTask;
     }
 }
