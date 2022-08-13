@@ -14,7 +14,8 @@ public class AuthorizationOptions
 {
     private static readonly Task<AuthorizationPolicy?> _nullPolicyTask = Task.FromResult<AuthorizationPolicy>(null);
 
-    private Dictionary<string, (AuthorizationPolicy policy, Task<AuthorizationPolicy> policyTask)> PolicyMap { get; } = new Dictionary<string, (AuthorizationPolicy, Task<AuthorizationPolicy>)>(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, Task<AuthorizationPolicy>> PolicyTaskMap { get; } = new Dictionary<string, Task<AuthorizationPolicy>>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Determines whether authorization handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
@@ -57,7 +58,8 @@ public class AuthorizationOptions
             throw new ArgumentNullException(nameof(policy));
         }
 
-        PolicyMap[name] = (policy, Task.FromResult(policy));
+        PolicyMap[name] = policy;
+        PolicyTaskMap[name] = Task.FromResult(policy);
     }
 
     /// <summary>
@@ -80,7 +82,8 @@ public class AuthorizationOptions
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);
         var policy = policyBuilder.Build();
-        PolicyMap[name] = (policy, Task.FromResult(policy));
+        PolicyMap[name] = policy;
+        PolicyTaskMap[name] = Task.FromResult(policy);
     }
 
     /// <summary>
@@ -97,7 +100,7 @@ public class AuthorizationOptions
 
         if (PolicyMap.TryGetValue(name, out var value))
         {
-            return value.policy;
+            return value;
         }
 
         return null;
@@ -110,9 +113,9 @@ public class AuthorizationOptions
             throw new ArgumentNullException(nameof(name));
         }
 
-        if (PolicyMap.TryGetValue(name, out var value))
+        if (PolicyTaskMap.TryGetValue(name, out var value))
         {
-            return value.policyTask;
+            return value;
         }
 
         return _nullPolicyTask;
