@@ -149,15 +149,6 @@ public static partial class RequestDelegateFactory
             _ => httpContext => targetableRequestDelegate(handler.Target, httpContext),
         };
 
-        if (targetableRequestDelegate is null)
-        {
-            finalRequestDelegate = (RequestDelegate)handler;
-        }
-        else
-        {
-            finalRequestDelegate = httpContext => targetableRequestDelegate(handler.Target, httpContext);
-        }
-
         return CreateRequestDelegateResult(finalRequestDelegate, factoryContext.EndpointBuilder);
     }
 
