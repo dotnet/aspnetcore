@@ -223,9 +223,14 @@ public class AuthorizationMiddlewareTests
             .Callback(() => getPolicyCount++);
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
             .Callback(() => getFallbackPolicyCount++);
+#if NETCOREAPP
+        policyProvider.Setup(p => p.CanCachePolicy).Returns(true);
+#endif
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+#if !NETCOREAPP
         middleware.CacheCombinedPolicy = true;
+#endif
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
 
         // Act & Assert
@@ -249,8 +254,12 @@ public class AuthorizationMiddlewareTests
     {
         public int GetFallbackPolicyCount;
         public int GetPolicyCount;
+        private readonly bool _canCache;
 
-        public TestDefaultPolicyProvider(IOptions<AuthorizationOptions> options) : base(options) { }
+        public TestDefaultPolicyProvider(IOptions<AuthorizationOptions> options, bool canCache) : base(options)
+        {
+            _canCache = canCache;
+        }
 
         public new Task<AuthorizationPolicy> GetFallbackPolicyAsync()
         {
@@ -263,14 +272,18 @@ public class AuthorizationMiddlewareTests
             GetPolicyCount++;
             return Task.FromResult(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
         }
+
+        public override bool CanCachePolicy => _canCache;
     }
 
-    [Fact]
-    public async Task OnAuthorizationAsync_WillCallDerviedDefaultPolicyProviderWithCache()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task OnAuthorizationAsync_WillCallDerviedDefaultPolicyProviderCanCache(bool canCache)
     {
         // Arrange
         var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
-        var policyProvider = new TestDefaultPolicyProvider(Options.Create(new AuthorizationOptions()));
+        var policyProvider = new TestDefaultPolicyProvider(Options.Create(new AuthorizationOptions()), canCache);
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider);
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
@@ -282,12 +295,12 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(1, next.CalledCount);
 
         await middleware.Invoke(context);
-        Assert.Equal(2, policyProvider.GetPolicyCount);
+        Assert.Equal(canCache ? 1: 2, policyProvider.GetPolicyCount);
         Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
         Assert.Equal(2, next.CalledCount);
 
         await middleware.Invoke(context);
-        Assert.Equal(3, policyProvider.GetPolicyCount);
+        Assert.Equal(canCache ? 1 : 3, policyProvider.GetPolicyCount);
         Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
         Assert.Equal(3, next.CalledCount);
     }

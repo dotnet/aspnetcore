@@ -71,4 +71,11 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
         // A change to either of these behaviors would require shipping a patch of MVC as well.
         return Task.FromResult(_options.GetPolicy(policyName));
     }
+
+#if NETCOREAPP
+    /// <summary>
+    /// Determines if policies from this provider can be cached, which is true for this provider.
+    /// </summary>
+    public virtual bool CanCachePolicy => true;
+#endif
 }

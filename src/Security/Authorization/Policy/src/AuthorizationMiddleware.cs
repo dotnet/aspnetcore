@@ -35,7 +35,11 @@ public class AuthorizationMiddleware
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
 
         // Only try to cache combined policies for the default policy provider
+#if NETCOREAPP
+        CacheCombinedPolicy = _policyProvider.CanCachePolicy;
+#else
         CacheCombinedPolicy = _policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider);
+#endif
     }
 
     internal bool CacheCombinedPolicy { get; set; }
