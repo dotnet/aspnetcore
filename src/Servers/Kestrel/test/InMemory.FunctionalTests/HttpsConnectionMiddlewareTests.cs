@@ -1,18 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -714,6 +708,77 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         await stream.AuthenticateAsClientAsync(clientOptions);
         await AssertConnectionResult(stream, true);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Fails on OSX.")]
+    public async Task ServerCertificateChainInExtraStore()
+    {
+        var streams = new List<SslStream>();
+        CertHelper.CleanupCertificates(nameof(ServerCertificateChainInExtraStore));
+        (var clientCertificate, var clientChain) = CertHelper.GenerateCertificates(nameof(ServerCertificateChainInExtraStore), longChain: true, serverCertificate: false);
+
+        using (var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser))
+        {
+            // add chain certificate so we can construct chain since there is no way how to pass intermediates directly.
+            store.Open(OpenFlags.ReadWrite);
+            store.AddRange(clientChain);
+            store.Close();
+        }
+
+        using (var chain = new X509Chain())
+        {
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            chain.ChainPolicy.DisableCertificateDownloads = true;
+            var chainStatus = chain.Build(clientCertificate);
+        }
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                ServerCertificateChain = clientChain,
+                OnAuthenticate = (con, so) =>
+                {
+                    so.ClientCertificateRequired = true;
+                    so.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                    {
+                        Assert.NotEmpty(chain.ChainPolicy.ExtraStore);
+                        Assert.Contains(clientChain[0], chain.ChainPolicy.ExtraStore);
+                        return true;
+                    };
+                    so.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+                }
+            });
+        }
+
+        await using (var server = new TestServer(
+            context => context.Response.WriteAsync("hello world"),
+            new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                var stream = OpenSslStreamWithCert(connection.Stream, clientCertificate);
+                await stream.AuthenticateAsClientAsync("localhost");
+                await AssertConnectionResult(stream, true);
+            }
+        }
+
+        CertHelper.CleanupCertificates(nameof(ServerCertificateChainInExtraStore));
+        clientCertificate.Dispose();
+        var list = (System.Collections.IList)clientChain;
+        for (var i = 0; i < list.Count; i++)
+        {
+            var c = (X509Certificate)list[i];
+            c.Dispose();
+        }
+
+        foreach (var s in streams)
+        {
+            s.Dispose();
+        }
     }
 
     [ConditionalFact]
