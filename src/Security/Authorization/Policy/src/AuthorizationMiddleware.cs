@@ -33,16 +33,7 @@ public class AuthorizationMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
-
-        // Only try to cache combined policies for the default policy provider
-#if NETCOREAPP
-        CacheCombinedPolicy = _policyProvider.CanCachePolicy;
-#else
-        CacheCombinedPolicy = _policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider);
-#endif
     }
-
-    internal bool CacheCombinedPolicy { get; set; }
 
     /// <summary>
     /// Invokes the middleware performing authorization.
@@ -64,7 +55,7 @@ public class AuthorizationMiddleware
         }
 
         // Use the computed policy for this endpoint if we can
-        var computedPolicy = CacheCombinedPolicy
+        var computedPolicy = _policyProvider.CanCachePolicy
             ? endpoint?.Metadata.GetMetadata<AuthorizationPolicyCache>()
             : null;
 

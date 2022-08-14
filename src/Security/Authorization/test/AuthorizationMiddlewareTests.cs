@@ -223,14 +223,9 @@ public class AuthorizationMiddlewareTests
             .Callback(() => getPolicyCount++);
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
             .Callback(() => getFallbackPolicyCount++);
-#if NETCOREAPP
         policyProvider.Setup(p => p.CanCachePolicy).Returns(true);
-#endif
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-#if !NETCOREAPP
-        middleware.CacheCombinedPolicy = true;
-#endif
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
 
         // Act & Assert
