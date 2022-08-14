@@ -26,7 +26,6 @@ internal sealed partial class ServerSentEventsTransport : ITransport
     private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
     private IDuplexPipe? _transport;
     private IDuplexPipe? _application;
-    private static readonly StreamPipeReaderOptions _defaultReaderOptions = new(useZeroByteReads: true);
 
     internal Task Running { get; private set; } = Task.CompletedTask;
 
@@ -139,7 +138,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
         {
-            var reader = PipeReader.Create(stream, _defaultReaderOptions);
+            var reader = PipeReader.Create(stream);
 
             using var registration = cancellationToken.Register(CancelReader, reader);
 
