@@ -217,8 +217,8 @@ public static partial class RequestDelegateFactory
             throw new ArgumentException($"{nameof(RequestDelegateFactoryOptions)}.{nameof(RequestDelegateFactoryOptions.EndpointBuilder)} must be null.", nameof(options));
         }
 
-        var endointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder();
-        var serviceProvider = options?.ServiceProvider ?? endointBuilder.ApplicationServices;
+        var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder();
+        var serviceProvider = options?.ServiceProvider ?? endpointBuilder.ApplicationServices;
 
         return new FactoryContext
         {
@@ -228,7 +228,7 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
-            EndpointBuilder = endointBuilder,
+            EndpointBuilder = endpointBuilder,
         };
     }
 
@@ -281,7 +281,7 @@ public static partial class RequestDelegateFactory
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
-        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0 )
+        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0)
         {
             filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext, targetFactory);
 
@@ -864,7 +864,7 @@ public static partial class RequestDelegateFactory
 
         // If filters have been registered, we set the `wasParamCheckFailure` property
         // but do not return from the invocation to allow the filters to run.
-        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0 )
+        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0)
         {
             // if (wasParamCheckFailure)
             // {
