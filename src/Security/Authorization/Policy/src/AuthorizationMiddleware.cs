@@ -90,7 +90,7 @@ public class AuthorizationMiddleware
         if (canCachePolicy)
         {
             _policyCache!.EnsureInitialized();
-            _policyCache?.Value?.TryGetValue(endpoint!, out policy);
+            _policyCache!.Value!.TryGetValue(endpoint!, out policy);
         }
 
         if (policy == null)
