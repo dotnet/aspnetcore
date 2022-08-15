@@ -824,10 +824,11 @@ public class AuthorizationMiddlewareTests
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
     }
 
-    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, IServiceProvider dataSource = null)
+    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, IServiceProvider services = null)
     {
         requestDelegate = requestDelegate ?? ((context) => Task.CompletedTask);
-        return new AuthorizationMiddleware(requestDelegate, policyProvider, dataSource);
+        services ??= new ServiceCollection().BuildServiceProvider();
+        return new AuthorizationMiddleware(requestDelegate, policyProvider, services);
     }
 
     private Endpoint CreateEndpoint(params object[] metadata)

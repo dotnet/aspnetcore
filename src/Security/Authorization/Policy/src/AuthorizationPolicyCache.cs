@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Authorization.Policy;
 
-internal class AuthorizationPolicyCache : IDisposable
+internal sealed class AuthorizationPolicyCache : IDisposable
 {
     // Caches AuthorizationPolicy instances
     private readonly DataSourceDependentCache<ConcurrentDictionary<Endpoint, AuthorizationPolicy>> _policyCache;
