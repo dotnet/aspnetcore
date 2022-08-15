@@ -16,7 +16,7 @@ internal class TestRateLimiter : RateLimiter
 
     public override TimeSpan? IdleDuration => throw new NotImplementedException();
 
-    public override int GetAvailablePermits()
+    public override RateLimiterStatistics GetStatistics()
     {
         throw new NotImplementedException();
     }
