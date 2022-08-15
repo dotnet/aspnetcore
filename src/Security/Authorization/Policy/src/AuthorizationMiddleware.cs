@@ -48,7 +48,9 @@ public class AuthorizationMiddleware
     /// <param name="services">The <see cref="IServiceProvider"/>.</param>
     public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IServiceProvider services) : this(next, policyProvider)
     {
-        if (services != null && _policyProvider.CanCachePolicy)
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (_policyProvider.CanCachePolicy)
         {
             _policyCache = services.GetService<AuthorizationPolicyCache>();
             _canCache = _policyCache != null;

@@ -20,11 +20,12 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(metadata);
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
-        Assert.Equal(metadata, Assert.Single(endpointModel.Metadata.Where(t => t is IAuthorizeData)));
+        Assert.Equal(metadata, Assert.Single(endpointModel.Metadata));
     }
 
     [Fact]
@@ -37,11 +38,12 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(Array.Empty<IAuthorizeData>());
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
-        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata.Where(t => t is IAuthorizeData)));
+        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
         Assert.Null(authMetadata.Policy);
     }
 
@@ -55,11 +57,12 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization("policy");
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
-        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata.Where(t => t is IAuthorizeData)));
+        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
         Assert.Equal("policy", authMetadata.Policy);
     }
 
@@ -73,11 +76,12 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(Array.Empty<string>());
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
-        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata.Where(t => t is IAuthorizeData)));
+        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
         Assert.Null(authMetadata.Policy);
     }
 
@@ -91,11 +95,12 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization();
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
-        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata.Where(t => t is IAuthorizeData)));
+        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
         Assert.Null(authMetadata.Policy);
     }
 
@@ -123,10 +128,11 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(policy);
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
- 
+
         Assert.Equal(2, endpointModel.Metadata.Count);
         var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(endpointModel.Metadata[0]);
         Assert.Null(authMetadata.Policy);
@@ -145,8 +151,9 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(policyBuilder => policyBuilder.Requirements.Add(requirement));
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
         Assert.Equal(2, endpointModel.Metadata.Count);
@@ -170,9 +177,10 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(policyBuilder => policyBuilder.Requirements.Add(requirement));
 
         // Assert
+        var convention = Assert.Single(builder.Conventions);
+
         var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         endpointModel.Metadata.Add(authorize);
-        var convention = Assert.Single(builder.Conventions);
         convention(endpointModel);
 
         // Confirm that we don't add another authorize if one already exists
@@ -195,11 +203,10 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.RequireAuthorization(policy);
 
         // Assert
+        var convention = Assert.Single(builder.Conventions);
 
         var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         endpointModel.Metadata.Add(authorize);
-
-        var convention = Assert.Single(builder.Conventions);
         convention(endpointModel);
 
         // Confirm that we don't add another authorize if one already exists
@@ -220,8 +227,9 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         builder.AllowAnonymous();
 
         // Assert
-        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
         convention(endpointModel);
 
         Assert.IsAssignableFrom<IAllowAnonymous>(Assert.Single(endpointModel.Metadata));
