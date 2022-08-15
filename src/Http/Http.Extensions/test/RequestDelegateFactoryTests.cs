@@ -2983,14 +2983,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             // Object return type where the object is IResult
             static object StaticResultAsObject() => new CustomResult("Still not enough tests!");
-            static object StaticResultAsTaskObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
-            static object StaticResultAsValueTaskObject() => ValueTask.FromResult<object>(new CustomResult("Still not enough tests!"));
-
-            // Object return type where the object is Task<IResult>
-            static object StaticResultAsTaskIResult() => Task.FromResult<IResult>(new CustomResult("Still not enough tests!"));
-
-            // Object return type where the object is ValueTask<IResult>
-            static object StaticResultAsValueTaskIResult() => ValueTask.FromResult<IResult>(new CustomResult("Still not enough tests!"));
 
             // Task<object> return type
             static Task<object> StaticTaskOfIResultAsObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
@@ -3010,11 +3002,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Func<ValueTask<CustomResult>>)StaticValueTaskTestAction},
 
                     new object[] { (Func<object>)StaticResultAsObject},
-                    new object[] { (Func<object>)StaticResultAsTaskObject},
-                    new object[] { (Func<object>)StaticResultAsValueTaskObject},
-
-                    new object[] { (Func<object>)StaticResultAsTaskIResult},
-                    new object[] { (Func<object>)StaticResultAsValueTaskIResult},
 
                     new object[] { (Func<Task<object>>)StaticTaskOfIResultAsObject},
                     new object[] { (Func<ValueTask<object>>)StaticValueTaskOfIResultAsObject},
@@ -3060,8 +3047,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             // Dynamic via object
             static object StaticStringAsObjectTestAction() => "String Test";
-            static object StaticTaskStringAsObjectTestAction() => Task.FromResult("String Test");
-            static object StaticValueTaskStringAsObjectTestAction() => ValueTask.FromResult("String Test");
 
             // Dynamic via Task<object>
             static Task<object> StaticStringAsTaskObjectTestAction() => Task.FromResult<object>("String Test");
@@ -3079,8 +3064,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Func<ValueTask<string>>)StaticValueTaskTestAction },
 
                     new object[] { (Func<object>)StaticStringAsObjectTestAction },
-                    new object[] { (Func<object>)StaticTaskStringAsObjectTestAction },
-                    new object[] { (Func<object>)StaticValueTaskStringAsObjectTestAction },
 
                     new object[] { (Func<Task<object>>)StaticStringAsTaskObjectTestAction },
                     new object[] { (Func<ValueTask<object>>)StaticStringAsValueTaskObjectTestAction },

@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
+public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         DiagnosticDescriptors.DoNotUseConfigureWebHostWithConfigureHostBuilder,
@@ -123,7 +123,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
                             invocation));
                 }
-                
+
                 //var builder = WebApplication.CreateBuilder(args);
                 //builder.Host.ConfigureLogging(x => {})
                 if (IsDisallowedMethod(

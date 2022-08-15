@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -17,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -184,6 +180,70 @@ public class SniOptionsSelectorTests
 
         var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "A.eXample.oRg");
         Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
+    }
+
+    [Fact]
+    public void FullChainCertsCanBeLoaded()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "Www.Example.Org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "Exact"
+                        }
+                    }
+                },
+                {
+                    "*.Example.Org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardPrefix"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+        var fullChainDictionary = mockCertificateConfigLoader.CertToFullChain;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "wWw.eXample.oRg");
+        Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
+
+        var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "B.a.eXample.oRg");
+        Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
+
+        var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "A.eXample.oRg");
+        Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
+
+        /*
+         * Chain test certs were created using smallstep cli: https://github.com/smallstep/cli
+         * root_ca(pwd: testroot) -> 
+         * intermediate_ca 1(pwd: inter) -> 
+         * intermediate_ca 2(pwd: inter) -> 
+         * leaf.com(pwd: leaf) (bundled)
+         */
+        var fullChain = fullChainDictionary[aSubdomainOptions.ServerCertificate];
+        // Expect intermediate 2 cert and leaf.com
+        Assert.Equal(2, fullChain.Count);
+        Assert.Equal("CN=leaf.com", fullChain[0].Subject);
+        Assert.Equal("CN=Test Intermediate CA 2", fullChain[0].IssuerName.Name);
+        Assert.Equal("CN=Test Intermediate CA 2", fullChain[1].Subject);
+        Assert.Equal("CN=Test Intermediate CA 1", fullChain[1].IssuerName.Name);
     }
 
     [Fact]
@@ -848,19 +908,24 @@ public class SniOptionsSelectorTests
     private class MockCertificateConfigLoader : ICertificateConfigLoader
     {
         public Dictionary<object, string> CertToPathDictionary { get; } = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
+        public Dictionary<object, X509Certificate2Collection> CertToFullChain { get; } = new Dictionary<object, X509Certificate2Collection>(ReferenceEqualityComparer.Instance);
 
         public bool IsTestMock => true;
 
-        public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
+        public (X509Certificate2, X509Certificate2Collection) LoadCertificate(CertificateConfig certInfo, string endpointName)
         {
             if (certInfo is null)
             {
-                return null;
+                return (null, null);
             }
 
             var cert = TestResources.GetTestCertificate();
             CertToPathDictionary.Add(cert, certInfo.Path);
-            return cert;
+
+            var fullChain = TestResources.GetTestChain();
+            CertToFullChain[cert] = fullChain;
+
+            return (cert, fullChain);
         }
     }
 

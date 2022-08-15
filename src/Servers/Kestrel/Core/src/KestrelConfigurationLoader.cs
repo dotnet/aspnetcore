@@ -353,8 +353,9 @@ public class KestrelConfigurationLoader
                 }
 
                 // A cert specified directly on the endpoint overrides any defaults.
-                httpsOptions.ServerCertificate = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name)
-                    ?? httpsOptions.ServerCertificate;
+                var (serverCert, fullChain) = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name);
+                httpsOptions.ServerCertificate = serverCert ?? httpsOptions.ServerCertificate;
+                httpsOptions.ServerCertificateChain = fullChain ?? httpsOptions.ServerCertificateChain;
 
                 if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                 {
@@ -423,7 +424,7 @@ public class KestrelConfigurationLoader
     {
         if (ConfigurationReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
         {
-            var defaultCert = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
+            var (defaultCert, _ /* cert chain */) = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
             if (defaultCert != null)
             {
                 DefaultCertificateConfig = defaultCertConfig;

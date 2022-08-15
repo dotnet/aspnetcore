@@ -18,4 +18,7 @@
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.RateLimiting.Tests" />
+  </ItemGroup>
 </Project>

@@ -18,6 +18,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 {
     internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 };
 
+    private const byte ByteCR = (byte)'\r';
+    private const byte ByteLF = (byte)'\n';
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
     private const string Asterisk = "*";
@@ -151,6 +153,13 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         switch (_requestProcessingStatus)
         {
             case RequestProcessingStatus.RequestPending:
+                // Skip any empty lines (\r or \n) between requests.
+                // Peek first as a minor performance optimization; it's a quick inlined check.
+                if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
+                {
+                    reader.AdvancePastAny(ByteCR, ByteLF);
+                }
+
                 if (reader.End)
                 {
                     break;

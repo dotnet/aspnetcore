@@ -58,7 +58,24 @@ internal sealed partial class RateLimitingMiddleware
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
-    public async Task Invoke(HttpContext context)
+    public Task Invoke(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint();
+        // If this endpoint has a DisableRateLimitingAttribute, don't apply any rate limits.
+        if (endpoint?.Metadata.GetMetadata<DisableRateLimitingAttribute>() is not null)
+        {
+            return _next(context);
+        }
+        var enableRateLimitingAttribute = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>();
+        // If this endpoint has no EnableRateLimitingAttribute & there's no global limiter, don't apply any rate limits.
+        if (enableRateLimitingAttribute is null && _globalLimiter is null)
+        {
+            return _next(context);
+        }
+        return InvokeInternal(context, enableRateLimitingAttribute);
+    }
+
+    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         using var leaseContext = await TryAcquireAsync(context);
         if (leaseContext.Lease.IsAcquired)
@@ -77,11 +94,19 @@ internal sealed partial class RateLimitingMiddleware
             if (leaseContext.GlobalRejected == false)
             {
                 DefaultRateLimiterPolicy? policy;
-                var policyName = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
-                if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
+                policy = enableRateLimitingAttribute?.Policy;
+                if (policy is not null)
                 {
                     thisRequestOnRejected = policy.OnRejected;
+                }
+                else
+                {
+                    var policyName = enableRateLimitingAttribute?.PolicyName;
+                    if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
+                    {
+                        thisRequestOnRejected = policy.OnRejected;
+                    }
                 }
             }
             if (thisRequestOnRejected is not null)
@@ -171,10 +196,21 @@ internal sealed partial class RateLimitingMiddleware
         // If we have a policy for this endpoint, use its partitioner. Else use a NoLimiter.
         return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
-            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
+            DefaultRateLimiterPolicy? policy;
+            var enableRateLimitingAttribute = context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>();
+            if (enableRateLimitingAttribute is null)
+            {
+                return RateLimitPartition.GetNoLimiter<DefaultKeyType>(_defaultPolicyKey);
+            }
+            policy = enableRateLimitingAttribute.Policy;
+            if (policy is not null)
+            {
+                return policy.GetPartition(context);
+            }
+            var name = enableRateLimitingAttribute.PolicyName;
             if (name is not null)
             {
-                if (_policyMap.TryGetValue(name, out var policy))
+                if (_policyMap.TryGetValue(name, out policy))
                 {
                     return policy.GetPartition(context);
                 }
@@ -183,7 +219,11 @@ internal sealed partial class RateLimitingMiddleware
                     throw new InvalidOperationException($"This endpoint requires a rate limiting policy with name {name}, but no such policy exists.");
                 }
             }
-            return RateLimitPartition.GetNoLimiter<DefaultKeyType>(_defaultPolicyKey);
+            // Should be impossible for both name & policy to be null, but throw in that scenario just in case.
+            else
+            {
+                throw new InvalidOperationException("This endpoint requested a rate limiting policy with a null name.");
+            }
         }, new DefaultKeyTypeEqualityComparer());
     }
 

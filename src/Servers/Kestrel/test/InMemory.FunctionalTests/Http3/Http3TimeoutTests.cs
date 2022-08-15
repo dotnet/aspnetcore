@@ -306,10 +306,11 @@ public class Http3TimeoutTests : Http3TestBase
 
         requestStream.StartStreamDisposeTcs.TrySetResult();
 
-        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
             ignoreNonGoAwayFrames: false,
             expectedLastStreamId: 4,
             Http3ErrorCode.InternalError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");

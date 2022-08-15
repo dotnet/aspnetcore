@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -30,6 +31,67 @@ public class RouteEndpointBuilderTest
     }
 
     [Fact]
+    public void Build_UpdateHttpMethodMetadata_WhenCorsPresent()
+    {
+        // Arrange
+        const int defaultOrder = 0;
+        static Task RequestDelegate(HttpContext d) => null;
+
+        var builder = new RouteEndpointBuilder(RequestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
+        {
+            DisplayName = "Display name!",
+            Metadata = { new TestCorsMetadata(), new HttpMethodMetadata(new[] { HttpMethods.Delete }, acceptCorsPreflight: false) }
+        };
+
+        // Act && Assert
+        var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
+        var httpMethodMetadata = endpoint.Metadata.GetMetadata<HttpMethodMetadata>();
+        Assert.NotNull(httpMethodMetadata);
+        Assert.True(httpMethodMetadata.AcceptCorsPreflight);
+    }
+
+    [Fact]
+    public void Build_UpdateLastHttpMethodMetadata_WhenCorsPresent()
+    {
+        // Arrange
+        const int defaultOrder = 0;
+        static Task RequestDelegate(HttpContext d) => null;
+
+        var builder = new RouteEndpointBuilder(RequestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
+        {
+            DisplayName = "Display name!",
+            Metadata = { new HttpMethodMetadata(new[] { HttpMethods.Get }, acceptCorsPreflight: false), new TestCorsMetadata(), new HttpMethodMetadata(new[] { HttpMethods.Delete }, acceptCorsPreflight: false) }
+        };
+
+        // Act && Assert
+        var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
+
+        Assert.Collection(endpoint.Metadata.GetOrderedMetadata<HttpMethodMetadata>(),
+            (metadata) => Assert.False(metadata.AcceptCorsPreflight),
+            (metadata) => Assert.True(metadata.AcceptCorsPreflight));
+    }
+
+    [Fact]
+    public void Build_DoesNotChangeHttpMethodMetadata_WhenCorsNotPresent()
+    {
+        // Arrange
+        const int defaultOrder = 0;
+        static Task RequestDelegate(HttpContext d) => null;
+
+        var builder = new RouteEndpointBuilder(RequestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
+        {
+            DisplayName = "Display name!",
+            Metadata = { new HttpMethodMetadata(new[] { HttpMethods.Delete }, acceptCorsPreflight: false) }
+        };
+
+        // Act && Assert
+        var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
+        var httpMethodMetadata = endpoint.Metadata.GetMetadata<HttpMethodMetadata>();
+        Assert.NotNull(httpMethodMetadata);
+        Assert.False(httpMethodMetadata.AcceptCorsPreflight);
+    }
+
+    [Fact]
     public async void Build_DoesNot_RunFilters()
     {
         var endpointFilterCallCount = 0;
@@ -45,8 +107,7 @@ public class RouteEndpointBuilderTest
 
         var builder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder);
 
-        builder.EndpointFilterFactories = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>();
-        builder.EndpointFilterFactories.Add((endopintContext, next) =>
+        builder.FilterFactories.Add((endopintContext, next) =>
         {
             endpointFilterCallCount++;
 
@@ -66,4 +127,7 @@ public class RouteEndpointBuilderTest
         Assert.Equal(0, invocationFilterCallCount);
         Assert.Equal(1, invocationCallCount);
     }
+
+    private class TestCorsMetadata : ICorsMetadata
+    { }
 }
