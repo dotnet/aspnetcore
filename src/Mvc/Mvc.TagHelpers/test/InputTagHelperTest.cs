@@ -833,6 +833,75 @@ public class InputTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
+    [Theory]
+    [InlineData("SomeProperty", "SomeProperty", true)]
+    [InlineData("SomeProperty", "[0].SomeProperty", true)]
+    [InlineData("SomeProperty", "[0].SomeProperty", false)]
+    public void Process_GeneratesInvariantCultureMetadataInput_WhenValueUsesInvariantFormatting(string propertyName, string nameAttributeValue, bool usesInvariantFormatting)
+    {
+        // Arrange
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+        var model = false;
+        var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(bool), model);
+        var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
+        var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
+        var tagHelper = new InputTagHelper(htmlGenerator.Object)
+        {
+            For = modelExpression,
+            InputTypeName = "text",
+            Name = propertyName,
+            ViewContext = viewContext,
+        };
+
+        var tagBuilder = new TagBuilder("input")
+        {
+            TagRenderMode = TagRenderMode.SelfClosing,
+            Attributes =
+            {
+                { "name", nameAttributeValue },
+            },
+        };
+
+        htmlGenerator
+            .Setup(mock => mock.GenerateTextBox(
+                tagHelper.ViewContext,
+                tagHelper.For.ModelExplorer,
+                tagHelper.For.Name,
+                modelExplorer.Model,
+                null,                   // format
+                It.IsAny<object>()))    // htmlAttributes
+            .Returns(tagBuilder)
+            .Callback(() => viewContext.FormContext.InvariantField(tagBuilder.Attributes["name"], usesInvariantFormatting))
+            .Verifiable();
+
+        var expectedPostElement = usesInvariantFormatting
+            ? $"<input name=\"__Invariant\" type=\"hidden\" value=\"{tagBuilder.Attributes["name"]}\" />"
+            : string.Empty;
+
+        var attributes = new TagHelperAttributeList
+            {
+                { "name", propertyName },
+                { "type", "text" },
+            };
+        var context = new TagHelperContext(attributes, new Dictionary<object, object>(), "test");
+        var output = new TagHelperOutput(
+            "input",
+            new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        // Act
+        tagHelper.Process(context, output);
+
+        // Assert
+        htmlGenerator.Verify();
+
+        Assert.Equal(expectedPostElement, output.PostElement.GetContent());
+    }
+
     [Fact]
     public async Task ProcessAsync_GenerateCheckBox_WithHiddenInputRenderModeNone()
     {

@@ -13,7 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
 {
+    internal const string CultureInvariantFieldName = "__Invariant";
+
     private readonly IFormCollection _values;
+    private readonly HashSet<string?>? _invariantValueKeys;
     private PrefixContainer? _prefixContainer;
 
     /// <summary>
@@ -39,6 +42,12 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         }
 
         _values = values;
+
+        if (_values.TryGetValue(CultureInvariantFieldName, out var invariantKeys) && invariantKeys.Count > 0)
+        {
+            _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
+        }
+
         Culture = culture;
     }
 
@@ -104,7 +113,8 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         }
         else
         {
-            return new ValueProviderResult(values, Culture);
+            var culture = _invariantValueKeys?.Contains(key) == true ? CultureInfo.InvariantCulture : Culture;
+            return new ValueProviderResult(values, culture);
         }
     }
 }
