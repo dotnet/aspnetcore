@@ -96,7 +96,7 @@ public class HttpParserTests : LoggedTest
     [MemberData(nameof(RequestLineInvalidDataLineFeedTerminator))]
     public void ParseRequestSucceedsOnInvalidRequestLineLineFeedTerminator(string requestLine)
     {
-        var parser = CreateParser(CreateEnabledTrace(), allowLineFeedTerminator: true);
+        var parser = CreateParser(CreateEnabledTrace(), disableHttp1LineFeedTerminators: false);
         var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
         var requestHandler = new RequestHandler();
 
@@ -326,7 +326,7 @@ public class HttpParserTests : LoggedTest
             ? new[] { expectedHeaderValue1 }
             : new[] { expectedHeaderValue1, expectedHeaderValue2 };
 
-        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues, allowLineFeedTerminator: true);
+        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues, disableHttp1LineFeedTerminators: false);
     }
 
     [Theory]
@@ -373,7 +373,7 @@ public class HttpParserTests : LoggedTest
             ? new[] { expectedHeaderValue1 }
             : new[] { expectedHeaderValue1, expectedHeaderValue2 };
 
-        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues, allowLineFeedTerminator: true);
+        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues, disableHttp1LineFeedTerminators: false);
     }
 
     [Theory]
@@ -624,7 +624,7 @@ public class HttpParserTests : LoggedTest
     [InlineData("Host:\r\nConnection: keep-alive\n\n")]
     public void ParseHeadersWithGratuitouslySplitBuffersQuirkMode(string headers)
     {
-        var parser = CreateParser(_nullTrace, allowLineFeedTerminator: true);
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: false);
         var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
 
         var requestHandler = new RequestHandler();
@@ -670,11 +670,11 @@ public class HttpParserTests : LoggedTest
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
     }
 
-    private void VerifyRawHeaders(string rawHeaders, IEnumerable<string> expectedHeaderNames, IEnumerable<string> expectedHeaderValues, bool allowLineFeedTerminator = false)
+    private void VerifyRawHeaders(string rawHeaders, IEnumerable<string> expectedHeaderNames, IEnumerable<string> expectedHeaderValues, bool disableHttp1LineFeedTerminators = true)
     {
         Assert.True(expectedHeaderNames.Count() == expectedHeaderValues.Count(), $"{nameof(expectedHeaderNames)} and {nameof(expectedHeaderValues)} sizes must match");
 
-        var parser = CreateParser(_nullTrace, allowLineFeedTerminator);
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators);
         var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
 
         var requestHandler = new RequestHandler();
@@ -689,7 +689,7 @@ public class HttpParserTests : LoggedTest
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
     }
 
-    private IHttpParser<RequestHandler> CreateParser(KestrelTrace log, bool allowLineFeedTerminator = false) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), allowLineFeedTerminator);
+    private IHttpParser<RequestHandler> CreateParser(KestrelTrace log, bool disableHttp1LineFeedTerminators = true) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
 
     public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 

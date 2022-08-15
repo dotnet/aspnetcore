@@ -2267,7 +2267,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                 "",
             };
 
-        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, true)))
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: false)))
         {
             var mask = Math.Pow(2, lines.Length) - 1;
 

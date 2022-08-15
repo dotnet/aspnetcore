@@ -20,14 +20,14 @@ internal class TestServiceContext : ServiceContext
         Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance), false);
     }
 
-    public TestServiceContext(ILoggerFactory loggerFactory, bool allowLineFeedTerminator = false)
+    public TestServiceContext(ILoggerFactory loggerFactory, bool disableHttp1LineFeedTerminators = true)
     {
-        Initialize(loggerFactory, CreateLoggingTrace(loggerFactory), allowLineFeedTerminator);
+        Initialize(loggerFactory, CreateLoggingTrace(loggerFactory), disableHttp1LineFeedTerminators);
     }
 
-    public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool allowLineFeedTerminator = false)
+    public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators = true)
     {
-        Initialize(loggerFactory, kestrelTrace, allowLineFeedTerminator);
+        Initialize(loggerFactory, kestrelTrace, disableHttp1LineFeedTerminators);
     }
 
     private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -49,7 +49,7 @@ internal class TestServiceContext : ServiceContext
         SystemClock = heartbeatManager;
     }
 
-    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool allowLineFeedTerminator)
+    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators)
     {
         LoggerFactory = loggerFactory;
         Log = kestrelTrace;
@@ -58,7 +58,7 @@ internal class TestServiceContext : ServiceContext
         SystemClock = MockSystemClock;
         DateHeaderValueManager = new DateHeaderValueManager();
         ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
-        HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), allowLineFeedTerminator);
+        HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
         ServerOptions = new KestrelServerOptions
         {
             AddServerHeader = false

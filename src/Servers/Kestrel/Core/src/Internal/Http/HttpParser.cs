@@ -21,13 +21,13 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
 {
     private readonly bool _showErrorDetails;
-    private readonly bool _allowLineFeedTerminator;
+    private readonly bool _disableHttp1LineFeedTerminators;
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser() : this(showErrorDetails: true, allowLineFeedTerminator: false)
+    public HttpParser() : this(showErrorDetails: true, disableHttp1LineFeedTerminators: false)
     {
     }
 
@@ -35,15 +35,15 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser(bool showErrorDetails) : this(showErrorDetails, allowLineFeedTerminator: false)
+    public HttpParser(bool showErrorDetails) : this(showErrorDetails, disableHttp1LineFeedTerminators: false)
     {
         _showErrorDetails = showErrorDetails;
     }
 
-    internal HttpParser(bool showErrorDetails, bool allowLineFeedTerminator)
+    internal HttpParser(bool showErrorDetails, bool disableHttp1LineFeedTerminators)
     {
         _showErrorDetails = showErrorDetails;
-        _allowLineFeedTerminator = allowLineFeedTerminator;
+        _disableHttp1LineFeedTerminators = disableHttp1LineFeedTerminators;
     }
 
     // byte types don't have a data type annotation so we pre-cast them; to avoid in-place casts
@@ -145,9 +145,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + 8] != ByteCR)
         {
             // LF should have been dropped prior to method call
-            // If _allowLineFeedTerminator and offset + 8 is .Length,
+            // If !_disableHttp1LineFeedTerminators and offset + 8 is .Length,
             // then requestLine is valid since it means LF was the next char
-            if (!_allowLineFeedTerminator || (uint)offset + 8 != (uint)requestLine.Length)
+            if (_disableHttp1LineFeedTerminators || (uint)offset + 8 != (uint)requestLine.Length)
             {
                 RejectRequestLine(requestLine);
             }
@@ -254,7 +254,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 {
                     // We got an LF with no CR before it.
                     var lfIndex = lfOrCrIndex;
-                    if (!_allowLineFeedTerminator)
+                    if (_disableHttp1LineFeedTerminators)
                     {
                         RejectRequestHeader(AppendEndOfLine(span[..lfIndex], lineFeedOnly: true));
                     }
@@ -329,7 +329,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         SequencePosition lineEnd;
         scoped ReadOnlySpan<byte> headerSpan;
         ReadOnlySequence<byte> header;
-        if (!_allowLineFeedTerminator && (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1))
+        if (_disableHttp1LineFeedTerminators && (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1))
         {
             // If we're not allowing LF by itself as a terminator, we need two characters
             // for the line terminator. Since we don't have two, we know there can't be
@@ -357,7 +357,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             lineEnd = currentSlice.GetPosition(1, firstLineEndCharPos);
             header = currentSlice.Slice(reader.Position, lineEnd);
         }
-        else if (!_allowLineFeedTerminator)
+        else if (_disableHttp1LineFeedTerminators)
         {
             // The terminator is an LF and we don't allow it.
             headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
@@ -368,7 +368,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
 
         // 'a:b\n' or 'a:b\r\n'
-        var minHeaderSpan = _allowLineFeedTerminator ? 4 : 5;
+        var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;
         if (headerSpan.Length < minHeaderSpan)
         {
             RejectRequestHeader(headerSpan);
@@ -381,7 +381,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             {
                 terminatorSize = 2;
             }
-            else if (_allowLineFeedTerminator)
+            else if (!_disableHttp1LineFeedTerminators)
             {
                 terminatorSize = 1;
             }

@@ -92,15 +92,6 @@ public class KestrelServerOptions
     public bool DisableStringReuse { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that controls whether the request lines
-    /// can end with LF only instead of CR/LF.
-    /// </summary>
-    /// <remarks>
-    /// Defaults to false.
-    /// </remarks>
-    public bool AllowLineFeedTerminator { get; set; }
-
-    /// <summary>
     /// Controls whether to return the "Alt-Svc" header from an HTTP/2 or lower response for HTTP/3.
     /// </summary>
     /// <remarks>
@@ -182,6 +173,24 @@ public class KestrelServerOptions
             return _enableWebTransportAndH3Datagrams.Value;
         }
         set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// </summary>
+    private bool? _disableHttp1LineFeedTerminators;
+    internal bool DisableHttp1LineFeedTerminators
+    {
+        get
+        {
+            if (!_disableHttp1LineFeedTerminators.HasValue)
+            {
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators", out var disabled) && disabled;
+            }
+
+            return _disableHttp1LineFeedTerminators.Value;
+        }
+        set => _disableHttp1LineFeedTerminators = value;
     }
 
     /// <summary>
