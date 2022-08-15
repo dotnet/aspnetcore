@@ -55,7 +55,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
 
         if (requestToken == null)
         {
-            return HandleRequestResult.Fail("Invalid state cookie.");
+            return HandleRequestResults.InvalidStateCookie;
         }
 
         var properties = requestToken.Properties;
