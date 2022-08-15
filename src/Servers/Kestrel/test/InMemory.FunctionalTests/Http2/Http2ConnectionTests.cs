@@ -1345,7 +1345,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task DATA_BufferRequestBodyLargerThanStreamSizeSmallerThanConnectionPipe_Works()
     {
-        // This test was not written to expect large window update frames.
+        // This test was not written to allow for arbitrary initial stream sizes. It was tuned to the old defaults.
         _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = 128 * 1024;
         _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize = 96 * 1024;
 
