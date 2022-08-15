@@ -97,6 +97,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     public Http3ControlStream? EncoderStream { get; set; }
     public Http3ControlStream? DecoderStream { get; set; }
     public string ConnectionId => _context.ConnectionId;
+    public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
     public void StopProcessingNextRequest()
         => StopProcessingNextRequest(serverInitiated: true);
@@ -304,7 +305,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     if (stream.StreamTimeoutTicks == default)
                     {
-                        stream.StreamTimeoutTicks = _context.TimeoutControl.GetResponseDrainDeadline(ticks, minDataRate);
+                        stream.StreamTimeoutTicks = TimeoutControl.GetResponseDrainDeadline(ticks, minDataRate);
                     }
 
                     if (stream.StreamTimeoutTicks < ticks)
@@ -345,6 +346,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
             // Don't delay on waiting to send outbound control stream settings.
             outboundControlStreamTask = ProcessOutboundControlStreamAsync(outboundControlStream);
+
+            // Close the connection if we don't receive any request streams
+            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
 
             while (_stoppedAcceptingStreams == 0)
             {
@@ -534,7 +538,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     await _streamCompletionAwaitable;
                 }
 
-                _context.TimeoutControl.CancelTimeout();
+                TimeoutControl.CancelTimeout();
             }
             catch
             {
@@ -793,6 +797,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             if (stream.IsRequestStream)
             {
+                if (_activeRequestCount == 0 && TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
+                {
+                    TimeoutControl.CancelTimeout();
+                }
+
                 _activeRequestCount++;
             }
             _streams[stream.StreamId] = stream;
@@ -806,6 +815,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             if (stream.IsRequestStream)
             {
                 _activeRequestCount--;
+
+                if (_activeRequestCount == 0)
+                {
+                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                }
             }
             _streams.Remove(stream.StreamId);
         }
