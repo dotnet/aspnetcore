@@ -31,7 +31,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
 
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
-        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
+        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionStack();
 
         _routeEntries.Add(new()
         {
@@ -53,7 +53,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         bool isFallback)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
-        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
+        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionStack();
 
         var routeAttributes = RouteAttributes.RouteHandler;
         if (isFallback)
@@ -92,7 +92,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         var endpoints = new RouteEndpoint[_routeEntries.Count];
         for (int i = 0; i < _routeEntries.Count; i++)
         {
-            endpoints[i] = (RouteEndpoint)CreateRouteEndpointBuilder(_routeEntries[i], context.Prefix, context.Conventions, context.FinallyConvnentions).Build();
+            endpoints[i] = (RouteEndpoint)CreateRouteEndpointBuilder(_routeEntries[i], context.Prefix, context.Conventions, context.FinallyConventions).Build();
         }
         return endpoints;
     }
@@ -194,7 +194,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             }
         }
 
-        entry.Conventions.IsReadonly = true;
+        entry.Conventions.IsReadOnly = true;
         foreach (var entrySpecificConvention in entry.Conventions)
         {
             entrySpecificConvention(builder);
@@ -229,10 +229,10 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             builder.RequestDelegate = factoryCreatedRequestDelegate;
         }
 
-        entry.FinallyConventions.IsReadonly = true;
-        for (var i = entry.FinallyConventions.Count - 1; i >= 0; i--)
+        entry.FinallyConventions.IsReadOnly = true;
+        foreach (var entryFinallyConvention in entry.FinallyConventions)
         {
-            entry.FinallyConventions[i](builder);
+            entryFinallyConvention(builder);
         }
 
         if (groupFinallyConventions is not null)
@@ -285,7 +285,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public IEnumerable<string>? HttpMethods { get; init; }
         public RouteAttributes RouteAttributes { get; init; }
         public ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
-        public ThrowOnAddAfterEndpointBuiltConventionCollection FinallyConventions { get; init; }
+        public ThrowOnAddAfterEndpointBuiltConventionStack FinallyConventions { get; init; }
     }
 
     [Flags]
@@ -304,16 +304,33 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
         // We throw if someone tries to add conventions to the RouteEntry after endpoints have already been resolved meaning the conventions
         // will not be observed given RouteEndpointDataSource is not meant to be dynamic and uses NullChangeToken.Singleton.
-        public bool IsReadonly { get; set; }
+        public bool IsReadOnly { get; set; }
 
         void ICollection<Action<EndpointBuilder>>.Add(Action<EndpointBuilder> convention)
         {
-            if (IsReadonly)
+            if (IsReadOnly)
             {
                 throw new InvalidOperationException(Resources.RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild);
             }
 
             Add(convention);
+        }
+    }
+
+    private sealed class ThrowOnAddAfterEndpointBuiltConventionStack : Stack<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
+    {
+        public bool IsReadOnly { get; set; }
+
+        public bool Remove(Action<EndpointBuilder> item) => throw new NotSupportedException();
+
+        void ICollection<Action<EndpointBuilder>>.Add(Action<EndpointBuilder> convention)
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild);
+            }
+
+            Push(convention);
         }
     }
 }

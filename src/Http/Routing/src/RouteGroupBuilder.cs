@@ -23,7 +23,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
 
     private readonly List<EndpointDataSource> _dataSources = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
-    private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
+    private readonly Stack<Action<EndpointBuilder>> _finallyConventions = new();
 
     internal RouteGroupBuilder(IEndpointRouteBuilder outerEndpointRouteBuilder, RoutePattern partialPrefix)
     {
@@ -36,7 +36,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
     IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => _outerEndpointRouteBuilder.CreateApplicationBuilder();
     ICollection<EndpointDataSource> IEndpointRouteBuilder.DataSources => _dataSources;
     void IEndpointConventionBuilder.Add(Action<EndpointBuilder> convention) => _conventions.Add(convention);
-    void IEndpointConventionBuilder.Finally(Action<EndpointBuilder> finalConvention) => _finallyConventions.Add(finalConvention);
+    void IEndpointConventionBuilder.Finally(Action<EndpointBuilder> finalConvention) => _finallyConventions.Push(finalConvention);
 
     private sealed class GroupEndpointDataSource : EndpointDataSource, IDisposable
     {
@@ -53,7 +53,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
                 Array.Empty<Action<EndpointBuilder>>(), _routeGroupBuilder._outerEndpointRouteBuilder.ServiceProvider);
 
         public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context) =>
-            GetGroupedEndpointsWithNullablePrefix(context.Prefix, context.Conventions, context.FinallyConvnentions, context.ApplicationServices);
+            GetGroupedEndpointsWithNullablePrefix(context.Prefix, context.Conventions, context.FinallyConventions, context.ApplicationServices);
 
         public IReadOnlyList<Endpoint> GetGroupedEndpointsWithNullablePrefix(
             RoutePattern? prefix,
@@ -94,15 +94,13 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
         {
             var fullPrefix = RoutePatternFactory.Combine(prefix, _routeGroupBuilder._partialPrefix);
             // Apply conventions passed in from the outer group first so their metadata is added earlier in the list at a lower precedent.
-            var combinedConventions = RoutePatternFactory.CombineLists(conventions, _routeGroupBuilder._conventions);
-            finallyConventions.Reverse();
-            _routeGroupBuilder._finallyConventions.Reverse();
-            var combinedFinallyConventions = RoutePatternFactory.CombineLists(_routeGroupBuilder._finallyConventions, finallyConventions);
+            var combinedConventions = CombineConventions(conventions, _routeGroupBuilder._conventions);
+            var combinedFinallyConventions = CombineConventions(_routeGroupBuilder._finallyConventions, finallyConventions);
             return new RouteGroupContext
             {
                 Prefix = fullPrefix,
                 Conventions = combinedConventions,
-                FinallyConvnentions = combinedFinallyConventions,
+                FinallyConventions = combinedFinallyConventions,
                 ApplicationServices = applicationServices
             };
         }
@@ -129,6 +127,30 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
             }
 
             return _compositeDataSource.GetChangeToken();
+        }
+
+        internal static IReadOnlyList<Action<EndpointBuilder>> CombineConventions(
+        IEnumerable<Action<EndpointBuilder>> firstColleciton,
+        IEnumerable<Action<EndpointBuilder>> secondCollection)
+        {
+            var firstSize = firstColleciton.Count();
+            var secondSize = secondCollection.Count();
+            var combinedConventions = new Action<EndpointBuilder>[firstSize + secondSize];
+
+            var i = 0;
+            foreach (var item in firstColleciton)
+            {
+                combinedConventions[i] = item;
+                i++;
+            }
+
+            foreach (var item in secondCollection)
+            {
+                combinedConventions[i] = item;
+                i++;
+            }
+
+            return combinedConventions;
         }
     }
 }

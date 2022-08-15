@@ -23,7 +23,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
 
     // Protected for READS and WRITES.
     protected readonly List<Action<EndpointBuilder>> Conventions;
-    protected readonly List<Action<EndpointBuilder>> FinallyConventions;
+    protected readonly Stack<Action<EndpointBuilder>> FinallyConventions;
 
     private List<Endpoint>? _endpoints;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -35,7 +35,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
         _actions = actions;
 
         Conventions = new List<Action<EndpointBuilder>>();
-        FinallyConventions = new List<Action<EndpointBuilder>>();
+        FinallyConventions = new Stack<Action<EndpointBuilder>>();
     }
 
     public override IReadOnlyList<Endpoint> Endpoints
@@ -57,7 +57,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
             Conventions,
             context.Conventions,
             FinallyConventions,
-            context.FinallyConvnentions);
+            new Stack<Action<EndpointBuilder>>(context.FinallyConventions));
     }
 
     // Will be called with the lock.
@@ -66,8 +66,8 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
         IReadOnlyList<ActionDescriptor> actions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> groupConventions,
-        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
-        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions);
+        Stack<Action<EndpointBuilder>> finallyConventions,
+        Stack<Action<EndpointBuilder>> groupFinallyConventions);
 
     protected void Subscribe()
     {
@@ -123,7 +123,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
                 conventions: Conventions,
                 groupConventions: Array.Empty<Action<EndpointBuilder>>(),
                 finallyConventions: FinallyConventions,
-                groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>());
+                groupFinallyConventions: new Stack<Action<EndpointBuilder>>());
             // Step 1 - capture old token
             var oldCancellationTokenSource = _cancellationTokenSource;
 

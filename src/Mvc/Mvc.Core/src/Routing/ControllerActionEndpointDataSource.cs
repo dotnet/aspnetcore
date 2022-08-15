@@ -56,7 +56,7 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         lock (Lock)
         {
             var conventions = new List<Action<EndpointBuilder>>();
-            var finallyConventions = new List<Action<EndpointBuilder>>();
+            var finallyConventions = new Stack<Action<EndpointBuilder>>();
             _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _orderSequence.GetNext(), conventions, finallyConventions));
             return new ControllerActionEndpointConventionBuilder(Lock, conventions, finallyConventions);
         }
@@ -67,8 +67,8 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         IReadOnlyList<ActionDescriptor> actions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> groupConventions,
-        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
-        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
+        Stack<Action<EndpointBuilder>> finallyConventions,
+        Stack<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

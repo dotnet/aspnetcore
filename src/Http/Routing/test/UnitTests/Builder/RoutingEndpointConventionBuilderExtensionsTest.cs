@@ -266,7 +266,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         internal EndpointBuilder EndpointBuilder { get; }
 
         private List<Action<EndpointBuilder>> _conventions;
-        private List<Action<EndpointBuilder>> _finallyConventions;
+        private Stack<Action<EndpointBuilder>> _finallyConventions;
 
         public DefaultEndpointConventionBuilder(EndpointBuilder endpointBuilder)
         {
@@ -289,7 +289,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
 
         public void Finally(Action<EndpointBuilder> finalConvention)
         {
-            _finallyConventions?.Add(finalConvention);
+            _finallyConventions?.Push(finalConvention);
         }
 
         public Endpoint Build()
@@ -308,9 +308,9 @@ public class RoutingEndpointConventionBuilderExtensionsTest
             var finallyConventions = Interlocked.Exchange(ref _finallyConventions, null);
             if (finallyConventions is not null)
             {
-                for (var i = finallyConventions.Count - 1; i >= 0; i--)
+                foreach (var finallyConvention in finallyConventions)
                 {
-                    finallyConventions[i](EndpointBuilder);
+                    finallyConvention(EndpointBuilder);
                 }
             }
 

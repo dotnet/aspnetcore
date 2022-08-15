@@ -49,7 +49,7 @@ public class CompositeEndpointDataSourceTest
         {
             Prefix = prefix,
             Conventions = conventions,
-            FinallyConvnentions = finallyConventions,
+            FinallyConventions = finallyConventions,
             ApplicationServices = applicationServices
         });
 
@@ -276,7 +276,7 @@ public class CompositeEndpointDataSourceTest
         {
             Prefix = prefix,
             Conventions = conventions,
-            FinallyConvnentions = finallyConventions,
+            FinallyConventions = finallyConventions,
             ApplicationServices = applicationServices
         };
         var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
@@ -321,7 +321,7 @@ public class CompositeEndpointDataSourceTest
         {
             Prefix = prefix,
             Conventions = conventions,
-            FinallyConvnentions = finallyConventions,
+            FinallyConventions = finallyConventions,
             ApplicationServices = applicationServices
         };
         var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
@@ -376,7 +376,7 @@ public class CompositeEndpointDataSourceTest
         {
             Prefix = prefix,
             Conventions = conventions,
-            FinallyConvnentions = finallyConventions,
+            FinallyConventions = finallyConventions,
             ApplicationServices = applicationServices
         };
         var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
@@ -398,6 +398,72 @@ public class CompositeEndpointDataSourceTest
                 Assert.Equal("/prefix/b", endpoint.RoutePattern.RawText);
                 Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
                 Assert.Equal("initial-metadata", endpoint.Metadata.GetMetadata<string>());
+            });
+    }
+
+    [Fact]
+    public void GetGroupedEndpoints_MultipleGroupFinallyConventionsApplyToAllEndpoints()
+    {
+        var endpointMetadata = new EndpointMetadataCollection(new object[]
+        {
+            "initial-metadata"
+        });
+        var endpoint1 = CreateEndpoint("/a", metadata: endpointMetadata);
+        var endpoint2 = CreateEndpoint("/b", metadata: endpointMetadata);
+        var dataSource = new TestGroupDataSource(new RouteEndpoint[] { endpoint1, endpoint2 });
+        var compositeDataSource = new CompositeEndpointDataSource(new[] { dataSource });
+
+        var prefix = RoutePatternFactory.Parse("/prefix");
+        var applicationServices = new ServiceCollection().BuildServiceProvider();
+        var metadata = new EndpointNameMetadata("name");
+        var finallyConventions = new Action<EndpointBuilder>[]
+        {
+            b =>
+            {
+                if (b.Metadata.OfType<string>().SingleOrDefault() == "initial-metadata")
+                {
+                    b.Metadata.Add(metadata);
+                }
+            },
+            b =>
+            {
+                if (b.Metadata.OfType<IEndpointNameMetadata>().SingleOrDefault() is not null)
+                {
+                    b.Metadata.Add("saw-last-metadata");
+                }
+            }
+        };
+        var conventions = Array.Empty<Action<EndpointBuilder>>();
+
+        var context = new RouteGroupContext
+        {
+            Prefix = prefix,
+            Conventions = conventions,
+            FinallyConventions = finallyConventions,
+            ApplicationServices = applicationServices
+        };
+        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
+        // Call twice to ensure that `GetGroupedEndpoints` is idempotent
+        groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
+
+        Assert.Collection(dataSource.ReceivedRouteGroupContexts,
+            receivedContext => Assert.Same(context, receivedContext),
+            receivedContext => Assert.Same(context, receivedContext));
+
+        Assert.Collection(groupedEndpoints,
+            endpoint1 =>
+            {
+                var endpoint = Assert.IsType<RouteEndpoint>(endpoint1);
+                Assert.Equal("/prefix/a", endpoint.RoutePattern.RawText);
+                Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
+                Assert.Equal(new[] { "initial-metadata", "saw-last-metadata" }, endpoint.Metadata.GetOrderedMetadata<string>());
+            },
+            endpoint2 =>
+            {
+                var endpoint = Assert.IsType<RouteEndpoint>(endpoint2);
+                Assert.Equal("/prefix/b", endpoint.RoutePattern.RawText);
+                Assert.NotNull(endpoint.Metadata.GetMetadata<IEndpointNameMetadata>());
+                Assert.Equal(new[] { "initial-metadata", "saw-last-metadata" }, endpoint.Metadata.GetOrderedMetadata<string>());
             });
     }
 

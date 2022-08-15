@@ -30,7 +30,7 @@ public sealed class RouteGroupContext
     /// via <see cref="IEndpointConventionBuilder.Add(Action{EndpointBuilder})"/>. These should be applied in LIFO order when building every <see cref="RouteEndpoint"/>
     /// returned from <see cref="EndpointDataSource.GetGroupedEndpoints(RouteGroupContext)"/>.
     /// </summary>
-    public IReadOnlyList<Action<EndpointBuilder>> FinallyConvnentions { get; init; } = Array.Empty<Action<EndpointBuilder>>();
+    public IReadOnlyList<Action<EndpointBuilder>> FinallyConventions { get; init; } = Array.Empty<Action<EndpointBuilder>>();
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.

@@ -8,8 +8,8 @@ Microsoft.AspNetCore.Routing.RouteGroupContext.ApplicationServices.get -> System
 Microsoft.AspNetCore.Routing.RouteGroupContext.ApplicationServices.init -> void
 Microsoft.AspNetCore.Routing.RouteGroupContext.Conventions.get -> System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>!>!
 Microsoft.AspNetCore.Routing.RouteGroupContext.Conventions.init -> void
-Microsoft.AspNetCore.Routing.RouteGroupContext.FinallyConvnentions.get -> System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>!>!
-Microsoft.AspNetCore.Routing.RouteGroupContext.FinallyConvnentions.init -> void
+Microsoft.AspNetCore.Routing.RouteGroupContext.FinallyConventions.get -> System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>!>!
+Microsoft.AspNetCore.Routing.RouteGroupContext.FinallyConventions.init -> void
 Microsoft.AspNetCore.Routing.RouteGroupContext.Prefix.get -> Microsoft.AspNetCore.Routing.Patterns.RoutePattern!
 Microsoft.AspNetCore.Routing.RouteGroupContext.Prefix.init -> void
 Microsoft.AspNetCore.Routing.RouteGroupContext.RouteGroupContext() -> void

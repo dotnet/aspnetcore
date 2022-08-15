@@ -277,8 +277,8 @@ public class ActionEndpointFactoryTest
             Array.Empty<ConventionalRouteEntry>(),
             groupConventions: Array.Empty<Action<EndpointBuilder>>(),
             conventions: Array.Empty<Action<EndpointBuilder>>(),
-            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
-            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: new Stack<Action<EndpointBuilder>>(),
+            finallyConventions: new Stack<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
 
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
@@ -383,15 +383,15 @@ public class ActionEndpointFactoryTest
             Array.Empty<ConventionalRouteEntry>(),
             groupConventions: Array.Empty<Action<EndpointBuilder>>(),
             conventions: Array.Empty<Action<EndpointBuilder>>(),
-            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
-            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: new Stack<Action<EndpointBuilder>>(),
+            finallyConventions: new Stack<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
         return Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
     }
 
     private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, string template)
     {
-        return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0, new List<Action<EndpointBuilder>>(), new List<Action<EndpointBuilder>>()));
+        return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0, new List<Action<EndpointBuilder>>(), new Stack<Action<EndpointBuilder>>()));
     }
 
     private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, ConventionalRouteEntry route)
@@ -406,8 +406,8 @@ public class ActionEndpointFactoryTest
             new[] { route, },
             groupConventions: Array.Empty<Action<EndpointBuilder>>(),
             conventions: Array.Empty<Action<EndpointBuilder>>(),
-            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
-            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: new Stack<Action<EndpointBuilder>>(),
+            finallyConventions: new Stack<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
@@ -432,8 +432,8 @@ public class ActionEndpointFactoryTest
             routes,
             groupConventions: Array.Empty<Action<EndpointBuilder>>(),
             conventions: Array.Empty<Action<EndpointBuilder>>(),
-            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
-            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: new Stack<Action<EndpointBuilder>>(),
+            finallyConventions: new Stack<Action<EndpointBuilder>>(),
             createInertEndpoints);
         return endpoints.ToList();
     }
@@ -446,10 +446,10 @@ public class ActionEndpointFactoryTest
         RouteValueDictionary dataTokens = null,
         int order = 0,
         List<Action<EndpointBuilder>> conventions = null,
-        List<Action<EndpointBuilder>> finallyConventions = null)
+        Stack<Action<EndpointBuilder>> finallyConventions = null)
     {
         conventions ??= new List<Action<EndpointBuilder>>();
-        finallyConventions ??= new List<Action<EndpointBuilder>>();
+        finallyConventions ??= new Stack<Action<EndpointBuilder>>();
         return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, order, conventions, finallyConventions);
     }
 

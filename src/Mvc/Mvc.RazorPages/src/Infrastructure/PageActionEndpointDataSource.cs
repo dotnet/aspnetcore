@@ -46,8 +46,8 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
         IReadOnlyList<ActionDescriptor> actions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> groupConventions,
-        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
-        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
+        Stack<Action<EndpointBuilder>> finallyConventions,
+        Stack<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

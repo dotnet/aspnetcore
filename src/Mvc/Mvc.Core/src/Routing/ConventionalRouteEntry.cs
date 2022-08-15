@@ -15,7 +15,7 @@ internal readonly struct ConventionalRouteEntry
     public readonly RouteValueDictionary? DataTokens;
     public readonly int Order;
     public readonly IReadOnlyList<Action<EndpointBuilder>> Conventions;
-    public readonly IReadOnlyList<Action<EndpointBuilder>> FinallyConventions;
+    public readonly Stack<Action<EndpointBuilder>> FinallyConventions;
 
     public ConventionalRouteEntry(
         string routeName,
@@ -25,7 +25,7 @@ internal readonly struct ConventionalRouteEntry
         RouteValueDictionary? dataTokens,
         int order,
         List<Action<EndpointBuilder>> conventions,
-        List<Action<EndpointBuilder>> finallyConventions)
+        Stack<Action<EndpointBuilder>> finallyConventions)
     {
         RouteName = routeName;
         DataTokens = dataTokens;

@@ -73,9 +73,9 @@ public abstract class EndpointDataSource
                 routeEndpointBuilder.Metadata.Add(metadata);
             }
 
-            for (var idx = context.FinallyConvnentions.Count - 1; idx >= 0; idx--)
+            foreach (var finallyConventions in context.FinallyConventions)
             {
-                context.FinallyConvnentions[idx](routeEndpointBuilder);
+                finallyConventions(routeEndpointBuilder);
             }
 
             // The RoutePattern, RequestDelegate, Order and DisplayName can all be overridden by non-group-aware conventions.

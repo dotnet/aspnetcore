@@ -1057,7 +1057,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var innerGroup = outerGroup.MapGroup("/");
         ((IEndpointConventionBuilder)innerGroup).Finally(b =>
         {
-            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint"))
+            // Verifies that both endpoint-specific finally conventions have run
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint-1")
+                && b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint-2"))
             {
                 b.Metadata.Add("added-from-inner-group");
             }
@@ -1070,12 +1072,14 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             }
         });
 
-        innerGroup.MapGet("/endpoint", () => { }).Finally(b => b.Metadata.Add("added-from-endpoint"));
+        var handler = innerGroup.MapGet("/endpoint", () => { });
+        handler.Finally(b => b.Metadata.Add("added-from-endpoint-1"));
+        handler.Finally(b => b.Metadata.Add("added-from-endpoint-2"));
 
         var endpoint = Assert.Single(builder.DataSources
             .SelectMany(ds => ds.Endpoints));
 
-        Assert.Equal(new[] { "added-from-endpoint", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+        Assert.Equal(new[] { "added-from-endpoint-2", "added-from-endpoint-1", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
     }
 
     class MyService { }
