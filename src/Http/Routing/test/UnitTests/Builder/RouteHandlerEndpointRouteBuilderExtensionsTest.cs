@@ -873,7 +873,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
-                    Assert.NotNull(routeHandlerContext.EndpointBuilder.ApplicationServices);
+                    Assert.NotNull(routeHandlerContext.ApplicationServices);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
                     context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
@@ -983,44 +983,6 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public void RequestDelegateFactory_ProvidesRouteEndpointBuilder_ToFilterFactory()
-    {
-        var appServiceCollection = new ServiceCollection();
-        var appService = new MyService();
-        appServiceCollection.AddSingleton(appService);
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(appServiceCollection.BuildServiceProvider()));
-        var filterFactoryRan = false;
-
-        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
-        var routeHandlerBuilder = builder.Map("/", PrintLogger);
-
-        var customDisplayName = "MyFilterFactory";
-        var customRoutePattern = RoutePatternFactory.Parse("/MyFilteredPattern");
-
-        routeHandlerBuilder.AddEndpointFilterFactory((rhc, next) =>
-        {
-            Assert.NotNull(rhc.EndpointBuilder.ApplicationServices);
-            var myService = rhc.EndpointBuilder.ApplicationServices.GetRequiredService<MyService>();
-            Assert.Equal(appService, myService);
-
-            rhc.EndpointBuilder.DisplayName = customDisplayName;
-            ((RouteEndpointBuilder)rhc.EndpointBuilder).RoutePattern = customRoutePattern;
-
-            filterFactoryRan = true;
-            return next;
-        });
-
-        var dataSource = GetBuilderEndpointDataSource(builder);
-        // Trigger Endpoint build by calling getter.
-        var routeEndpoint = Assert.Single(dataSource.Endpoints);
-        Assert.Equal(customDisplayName, routeEndpoint.DisplayName);
-        Assert.Equal(customRoutePattern, routeEndpoint.RoutePattern);
-        Assert.True(filterFactoryRan);
-    }
-
-    }
-
-    [Fact]
     public void FinallyOnGroup_CanExamineFinallyOnEndpoint()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
@@ -1074,6 +1036,8 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             .SelectMany(ds => ds.Endpoints));
 
         Assert.Equal(new[] { "added-from-endpoint-1", "added-from-endpoint-2", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+    }
+
     class MyService { }
 
     class ServiceAccessingEndpointFilter : IEndpointFilter

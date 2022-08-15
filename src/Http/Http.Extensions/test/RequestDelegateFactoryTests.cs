@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -5441,7 +5442,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatUsesEndpointMetadata()
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatReadsEndpointMetadata()
     {
         // Arrange
         string HelloName(IFormFileCollection formFiles)
@@ -5473,22 +5474,28 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) =>
                 {
-                    var acceptsMetadata = routeHandlerContext.EndpointBuilder.Metadata.OfType<IAcceptsMetadata>();
-                    var contentType = acceptsMetadata.SingleOrDefault()?.ContentTypes.SingleOrDefault();
+                    string? contentType = null;
 
                     return async (context) =>
                     {
+                        contentType ??= context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IAcceptsMetadata>()?.ContentTypes.SingleOrDefault();
+
                         if (contentType == "multipart/form-data")
                         {
                             return "I see you expect a form.";
                         }
+
                         return await next(context);
                     };
                 },
             }),
         });
-        var requestDelegate = factoryResult.RequestDelegate;
-        await requestDelegate(httpContext);
+
+        var builder = new RouteEndpointBuilder(factoryResult.RequestDelegate, RoutePatternFactory.Parse("/"), order: 0);
+        ((List<object>)builder.Metadata).AddRange(factoryResult.EndpointMetadata);
+        httpContext.Features.Set<IEndpointFeature>(new EndpointFeature { Endpoint = builder.Build() });
+
+        await factoryResult.RequestDelegate(httpContext);
 
         // Assert
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
@@ -5998,7 +6005,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Arrange
         var @delegate = (AddsCustomParameterMetadataBindable param1) => { };
         var customMetadata = new CustomEndpointMetadata();
-        var options = new RequestDelegateFactoryOptions { EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object> { customMetadata }) };
+        var options = new RequestDelegateFactoryOptions { EndpointBuilder = CreateEndpointBuilder(new List<object> { customMetadata }) };
 
         // Act
         var result = RequestDelegateFactory.Create(@delegate, options);
@@ -6099,7 +6106,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6121,7 +6128,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => Task.FromResult(new CountsDefaultEndpointMetadataResult());
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6143,7 +6150,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult());
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6165,7 +6172,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6186,7 +6193,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6207,7 +6214,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6230,7 +6237,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            EndpointBuilder = CreateEndpointBuilderFromMetadata(new List<object>
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
@@ -6241,16 +6248,88 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Collection(result.EndpointMetadata,
+            // Initial metadata from RequestDelegateFactoryOptions.EndpointBuilder. If the caller want to override inferred metadata,
+            // They need to call InferMetadata first, then add the overriding metadata, and then call Create with InferMetadata's result.
+            // This is demonstrated in the following tests.
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-            // Initial metadata from RequestDelegateFactoryOptions.InitialEndpointMetadata
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
             m => Assert.True(m is DefaultMetadataCountMetadata { Count: 4 }));
+    }
+
+    [Fact]
+    public void Create_DoesNotInferMetadata_GivenManuallyConstructedMetadataResult()
+    {
+        var invokeCount = 0;
+
+        // Arrange
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) =>
+        {
+            invokeCount++;
+            return new CountsDefaultEndpointMetadataResult();
+        };
+
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(),
+        };
+        var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
+        var httpContext = CreateHttpContext();
+
+        // An empty object should deserialize to AddsCustomParameterMetadata since it has no required properties.
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new object());
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
+
+        // Assert
+        Assert.Empty(result.EndpointMetadata);
+        Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
+
+        // Make extra sure things are running as expected, as this non-InferMetadata path is no longer exercised by RouteEndpointDataSource,
+        // and most of the other unit tests don't pass in a metadataResult without a cached factory context.
+        Assert.True(result.RequestDelegate(httpContext).IsCompletedSuccessfully);
+        Assert.Equal(1, invokeCount);
+    }
+
+    [Fact]
+    public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
+    {
+        // Arrange
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(),
+        };
+
+        // Act
+        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
+        options.EndpointBuilder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+        var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
+
+        // Assert
+        Assert.Collection(result.EndpointMetadata,
+            // Inferred AcceptsMetadata from RDF for complex type
+            m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
+            m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
+            // Metadata provided by parameters implementing IEndpointMetadataProvider
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
+            // Metadata provided by return type implementing IEndpointMetadataProvider
+            m => Assert.True(m is DefaultMetadataCountMetadata { Count: 3 }),
+            // Entry-specific metadata added after a call to InferMetadata
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
 
     [Fact]
@@ -6353,8 +6432,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_ReturnsSameRequestDelegatePassedIn_IfNotModifiedByFilters()
     {
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
-        var filter1Tag = new TagsAttribute("filter1");
-        var filter2Tag = new TagsAttribute("filter2");
+        var invokeCount = 0;
 
         RequestDelegateFactoryOptions options = new()
         {
@@ -6362,12 +6440,12 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) =>
                 {
-                    routeHandlerContext.EndpointBuilder.Metadata.Add(filter1Tag);
+                    invokeCount++;
                     return next;
                 },
                 (routeHandlerContext, next) =>
                 {
-                    routeHandlerContext.EndpointBuilder.Metadata.Add(filter2Tag);
+                    invokeCount++;
                     return next;
                 },
             }),
@@ -6375,24 +6453,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         var result = RequestDelegateFactory.Create(initialRequestDelegate, options);
         Assert.Same(initialRequestDelegate, result.RequestDelegate);
-        Assert.Collection(result.EndpointMetadata,
-            m => Assert.Same(filter2Tag, m),
-            m => Assert.Same(filter1Tag, m));
-    }
-
-    [Fact]
-    public void Create_Rejects_EndpointBuilderWithNonNullRequestDelegate()
-    {
-        RequestDelegate requestDelegate = static context => Task.CompletedTask;
-
-        RequestDelegateFactoryOptions options = new()
-        {
-            EndpointBuilder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), order: 0),
-        };
-
-        var ex = Assert.Throws<ArgumentException>(() => RequestDelegateFactory.Create(requestDelegate, options));
-
-        Assert.Equal("options", ex.ParamName);
+        Assert.Equal(2, invokeCount);
     }
 
     [Fact]
@@ -6427,10 +6488,13 @@ public class RequestDelegateFactoryTests : LoggedTest
         };
     }
 
-    private EndpointBuilder CreateEndpointBuilderFromMetadata(IEnumerable<object> metadata)
+    private EndpointBuilder CreateEndpointBuilder(IEnumerable<object>? metadata = null)
     {
         var builder = new RouteEndpointBuilder(null, RoutePatternFactory.Parse("/"), 0);
-        ((List<object>)builder.Metadata).AddRange(metadata);
+        if (metadata is not null)
+        {
+            ((List<object>)builder.Metadata).AddRange(metadata);
+        }
         return builder;
     }
 
@@ -6506,7 +6570,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             context.EndpointMetadata?.Add(new DefaultMetadataCountMetadata { Count = defaultMetadataCount ?? 0 });
         }
 
-        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+        public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
     }
 
     private class RemovesAcceptsParameterMetadata : IEndpointParameterMetadataProvider
@@ -6578,7 +6642,17 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    // TODO: Binding breaks if we explicitly implement IParsable. :(
+    // We could special-case IParsable because we have a reference to it. The check for `!method.IsAbstract` in GetStaticMethodFromHierarchy
+    // stops us from finding it now. But even if we did find it, we haven't implemented the correct code gen to call it for unreferenced interfaces.
+    // We might have to use Type.GetInterfaceMap. See previous discussion: https://github.com/dotnet/aspnetcore/pull/40926#discussion_r837781209
+    //
+    // System.InvalidOperationException : TryParse method found on AddsCustomParameterMetadata with incorrect format. Must be a static method with format
+    // bool TryParse(string, IFormatProvider, out AddsCustomParameterMetadata)
+    // bool TryParse(string, out AddsCustomParameterMetadata)
+    // but found
+    // static Boolean TryParse(System.String, System.IFormatProvider, AddsCustomParameterMetadata ByRef)
+    private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider//, IParsable<AddsCustomParameterMetadata>
     {
         public AddsCustomParameterMetadataAsProperty? Data { get; set; }
 
@@ -6591,6 +6665,14 @@ public class RequestDelegateFactoryTests : LoggedTest
         {
             context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
+
+        //static bool IParsable<AddsCustomParameterMetadata>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out AddsCustomParameterMetadata result)
+        //{
+        //    result = new();
+        //    return true;
+        //}
+
+        //static AddsCustomParameterMetadata IParsable<AddsCustomParameterMetadata>.Parse(string s, IFormatProvider? provider) => throw new NotSupportedException();
     }
 
     private class AddsCustomParameterMetadataBindable : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
@@ -6975,6 +7057,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         {
             throw new NotImplementedException();
         }
+    }
+
+    private class EndpointFeature : IEndpointFeature
+    {
+        public Endpoint? Endpoint { get; set; }
     }
 }
 

@@ -185,6 +185,19 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             }
         }
 
+        RequestDelegateFactoryOptions? rdfOptions = null;
+        RequestDelegateMetadataResult? rdfMetadataResult = null;
+
+        // Any metadata inferred directly inferred by RDF or indirectly inferred via IEndpoint(Parameter)MetadataProviders are
+        // considered less specific than method-level attributes and conventions but more specific than group conventions
+        // so inferred metadata gets added in between these. If group conventions need to override inferred metadata,
+        // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
+        if (isRouteHandler)
+        {
+            rdfOptions = CreateRDFOptions(entry, pattern, builder);
+            rdfMetadataResult = RequestDelegateFactory.InferMetadata(entry.RouteHandler.Method, rdfOptions);
+        }
+
         // Add delegate attributes as metadata before entry-specific conventions but after group conventions.
         var attributes = handler.Method.GetCustomAttributes();
         if (attributes is not null)
@@ -204,29 +217,13 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // If no convention has modified builder.RequestDelegate, we can use the RequestDelegate returned by the RequestDelegateFactory directly.
         var conventionOverriddenRequestDelegate = ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate) ? null : builder.RequestDelegate;
 
-        // Now that we're done running conventions, we no longer need the redirect RequestDelegate. The RequestDelegateFactory prevents it being set ahead of time.
-        builder.RequestDelegate = null;
-
         if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
-            var routeParamNames = new List<string>(pattern.Parameters.Count);
-            foreach (var parameter in pattern.Parameters)
-            {
-                routeParamNames.Add(parameter.Name);
-            }
-
-            RequestDelegateFactoryOptions factoryOptions = new()
-            {
-                ServiceProvider = _applicationServices,
-                RouteParameterNames = routeParamNames,
-                ThrowOnBadRequest = _throwOnBadRequest,
-                DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
-                EndpointBuilder = builder,
-            };
+            rdfOptions ??= CreateRDFOptions(entry, pattern, builder);
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
             // We always set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
-            factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
+            factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, rdfOptions, rdfMetadataResult).RequestDelegate;
         }
 
         Debug.Assert(factoryCreatedRequestDelegate is not null);
@@ -252,6 +249,24 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         }
 
         return builder;
+    }
+
+    private RequestDelegateFactoryOptions CreateRDFOptions(RouteEntry entry, RoutePattern pattern, RouteEndpointBuilder builder)
+    {
+        var routeParamNames = new List<string>(pattern.Parameters.Count);
+        foreach (var parameter in pattern.Parameters)
+        {
+            routeParamNames.Add(parameter.Name);
+        }
+
+        return new()
+        {
+            ServiceProvider = _applicationServices,
+            RouteParameterNames = routeParamNames,
+            ThrowOnBadRequest = _throwOnBadRequest,
+            DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
+            EndpointBuilder = builder,
+        };
     }
 
     private static bool ShouldDisableInferredBodyParameters(IEnumerable<string>? httpMethods)

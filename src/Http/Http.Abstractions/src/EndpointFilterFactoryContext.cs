@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -21,7 +20,13 @@ public sealed class EndpointFilterFactoryContext
     public required MethodInfo MethodInfo { get; init; }
 
     /// <summary>
-    /// The <see cref="EndpointBuilder"/> associated with the current endpoint being filtered.
+    /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
     /// </summary>
-    public required EndpointBuilder EndpointBuilder { get; init; }
+    public IServiceProvider ApplicationServices { get; init; } = EmptyServiceProvider.Instance;
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
+        public object? GetService(Type serviceType) => null;
+    }
 }

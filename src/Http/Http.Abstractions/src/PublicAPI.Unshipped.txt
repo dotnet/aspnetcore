@@ -5,7 +5,7 @@ abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Arguments.get
 abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.GetArgument<T>(int index) -> T
 abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.set -> void
+Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.init -> void
 Microsoft.AspNetCore.Builder.EndpointBuilder.FilterFactories.get -> System.Collections.Generic.IList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>!
 Microsoft.AspNetCore.Builder.IEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Http.AsParametersAttribute
@@ -15,8 +15,8 @@ Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointFilterDelegate
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointBuilder.get -> Microsoft.AspNetCore.Builder.EndpointBuilder!
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointBuilder.init -> void
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.ApplicationServices.init -> void
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointFilterFactoryContext() -> void
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.MethodInfo.get -> System.Reflection.MethodInfo!
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.MethodInfo.init -> void
