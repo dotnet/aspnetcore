@@ -12,6 +12,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>

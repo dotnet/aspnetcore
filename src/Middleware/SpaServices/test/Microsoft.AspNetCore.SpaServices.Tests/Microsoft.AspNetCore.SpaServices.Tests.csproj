@@ -5,7 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.SpaServices" />
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>

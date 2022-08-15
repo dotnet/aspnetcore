@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" />
     <Reference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" />
     <Reference Include="Microsoft.AspNetCore.Authorization" />
@@ -20,6 +21,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>

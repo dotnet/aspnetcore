@@ -189,7 +189,7 @@
     <SystemIdentityModelTokensJwtPackageVersion>5.2.4</SystemIdentityModelTokensJwtPackageVersion>
     <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
     <SystemIOPipelinesPackageVersion>4.5.4</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.4</SystemMemoryPackageVersion>
+    <SystemMemoryPackageVersion>4.5.5</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.4</SystemNetHttpPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.4</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0</SystemNumericsVectorsPackageVersion>
