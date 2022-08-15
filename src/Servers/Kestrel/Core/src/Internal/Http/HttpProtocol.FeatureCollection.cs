@@ -92,7 +92,7 @@ internal partial class HttpProtocol
             if (!ReferenceEquals(_requestStreamInternal, RequestBody))
             {
                 _requestStreamInternal = RequestBody;
-                RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize()));
+                RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize(), useZeroByteReads: true));
 
                 OnCompleted((self) =>
                 {
