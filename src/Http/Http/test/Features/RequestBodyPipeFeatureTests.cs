@@ -57,6 +57,7 @@ public class RequestBodyPipeFeatureTests
         var feature = new RequestBodyPipeFeature(context);
         var data = await feature.Reader.ReadAsync();
 
+        Assert.Equal(2, bufferLengths.Count);
         Assert.Equal(0, bufferLengths[0]);
         Assert.Equal(4096, bufferLengths[1]);
     }
