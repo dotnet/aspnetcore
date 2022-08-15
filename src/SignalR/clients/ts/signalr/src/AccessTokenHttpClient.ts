@@ -54,4 +54,8 @@ export class AccessTokenHttpClient extends HttpClient {
             }
         }
     }
+
+    public getCookieString(url: string): string {
+        return this._innerClient.getCookieString(url);
+    }
 }
