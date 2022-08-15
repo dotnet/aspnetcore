@@ -143,24 +143,6 @@ public static class AuthorizationEndpointConventionBuilderExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Enables AuthorizationMiddleware to cache the policy for a particular endpoint so its only computed once when using the default DefaultAuthorizationPolicyProvider.
-    /// </summary>
-    /// <param name="builder">The endpoint convention builder.</param>
-    /// <returns>The original convention builder parameter.</returns>
-    public static TBuilder WithAuthorizationCache<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
-    {
-        builder.Add(endpointBuilder =>
-        {
-            // Only add a policy cache if there isn't one
-            if (!endpointBuilder.Metadata.Any(meta => meta is AuthorizationPolicyCache))
-            {
-                endpointBuilder.Metadata.Add(new AuthorizationPolicyCache());
-            }
-        });
-        return builder;
-    }
-
     private static void RequirePolicyCore<TBuilder>(TBuilder builder, AuthorizationPolicy policy)
         where TBuilder : IEndpointConventionBuilder
     {
@@ -173,7 +155,6 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             }
             endpointBuilder.Metadata.Add(policy);
         });
-        builder.WithAuthorizationCache();
     }
 
     private static void RequireAuthorizationCore<TBuilder>(TBuilder builder, IEnumerable<IAuthorizeData> authorizeData)
@@ -186,6 +167,5 @@ public static class AuthorizationEndpointConventionBuilderExtensions
                 endpointBuilder.Metadata.Add(data);
             }
         });
-        builder.WithAuthorizationCache();
     }
 }

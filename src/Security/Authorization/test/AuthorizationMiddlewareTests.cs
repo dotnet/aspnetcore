@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Authorization.Test.TestObjects;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
@@ -211,6 +213,14 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
+    private static EndpointDataSource CreateDataSource(Endpoint endpoint)
+    {
+        var dataSource = new Mock<EndpointDataSource>();
+        dataSource.Setup(d => d.Endpoints).Returns(new Endpoint[] { endpoint });
+        dataSource.Setup(d => d.GetChangeToken()).Returns(new CancellationChangeToken(new CancellationToken()));
+        return dataSource.Object;
+    }
+
     [Fact]
     public async Task OnAuthorizationAsync_WillNotCallPolicyProviderWithCache()
     {
@@ -225,8 +235,10 @@ public class AuthorizationMiddlewareTests
             .Callback(() => getFallbackPolicyCount++);
         policyProvider.Setup(p => p.CanCachePolicy).Returns(true);
         var next = new TestRequestDelegate();
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
+
+        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, CreateDataSource(endpoint));
+        var context = GetHttpContext(anonymous: true, endpoint: endpoint);
 
         // Act & Assert
         await middleware.Invoke(context);
@@ -280,8 +292,9 @@ public class AuthorizationMiddlewareTests
         var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
         var policyProvider = new TestDefaultPolicyProvider(Options.Create(new AuthorizationOptions()), canCache);
         var next = new TestRequestDelegate();
-        var middleware = CreateMiddleware(next.Invoke, policyProvider);
-        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
+        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
+        var middleware = CreateMiddleware(next.Invoke, policyProvider, CreateDataSource(endpoint));
+        var context = GetHttpContext(anonymous: true, endpoint: endpoint);
 
         // Act & Assert
         await middleware.Invoke(context);
@@ -314,7 +327,7 @@ public class AuthorizationMiddlewareTests
             .Callback(() => getFallbackPolicyCount++);
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizationPolicyCache(), new AuthorizeAttribute("whatever")));
+        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute("whatever")));
 
         // Act & Assert
         await middleware.Invoke(context);
@@ -805,10 +818,10 @@ public class AuthorizationMiddlewareTests
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
     }
 
-    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null)
+    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, EndpointDataSource dataSource = null)
     {
         requestDelegate = requestDelegate ?? ((context) => Task.CompletedTask);
-        return new AuthorizationMiddleware(requestDelegate, policyProvider);
+        return new AuthorizationMiddleware(requestDelegate, policyProvider, dataSource);
     }
 
     private Endpoint CreateEndpoint(params object[] metadata)
