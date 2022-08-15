@@ -234,29 +234,16 @@ public class OutputCachePoliciesTests
     }
 
     [Fact]
-    public async Task VaryByValuePolicy_SingleValue()
+    public async Task VaryByKeyPrefixPolicy_AddsKeyPrefix()
     {
         var context = TestUtils.CreateUninitializedContext();
         var value = "value";
 
-        IOutputCachePolicy policy = new VaryByValuePolicy(context => value);
+        IOutputCachePolicy policy = new VaryByKeyPrefixPolicy((context, cancellationToken) => ValueTask.FromResult(value));
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(value, context.CacheVaryByRules.VaryByPrefix);
-    }
-
-    [Fact]
-    public async Task VaryByValuePolicy_SingleValueAsync()
-    {
-        var context = TestUtils.CreateUninitializedContext();
-        var value = "value";
-
-        IOutputCachePolicy policy = new VaryByValuePolicy((context, token) => ValueTask.FromResult(value));
-
-        await policy.CacheRequestAsync(context, default);
-
-        Assert.Equal(value, context.CacheVaryByRules.VaryByPrefix);
+        Assert.Equal(value, context.CacheVaryByRules.VaryByKeyPrefix);
     }
 
     [Fact]
@@ -266,24 +253,10 @@ public class OutputCachePoliciesTests
         var key = "key";
         var value = "value";
 
-        IOutputCachePolicy policy = new VaryByValuePolicy(context => new KeyValuePair<string, string>(key, value));
+        IOutputCachePolicy policy = new VaryByValuePolicy((context, CancellationToken) => ValueTask.FromResult(new KeyValuePair<string, string>(key, value)));
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByCustom);
-    }
-
-    [Fact]
-    public async Task VaryByValuePolicy_KeyValuePairAsync()
-    {
-        var context = TestUtils.CreateUninitializedContext();
-        var key = "key";
-        var value = "value";
-
-        IOutputCachePolicy policy = new VaryByValuePolicy((context, token) => ValueTask.FromResult(new KeyValuePair<string, string>(key, value)));
-
-        await policy.CacheRequestAsync(context, default);
-
-        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByCustom);
+        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByValues);
     }
 }

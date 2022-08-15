@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public sealed class CacheVaryByRules
 {
-    private Dictionary<string, string>? _varyByCustom;
+    private Dictionary<string, string>? _varyByValues;
 
-    internal bool HasVaryByCustom => _varyByCustom != null && _varyByCustom.Any();
+    internal bool HasVaryByValues => _varyByValues != null && _varyByValues.Any();
 
     /// <summary>
-    /// Gets a dictionary of key-pair values to vary the cache by.
+    /// Gets a dictionary of key-pair values to vary by.
     /// </summary>
-    public IDictionary<string, string> VaryByCustom => _varyByCustom ??= new();
+    public IDictionary<string, string> VaryByValues => _varyByValues ??= new Dictionary<string, string>();
 
     /// <summary>
     /// Gets or sets the list of route value names to vary by.
@@ -38,5 +38,5 @@ public sealed class CacheVaryByRules
     /// <summary>
     /// Gets or sets a prefix to vary by.
     /// </summary>
-    public StringValues VaryByPrefix { get; set; }
+    public string? VaryByKeyPrefix { get; set; }
 }

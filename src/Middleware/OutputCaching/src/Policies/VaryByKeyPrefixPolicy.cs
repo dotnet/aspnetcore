@@ -6,22 +6,18 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// When applied, the cached content will be different for every provided value.
+/// A policy that varies the cache key using the specified value.
 /// </summary>
-internal sealed class VaryByValuePolicy : IOutputCachePolicy
+internal sealed class VaryByKeyPrefixPolicy : IOutputCachePolicy
 {
     private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
 
     /// <summary>
-    /// Creates a policy that vary the cached content based on the specified value.
+    /// Creates a policy that varies the cache key using the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<HttpContext, CancellationToken, ValueTask<KeyValuePair<string, string>>> varyBy)
+    public VaryByKeyPrefixPolicy(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
     {
-        _varyByAsync = async (context, rules, cancellationToken) =>
-        {
-            var result = await varyBy(context, cancellationToken);
-            rules.VaryByValues[result.Key] = result.Value;
-        };
+        _varyByAsync = async (context, rules, cancellationToken) => rules.VaryByKeyPrefix = await varyBy(context, cancellationToken);
     }
 
     /// <inheritdoc/>

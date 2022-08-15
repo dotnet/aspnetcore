@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
@@ -115,16 +114,43 @@ public class OutputCachePolicyBuilderTests
     }
 
     [Fact]
+    public async Task BuildPolicy_CreatesVaryByKeyPrefixPolicy()
+    {
+        var context1 = TestUtils.CreateUninitializedContext();
+        var context2 = TestUtils.CreateUninitializedContext();
+        var context3 = TestUtils.CreateUninitializedContext();
+
+        var policy1 = new OutputCachePolicyBuilder().VaryByKeyPrefix("tenant1").Build();
+        var policy2 = new OutputCachePolicyBuilder().VaryByKeyPrefix(context => "tenant2").Build();
+        var policy3 = new OutputCachePolicyBuilder().VaryByKeyPrefix((context, cancellationToken) => ValueTask.FromResult("tenant3")).Build();
+
+        await policy1.CacheRequestAsync(context1, cancellation: default);
+        await policy2.CacheRequestAsync(context2, cancellation: default);
+        await policy3.CacheRequestAsync(context3, cancellation: default);
+
+        Assert.Equal("tenant1", context1.CacheVaryByRules.VaryByKeyPrefix);
+        Assert.Equal("tenant2", context2.CacheVaryByRules.VaryByKeyPrefix);
+        Assert.Equal("tenant3", context3.CacheVaryByRules.VaryByKeyPrefix);
+    }
+
+    [Fact]
     public async Task BuildPolicy_CreatesVaryByValuePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.VaryByValue(context => new KeyValuePair<string, string>("color", "blue")).Build();
+        var policy = builder
+            .VaryByValue("shape", "circle")
+            .VaryByValue(context => new KeyValuePair<string, string>("color", "blue"))
+            .VaryByValue((context, cancellationToken) => ValueTask.FromResult(new KeyValuePair<string, string>("size", "1m")))
+            .Build();
+
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
-        Assert.Equal("blue", context.CacheVaryByRules.VaryByCustom["color"]);
+        Assert.Equal("circle", context.CacheVaryByRules.VaryByValues["shape"]);
+        Assert.Equal("blue", context.CacheVaryByRules.VaryByValues["color"]);
+        Assert.Equal("1m", context.CacheVaryByRules.VaryByValues["size"]);
     }
 
     [Fact]

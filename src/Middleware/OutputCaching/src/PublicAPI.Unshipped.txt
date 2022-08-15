@@ -8,9 +8,9 @@ Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.get -> Microsoft.E
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.set -> void
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByCustom.get -> System.Collections.Generic.IDictionary<string!, string!>!
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByPrefix.get -> Microsoft.Extensions.Primitives.StringValues
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByPrefix.set -> void
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByKeyPrefix.get -> string?
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByKeyPrefix.set -> void
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByValues.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.OutputCaching.IOutputCacheFeature
 Microsoft.AspNetCore.OutputCaching.IOutputCacheFeature.Context.get -> Microsoft.AspNetCore.OutputCaching.OutputCacheContext!
 Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy.CacheRequestAsync(Microsoft.AspNetCore.OutputCaching.OutputCacheContext! context, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.ValueTask
@@ -55,11 +55,13 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.NoCache() -> Microso
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.OutputCachePolicyBuilder() -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Tag(params string![]! tags) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headerNames) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByKeyPrefix(string! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByKeyPrefix(System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByKeyPrefix(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string!>>! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByQuery(params string![]! queryKeys) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByRouteValue(params string![]! routeValueNames) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(string! key, string! value) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Collections.Generic.KeyValuePair<string!, string!>>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string!>>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Collections.Generic.KeyValuePair<string!, string!>>>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.AllowCacheLookup.get -> bool
