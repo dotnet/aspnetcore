@@ -16,8 +16,8 @@ public class Http2Limits
     private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
     private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
     private int _maxRequestHeaderFieldSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
-    private int _initialConnectionWindowSize = 1024 * 128; // Larger than the default 64kb, and larger than any one single stream.
-    private int _initialStreamWindowSize = 1024 * 96; // Larger than the default 64kb
+    private int _initialConnectionWindowSize = 1024 * 1024; // Equal to SocketTransportOptions.MaxReadBufferSize, and larger than any one single stream.
+    private int _initialStreamWindowSize = 768 * 1024; // Larger than the default 64kb, and able to use most (3/4ths) of the connection window by itself.
     private TimeSpan _keepAlivePingDelay = TimeSpan.MaxValue;
     private TimeSpan _keepAlivePingTimeout = TimeSpan.FromSeconds(20);
 
@@ -105,7 +105,7 @@ public class Http2Limits
     /// Indicates how much request body data the server is willing to receive and buffer at a time aggregated across all
     /// requests (streams) per connection. Note requests are also limited by <see cref="InitialStreamWindowSize"/>
     /// <para>
-    /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 128 kb.
+    /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 1 MB.
     /// </para>
     /// </summary>
     public int InitialConnectionWindowSize
@@ -127,7 +127,7 @@ public class Http2Limits
     /// Indicates how much request body data the server is willing to receive and buffer at a time per stream.
     /// Note connections are also limited by <see cref="InitialConnectionWindowSize"/>
     /// <para>
-    /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 96 kb.
+    /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 768 KB.
     /// </para>
     /// </summary>
     public int InitialStreamWindowSize

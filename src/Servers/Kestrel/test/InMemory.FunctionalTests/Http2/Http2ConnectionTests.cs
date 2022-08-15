@@ -1345,6 +1345,10 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task DATA_BufferRequestBodyLargerThanStreamSizeSmallerThanConnectionPipe_Works()
     {
+        // This test was not written to expect large window update frames.
+        _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = 128 * 1024;
+        _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize = 96 * 1024;
+
         var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
         var framesInStreamWindow = initialStreamWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
         var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
@@ -3374,7 +3378,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         setting = settings[1];
         Assert.Equal(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, setting.Parameter);
-        Assert.Equal(96 * 1024u, setting.Value);
+        Assert.Equal(768 * 1024u, setting.Value);
 
         setting = settings[2];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, setting.Parameter);
@@ -3389,7 +3393,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2SettingsFrameFlags.NONE,
             withStreamId: 0);
 
-        Assert.Equal(1024 * 128 - (int)Http2PeerSettings.DefaultInitialWindowSize, update.WindowUpdateSizeIncrement);
+        Assert.Equal(1024 * 1024 - (int)Http2PeerSettings.DefaultInitialWindowSize, update.WindowUpdateSizeIncrement);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
             withLength: 0,
@@ -3448,7 +3452,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2SettingsFrameFlags.NONE,
             withStreamId: 0);
 
-        Assert.Equal(1024 * 128u - Http2PeerSettings.DefaultInitialWindowSize, (uint)update.WindowUpdateSizeIncrement);
+        Assert.Equal(1024 * 1024u - Http2PeerSettings.DefaultInitialWindowSize, (uint)update.WindowUpdateSizeIncrement);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
             withLength: 0,
