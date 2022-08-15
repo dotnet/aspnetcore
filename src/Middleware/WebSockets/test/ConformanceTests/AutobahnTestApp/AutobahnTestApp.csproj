@@ -16,6 +16,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(MicrosoftAspNetCoreServerIISIntegrationPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(MicrosoftAspNetCoreServerKestrelHttpsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="$(MicrosoftAspNetCoreServerKestrelCorePackageVersion)" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
 
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine"  />

@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="System.IO.Pipelines" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
 </Project>
