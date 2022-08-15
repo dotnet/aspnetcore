@@ -331,7 +331,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
     }
 
     [Fact]
-    public async Task AuthenticateWithoutCookieWillFail()
+    public async Task AuthenticateWithoutCookieWillReturnNoResult()
     {
         using var host = await CreateHost(o =>
         {
@@ -345,7 +345,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
             if (req.Path == new PathString("/auth"))
             {
                 var result = await context.AuthenticateAsync("Google");
-                Assert.NotNull(result.Failure);
+                Assert.True(result.None);
             }
         });
         using var server = host.GetTestServer();
