@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.ObjectPool;
@@ -28,7 +29,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         _options = options.Value;
     }
 
-    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>R<delimiter>RouteName1=RouteValue1<subdelimiter>RouteName2=RouteValue2
     public string CreateStorageKey(OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
@@ -79,8 +80,8 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 }
             }
 
-            // Vary by headers
-            var headersCount = varyByRules?.Headers.Count ?? 0;
+            // Vary by header names
+            var headersCount = varyByRules?.HeaderNames.Count ?? 0;
             if (headersCount > 0)
             {
                 // Append a group separator for the header segment of the cache key
@@ -90,7 +91,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 var requestHeaders = context.HttpContext.Request.Headers;
                 for (var i = 0; i < headersCount; i++)
                 {
-                    var header = varyByRules!.Headers[i] ?? string.Empty;
+                    var header = varyByRules!.HeaderNames[i] ?? string.Empty;
                     var headerValues = requestHeaders[header];
                     builder.Append(KeyDelimiter)
                         .Append(header)
@@ -163,6 +164,29 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                             builder.Append(queryValueArray[j]);
                         }
                     }
+                }
+            }
+
+            // Vary by route value names
+            var routeValueNamesCount = varyByRules?.RouteValueNames.Count ?? 0;
+            if (routeValueNamesCount > 0)
+            {
+                // Append a group separator for the route values segment of the cache key
+                builder.Append(KeyDelimiter)
+                    .Append('R');
+
+                for (var i = 0; i < routeValueNamesCount; i++)
+                {
+                    // The lookup key can't be null
+                    var routeValueName = varyByRules!.RouteValueNames[i] ?? string.Empty;
+
+                    // RouteValueNames returns null if the key doesn't exist
+                    var routeValueValue = context.HttpContext.Request.RouteValues[routeValueName];
+
+                    builder.Append(KeyDelimiter)
+                        .Append(routeValueName)
+                        .Append('=')
+                        .Append(Convert.ToString(routeValueValue, CultureInfo.InvariantCulture));
                 }
             }
 

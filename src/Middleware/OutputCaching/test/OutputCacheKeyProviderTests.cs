@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
@@ -56,7 +57,6 @@ public class OutputCacheKeyProviderTests
     [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_VaryByRulesIsotNull()
     {
-        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
 
         Assert.NotNull(context.CacheVaryByRules);
@@ -67,12 +67,43 @@ public class OutputCacheKeyProviderTests
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-        };
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}", cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageVaryKey_IncludesListedRouteValuesOnly()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.RouteValues["RouteA"] = "ValueA";
+        context.HttpContext.Request.RouteValues["RouteB"] = "ValueB";
+        context.CacheVaryByRules.RouteValueNames = new string[] { "RouteA", "RouteC" };
+
+        Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}R{KeyDelimiter}RouteA=ValueA{KeyDelimiter}RouteC=",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageVaryKey_SerializeRouteValueToStringInvariantCulture()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.RouteValues["RouteA"] = 123.456;
+        context.CacheVaryByRules.RouteValueNames = new string[] { "RouteA", "RouteC" };
+
+        var culture = Thread.CurrentThread.CurrentCulture;
+        try
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}R{KeyDelimiter}RouteA=123.456{KeyDelimiter}RouteC=",
+                cacheKeyProvider.CreateStorageKey(context));
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentCulture = culture;
+        }
     }
 
     [Fact]
@@ -82,10 +113,7 @@ public class OutputCacheKeyProviderTests
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
         context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            Headers = new string[] { "HeaderA", "HeaderC" }
-        };
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=",
             cacheKeyProvider.CreateStorageKey(context));
@@ -98,10 +126,7 @@ public class OutputCacheKeyProviderTests
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.Headers["HeaderA"] = "ValueB";
         context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            Headers = new string[] { "HeaderA", "HeaderC" }
-        };
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueAValueB{KeyDelimiter}HeaderC=",
             cacheKeyProvider.CreateStorageKey(context));
@@ -113,11 +138,8 @@ public class OutputCacheKeyProviderTests
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-            QueryKeys = new string[] { "QueryA", "QueryC" }
-        };
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
             cacheKeyProvider.CreateStorageKey(context));
@@ -129,11 +151,8 @@ public class OutputCacheKeyProviderTests
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.QueryString = new QueryString("?queryA=ValueA&queryB=ValueB");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-            QueryKeys = new string[] { "QueryA", "QueryC" }
-        };
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
 
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
             cacheKeyProvider.CreateStorageKey(context));
@@ -145,11 +164,8 @@ public class OutputCacheKeyProviderTests
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-            QueryKeys = new string[] { "*" }
-        };
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.QueryKeys = new string[] { "*" };
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
@@ -163,12 +179,9 @@ public class OutputCacheKeyProviderTests
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryA=ValueB");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-            QueryKeys = new string[] { "*" }
-        };
-
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.QueryKeys = new string[] { "*" };
+    
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
@@ -181,11 +194,8 @@ public class OutputCacheKeyProviderTests
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueB&QueryA=ValueA");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-            QueryKeys = new string[] { "*" }
-        };
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.QueryKeys = new string[] { "*" };
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
@@ -194,21 +204,21 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
-    public void OutputCachingKeyProvider_CreateStorageVaryKey_IncludesListedHeadersAndQueryKeys()
+    public void OutputCachingKeyProvider_CreateStorageVaryKey_IncludesListedHeadersAndQueryKeysAndRouteValues()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
         context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
-        context.CacheVaryByRules = new CacheVaryByRules()
-        {
-            VaryByPrefix = Guid.NewGuid().ToString("n"),
-            Headers = new string[] { "HeaderA", "HeaderC" },
-            QueryKeys = new string[] { "QueryA", "QueryC" }
-        };
+        context.HttpContext.Request.RouteValues["RouteA"] = "ValueA";
+        context.HttpContext.Request.RouteValues["RouteB"] = "ValueB";
+        context.CacheVaryByRules.VaryByPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
+        context.CacheVaryByRules.RouteValueNames = new string[] { "RouteA", "RouteC" };
 
-        Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
+        Assert.Equal($"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}C{KeyDelimiter}{context.CacheVaryByRules.VaryByPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC={KeyDelimiter}R{KeyDelimiter}RouteA=ValueA{KeyDelimiter}RouteC=",
             cacheKeyProvider.CreateStorageKey(context));
     }
 }
