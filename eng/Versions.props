@@ -140,7 +140,7 @@
     <MicrosoftDotNetBuildTasksInstallersVersion>7.0.0-beta.22411.2</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>7.0.0-beta.22411.2</MicrosoftDotNetBuildTasksTemplatingVersion>
     <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>7.0.0-alpha.1.22405.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>7.0.0-alpha.1.22409.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
   </PropertyGroup>
   <!--
 
