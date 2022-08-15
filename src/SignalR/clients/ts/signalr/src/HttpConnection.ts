@@ -4,7 +4,6 @@
 import { AccessTokenHttpClient } from "./AccessTokenHttpClient";
 import { DefaultHttpClient } from "./DefaultHttpClient";
 import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
-import { HeaderNames } from "./HeaderNames";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
