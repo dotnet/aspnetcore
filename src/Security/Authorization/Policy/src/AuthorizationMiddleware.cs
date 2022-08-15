@@ -25,6 +25,7 @@ public class AuthorizationMiddleware
 
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
+    private readonly bool _canCache;
 
     // Caches AuthorizationPolicy instances
     private readonly DataSourceDependentCache<ConcurrentDictionary<Endpoint, AuthorizationPolicy>>? _policyCache;
@@ -38,6 +39,7 @@ public class AuthorizationMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
+        _canCache = false;
     }
 
     /// <summary>
@@ -48,7 +50,7 @@ public class AuthorizationMiddleware
     /// <param name="dataSource">The <see cref="EndpointDataSource"/>.</param>
     public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, EndpointDataSource dataSource) : this(next, policyProvider)
     {
-        if (dataSource != null)
+        if (dataSource != null && _policyProvider.CanCachePolicy)
         {
             // We cache AuthorizationPolicy instances per-Endpoint for performance, but we want to wipe out
             // that cache if the endpoints change so that we don't allow unbounded memory growth.
@@ -58,6 +60,7 @@ public class AuthorizationMiddleware
                 // need to build a big data structure up front to be correct.
                 return new ConcurrentDictionary<Endpoint, AuthorizationPolicy>();
             });
+            _canCache = true;
         }
     }
 
@@ -83,7 +86,7 @@ public class AuthorizationMiddleware
         // Use the computed policy for this endpoint if we can
         AuthorizationPolicy? policy = null;
 
-        var canCachePolicy = _policyProvider.CanCachePolicy && _policyCache != null && endpoint != null;
+        var canCachePolicy = _canCache && endpoint != null;
         if (canCachePolicy)
         {
             _policyCache!.EnsureInitialized();

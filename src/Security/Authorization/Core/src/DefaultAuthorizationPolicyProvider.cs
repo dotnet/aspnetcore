@@ -74,8 +74,8 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
 
 #if NETCOREAPP
     /// <summary>
-    /// Determines if policies from this provider can be cached, which is true for this provider.
+    /// Determines if policies from this provider can be cached, which is true only for this type.
     /// </summary>
-    public virtual bool CanCachePolicy => true;
+    public virtual bool CanCachePolicy => GetType() == typeof(DefaultAuthorizationPolicyProvider);
 #endif
 }
