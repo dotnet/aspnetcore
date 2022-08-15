@@ -205,7 +205,7 @@ public static partial class RequestDelegateFactory
     {
         if (options?.EndpointBuilder?.RequestDelegate is not null)
         {
-            throw new ArgumentException($"{nameof(RequestDelegateFactoryOptions)}.{nameof(RequestDelegateFactoryOptions.EndpointBuilder)} must be null.", nameof(options));
+            throw new ArgumentException($"{nameof(RequestDelegateFactoryOptions)}.{nameof(RequestDelegateFactoryOptions.EndpointBuilder)}.{nameof(EndpointBuilder.RequestDelegate)} must be null.", nameof(options));
         }
 
         var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder();
