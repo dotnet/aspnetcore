@@ -768,8 +768,11 @@ describe("HttpConnection", () => {
                         httpClientGetCount++;
                         const authorizationValue = r.headers![HeaderNames.Authorization];
                         if (httpClientGetCount === 1) {
+                            // Auth failure to cause a retry with a call to accessTokenFactory
+                            return new HttpResponse(401);
+                        } else if (httpClientGetCount === 2) {
                             if (authorizationValue) {
-                                fail("First long poll request should have a authorization header.");
+                                fail("First long poll request should have no authorization header.");
                             }
                             // First long polling request must succeed so start completes
                             return "";

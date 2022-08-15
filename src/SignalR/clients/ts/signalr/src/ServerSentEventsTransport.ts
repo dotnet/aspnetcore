@@ -38,7 +38,7 @@ export class ServerSentEventsTransport implements ITransport {
 
         this._logger.log(LogLevel.Trace, "(SSE transport) Connecting.");
 
-        // set url before accessTokenFactory because this.url is only for send and we set the auth header instead of the query string for send
+        // set url before accessTokenFactory because this._url is only for send and we set the auth header instead of the query string for send
         this._url = url;
 
         if (this._accessTokenFactory) {
@@ -111,7 +111,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this._eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "SSE", this._httpClient, this._url!, this._accessTokenFactory, data, this._options);
+        return sendMessage(this._logger, "SSE", this._httpClient, this._url!, data, this._options);
     }
 
     public stop(): Promise<void> {
