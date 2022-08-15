@@ -26,9 +26,7 @@ public class AuthorizationMiddleware
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
     private readonly bool _canCache;
-
-    // Caches AuthorizationPolicy instances
-    private readonly DataSourceDependentCache<ConcurrentDictionary<Endpoint, AuthorizationPolicy>>? _policyCache;
+    private readonly AuthorizationPolicyCache? _policyCache;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
@@ -47,20 +45,13 @@ public class AuthorizationMiddleware
     /// </summary>
     /// <param name="next">The next middleware in the application middleware pipeline.</param>
     /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
-    /// <param name="dataSource">The <see cref="EndpointDataSource"/>.</param>
-    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, EndpointDataSource dataSource) : this(next, policyProvider)
+    /// <param name="services">The <see cref="IServiceProvider"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IServiceProvider services) : this(next, policyProvider)
     {
-        if (dataSource != null && _policyProvider.CanCachePolicy)
+        if (services != null && _policyProvider.CanCachePolicy)
         {
-            // We cache AuthorizationPolicy instances per-Endpoint for performance, but we want to wipe out
-            // that cache if the endpoints change so that we don't allow unbounded memory growth.
-            _policyCache = new DataSourceDependentCache<ConcurrentDictionary<Endpoint, AuthorizationPolicy>>(dataSource, (_) =>
-            {
-                // We don't eagerly fill this cache because there's no real reason to. Unlike URL matching, we don't
-                // need to build a big data structure up front to be correct.
-                return new ConcurrentDictionary<Endpoint, AuthorizationPolicy>();
-            });
-            _canCache = true;
+            _policyCache = services.GetService<AuthorizationPolicyCache>();
+            _canCache = _policyCache != null;
         }
     }
 
@@ -85,12 +76,10 @@ public class AuthorizationMiddleware
 
         // Use the computed policy for this endpoint if we can
         AuthorizationPolicy? policy = null;
-
         var canCachePolicy = _canCache && endpoint != null;
         if (canCachePolicy)
         {
-            _policyCache!.EnsureInitialized();
-            _policyCache!.Value!.TryGetValue(endpoint!, out policy);
+            policy = _policyCache!.Lookup(endpoint!);
         }
 
         if (policy == null)
@@ -105,7 +94,7 @@ public class AuthorizationMiddleware
             // Cache the computed policy
             if (policy != null && canCachePolicy)
             {
-                _policyCache!.Value![endpoint!] = policy;
+                _policyCache!.Store(endpoint!, policy);
             }
         }
 
@@ -155,4 +144,5 @@ public class AuthorizationMiddleware
         var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
         await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
     }
+
 }

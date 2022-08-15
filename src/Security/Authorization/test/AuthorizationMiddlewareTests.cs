@@ -237,7 +237,10 @@ public class AuthorizationMiddlewareTests
         var next = new TestRequestDelegate();
 
         var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, CreateDataSource(endpoint));
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services);
         var context = GetHttpContext(anonymous: true, endpoint: endpoint);
 
         // Act & Assert
@@ -293,7 +296,10 @@ public class AuthorizationMiddlewareTests
         var policyProvider = new TestDefaultPolicyProvider(Options.Create(new AuthorizationOptions()), canCache);
         var next = new TestRequestDelegate();
         var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
-        var middleware = CreateMiddleware(next.Invoke, policyProvider, CreateDataSource(endpoint));
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider, services);
         var context = GetHttpContext(anonymous: true, endpoint: endpoint);
 
         // Act & Assert
@@ -818,7 +824,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
     }
 
-    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, EndpointDataSource dataSource = null)
+    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, IServiceProvider dataSource = null)
     {
         requestDelegate = requestDelegate ?? ((context) => Task.CompletedTask);
         return new AuthorizationMiddleware(requestDelegate, policyProvider, dataSource);
