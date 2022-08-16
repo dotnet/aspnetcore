@@ -252,5 +252,43 @@ public class MyController
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
+
+    [Fact]
+    public async Task MinimalAction_ReturningActionResultOfTDeclarationInDifferentFile_ProducesDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+var webApp = WebApplication.Create();
+webApp.MapPost(""/"", /*MM*/MyController.ActionResultMethod);
+");
+        var controllerSource = @"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+
+public static class MyController
+{
+    public static async Task<ActionResult<Person>> ActionResultMethod(int id)
+    {
+        await Task.Yield();
+        if (id == 0) return new NotFoundResult();
+        return new Person(""test"");
+    }
+
+    public record Person(string Name);
+}
+";
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source, controllerSource);
+
+        // Assert
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
 }
 
