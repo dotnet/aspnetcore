@@ -14,9 +14,9 @@ public sealed class PageActionEndpointConventionBuilder : IEndpointConventionBui
     // The lock is shared with the data source.
     private readonly object _lock;
     private readonly List<Action<EndpointBuilder>> _conventions;
-    private readonly Stack<Action<EndpointBuilder>> _finallyConventions;
+    private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
-    internal PageActionEndpointConventionBuilder(object @lock, List<Action<EndpointBuilder>> conventions, Stack<Action<EndpointBuilder>> finallyConventions)
+    internal PageActionEndpointConventionBuilder(object @lock, List<Action<EndpointBuilder>> conventions, List<Action<EndpointBuilder>> finallyConventions)
     {
         _lock = @lock;
         _conventions = conventions;
@@ -49,7 +49,7 @@ public sealed class PageActionEndpointConventionBuilder : IEndpointConventionBui
 
         lock (_lock)
         {
-            _finallyConventions.Push(finalConvention);
+            _finallyConventions.Add(finalConvention);
         };
     }
 }

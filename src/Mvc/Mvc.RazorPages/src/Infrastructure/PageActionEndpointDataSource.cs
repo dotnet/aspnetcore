@@ -46,8 +46,8 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
         IReadOnlyList<ActionDescriptor> actions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> groupConventions,
-        Stack<Action<EndpointBuilder>> finallyConventions,
-        Stack<Action<EndpointBuilder>> groupFinallyConventions)
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -59,10 +59,10 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
                     routeNames,
                     action,
                     Array.Empty<ConventionalRouteEntry>(),
-                    groupConventions: groupConventions,
                     conventions: conventions,
-                    groupFinallyConventions: groupFinallyConventions,
+                    groupConventions: groupConventions,
                     finallyConventions: finallyConventions,
+                    groupFinallyConventions: groupFinallyConventions,
                     CreateInertEndpoints,
                     groupPrefix);
             }

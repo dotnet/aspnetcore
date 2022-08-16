@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Builder;
 public class RoutingEndpointConventionBuilderExtensionsTest
 {
     [Fact]
-    public void RequireHost_HostNames()
+    public void RequireHost_RegisterConventionAndHostNames()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -194,7 +194,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
     }
 
     [Fact]
-    public void FinallyConventions_CanExamineMetadataInLIFOOrder()
+    public void FinallyConventions_CanExamineMetadataInFIFOOrder()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -203,16 +203,16 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         builder.WithMetadata("test-metadata");
         builder.Finally(inner =>
         {
-            if (inner.Metadata.Any(md => md is string smd && smd == "inner-metadata"))
+            if (inner.Metadata.Any(md => md is string smd && smd == "test-metadata"))
             {
-                inner.Metadata.Add("inner-metadata-2");
+                inner.Metadata.Add("inner-metadata");
             }
         });
         builder.Finally(inner =>
         {
-            if (inner.Metadata.Any(md => md is string smd && smd == "test-metadata"))
+            if (inner.Metadata.Any(md => md is string smd && smd == "inner-metadata"))
             {
-                inner.Metadata.Add("inner-metadata");
+                inner.Metadata.Add("inner-metadata-2");
             }
         });
 
@@ -266,7 +266,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         internal EndpointBuilder EndpointBuilder { get; }
 
         private List<Action<EndpointBuilder>> _conventions;
-        private Stack<Action<EndpointBuilder>> _finallyConventions;
+        private List<Action<EndpointBuilder>> _finallyConventions;
 
         public DefaultEndpointConventionBuilder(EndpointBuilder endpointBuilder)
         {
@@ -289,7 +289,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
 
         public void Finally(Action<EndpointBuilder> finalConvention)
         {
-            _finallyConventions?.Push(finalConvention);
+            _finallyConventions?.Add(finalConvention);
         }
 
         public Endpoint Build()

@@ -141,6 +141,38 @@ public class OpenApiRouteHandlerBuilderExtensionTests
     }
 
     [Fact]
+    public void WithOpenApi_WorksWithGroupAndSpecificEndpoint()
+    {
+        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiOperationGeneratorTests) };
+        var serviceProviderIsService = new ServiceProviderIsService();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
+            .AddSingleton<IHostEnvironment>(hostEnvironment)
+            .BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        string GetString() => "Foo";
+        var myGroup = builder.MapGroup("/group");
+        myGroup.WithOpenApi(o =>
+        {
+            o.Summary = "Set from outer group";
+            return o;
+        });
+        myGroup.MapDelete("/a", GetString).WithOpenApi(o =>
+        {
+            o.Summary = "Set from endpoint";
+            return o;
+        });
+
+        // The RotueGroupBuilder adds a single EndpointDataSource.
+        var groupDataSource = Assert.Single(builder.DataSources);
+        var endpoint = Assert.Single(groupDataSource.Endpoints);
+        var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
+        Assert.NotNull(operation);
+        Assert.Equal("Set from outer group", operation.Summary);
+    }
+
+    [Fact]
     public void WithOpenApi_GroupMetadataCanExamineAndExtendMoreLocalMetadata()
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiOperationGeneratorTests) };

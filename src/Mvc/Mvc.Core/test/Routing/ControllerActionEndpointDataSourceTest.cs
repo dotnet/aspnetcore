@@ -477,7 +477,7 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
     }
 
     [Fact]
-    public void Endpoints_AppliesFinallyConventions_InLIFOOrder()
+    public void Endpoints_AppliesFinallyConventions_InFIFOOrder_Last()
     {
         // Arrange
         var actions = new List<ActionDescriptor>
@@ -527,12 +527,12 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
             e =>
             {
                 Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
-                Assert.Equal(new[] { "A2", "A1", "C2", "C1" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.Equal(new[] { "A1", "A2", "C1", "C2" }, e.Metadata.GetOrderedMetadata<string>());
             },
             e =>
             {
                 Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
-                Assert.Equal(new[] { "B2", "B1", "C2", "C1" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.Equal(new[] { "B1", "B2", "C1", "C2" }, e.Metadata.GetOrderedMetadata<string>());
             },
             e =>
             {

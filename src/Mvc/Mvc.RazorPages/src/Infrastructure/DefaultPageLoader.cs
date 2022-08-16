@@ -71,7 +71,6 @@ internal sealed class DefaultPageLoader : PageLoader
             routeNames: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             action: compiled,
             routes: Array.Empty<ConventionalRouteEntry>(),
-            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
             conventions: new Action<EndpointBuilder>[]
             {
                     b =>
@@ -88,8 +87,9 @@ internal sealed class DefaultPageLoader : PageLoader
                         }
                     },
             },
-            groupFinallyConventions: new Stack<Action<EndpointBuilder>>(),
-            finallyConventions: new Stack<Action<EndpointBuilder>>(),
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
 
         // In some test scenarios there's no route so the endpoint isn't created. This is fine because

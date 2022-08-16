@@ -43,10 +43,10 @@ internal sealed class ActionEndpointFactory
         HashSet<string> routeNames,
         ActionDescriptor action,
         IReadOnlyList<ConventionalRouteEntry> routes,
-        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
-        Stack<Action<EndpointBuilder>> groupFinallyConventions,
-        Stack<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions,
         bool createInertEndpoints,
         RoutePattern? groupPrefix = null)
     {
@@ -54,10 +54,10 @@ internal sealed class ActionEndpointFactory
         ArgumentNullException.ThrowIfNull(nameof(routeNames));
         ArgumentNullException.ThrowIfNull(nameof(action));
         ArgumentNullException.ThrowIfNull(nameof(routes));
-        ArgumentNullException.ThrowIfNull(nameof(groupConventions));
         ArgumentNullException.ThrowIfNull(nameof(conventions));
-        ArgumentNullException.ThrowIfNull(nameof(groupFinallyConventions));
+        ArgumentNullException.ThrowIfNull(nameof(groupConventions));
         ArgumentNullException.ThrowIfNull(nameof(finallyConventions));
+        ArgumentNullException.ThrowIfNull(nameof(groupFinallyConventions));
 
         if (createInertEndpoints)
         {
@@ -79,7 +79,7 @@ internal sealed class ActionEndpointFactory
                 perRouteConventions: Array.Empty<Action<EndpointBuilder>>(),
                 groupFinallyConventions: groupFinallyConventions,
                 finallyConventions: finallyConventions,
-                perRouteFinallyConventions: new Stack<Action<EndpointBuilder>>());
+                perRouteFinallyConventions: Array.Empty<Action<EndpointBuilder>>());
             endpoints.Add(builder.Build());
         }
 
@@ -167,7 +167,7 @@ internal sealed class ActionEndpointFactory
                 perRouteConventions: Array.Empty<Action<EndpointBuilder>>(),
                 groupFinallyConventions: groupFinallyConventions,
                 finallyConventions: finallyConventions,
-                perRouteFinallyConventions: new Stack<Action<EndpointBuilder>>());
+                perRouteFinallyConventions: Array.Empty<Action<EndpointBuilder>>());
             endpoints.Add(builder.Build());
         }
     }
@@ -179,8 +179,8 @@ internal sealed class ActionEndpointFactory
         ConventionalRouteEntry route,
         IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
-        Stack<Action<EndpointBuilder>> groupFinallyConventions,
-        Stack<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
         RoutePattern? groupPrefix = null)
     {
         if (endpoints == null)
@@ -347,9 +347,9 @@ internal sealed class ActionEndpointFactory
         IReadOnlyList<Action<EndpointBuilder>> groupConventions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> perRouteConventions,
-        Stack<Action<EndpointBuilder>> groupFinallyConventions,
-        Stack<Action<EndpointBuilder>> finallyConventions,
-        Stack<Action<EndpointBuilder>> perRouteFinallyConventions)
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> perRouteFinallyConventions)
     {
         // REVIEW: The RouteEndpointDataSource adds HttpMethodMetadata before running group conventions
         // do we need to do the same here?

@@ -31,7 +31,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
 
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
-        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionStack();
+        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
 
         _routeEntries.Add(new()
         {
@@ -53,7 +53,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         bool isFallback)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
-        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionStack();
+        var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
 
         var routeAttributes = RouteAttributes.RouteHandler;
         if (isFallback)
@@ -285,7 +285,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public IEnumerable<string>? HttpMethods { get; init; }
         public RouteAttributes RouteAttributes { get; init; }
         public ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
-        public ThrowOnAddAfterEndpointBuiltConventionStack FinallyConventions { get; init; }
+        public ThrowOnAddAfterEndpointBuiltConventionCollection FinallyConventions { get; init; }
     }
 
     [Flags]
@@ -314,23 +314,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             }
 
             Add(convention);
-        }
-    }
-
-    private sealed class ThrowOnAddAfterEndpointBuiltConventionStack : Stack<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
-    {
-        public bool IsReadOnly { get; set; }
-
-        public bool Remove(Action<EndpointBuilder> item) => throw new NotSupportedException();
-
-        void ICollection<Action<EndpointBuilder>>.Add(Action<EndpointBuilder> convention)
-        {
-            if (IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild);
-            }
-
-            Push(convention);
         }
     }
 }

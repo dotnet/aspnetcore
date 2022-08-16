@@ -1049,7 +1049,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public void FinallyONestednGroups_CanExamineFinallyInLIFOOrder()
+    public void FinallyOnNestedGroups_OuterGroupCanExamineInnerGroup()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
 
@@ -1079,7 +1079,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var endpoint = Assert.Single(builder.DataSources
             .SelectMany(ds => ds.Endpoints));
 
-        Assert.Equal(new[] { "added-from-endpoint-2", "added-from-endpoint-1", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+        Assert.Equal(new[] { "added-from-endpoint-1", "added-from-endpoint-2", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
     }
 
     class MyService { }
