@@ -7,7 +7,7 @@ import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 /** @private */
 export class AccessTokenHttpClient extends HttpClient {
     private _innerClient: HttpClient;
-    private _accessToken: string | undefined;
+    _accessToken: string | undefined;
     private _accessTokenFactory: (() => string | Promise<string>) | undefined;
 
     constructor(innerClient: HttpClient, currentAccessToken: string | undefined, accessTokenFactory: (() => string | Promise<string>) | undefined) {

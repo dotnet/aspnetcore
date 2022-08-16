@@ -267,7 +267,9 @@ export class HttpConnection implements IConnection {
                         // the returned access token
                         const accessToken = negotiateResponse.accessToken;
                         this._accessTokenFactory = () => accessToken;
-                        this._httpClient.replaceAccessTokenFactory(this._accessTokenFactory);
+                        // set the factory to undefined so the httpClient won't retry with the same token, since we know it won't change until a connection restart
+                        this._httpClient._accessToken = accessToken;
+                        this._httpClient.replaceAccessTokenFactory(undefined);
                     }
 
                     redirects++;
@@ -418,7 +420,7 @@ export class HttpConnection implements IConnection {
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
+                return new ServerSentEventsTransport(this._httpClient, this._httpClient._accessToken, this._logger, this._options);
             case HttpTransportType.LongPolling:
                 return new LongPollingTransport(this._httpClient, this._logger, this._options);
             default:

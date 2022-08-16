@@ -297,7 +297,12 @@ describe("ServerSentEventsTransport", () => {
 });
 
 async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), options?: IHttpConnectionOptions): Promise<ServerSentEventsTransport> {
-    const sse = new ServerSentEventsTransport(options?.httpClient || new TestHttpClient(), accessTokenFactory, logger,
+    let token;
+    // SSE assumes (correctly) that negotiate will already create the token we want to use on connection startup, so simulate that here when creating the SSE transport
+    if (accessTokenFactory) {
+        token = await accessTokenFactory();
+    }
+    const sse = new ServerSentEventsTransport(options?.httpClient || new TestHttpClient(), token, logger,
         { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, timeout: 10205, ...options });
 
     const connectPromise = sse.connect(url || "http://example.com", TransferFormat.Text);
