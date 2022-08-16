@@ -126,6 +126,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 #endif
             )
         {
+            // Apply access token logic when using HTTP/1.1 because we don't use the AccessTokenHttpMessageHandler via HttpClient unless the user specifies HTTP/2.0 or higher
             var accessToken = await _httpConnectionOptions.AccessTokenProvider().ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -138,9 +139,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
                 else
                 {
-#pragma warning disable CA1416 // Analyzer bug
                     webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
-#pragma warning restore CA1416 // Analyzer bug
                 }
             }
         }

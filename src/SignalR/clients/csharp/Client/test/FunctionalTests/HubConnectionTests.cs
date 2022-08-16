@@ -1785,6 +1785,67 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
+    public async Task WebSocketsWithAccessTokenOverHttp2()
+    {
+        var accessTokenCallCount = 0;
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
+                o2.UseHttps();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, options =>
+                {
+                    options.HttpMessageHandlerFactory = h =>
+                    {
+                        ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                        return h;
+                    };
+                    options.WebSocketConfiguration = o =>
+                    {
+                        o.HttpVersion = HttpVersion.Version20;
+                        o.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                    };
+                    options.AccessTokenProvider = () =>
+                    {
+                        accessTokenCallCount++;
+                        return Task.FromResult("test");
+                    };
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var headerResponse = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new string[] { "Authorization" }).DefaultTimeout();
+                Assert.Single(headerResponse);
+                Assert.Equal("Bearer test", headerResponse[0]);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        Assert.Equal(1, accessTokenCallCount);
+
+        // Triple check that the WebSocket ran over HTTP/2, also verify the negotiate was HTTP/2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 CONNECT"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 CONNECT"));
+    }
+
+    [ConditionalFact]
+    [WebSocketsSupportedCondition]
     public async Task CookiesFromNegotiateAreAppliedToWebSockets()
     {
         await using (var server = await StartServer<Startup>())
