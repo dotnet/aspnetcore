@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -19,7 +15,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
@@ -1734,6 +1729,58 @@ public class HubConnectionTests : FunctionalTestBase
                 await hubConnection.DisposeAsync().DefaultTimeout();
             }
         }
+    }
+
+    [ConditionalFact]
+    [WebSocketsSupportedCondition]
+    public async Task WebSocketsCanConnectOverHttp2()
+    {
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
+                o2.UseHttps();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, options =>
+                {
+                    options.HttpMessageHandlerFactory = h =>
+                    {
+                        ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                        return h;
+                    };
+                    options.WebSocketConfiguration = o =>
+                    {
+                        o.HttpVersion = HttpVersion.Version20;
+                        o.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                    };
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var echoResponse = await hubConnection.InvokeAsync<string>(nameof(TestHub.Echo), "Foo").DefaultTimeout();
+                Assert.Equal("Foo", echoResponse);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        // Triple check that the WebSocket ran over HTTP/2, also verify the negotiate was HTTP/2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 CONNECT"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 CONNECT"));
     }
 
     [ConditionalFact]

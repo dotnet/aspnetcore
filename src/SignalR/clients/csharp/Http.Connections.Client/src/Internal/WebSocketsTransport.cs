@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
@@ -119,7 +120,11 @@ internal sealed partial class WebSocketsTransport : ITransport
             }
         }
 
-        if (_httpConnectionOptions.AccessTokenProvider != null)
+        if (_httpConnectionOptions.AccessTokenProvider != null
+#if NET7_0_OR_GREATER
+            && webSocket.Options.HttpVersion < HttpVersion.Version20
+#endif
+            )
         {
             var accessToken = await _httpConnectionOptions.AccessTokenProvider().ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -143,11 +148,18 @@ internal sealed partial class WebSocketsTransport : ITransport
         try
         {
 #if NET7_0_OR_GREATER
-            // TODO: Pass _httpClient here once https://github.com/dotnet/runtime/issues/72476 and https://github.com/dotnet/runtime/issues/72301 are resolved
-            await webSocket.ConnectAsync(url, invoker: null, cancellationToken).ConfigureAwait(false);
-#else
-            await webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+            // Only share the HttpClient if the user opts-in to HTTP/2 (or higher)
+            // This is because there is some non-obvious behavior changes when passing in an invoker to ConnectAsync
+            // and there isn't really any benefit to sharing the HttpClient in HTTP/1.1
+            if (webSocket.Options.HttpVersion > HttpVersion.Version11)
+            {
+                await webSocket.ConnectAsync(url, invoker: _httpClient, cancellationToken).ConfigureAwait(false);
+            }
+            else
 #endif
+            {
+                await webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch
         {
