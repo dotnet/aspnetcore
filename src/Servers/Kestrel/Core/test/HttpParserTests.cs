@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -156,6 +157,24 @@ public class HttpParserTests : LoggedTest
 
         Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion), exception.Message);
         Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
+    }
+
+    [Fact]
+    public void StartOfPathNotFound()
+    {
+        var requestLine = $"GET \n";
+
+        var parser = CreateParser(CreateEnabledTrace());
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
+
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail("GET "), exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
     [Theory]

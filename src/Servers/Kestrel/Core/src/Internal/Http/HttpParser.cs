@@ -37,7 +37,6 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public HttpParser(bool showErrorDetails) : this(showErrorDetails, disableHttp1LineFeedTerminators: false)
     {
-        _showErrorDetails = showErrorDetails;
     }
 
     internal HttpParser(bool showErrorDetails, bool disableHttp1LineFeedTerminators)
@@ -332,7 +331,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         if (_disableHttp1LineFeedTerminators && (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1))
         {
             // If we're not allowing LF by itself as a terminator, we need two characters
-            // for the line terminator. Since we don't have two, we know there can't be
+            // for the line terminator. Since we don't have two, we know there can't be 
             // a CRLF here. However, we need to also check that found char is CR and not LF.
 
             // Advance 1 to include CR/LF in lineEnd

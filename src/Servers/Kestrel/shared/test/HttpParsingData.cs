@@ -393,6 +393,9 @@ public class HttpParsingData
             new[] { "Header: value\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header: value\x0A") },
             new[] { "Header-1: value1\nHeader-2: value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1: value1\x0A") },
             new[] { "Header-1: value1\r\nHeader-2: value2\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2: value2\x0A") },
+
+            // Empty header name
+            new[] { ":a\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@":a\x0A") },
         };
 
     public static IEnumerable<object[]> RequestHeaderInvalidData => new[]
@@ -435,6 +438,7 @@ public class HttpParsingData
             new[] { "Header-1 value1\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1 value1\x0D\x0A") },
             new[] { "Header-1 value1\r\nHeader-2: value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1 value1\x0D\x0A") },
             new[] { "Header-1: value1\r\nHeader-2 value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2 value2\x0D\x0A") },
+            new[] { "HeaderValue1\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"HeaderValue1\x0D\x0A") },
 
             // Starting with whitespace
             new[] { " Header: value\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@" Header: value\x0D\x0A") },
@@ -467,9 +471,11 @@ public class HttpParsingData
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r\r", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r \n", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
+            new[] { "Header-1: value1\r\nHeader-2\t: value2 \n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2\x09: value2 \x0A") },
 
             // Empty header name
             new[] { ": value\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@": value\x0D\x0A") },
+            new[] { ":a\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@":a\x0D\x0A") },
         };
 
     public static TheoryData<string, string> HostHeaderData
