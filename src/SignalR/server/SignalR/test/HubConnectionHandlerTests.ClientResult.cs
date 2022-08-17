@@ -180,7 +180,7 @@ public partial class HubConnectionHandlerTests
             await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
 
             var context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
-            var resultTask = context.Clients.Client(client.Connection.ConnectionId).InvokeAsync<int>("GetClientResult", 1);
+            var resultTask = context.Clients.Client(client.Connection.ConnectionId).InvokeAsync<int>("GetClientResult", 1, cancellationToken: default);
 
             var message = await client.ReadAsync().DefaultTimeout();
             var invocation = Assert.IsType<InvocationMessage>(message);

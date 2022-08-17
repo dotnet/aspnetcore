@@ -209,18 +209,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     else
                                     {
                                         // If we have an invocation id already we can parse the end result
-                                        Type? returnType;
-                                        try
-                                        {
-                                            returnType = binder.GetReturnType(invocationId);
-                                        }
-                                        // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
-                                        // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
-                                        // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
-                                        catch (Exception)
-                                        {
-                                            returnType = null;
-                                        }
+                                        var returnType = ProtocolHelper.TryGetReturnType(binder, invocationId);
                                         if (returnType is null)
                                         {
                                             reader.Skip();
@@ -416,18 +405,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                     if (resultToken != null)
                     {
-                        Type? returnType;
-                        try
-                        {
-                            returnType = binder.GetReturnType(invocationId);
-                        }
-                        // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
-                        // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
-                        // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
-                        catch (Exception)
-                        {
-                            returnType = null;
-                        }
+                        var returnType = ProtocolHelper.TryGetReturnType(binder, invocationId);
                         if (returnType is null)
                         {
                             result = null;

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
@@ -23,8 +22,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 /// <typeparam name="THub">The type of <see cref="Hub"/> to manage connections for.</typeparam>
 public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable where THub : Hub
 {
-    private static readonly CancellationTokenSourcePool _cancellationTokenSourcePool = new();
-
     private readonly HubConnectionStore _connections = new HubConnectionStore();
     private readonly RedisSubscriptionManager _groups = new RedisSubscriptionManager();
     private readonly RedisSubscriptionManager _users = new RedisSubscriptionManager();
@@ -409,7 +406,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc/>
-    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         // send thing
         if (connectionId == null)
@@ -422,17 +419,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         // Needs to be unique across servers, easiest way to do that is prefix with connection ID.
         var invocationId = $"{connectionId}{Interlocked.Increment(ref _lastInvocationId)}";
 
-        CancellationTokenSource? cts = null;
-        // Add a default timeout if one isn't provided
-        if (!cancellationToken.CanBeCanceled)
-        {
-            cts = _cancellationTokenSourcePool.Rent();
-            cts.CancelAfter(TimeSpan.FromSeconds(30));
-            cancellationToken = cts.Token;
-        }
-
-        using var _ = cts;
-        using var __ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
+        using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection?.ConnectionAborted ?? default, out var linkedToken);
         var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);
 

@@ -162,18 +162,7 @@ internal abstract class MessagePackHubProtocolWorker
                 error = ReadString(ref reader, "error");
                 break;
             case NonVoidResult:
-                Type? itemType;
-                try
-                {
-                    itemType = binder.GetReturnType(invocationId);
-                }
-                // GetReturnType throws if invocationId not found, this can be caused by the server canceling a client-result but the client still sending a result
-                // For now let's ignore the failure and skip parsing the result, server will log that the result wasn't expected anymore and ignore the message
-                // In the future we may want a CompletionBindingFailureMessage that we can flow to the dispatcher for handling
-                catch (Exception)
-                {
-                    itemType = null;
-                }
+                var itemType = ProtocolHelper.TryGetReturnType(binder, invocationId);
                 if (itemType is null)
                 {
                     reader.Skip();
