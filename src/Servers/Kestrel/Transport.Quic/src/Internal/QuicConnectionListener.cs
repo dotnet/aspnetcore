@@ -88,7 +88,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                 var connectionOptions = new QuicServerConnectionOptions
                 {
                     ServerAuthenticationOptions = serverAuthenticationOptions,
-                    IdleTimeout = options.IdleTimeout,
+                    IdleTimeout = Timeout.InfiniteTimeSpan, // Kestrel manages connection lifetimes itself so it can send GoAway's.
                     MaxInboundBidirectionalStreams = options.MaxBidirectionalStreamCount,
                     MaxInboundUnidirectionalStreams = options.MaxUnidirectionalStreamCount,
                     DefaultCloseErrorCode = options.DefaultCloseErrorCode,

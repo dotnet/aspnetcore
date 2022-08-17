@@ -26,7 +26,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         limiters.Add(limiter);
     }
 
-    public override int GetAvailablePermits(TResource resourceID)
+    public override RateLimiterStatistics GetStatistics(TResource resourceID)
     {
         throw new NotImplementedException();
     }

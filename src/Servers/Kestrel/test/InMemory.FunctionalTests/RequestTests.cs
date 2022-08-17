@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -77,6 +78,36 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
 
             Assert.False(responseBodyPersisted);
+        }
+    }
+
+    [Fact]
+    public async Task RequestBodyPipeReaderDoesZeroByteReads()
+    {
+        await using (var server = new TestServer(async context =>
+        {
+            var bufferLengths = new List<int>();
+
+            var mockStream = new Mock<Stream>();
+
+            mockStream.Setup(s => s.CanRead).Returns(true);
+            mockStream.Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Returns<Memory<byte>, CancellationToken>((buffer, token) =>
+            {
+                bufferLengths.Add(buffer.Length);
+                return ValueTask.FromResult(0);
+            });
+
+            context.Request.Body = mockStream.Object;
+            var data = await context.Request.BodyReader.ReadAsync();
+
+            Assert.Equal(2, bufferLengths.Count);
+            Assert.Equal(0, bufferLengths[0]);
+            Assert.Equal(4096, bufferLengths[1]);
+
+            await context.Response.WriteAsync("hello, world");
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
         }
     }
 

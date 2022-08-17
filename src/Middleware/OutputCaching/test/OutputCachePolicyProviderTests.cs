@@ -46,7 +46,7 @@ public class OutputCachePolicyProviderTests
     public async Task AttemptOutputCaching_CacheableMethods_IsAllowed(string method)
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         var policies = new[] { new OutputCachePolicyBuilder().Build() };
         context.HttpContext.Request.Method = method;
 
@@ -65,7 +65,7 @@ public class OutputCachePolicyProviderTests
     public async Task AttemptOutputCaching_UncacheableMethods_NotAllowed(string method)
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         var policy = new OutputCachePolicyBuilder().Build();
         context.HttpContext.Request.Method = method;
 
@@ -73,16 +73,13 @@ public class OutputCachePolicyProviderTests
 
         Assert.False(context.AllowCacheLookup);
         Assert.False(context.AllowCacheStorage);
-        TestUtils.AssertLoggedMessages(
-            sink.Writes,
-            LoggedMessage.RequestMethodNotCacheable);
     }
 
     [Fact]
     public async Task AttemptResponseCaching_AuthorizationHeaders_NotAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Headers.Authorization = "Placeholder";
 
@@ -92,17 +89,13 @@ public class OutputCachePolicyProviderTests
 
         Assert.False(context.AllowCacheStorage);
         Assert.False(context.AllowCacheLookup);
-
-        TestUtils.AssertLoggedMessages(
-            sink.Writes,
-            LoggedMessage.RequestWithAuthorizationNotCacheable);
     }
 
     [Fact]
     public async Task AllowCacheStorage_NoStore_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
         {
@@ -120,7 +113,7 @@ public class OutputCachePolicyProviderTests
     public async Task AllowCacheLookup_LegacyDirectives_OverridenByCacheControl()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Headers.Pragma = "no-cache";
         context.HttpContext.Request.Headers.CacheControl = "max-age=10";
@@ -136,7 +129,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_NoPublic_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
 
         var policy = new OutputCachePolicyBuilder().Build();
         await policy.ServeResponseAsync(context, default);
@@ -150,7 +143,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_Public_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             Public = true
@@ -168,7 +161,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_NoCache_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             NoCache = true
@@ -186,7 +179,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_ResponseNoStore_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             NoStore = true
@@ -204,7 +197,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_SetCookieHeader_NotAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.Headers.SetCookie = "cookieName=cookieValue";
 
         var policy = new OutputCachePolicyBuilder().Build();
@@ -212,16 +205,13 @@ public class OutputCachePolicyProviderTests
 
         Assert.False(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
-        TestUtils.AssertLoggedMessages(
-            sink.Writes,
-            LoggedMessage.ResponseWithSetCookieNotCacheable);
     }
 
     [Fact]
     public async Task IsResponseCacheable_VaryHeaderByStar_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.Headers.Vary = "*";
         var policy = new OutputCachePolicyBuilder().Build();
         await policy.ServeResponseAsync(context, default);
@@ -235,7 +225,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_Private_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             Private = true
@@ -254,7 +244,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_SuccessStatusCodes_IsAllowed(int statusCode)
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.StatusCode = statusCode;
 
         var policy = new OutputCachePolicyBuilder().Build();
@@ -330,7 +320,7 @@ public class OutputCachePolicyProviderTests
     public async Task IsResponseCacheable_NonSuccessStatusCodes_NotAllowed(int statusCode)
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.StatusCode = statusCode;
 
         var policy = new OutputCachePolicyBuilder().Build();
@@ -338,16 +328,13 @@ public class OutputCachePolicyProviderTests
 
         Assert.True(context.AllowCacheLookup);
         Assert.False(context.AllowCacheStorage);
-        TestUtils.AssertLoggedMessages(
-            sink.Writes,
-            LoggedMessage.ResponseWithUnsuccessfulStatusCodeNotCacheable);
     }
 
     [Fact]
     public async Task IsResponseCacheable_NoExpiryRequirements_IsAllowed()
     {
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
         var utcNow = DateTimeOffset.UtcNow;
@@ -367,7 +354,7 @@ public class OutputCachePolicyProviderTests
     {
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
@@ -390,7 +377,7 @@ public class OutputCachePolicyProviderTests
     {
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
-        var context = TestUtils.CreateTestContext(sink);
+        var context = TestUtils.CreateTestContext(testSink: sink);
         context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
