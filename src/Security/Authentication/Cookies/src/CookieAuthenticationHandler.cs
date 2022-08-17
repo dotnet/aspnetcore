@@ -147,7 +147,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         var ticket = Options.TicketDataFormat.Unprotect(cookie, GetTlsTokenBinding());
         if (ticket == null)
         {
-            return AuthenticateResult.Fail("Unprotect ticket failed");
+            return AuthenticateResults.FailedUnprotectingTicket;
         }
 
         if (Options.SessionStore != null)
@@ -155,13 +155,13 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             var claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
             if (claim == null)
             {
-                return AuthenticateResult.Fail("SessionId missing");
+                return AuthenticateResults.MissingSessionId;
             }
             // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
             ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context, Context.RequestAborted);
             if (ticket == null)
             {
-                return AuthenticateResult.Fail("Identity missing in session store");
+                return AuthenticateResults.MissingIdentityInSession;
             }
             _sessionKey = claim.Value;
         }
@@ -178,7 +178,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
                 // Clear out the session key if its expired, so renew doesn't try to use it
                 _sessionKey = null;
             }
-            return AuthenticateResult.Fail("Ticket expired");
+            return AuthenticateResults.ExpiredTicket;
         }
 
         // Finally we have a valid ticket
@@ -204,7 +204,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         if (context.Principal == null)
         {
-            return AuthenticateResult.Fail("No principal.");
+            return AuthenticateResults.NoPrincipal;
         }
 
         if (context.ShouldRenew)

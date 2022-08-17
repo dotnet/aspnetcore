@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client;
 
 public partial class HttpConnection
 {
-    private static partial class Log
+    internal static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "Starting HttpConnection.", EventName = "Starting")]
         public static partial void Starting(ILogger logger);
@@ -104,5 +105,8 @@ public partial class HttpConnection
 
         [LoggerMessage(20, LogLevel.Trace, "Cookies are not supported on this platform.", EventName = "CookiesNotSupported")]
         public static partial void CookiesNotSupported(ILogger logger);
+
+        [LoggerMessage(21, LogLevel.Debug, "{StatusCode} received, getting a new access token and retrying request.", EventName = "RetryAccessToken")]
+        public static partial void RetryAccessToken(ILogger logger, HttpStatusCode statusCode);
     }
 }

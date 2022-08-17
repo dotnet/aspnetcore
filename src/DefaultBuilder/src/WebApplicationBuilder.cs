@@ -20,6 +20,7 @@ public sealed class WebApplicationBuilder
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
+    private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
@@ -162,6 +163,8 @@ public sealed class WebApplicationBuilder
             if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
             {
                 app.UseRouting();
+                // Middleware the needs to re-route will use this property to call UseRouting()
+                _builtApplication.Properties[UseRoutingKey] = app.Properties[UseRoutingKey];
             }
             else
             {
@@ -172,7 +175,8 @@ public sealed class WebApplicationBuilder
 
         // Process authorization and authentication middlewares independently to avoid
         // registering middlewares for services that do not exist
-        if (_builtApplication.Services.GetService<IAuthenticationSchemeProvider>() is not null)
+        var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
+        if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
         {
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
@@ -184,7 +188,7 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        if (_builtApplication.Services.GetService<IAuthorizationHandlerProvider>() is not null)
+        if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
         {
             if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
             {

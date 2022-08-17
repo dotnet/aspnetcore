@@ -13,6 +13,10 @@
     {"testName": {"contains": "ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug"}},
     {"testName": {"contains": "Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade"}},
     {"testName": {"contains": "Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade"}},
+    {"testName": {"contains": "WebConfigAppendsHostingStartup_OutOfProcess"}},
+    {"testName": {"contains": "HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate"}},
+    {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
+    {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testAssembly": {"contains": "IIS"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}

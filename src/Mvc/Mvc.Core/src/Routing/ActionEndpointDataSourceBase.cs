@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
@@ -46,8 +47,21 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
         }
     }
 
+    public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
+    {
+        return CreateEndpoints(
+            context.Prefix,
+            _actions.ActionDescriptors.Items,
+            Conventions,
+            context.Conventions);
+    }
+
     // Will be called with the lock.
-    protected abstract List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions);
+    protected abstract List<Endpoint> CreateEndpoints(
+        RoutePattern? groupPrefix,
+        IReadOnlyList<ActionDescriptor> actions,
+        IReadOnlyList<Action<EndpointBuilder>> conventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions);
 
     protected void Subscribe()
     {
@@ -97,7 +111,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
     {
         lock (Lock)
         {
-            var endpoints = CreateEndpoints(_actions.ActionDescriptors.Items, Conventions);
+            var endpoints = CreateEndpoints(groupPrefix: null, _actions.ActionDescriptors.Items, Conventions, Array.Empty<Action<EndpointBuilder>>());
 
             // See comments in DefaultActionDescriptorCollectionProvider. These steps are done
             // in a specific order to ensure callers always see a consistent state.

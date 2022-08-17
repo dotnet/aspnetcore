@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Cors;
@@ -38,12 +37,7 @@ internal sealed class CorsApplicationModelProvider : IApplicationModelProvider
             throw new ArgumentNullException(nameof(context));
         }
 
-        if (_mvcOptions.EnableEndpointRouting)
-        {
-            // When doing endpoint routing, translate IEnableCorsAttribute to an HttpMethodMetadata with CORS enabled.
-            ConfigureCorsEndpointMetadata(context.Result);
-        }
-        else
+        if (!_mvcOptions.EnableEndpointRouting)
         {
             ConfigureCorsFilters(context);
         }
@@ -117,38 +111,4 @@ internal sealed class CorsApplicationModelProvider : IApplicationModelProvider
         }
     }
 
-    private static void ConfigureCorsEndpointMetadata(ApplicationModel applicationModel)
-    {
-        foreach (var controller in applicationModel.Controllers)
-        {
-            var corsOnController = controller.Attributes.OfType<IDisableCorsAttribute>().Any() ||
-                controller.Attributes.OfType<IEnableCorsAttribute>().Any();
-
-            foreach (var action in controller.Actions)
-            {
-                var corsOnAction = action.Attributes.OfType<IDisableCorsAttribute>().Any() ||
-                    action.Attributes.OfType<IEnableCorsAttribute>().Any();
-
-                if (!corsOnController && !corsOnAction)
-                {
-                    // No CORS here.
-                    continue;
-                }
-
-                foreach (var selector in action.Selectors)
-                {
-                    var metadata = selector.EndpointMetadata;
-                    // Read interface .Count once rather than per iteration
-                    var metadataCount = metadata.Count;
-                    for (var i = 0; i < metadataCount; i++)
-                    {
-                        if (metadata[i] is HttpMethodMetadata httpMethodMetadata)
-                        {
-                            metadata[i] = new HttpMethodMetadata(httpMethodMetadata.HttpMethods, acceptCorsPreflight: true);
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

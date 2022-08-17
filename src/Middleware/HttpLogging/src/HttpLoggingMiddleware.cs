@@ -105,7 +105,11 @@ internal sealed class HttpLoggingMiddleware
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
             {
-                if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
+                if (request.ContentType is null)
+                {
+                    _logger.NoMediaType("request");
+                }
+                else if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
                     options.MediaTypeOptions.MediaTypeStates,
                     out var encoding))
                 {
@@ -119,7 +123,7 @@ internal sealed class HttpLoggingMiddleware
                 }
                 else
                 {
-                    _logger.UnrecognizedMediaType();
+                    _logger.UnrecognizedMediaType("request");
                 }
             }
 

@@ -71,6 +71,7 @@ internal sealed class DefaultPageLoader : PageLoader
             routeNames: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             action: compiled,
             routes: Array.Empty<ConventionalRouteEntry>(),
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
             conventions: new Action<EndpointBuilder>[]
             {
                     b =>

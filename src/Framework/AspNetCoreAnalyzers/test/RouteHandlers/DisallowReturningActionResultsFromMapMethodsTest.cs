@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
@@ -128,7 +129,7 @@ webApp.MapGet(""/"", () => /*MM*/new OkObjectResult(""cool story""));
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
+        Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -151,7 +152,7 @@ webApp.MapGet(""/"", (int id) => /*MM*/id == 0 ? (ActionResult)new NotFoundResul
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
+        Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -179,7 +180,7 @@ static object OkObjectResultReturningMethod()
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
+        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -211,7 +212,7 @@ public record Person(string Name);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
+        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -249,7 +250,7 @@ public class MyController
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
+        Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 }
 

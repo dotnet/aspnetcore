@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
+using System.ServiceProcess;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
+using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -42,12 +48,11 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
                 (args, contentRoot) => $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
             EnablePreload(baseDeploymentParameters);
 
-            await RunTest(baseDeploymentParameters, async result =>
-            {
-                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
-                StopServer();
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
-            });
+            var result = await DeployAsync(baseDeploymentParameters);
+
+            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
         }
     }
 
@@ -74,12 +79,11 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
                         .GetOrAdd("add", "initializationPage", "/CreateFile");
                 });
 
-            await RunTest(baseDeploymentParameters, async result =>
-            {
-                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
-                StopServer();
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
-            });
+            var result = await DeployAsync(baseDeploymentParameters);
+
+            await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
         }
     }
 

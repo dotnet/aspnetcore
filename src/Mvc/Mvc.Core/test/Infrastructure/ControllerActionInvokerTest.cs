@@ -1333,6 +1333,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             (_, __) => default,
             (_, __, ___) => Task.CompletedTask,
             objectMethodExecutor,
+            controllerMethodExecutor,
             controllerMethodExecutor);
 
         var invoker = new ControllerActionInvoker(
@@ -1663,6 +1664,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
                 return Task.CompletedTask;
             },
             objectMethodExecutor,
+            actionMethodExecutor,
             actionMethodExecutor);
 
         var actionContext = new ActionContext(httpContext, routeData, actionDescriptor);
