@@ -496,6 +496,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         }
 
         Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
+        Assert.Throws<InvalidOperationException>(() => endpointBuilder.Finally(b => b.Metadata.Add(new RouteNameMetadata("Foo"))));
     }
 
     [Theory]
@@ -1039,7 +1040,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 b.Metadata.Add("added-from-group");
             }
         });
-            
+
         group.MapGet("/endpoint", () => { }).Finally(b => b.Metadata.Add("added-from-endpoint"));
 
         var endpoint = Assert.Single(builder.DataSources
