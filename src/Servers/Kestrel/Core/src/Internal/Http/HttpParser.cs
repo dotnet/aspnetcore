@@ -198,13 +198,15 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     var crIndex = lfOrCrIndex;
                     reader.Advance(crIndex + 1);
 
+                    bool hasDataAfterCr;
+
                     if ((uint)span.Length > (uint)(crIndex + 1) && span[crIndex + 1] == ByteLF)
                     {
                         // CR/LF in the same span (common case)
                         span = span.Slice(0, crIndex);
                         foundCrlf = true;
                     }
-                    else if (reader.TryPeek(out byte lfMaybe) && lfMaybe == ByteLF)
+                    else if ((hasDataAfterCr = reader.TryPeek(out byte lfMaybe)) && lfMaybe == ByteLF)
                     {
                         // CR/LF but split between spans
                         span = span.Slice(0, span.Length - 1);
@@ -213,7 +215,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     else
                     {
                         // What's after the CR?
-                        if (!reader.TryPeek(out _))
+                        if (!hasDataAfterCr)
                         {
                             // No more chars after CR? Don't consume an incomplete header
                             reader.Rewind(crIndex + 1);
