@@ -147,6 +147,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+#if (IndividualAuth)
+app.UseAuthorization();
+
+#endif
+
 #if (OrganizationalAuth || IndividualAuth)
 app.MapControllers();
 #endif

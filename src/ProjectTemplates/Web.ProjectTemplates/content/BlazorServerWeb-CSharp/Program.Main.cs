@@ -153,6 +153,11 @@ public class Program
 
         app.UseRouting();
 
+        #if (IndividualAuth)
+        app.UseAuthorization();
+
+        #endif
+
         #if (OrganizationalAuth || IndividualAuth)
         app.MapControllers();
         #endif
