@@ -1599,7 +1599,6 @@ public class ModelStateDictionaryTest
         Assert.Equal("value1", property.RawValue);
     }
 
-
     [Fact]
     public void GetFieldValidationState_ReturnsUnvalidated_IfTreeHeightIsGreaterThanLimit()
     {
