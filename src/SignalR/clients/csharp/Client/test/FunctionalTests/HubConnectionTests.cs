@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -1742,6 +1743,10 @@ public class HubConnectionTests : FunctionalTestBase
                 o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
                 o2.UseHttps();
             });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
         }))
         {
             var hubConnection = new HubConnectionBuilder()
@@ -1794,6 +1799,10 @@ public class HubConnectionTests : FunctionalTestBase
             {
                 o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
                 o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
             });
         }))
         {
