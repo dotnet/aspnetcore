@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.HttpOverrides;
 
 internal sealed class CertificateForwardingFeature : ITlsConnectionFeature
 {
-    private static readonly Task<X509Certificate2?> _nullCertificate = Task.FromResult<X509Certificate2?>(null);
-
     private readonly ILogger _logger;
     private readonly StringValues _header;
     private readonly CertificateForwardingOptions _options;
@@ -43,7 +41,7 @@ internal sealed class CertificateForwardingFeature : ITlsConnectionFeature
             catch (Exception e)
             {
                 _logger.NoCertificate(e);
-                return _nullCertificate;
+                return Task.FromResult<X509Certificate2?>(null);
             }
         }
         else
