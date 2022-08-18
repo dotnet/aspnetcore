@@ -95,7 +95,7 @@ public class SocketTransportOptions
     /// using this method do not need to call it again.
     /// </remarks>
     /// <remarks>
-    /// Defaults to <see cref="CreateBoundListenSocket"/>.
+    /// Defaults to <see cref="CreateDefaultBoundListenSocket"/>.
     /// </remarks>
     public Func<EndPoint, Socket> CreateBoundListenSocket { get; set; } = CreateDefaultBoundListenSocket;
 
