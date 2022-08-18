@@ -31,7 +31,8 @@ public class RemoteAuthenticationService<
 {
     private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
     private bool _initialized;
-    private readonly JavaScriptLoggingOptions _loggingOptions;
+
+    private readonly RemoteAuthenticationServiceJavaScriptLoggingOptions _loggingOptions;
 
     // This defaults to 1/1/1970
     private DateTimeOffset _userLastCheck = DateTimeOffset.FromUnixTimeSeconds(0);
@@ -93,7 +94,11 @@ public class RemoteAuthenticationService<
         Navigation = navigation;
         AccountClaimsPrincipalFactory = accountClaimsPrincipalFactory;
         Options = options.Value;
-        _loggingOptions = new JavaScriptLoggingOptions(logger?.IsEnabled(LogLevel.Debug) ?? false, logger?.IsEnabled(LogLevel.Trace) ?? false);
+        _loggingOptions = new RemoteAuthenticationServiceJavaScriptLoggingOptions
+        {
+            DebugEnabled = logger?.IsEnabled(LogLevel.Debug) ?? false,
+            TraceEnabled = logger?.IsEnabled(LogLevel.Trace) ?? false
+        };
     }
 
     /// <inheritdoc />
@@ -163,6 +168,7 @@ public class RemoteAuthenticationService<
     /// <inheritdoc />
     [DynamicDependency(JsonSerialized, typeof(AccessToken))]
     [DynamicDependency(JsonSerialized, typeof(AccessTokenRequestOptions))]
+
     public virtual async ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
     {
         if (options is null)
@@ -215,6 +221,7 @@ public class RemoteAuthenticationService<
         return user;
     }
 
+    [DynamicDependency(JsonSerialized, typeof(RemoteAuthenticationServiceJavaScriptLoggingOptions))]
     private async ValueTask EnsureAuthService()
     {
         if (!_initialized)
@@ -240,7 +247,15 @@ public class RemoteAuthenticationService<
         static async Task<AuthenticationState> UpdateAuthenticationState(Task<ClaimsPrincipal> futureUser) => new AuthenticationState(await futureUser);
     }
 
-    private record JavaScriptLoggingOptions(bool DebugEnabled, bool TraceEnabled);
+}
+
+// We need to do this as it can't be nested inside RemoteAuthenticationService because
+// it needs to be put in an attribute for linking purposes and that can't be an open generic type.
+internal class RemoteAuthenticationServiceJavaScriptLoggingOptions
+{
+    public bool DebugEnabled { get; set; }
+
+    public bool TraceEnabled { get; set; }
 }
 
 // Internal for testing purposes
