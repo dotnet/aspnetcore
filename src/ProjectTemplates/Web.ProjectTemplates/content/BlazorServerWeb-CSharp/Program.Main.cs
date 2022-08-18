@@ -157,7 +157,6 @@ public class Program
         app.UseAuthorization();
 
         #endif
-
         #if (OrganizationalAuth || IndividualAuth)
         app.MapControllers();
         #endif
