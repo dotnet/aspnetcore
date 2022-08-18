@@ -27,7 +27,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser() : this(showErrorDetails: true, disableHttp1LineFeedTerminators: false)
+    public HttpParser() : this(showErrorDetails: true)
     {
     }
 
@@ -35,7 +35,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser(bool showErrorDetails) : this(showErrorDetails, disableHttp1LineFeedTerminators: false)
+    public HttpParser(bool showErrorDetails) : this(showErrorDetails, AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators", out var disabled) && disabled)
     {
     }
 
@@ -176,9 +176,6 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     {
         while (!reader.End)
         {
-            // Size of the detected EOL
-            var eolSize = -1;
-
             // Check if the reader's span contains an LF to skip the reader if possible
             var span = reader.UnreadSpan;
 
@@ -190,6 +187,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 return true;
             }
 
+            var foundCrlf = false;
+
             var lfOrCrIndex = span.IndexOfAny(ByteCR, ByteLF);
             if (lfOrCrIndex >= 0)
             {
@@ -199,7 +198,6 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     var crIndex = lfOrCrIndex;
                     reader.Advance(crIndex + 1);
 
-                    var foundCrlf = false;
                     if ((uint)span.Length > (uint)(crIndex + 1) && span[crIndex + 1] == ByteLF)
                     {
                         // CR/LF in the same span (common case)
@@ -236,8 +234,6 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
                     if (foundCrlf)
                     {
-                        eolSize = 2;
-
                         // Advance past the LF too
                         reader.Advance(1);
 
@@ -290,7 +286,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             {
                 // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
                 // Not parsable as a valid name:value header pair.
-                RejectRequestHeader(AppendEndOfLine(span, lineFeedOnly: eolSize == 1));
+                RejectRequestHeader(AppendEndOfLine(span, lineFeedOnly: !foundCrlf));
             }
         }
 
@@ -328,7 +324,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         SequencePosition lineEnd;
         scoped ReadOnlySpan<byte> headerSpan;
         ReadOnlySequence<byte> header;
-        if (_disableHttp1LineFeedTerminators && (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1))
+        if (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1)
         {
             // If we're not allowing LF by itself as a terminator, we need two characters
             // for the line terminator. Since we don't have two, we know there can't be 
@@ -337,34 +333,43 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             // Advance 1 to include CR/LF in lineEnd
             lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
             header = currentSlice.Slice(reader.Position, lineEnd);
-            headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
-            if (headerSpan[^1] != ByteCR)
+            headerSpan = header.ToSpan();
+            if (headerSpan[^1] == ByteCR)
             {
-                RejectRequestHeader(headerSpan);
+                // CR without LF, can't read the header
+                return -1;
             }
-
-            return -1;
+            else
+            {
+                if (_disableHttp1LineFeedTerminators)
+                {
+                    // LF and disabled LF
+                    RejectRequestHeader(headerSpan);
+                }
+            }
         }
 
         // Offset 1 to include the first line end char.
         var firstLineEndCharPos = currentSlice.GetPosition(1, lineEndPosition.Value);
         header = currentSlice.Slice(reader.Position, firstLineEndCharPos);
 
-        if (header.ToSpan()[^1] == ByteCR)
+        headerSpan = header.ToSpan();
+
+        if (headerSpan[^1] == ByteCR)
         {
-            // Advance one more to include the potential LF in lineEnd
-            lineEnd = currentSlice.GetPosition(1, firstLineEndCharPos);
-            header = currentSlice.Slice(reader.Position, lineEnd);
+            header = currentSlice.Slice(reader.Position, currentSlice.GetPosition(2, lineEndPosition.Value));
         }
         else if (_disableHttp1LineFeedTerminators)
         {
             // The terminator is an LF and we don't allow it.
-            headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
             RejectRequestHeader(headerSpan);
-            return -1;
+        }
+        else
+        {
+            header = currentSlice.Slice(reader.Position, currentSlice.GetPosition(1, lineEndPosition.Value));
         }
 
-        headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
+        headerSpan = header.ToSpan();
 
         // 'a:b\n' or 'a:b\r\n'
         var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;

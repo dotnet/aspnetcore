@@ -636,6 +636,34 @@ public class HttpParserTests : LoggedTest
     }
 
     [Theory]
+    [InlineData("Host: \r\nConnection: keep-alive\r")]
+    public void ParseHeaderLineIncompleteDataWithGratuitouslySplitBuffers(string headers)
+    {
+        var parser = CreateParser(_nullTrace);
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
+
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+        var result = parser.ParseHeaders(requestHandler, ref reader);
+
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("Host: \r\nConnection: keep-alive\r")]
+    public void ParseHeaderLineIncompleteData(string headers)
+    {
+        var parser = CreateParser(_nullTrace);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(headers));
+
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+        var result = parser.ParseHeaders(requestHandler, ref reader);
+
+        Assert.False(result);
+    }
+
+    [Theory]
     [InlineData("Host:\nConnection: keep-alive\r\n\r\n")]
     [InlineData("Host:\r\nConnection: keep-alive\n\r\n")]
     [InlineData("A:B\nB: C\r\n\r\n")]
