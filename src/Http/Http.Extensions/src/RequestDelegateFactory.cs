@@ -64,6 +64,9 @@ public static partial class RequestDelegateFactory
     private static readonly PropertyInfo HeaderIndexerProperty = typeof(IHeaderDictionary).GetProperty("Item")!;
     private static readonly PropertyInfo FormFilesIndexerProperty = typeof(IFormFileCollection).GetProperty("Item")!;
 
+    private static readonly MemberExpression CancellationTokenNoneExpr = Expression.Property(null, typeof(CancellationToken), nameof(CancellationToken.None));
+    private static readonly MemberExpression CultureInfoInvariantCultureExpr = Expression.Property(null, typeof(CultureInfo), nameof(CultureInfo.InvariantCulture));
+
     // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
     // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
     private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object?, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync<object?>(response, value, default));
@@ -96,6 +99,9 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
     private static readonly NewExpression CompletedValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(Task) })!, CompletedTaskExpr);
+    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(
+        typeof(ValueTask<object>).GetConstructor(new[] { typeof(EmptyHttpResult) })!,
+        Expression.Property(null, typeof(EmptyHttpResult), nameof(EmptyHttpResult.Instance)));
 
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
@@ -366,7 +372,7 @@ public static partial class RequestDelegateFactory
     {
         if (returnType == typeof(void))
         {
-            return Expression.Block(methodCall, Expression.Constant(new ValueTask<object?>(EmptyHttpResult.Instance)));
+            return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
         }
         else if (returnType == typeof(Task))
         {
@@ -991,11 +997,11 @@ public static partial class RequestDelegateFactory
         else if (returnType.IsValueType)
         {
             var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, CancellationTokenNoneExpr);
         }
         else
         {
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, CancellationTokenNoneExpr);
         }
     }
 
@@ -1460,7 +1466,7 @@ public static partial class RequestDelegateFactory
                 HttpContextExpr, parameterTypeNameConstant, parameterNameConstant,
                 TempSourceStringExpr, Expression.Constant(factoryContext.ThrowOnBadRequest)));
 
-        var tryParseCall = tryParseMethodCall(parsedValue, Expression.Constant(CultureInfo.InvariantCulture));
+        var tryParseCall = tryParseMethodCall(parsedValue, CultureInfoInvariantCultureExpr);
 
         // The following code is generated if the parameter is required and
         // the method should not be matched.
