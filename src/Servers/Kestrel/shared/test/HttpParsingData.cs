@@ -400,11 +400,6 @@ public class HttpParsingData
 
     public static IEnumerable<object[]> RequestHeaderInvalidData => new[]
     {
-            // Missing CR
-            new[] { "Header: value\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header: value\x0A") },
-            new[] { "Header-1: value1\nHeader-2: value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1: value1\x0A") },
-            new[] { "Header-1: value1\r\nHeader-2: value2\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2: value2\x0A") },
-
             // Line folding
             new[] { "Header: line1\r\n line2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@" line2\x0D\x0A") },
             new[] { "Header: line1\r\n\tline2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"\x09line2\x0D\x0A") },
