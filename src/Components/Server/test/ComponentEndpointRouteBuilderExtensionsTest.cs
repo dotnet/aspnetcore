@@ -93,7 +93,7 @@ public class ComponentEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
-    public void MapBlazorHub_AppliesFinalConventionsInLIFOOrder()
+    public void MapBlazorHub_AppliesFinalConventionsInFIFOOrder()
     {
         // Arrange
         var applicationBuilder = CreateAppBuilder();
@@ -106,12 +106,12 @@ public class ComponentEndpointRouteBuilderExtensionsTest
             .UseEndpoints(endpoints =>
             {
                 var builder = endpoints.MapBlazorHub(dispatchOptions => called = true);
+                builder.Finally(b => b.Metadata.Add("first-in"));
+                builder.Finally(b => b.Metadata.Add("last-in"));
                 builder.Finally(b =>
                 {
                     populatedMetadata = b.Metadata.OfType<string>().ToArray();
                 });
-                builder.Finally(b => b.Metadata.Add("first-in"));
-                builder.Finally(b => b.Metadata.Add("last-in"));
             }).Build();
 
         // Trigger endpoint construction
@@ -119,7 +119,7 @@ public class ComponentEndpointRouteBuilderExtensionsTest
 
         // Assert
         Assert.True(called);
-        Assert.Equal(new[] { "last-in", "first-in" }, populatedMetadata);
+        Assert.Equal(new[] { "first-in", "last-in" }, populatedMetadata);
     }
 
     private IApplicationBuilder CreateAppBuilder()
