@@ -223,7 +223,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                         }
                         else if (crIndex == 0)
                         {
-                            // CR by itself
+                            // CR followed by something other than LF
                             KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
                         }
                         else
