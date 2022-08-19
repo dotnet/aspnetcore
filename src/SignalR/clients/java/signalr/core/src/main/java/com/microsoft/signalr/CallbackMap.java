@@ -31,22 +31,22 @@ class CallbackMap {
                     }
                 }
             }
+            methodHandlers = new ArrayList<>(methodHandlers);
             methodHandlers.add(handler);
+
+            // replace List in handlers map
+            handlers.remove(target);
+            handlers.put(target, methodHandlers);
             return handler;
         } finally {
             lock.unlock();
         }
     }
 
-    // Returns a copy of the handlers list so that modifications to the list don't cause issues with looping over the list
     public List<InvocationHandler> get(String key) {
         try {
             lock.lock();
-            List<InvocationHandler> handlers = this.handlers.get(key);
-            if (handlers == null) {
-                return null;
-            }
-            return new ArrayList<InvocationHandler>(handlers);
+            return this.handlers.get(key);
         } finally {
             lock.unlock();
         }
@@ -66,7 +66,12 @@ class CallbackMap {
             lock.lock();
             List<InvocationHandler> handlers = this.handlers.get(key);
             if (handlers != null) {
+                handlers = new ArrayList<>(handlers);
                 handlers.remove(handler);
+
+                // replace List in handlers map
+                this.handlers.remove(key);
+                this.handlers.put(key, handlers);
             }
         } finally {
             lock.unlock();
