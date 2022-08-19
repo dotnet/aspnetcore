@@ -324,19 +324,17 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         SequencePosition lineEnd;
-        scoped ReadOnlySpan<byte> headerSpan;
         ReadOnlySequence<byte> header;
+
+        var firstLineEndCharPos = lineEndPosition.Value;
+        currentSlice.TryGet(ref firstLineEndCharPos, out var s);
+        var firstEolChar = s.Span[0];
+
+        // Is the first EOL char the last of the current slice?
         if (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1)
         {
-            // If we're not allowing LF by itself as a terminator, we need two characters
-            // for the line terminator. Since we don't have two, we know there can't be 
-            // a CRLF here. However, we need to also check that found char is CR and not LF.
-
-            // Advance 1 to include CR/LF in lineEnd
-            lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
-            header = currentSlice.Slice(reader.Position, lineEnd);
-            headerSpan = header.ToSpan();
-            if (headerSpan[^1] == ByteCR)
+            // Get the EOL char
+            if (firstEolChar == ByteCR)
             {
                 // CR without LF, can't read the header
                 return -1;
@@ -345,33 +343,40 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             {
                 if (_disableHttp1LineFeedTerminators)
                 {
-                    // LF and disabled LF
-                    RejectRequestHeader(headerSpan);
+                    // LF only but disabled
+
+                    // Advance 1 to include LF in result
+                    lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
+                    RejectRequestHeader(currentSlice.Slice(reader.Position, lineEnd).ToSpan());
                 }
             }
         }
 
-        // Offset 1 to include the first line end char.
-        var firstLineEndCharPos = currentSlice.GetPosition(1, lineEndPosition.Value);
-        header = currentSlice.Slice(reader.Position, firstLineEndCharPos);
+        // At this point the first EOL char is not the last byte in the current slice
 
-        headerSpan = header.ToSpan();
+        // Offset 1 to include the first EOL char.
+        firstLineEndCharPos = currentSlice.GetPosition(1, lineEndPosition.Value);
 
-        if (headerSpan[^1] == ByteCR)
+        if (firstEolChar == ByteCR)
         {
-            header = currentSlice.Slice(reader.Position, currentSlice.GetPosition(2, lineEndPosition.Value));
+            // First EOL char is CR, include the char after CR
+            lineEnd = currentSlice.GetPosition(2, lineEndPosition.Value);
+            header = currentSlice.Slice(reader.Position, lineEnd);
         }
         else if (_disableHttp1LineFeedTerminators)
         {
             // The terminator is an LF and we don't allow it.
-            RejectRequestHeader(headerSpan);
+            RejectRequestHeader(currentSlice.Slice(reader.Position, firstLineEndCharPos).ToSpan());
+            return -1;
         }
         else
         {
-            header = currentSlice.Slice(reader.Position, currentSlice.GetPosition(1, lineEndPosition.Value));
+            // First EOL char is LF. only include this one
+            lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
+            header = currentSlice.Slice(reader.Position, lineEnd);
         }
 
-        headerSpan = header.ToSpan();
+        var headerSpan = header.ToSpan();
 
         // 'a:b\n' or 'a:b\r\n'
         var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;
@@ -381,6 +386,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         var terminatorSize = -1;
+
         if (headerSpan[^1] == ByteLF)
         {
             if (headerSpan[^2] == ByteCR)
