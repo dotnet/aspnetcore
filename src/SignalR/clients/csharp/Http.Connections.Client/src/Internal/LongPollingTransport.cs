@@ -148,7 +148,12 @@ internal sealed partial class LongPollingTransport : ITransport
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
+                var request = new HttpRequestMessage(HttpMethod.Get, pollUrl)
+                {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                    Version = HttpVersion.Version20,
+#endif
+                };
 
                 HttpResponseMessage response;
 
