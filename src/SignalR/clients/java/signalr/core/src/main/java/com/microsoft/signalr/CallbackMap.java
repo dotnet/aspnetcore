@@ -38,10 +38,15 @@ class CallbackMap {
         }
     }
 
+    // Returns a copy of the handlers list so that modifications to the list don't cause issues with looping over the list
     public List<InvocationHandler> get(String key) {
         try {
             lock.lock();
-            return handlers.get(key);
+            List<InvocationHandler> handlers = this.handlers.get(key);
+            if (handlers == null) {
+                return null;
+            }
+            return new ArrayList<InvocationHandler>(handlers);
         } finally {
             lock.unlock();
         }
@@ -51,6 +56,18 @@ class CallbackMap {
         try {
             lock.lock();
             handlers.remove(key);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void remove(String key, InvocationHandler handler) {
+        try {
+            lock.lock();
+            List<InvocationHandler> handlers = this.handlers.get(key);
+            if (handlers != null) {
+                handlers.remove(handler);
+            }
         } finally {
             lock.unlock();
         }
