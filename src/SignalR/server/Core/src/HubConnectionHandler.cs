@@ -200,8 +200,8 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         // Ensure the connection is aborted before firing disconnect
         await connection.AbortAsync();
 
-        // If a client result is requested in OnDisconnectedAsync we want to make sure it isn't blocked by the ActiveInvocationLimit
-        _ = connection.ActiveInvocationLimit.AttemptWait();
+        // If a client result is requested in OnDisconnectedAsync we want to avoid the SemaphoreFullException and get the better connection disconnected IOException
+        _ = connection.ActiveInvocationLimit.TryAcquire();
 
         try
         {

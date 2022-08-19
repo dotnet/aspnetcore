@@ -277,6 +277,46 @@ public partial class HubConnectionHandlerTests
         }
     }
 
+    [Fact]
+    public async Task ClientResultFromBackgroundThreadInHubMethodWorks()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var completionMessage = await client.InvokeAsync(nameof(MethodHub.BackgroundClientResult)).DefaultTimeout();
+
+                tcsService.StartedMethod.SetResult(null);
+
+                var task = await Task.WhenAny(tcsService.EndMethod.Task, client.ReadAsync()).DefaultTimeout();
+                if (task == tcsService.EndMethod.Task)
+                {
+                    await tcsService.EndMethod.Task;
+                }
+                // Hub asks client for a result, this is an invocation message with an ID
+                var invocationMessage = Assert.IsType<InvocationMessage>(await (Task<HubMessage>)task);
+                Assert.NotNull(invocationMessage.InvocationId);
+                var res = 4 + ((long)invocationMessage.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+
+                Assert.Equal(5, await tcsService.EndMethod.Task.DefaultTimeout());
+
+                // Make sure we can still do a Hub invocation and that the semaphore state didn't get messed up
+                completionMessage = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                Assert.Equal(43L, completionMessage.Result);
+            }
+        }
+    }
+
     private class TestBinder : IInvocationBinder
     {
         public IReadOnlyList<Type> GetParameterTypes(string methodName)

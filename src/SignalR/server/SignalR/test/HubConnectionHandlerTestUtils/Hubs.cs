@@ -338,6 +338,24 @@ public class MethodHub : TestHub
         var sum = await Clients.Caller.InvokeAsync<int>("Sum", num, cancellationToken: default);
         return sum;
     }
+
+    public void BackgroundClientResult(TcsService tcsService)
+    {
+        var caller = Clients.Caller;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await tcsService.StartedMethod.Task;
+                var result = await caller.InvokeAsync<int>("GetResult", 1, CancellationToken.None);
+                tcsService.EndMethod.SetResult(result);
+            }
+            catch (Exception ex)
+            {
+                tcsService.EndMethod.SetException(ex);
+            }
+        });
+    }
 }
 
 internal class SelfRef

@@ -7,8 +7,9 @@ internal sealed class HubCallerClients : IHubCallerClients
 {
     private readonly string _connectionId;
     private readonly IHubClients _hubClients;
-    private readonly string[] _currentConnectionId;
-    private readonly ChannelBasedSemaphore _parallelInvokes;
+    internal readonly ChannelBasedSemaphore _parallelInvokes;
+
+    internal int ShouldReleaseSemaphore = 1;
 
     // Client results don't work in OnConnectedAsync
     // This property is set by the hub dispatcher when those methods are being called
@@ -19,7 +20,6 @@ internal sealed class HubCallerClients : IHubCallerClients
     {
         _connectionId = connectionId;
         _hubClients = hubClients;
-        _currentConnectionId = new[] { _connectionId };
         _parallelInvokes = parallelInvokes;
     }
 
@@ -32,11 +32,11 @@ internal sealed class HubCallerClients : IHubCallerClients
             {
                 return new NoInvokeSingleClientProxy(_hubClients.Client(_connectionId));
             }
-            return new SingleClientProxy(_hubClients.Client(_connectionId), _parallelInvokes);
+            return new SingleClientProxy(_hubClients.Client(_connectionId), this);
         }
     }
 
-    public IClientProxy Others => _hubClients.AllExcept(_currentConnectionId);
+    public IClientProxy Others => _hubClients.AllExcept(new[] { _connectionId });
 
     public IClientProxy All => _hubClients.All;
 
@@ -52,7 +52,7 @@ internal sealed class HubCallerClients : IHubCallerClients
         {
             return new NoInvokeSingleClientProxy(_hubClients.Client(_connectionId));
         }
-        return new SingleClientProxy(_hubClients.Client(connectionId), _parallelInvokes);
+        return new SingleClientProxy(_hubClients.Client(connectionId), this);
     }
 
     public IClientProxy Group(string groupName)
@@ -67,7 +67,7 @@ internal sealed class HubCallerClients : IHubCallerClients
 
     public IClientProxy OthersInGroup(string groupName)
     {
-        return _hubClients.GroupExcept(groupName, _currentConnectionId);
+        return _hubClients.GroupExcept(groupName, new[] { _connectionId });
     }
 
     public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds)
@@ -113,29 +113,26 @@ internal sealed class HubCallerClients : IHubCallerClients
     private sealed class SingleClientProxy : ISingleClientProxy
     {
         private readonly ISingleClientProxy _proxy;
-        private readonly ChannelBasedSemaphore _parallelInvokes;
+        private readonly HubCallerClients _hubCallerClients;
 
-        public SingleClientProxy(ISingleClientProxy hubClients, ChannelBasedSemaphore parallelInvokes)
+        public SingleClientProxy(ISingleClientProxy hubClients, HubCallerClients hubCallerClients)
         {
             _proxy = hubClients;
-            _parallelInvokes = parallelInvokes;
+            _hubCallerClients = hubCallerClients;
         }
 
         public async Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             // Releases the Channel that is blocking pending invokes, which in turn can block the receive loop.
             // Because we are waiting for a result from the client we need to let the receive loop run otherwise we'll be blocked forever
-            await _parallelInvokes.ReleaseAsync(cancellationToken);
-            try
+            var value = Interlocked.CompareExchange(ref _hubCallerClients.ShouldReleaseSemaphore, 0, 1);
+            // Only release once, and we set ShouldReleaseSemaphore to 0 so the DefaultHubDispatcher knows not to call Release again
+            if (value == 1)
             {
-                var result = await _proxy.InvokeCoreAsync<T>(method, args, cancellationToken);
-                return result;
+                _hubCallerClients._parallelInvokes.Release();
             }
-            finally
-            {
-                // Re-wait, this is because when the hub method completes it will release which we already did above, so we need to reset the state
-                _ = await _parallelInvokes.WaitAsync(CancellationToken.None);
-            }
+            var result = await _proxy.InvokeCoreAsync<T>(method, args, cancellationToken);
+            return result;
         }
 
         public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
