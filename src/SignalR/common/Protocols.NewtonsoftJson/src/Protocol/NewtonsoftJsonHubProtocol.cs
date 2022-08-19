@@ -217,7 +217,6 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                         }
                                         else
                                         {
-
                                             if (!JsonUtils.ReadForType(reader, returnType))
                                             {
                                                 throw new JsonReaderException("Unexpected end when reading JSON");
