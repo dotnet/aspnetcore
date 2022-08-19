@@ -3,8 +3,8 @@
     <Description>Swagger for gRPC ASP.NET Core</Description>
     <PackageTags>gRPC RPC HTTP/2 REST Swagger OpenAPI</PackageTags>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsPackable>false</IsPackable>
-    <IsShipping>false</IsShipping>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
