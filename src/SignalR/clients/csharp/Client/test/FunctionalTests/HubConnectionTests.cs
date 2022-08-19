@@ -1734,6 +1734,7 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task WebSocketsCanConnectOverHttp2()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -1790,6 +1791,7 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task WebSocketsWithAccessTokenOverHttp2()
     {
         var accessTokenCallCount = 0;
