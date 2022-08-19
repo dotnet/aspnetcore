@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
+#pragma warning disable CA2252 // WebTransport is a preview feature
 internal sealed class WebTransportSession : IWebTransportSession
 {
     private static readonly IStreamDirectionFeature _outputStreamDirectionFeature = new DefaultStreamDirectionFeature(canRead: false, canWrite: true);
@@ -190,3 +191,4 @@ internal sealed class WebTransportSession : IWebTransportSession
         return success;
     }
 }
+#pragma warning restore CA2252 // WebTransport is a preview feature
