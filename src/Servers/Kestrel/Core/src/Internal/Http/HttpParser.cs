@@ -35,7 +35,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser(bool showErrorDetails) : this(showErrorDetails, AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators", out var disabled) && disabled)
+    public HttpParser(bool showErrorDetails) : this(showErrorDetails, AppContext.TryGetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled)
     {
     }
 
@@ -400,7 +400,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         // Last chance to bail if the terminator size is not valid or the header doesn't parse.
-        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan[..^terminatorSize]))
+        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
         {
             RejectRequestHeader(headerSpan);
         }

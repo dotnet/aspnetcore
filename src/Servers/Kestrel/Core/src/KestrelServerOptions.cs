@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class KestrelServerOptions
 {
+    internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
@@ -185,7 +187,7 @@ public class KestrelServerOptions
         {
             if (!_disableHttp1LineFeedTerminators.HasValue)
             {
-                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators", out var disabled) && disabled;
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch(DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled;
             }
 
             return _disableHttp1LineFeedTerminators.Value;
