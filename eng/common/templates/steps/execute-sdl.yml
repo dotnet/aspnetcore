@@ -8,29 +8,26 @@ parameters:
   condition: ''
 
 steps:
-- ${{ if ne(parameters.overrideGuardianVersion, '') }}:
-  - powershell: |
-      $content = Get-Content $(GuardianPackagesConfigFile)
-
-      Write-Host "packages.config content was:`n$content"
-
-      $content = $content.Replace('$(DefaultGuardianVersion)', '$(GuardianVersion)')
-      $content | Set-Content $(GuardianPackagesConfigFile)
-
-      Write-Host "packages.config content updated to:`n$content"
-    displayName: Use overridden Guardian version ${{ parameters.overrideGuardianVersion }}
+- task: NuGetAuthenticate@1
+  inputs:
+    nuGetServiceConnections: GuardianConnect
 
 - task: NuGetToolInstaller@1
   displayName: 'Install NuGet.exe'
   
-- task: NuGetCommand@2
-  displayName: 'Install Guardian'
-  inputs:
-    restoreSolution: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
-    feedsToUse: config
-    nugetConfigPath: $(Build.SourcesDirectory)\eng\common\sdl\NuGet.config
-    externalFeedCredentials: GuardianConnect
-    restoreDirectory: $(Build.SourcesDirectory)\.packages
+- ${{ if ne(parameters.overrideGuardianVersion, '') }}:
+  - pwsh: |
+      . $(Build.SourcesDirectory)\eng\common\sdl\sdl.ps1
+      $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts -Version ${{ parameters.overrideGuardianVersion }}
+      Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
+    displayName: Install Guardian (Overridden)
+
+- ${{ if eq(parameters.overrideGuardianVersion, '') }}:
+  - pwsh: |
+      . $(Build.SourcesDirectory)\eng\common\sdl\sdl.ps1
+      $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts
+      Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
+    displayName: Install Guardian
 
 - ${{ if ne(parameters.overrideParameters, '') }}:
   - powershell: ${{ parameters.executeAllSdlToolsScript }} ${{ parameters.overrideParameters }}
@@ -40,7 +37,7 @@ steps:
 
 - ${{ if eq(parameters.overrideParameters, '') }}:
   - powershell: ${{ parameters.executeAllSdlToolsScript }}
-      -GuardianPackageName Microsoft.Guardian.Cli.$(GuardianVersion)
+      -GuardianCliLocation $(GuardianCliLocation)
       -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
       -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
       ${{ parameters.additionalParameters }}
