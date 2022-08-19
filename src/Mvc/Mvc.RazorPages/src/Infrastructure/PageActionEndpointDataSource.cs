@@ -26,7 +26,7 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
         DataSourceId = dataSourceIdProvider.CreateId();
         _endpointFactory = endpointFactory;
         _orderSequence = orderedEndpoints;
-        DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions);
+        DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions, FinallyConventions);
 
         // IMPORTANT: this needs to be the last thing we do in the constructor.
         // Change notifications can happen immediately!
@@ -45,7 +45,9 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
         RoutePattern? groupPrefix,
         IReadOnlyList<ActionDescriptor> actions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
-        IReadOnlyList<Action<EndpointBuilder>> groupConventions)
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -57,8 +59,10 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
                     routeNames,
                     action,
                     Array.Empty<ConventionalRouteEntry>(),
-                    groupConventions: groupConventions,
                     conventions: conventions,
+                    groupConventions: groupConventions,
+                    finallyConventions: finallyConventions,
+                    groupFinallyConventions: groupFinallyConventions,
                     CreateInertEndpoints,
                     groupPrefix);
             }
