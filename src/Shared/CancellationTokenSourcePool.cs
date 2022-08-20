@@ -3,7 +3,7 @@
 
 using System.Collections.Concurrent;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+namespace Microsoft.AspNetCore.Internal;
 
 internal sealed class CancellationTokenSourcePool
 {
