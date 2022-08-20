@@ -45,6 +45,7 @@ public class PageActionEndpointDataSourceTest : ActionEndpointDataSourceBaseTest
         // Assert
         Assert.Empty(endpoints);
     }
+
     [Fact]
     public void Endpoints_AppliesConventions()
     {
@@ -141,7 +142,12 @@ public class PageActionEndpointDataSourceTest : ActionEndpointDataSourceBaseTest
         };
         var sp = Mock.Of<IServiceProvider>();
         var groupPattern = RoutePatternFactory.Parse("/group1");
-        var endpoints = dataSource.GetGroupedEndpoints(new RouteGroupContext(groupPattern, groupConventions, sp));
+        var endpoints = dataSource.GetGroupedEndpoints(new RouteGroupContext
+        {
+            Prefix = groupPattern,
+            Conventions = groupConventions,
+            ApplicationServices = sp
+        });
 
         // Assert
         Assert.Collection(
@@ -162,9 +168,97 @@ public class PageActionEndpointDataSourceTest : ActionEndpointDataSourceBaseTest
             });
     }
 
-    private class GroupMetadata
+    [Fact]
+    public void Endpoints_AppliesFinallyConventions_InFIFOOrder_Last()
     {
+        // Arrange
+        var actions = new List<ActionDescriptor>
+            {
+                new PageActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = "/test",
+                    },
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Test" },
+                        { "controller", "Test" },
+                    },
+                },
+            };
+
+        var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+        mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
+
+        var dataSource = (PageActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
+
+        dataSource.DefaultBuilder.Finally((b) => b.Metadata.Add("A1"));
+        dataSource.DefaultBuilder.Finally((b) => b.Metadata.Add("A2"));
+
+        // Act
+        var endpoints = dataSource.Endpoints;
+
+        // Assert
+        Assert.Collection(
+            endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+            e =>
+            {
+                Assert.Equal("/test", e.RoutePattern.RawText);
+                Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal(new[] { "A1", "A2" }, e.Metadata.GetOrderedMetadata<string>());
+            });
     }
+
+    [Fact]
+    public void Endpoints_FinallyConvention_CanObserveMetadata()
+    {
+        // Arrange
+        var actions = new List<ActionDescriptor>
+            {
+                new PageActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = "/test",
+                    },
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Test" },
+                        { "controller", "Test" },
+                    },
+                    EndpointMetadata = new List<object>() { "initial-metadata" }
+                },
+            };
+
+        var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+        mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
+
+        var dataSource = (PageActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
+
+        dataSource.DefaultBuilder.Finally((b) =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "initial-metadata"))
+            {
+                b.Metadata.Add("initial-metadata-observed");
+            }
+        });
+
+        // Act
+        var endpoints = dataSource.Endpoints;
+
+        // Assert
+        Assert.Collection(
+            endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+            e =>
+            {
+                Assert.Equal("/test", e.RoutePattern.RawText);
+                Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal(new[] { "initial-metadata", "initial-metadata-observed" }, e.Metadata.GetOrderedMetadata<string>());
+            });
+    }
+
+    private class GroupMetadata { }
 
     private protected override ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory)
     {

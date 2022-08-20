@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
