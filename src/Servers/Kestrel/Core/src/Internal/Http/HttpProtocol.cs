@@ -1158,7 +1158,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                     // If the response shouldn't include a Content-Length but it's 0
                     // we'll just get rid of it without throwing an error, since it
                     // is semantically equivalent to not having a Content-Length.
-                    responseHeaders.Remove(HeaderNames.ContentLength, out _);
+                    responseHeaders.ContentLength = null;
                 }
                 else
                 {
