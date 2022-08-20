@@ -421,6 +421,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     public async Task StreamPool_StreamAbortedOnClientAndServer_NotPooled()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);

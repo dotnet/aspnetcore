@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Testing;
 
 public static class ServerRetryHelper
 {
+    private const int RetryCount = 15;
+
     /// <summary>
     /// Retry a func. Useful when a test needs an explicit port and you want to avoid port conflicts.
     /// </summary>
@@ -27,7 +29,7 @@ public static class ServerRetryHelper
             {
                 retryCount++;
 
-                if (retryCount >= 5)
+                if (retryCount >= RetryCount)
                 {
                     throw;
                 }
