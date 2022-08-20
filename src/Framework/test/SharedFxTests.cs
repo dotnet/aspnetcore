@@ -204,7 +204,6 @@ public class SharedFxTests
                         $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
             }
 
-            Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
             Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
             Assert.Equal(0, assemblyDefinition.Version.Build);
             Assert.Equal(0, assemblyDefinition.Version.Revision);
