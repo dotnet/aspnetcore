@@ -14,11 +14,7 @@ public partial class HubConnectionHandlerTests
     {
         using (StartVerifiableLog())
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
-            {
-                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
-                builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
-            }, LoggerFactory);
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder => { }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
             using (var client = new TestClient())
@@ -47,10 +43,8 @@ public partial class HubConnectionHandlerTests
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             {
-                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
                 builder.AddSignalR(o =>
                 {
-                    o.MaximumParallelInvocationsPerClient = 2;
                     o.EnableDetailedErrors = true;
                 });
             }, LoggerFactory);
@@ -75,36 +69,6 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
-    public async Task ThrowsWhenParallelHubInvokesNotEnabled()
-    {
-        using (StartVerifiableLog(write => write.EventId.Name == "FailedInvokingHubMethod"))
-        {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
-            {
-                builder.AddSignalR(o =>
-                {
-                    o.MaximumParallelInvocationsPerClient = 1;
-                    o.EnableDetailedErrors = true;
-                });
-            }, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-            using (var client = new TestClient())
-            {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-
-                var invocationId = await client.SendHubMessageAsync(new InvocationMessage("1", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
-
-                // Hub asks client for a result, this is an invocation message with an ID
-                var completionMessage = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
-                Assert.Equal(invocationId, completionMessage.InvocationId);
-                Assert.Equal("An unexpected error occurred invoking 'GetClientResult' on the server. InvalidOperationException: Client results inside a Hub method requires HubOptions.MaximumParallelInvocationsPerClient to be greater than 1.",
-                    completionMessage.Error);
-            }
-        }
-    }
-
-    [Fact]
     public async Task ThrowsWhenUsedInOnConnectedAsync()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "ErrorDispatchingHubEvent"))
@@ -113,7 +77,6 @@ public partial class HubConnectionHandlerTests
             {
                 builder.AddSignalR(o =>
                 {
-                    o.MaximumParallelInvocationsPerClient = 2;
                     o.EnableDetailedErrors = true;
                 });
             }, LoggerFactory);
@@ -141,7 +104,6 @@ public partial class HubConnectionHandlerTests
             {
                 builder.AddSignalR(o =>
                 {
-                    o.MaximumParallelInvocationsPerClient = 2;
                     o.EnableDetailedErrors = true;
                 });
             }, LoggerFactory);
@@ -235,11 +197,7 @@ public partial class HubConnectionHandlerTests
     {
         using (StartVerifiableLog())
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
-            {
-                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
-                builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
-            }, LoggerFactory);
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder => { }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
 
             using var client = new TestClient(invocationBinder: new GetClientResultTwoWaysInvocationBinder());
@@ -263,6 +221,99 @@ public partial class HubConnectionHandlerTests
 
             var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
             Assert.Equal(new ClientResults(11, 7), completion.Result);
+        }
+    }
+
+    [Fact]
+    public async Task ClientResultFromHubDoesNotBlockReceiveLoop()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                // block 1 of the 2 parallel invocations
+                _ = await client.SendHubMessageAsync(new InvocationMessage("1", nameof(MethodHub.BlockingMethod), Array.Empty<object>())).DefaultTimeout();
+
+                // make multiple invocations which would normally block the invocation processing
+                var invocationId = await client.SendHubMessageAsync(new InvocationMessage("2", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
+                var invocationId2 = await client.SendHubMessageAsync(new InvocationMessage("3", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
+                var invocationId3 = await client.SendHubMessageAsync(new InvocationMessage("4", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
+
+                // Read all 3 invocation messages from the server, shows that the hub processing continued even though parallel invokes is 2
+                // Hub asks client for a result, this is an invocation message with an ID
+                var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                var invocationMessage2 = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                var invocationMessage3 = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+
+                Assert.NotNull(invocationMessage.InvocationId);
+                Assert.NotNull(invocationMessage2.InvocationId);
+                Assert.NotNull(invocationMessage3.InvocationId);
+                var res = 4 + ((long)invocationMessage.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(9L, completion.Result);
+                Assert.Equal(invocationId, completion.InvocationId);
+
+                res = 5 + ((long)invocationMessage2.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage2.InvocationId, res)).DefaultTimeout();
+                completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(10L, completion.Result);
+                Assert.Equal(invocationId2, completion.InvocationId);
+
+                res = 6 + ((long)invocationMessage3.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage3.InvocationId, res)).DefaultTimeout();
+                completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(11L, completion.Result);
+                Assert.Equal(invocationId3, completion.InvocationId);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ClientResultFromBackgroundThreadInHubMethodWorks()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var completionMessage = await client.InvokeAsync(nameof(MethodHub.BackgroundClientResult)).DefaultTimeout();
+
+                tcsService.StartedMethod.SetResult(null);
+
+                var task = await Task.WhenAny(tcsService.EndMethod.Task, client.ReadAsync()).DefaultTimeout();
+                if (task == tcsService.EndMethod.Task)
+                {
+                    await tcsService.EndMethod.Task;
+                }
+                // Hub asks client for a result, this is an invocation message with an ID
+                var invocationMessage = Assert.IsType<InvocationMessage>(await (Task<HubMessage>)task);
+                Assert.NotNull(invocationMessage.InvocationId);
+                var res = 4 + ((long)invocationMessage.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+
+                Assert.Equal(5, await tcsService.EndMethod.Task.DefaultTimeout());
+
+                // Make sure we can still do a Hub invocation and that the semaphore state didn't get messed up
+                completionMessage = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                Assert.Equal(43L, completionMessage.Result);
+            }
         }
     }
 
