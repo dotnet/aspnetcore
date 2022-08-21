@@ -73,13 +73,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
     public override async Task OnConnectedAsync(HubConnectionContext connection)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        connection.HubCallerClients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId, connection.ActiveInvocationLimit is not null);
 
         var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
         var hub = hubActivator.Create();
         try
         {
-            InitializeHub(hub, connection);
+            // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
+            InitializeHub(hub, connection, invokeAllowed: false);
 
             if (_onConnectedMiddleware != null)
             {
@@ -90,9 +90,6 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             {
                 await hub.OnConnectedAsync();
             }
-
-            // OnConnectedAsync is finished, allow hub methods to use client results (ISingleClientProxy.InvokeAsync)
-            connection.HubCallerClients.InvokeAllowed = true;
         }
         finally
         {
@@ -256,13 +253,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         else
         {
             bool isStreamCall = descriptor.StreamingParameters != null;
-            if (connection.ActiveInvocationLimit != null && !isStreamCall && !isStreamResponse)
+            if (!isStreamCall && !isStreamResponse)
             {
                 return connection.ActiveInvocationLimit.RunAsync(static state =>
                 {
                     var (dispatcher, descriptor, connection, invocationMessage) = state;
                     return dispatcher.Invoke(descriptor, connection, invocationMessage, isStreamResponse: false, isStreamCall: false);
-                }, (this, descriptor, connection, hubMethodInvocationMessage));
+                }, (this, descriptor, connection, hubMethodInvocationMessage)).AsTask();
             }
             else
             {
@@ -271,11 +268,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
     }
 
-    private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection,
+    private async Task<bool> Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection,
         HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamResponse, bool isStreamCall)
     {
         var methodExecutor = descriptor.MethodExecutor;
 
+        var wasSemaphoreReleased = false;
         var disposeScope = true;
         var scope = _serviceScopeFactory.CreateAsyncScope();
         IHubActivator<THub>? hubActivator = null;
@@ -290,12 +288,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                     $"Failed to invoke '{hubMethodInvocationMessage.Target}' because user is unauthorized");
-                return;
+                return true;
             }
 
             if (!await ValidateInvocationMode(descriptor, isStreamResponse, hubMethodInvocationMessage, connection))
             {
-                return;
+                return true;
             }
 
             try
@@ -308,7 +306,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                     Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
-                    return;
+                    return true;
                 }
 
                 InitializeHub(hub, connection);
@@ -404,9 +402,15 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         {
             if (disposeScope)
             {
+                if (hub?.Clients is HubCallerClients hubCallerClients)
+                {
+                    wasSemaphoreReleased = Interlocked.CompareExchange(ref hubCallerClients.ShouldReleaseSemaphore, 0, 1) == 0;
+                }
                 await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
             }
         }
+
+        return !wasSemaphoreReleased;
     }
 
     private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub>? hubActivator,
@@ -553,9 +557,9 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         await connection.WriteAsync(CompletionMessage.WithError(invocationId, errorMessage));
     }
 
-    private void InitializeHub(THub hub, HubConnectionContext connection)
+    private void InitializeHub(THub hub, HubConnectionContext connection, bool invokeAllowed = true)
     {
-        hub.Clients = connection.HubCallerClients;
+        hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId, connection.ActiveInvocationLimit) { InvokeAllowed = invokeAllowed };
         hub.Context = connection.HubCallerContext;
         hub.Groups = _hubContext.Groups;
     }
