@@ -232,7 +232,7 @@ public class Startup
             {
                 try
                 {
-                    var result = await hubContext.Clients.Client(id).InvokeAsync<int>("Result");
+                    var result = await hubContext.Clients.Client(id).InvokeAsync<int>("Result", cancellationToken: default);
                     return result.ToString(CultureInfo.InvariantCulture);
                 }
                 catch (Exception ex)

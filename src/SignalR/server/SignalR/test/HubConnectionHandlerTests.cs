@@ -2991,8 +2991,14 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await client.SendHubMessageAsync(PingMessage.Instance);
 
                 // Call long running hub method
-                var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
+                var hubMethodTask1 = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
                 await tcsService.StartedMethod.Task.DefaultTimeout();
+
+                // Wait for server to start reading again
+                await customDuplex.WrappedPipeReader.WaitForReadStart().DefaultTimeout();
+                // Send another invocation to server, since we use Inline scheduling we know that once this call completes the server will have read and processed
+                // the message, it should be stuck waiting for the in-progress invoke now
+                _ = await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod)).DefaultTimeout();
 
                 // Tick heartbeat while hub method is running to show that close isn't triggered
                 client.TickHeartbeat();
@@ -3000,7 +3006,8 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 // Unblock long running hub method
                 tcsService.EndMethod.SetResult(null);
 
-                await hubMethodTask.DefaultTimeout();
+                await hubMethodTask1.DefaultTimeout();
+                await client.ReadAsync().DefaultTimeout();
 
                 // There is a small window when the hub method finishes and the timer starts again
                 // So we need to delay a little before ticking the heart beat.

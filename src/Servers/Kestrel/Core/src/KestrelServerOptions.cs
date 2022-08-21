@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class KestrelServerOptions
 {
+    internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
@@ -173,6 +175,24 @@ public class KestrelServerOptions
             return _enableWebTransportAndH3Datagrams.Value;
         }
         set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// </summary>
+    private bool? _disableHttp1LineFeedTerminators;
+    internal bool DisableHttp1LineFeedTerminators
+    {
+        get
+        {
+            if (!_disableHttp1LineFeedTerminators.HasValue)
+            {
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch(DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled;
+            }
+
+            return _disableHttp1LineFeedTerminators.Value;
+        }
+        set => _disableHttp1LineFeedTerminators = value;
     }
 
     /// <summary>
