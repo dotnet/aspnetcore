@@ -13,6 +13,7 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <!-- Nullable disabled because package targets netstandard2.0. -->
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
