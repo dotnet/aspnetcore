@@ -127,7 +127,9 @@ public class Http1HttpProtocolFeatureCollectionTests
         _collection[typeof(IHttpExtendedConnectFeature)] = CreateHttp1Connection();
         _collection[typeof(IHttpUpgradeFeature)] = CreateHttp1Connection();
         _collection[typeof(IPersistentStateFeature)] = CreateHttp1Connection();
+#pragma warning disable CA2252 // WebTransport is a preview feature
         _collection.Set<IHttpWebTransportFeature>(CreateHttp1Connection());
+#pragma warning restore CA2252 // WebTransport is a preview feature
 
         CompareGenericGetterToIndexer();
 
@@ -155,7 +157,9 @@ public class Http1HttpProtocolFeatureCollectionTests
         _collection.Set<IHttpExtendedConnectFeature>(CreateHttp1Connection());
         _collection.Set<IHttpUpgradeFeature>(CreateHttp1Connection());
         _collection.Set<IPersistentStateFeature>(CreateHttp1Connection());
+#pragma warning disable CA2252 // WebTransport is a preview feature
         _collection.Set<IHttpWebTransportFeature>(CreateHttp1Connection());
+#pragma warning restore CA2252 // WebTransport is a preview feature
 
         CompareGenericGetterToIndexer();
 
