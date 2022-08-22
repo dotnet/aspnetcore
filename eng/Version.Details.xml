@@ -290,6 +290,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f52d8c59bb49360eb2cbeeb863c5856ebd62adda</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22419.1">
+      <Uri>https://github.com/dotnet/xdt</Uri>
+      <Sha>6a23b4b92e39fdbd4c63672893b7dce394cc1400</Sha>
+      <SourceBuild RepoName="xdt" ManagedOnly="true" />
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
