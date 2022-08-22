@@ -139,6 +139,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // Consume space
         offset++;
 
+        while ((uint)offset < (uint)requestLine.Length
+            && requestLine[offset] == ByteSpace)
+        {
+            // It's invalid to have multiple spaces between the url resource and version
+            // but some clients do it. Skip them.
+            offset++;
+        }
+
         // Version + CR is 9 bytes which should take us to .Length
         // LF should have been dropped prior to method call
         if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + 8] != ByteCR)
