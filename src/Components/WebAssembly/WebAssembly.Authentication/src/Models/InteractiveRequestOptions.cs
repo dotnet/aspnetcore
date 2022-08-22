@@ -27,9 +27,9 @@ public sealed class InteractiveRequestOptions
     /// <summary>
     /// Gets the scopes this request must use in the operation.
     /// </summary>
-    public IEnumerable<string> Scopes { get; init; }
+    public IEnumerable<string> Scopes { get; init; } = Array.Empty<string>();
 
-    private Dictionary<string, object> AdditionalRequestParameters { get; set; }
+    private Dictionary<string, object>? AdditionalRequestParameters { get; set; }
 
     /// <summary>
     /// Tries to add an additional parameter to pass in to the underlying provider.
@@ -43,7 +43,7 @@ public sealed class InteractiveRequestOptions
     {
         ArgumentNullException.ThrowIfNull(name, nameof(name));
         AdditionalRequestParameters ??= new();
-        return AdditionalRequestParameters.TryAdd(name, value);
+        return AdditionalRequestParameters.TryAdd(name, value!);
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public sealed class InteractiveRequestOptions
     /// <summary>
     /// Tries to retrieve an existing additional parameter.
     /// </summary>
-    public bool TryGetAdditionalParameter<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string name, out TValue value)
+    public bool TryGetAdditionalParameter<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string name, out TValue? value)
     {
         ArgumentNullException.ThrowIfNull(name);
 
@@ -70,7 +70,7 @@ public sealed class InteractiveRequestOptions
         if (rawValue is JsonElement json)
         {
             value = Deserialize(json);
-            AdditionalRequestParameters[name] = value;
+            AdditionalRequestParameters[name] = value!;
             return true;
         }
         else
@@ -83,14 +83,14 @@ public sealed class InteractiveRequestOptions
             "Trimming",
             "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
             Justification = "The types this method deserializes are anotated with 'DynamicallyAccessedMembers' to prevent them from being linked out as part of 'TryAddAdditionalParameter'.")]
-        static TValue Deserialize(JsonElement element) => element.Deserialize<TValue>();
+        static TValue Deserialize(JsonElement element) => element.Deserialize<TValue>()!;
     }
 
     internal string ToState() => JsonSerializer.Serialize(this, InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions);
 
     internal static InteractiveRequestOptions FromState(string state) => JsonSerializer.Deserialize(
         state,
-        InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions);
+        InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions)!;
 
     internal class Converter : JsonConverter<InteractiveRequestOptions>
     {
@@ -119,7 +119,7 @@ public sealed class InteractiveRequestOptions
             [property: JsonInclude] string ReturnUrl,
             [property: JsonInclude] IEnumerable<string> Scopes,
             [property: JsonInclude] InteractionType Interaction,
-            [property: JsonInclude] Dictionary<string, object> AdditionalRequestParameters);
+            [property: JsonInclude] Dictionary<string, object>? AdditionalRequestParameters);
     }
 }
 

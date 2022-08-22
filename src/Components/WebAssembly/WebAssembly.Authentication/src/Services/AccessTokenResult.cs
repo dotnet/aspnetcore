@@ -33,7 +33,7 @@ public class AccessTokenResult
     /// <param name="token">The <see cref="AccessToken"/> in case it was successful.</param>
     /// <param name="interactiveRequestUrl">The redirect uri to go to for provisioning the token with <see cref="NavigationManagerExtensions.NavigateToLogin(NavigationManager, string, InteractiveRequestOptions)"/>.</param>
     /// <param name="interactiveRequest">The <see cref="InteractiveRequestOptions"/> containing the parameters for the interactive authentication.</param>
-    public AccessTokenResult(AccessTokenResultStatus status, AccessToken token, [StringSyntax(StringSyntaxAttribute.Uri)] string interactiveRequestUrl, InteractiveRequestOptions interactiveRequest)
+    public AccessTokenResult(AccessTokenResultStatus status, AccessToken token, [StringSyntax(StringSyntaxAttribute.Uri)] string? interactiveRequestUrl, InteractiveRequestOptions? interactiveRequest)
     {
         Status = status;
         _token = token;
@@ -50,25 +50,25 @@ public class AccessTokenResult
     /// Gets the URL to redirect to if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
     /// </summary>
     [Obsolete("Use 'InteractiveRequestUrl' and 'InteractiveRequest' instead.")]
-    public string RedirectUrl { get; }
+    public string? RedirectUrl { get; }
 
     /// <summary>
     /// Gets the URL to call <see cref="NavigationManagerExtensions.NavigateToLogin(NavigationManager, string, InteractiveRequestOptions)"/> if <see cref="Status"/> is
     /// <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
     /// </summary>
-    public string InteractiveRequestUrl { get; }
+    public string? InteractiveRequestUrl { get; }
 
     /// <summary>
     /// Gets the <see cref="InteractiveRequestOptions"/> to use if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
     /// </summary>
-    public InteractiveRequestOptions InteractionOptions { get; }
+    public InteractiveRequestOptions? InteractionOptions { get; }
 
     /// <summary>
     /// Determines whether the token request was successful and makes the <see cref="AccessToken"/> available for use when it is.
     /// </summary>
     /// <param name="accessToken">The <see cref="AccessToken"/> if the request was successful.</param>
     /// <returns><c>true</c> when the token request is successful; <c>false</c> otherwise.</returns>
-    public bool TryGetToken(out AccessToken accessToken)
+    public bool TryGetToken([NotNullWhen(true)] out AccessToken? accessToken)
     {
         if (Status == AccessTokenResultStatus.Success)
         {

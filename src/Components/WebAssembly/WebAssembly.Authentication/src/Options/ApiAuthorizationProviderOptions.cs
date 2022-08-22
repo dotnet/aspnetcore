@@ -11,5 +11,5 @@ public class ApiAuthorizationProviderOptions
     /// <summary>
     /// Gets or sets the endpoint to call to retrieve the authentication settings for the application.
     /// </summary>
-    public string ConfigurationEndpoint { get; set; }
+    public string? ConfigurationEndpoint { get; set; }
 }
