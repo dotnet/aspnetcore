@@ -239,11 +239,11 @@ public class OutputCachePoliciesTests
         var context = TestUtils.CreateUninitializedContext();
         var value = "value";
 
-        IOutputCachePolicy policy = new VaryByKeyPrefixPolicy((context, cancellationToken) => ValueTask.FromResult(value));
+        IOutputCachePolicy policy = new SetCacheKeyPrefixPolicy((context, cancellationToken) => ValueTask.FromResult(value));
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(value, context.CacheVaryByRules.VaryByKeyPrefix);
+        Assert.Equal(value, context.CacheVaryByRules.CacheKeyPrefix);
     }
 
     [Fact]

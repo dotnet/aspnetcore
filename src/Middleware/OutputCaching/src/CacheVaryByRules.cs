@@ -38,5 +38,5 @@ public sealed class CacheVaryByRules
     /// <summary>
     /// Gets or sets a prefix to vary by.
     /// </summary>
-    public string? VaryByKeyPrefix { get; set; }
+    public string? CacheKeyPrefix { get; set; }
 }

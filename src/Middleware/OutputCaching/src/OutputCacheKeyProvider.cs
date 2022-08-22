@@ -39,10 +39,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
         try
         {
-            if (!String.IsNullOrEmpty(context.CacheVaryByRules.VaryByKeyPrefix))
+            if (!string.IsNullOrEmpty(context.CacheVaryByRules.CacheKeyPrefix))
             {
                 builder
-                    .Append(context.CacheVaryByRules.VaryByKeyPrefix)
+                    .Append(context.CacheVaryByRules.CacheKeyPrefix)
                     .Append(KeyDelimiter);
             }
 

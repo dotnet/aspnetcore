@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// A policy that varies the cache key using the specified value.
+/// A policy that sets the cache key prefix using the specified value.
 /// </summary>
-internal sealed class VaryByKeyPrefixPolicy : IOutputCachePolicy
+internal sealed class SetCacheKeyPrefixPolicy : IOutputCachePolicy
 {
     private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
 
     /// <summary>
     /// Creates a policy that varies the cache key using the specified value.
     /// </summary>
-    public VaryByKeyPrefixPolicy(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
+    public SetCacheKeyPrefixPolicy(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
     {
-        _varyByAsync = async (context, rules, cancellationToken) => rules.VaryByKeyPrefix = await varyBy(context, cancellationToken);
+        _varyByAsync = async (context, rules, cancellationToken) => rules.CacheKeyPrefix = await varyBy(context, cancellationToken);
     }
 
     /// <inheritdoc/>

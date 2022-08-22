@@ -1,6 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.OutputCacheApplicationBuilderExtensions
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.CacheKeyPrefix.get -> string?
+Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.CacheKeyPrefix.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.CacheVaryByRules() -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.HeaderNames.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.HeaderNames.set -> void
@@ -8,8 +10,6 @@ Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.get -> Microsoft.E
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.QueryKeys.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.RouteValueNames.set -> void
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByKeyPrefix.get -> string?
-Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByKeyPrefix.set -> void
 Microsoft.AspNetCore.OutputCaching.CacheVaryByRules.VaryByValues.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.OutputCaching.IOutputCacheFeature
 Microsoft.AspNetCore.OutputCaching.IOutputCacheFeature.Context.get -> Microsoft.AspNetCore.OutputCaching.OutputCacheContext!
@@ -53,11 +53,11 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Clear() -> Microsoft
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Expire(System.TimeSpan expiration) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.NoCache() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.OutputCachePolicyBuilder() -> void
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.SetCacheKeyPrefix(string! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.SetCacheKeyPrefix(System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.SetCacheKeyPrefix(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string!>>! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Tag(params string![]! tags) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headerNames) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByKeyPrefix(string! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByKeyPrefix(System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByKeyPrefix(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string!>>! keyPrefix) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByQuery(params string![]! queryKeys) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByRouteValue(params string![]! routeValueNames) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(string! key, string! value) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!

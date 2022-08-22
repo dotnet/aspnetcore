@@ -120,17 +120,17 @@ public class OutputCachePolicyBuilderTests
         var context2 = TestUtils.CreateUninitializedContext();
         var context3 = TestUtils.CreateUninitializedContext();
 
-        var policy1 = new OutputCachePolicyBuilder().VaryByKeyPrefix("tenant1").Build();
-        var policy2 = new OutputCachePolicyBuilder().VaryByKeyPrefix(context => "tenant2").Build();
-        var policy3 = new OutputCachePolicyBuilder().VaryByKeyPrefix((context, cancellationToken) => ValueTask.FromResult("tenant3")).Build();
+        var policy1 = new OutputCachePolicyBuilder().SetCacheKeyPrefix("tenant1").Build();
+        var policy2 = new OutputCachePolicyBuilder().SetCacheKeyPrefix(context => "tenant2").Build();
+        var policy3 = new OutputCachePolicyBuilder().SetCacheKeyPrefix((context, cancellationToken) => ValueTask.FromResult("tenant3")).Build();
 
         await policy1.CacheRequestAsync(context1, cancellation: default);
         await policy2.CacheRequestAsync(context2, cancellation: default);
         await policy3.CacheRequestAsync(context3, cancellation: default);
 
-        Assert.Equal("tenant1", context1.CacheVaryByRules.VaryByKeyPrefix);
-        Assert.Equal("tenant2", context2.CacheVaryByRules.VaryByKeyPrefix);
-        Assert.Equal("tenant3", context3.CacheVaryByRules.VaryByKeyPrefix);
+        Assert.Equal("tenant1", context1.CacheVaryByRules.CacheKeyPrefix);
+        Assert.Equal("tenant2", context2.CacheVaryByRules.CacheKeyPrefix);
+        Assert.Equal("tenant3", context3.CacheVaryByRules.CacheKeyPrefix);
     }
 
     [Fact]

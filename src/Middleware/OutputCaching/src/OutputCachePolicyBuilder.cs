@@ -121,7 +121,7 @@ public sealed class OutputCachePolicyBuilder
     /// Adds a policy that varies the cache key using the specified value.
     /// </summary>
     /// <param name="keyPrefix">The value to vary the cache key by.</param>
-    public OutputCachePolicyBuilder VaryByKeyPrefix(string keyPrefix)
+    public OutputCachePolicyBuilder SetCacheKeyPrefix(string keyPrefix)
     {
         ArgumentNullException.ThrowIfNull(keyPrefix);
 
@@ -130,14 +130,14 @@ public sealed class OutputCachePolicyBuilder
             return ValueTask.FromResult(keyPrefix);
         }
 
-        return AddPolicy(new VaryByKeyPrefixPolicy(varyByKeyFunc));
+        return AddPolicy(new SetCacheKeyPrefixPolicy(varyByKeyFunc));
     }
 
     /// <summary>
     /// Adds a policy that varies the cache key using the specified value.
     /// </summary>
     /// <param name="keyPrefix">The value to vary the cache key by.</param>
-    public OutputCachePolicyBuilder VaryByKeyPrefix(Func<HttpContext, string> keyPrefix)
+    public OutputCachePolicyBuilder SetCacheKeyPrefix(Func<HttpContext, string> keyPrefix)
     {
         ArgumentNullException.ThrowIfNull(keyPrefix);
 
@@ -146,18 +146,18 @@ public sealed class OutputCachePolicyBuilder
             return ValueTask.FromResult(keyPrefix(context));
         }
 
-        return AddPolicy(new VaryByKeyPrefixPolicy(varyByKeyFunc));
+        return AddPolicy(new SetCacheKeyPrefixPolicy(varyByKeyFunc));
     }
 
     /// <summary>
     /// Adds a policy that varies the cache key using the specified value.
     /// </summary>
     /// <param name="keyPrefix">The value to vary the cache key by.</param>
-    public OutputCachePolicyBuilder VaryByKeyPrefix(Func<HttpContext, CancellationToken, ValueTask<string>> keyPrefix)
+    public OutputCachePolicyBuilder SetCacheKeyPrefix(Func<HttpContext, CancellationToken, ValueTask<string>> keyPrefix)
     {
         ArgumentNullException.ThrowIfNull(keyPrefix);
 
-        return AddPolicy(new VaryByKeyPrefixPolicy(keyPrefix));
+        return AddPolicy(new SetCacheKeyPrefixPolicy(keyPrefix));
     }
 
     /// <summary>
