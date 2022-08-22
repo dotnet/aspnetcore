@@ -125,7 +125,7 @@ internal sealed partial class RateLimitingMiddleware
     private ValueTask<LeaseContext> TryAcquireAsync(HttpContext context)
     {
         var leaseContext = CombinedAcquire(context);
-        if (leaseContext.Lease.IsAcquired)
+        if (leaseContext.Lease?.IsAcquired == true)
         {
             return ValueTask.FromResult(leaseContext);
         }
