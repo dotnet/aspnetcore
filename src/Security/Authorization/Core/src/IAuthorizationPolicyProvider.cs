@@ -33,6 +33,6 @@ public interface IAuthorizationPolicyProvider
     /// <summary>
     /// Determines if policies from this provider can be cached, defaults to false.
     /// </summary>
-    bool CanCachePolicy => false;
+    bool AllowsCachingPolicies => false;
 #endif
 }
