@@ -155,20 +155,11 @@ internal sealed partial class RateLimitingMiddleware
                 return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.EndpointLimiter, Lease = endpointLease };
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             endpointLease?.Dispose();
             globalLease?.Dispose();
-            // Don't throw if the request was canceled - instead log. 
-            if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
-            {
-                RateLimiterLog.RequestCanceled(_logger);
-                return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.RequestCanceled };
-            }
-            else
-            {
-                throw;
-            }
+            throw;
         }
         return globalLease is null ? new LeaseContext() { Lease = endpointLease } : new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
     }
