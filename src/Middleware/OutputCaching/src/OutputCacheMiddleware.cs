@@ -92,7 +92,7 @@ internal sealed class OutputCacheMiddleware
 
     private async Task InvokeAwaited(HttpContext httpContext, IReadOnlyList<IOutputCachePolicy> policies)
     {
-        var context = new OutputCacheContext(httpContext, _store, _options, _logger);
+        var context = new OutputCacheContext { HttpContext = httpContext };
 
         // Add IOutputCacheFeature
         AddOutputCacheFeature(context);
@@ -247,7 +247,7 @@ internal sealed class OutputCacheMiddleware
         // Validate expiration
         if (context.CachedEntryAge <= TimeSpan.Zero)
         {
-            context.Logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
+            _logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
             context.IsCacheEntryFresh = false;
         }
 
@@ -316,7 +316,7 @@ internal sealed class OutputCacheMiddleware
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
 
-        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, cacheContext, static async (key, cacheContext) => await OutputCacheEntryFormatter.GetAsync(key, cacheContext.Store, cacheContext.HttpContext.RequestAborted));
+        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted));
 
         if (await TryServeCachedResponseAsync(cacheContext, cacheEntry, policies))
         {
@@ -341,32 +341,33 @@ internal sealed class OutputCacheMiddleware
             return;
         }
 
-        var varyHeaders = context.CacheVaryByRules.Headers;
+        var varyHeaderNames = context.CacheVaryByRules.HeaderNames;
+        var varyRouteValueNames = context.CacheVaryByRules.RouteValueNames;
         var varyQueryKeys = context.CacheVaryByRules.QueryKeys;
-        var varyByCustomKeys = context.CacheVaryByRules.VaryByCustom;
+        var varyByCustomKeys = context.CacheVaryByRules.HasVaryByCustom ? context.CacheVaryByRules.VaryByCustom : null;
         var varyByPrefix = context.CacheVaryByRules.VaryByPrefix;
 
         // Check if any vary rules exist
-        if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
+        if (!StringValues.IsNullOrEmpty(varyHeaderNames) || !StringValues.IsNullOrEmpty(varyRouteValueNames) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
         {
             // Normalize order and casing of vary by rules
-            var normalizedVaryHeaders = GetOrderCasingNormalizedStringValues(varyHeaders);
+            var normalizedVaryHeaderNames = GetOrderCasingNormalizedStringValues(varyHeaderNames);
+            var normalizedVaryRouteValueNames = GetOrderCasingNormalizedStringValues(varyRouteValueNames);
             var normalizedVaryQueryKeys = GetOrderCasingNormalizedStringValues(varyQueryKeys);
             var normalizedVaryByCustom = GetOrderCasingNormalizedDictionary(varyByCustomKeys);
 
             // Update vary rules with normalized values
-            context.CacheVaryByRules = new CacheVaryByRules
-            {
-                VaryByPrefix = varyByPrefix + normalizedVaryByCustom,
-                Headers = normalizedVaryHeaders,
-                QueryKeys = normalizedVaryQueryKeys
-            };
+            context.CacheVaryByRules.VaryByCustom.Clear();
+            context.CacheVaryByRules.VaryByPrefix = varyByPrefix + normalizedVaryByCustom;
+            context.CacheVaryByRules.HeaderNames = normalizedVaryHeaderNames;
+            context.CacheVaryByRules.RouteValueNames = normalizedVaryRouteValueNames;
+            context.CacheVaryByRules.QueryKeys = normalizedVaryQueryKeys;
 
             // TODO: Add same condition on LogLevel in Response Caching
             // Always overwrite the CachedVaryByRules to update the expiry information
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.VaryByRulesUpdated(normalizedVaryHeaders.ToString(), normalizedVaryQueryKeys.ToString());
+                _logger.VaryByRulesUpdated(normalizedVaryHeaderNames.ToString(), normalizedVaryQueryKeys.ToString(), normalizedVaryRouteValueNames.ToString());
             }
         }
 
@@ -516,7 +517,7 @@ internal sealed class OutputCacheMiddleware
         RemoveOutputCacheFeature(context.HttpContext);
     }
 
-    internal static bool ContentIsNotModified(OutputCacheContext context)
+    internal bool ContentIsNotModified(OutputCacheContext context)
     {
         var cachedResponseHeaders = context.CachedResponse.Headers;
         var ifNoneMatchHeader = context.HttpContext.Request.Headers.IfNoneMatch;
@@ -525,7 +526,7 @@ internal sealed class OutputCacheMiddleware
         {
             if (ifNoneMatchHeader.Count == 1 && StringSegment.Equals(ifNoneMatchHeader[0], EntityTagHeaderValue.Any.Tag, StringComparison.OrdinalIgnoreCase))
             {
-                context.Logger.NotModifiedIfNoneMatchStar();
+                _logger.NotModifiedIfNoneMatchStar();
                 return true;
             }
 
@@ -538,7 +539,7 @@ internal sealed class OutputCacheMiddleware
                     var requestETag = ifNoneMatchEtags[i];
                     if (eTag.Compare(requestETag, useStrongComparison: false))
                     {
-                        context.Logger.NotModifiedIfNoneMatchMatched(requestETag);
+                        _logger.NotModifiedIfNoneMatchMatched(requestETag);
                         return true;
                     }
                 }
@@ -558,7 +559,7 @@ internal sealed class OutputCacheMiddleware
                 if (HeaderUtilities.TryParseDate(ifModifiedSince.ToString(), out var modifiedSince) &&
                     modified <= modifiedSince)
                 {
-                    context.Logger.NotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
+                    _logger.NotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
                     return true;
                 }
             }

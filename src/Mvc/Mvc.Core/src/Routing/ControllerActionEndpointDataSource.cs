@@ -31,7 +31,7 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
 
         _routes = new List<ConventionalRouteEntry>();
 
-        DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
+        DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions, FinallyConventions);
 
         // IMPORTANT: this needs to be the last thing we do in the constructor.
         // Change notifications can happen immediately!
@@ -56,8 +56,9 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         lock (Lock)
         {
             var conventions = new List<Action<EndpointBuilder>>();
-            _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _orderSequence.GetNext(), conventions));
-            return new ControllerActionEndpointConventionBuilder(Lock, conventions);
+            var finallyConventions = new List<Action<EndpointBuilder>>();
+            _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _orderSequence.GetNext(), conventions, finallyConventions));
+            return new ControllerActionEndpointConventionBuilder(Lock, conventions, finallyConventions);
         }
     }
 
@@ -65,7 +66,9 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         RoutePattern? groupPrefix,
         IReadOnlyList<ActionDescriptor> actions,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
-        IReadOnlyList<Action<EndpointBuilder>> groupConventions)
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -89,8 +92,10 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
                                               routeNames,
                                               action,
                                               _routes,
-                                              groupConventions: groupConventions,
                                               conventions: conventions,
+                                              groupConventions: groupConventions,
+                                              finallyConventions: finallyConventions,
+                                              groupFinallyConventions: groupFinallyConventions,
                                               CreateInertEndpoints,
                                               groupPrefix: groupPrefix);
 
@@ -118,6 +123,8 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
                 route,
                 groupConventions: groupConventions,
                 conventions: conventions,
+                finallyConventions: finallyConventions,
+                groupFinallyConventions: groupFinallyConventions,
                 groupPrefix: groupPrefix);
         }
 

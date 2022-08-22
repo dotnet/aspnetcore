@@ -144,7 +144,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
         {
             // TODO: RedisHubLifetimeManager will want to notify the other server (if there is one) about the cancellation
             // so it can clean up state and potentially forward that info to the connection
-            _clientResultsManager.TryCompleteResult(_connectionId, CompletionMessage.WithError(_invocationId, "Canceled"));
+            _clientResultsManager.TryCompleteResult(_connectionId, CompletionMessage.WithError(_invocationId, "Invocation canceled by the server."));
         }
 
         public new void SetResult(T result)

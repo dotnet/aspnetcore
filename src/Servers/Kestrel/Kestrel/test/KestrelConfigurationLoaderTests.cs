@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -16,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -140,6 +135,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureHttpsDefaults(opt =>
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
+            opt.ServerCertificateChain = TestResources.GetTestChain();
             opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
 
@@ -155,6 +151,8 @@ public class KestrelConfigurationLoaderTests
                 ran1 = true;
                 Assert.True(opt.IsHttps);
                 Assert.NotNull(opt.HttpsOptions.ServerCertificate);
+                Assert.NotNull(opt.HttpsOptions.ServerCertificateChain);
+                Assert.Equal(2, opt.HttpsOptions.ServerCertificateChain.Count);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
                 Assert.Equal(HttpProtocols.Http1, opt.ListenOptions.Protocols);
             })

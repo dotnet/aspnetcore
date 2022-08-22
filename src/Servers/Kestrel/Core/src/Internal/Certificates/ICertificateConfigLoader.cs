@@ -9,5 +9,5 @@ internal interface ICertificateConfigLoader
 {
     bool IsTestMock { get; }
 
-    X509Certificate2? LoadCertificate(CertificateConfig? certInfo, string endpointName);
+    (X509Certificate2?, X509Certificate2Collection?) LoadCertificate(CertificateConfig? certInfo, string endpointName);
 }

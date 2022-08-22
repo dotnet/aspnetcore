@@ -23,6 +23,8 @@ public class AuthorizationMiddleware
 
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
+    private readonly bool _canCache;
+    private readonly AuthorizationPolicyCache? _policyCache;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
@@ -33,6 +35,24 @@ public class AuthorizationMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
+        _canCache = false;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The next middleware in the application middleware pipeline.</param>
+    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IServiceProvider services) : this(next, policyProvider)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (_policyProvider.CanCachePolicy)
+        {
+            _policyCache = services.GetService<AuthorizationPolicyCache>();
+            _canCache = _policyCache != null;
+        }
     }
 
     /// <summary>
@@ -47,7 +67,6 @@ public class AuthorizationMiddleware
         }
 
         var endpoint = context.GetEndpoint();
-
         if (endpoint != null)
         {
             // EndpointRoutingMiddleware uses this flag to check if the Authorization middleware processed auth metadata on the endpoint.
@@ -55,12 +74,29 @@ public class AuthorizationMiddleware
             context.Items[AuthorizationMiddlewareInvokedWithEndpointKey] = AuthorizationMiddlewareWithEndpointInvokedValue;
         }
 
-        // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
-        var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+        // Use the computed policy for this endpoint if we can
+        AuthorizationPolicy? policy = null;
+        var canCachePolicy = _canCache && endpoint != null;
+        if (canCachePolicy)
+        {
+            policy = _policyCache!.Lookup(endpoint!);
+        }
 
-        var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
+        if (policy == null)
+        {
+            // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
+            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
 
-        var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
+            var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
+
+            policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
+
+            // Cache the computed policy
+            if (policy != null && canCachePolicy)
+            {
+                _policyCache!.Store(endpoint!, policy);
+            }
+        }
 
         if (policy == null)
         {
@@ -108,4 +144,5 @@ public class AuthorizationMiddleware
         var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
         await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
     }
+
 }
