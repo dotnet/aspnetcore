@@ -162,7 +162,7 @@ internal sealed partial class RateLimitingMiddleware
             // Don't throw if the request was canceled - instead log. 
             if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
             {
-                RateLimiterLog.TaskCanceled(_logger);
+                RateLimiterLog.RequestCanceled(_logger);
                 return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.RequestCanceled };
             }
             else
@@ -202,7 +202,7 @@ internal sealed partial class RateLimitingMiddleware
             // Don't throw if the request was canceled - instead log. 
             if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
             {
-                RateLimiterLog.TaskCanceled(_logger);
+                RateLimiterLog.RequestCanceled(_logger);
                 return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.RequestCanceled };
             }
             else
@@ -259,7 +259,7 @@ internal sealed partial class RateLimitingMiddleware
         [LoggerMessage(2, LogLevel.Debug, "This endpoint requires a rate limiting policy with name {PolicyName}, but no such policy exists.", EventName = "WarnMissingPolicy")]
         internal static partial void WarnMissingPolicy(ILogger logger, string policyName);
 
-        [LoggerMessage(3, LogLevel.Debug, "The request was canceled.", EventName = "TaskCanceled")]
-        internal static partial void TaskCanceled(ILogger logger);
+        [LoggerMessage(3, LogLevel.Debug, "The request was canceled.", EventName = "RequestCanceled")]
+        internal static partial void RequestCanceled(ILogger logger);
     }
 }
