@@ -76,6 +76,6 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     /// <summary>
     /// Determines if policies from this provider can be cached, which is true only for this type.
     /// </summary>
-    public virtual bool CanCachePolicy => GetType() == typeof(DefaultAuthorizationPolicyProvider);
+    public virtual bool AllowsCachingPolicies => GetType() == typeof(DefaultAuthorizationPolicyProvider);
 #endif
 }
