@@ -48,7 +48,7 @@ public class AuthorizationMiddleware
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        if (_policyProvider.CanCachePolicy)
+        if (_policyProvider.AllowsCachingPolicies)
         {
             _policyCache = services.GetService<AuthorizationPolicyCache>();
             _canCache = _policyCache != null;
