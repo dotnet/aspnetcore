@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>
@@ -13,8 +13,6 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
-    <!-- Nullable disabled because package targets netstandard2.0. -->
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
