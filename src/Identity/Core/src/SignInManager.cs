@@ -535,7 +535,13 @@ public class SignInManager<TUser> where TUser : class
         if (UserManager.SupportsUserLockout)
         {
             await UserManager.AccessFailedAsync(user);
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
+            }
         }
+
         return SignInResult.Failed;
     }
 
@@ -576,7 +582,13 @@ public class SignInManager<TUser> where TUser : class
         if (UserManager.SupportsUserLockout)
         {
             await UserManager.AccessFailedAsync(user);
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
+            }
         }
+
         return SignInResult.Failed;
     }
 
