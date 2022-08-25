@@ -31,7 +31,6 @@ public class RemoteAuthenticationService<
 {
     private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
     private bool _initialized;
-
     private readonly RemoteAuthenticationServiceJavaScriptLoggingOptions _loggingOptions;
 
     // This defaults to 1/1/1970
