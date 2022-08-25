@@ -23,4 +23,10 @@ public sealed class ConnectionEndpointRouteBuilder : IEndpointConventionBuilder
     {
         _endpointConventionBuilder.Add(convention);
     }
+
+    /// <inheritdoc/>
+    public void Finally(Action<EndpointBuilder> finalConvention)
+    {
+        _endpointConventionBuilder.Finally(finalConvention);
+    }
 }

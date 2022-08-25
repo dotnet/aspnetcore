@@ -178,7 +178,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                 return AuthenticateResult.Fail(authenticationFailedContext.Exception);
             }
 
-            return AuthenticateResult.Fail("No SecurityTokenValidator available for token.");
+            return AuthenticateResults.ValidatorNotFound;
         }
         catch (Exception ex)
         {

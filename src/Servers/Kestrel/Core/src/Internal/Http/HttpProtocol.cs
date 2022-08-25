@@ -1153,7 +1153,17 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             if (!CanIncludeResponseContentLengthHeader())
             {
-                RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.ContentLength);
+                if (responseHeaders.ContentLength.Value == 0)
+                {
+                    // If the response shouldn't include a Content-Length but it's 0
+                    // we'll just get rid of it without throwing an error, since it
+                    // is semantically equivalent to not having a Content-Length.
+                    responseHeaders.ContentLength = null;
+                }
+                else
+                {
+                    RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.ContentLength);
+                }
             }
             else if (StatusCode == StatusCodes.Status205ResetContent && responseHeaders.ContentLength.Value != 0)
             {

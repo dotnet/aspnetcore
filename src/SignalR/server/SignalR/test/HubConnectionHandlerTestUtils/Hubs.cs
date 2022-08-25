@@ -335,8 +335,26 @@ public class MethodHub : TestHub
 
     public async Task<int> GetClientResult(int num)
     {
-        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num);
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num, cancellationToken: default);
         return sum;
+    }
+
+    public void BackgroundClientResult(TcsService tcsService)
+    {
+        var caller = Clients.Caller;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await tcsService.StartedMethod.Task;
+                var result = await caller.InvokeAsync<int>("GetResult", 1, CancellationToken.None);
+                tcsService.EndMethod.SetResult(result);
+            }
+            catch (Exception ex)
+            {
+                tcsService.EndMethod.SetException(ex);
+            }
+        });
     }
 }
 
@@ -537,6 +555,8 @@ public interface ITest
     Task Broadcast(string message);
 
     Task<int> GetClientResult(int value);
+
+    Task<int> GetClientResultWithCancellation(int value, CancellationToken cancellationToken);
 }
 
 public record ClientResults(int ClientResult, int CallerResult);
@@ -1258,7 +1278,7 @@ public class OnConnectedClientResultHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
-        await Clients.Caller.InvokeAsync<int>("Test");
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
     }
 }
 
@@ -1266,7 +1286,7 @@ public class OnDisconnectedClientResultHub : Hub
 {
     public override async Task OnDisconnectedAsync(Exception ex)
     {
-        await Clients.Caller.InvokeAsync<int>("Test");
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
     }
 }
 

@@ -482,7 +482,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager1.OnConnectedAsync(connection1).DefaultTimeout();
 
             // Server2 asks for a result from client1 on Server1
-            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" }, cancellationToken: default);
             var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
             Assert.NotNull(invocation.InvocationId);
             Assert.Equal("test", invocation.Arguments[0]);
@@ -513,7 +513,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager1.OnConnectedAsync(connection1).DefaultTimeout();
 
             // Server2 asks for a result from client1 on Server1
-            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" }, cancellationToken: default);
             var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
             Assert.NotNull(invocation.InvocationId);
             Assert.Equal("test", invocation.Arguments[0]);
@@ -544,7 +544,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager1.OnConnectedAsync(connection1).DefaultTimeout();
 
             // No client on any backplanes with this ID
-            await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" })).DefaultTimeout();
+            await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" }, cancellationToken: default)).DefaultTimeout();
         }
     }
 
@@ -565,7 +565,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
 
             await manager2.OnConnectedAsync(connection1).DefaultTimeout();
 
-            var invoke1 = manager1.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var invoke1 = manager1.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" }, cancellationToken: default);
             var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
 
             connection1.Abort();
@@ -597,10 +597,10 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager1.OnConnectedAsync(connection1).DefaultTimeout();
             await manager2.OnConnectedAsync(connection2).DefaultTimeout();
 
-            var invoke1 = manager1.InvokeConnectionAsync<int>(connection2.ConnectionId, "Result", new object[] { "test" });
+            var invoke1 = manager1.InvokeConnectionAsync<int>(connection2.ConnectionId, "Result", new object[] { "test" }, cancellationToken: default);
             var invocation2 = Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
 
-            var invoke2 = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var invoke2 = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" }, cancellationToken: default);
             var invocation1 = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
 
             Assert.NotEqual(invocation1.InvocationId, invocation2.InvocationId);
@@ -626,7 +626,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
         var manager1 = CreateNewHubLifetimeManager(backplane);
         var manager2 = CreateNewHubLifetimeManager(backplane);
 
-        var ex = await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("1234", "Result", new object[] { "test" })).DefaultTimeout();
+        var ex = await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("1234", "Result", new object[] { "test" }, cancellationToken: default)).DefaultTimeout();
         Assert.Equal("Connection '1234' does not exist.", ex.Message);
     }
 }

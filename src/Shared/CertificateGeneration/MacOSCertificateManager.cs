@@ -375,7 +375,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     protected override void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
     {
-        if (store.Name! == StoreName.My.ToString() && store.Location == store.Location && Directory.Exists(MacOSUserHttpsCertificateLocation))
+        if (store.Name! == StoreName.My.ToString() && store.Location == StoreLocation.CurrentUser && Directory.Exists(MacOSUserHttpsCertificateLocation))
         {
             var certsFromDisk = GetCertsFromDisk();
 
@@ -388,7 +388,10 @@ internal sealed class MacOSCertificateManager : CertificateManager
             // Certs created (or "upgraded") by .NET 7+.
             // .NET 7+ installs the certificate on disk as well as on the user keychain (for backwards
             // compatibility with pre-.NET 7).
-            var onDiskAndKeychain = certsFromDisk.Intersect(certsFromStore, ThumbprintComparer.Instance);
+            // Note that the actual certs we populate need to be the ones from the store location, and
+            // not the version from disk, since we may do other operations with these certs later (such
+            // as exporting) which would fail with crypto errors otherwise.
+            var onDiskAndKeychain = certsFromStore.Intersect(certsFromDisk, ThumbprintComparer.Instance);
 
             // The only times we can find a certificate on the keychain and a certificate on keychain+disk
             // are when the certificate on disk and keychain has expired and a pre-.NET 7 SDK has been

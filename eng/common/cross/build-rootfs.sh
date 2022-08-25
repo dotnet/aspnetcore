@@ -76,10 +76,10 @@ __FreeBSDPackages+=" openssl"
 __FreeBSDPackages+=" krb5"
 __FreeBSDPackages+=" terminfo-db"
 
-__IllumosPackages="icu-64.2nb2"
-__IllumosPackages+=" mit-krb5-1.16.2nb4"
-__IllumosPackages+=" openssl-1.1.1e"
-__IllumosPackages+=" zlib-1.2.11"
+__IllumosPackages="icu"
+__IllumosPackages+=" mit-krb5"
+__IllumosPackages+=" openssl"
+__IllumosPackages+=" zlib"
 
 __HaikuPackages="gmp"
 __HaikuPackages+=" gmp_devel"
@@ -390,14 +390,18 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     if [[ "$__UseMirror" == 1 ]]; then
         BaseUrl=http://pkgsrc.smartos.skylime.net
     fi
-    BaseUrl="$BaseUrl/packages/SmartOS/2020Q1/${__illumosArch}/All"
+    BaseUrl="$BaseUrl/packages/SmartOS/trunk/${__illumosArch}/All"
+    echo "Downloading manifest"
+    wget "$BaseUrl"
     echo "Downloading dependencies."
     read -ra array <<<"$__IllumosPackages"
     for package in "${array[@]}"; do
-       echo "Installing $package..."
+        echo "Installing '$package'"
+        package="$(grep ">$package-[0-9]" All | sed -En 's/.*href="(.*)\.tgz".*/\1/p')"
+        echo "Resolved name '$package'"
         wget "$BaseUrl"/"$package".tgz
         ar -x "$package".tgz
-        tar --skip-old-files -xzf "$package".tmp.tgz -C "$__RootfsDir" 2>/dev/null
+        tar --skip-old-files -xzf "$package".tmp.tg* -C "$__RootfsDir" 2>/dev/null
     done
     echo "Cleaning up temporary files."
     popd

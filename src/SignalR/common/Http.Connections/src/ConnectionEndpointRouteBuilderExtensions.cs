@@ -143,5 +143,13 @@ public static class ConnectionEndpointRouteBuilderExtensions
                 endpointConventionBuilder.Add(convention);
             }
         }
+
+        public void Finally(Action<EndpointBuilder> finalConvention)
+        {
+            foreach (var endpointConventionBuilder in _endpointConventionBuilders)
+            {
+                endpointConventionBuilder.Finally(finalConvention);
+            }
+        }
     }
 }
