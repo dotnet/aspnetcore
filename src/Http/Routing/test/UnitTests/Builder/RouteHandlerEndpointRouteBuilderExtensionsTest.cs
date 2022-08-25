@@ -983,6 +983,32 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public void RequestDelegateFactory_ProvidesAppServiceProvider_ToFilterFactory()
+    {
+        var appServiceCollection = new ServiceCollection();
+        var appService = new MyService();
+        appServiceCollection.AddSingleton(appService);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(appServiceCollection.BuildServiceProvider()));
+        var filterFactoryRan = false;
+
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
+        var routeHandlerBuilder = builder.Map("/", PrintLogger);
+        routeHandlerBuilder.AddEndpointFilterFactory((rhc, next) =>
+        {
+            Assert.NotNull(rhc.ApplicationServices);
+            var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
+            Assert.Equal(appService, myService);
+            filterFactoryRan = true;
+            return next;
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        Assert.Single(dataSource.Endpoints);
+        Assert.True(filterFactoryRan);
+    }
+
+    [Fact]
     public void FinallyOnGroup_CanExamineFinallyOnEndpoint()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
