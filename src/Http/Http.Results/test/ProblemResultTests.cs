@@ -70,7 +70,7 @@ public class ProblemResultTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesDefaults_WhenHttpStatusCodeSet()
+    public async Task ExecuteAsync_SetsTitleFromReasonPhrases_WhenNotInDefaults()
     {
         // Arrange
         var details = new ProblemDetails()
