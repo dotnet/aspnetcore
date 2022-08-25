@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -437,6 +438,75 @@ public partial class HubConnectionHandlerTests
             Assert.Equal("test", completion.Result);
 
             Assert.Contains(TestSink.Writes, c => c.EventId.Name == "UnexpectedCompletion");
+        }
+    }
+
+    [Fact]
+    public async Task ClientResultInUploadStreamingMethodWorks()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder => { }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var invocationId = await client.BeginUploadStreamAsync("1", nameof(MethodHub.GetClientResultWithStream), new[] { "id" }, Array.Empty<object>()).DefaultTimeout();
+
+                // Hub asks client for a result, this is an invocation message with an ID
+                var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.NotNull(invocationMessage.InvocationId);
+                var res = 4 + ((long)invocationMessage.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(5L, completion.Result);
+                Assert.Equal(invocationId, completion.InvocationId);
+
+                // Make sure we can still do a Hub invocation and that the semaphore state didn't get messed up
+                var completionMessage = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                Assert.Equal(43L, completionMessage.Result);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ClientResultInStreamingMethodWorks()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder => { }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            var invocationBinder = new Mock<IInvocationBinder>();
+            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(int));
+            invocationBinder.Setup(b => b.GetParameterTypes(It.IsAny<string>())).Returns(new[] { typeof(int) });
+            invocationBinder.Setup(b => b.GetReturnType(It.IsAny<string>())).Returns(typeof(int));
+            using (var client = new TestClient(invocationBinder: invocationBinder.Object))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var invocationId = await client.SendStreamInvocationAsync(nameof(MethodHub.StreamWithClientResult)).DefaultTimeout();
+
+                // Hub asks client for a result, this is an invocation message with an ID
+                var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.NotNull(invocationMessage.InvocationId);
+                var res = 4 + ((int)invocationMessage.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+
+                var streamItem = Assert.IsType<StreamItemMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(5, streamItem.Item);
+                Assert.Equal(invocationId, streamItem.InvocationId);
+
+                var completionMessage = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(invocationId, completionMessage.InvocationId);
+
+                // Make sure we can still do a Hub invocation and that the semaphore state didn't get messed up
+                completionMessage = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).DefaultTimeout();
+                Assert.Equal(43, completionMessage.Result);
+            }
         }
     }
 
