@@ -14,7 +14,7 @@ public class Program
     {
         // By default we assume we're being run in the context of the <repo>/src/Http/Http.Results/src
         var pwd = Directory.GetCurrentDirectory();
-        var classTargetFilePath = Path.Combine(pwd, "ResultsOfT.cs");
+        var classTargetFilePath = Path.Combine(pwd, "ResultsOfT.Generated.cs");
         var testsTargetFilePath = Path.Combine(pwd, "..", "test", "ResultsOfTTests.Generated.cs");
 
         if (args.Length > 0)
@@ -80,7 +80,7 @@ public class Program
             writer.WriteLine("/// <remarks>");
             writer.WriteLine("/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance");
             writer.WriteLine("/// from an instance of one of the declared type arguments, e.g.");
-            writer.WriteLine("/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>");
+            writer.WriteLine("/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>");
             writer.WriteLine("/// </remarks>");
 
             // Type params docs
@@ -104,7 +104,7 @@ public class Program
             writer.Write(">");
 
             // Interfaces
-            writer.WriteLine(" : IResult, IEndpointMetadataProvider");
+            writer.WriteLine(" : IResult, INestedHttpResult, IEndpointMetadataProvider");
 
             // Type arg constraints
             for (int j = 1; j <= i; j++)
@@ -137,7 +137,7 @@ public class Program
             writer.WriteIndentedLine("/// <inheritdoc/>");
             writer.WriteIndentedLine("public Task ExecuteAsync(HttpContext httpContext)");
             writer.WriteIndentedLine("{");
-            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext);");
             writer.WriteLine();
             writer.WriteIndentedLine(2, "if (Result is null)");
             writer.WriteIndentedLine(2, "{");
@@ -179,6 +179,8 @@ public class Program
             writer.WriteIndentedLine("/// <inheritdoc/>");
             writer.WriteIndentedLine("static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)");
             writer.WriteIndentedLine("{");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(context);");
+            writer.WriteLine();
             for (int j = 1; j <= i; j++)
             {
                 writer.WriteIndentedLine(2, $"ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult{j}>(context);");
@@ -257,9 +259,10 @@ public class Program
             GenerateTest_ExecuteResult_ExecutesAssignedResult(writer, i);
             GenerateTest_Throws_ArgumentNullException_WhenHttpContextIsNull(writer, i);
             GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(writer, i);
-            Generate_AcceptsIResult_AsAnyTypeArg(writer, i);
-            Generate_AcceptsNestedResultsOfT_AsAnyTypeArg(writer, i);
-            Generate_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(writer, i);
+            GenerateTest_AcceptsIResult_AsAnyTypeArg(writer, i);
+            GenerateTest_AcceptsNestedResultsOfT_AsAnyTypeArg(writer, i);
+            GenerateTest_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(writer, i);
+            GenerateTest_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull(writer, i);
         }
 
         Generate_ChecksumResultClass(writer);
@@ -587,15 +590,15 @@ public class Program
         writer.WriteLine();
     }
 
-    static void Generate_AcceptsIResult_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
+    static void GenerateTest_AcceptsIResult_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
     {
         for (int i = 1; i <= typeArgCount; i++)
         {
-            Generate_AcceptsIResult_AsNthTypeArg(writer, typeArgCount, i);
+            GenerateTest_AcceptsIResult_AsNthTypeArg(writer, typeArgCount, i);
         }
     }
 
-    static void Generate_AcceptsIResult_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
+    static void GenerateTest_AcceptsIResult_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
     {
         //[Theory]
         //[InlineData(1, typeof(ChecksumResult1))]
@@ -695,15 +698,15 @@ public class Program
         writer.WriteLine();
     }
 
-    static void Generate_AcceptsNestedResultsOfT_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
+    static void GenerateTest_AcceptsNestedResultsOfT_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
     {
         for (int i = 1; i <= typeArgCount; i++)
         {
-            Generate_AcceptsNestedResultsOfT_AsNthTypeArg(writer, typeArgCount, i);
+            GenerateTest_AcceptsNestedResultsOfT_AsNthTypeArg(writer, typeArgCount, i);
         }
     }
 
-    static void Generate_AcceptsNestedResultsOfT_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
+    static void GenerateTest_AcceptsNestedResultsOfT_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
     {
         //[Theory]
         //[InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2>))]
@@ -803,7 +806,7 @@ public class Program
         writer.WriteLine();
     }
 
-    static void Generate_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(StreamWriter writer, int typeArgNumber)
+    static void GenerateTest_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(StreamWriter writer, int typeArgNumber)
     {
         //[Fact]
         //public void ResultsOfTResult1TResult2_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider()
@@ -811,7 +814,7 @@ public class Program
         //    // Arrange
         //    Results<ProvidesMetadataResult1, ProvidesMetadataResult2> MyApi() { throw new NotImplementedException(); }
         //    var metadata = new List<object>();
-        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         //    // Act
         //    PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
@@ -847,7 +850,7 @@ public class Program
         }
         writer.WriteLine("> MyApi() { throw new NotImplementedException(); }");
         writer.WriteIndentedLine(2, "var metadata = new List<object>();");
-        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);");
+        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);");
         writer.WriteLine();
 
         // Act
@@ -871,6 +874,46 @@ public class Program
         {
             writer.WriteIndentedLine(2, $"Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata {{ SourceTypeName: nameof(ProvidesMetadataResult{j}) }});");
         }
+
+        // Close method
+        writer.WriteIndentedLine(1, "}");
+        writer.WriteLine();
+    }
+
+    static void GenerateTest_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull(StreamWriter writer, int typeArgNumber)
+    {
+        //[Fact]
+        //public void ResultsOfTResult1TResult2_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()
+        //{
+        //    // Act & Assert
+        //    Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(null));
+        //}
+
+        // Attributes
+        writer.WriteIndentedLine("[Fact]");
+
+        // Start method
+        writer.WriteIndent(1, "public void ResultsOf");
+        for (int j = 1; j <= typeArgNumber; j++)
+        {
+            writer.Write($"TResult{j}");
+        }
+        writer.WriteLine("_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()");
+        writer.WriteIndentedLine("{");
+
+        // Act & Assert
+        writer.WriteIndentedLine(2, "// Act & Assert");
+        writer.WriteIndent(2, "Assert.Throws<ArgumentNullException>(\"context\", () => PopulateMetadata<Results<");
+        for (int j = 1; j <= typeArgNumber; j++)
+        {
+            writer.Write($"ProvidesMetadataResult{j}");
+
+            if (j != typeArgNumber)
+            {
+                writer.Write(", ");
+            }
+        }
+        writer.WriteLine(">>(null));");
 
         // Close method
         writer.WriteIndentedLine(1, "}");
@@ -913,7 +956,7 @@ public class Program
 
     static void Generate_ProvidesMetadataResultClass(StreamWriter writer, int typeArgNumber)
     {
-        //private class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
+        //private sealed class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
         //{
         //    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
 

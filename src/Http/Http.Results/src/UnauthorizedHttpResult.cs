@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the No Unauthorized (401) status code.
 /// </summary>
-public sealed class UnauthorizedHttpResult : IResult
+public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UnauthorizedHttpResult"/> class.
@@ -24,9 +24,13 @@ public sealed class UnauthorizedHttpResult : IResult
     /// </summary>
     public int StatusCode => StatusCodes.Status401Unauthorized;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.UnauthorizedResult");

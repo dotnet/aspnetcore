@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 // balanced as in a stack. It retains up to 'maxPreservedItems' instances in
 // memory, then for any further requests it supplies untracked instances.
 
-internal class StackObjectPool<T> where T : class
+internal sealed class StackObjectPool<T> where T : class
 {
     private readonly int _maxPreservedItems;
     private readonly Func<T> _instanceFactory;

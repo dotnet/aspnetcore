@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 // 2. Doesn't do ValueTask validation using the token
 // 3. Doesn't support usage outside of async/await (doesn't try to capture and restore the execution context)
 // 4. Doesn't use cancellation tokens
-internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource<int>
+internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource<SocketOperationResult>
 {
     private static readonly Action<object?> _continuationCompleted = _ => { };
 
@@ -40,21 +40,16 @@ internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource
         }
     }
 
-    public int GetResult(short token)
+    public SocketOperationResult GetResult(short token)
     {
         _continuation = null;
 
         if (SocketError != SocketError.Success)
         {
-            ThrowSocketException(SocketError);
+            return new SocketOperationResult(CreateException(SocketError));
         }
 
-        return BytesTransferred;
-
-        static void ThrowSocketException(SocketError e)
-        {
-            throw CreateException(e);
-        }
+        return new SocketOperationResult(BytesTransferred);
     }
 
     protected static SocketException CreateException(SocketError e)

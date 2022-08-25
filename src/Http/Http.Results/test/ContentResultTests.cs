@@ -123,6 +123,50 @@ public class ContentResultTests
         Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new ContentHttpResult("content", null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void ContentResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new ContentHttpResult("content", contentType));
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void ContentResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ContentHttpResult("content", contentType, StatusCodes.Status202Accepted));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void ContentResult_Implements_IStatusCodeHttpResult_Correctly_WithNullStatus()
+    {
+        // Arrange
+        var contentType = "application/custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ContentHttpResult("content", contentType));
+        Assert.Null(result.StatusCode);
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

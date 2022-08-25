@@ -44,7 +44,7 @@
     "src/**/*"
   ],
   "devDependencies": {
-    "@types/eventsource": "^1.1.5",
+    "@types/eventsource": "^1.1.8",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
     "@types/tough-cookie": "^4.0.0",
@@ -52,13 +52,12 @@
   },
   "dependencies": {
     "abort-controller": "^3.0.0",
-    "eventsource": "^1.0.7",
-    "fetch-cookie": "^0.11.0",
+    "eventsource": "^2.0.2",
+    "fetch-cookie": "^2.0.3",
     "node-fetch": "^2.6.7",
     "ws": "^7.4.5"
   },
   "resolutions": {
-    "ansi-regex": "5.0.1",
-    "url-parse": ">=1.5.6"
+    "ansi-regex": "5.0.1"
   }
 }

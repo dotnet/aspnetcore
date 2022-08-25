@@ -110,7 +110,7 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
         }
     }
 
-    private class StringSerializer : IDataSerializer<string>
+    private sealed class StringSerializer : IDataSerializer<string>
     {
         public string Deserialize(byte[] data)
         {

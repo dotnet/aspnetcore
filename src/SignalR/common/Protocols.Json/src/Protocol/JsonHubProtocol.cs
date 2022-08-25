@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -174,19 +175,38 @@ public sealed class JsonHubProtocol : IHubProtocol
                                     $"Expected '{StreamIdsPropertyName}' to be of type {SystemTextJsonExtensions.GetTokenString(JsonTokenType.StartArray)}.");
                             }
 
-                            var newStreamIds = new List<string>();
+                            List<string>? newStreamIds = null;
                             reader.Read();
                             while (reader.TokenType != JsonTokenType.EndArray)
                             {
+                                newStreamIds ??= new();
                                 newStreamIds.Add(reader.GetString() ?? throw new InvalidDataException($"Null value for '{StreamIdsPropertyName}' is not valid."));
                                 reader.Read();
                             }
 
-                            streamIds = newStreamIds.ToArray();
+                            streamIds = newStreamIds?.ToArray() ?? Array.Empty<string>();
                         }
                         else if (reader.ValueTextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                         {
+#if NETCOREAPP
+                            reader.Read();
+
+                            if (reader.TokenType != JsonTokenType.String)
+                            {
+                                throw new InvalidDataException($"Expected '{TargetPropertyName}' to be of type {JsonTokenType.String}.");
+                            }
+
+                            if (!reader.HasValueSequence)
+                            {
+                                target = binder.GetTarget(reader.ValueSpan) ?? reader.GetString();
+                            }
+                            else
+                            {
+                                target = reader.GetString();
+                            }
+#else
                             target = reader.ReadAsString(TargetPropertyName);
+#endif
                         }
                         else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                         {
@@ -210,8 +230,16 @@ public sealed class JsonHubProtocol : IHubProtocol
                             else
                             {
                                 // If we have an invocation id already we can parse the end result
-                                var returnType = binder.GetReturnType(invocationId);
-                                result = BindType(ref reader, input, returnType);
+                                var returnType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                                if (returnType is null)
+                                {
+                                    reader.Skip();
+                                    result = null;
+                                }
+                                else
+                                {
+                                    result = BindType(ref reader, input, returnType);
+                                }
                             }
                         }
                         else if (reader.ValueTextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
@@ -388,8 +416,15 @@ public sealed class JsonHubProtocol : IHubProtocol
 
                     if (hasResultToken)
                     {
-                        var returnType = binder.GetReturnType(invocationId);
-                        result = BindType(ref resultToken, input, returnType);
+                        var returnType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                        if (returnType is null)
+                        {
+                            result = null;
+                        }
+                        else
+                        {
+                            result = BindType(ref resultToken, input, returnType);
+                        }
                     }
 
                     message = BindCompletionMessage(invocationId, error, result, hasResult);

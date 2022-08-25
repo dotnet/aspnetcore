@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Repositories;
@@ -24,6 +25,10 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
     /// </summary>
     /// <param name="services"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    // DataProtectionKey.Id is not used anywhere. Add DynamicDependency to prevent it from being trimmed.
+    // Note that in the future EF may annotate itself to include properties automatically, and the annotation here could be removed.
+    // Fixes https://github.com/dotnet/aspnetcore/issues/43187
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(DataProtectionKey))]
     public EntityFrameworkCoreXmlRepository(IServiceProvider services, ILoggerFactory loggerFactory)
     {
         if (loggerFactory == null)

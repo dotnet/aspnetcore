@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
-internal class BatchingLogger : ILogger
+internal sealed class BatchingLogger : ILogger
 {
     private readonly BatchingLoggerProvider _provider;
     private readonly string _category;

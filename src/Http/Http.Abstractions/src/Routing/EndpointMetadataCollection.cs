@@ -162,25 +162,26 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     /// <summary>
     /// Enumerates the elements of an <see cref="EndpointMetadataCollection"/>.
     /// </summary>
-    public struct Enumerator : IEnumerator<object?>
+    public struct Enumerator : IEnumerator<object>
     {
 #pragma warning disable IDE0044
         // Intentionally not readonly to prevent defensive struct copies
         private object[] _items;
 #pragma warning restore IDE0044
         private int _index;
+        private object? _current;
 
         internal Enumerator(EndpointMetadataCollection collection)
         {
             _items = collection._items;
             _index = 0;
-            Current = null;
+            _current = null;
         }
 
         /// <summary>
         /// Gets the element at the current position of the enumerator
         /// </summary>
-        public object? Current { get; private set; }
+        public object Current => _current!;
 
         /// <summary>
         /// Releases all resources used by the <see cref="Enumerator"/>.
@@ -200,11 +201,11 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
         {
             if (_index < _items.Length)
             {
-                Current = _items[_index++];
+                _current = _items[_index++];
                 return true;
             }
 
-            Current = null;
+            _current = null;
             return false;
         }
 
@@ -214,7 +215,7 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
         public void Reset()
         {
             _index = 0;
-            Current = null;
+            _current = null;
         }
     }
 }

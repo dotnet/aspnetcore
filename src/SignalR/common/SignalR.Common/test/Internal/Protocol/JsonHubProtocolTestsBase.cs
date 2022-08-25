@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -192,6 +187,18 @@ public abstract class JsonHubProtocolTestsBase
         var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
         var ex = Assert.Throws<InvalidDataException>(() => JsonHubProtocol.TryParseMessage(ref data, binder, out var _));
         Assert.Equal(expectedMessage, ex.Message);
+    }
+
+    [Fact]
+    public void EmptyStreamIdsDoesNotAllocateNewArray()
+    {
+        var testData = Frame("{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[]}");
+
+        var binder = new TestBinder(Array.Empty<Type>(), typeof(object));
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(testData));
+        JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
+        Assert.IsType<InvocationMessage>(message);
+        Assert.Same(Array.Empty<string>(), (message as InvocationMessage).StreamIds);
     }
 
     [Theory]
@@ -446,6 +453,19 @@ public abstract class JsonHubProtocolTestsBase
         {
             MemoryBufferWriter.Return(writer);
         }
+    }
+
+    [Fact]
+    public void UnexpectedClientResultGivesEmptyCompletionMessage()
+    {
+        var binder = new TestBinder();
+        var message = Frame("{\"type\":3,\"result\":1,\"invocationId\":\"1\"}");
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(message));
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.Equal("1", completion.InvocationId);
     }
 
     public static string Frame(string input)

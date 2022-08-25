@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
-internal class DfaMatcherFactory : MatcherFactory
+internal sealed class DfaMatcherFactory : MatcherFactory
 {
     private readonly IServiceProvider _services;
 

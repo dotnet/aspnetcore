@@ -10,7 +10,7 @@ using Microsoft.Extensions.FileProviders;
 /// See: <see href="https://github.com/dotnet/core-setup/blob/master/Documentation/design-docs/host-startup-hook.md"/>
 /// The type must be named StartupHook without any namespace, and should be internal.
 /// </summary>
-internal class StartupHook
+internal sealed class StartupHook
 {
     /// <summary>
     /// Startup hooks are pieces of code that will run before a users program main executes

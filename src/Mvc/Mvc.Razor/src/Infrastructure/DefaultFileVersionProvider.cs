@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 /// <summary>
 /// Provides version hash for a specified file.
 /// </summary>
-internal class DefaultFileVersionProvider : IFileVersionProvider
+internal sealed class DefaultFileVersionProvider : IFileVersionProvider
 {
     private const string VersionKey = "v";
 

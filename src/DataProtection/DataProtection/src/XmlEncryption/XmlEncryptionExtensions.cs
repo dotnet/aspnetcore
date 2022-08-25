@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 internal static unsafe class XmlEncryptionExtensions
 {
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
         // If no decryption necessary, return original element.
@@ -49,7 +48,7 @@ internal static unsafe class XmlEncryptionExtensions
             // the decryptor should be the child of the 'encryptedSecret' element.
             var clonedElementWhichRequiresDecryption = new XElement(elementWhichRequiresDecryption);
             string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.DecryptorTypeAttributeName)!;
-            var decryptorInstance = activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
+            var decryptorInstance = CreateDecryptor(activator, decryptorTypeName);
             var decryptedElement = decryptorInstance.Decrypt(clonedElementWhichRequiresDecryption.Elements().Single());
 
             // Put a placeholder into the original document so that we can continue our
@@ -66,6 +65,34 @@ internal static unsafe class XmlEncryptionExtensions
             entry.Key.ReplaceWith(entry.Value);
         }
         return doc.Root!;
+    }
+
+    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
+    private static IXmlDecryptor CreateDecryptor(IActivator activator, string decryptorTypeName)
+    {
+        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
+            ? forwardedTypeName
+            : decryptorTypeName;
+        var type = Type.GetType(resolvedTypeName, throwOnError: false);
+
+        if (type == typeof(DpapiNGXmlDecryptor))
+        {
+            return activator.CreateInstance<DpapiNGXmlDecryptor>(decryptorTypeName);
+        }
+        else if (type == typeof(DpapiXmlDecryptor))
+        {
+            return activator.CreateInstance<DpapiXmlDecryptor>(decryptorTypeName);
+        }
+        else if (type == typeof(EncryptedXmlDecryptor))
+        {
+            return activator.CreateInstance<EncryptedXmlDecryptor>(decryptorTypeName);
+        }
+        else if (type == typeof(NullXmlDecryptor))
+        {
+            return activator.CreateInstance<NullXmlDecryptor>(decryptorTypeName);
+        }
+
+        return activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
     }
 
     public static XElement? EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)

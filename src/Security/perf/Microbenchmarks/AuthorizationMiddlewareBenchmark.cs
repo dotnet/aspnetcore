@@ -43,7 +43,7 @@ public class AuthorizationMiddlewareBenchmark
         return _authorizationMiddleware.Invoke(_httpContextHasEndpoint);
     }
 
-    private class EndpointFeature : IEndpointFeature
+    private sealed class EndpointFeature : IEndpointFeature
     {
         public Endpoint Endpoint { get; set; }
     }

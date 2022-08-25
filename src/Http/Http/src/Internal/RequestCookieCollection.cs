@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class RequestCookieCollection : IRequestCookieCollection
+internal sealed class RequestCookieCollection : IRequestCookieCollection
 {
     public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
     private static readonly string[] EmptyKeys = Array.Empty<string>();
@@ -117,7 +117,7 @@ internal class RequestCookieCollection : IRequestCookieCollection
         return Store.ContainsKey(key);
     }
 
-    public bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value)
+    public bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
     {
         if (Store == null)
         {

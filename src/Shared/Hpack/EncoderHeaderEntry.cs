@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace System.Net.Http.HPack;
 
 [DebuggerDisplay("Name = {Name} Value = {Value}")]
-internal class EncoderHeaderEntry
+internal sealed class EncoderHeaderEntry
 {
     // Header name and value
     public string? Name;

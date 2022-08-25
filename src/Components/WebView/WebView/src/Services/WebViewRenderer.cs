@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
-internal class WebViewRenderer : WebRenderer
+internal sealed class WebViewRenderer : WebRenderer
 {
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
@@ -76,7 +76,7 @@ internal class WebViewRenderer : WebRenderer
         nextUnacknowledgedBatch.CompletionSource.SetResult();
     }
 
-    record UnacknowledgedRenderBatch
+    private sealed record UnacknowledgedRenderBatch
     {
         public long BatchId { get; init; }
         public TaskCompletionSource CompletionSource { get; init; }

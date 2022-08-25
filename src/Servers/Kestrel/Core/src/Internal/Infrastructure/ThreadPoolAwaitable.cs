@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal class ThreadPoolAwaitable : ICriticalNotifyCompletion
+internal sealed class ThreadPoolAwaitable : ICriticalNotifyCompletion
 {
     public static readonly ThreadPoolAwaitable Instance = new ThreadPoolAwaitable();
 

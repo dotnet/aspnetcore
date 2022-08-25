@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class SegmentWriteStream : Stream
+internal sealed class SegmentWriteStream : Stream
 {
     private readonly List<byte[]> _segments = new List<byte[]>();
     private readonly MemoryStream _bufferStream = new MemoryStream();

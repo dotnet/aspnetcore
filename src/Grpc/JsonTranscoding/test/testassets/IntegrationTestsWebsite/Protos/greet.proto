@@ -20,11 +20,39 @@ service Greeter {
       body: "*"
     };
   }
+  rpc SayHelloComplex (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name=from/*}"
+    };
+  }
+  rpc SayHelloComplexCatchAll1 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/{name=v1/greeter/**/b}/c/d/one"
+    };
+  }
+  rpc SayHelloComplexCatchAll2 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/{name=v1/greeter/**/b}/c/d/two"
+    };
+  }
+  rpc SayHelloComplexCatchAll3 (ComplextHelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/{name.last_name}/{name.first_name=complex_greeter/**/b}/c/d/two"
+    };
+  }
 }
 
 // The request message containing the user's name.
 message HelloRequest {
   string name = 1;
+}
+
+message ComplextHelloRequest {
+  NameDetail name = 1;
+  message NameDetail {
+    string first_name = 1;
+    string last_name = 2;
+  }
 }
 
 // The response message containing the greetings.

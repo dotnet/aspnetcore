@@ -116,7 +116,7 @@ internal static class HostingEnvironmentExtensions
         }
 
         hostingEnvironment.EnvironmentName =
-            baseEnvironment?.EnvironmentName ?? 
+            baseEnvironment?.EnvironmentName ??
             options.Environment ??
             hostingEnvironment.EnvironmentName;
     }

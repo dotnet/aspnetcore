@@ -102,10 +102,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader Endpoint(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         return Endpoint(new IPEndPoint(address, port), configure);
     }
@@ -120,14 +117,8 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader Endpoint(IPEndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -149,10 +140,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader LocalhostEndpoint(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -172,10 +160,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader AnyIPEndpoint(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -195,18 +180,12 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader UnixSocketEndpoint(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
         if (socketPath.Length == 0 || socketPath[0] != '/')
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -226,10 +205,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader HandleEndpoint(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -353,8 +329,9 @@ public class KestrelConfigurationLoader
                 }
 
                 // A cert specified directly on the endpoint overrides any defaults.
-                httpsOptions.ServerCertificate = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name)
-                    ?? httpsOptions.ServerCertificate;
+                var (serverCert, fullChain) = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name);
+                httpsOptions.ServerCertificate = serverCert ?? httpsOptions.ServerCertificate;
+                httpsOptions.ServerCertificateChain = fullChain ?? httpsOptions.ServerCertificateChain;
 
                 if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                 {
@@ -423,7 +400,7 @@ public class KestrelConfigurationLoader
     {
         if (ConfigurationReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
         {
-            var defaultCert = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
+            var (defaultCert, _ /* cert chain */) = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
             if (defaultCert != null)
             {
                 DefaultCertificateConfig = defaultCertConfig;
@@ -493,10 +470,9 @@ public class KestrelConfigurationLoader
 
     private bool TryGetCertificatePath([NotNullWhen(true)] out string? path)
     {
-        // This will go away when we implement
-        // https://github.com/aspnet/Hosting/issues/1294
+        // See https://github.com/aspnet/Hosting/issues/1294
         var appData = Environment.GetEnvironmentVariable("APPDATA");
-        var home = Environment.GetEnvironmentVariable("HOME");
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
         basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
         path = basePath != null ? Path.Combine(basePath, $"{HostEnvironment.ApplicationName}.pfx") : null;

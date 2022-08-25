@@ -44,7 +44,7 @@ public static class AntiforgeryExtensions
         return new InputContent(tokenSet);
     }
 
-    private class InputContent : IHtmlContent
+    private sealed class InputContent : IHtmlContent
     {
         private readonly string _fieldName;
         private readonly string _requestToken;

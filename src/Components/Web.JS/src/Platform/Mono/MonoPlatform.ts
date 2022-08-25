@@ -18,6 +18,7 @@ import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConf
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let IMPORTS: any = undefined as any;
 
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
@@ -249,6 +250,14 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const existingPostRun = moduleConfig.postRun || [];
   (moduleConfig as any).preloadPlugins = [];
 
+  let resourcesLoaded = 0;
+  function setProgress(){
+      resourcesLoaded++;
+      const percentage = resourcesLoaded / totalResources.length * 100;
+      document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
+      document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+    }
+
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
@@ -259,6 +268,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
     /* type */ 'dotnetwasm'
   );
+  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, wasmBeingLoaded);
+  totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
@@ -269,6 +280,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
       'globalization'
     );
+    totalResources.push(timeZoneResource);
+    timeZoneResource.response.then(_ => setProgress());
   }
 
   let icuDataResource: LoadingResource | undefined;
@@ -281,23 +294,26 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
       'globalization'
     );
+    totalResources.push(icuDataResource);
+    icuDataResource.response.then(_ => setProgress());
   }
 
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
-    const { MONO: mono, BINDING: binding, Module: module } = api;
+    const { MONO: mono, BINDING: binding, Module: module, IMPORTS: imports } = api;
     Module = module;
     BINDING = binding;
     MONO = mono;
+    IMPORTS = imports;
 
     // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-    const instantiateWasm = (imports, successCallback) => {
+    const instantiateWasm = (wasmImports, successCallback) => {
       (async () => {
         let compiledInstance: WebAssembly.Instance;
         try {
           const dotnetWasmResource = await wasmBeingLoaded;
-          compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
+          compiledInstance = await compileWasmModule(dotnetWasmResource, wasmImports);
         } catch (ex) {
           printErr((ex as Error).toString());
           throw ex;
@@ -329,9 +345,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
       pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-      Blazor._internal.dotNetCriticalError = (message) => {
-        printErr(BINDING.conv_string(message) || '(null)');
-      };
+      Blazor._internal.dotNetCriticalError = (message) => printErr(message || '(null)');
 
       // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
       // startup sequence to load satellite assemblies for the application's culture.
@@ -467,6 +481,16 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       // -1 enables debugging with logging disabled. 0 disables debugging entirely.
       MONO.mono_wasm_load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
       MONO.mono_wasm_runtime_ready();
+      try {
+        BINDING.bind_static_method('invalid-fqn', '');
+      } catch (e) {
+        // HOTFIX: until https://github.com/dotnet/runtime/pull/72275
+        // this would always throw, but it will initialize runtime interop as side-effect
+      }
+
+      // makes Blazor._internal visible to [JSImport]
+      IMPORTS.Blazor = { _internal: Blazor._internal };
+
       attachInteropInvoker();
       runtimeReadyResolve(api);
     };
@@ -628,24 +652,28 @@ async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
 }
 
 async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
-  // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
-  // it doesn't provide any method for supplying a custom response provider, and we want to integrate
-  // with our resource loader cache.
+  const wasmResourceResponse = await wasmResource.response;
 
-  if (typeof WebAssembly['instantiateStreaming'] === 'function') {
-    try {
-      const streamingResult = await WebAssembly['instantiateStreaming'](wasmResource.response, imports);
-      return streamingResult.instance;
-    } catch (ex) {
-      console.info('Streaming compilation failed. Falling back to ArrayBuffer instantiation. ', ex);
+  // The instantiateStreaming spec explicitly requires the following exact MIME type (with no trailing parameters, etc.)
+  // https://webassembly.github.io/spec/web-api/#dom-webassembly-instantiatestreaming
+  const hasWasmContentType = wasmResourceResponse.headers?.get('content-type') === 'application/wasm';
+
+  if (hasWasmContentType && typeof WebAssembly.instantiateStreaming === 'function') {
+    // We can use streaming compilation. We know this shouldn't fail due to the content-type header being wrong,
+    // as we already just checked that. So if this fails for some other reason we'll treat it as fatal.
+    const streamingResult = await WebAssembly.instantiateStreaming(wasmResourceResponse, imports);
+    return streamingResult.instance;
+  } else {
+    if (!hasWasmContentType) {
+      // In most cases the developer should fix this. It's unusual enough that we don't mind logging a warning each time.
+      console.warn('WebAssembly resource does not have the expected content type "application/wasm", so falling back to slower ArrayBuffer instantiation.');
     }
-  }
 
-  // If that's not available or fails (e.g., due to incorrect content-type header),
-  // fall back to ArrayBuffer instantiation
-  const arrayBuffer = await wasmResource.response.then(r => r.arrayBuffer());
-  const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-  return arrayBufferResult.instance;
+    // Fall back on ArrayBuffer instantiation.
+    const arrayBuffer = await wasmResourceResponse.arrayBuffer();
+    const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
+    return arrayBufferResult.instance;  
+  }
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {

@@ -37,7 +37,6 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         _activator = activator;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private static List<string> ReadKeyEscrowSinks(RegistryKey key)
     {
         var sinks = new List<string>();
@@ -52,7 +51,7 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
                 var candidate = sinkFromRegistry.Trim();
                 if (!string.IsNullOrEmpty(candidate))
                 {
-                    typeof(IKeyEscrowSink).AssertIsAssignableFrom(Type.GetType(candidate, throwOnError: true)!);
+                    typeof(IKeyEscrowSink).AssertIsAssignableFrom(TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(candidate));
                     sinks.Add(candidate);
                 }
             }
@@ -61,7 +60,6 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         return sinks;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public RegistryPolicy? ResolvePolicy()
     {
         using (var registryKey = _getPolicyRegKey())
@@ -70,7 +68,6 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         }
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private RegistryPolicy? ResolvePolicyCore(RegistryKey? policyRegKey)
     {
         if (policyRegKey == null)
@@ -174,14 +171,13 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         return options;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private static ManagedAuthenticatedEncryptorConfiguration GetManagedAuthenticatedEncryptorConfiguration(RegistryKey key)
     {
         var options = new ManagedAuthenticatedEncryptorConfiguration();
         var valueFromRegistry = key.GetValue(nameof(ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmType));
         if (valueFromRegistry != null)
         {
-            options.EncryptionAlgorithmType = Type.GetType(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!, throwOnError: true)!;
+            options.EncryptionAlgorithmType = TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!);
         }
 
         valueFromRegistry = key.GetValue(nameof(ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize));
@@ -193,7 +189,7 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         valueFromRegistry = key.GetValue(nameof(ManagedAuthenticatedEncryptorConfiguration.ValidationAlgorithmType));
         if (valueFromRegistry != null)
         {
-            options.ValidationAlgorithmType = Type.GetType(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!, throwOnError: true)!;
+            options.ValidationAlgorithmType = TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!);
         }
 
         return options;

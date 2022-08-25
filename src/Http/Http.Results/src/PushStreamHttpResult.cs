@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Represents an <see cref="IResult"/> that when executed will
 /// write a file from the writer callback to the response.
 /// </summary>
-public sealed class PushStreamHttpResult : IResult
+public sealed class PushStreamHttpResult : IResult, IFileHttpResult, IContentTypeHttpResult
 {
     private readonly Func<Stream, Task> _streamWriterCallback;
 
@@ -100,6 +100,8 @@ public sealed class PushStreamHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PushStreamResult");

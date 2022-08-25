@@ -158,6 +158,22 @@
       "_justification": "Legitimate key file used for testing"
     },
     {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\intermediate2_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\intermediate_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\leaf.com.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\root_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
       "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\node_modules\\https-proxy-agent\\node_modules\\agent-base\\test\\ssl-cert-snakeoil.key",
       "_justification": "Legitimate key file used for testing"
     }

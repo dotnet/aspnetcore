@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
-internal class RegistryPolicy
+internal sealed class RegistryPolicy
 {
     public RegistryPolicy(
         AlgorithmConfiguration? configuration,

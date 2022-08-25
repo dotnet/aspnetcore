@@ -36,6 +36,10 @@ internal interface IHttp3Stream
 
     bool IsRequestStream { get; }
 
+    bool EndStreamReceived { get; }
+    bool IsAborted { get; }
+    bool IsCompleted { get; }
+
     string TraceIdentifier { get; }
 
     void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode);

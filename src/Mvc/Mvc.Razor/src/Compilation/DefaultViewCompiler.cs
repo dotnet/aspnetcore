@@ -13,8 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation;
 /// <summary>
 /// Caches the result of runtime compilation of Razor files for the duration of the application lifetime.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 // This name is hardcoded in RazorRuntimeCompilationMvcCoreBuilderExtensions. Make sure it's updated if this is ever renamed.
 internal partial class DefaultViewCompiler : IViewCompiler
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly ApplicationPartManager _applicationPartManager;
     private readonly ConcurrentDictionary<string, string> _normalizedPathCache;

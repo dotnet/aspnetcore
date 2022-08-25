@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews;
 /// <summary>
 /// Holds data to be displayed on the compilation error page.
 /// </summary>
-internal class CompilationErrorPageModel
+internal sealed class CompilationErrorPageModel
 {
     public CompilationErrorPageModel(DeveloperExceptionPageOptions options)
     {

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal class TemplateBuilder
+internal sealed class TemplateBuilder
 {
     private readonly IViewEngine _viewEngine;
     private readonly IViewBufferScope _bufferScope;

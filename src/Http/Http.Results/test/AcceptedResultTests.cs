@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 public class AcceptedResultTests
 {
     [Fact]
-    public async Task ExecuteResultAsync_SetsStatusCodeAndLocationHeader()
+    public async Task ExecuteAsync_SetsStatusCodeAndLocationHeader()
     {
         // Arrange
         var expectedUrl = "testAction";
@@ -32,13 +32,39 @@ public class AcceptedResultTests
         // Arrange
         Accepted MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Accepted>(context);
 
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ProducesResponseTypeMetadata { StatusCode: StatusCodes.Status202Accepted });
+    }
+
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new Accepted("location");
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Accepted>(null));
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Accepted("location"));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

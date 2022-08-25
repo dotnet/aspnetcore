@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal class Http2FrameWriter
+internal sealed class Http2FrameWriter
 {
     // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
@@ -161,10 +161,8 @@ internal class Http2FrameWriter
 
                     FlushResult flushResult = default;
 
-                    // There are 2 cases where we abort:
-                    // 1. We're not complete but we got the abort.
-                    // 2. We're complete and there's no more response data to be written.
-                    if ((aborted && !completed) || (aborted && completed && actual == 0 && stream.ResponseTrailers is null or { Count: 0 }))
+                    // We're not complete but we got the abort.
+                    if (aborted && !completed)
                     {
                         // Response body is aborted, complete reader for this output producer.
                         if (flushHeaders)
@@ -175,10 +173,17 @@ internal class Http2FrameWriter
 
                         if (actual > 0)
                         {
+                            // actual > int.MaxValue should never be possible because it would exceed Http2PeerSettings.MaxWindowSize
+                            // which is a protocol-defined limit. There's no way Kestrel would try to write more than that in one go.
+                            Debug.Assert(actual <= int.MaxValue);
+
                             // If we got here it means we're going to cancel the write. Restore any consumed bytes to the connection window.
-                            lock (_windowUpdateLock)
+                            if (!TryUpdateConnectionWindow((int)actual))
                             {
-                                _connectionWindow += actual;
+                                // This branch can only ever be taken given both a buggy client and aborting streams mid-write. Even then, we're much more likely catch the
+                                // error in Http2Connection.ProcessFrameAsync() before catching it here. This branch is technically possible though, so we defend against it.
+                                await HandleFlowControlErrorAsync();
+                                return;
                             }
                         }
                     }
@@ -196,6 +201,8 @@ internal class Http2FrameWriter
                     }
                     else if (completed && producer.AppCompletedWithNoResponseBodyOrTrailers)
                     {
+                        Debug.Assert(flushHeaders, "The app completed successfully without flushing headers!");
+
                         if (buffer.Length != 0)
                         {
                             _log.Http2UnexpectedDataRemaining(stream.StreamId, _connectionId);
@@ -204,8 +211,7 @@ internal class Http2FrameWriter
                         {
                             stream.DecrementActiveClientStreamCount();
 
-                            // Headers have already been written and there is no other content to write
-                            flushResult = await FlushAsync(stream, flushHeaders, outputAborter: null, cancellationToken: default);
+                            flushResult = await FlushEndOfStreamHeadersAsync(stream);
                         }
                     }
                     else
@@ -263,6 +269,18 @@ internal class Http2FrameWriter
         }
 
         _log.Http2ConnectionQueueProcessingCompleted(_connectionId);
+    }
+
+    private async Task HandleFlowControlErrorAsync()
+    {
+        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+        _log.Http2ConnectionError(_connectionId, connectionError);
+        await WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.FLOW_CONTROL_ERROR);
+
+        // Prevent Abort() from writing an INTERNAL_ERROR GOAWAY frame after our FLOW_CONTROL_ERROR.
+        Complete();
+        // Stop processing any more requests and immediately close the connection.
+        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError));
     }
 
     private bool TryQueueProducerForConnectionWindowUpdate(long actual, Http2OutputProducer producer)
@@ -354,7 +372,7 @@ internal class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> FlushAsync(Http2Stream stream, bool writeHeaders, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
+    private ValueTask<FlushResult> FlushEndOfStreamHeadersAsync(Http2Stream stream)
     {
         lock (_writeLock)
         {
@@ -363,16 +381,12 @@ internal class Http2FrameWriter
                 return default;
             }
 
-            if (writeHeaders)
-            {
-                // write headers
-                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
-            }
+            WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
 
             var bytesWritten = _unflushedBytes;
             _unflushedBytes = 0;
 
-            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten, outputAborter, cancellationToken);
+            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
         }
     }
 

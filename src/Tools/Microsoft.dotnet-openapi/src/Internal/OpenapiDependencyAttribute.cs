@@ -9,7 +9,7 @@ using Microsoft.DotNet.OpenApi;
 namespace Microsoft.DotNet.Openapi.Tools.Internal;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-internal class OpenApiDependencyAttribute : Attribute
+internal sealed class OpenApiDependencyAttribute : Attribute
 {
     public OpenApiDependencyAttribute(string name, string version, string codeGenerators)
     {

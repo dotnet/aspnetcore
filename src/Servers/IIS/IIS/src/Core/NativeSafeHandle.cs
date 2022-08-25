@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class NativeSafeHandle : SafeHandle
+internal sealed class NativeSafeHandle : SafeHandle
 {
     public override bool IsInvalid => handle == IntPtr.Zero;
 

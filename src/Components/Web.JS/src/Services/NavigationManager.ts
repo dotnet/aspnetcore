@@ -7,32 +7,50 @@ import { EventDelegator } from '../Rendering/Events/EventDelegator';
 
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
+let hasLocationChangingEventListeners = false;
+let currentHistoryIndex = 0;
+let currentLocationChangingCallId = 0;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangingCallback: ((callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
+
+let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
+let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
-  navigateTo,
+  setHasLocationChangingListeners,
+  endLocationChanging,
+  navigateTo: navigateToFromDotNet,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
 };
 
-function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>): void {
-  notifyLocationChangedCallback = callback;
+function listenForNavigationEvents(
+  locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
+  locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
+): void {
+  notifyLocationChangedCallback = locationChangedCallback;
+  notifyLocationChangingCallback = locationChangingCallback;
 
   if (hasRegisteredNavigationEventListeners) {
     return;
   }
 
   hasRegisteredNavigationEventListeners = true;
-  window.addEventListener('popstate', () => notifyLocationChanged(false));
+  window.addEventListener('popstate', onPopState);
+  currentHistoryIndex = history.state?._index ?? 0;
 }
 
 function enableNavigationInterception(): void {
   hasEnabledNavigationInterception = true;
+}
+
+function setHasLocationChangingListeners(hasListeners: boolean) {
+  hasLocationChangingEventListeners = hasListeners;
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
@@ -74,15 +92,25 @@ export function navigateTo(uri: string, options: NavigationOptions): void;
 export function navigateTo(uri: string, forceLoad: boolean): void;
 export function navigateTo(uri: string, forceLoad: boolean, replace: boolean): void;
 export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | boolean, replaceIfUsingOldOverload = false): void {
-  const absoluteUri = toAbsoluteUri(uri);
-
   // Normalize the parameters to the newer overload (i.e., using NavigationOptions)
   const options: NavigationOptions = forceLoadOrOptions instanceof Object
     ? forceLoadOrOptions
     : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
 
+  navigateToCore(uri, options);
+}
+
+function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
+  // The location changing callback is called from .NET for programmatic navigations originating from .NET.
+  // In this case, we shouldn't invoke the callback again from the JS side.
+  navigateToCore(uri, options, /* skipLocationChangingCallback */ true);
+}
+
+function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
+  const absoluteUri = toAbsoluteUri(uri);
+
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -107,7 +135,16 @@ function performExternalNavigation(uri: string, replace: boolean) {
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean) {
+async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
+  ignorePendingNavigation();
+
+  if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
+    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
+    if (!shouldContinueNavigation) {
+      return;
+    }
+  }
+
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -116,18 +153,98 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   resetScrollAfterNextBatch();
 
   if (!replace) {
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+    currentHistoryIndex++;
+    history.pushState({
+      userState: state,
+      _index: currentHistoryIndex,
+    }, /* ignored title */ '', absoluteInternalHref);
   } else {
-    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
+    history.replaceState({
+      userState: state,
+      _index: currentHistoryIndex,
+    }, /* ignored title */ '', absoluteInternalHref);
   }
 
-  notifyLocationChanged(interceptedLink);
+  await notifyLocationChanged(interceptedLink);
+}
+
+function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
+  return new Promise(resolve => {
+    const oldPopStateCallback = popStateCallback;
+
+    popStateCallback = () => {
+      popStateCallback = oldPopStateCallback;
+      resolve();
+    };
+
+    history.go(delta);
+  });
+}
+
+function ignorePendingNavigation() {
+  if (resolveCurrentNavigation) {
+    resolveCurrentNavigation(false);
+    resolveCurrentNavigation = null;
+  }
+}
+
+function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean): Promise<boolean> {
+  return new Promise<boolean>(resolve => {
+    ignorePendingNavigation();
+
+    if (!notifyLocationChangingCallback) {
+      resolve(false);
+      return;
+    }
+
+    currentLocationChangingCallId++;
+    resolveCurrentNavigation = resolve;
+    notifyLocationChangingCallback(currentLocationChangingCallId, uri, state, intercepted);
+  });
+}
+
+function endLocationChanging(callId: number, shouldContinueNavigation: boolean) {
+  if (resolveCurrentNavigation && callId === currentLocationChangingCallId) {
+    resolveCurrentNavigation(shouldContinueNavigation);
+    resolveCurrentNavigation = null;
+  }
+}
+
+async function onBrowserInitiatedPopState(state: PopStateEvent) {
+  ignorePendingNavigation();
+
+  if (hasLocationChangingEventListeners) {
+    const index = state.state?._index ?? 0;
+    const userState = state.state?.userState;
+    const delta = index - currentHistoryIndex;
+    const uri = location.href;
+
+    // Temporarily revert the navigation until we confirm if the navigation should continue.
+    await navigateHistoryWithoutPopStateCallback(-delta);
+
+    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false);
+    if (!shouldContinueNavigation) {
+      return;
+    }
+
+    await navigateHistoryWithoutPopStateCallback(delta);
+  }
+
+  await notifyLocationChanged(false);
 }
 
 async function notifyLocationChanged(interceptedLink: boolean) {
   if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, interceptedLink);
+    await notifyLocationChangedCallback(location.href, history.state?.userState, interceptedLink);
   }
+}
+
+async function onPopState(state: PopStateEvent) {
+  if (popStateCallback) {
+    await popStateCallback(state);
+  }
+
+  currentHistoryIndex = history.state?._index ?? 0;
 }
 
 let testAnchor: HTMLAnchorElement;
@@ -170,12 +287,15 @@ function findClosestAnchorAncestorLegacy(element: Element | null, tagName: strin
 }
 
 function isWithinBaseUriSpace(href: string) {
-  const baseUriWithTrailingSlash = toBaseUriWithTrailingSlash(document.baseURI!); // TODO: Might baseURI really be null?
-  return href.startsWith(baseUriWithTrailingSlash);
+  const baseUriWithoutTrailingSlash = toBaseUriWithoutTrailingSlash(document.baseURI!);
+  const nextChar = href.charAt(baseUriWithoutTrailingSlash.length);
+
+  return href.startsWith(baseUriWithoutTrailingSlash)
+    && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
 }
 
-function toBaseUriWithTrailingSlash(baseUri: string) {
-  return baseUri.substr(0, baseUri.lastIndexOf('/') + 1);
+function toBaseUriWithoutTrailingSlash(baseUri: string) {
+  return baseUri.substring(0, baseUri.lastIndexOf('/'));
 }
 
 function eventHasSpecialKey(event: MouseEvent) {
@@ -192,4 +312,5 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
 export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
+  historyEntryState?: string;
 }

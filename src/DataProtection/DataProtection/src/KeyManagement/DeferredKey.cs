@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 /// </summary>
 internal sealed class DeferredKey : KeyBase
 {
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public DeferredKey(
         Guid keyId,
         DateTimeOffset creationDate,
@@ -36,7 +35,6 @@ internal sealed class DeferredKey : KeyBase
     {
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private static Func<IAuthenticatedEncryptorDescriptor> GetLazyDescriptorDelegate(IInternalXmlKeyManager keyManager, XElement keyElement)
     {
         // The <key> element will be held around in memory for a potentially lengthy period
@@ -54,7 +52,6 @@ internal sealed class DeferredKey : KeyBase
             keyElement = null!;
         }
 
-        [RequiresUnreferencedCode(TrimmerWarning.Message)]
         IAuthenticatedEncryptorDescriptor GetLazyDescriptorDelegate()
         {
             return keyManager.DeserializeDescriptorFromKeyElement(encryptedKeyElement.ToXElement());

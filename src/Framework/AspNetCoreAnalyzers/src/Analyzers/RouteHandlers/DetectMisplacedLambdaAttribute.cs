@@ -13,7 +13,6 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DetectMisplacedLambdaAttribute(
         in OperationAnalysisContext context,
-        IInvocationOperation invocation,
         IAnonymousFunctionOperation lambda)
     {
         // This analyzer will only process invocations that are immediate children of the
@@ -23,28 +22,20 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         //    Hello();
         //    return "foo";
         // }
-        InvocationExpressionSyntax? targetInvocation = null;
+        IMethodSymbol? methodSymbol = null;
 
         // () => Hello() has a single child which is a BlockOperation so we check to see if
         // expression associated with that operation is an invocation expression
         if (lambda.ChildOperations.FirstOrDefault().Syntax is InvocationExpressionSyntax innerInvocation)
         {
-            targetInvocation = innerInvocation;
+            methodSymbol = lambda.Symbol;
         }
 
         if (lambda.ChildOperations.FirstOrDefault().ChildOperations.FirstOrDefault() is IReturnOperation returnOperation
             && returnOperation.ReturnedValue is IInvocationOperation returnedInvocation)
         {
-            targetInvocation = (InvocationExpressionSyntax)returnedInvocation.Syntax;
+            methodSymbol = returnedInvocation.TargetMethod;
         }
-
-        if (targetInvocation is null)
-        {
-            return;
-        }
-
-        var methodOperation = invocation.SemanticModel.GetSymbolInfo(targetInvocation);
-        var methodSymbol = methodOperation.Symbol ?? methodOperation.CandidateSymbols.FirstOrDefault();
 
         // If no method definition was found for the lambda, then abort.
         if (methodSymbol is null)

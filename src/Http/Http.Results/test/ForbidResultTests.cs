@@ -108,6 +108,17 @@ public class ForbidResultTests
         auth.Verify();
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new ForbidHttpResult();
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static DefaultHttpContext GetHttpContext(IAuthenticationService auth)
     {
         var httpContext = new DefaultHttpContext();

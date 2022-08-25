@@ -411,7 +411,7 @@ public class EventTests
         var builder = new HostBuilder()
             .ConfigureServices(services => services
                 .AddRouting()
-                .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddAuthentication()
                 .AddNegotiate(options =>
                 {
                     options.StateFactory = new TestNegotiateStateFactory();

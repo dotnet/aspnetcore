@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-internal class RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
+internal sealed class RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
     : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
     where TRemoteAuthenticationState : RemoteAuthenticationState
     where TAccount : RemoteUserAccount

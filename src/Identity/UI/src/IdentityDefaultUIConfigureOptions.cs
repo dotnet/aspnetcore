@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.UI;
 
-internal class IdentityDefaultUIConfigureOptions<TUser> :
+internal sealed class IdentityDefaultUIConfigureOptions<TUser> :
     IPostConfigureOptions<RazorPagesOptions>,
     IConfigureNamedOptions<CookieAuthenticationOptions> where TUser : class
 {

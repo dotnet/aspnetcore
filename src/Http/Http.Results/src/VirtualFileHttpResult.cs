@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// A <see cref="IResult" /> that on execution writes the file specified
 /// using a virtual path to the response using mechanisms provided by the host.
 /// </summary>
-public sealed class VirtualFileHttpResult : IResult
+public sealed class VirtualFileHttpResult : IResult, IFileHttpResult, IContentTypeHttpResult
 {
     private string _fileName;
 
@@ -62,7 +62,7 @@ public sealed class VirtualFileHttpResult : IResult
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+        FileName = fileName;
         ContentType = contentType ?? "application/octet-stream";
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
@@ -101,6 +101,8 @@ public sealed class VirtualFileHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var hostingEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
         var fileInfo = GetFileInformation(hostingEnvironment.WebRootFileProvider);

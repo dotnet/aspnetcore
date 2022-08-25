@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with status code Accepted (202) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class Accepted : IResult, IEndpointMetadataProvider
+public sealed class Accepted : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Accepted"/> class with the values
@@ -31,11 +31,6 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     internal Accepted(Uri locationUri)
     {
-        if (locationUri == null)
-        {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
-
         if (locationUri.IsAbsoluteUri)
         {
             Location = locationUri.AbsoluteUri;
@@ -51,6 +46,8 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider
     /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <summary>
     /// Gets the location at which the status of the requested content can be monitored.
     /// </summary>
@@ -59,6 +56,8 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.AcceptedResult");
@@ -77,6 +76,8 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted));
     }
 }

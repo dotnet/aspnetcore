@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Html;
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 // See the details of the component serialization protocol in ServerComponentDeserializer.cs on the Components solution.
-internal class ServerComponentSerializer
+internal sealed class ServerComponentSerializer
 {
     public const int PreambleBufferSize = 3;
 

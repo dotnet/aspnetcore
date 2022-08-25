@@ -87,7 +87,11 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     {
         if (!IsUpgradableRequest)
         {
-            throw new InvalidOperationException("This request cannot be upgraded, it is incompatible.");
+            if (Request.ProtocolVersion != System.Net.HttpVersion.Version11)
+            {
+                throw new InvalidOperationException("Upgrade requires HTTP/1.1.");
+            }
+            throw new InvalidOperationException("This request cannot be upgraded because it has a body.");
         }
         if (Response.HasStarted)
         {
@@ -254,15 +258,11 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     {
         Response.StatusCode = status;
         Response.ContentLength = 0;
-        Dispose();
     }
 
     internal unsafe void Delegate(DelegationRule destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
         if (Request.HasRequestBodyStarted)
         {
             throw new InvalidOperationException("This request cannot be delegated, the request body has already started.");

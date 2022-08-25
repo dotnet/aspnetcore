@@ -7,11 +7,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authorization</PackageTags>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="..\..\..\..\Http\Routing\src\DataSourceDependentCache.cs" Link="DataSourceDependentCache.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
-internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
+internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
 

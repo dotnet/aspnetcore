@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class DisconnectListener
+internal sealed partial class DisconnectListener
 {
     private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens = new();
 
@@ -116,7 +116,7 @@ internal partial class DisconnectListener
         return returnToken;
     }
 
-    private class ConnectionCancellation
+    private sealed class ConnectionCancellation
     {
         private readonly DisconnectListener _parent;
         private volatile bool _initialized; // Must be volatile because initialization is synchronized

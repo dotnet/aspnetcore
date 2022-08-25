@@ -208,7 +208,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
@@ -216,6 +216,13 @@ public partial class ResultsOfTTests
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(null));
     }
 
     [Theory]
@@ -480,7 +487,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3>>(context);
@@ -489,6 +496,13 @@ public partial class ResultsOfTTests
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult3) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3>>(null));
     }
 
     [Theory]
@@ -829,7 +843,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4>>(context);
@@ -839,6 +853,13 @@ public partial class ResultsOfTTests
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult3) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult4) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4>>(null));
     }
 
     [Theory]
@@ -1263,7 +1284,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5>>(context);
@@ -1274,6 +1295,13 @@ public partial class ResultsOfTTests
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult3) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult4) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult5) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5>>(null));
     }
 
     [Theory]
@@ -1790,7 +1818,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6>>(context);
@@ -1802,6 +1830,13 @@ public partial class ResultsOfTTests
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult4) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult5) });
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult6) });
+    }
+
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_PopulateMetadata_Throws_ArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6>>(null));
     }
 
     abstract class ChecksumResult : IResult

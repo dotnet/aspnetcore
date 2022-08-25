@@ -424,7 +424,7 @@ public class TagBuilder : IHtmlContent
         }
     }
 
-    private class RenderTagHtmlContent : IHtmlContent
+    private sealed class RenderTagHtmlContent : IHtmlContent
     {
         private readonly TagBuilder _tagBuilder;
         private readonly TagRenderMode _tagRenderMode;

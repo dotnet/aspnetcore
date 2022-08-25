@@ -32,7 +32,7 @@ public sealed partial class SignInHttpResult : IResult
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
     internal SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
     {
-        Principal = principal ?? throw new ArgumentNullException(nameof(principal));
+        Principal = principal;
         AuthenticationScheme = authenticationScheme;
         Properties = properties;
     }
@@ -55,6 +55,8 @@ public sealed partial class SignInHttpResult : IResult
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.SignInResult");

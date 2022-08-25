@@ -23,6 +23,17 @@ public class EmptyResultTests
         Assert.Equal(0, memoryStream.Length);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = EmptyHttpResult.Instance;
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static HttpContext GetHttpContext()
     {
         var httpContext = new DefaultHttpContext();

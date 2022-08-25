@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
@@ -73,72 +67,6 @@ public class InitCommand : ICommand
 
     public void Execute(CommandContext context)
     {
-        var projectPath = ResolveProjectPath(ProjectPath, WorkingDirectory);
-
-        // Load the project file as XML
-        var projectDocument = XDocument.Load(projectPath, LoadOptions.PreserveWhitespace);
-
-        // Accept the `--id` CLI option to the main app
-        string newSecretsId = string.IsNullOrWhiteSpace(OverrideId)
-            ? Guid.NewGuid().ToString()
-            : OverrideId;
-
-        // Confirm secret ID does not contain invalid characters
-        if (Path.GetInvalidPathChars().Any(invalidChar => newSecretsId.Contains(invalidChar)))
-        {
-            throw new ArgumentException(Resources.FormatError_InvalidSecretsId(newSecretsId));
-        }
-
-        var existingUserSecretsId = projectDocument.XPathSelectElements("//UserSecretsId").FirstOrDefault();
-
-        // Check if a UserSecretsId is already set
-        if (existingUserSecretsId is object)
-        {
-            // Only set the UserSecretsId if the user specified an explicit value
-            if (string.IsNullOrWhiteSpace(OverrideId))
-            {
-                context.Reporter.Output(Resources.FormatMessage_ProjectAlreadyInitialized(projectPath));
-                return;
-            }
-
-            existingUserSecretsId.SetValue(newSecretsId);
-        }
-        else
-        {
-            // Find the first non-conditional PropertyGroup
-            var propertyGroup = projectDocument.Root.DescendantNodes()
-                .FirstOrDefault(node => node is XElement el
-                    && el.Name == "PropertyGroup"
-                    && el.Attributes().All(attr =>
-                        attr.Name != "Condition")) as XElement;
-
-            // No valid property group, create a new one
-            if (propertyGroup == null)
-            {
-                propertyGroup = new XElement("PropertyGroup");
-                projectDocument.Root.AddFirst(propertyGroup);
-            }
-
-            // Add UserSecretsId element
-            propertyGroup.Add("  ");
-            propertyGroup.Add(new XElement("UserSecretsId", newSecretsId));
-            propertyGroup.Add($"{Environment.NewLine}  ");
-        }
-
-        var settings = new XmlWriterSettings
-        {
-            OmitXmlDeclaration = true,
-        };
-
-        using var xw = XmlWriter.Create(projectPath, settings);
-        projectDocument.Save(xw);
-
-        context.Reporter.Output(Resources.FormatMessage_SetUserSecretsIdForProject(newSecretsId, projectPath));
-    }
-
-    private static string ResolveProjectPath(string name, string path)
-    {
-        var finder = new MsBuildProjectFinder(path);
-        return finder.FindMsBuildProject(name);
+        UserSecretsCreator.CreateUserSecretsId(context.Reporter, ProjectPath, WorkingDirectory, OverrideId);
     }
 }

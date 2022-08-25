@@ -60,7 +60,7 @@ public abstract class LoginWithRecoveryCodeModel : PageModel
     public virtual Task<IActionResult> OnPostAsync(string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel where TUser : class
+internal sealed class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;

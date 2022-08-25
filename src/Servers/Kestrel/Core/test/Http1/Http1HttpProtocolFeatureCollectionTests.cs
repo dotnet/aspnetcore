@@ -124,8 +124,10 @@ public class Http1HttpProtocolFeatureCollectionTests
         _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
         _collection[typeof(IRouteValuesFeature)] = CreateHttp1Connection();
         _collection[typeof(IEndpointFeature)] = CreateHttp1Connection();
+        _collection[typeof(IHttpExtendedConnectFeature)] = CreateHttp1Connection();
         _collection[typeof(IHttpUpgradeFeature)] = CreateHttp1Connection();
         _collection[typeof(IPersistentStateFeature)] = CreateHttp1Connection();
+        _collection.Set<IHttpWebTransportFeature>(CreateHttp1Connection());
 
         CompareGenericGetterToIndexer();
 
@@ -150,8 +152,10 @@ public class Http1HttpProtocolFeatureCollectionTests
         _collection.Set<IHttpBodyControlFeature>(CreateHttp1Connection());
         _collection.Set<IRouteValuesFeature>(CreateHttp1Connection());
         _collection.Set<IEndpointFeature>(CreateHttp1Connection());
+        _collection.Set<IHttpExtendedConnectFeature>(CreateHttp1Connection());
         _collection.Set<IHttpUpgradeFeature>(CreateHttp1Connection());
         _collection.Set<IPersistentStateFeature>(CreateHttp1Connection());
+        _collection.Set<IHttpWebTransportFeature>(CreateHttp1Connection());
 
         CompareGenericGetterToIndexer();
 

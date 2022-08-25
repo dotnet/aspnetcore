@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// to detect when one attribute is overriding another, but in the vast majority of cases attributes don't
 /// actually override each other.
 /// </summary>
-internal class SimplifiedStringHashComparer : IEqualityComparer<string>
+internal sealed class SimplifiedStringHashComparer : IEqualityComparer<string>
 {
     public static readonly SimplifiedStringHashComparer Instance = new SimplifiedStringHashComparer();
 

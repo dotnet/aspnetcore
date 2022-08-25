@@ -9,9 +9,9 @@ import java.util.List;
 
 class InvocationHandler {
     private final List<Type> types;
-    private final ActionBase action;
+    private final Object action;
 
-    InvocationHandler(ActionBase action, Type... types) {
+    InvocationHandler(Object action, Type... types) {
         this.action = action;
         this.types = Arrays.asList(types);
     }
@@ -20,7 +20,11 @@ class InvocationHandler {
         return types;
     }
 
-    public ActionBase getAction() {
+    public Object getAction() {
         return action;
+    }
+
+    public boolean getHasResult() {
+        return action instanceof FunctionBase;
     }
 }

@@ -71,7 +71,7 @@ public partial class CreatedAtRouteResultTests
         // Arrange
         CreatedAtRoute MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<CreatedAtRoute>(context);
@@ -79,6 +79,37 @@ public partial class CreatedAtRouteResultTests
         // Assert
         var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
+    }
+
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new CreatedAtRoute(null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<CreatedAtRoute>(null));
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var rawResult = new CreatedAtRoute(
+            routeName: null,
+            routeValues: new Dictionary<string, object>());
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(rawResult);
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

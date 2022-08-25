@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
+internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
 {
     private int StreamId => _stream.StreamId;
     private readonly Http2FrameWriter _frameWriter;
@@ -436,9 +436,10 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
+            // Stop() always schedules a completion if one wasn't scheduled already.
             Stop();
             // We queued the stream to complete but didn't complete the response yet
-            if (_completeScheduled && !_completedResponse)
+            if (!_completedResponse)
             {
                 // Set the error so that we can write the RST when the response completes.
                 _resetErrorCode = error;

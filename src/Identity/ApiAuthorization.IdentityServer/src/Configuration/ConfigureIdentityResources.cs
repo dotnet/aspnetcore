@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Configuration;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class ConfigureIdentityResources : IConfigureOptions<ApiAuthorizationOptions>
+internal sealed class ConfigureIdentityResources : IConfigureOptions<ApiAuthorizationOptions>
 {
     private readonly IConfiguration _configuration;
     private const char ScopesSeparator = ' ';

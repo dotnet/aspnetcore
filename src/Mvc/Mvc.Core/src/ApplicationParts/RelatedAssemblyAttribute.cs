@@ -121,7 +121,9 @@ public sealed class RelatedAssemblyAttribute : Attribute
         return relatedAssemblies;
     }
 
+#pragma warning disable CA1852 // Seal internal types
     internal class AssemblyLoadContextWrapper
+#pragma warning restore CA1852 // Seal internal types
     {
         private readonly AssemblyLoadContext _loadContext;
 

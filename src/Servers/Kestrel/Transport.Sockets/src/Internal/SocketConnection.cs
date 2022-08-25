@@ -143,13 +143,25 @@ internal sealed partial class SocketConnection : TransportConnection
                 if (_waitForData)
                 {
                     // Wait for data before allocating a buffer.
-                    await _receiver.WaitForDataAsync(_socket);
+                    var waitForDataResult = await _receiver.WaitForDataAsync(_socket);
+
+                    if (!IsNormalCompletion(waitForDataResult))
+                    {
+                        break;
+                    }
                 }
 
                 // Ensure we have some reasonable amount of buffer space
                 var buffer = Input.GetMemory(MinAllocBufferSize);
 
-                var bytesReceived = await _receiver.ReceiveAsync(_socket, buffer);
+                var receiveResult = await _receiver.ReceiveAsync(_socket, buffer);
+
+                if (!IsNormalCompletion(receiveResult))
+                {
+                    break;
+                }
+
+                var bytesReceived = receiveResult.BytesTransferred;
 
                 if (bytesReceived == 0)
                 {
@@ -181,23 +193,53 @@ internal sealed partial class SocketConnection : TransportConnection
                     // Pipe consumer is shut down, do we stop writing
                     break;
                 }
-            }
-        }
-        catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
-        {
-            // This could be ignored if _shutdownReason is already set.
-            error = new ConnectionResetException(ex.Message, ex);
 
-            // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
-            // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
-            if (!_socketDisposed)
-            {
-                SocketsLog.ConnectionReset(_logger, this);
+                bool IsNormalCompletion(SocketOperationResult result)
+                {
+                    if (!result.HasError)
+                    {
+                        return true;
+                    }
+
+                    if (IsConnectionResetError(result.SocketError.SocketErrorCode))
+                    {
+                        // This could be ignored if _shutdownReason is already set.
+                        var ex = result.SocketError;
+                        error = new ConnectionResetException(ex.Message, ex);
+
+                        // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
+                        // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
+                        if (!_socketDisposed)
+                        {
+                            SocketsLog.ConnectionReset(_logger, this);
+                        }
+
+                        return false;
+                    }
+
+                    if (IsConnectionAbortError(result.SocketError.SocketErrorCode))
+                    {
+                        // This exception should always be ignored because _shutdownReason should be set.
+                        error = result.SocketError;
+
+                        if (!_socketDisposed)
+                        {
+                            // This is unexpected if the socket hasn't been disposed yet.
+                            SocketsLog.ConnectionError(_logger, this, error);
+                        }
+
+                        return false;
+                    }
+
+                    // This is unexpected.
+                    error = result.SocketError;
+                    SocketsLog.ConnectionError(_logger, this, error);
+
+                    return false;
+                }
             }
         }
-        catch (Exception ex)
-            when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
-                   ex is ObjectDisposedException)
+        catch (ObjectDisposedException ex)
         {
             // This exception should always be ignored because _shutdownReason should be set.
             error = ex;
@@ -216,7 +258,7 @@ internal sealed partial class SocketConnection : TransportConnection
         }
         finally
         {
-            // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
+            // If Shutdown() has already been called, assume that was the reason ProcessReceives() exited.
             Input.Complete(_shutdownReason ?? error);
 
             FireConnectionClosed();
@@ -245,7 +287,29 @@ internal sealed partial class SocketConnection : TransportConnection
                 if (!buffer.IsEmpty)
                 {
                     _sender = _socketSenderPool.Rent();
-                    await _sender.SendAsync(_socket, buffer);
+                    var transferResult = await _sender.SendAsync(_socket, buffer);
+
+                    if (transferResult.HasError)
+                    {
+                        if (IsConnectionResetError(transferResult.SocketError.SocketErrorCode))
+                        {
+                            var ex = transferResult.SocketError;
+                            shutdownReason = new ConnectionResetException(ex.Message, ex);
+                            SocketsLog.ConnectionReset(_logger, this);
+
+                            break;
+                        }
+
+                        if (IsConnectionAbortError(transferResult.SocketError.SocketErrorCode))
+                        {
+                            shutdownReason = transferResult.SocketError;
+
+                            break;
+                        }
+
+                        unexpectedError = shutdownReason = transferResult.SocketError;
+                    }
+
                     // We don't return to the pool if there was an exception, and
                     // we keep the _sender assigned so that we can dispose it in StartAsync.
                     _socketSenderPool.Return(_sender);
@@ -260,14 +324,7 @@ internal sealed partial class SocketConnection : TransportConnection
                 }
             }
         }
-        catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
-        {
-            shutdownReason = new ConnectionResetException(ex.Message, ex);
-            SocketsLog.ConnectionReset(_logger, this);
-        }
-        catch (Exception ex)
-            when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
-                   ex is ObjectDisposedException)
+        catch (ObjectDisposedException ex)
         {
             // This should always be ignored since Shutdown() must have already been called by Abort().
             shutdownReason = ex;

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-dump": {
+      "version": "${DotnetDumpVersion}",
+      "commands": [
+        "dotnet-dump"
+      ]
+    },
+    "dotnet-ef": {
+      "version": "${DotnetEfVersion}",
+      "commands": [
+        "dotnet-ef"
+      ]
+    },
+    "dotnet-serve": {
+      "version": "${DotnetServeVersion}",
+      "commands": [
+        "dotnet-serve"
+      ]
+    },
+    "Microsoft.Playwright.CLI": {
+      "version": "${MicrosoftPlaywrightCLIVersion}",
+      "commands": [
+        "playwright"
+      ]
+    }
+  }
+}

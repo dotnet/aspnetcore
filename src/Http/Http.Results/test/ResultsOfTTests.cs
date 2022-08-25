@@ -22,7 +22,7 @@ public partial class ResultsOfTTests
     public void GeneratedCodeIsUpToDate()
     {
         // This assumes the output is in the repo artifacts directory
-        var resultsOfTGeneratedPath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsOfT.cs");
+        var resultsOfTGeneratedPath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsOfT.Generated.cs");
         var testsGeneratedPath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsOfTTests.Generated.cs");
 
         var testResultsOfTGeneratedPath = Path.GetTempFileName();
@@ -38,7 +38,7 @@ public partial class ResultsOfTTests
             var testResultsOfTGenerated = File.ReadAllText(testResultsOfTGeneratedPath);
             var testTestsGenerated = File.ReadAllText(testTestsGeneratedPath);
 
-            AssertFileContentEqual(currentResultsOfTGenerated, testResultsOfTGenerated, "ResultsOfT.cs");
+            AssertFileContentEqual(currentResultsOfTGenerated, testResultsOfTGenerated, "ResultsOfT.Generated.cs");
             AssertFileContentEqual(currentTestsGenerated, testTestsGenerated, "ResultsOfTTests.Generated.cs");
         }
         finally
@@ -93,5 +93,12 @@ public partial class ResultsOfTTests
     private class ResultTypeProvidedMetadata
     {
         public string SourceTypeName { get; init; }
+    }
+
+    private class EmptyServiceProvider : IServiceProvider
+    {
+        public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
+
+        public object GetService(Type serviceType) => null;
     }
 }

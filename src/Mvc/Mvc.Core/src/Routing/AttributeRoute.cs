@@ -12,7 +12,7 @@ using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class AttributeRoute : IRouter
+internal sealed class AttributeRoute : IRouter
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly IServiceProvider _services;
@@ -237,7 +237,7 @@ internal class AttributeRoute : IRouter
         return routeInfo;
     }
 
-    private class RouteInfo
+    private sealed class RouteInfo
     {
         public ActionDescriptor ActionDescriptor { get; init; } = default!;
 
@@ -254,7 +254,7 @@ internal class AttributeRoute : IRouter
         public bool SuppressLinkGeneration { get; set; }
     }
 
-    private class RouteInfoEqualityComparer : IEqualityComparer<RouteInfo>
+    private sealed class RouteInfoEqualityComparer : IEqualityComparer<RouteInfo>
     {
         public static readonly RouteInfoEqualityComparer Instance = new();
 
@@ -296,7 +296,7 @@ internal class AttributeRoute : IRouter
     }
 
     // Used only to hook up link generation, and it doesn't need to do anything.
-    private class NullRouter : IRouter
+    private sealed class NullRouter : IRouter
     {
         public static readonly NullRouter Instance = new NullRouter();
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace System.IO.Pipelines;
 
 // Write only stream implementation for efficiently writing bytes from the request body
-internal class PipeWriterStream : Stream
+internal sealed class PipeWriterStream : Stream
 {
     private long _length;
     private readonly PipeWriter _pipeWriter;

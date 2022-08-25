@@ -6,7 +6,7 @@ import { Blazor } from './GlobalExports';
 import { shouldAutoStart } from './BootCommon';
 import { internalFunctions as navigationManagerFunctions } from './Services/NavigationManager';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
-import { sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
+import { sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged, sendLocationChanging } from './Platform/WebView/WebViewIpcSender';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebView';
 
 let started = false;
@@ -28,7 +28,7 @@ async function boot(): Promise<void> {
   });
 
   navigationManagerFunctions.enableNavigationInterception();
-  navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged);
+  navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged, sendLocationChanging);
 
   sendAttachPage(navigationManagerFunctions.getBaseURI(), navigationManagerFunctions.getLocationHref());
   await jsInitializer.invokeAfterStartedCallbacks(Blazor);

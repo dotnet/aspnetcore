@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.TestHost;
 /// <summary>
 /// The client's view of the response body.
 /// </summary>
-internal class ResponseBodyReaderStream : Stream
+internal sealed class ResponseBodyReaderStream : Stream
 {
     private bool _readerComplete;
     private bool _aborted;

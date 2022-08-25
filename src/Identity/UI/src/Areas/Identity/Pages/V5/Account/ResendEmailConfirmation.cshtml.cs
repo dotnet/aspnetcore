@@ -55,7 +55,7 @@ public class ResendEmailConfirmationModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class ResendEmailConfirmationModel<TUser> : ResendEmailConfirmationModel where TUser : class
+internal sealed class ResendEmailConfirmationModel<TUser> : ResendEmailConfirmationModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly IEmailSender _emailSender;

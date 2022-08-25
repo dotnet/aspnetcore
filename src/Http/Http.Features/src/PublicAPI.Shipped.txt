@@ -1,6 +1,19 @@
 #nullable enable
-~Microsoft.AspNetCore.Http.Features.FeatureReference<> (forwarded, contained in Microsoft.Extensions.Features)
-~Microsoft.AspNetCore.Http.Features.FeatureReferences<> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Fetch(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features) -> T? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Update(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features, T feature) -> T (forwarded, contained in Microsoft.Extensions.Features)
+static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Default -> Microsoft.AspNetCore.Http.Features.FeatureReference<T> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T>.FeatureReference() -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Cache -> TCache? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Collection.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection! (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature, TState>(ref TFeature? cached, TState state, System.Func<TState, TFeature?>! factory) -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature>(ref TFeature? cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection!, TFeature?>! factory) -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection, int revision) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences() -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.CookieOptions
 Microsoft.AspNetCore.Http.CookieOptions.CookieOptions() -> void
 Microsoft.AspNetCore.Http.CookieOptions.Domain.get -> string?
