@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.Metrics;
-using System.Threading.Tasks;
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
@@ -780,38 +777,6 @@ public class OutputCacheMiddlewareTests
     private class FakeResponseFeature : HttpResponseFeature
     {
         public override void OnStarting(Func<object, Task> callback, object state) { }
-    }
-
-    [Fact]
-    public void GetOrderCasingNormalizedStringValues_NormalizesCasingToUpper()
-    {
-        var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
-        var lowercaseStrings = new StringValues(new[] { "stringA", "stringB" });
-
-        var normalizedStrings = OutputCacheKeyProvider.GetOrderCasingNormalizedStringValues(lowercaseStrings);
-
-        Assert.Equal(uppercaseStrings, normalizedStrings);
-    }
-
-    [Fact]
-    public void GetOrderCasingNormalizedStringValues_NormalizesOrder()
-    {
-        var orderedStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
-        var reverseOrderStrings = new StringValues(new[] { "STRINGB", "STRINGA" });
-
-        var normalizedStrings = OutputCacheKeyProvider.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
-
-        Assert.Equal(orderedStrings, normalizedStrings);
-    }
-
-    [Fact]
-    public void GetOrderCasingNormalizedStringValues_PreservesCommas()
-    {
-        var originalStrings = new StringValues(new[] { "STRINGA, STRINGB" });
-
-        var normalizedStrings = OutputCacheKeyProvider.GetOrderCasingNormalizedStringValues(originalStrings);
-
-        Assert.Equal(originalStrings, normalizedStrings);
     }
 
     [Fact]

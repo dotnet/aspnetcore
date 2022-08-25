@@ -4,7 +4,6 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -30,7 +29,12 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         _options = options.Value;
     }
 
-    // <VaryByKeyPrefix><delimiter>GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>R<delimiter>RouteName1=RouteValue1<subdelimiter>RouteName2=RouteValue2
+    // <VaryByKeyPrefix><delimiter>
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>
+    // H<delimiter>HeaderName=HeaderValue<delimiter>
+    // Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>
+    // R<delimiter>RouteName1=RouteValue1<delimiter>RouteName2=RouteValue2
+    // V<delimiter>ValueName1=Value1<delimiter>ValueName2=Value2
     public string CreateStorageKey(OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
@@ -98,12 +102,6 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         var varyQueryKeys = context.CacheVaryByRules.QueryKeys;
         var varyByValues = context.CacheVaryByRules.HasVaryByValues ? context.CacheVaryByRules.VaryByValues : null;
 
-        // Normalize order and casing of vary by rules
-        var normalizedVaryHeaderNames = GetOrderCasingNormalizedStringValues(varyHeaderNames);
-        var normalizedVaryRouteValueNames = GetOrderCasingNormalizedStringValues(varyRouteValueNames);
-        var normalizedVaryQueryKeys = GetOrderCasingNormalizedStringValues(varyQueryKeys);
-        var normalizedVaryByValues = GetOrderDictionary(varyByValues);
-
         // Vary by header names
         var headersCount = varyByRules.HeaderNames.Count;
 
@@ -135,14 +133,14 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         }
 
         // Vary by query keys
-        if (normalizedVaryQueryKeys.Length > 0)
+        if (varyQueryKeys.Count > 0)
         {
             // Append a group separator for the query key segment of the cache key
             builder
                 .Append(KeyDelimiter)
                 .Append('Q');
 
-            if (normalizedVaryQueryKeys.Length == 1 && string.Equals(normalizedVaryQueryKeys[0], "*", StringComparison.Ordinal) && context.HttpContext.Request.Query.Count > 0)
+            if (varyQueryKeys.Count == 1 && string.Equals(varyQueryKeys[0], "*", StringComparison.Ordinal) && context.HttpContext.Request.Query.Count > 0)
             {
                 // Vary by all available query keys
                 var queryArray = context.HttpContext.Request.Query.ToArray();
@@ -222,7 +220,11 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         }
 
         // Vary by values
-        var valueNamesCount = normalizedVaryByValues.Length;
+
+        // Order keys to have a deterministic key
+        var orderedKeys = GetOrderDictionaryKeys(varyByValues);
+
+        var valueNamesCount = orderedKeys.Length;
         if (valueNamesCount > 0)
         {
             // Append a group separator for the values segment of the cache key
@@ -233,7 +235,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
             for (var i = 0; i < valueNamesCount; i++)
             {
                 // The lookup key can't be null
-                var key = normalizedVaryByValues[i] ?? string.Empty;
+                var key = orderedKeys[i] ?? string.Empty;
 
                 var value = varyByRules.VaryByValues[key];
 
@@ -245,35 +247,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         }
     }
 
-    // Normalize order and casing
-    internal static string[] GetOrderCasingNormalizedStringValues(StringValues stringValues)
-    {
-        if (stringValues.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-        else if (stringValues.Count == 1)
-        {
-            return new string[] { stringValues.ToString().ToUpperInvariant() };
-        }
-        else
-        {
-            var originalArray = stringValues.ToArray();
-            var newArray = new string[originalArray.Length];
-
-            for (var i = 0; i < originalArray.Length; i++)
-            {
-                newArray[i] = originalArray[i]!.ToUpperInvariant();
-            }
-
-            // Since the casing has already been normalized, use Ordinal comparison
-            Array.Sort(newArray, StringComparer.OrdinalIgnoreCase);
-
-            return newArray;
-        }
-    }
-
-    internal static string[] GetOrderDictionary(IDictionary<string, string>? dictionary)
+    internal static string[] GetOrderDictionaryKeys(IDictionary<string, string>? dictionary)
     {
         if (dictionary == null || dictionary.Count == 0)
         {
@@ -282,7 +256,6 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
         var newArray = dictionary.Keys.ToArray();
 
-        // Since the casing has already been normalized, use Ordinal comparison
         Array.Sort(newArray, StringComparer.OrdinalIgnoreCase);
 
         return newArray;

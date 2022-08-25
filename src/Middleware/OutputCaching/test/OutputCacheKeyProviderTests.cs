@@ -133,6 +133,18 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_UsesListedHeaderKey_AsKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
+        context.CacheVaryByRules.HeaderNames = new string[] { "HEADERA" };
+
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HEADERA=ValueA",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_HeaderValuesAreSorted()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -168,6 +180,19 @@ public class OutputCacheKeyProviderTests
         context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
 
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_UseListedQueryKeys_AsKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?queryA=ValueA");
+        context.CacheVaryByRules.CacheKeyPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QUERYA" };
+
+        Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA",
             cacheKeyProvider.CreateStorageKey(context));
     }
 
@@ -232,6 +257,19 @@ public class OutputCacheKeyProviderTests
         context.CacheVaryByRules.RouteValueNames = new string[] { "RouteA", "RouteC" };
 
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC={KeyDelimiter}R{KeyDelimiter}RouteA=ValueA{KeyDelimiter}RouteC=",
+            cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_UseListedRouteValueNames_AsKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.RouteValues["RouteA"] = "ValueA";
+        context.CacheVaryByRules.CacheKeyPrefix = Guid.NewGuid().ToString("n");
+        context.CacheVaryByRules.RouteValueNames= new string[] { "ROUTEA" };
+
+        Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}R{KeyDelimiter}ROUTEA=ValueA",
             cacheKeyProvider.CreateStorageKey(context));
     }
 }
