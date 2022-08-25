@@ -817,9 +817,16 @@ public partial class HubConnection : IAsyncDisposable
 
         Log.CompletingStream(_logger, streamId);
 
-        // Don't use cancellation token here
-        // this is triggered by a cancellation token to tell the server that the client is done streaming
-        await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+        try
+        {
+            // Don't use cancellation token here
+            // this is triggered by a cancellation token to tell the server that the client is done streaming
+            await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.SendStreamCompletionFailed(_logger, streamId, ex);
+        }
     }
 
     private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
@@ -1018,71 +1025,81 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task DispatchInvocationAsync(InvocationMessage invocation, ConnectionState connectionState)
     {
-        var expectsResult = !string.IsNullOrEmpty(invocation.InvocationId);
-        // Find the handler
-        if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
+        try
         {
-            if (expectsResult)
+            var expectsResult = !string.IsNullOrEmpty(invocation.InvocationId);
+            // Find the handler
+            if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
             {
-                Log.MissingResultHandler(_logger, invocation.Target);
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
-            }
-            else
-            {
-                Log.MissingHandler(_logger, invocation.Target);
-            }
-            return;
-        }
-
-        // Grabbing the current handlers
-        var copiedHandlers = invocationHandlerList.GetHandlers();
-        object? result = null;
-        Exception? resultException = null;
-        var hasResult = false;
-        foreach (var handler in copiedHandlers)
-        {
-            try
-            {
-                var task = handler.InvokeAsync(invocation.Arguments);
-                if (handler.HasResult && task is Task<object?> resultTask)
+                if (expectsResult)
                 {
-                    result = await resultTask.ConfigureAwait(false);
-                    hasResult = true;
+                    Log.MissingResultHandler(_logger, invocation.Target);
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
                 }
                 else
                 {
-                    await task.ConfigureAwait(false);
+                    Log.MissingHandler(_logger, invocation.Target);
                 }
+                return;
             }
-            catch (Exception ex)
-            {
-                Log.ErrorInvokingClientSideMethod(_logger, invocation.Target, ex);
-                if (handler.HasResult)
-                {
-                    resultException = ex;
-                }
-            }
-        }
 
-        if (expectsResult)
-        {
-            if (resultException is not null)
+            // Grabbing the current handlers
+            var copiedHandlers = invocationHandlerList.GetHandlers();
+            object? result = null;
+            Exception? resultException = null;
+            var hasResult = false;
+            foreach (var handler in copiedHandlers)
             {
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, resultException.Message), cancellationToken: default).ConfigureAwait(false);
+                try
+                {
+                    var task = handler.InvokeAsync(invocation.Arguments);
+                    if (handler.HasResult && task is Task<object?> resultTask)
+                    {
+                        result = await resultTask.ConfigureAwait(false);
+                        hasResult = true;
+                    }
+                    else
+                    {
+                        await task.ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorInvokingClientSideMethod(_logger, invocation.Target, ex);
+                    if (handler.HasResult)
+                    {
+                        resultException = ex;
+                    }
+                }
+            }
+
+            if (expectsResult)
+            {
+                if (resultException is not null)
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, resultException.Message), cancellationToken: default).ConfigureAwait(false);
+                }
+                else if (hasResult)
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
+                }
+                else
+                {
+                    Log.MissingResultHandler(_logger, invocation.Target);
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                }
             }
             else if (hasResult)
             {
-                await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
-            }
-            else
-            {
-                Log.MissingResultHandler(_logger, invocation.Target);
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                Log.ResultNotExpected(_logger, invocation.Target);
             }
         }
-        else if (hasResult)
+        catch (Exception ex)
         {
-            Log.ResultNotExpected(_logger, invocation.Target);
+            // Avoid unobserved task exceptions
+            // Currently the only exceptions that should be able to occur are if a client result completion message is being sent and fails
+            // e.g. connection closed
+            Log.ErrorProcessingInvocation(_logger, invocation.InvocationId!, ex);
         }
     }
 
