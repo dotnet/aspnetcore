@@ -234,4 +234,148 @@ public class OutputCacheKeyProviderTests
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC={KeyDelimiter}R{KeyDelimiter}RouteA=ValueA{KeyDelimiter}RouteC=",
             cacheKeyProvider.CreateStorageKey(context));
     }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_MethodCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Method = "head" + KeyDelimiter;
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_PathCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Path = "/path" + KeyDelimiter;
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_SchemeCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Scheme = "https" + KeyDelimiter;
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_HostCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            context.HttpContext.Request.Host = new HostString("example.com" + KeyDelimiter, 80);
+            cacheKeyProvider.CreateStorageKey(context);
+        });
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_PathBaseCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.PathBase = "/pathBase" + KeyDelimiter;
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_HeadersCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueA" + KeyDelimiter;
+        context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_UnlistedHeadersCanContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
+        context.HttpContext.Request.Headers["HeaderB"] = "ValueB" + KeyDelimiter;
+        context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.NotEmpty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_QueryStringCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString($"?QueryA=ValueA{KeyDelimiter}&QueryB=ValueB");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_UnlistedQueryStringCanContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString($"?QueryA=ValueA&QueryB=ValueB{KeyDelimiter}");
+        context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.NotEmpty(cacheKey);
+    }
+
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_RouteValuesCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.RouteValues["RouteA"] = "ValueA" + KeyDelimiter;
+        context.HttpContext.Request.RouteValues["RouteB"] = "ValueB";
+        context.CacheVaryByRules.RouteValueNames = new string[] { "RouteA", "RouteC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_UnlistedRouteValuesCanContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.RouteValues["RouteA"] = "ValueA";
+        context.HttpContext.Request.RouteValues["RouteB"] = "ValueB" + KeyDelimiter;
+        context.CacheVaryByRules.RouteValueNames = new string[] { "RouteA", "RouteC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.NotEmpty(cacheKey);
+    }
 }
