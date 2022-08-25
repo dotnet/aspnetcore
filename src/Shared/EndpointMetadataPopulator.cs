@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
+[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
 internal static class EndpointMetadataPopulator
 {
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
