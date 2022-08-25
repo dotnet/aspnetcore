@@ -9,7 +9,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -56,8 +55,6 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo TaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(TaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ArrayEmptyOfObjectMethod = typeof(Array).GetMethod(nameof(Array.Empty), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(new Type[] { typeof(object) });
 
     private static readonly PropertyInfo QueryIndexerProperty = typeof(IQueryCollection).GetProperty("Item")!;
@@ -268,8 +265,8 @@ public static partial class RequestDelegateFactory
             return metadataResult.CachedFactoryContext;
         }
 
-        var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder();
-        var serviceProvider = options?.ServiceProvider ?? endpointBuilder.ApplicationServices;
+        var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
+        var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder(serviceProvider);
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -382,10 +379,9 @@ public static partial class RequestDelegateFactory
         if (!factoryContext.MetadataAlreadyInferred)
         {
             // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
-            AddTypeProvidedMetadata(methodInfo,
-                factoryContext.EndpointBuilder.Metadata,
-                factoryContext.ServiceProvider,
-                CollectionsMarshal.AsSpan(factoryContext.Parameters));
+            EndpointMetadataPopulator.PopulateMetadata(methodInfo,
+                factoryContext.EndpointBuilder,
+                factoryContext.Parameters);
         }
 
         return args;
@@ -575,61 +571,6 @@ public static partial class RequestDelegateFactory
 
         // new EndpointFilterInvocationContext(httpContext, (object)name_local, (object)int_local);
         return fallbackConstruction;
-    }
-
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, IList<object> metadata, IServiceProvider services, ReadOnlySpan<ParameterInfo> parameters)
-    {
-        object?[]? invokeArgs = null;
-
-        // Get metadata from parameter types
-        foreach (var parameter in parameters)
-        {
-            if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
-            {
-                // Parameter type implements IEndpointParameterMetadataProvider
-                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
-                invokeArgs ??= new object[1];
-                invokeArgs[0] = parameterContext;
-                PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
-            }
-
-            if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
-            {
-                // Parameter type implements IEndpointMetadataProvider
-                var context = new EndpointMetadataContext(methodInfo, metadata, services);
-                invokeArgs ??= new object[1];
-                invokeArgs[0] = context;
-                PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
-            }
-        }
-
-        // Get metadata from return type
-        var returnType = methodInfo.ReturnType;
-        if (AwaitableInfo.IsTypeAwaitable(returnType, out var awaitableInfo))
-        {
-            returnType = awaitableInfo.ResultType;
-        }
-
-        if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
-        {
-            // Return type implements IEndpointMetadataProvider
-            var context = new EndpointMetadataContext(methodInfo, metadata, services);
-            invokeArgs ??= new object[1];
-            invokeArgs[0] = context;
-            PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
-        }
-    }
-
-    private static void PopulateMetadataForParameter<T>(EndpointParameterMetadataContext parameterContext)
-        where T : IEndpointParameterMetadataProvider
-    {
-        T.PopulateMetadata(parameterContext);
-    }
-
-    private static void PopulateMetadataForEndpoint<T>(EndpointMetadataContext context)
-        where T : IEndpointMetadataProvider
-    {
-        T.PopulateMetadata(context);
     }
 
     private static Expression[] CreateArguments(ParameterInfo[]? parameters, RequestDelegateFactoryContext factoryContext)
@@ -2450,9 +2391,20 @@ public static partial class RequestDelegateFactory
 
     private sealed class RDFEndpointBuilder : EndpointBuilder
     {
+        public RDFEndpointBuilder(IServiceProvider applicationServices)
+        {
+            ApplicationServices = applicationServices;
+        }
+
         public override Endpoint Build()
         {
             throw new NotSupportedException();
         }
+    }
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
+        public object? GetService(Type serviceType) => null;
     }
 }

@@ -349,9 +349,9 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class AddsCustomEndpointMetadataResult : IEndpointMetadataProvider, IResult
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
@@ -359,16 +359,16 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static ValueTask<AddsCustomParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+        public static ValueTask<AddsCustomParameterMetadata?> BindAsync(HttpContext context, ParameterInfo parameter) => default;
 
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {
-            parameterContext.EndpointMetadata.Add(new ParameterNameMetadata { Name = parameterContext.Parameter.Name ?? string.Empty });
+            builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name ?? string.Empty });
         }
 
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
     }
 

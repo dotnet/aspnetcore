@@ -6118,7 +6118,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-        Assert.Contains(result.EndpointMetadata, m => m is DefaultMetadataCountMetadata { Count: 1 });
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
     [Fact]
@@ -6140,7 +6140,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-        Assert.Contains(result.EndpointMetadata, m => m is DefaultMetadataCountMetadata { Count: 1 });
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
     [Fact]
@@ -6162,7 +6162,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-        Assert.Contains(result.EndpointMetadata, m => m is DefaultMetadataCountMetadata { Count: 1 });
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
     [Fact]
@@ -6259,7 +6259,25 @@ public class RequestDelegateFactoryTests : LoggedTest
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is DefaultMetadataCountMetadata { Count: 4 }));
+            m => Assert.True(m is MetadataCountMetadata { Count: 4 }));
+    }
+
+    [Fact]
+    public void Create_FlowsRoutePattern_ToMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (AddsRoutePatternMetadata param1) => { };
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/test/pattern"), order: 0);
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = builder,
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is RoutePatternMetadata { RoutePattern: "/test/pattern" });
     }
 
     [Fact]
@@ -6327,7 +6345,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is DefaultMetadataCountMetadata { Count: 3 }),
+            m => Assert.True(m is MetadataCountMetadata { Count: 3 }),
             // Entry-specific metadata added after a call to InferMetadata
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
@@ -6509,11 +6527,11 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class AccessesServicesMetadataResult : IResult, IEndpointMetadataProvider
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            if (context.ApplicationServices?.GetRequiredService<MetadataService>() is { } metadataService)
+            if (builder.ApplicationServices.GetRequiredService<MetadataService>() is { } metadataService)
             {
-                context.EndpointMetadata.Add(metadataService);
+                builder.Metadata.Add(metadataService);
             }
         }
 
@@ -6525,11 +6543,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         public static ValueTask<AccessesServicesMetadataBinder> BindAsync(HttpContext context, ParameterInfo parameter) =>
             new(new AccessesServicesMetadataBinder());
 
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            if (context.ApplicationServices?.GetRequiredService<MetadataService>() is { } metadataService)
+            if (builder.ApplicationServices.GetRequiredService<MetadataService>() is { } metadataService)
             {
-                context.EndpointMetadata.Add(metadataService);
+                builder.Metadata.Add(metadataService);
             }
         }
     }
@@ -6544,9 +6562,9 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class AddsCustomEndpointMetadataResult : IEndpointMetadataProvider, IResult
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
@@ -6554,7 +6572,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class AddsNoEndpointMetadataResult : IEndpointMetadataProvider, IResult
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
 
         }
@@ -6564,10 +6582,10 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class CountsDefaultEndpointMetadataResult : IEndpointMetadataProvider, IResult
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            var defaultMetadataCount = context.EndpointMetadata?.Count;
-            context.EndpointMetadata?.Add(new DefaultMetadataCountMetadata { Count = defaultMetadataCount ?? 0 });
+            var currentMetadataCount = builder.Metadata.Count;
+            builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
@@ -6575,16 +6593,16 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class RemovesAcceptsParameterMetadata : IEndpointParameterMetadataProvider
     {
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {
-            if (parameterContext.EndpointMetadata is not null)
+            if (builder.Metadata is not null)
             {
-                for (int i = parameterContext.EndpointMetadata.Count - 1; i >= 0; i--)
+                for (int i = builder.Metadata.Count - 1; i >= 0; i--)
                 {
-                    var metadata = parameterContext.EndpointMetadata[i];
+                    var metadata = builder.Metadata[i];
                     if (metadata is IAcceptsMetadata)
                     {
-                        parameterContext.EndpointMetadata.RemoveAt(i);
+                        builder.Metadata.RemoveAt(i);
                     }
                 }
             }
@@ -6593,16 +6611,16 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class RemovesAcceptsMetadata : IEndpointMetadataProvider
     {
-        public static void PopulateMetadata(EndpointMetadataContext parameterContext)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            if (parameterContext.EndpointMetadata is not null)
+            if (builder.Metadata is not null)
             {
-                for (int i = parameterContext.EndpointMetadata.Count - 1; i >= 0; i--)
+                for (int i = builder.Metadata.Count - 1; i >= 0; i--)
                 {
-                    var metadata = parameterContext.EndpointMetadata[i];
+                    var metadata = builder.Metadata[i];
                     if (metadata is IAcceptsMetadata)
                     {
-                        parameterContext.EndpointMetadata.RemoveAt(i);
+                        builder.Metadata.RemoveAt(i);
                     }
                 }
             }
@@ -6611,16 +6629,16 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class RemovesAcceptsMetadataResult : IEndpointMetadataProvider, IResult
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            if (context.EndpointMetadata is not null)
+            if (builder.Metadata is not null)
             {
-                for (int i = context.EndpointMetadata.Count - 1; i >= 0; i--)
+                for (int i = builder.Metadata.Count - 1; i >= 0; i--)
                 {
-                    var metadata = context.EndpointMetadata[i];
+                    var metadata = builder.Metadata[i];
                     if (metadata is IAcceptsMetadata)
                     {
-                        context.EndpointMetadata.RemoveAt(i);
+                        builder.Metadata.RemoveAt(i);
                     }
                 }
             }
@@ -6631,14 +6649,14 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class AddsCustomParameterMetadataAsProperty : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {
-            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+            builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name });
         }
 
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Property });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Property });
         }
     }
 
@@ -6656,14 +6674,14 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         public AddsCustomParameterMetadataAsProperty? Data { get; set; }
 
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {
-            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+            builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name });
         }
 
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
 
         //static bool IParsable<AddsCustomParameterMetadata>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out AddsCustomParameterMetadata result)
@@ -6679,18 +6697,31 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         public static ValueTask<AddsCustomParameterMetadataBindable> BindAsync(HttpContext context, ParameterInfo parameter) => default;
 
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {
-            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+            builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name });
         }
 
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
     }
 
-    private class DefaultMetadataCountMetadata
+    private class AddsRoutePatternMetadata : IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            if (builder is not RouteEndpointBuilder reb)
+            {
+                return;
+            }
+
+            builder.Metadata.Add(new RoutePatternMetadata { RoutePattern = reb.RoutePattern?.RawText ?? string.Empty });
+        }
+    }
+
+    private class MetadataCountMetadata
     {
         public int Count { get; init; }
     }
@@ -6705,6 +6736,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         public string? Data { get; init; }
 
         public MetadataSource Source { get; init; }
+    }
+
+    private class RoutePatternMetadata
+    {
+        public string RoutePattern { get; init; } = String.Empty;
     }
 
     private enum MetadataSource
