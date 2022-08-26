@@ -63,6 +63,8 @@ public static class ServerRetryHelper
         // Ignore active UDP listeners
         AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveUdpListeners());
 
+        logger.LogInformation($"Found {unavailableEndpoints.Count} unavailable endpoints.");
+
         for (var i = startingPort; i < ushort.MaxValue; i++)
         {
             var match = unavailableEndpoints.FirstOrDefault(ep => ep.Port == i);
