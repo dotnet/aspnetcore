@@ -13,9 +13,6 @@ public static class ServerRetryHelper
     /// <summary>
     /// Retry a func. Useful when a test needs an explicit port and you want to avoid port conflicts.
     /// </summary>
-    /// <summary>
-    /// Retry a func. Useful when a test needs an explicit port and you want to avoid port conflicts.
-    /// </summary>
     public static async Task BindPortsWithRetry(Func<int, Task> retryFunc, ILogger logger)
     {
         var retryCount = 0;
