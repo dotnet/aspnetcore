@@ -21,7 +21,7 @@ public static class ServerRetryHelper
 
         while (true)
         {
-            // Approx dynamic port range on Windows and Linux.
+            // Find a port that's available for TCP and UDP. Start with port 5000 and search upwards from there.
             var port = GetAvailablePort(nextPortAttempt, logger);
 
             try
