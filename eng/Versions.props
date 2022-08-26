@@ -137,8 +137,8 @@
     <MicrosoftEntityFrameworkCoreVersion>8.0.0-alpha.1.22422.17</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-alpha.1.22422.17</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>7.0.0-beta.22419.1</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>7.0.0-beta.22419.1</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>7.0.0-beta.22425.3</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>7.0.0-beta.22425.3</MicrosoftDotNetBuildTasksTemplatingVersion>
     <!-- Packages from dotnet/source-build-externals -->
     <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>7.0.0-alpha.1.22409.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
   </PropertyGroup>
