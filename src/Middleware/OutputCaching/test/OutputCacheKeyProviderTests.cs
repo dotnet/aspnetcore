@@ -389,7 +389,6 @@ public class OutputCacheKeyProviderTests
         Assert.NotEmpty(cacheKey);
     }
 
-
     [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_RouteValuesCantContainDelimiter()
     {
