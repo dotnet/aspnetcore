@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByValuePolicy : IOutputCachePolicy
 {
-    private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
+    private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask> _varyByAsync;
 
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
@@ -27,7 +27,7 @@ internal sealed class VaryByValuePolicy : IOutputCachePolicy
     /// <inheritdoc/>
     ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        return _varyByAsync?.Invoke(context.HttpContext, context.CacheVaryByRules, cancellationToken) ?? ValueTask.CompletedTask;
+        return _varyByAsync.Invoke(context.HttpContext, context.CacheVaryByRules, cancellationToken);
     }
 
     /// <inheritdoc/>
