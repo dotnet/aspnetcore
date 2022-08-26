@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.NetworkInformation;
 using Microsoft.Extensions.Logging;
 
@@ -49,43 +50,44 @@ public static class ServerRetryHelper
     {
         logger.LogInformation($"Searching for free port starting at {startingPort}.");
 
-        var portArray = new List<int>();
+        var unavailableEndpoints = new List<IPEndPoint>();
 
         var properties = IPGlobalProperties.GetIPGlobalProperties();
 
         // Ignore active connections
-        var connections = properties.GetActiveTcpConnections();
-        portArray.AddRange(from n in connections
-                           where n.LocalEndPoint.Port >= startingPort
-                           select n.LocalEndPoint.Port);
+        AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveTcpConnections().Select(c => c.LocalEndPoint));
 
         // Ignore active tcp listners
-        var endPoints = properties.GetActiveTcpListeners();
-        portArray.AddRange(from n in endPoints
-                           where n.Port >= startingPort
-                           select n.Port);
+        AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveTcpListeners());
 
         // Ignore active UDP listeners
-        endPoints = properties.GetActiveUdpListeners();
-        portArray.AddRange(from n in endPoints
-                           where n.Port >= startingPort
-                           select n.Port);
-
-        portArray.Sort();
+        AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveUdpListeners());
 
         for (var i = startingPort; i < ushort.MaxValue; i++)
         {
-            if (!portArray.Contains(i))
+            var match = unavailableEndpoints.FirstOrDefault(ep => ep.Port == i);
+            if (match == null)
             {
                 logger.LogInformation($"Port {i} free.");
                 return i;
             }
             else
             {
-                logger.LogInformation($"Port {i} in use.");
+                logger.LogInformation($"Port {i} in use. End point: {match}");
             }
         }
 
         throw new Exception($"Couldn't find a free port after {startingPort}.");
+
+        static void AddEndpoints(int startingPort, List<IPEndPoint> endpoints, IEnumerable<IPEndPoint> activeEndpoints)
+        {
+            foreach (IPEndPoint endpoint in activeEndpoints)
+            {
+                if (endpoint.Port >= startingPort)
+                {
+                    endpoints.Add(endpoint);
+                }
+            }
+        }
     }
 }
