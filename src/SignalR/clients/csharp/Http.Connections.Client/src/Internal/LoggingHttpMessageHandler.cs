@@ -30,7 +30,7 @@ internal sealed partial class LoggingHttpMessageHandler : DelegatingHandler
 
         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.SwitchingProtocols)
         {
             Log.UnsuccessfulHttpResponse(_logger, response.StatusCode, request.Method, request.RequestUri!);
         }

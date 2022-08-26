@@ -27,11 +27,11 @@ public class WebTransportHandshakeTests : Http3TestBase
         {
             var success = true;
 
+#pragma warning disable CA2252 // WebTransport is a preview feature
             var webTransportFeature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
 
             success &= webTransportFeature.IsWebTransportRequest;
 
-#pragma warning disable CA2252 // This API requires opting into preview features
             try
             {
                 var session = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout(); // todo session is null here

@@ -96,6 +96,11 @@ public class TestHub : Hub
         return Context.Features.Get<IHttpTransportFeature>().TransportType.ToString();
     }
 
+    public string GetHttpProtocol()
+    {
+        return Context.GetHttpContext()?.Request?.Protocol ?? "unknown";
+    }
+
     public async Task CallWithUnserializableObject()
     {
         await Clients.All.SendAsync("Foo", Unserializable.Create());

@@ -1169,7 +1169,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
     }
 
+#pragma warning disable CA2252 // WebTransport is a preview feature
     public override async ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+#pragma warning restore CA2252 // WebTransport is a preview feature
     {
         if (_isWebTransportSessionAccepted)
         {
