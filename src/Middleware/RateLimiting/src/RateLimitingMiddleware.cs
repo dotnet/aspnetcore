@@ -78,12 +78,17 @@ internal sealed partial class RateLimitingMiddleware
     private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         using var leaseContext = await TryAcquireAsync(context);
-        if (leaseContext.Lease.IsAcquired)
+        if (leaseContext.Lease?.IsAcquired == true)
         {
             await _next(context);
         }
         else
         {
+            // If the request was canceled, do not call OnRejected, just return.
+            if (leaseContext.RequestRejectionReason == RequestRejectionReason.RequestCanceled)
+            {
+                return;
+            }
             var thisRequestOnRejected = _defaultOnRejected;
             RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
             // OnRejected "wins" over DefaultRejectionStatusCode - we set DefaultRejectionStatusCode first,
@@ -91,7 +96,7 @@ internal sealed partial class RateLimitingMiddleware
             context.Response.StatusCode = _rejectionStatusCode;
 
             // If this request was rejected by the endpoint limiter, use its OnRejected if available.
-            if (leaseContext.GlobalRejected == false)
+            if (leaseContext.RequestRejectionReason == RequestRejectionReason.EndpointLimiter)
             {
                 DefaultRateLimiterPolicy? policy;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
@@ -111,7 +116,8 @@ internal sealed partial class RateLimitingMiddleware
             }
             if (thisRequestOnRejected is not null)
             {
-                await thisRequestOnRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
+                // leaseContext.Lease will only be null when the request was canceled.
+                await thisRequestOnRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease! }, context.RequestAborted);
             }
         }
     }
@@ -119,7 +125,7 @@ internal sealed partial class RateLimitingMiddleware
     private ValueTask<LeaseContext> TryAcquireAsync(HttpContext context)
     {
         var leaseContext = CombinedAcquire(context);
-        if (leaseContext.Lease.IsAcquired)
+        if (leaseContext.Lease?.IsAcquired == true)
         {
             return ValueTask.FromResult(leaseContext);
         }
@@ -139,14 +145,14 @@ internal sealed partial class RateLimitingMiddleware
                 globalLease = _globalLimiter.AttemptAcquire(context);
                 if (!globalLease.IsAcquired)
                 {
-                    return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
+                    return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.GlobalLimiter, Lease = globalLease };
                 }
             }
             endpointLease = _endpointLimiter.AttemptAcquire(context);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
-                return new LeaseContext() { GlobalRejected = false, Lease = endpointLease };
+                return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.EndpointLimiter, Lease = endpointLease };
             }
         }
         catch (Exception)
@@ -170,21 +176,30 @@ internal sealed partial class RateLimitingMiddleware
                 globalLease = await _globalLimiter.AcquireAsync(context, cancellationToken: cancellationToken);
                 if (!globalLease.IsAcquired)
                 {
-                    return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
+                    return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.GlobalLimiter, Lease = globalLease };
                 }
             }
             endpointLease = await _endpointLimiter.AcquireAsync(context, cancellationToken: cancellationToken);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
-                return new LeaseContext() { GlobalRejected = false, Lease = endpointLease };
+                return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.EndpointLimiter, Lease = endpointLease };
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             endpointLease?.Dispose();
             globalLease?.Dispose();
-            throw;
+            // Don't throw if the request was canceled - instead log. 
+            if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
+            {
+                RateLimiterLog.RequestCanceled(_logger);
+                return new LeaseContext() { RequestRejectionReason = RequestRejectionReason.RequestCanceled };
+            }
+            else
+            {
+                throw;
+            }
         }
 
         return globalLease is null ? new LeaseContext() { Lease = endpointLease } : new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
@@ -234,5 +249,8 @@ internal sealed partial class RateLimitingMiddleware
 
         [LoggerMessage(2, LogLevel.Debug, "This endpoint requires a rate limiting policy with name {PolicyName}, but no such policy exists.", EventName = "WarnMissingPolicy")]
         internal static partial void WarnMissingPolicy(ILogger logger, string policyName);
+
+        [LoggerMessage(3, LogLevel.Debug, "The request was canceled.", EventName = "RequestCanceled")]
+        internal static partial void RequestCanceled(ILogger logger);
     }
 }

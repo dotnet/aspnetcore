@@ -228,6 +228,8 @@ public class Http3RequestTests : LoggedTest
     public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         var builder = CreateHostBuilder(context =>
         {
             return Task.CompletedTask;

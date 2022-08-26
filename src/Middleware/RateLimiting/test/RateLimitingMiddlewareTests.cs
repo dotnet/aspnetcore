@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
-public class RateLimitingMiddlewareTests : LoggedTest
+public class RateLimitingMiddlewareTests
 {
     [Fact]
     public void Ctor_ThrowsExceptionsWhenNullArgs()
@@ -115,8 +116,13 @@ public class RateLimitingMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestAborted_ThrowsTaskCanceledException()
+    public async Task RequestAborted_DoesNotThrowTaskCanceledException()
     {
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RateLimitingMiddleware>,
+            TestSink.EnableWithTypeName<RateLimitingMiddleware>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
         var options = CreateOptionsAccessor();
         options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
 
@@ -124,13 +130,21 @@ public class RateLimitingMiddlewareTests : LoggedTest
             {
                 return Task.CompletedTask;
             },
-            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            loggerFactory.CreateLogger<RateLimitingMiddleware>(),
             options,
             Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.RequestAborted = new CancellationToken(true);
-        await Assert.ThrowsAsync<TaskCanceledException>(() => middleware.Invoke(context)).DefaultTimeout();
+        await middleware.Invoke(context);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        var logMessages = sink.Writes.ToList();
+
+        Assert.Single(logMessages);
+        var message = logMessages.First();
+        Assert.Equal(LogLevel.Debug, message.LogLevel);
+        Assert.Equal("The request was canceled.", message.State.ToString());
     }
 
     [Fact]
