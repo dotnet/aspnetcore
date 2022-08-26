@@ -1,35 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net;
-using System.Net.Sockets;
+using System.Net.NetworkInformation;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing;
 
 public static class ServerRetryHelper
 {
-    private const int RetryCount = 10;
+    private const int RetryCount = 20;
 
+    /// <summary>
+    /// Retry a func. Useful when a test needs an explicit port and you want to avoid port conflicts.
+    /// </summary>
     /// <summary>
     /// Retry a func. Useful when a test needs an explicit port and you want to avoid port conflicts.
     /// </summary>
     public static async Task BindPortsWithRetry(Func<int, Task> retryFunc, ILogger logger)
     {
-        var ports = GetFreePorts(RetryCount);
-
         var retryCount = 0;
+        var nextPortAttempt = 5000;
+
         while (true)
         {
+            // Approx dynamic port range on Windows and Linux.
+            var port = GetAvailablePort(nextPortAttempt, logger);
 
             try
             {
-                await retryFunc(ports[retryCount]);
+                await retryFunc(port);
                 break;
             }
             catch (Exception ex)
             {
                 retryCount++;
+                nextPortAttempt = port + 1;
 
                 if (retryCount >= RetryCount)
                 {
@@ -43,34 +48,47 @@ public static class ServerRetryHelper
         }
     }
 
-    private static int[] GetFreePorts(int count)
+    private static int GetAvailablePort(int startingPort, ILogger logger)
     {
-        var sockets = new List<Socket>();
+        logger.LogInformation($"Searching for free port starting at {startingPort}.");
 
-        for (var i = 0; i < count; i++)
+        var portArray = new List<int>();
+
+        var properties = IPGlobalProperties.GetIPGlobalProperties();
+
+        // Ignore active connections
+        var connections = properties.GetActiveTcpConnections();
+        portArray.AddRange(from n in connections
+                           where n.LocalEndPoint.Port >= startingPort
+                           select n.LocalEndPoint.Port);
+
+        // Ignore active tcp listners
+        var endPoints = properties.GetActiveTcpListeners();
+        portArray.AddRange(from n in endPoints
+                           where n.Port >= startingPort
+                           select n.Port);
+
+        // Ignore active UDP listeners
+        endPoints = properties.GetActiveUdpListeners();
+        portArray.AddRange(from n in endPoints
+                           where n.Port >= startingPort
+                           select n.Port);
+
+        portArray.Sort();
+
+        for (var i = startingPort; i < ushort.MaxValue; i++)
         {
-            // Find a port that's free by binding port 0.
-            // Note that this port should be free when the test runs, but:
-            // - Something else could steal it before the test uses it.
-            // - UDP port with the same number could be in use.
-            // For that reason, some retries should be available.
-            var ipEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
-            var listenSocket = new Socket(ipEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            listenSocket.Bind(ipEndPoint);
-
-            sockets.Add(listenSocket);
+            if (!portArray.Contains(i))
+            {
+                logger.LogInformation($"Port {i} free.");
+                return i;
+            }
+            else
+            {
+                logger.LogInformation($"Port {i} in use.");
+            }
         }
 
-        // Ports are calculated upfront. Rebinding with port 0 could result the same port
-        // being returned for each retry.
-        var ports = sockets.Select(s => (IPEndPoint)s.LocalEndPoint).Select(ep => ep.Port).ToArray();
-
-        foreach (var socket in sockets)
-        {
-            socket.Dispose();
-        }
-
-        return ports;
+        throw new Exception($"Couldn't find a free port after {startingPort}.");
     }
 }
