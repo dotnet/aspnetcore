@@ -29,4 +29,12 @@ public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionB
         _disconnectEndpoint.Add(convention);
         _jsInitializersEndpoint.Add(convention);
     }
+
+    /// <inheritdoc/>
+    public void Finally(Action<EndpointBuilder> finalConvention)
+    {
+        _hubEndpoint.Finally(finalConvention);
+        _disconnectEndpoint.Finally(finalConvention);
+        _jsInitializersEndpoint.Finally(finalConvention);
+    }
 }

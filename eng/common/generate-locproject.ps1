@@ -62,7 +62,7 @@ $locJson = @{
                     $outputPath = "$(($_.DirectoryName | Resolve-Path -Relative) + "\")"
                     $continue = $true
                     foreach ($exclusion in $exclusions.Exclusions) {
-                        if ($outputPath.Contains($exclusion))
+                        if ($_.FullName.Contains($exclusion))
                         {
                             $continue = $false
                         }
@@ -98,7 +98,7 @@ $locJson = @{
                     $outputPath = "$($_.Directory.FullName | Resolve-Path -Relative)\"
                     $continue = $true
                     foreach ($exclusion in $exclusions.Exclusions) {
-                        if ($outputPath.Contains($exclusion))
+                        if ($_.FullName.Contains($exclusion))
                         {
                             $continue = $false
                         }

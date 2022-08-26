@@ -37,7 +37,7 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
         {
             try
             {
-                return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider);
+                return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider, _httpClient);
             }
             catch (PlatformNotSupportedException ex)
             {

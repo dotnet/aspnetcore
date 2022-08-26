@@ -122,11 +122,11 @@
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\testCert.pfx",
+      "file": "\\src\\SignalR\\common\\Shared\\testCert.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\testCertECC.pfx",
+      "file": "\\src\\SignalR\\common\\Shared\\testCertECC.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
