@@ -1019,7 +1019,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthRequestHeadersExist()
     {
         // Arrange
-        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, "1024");
+        string contentLength = "1024";
+        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
         _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
 
         // Act
@@ -1027,6 +1028,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         // Assert
         Assert.True(_http1Connection.RequestHeaders.ContainsKey($"x-{HeaderNames.ContentLength}"));
+        Assert.Equal(contentLength, _http1Connection.RequestHeaders[$"x-{HeaderNames.ContentLength}"]);
         Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
     }
 
