@@ -160,10 +160,8 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 var header = varyByRules.HeaderNames[i] ?? string.Empty;
                 var headerValues = requestHeaders[header];
 
-                if (ContainsDelimiters(header))
-                {
-                    return false;
-                }
+                // Delimiters are not checked in the keys since they are taken
+                // from configuration
 
                 builder
                     .Append(KeyDelimiter)
@@ -238,10 +236,8 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                     var queryKey = varyByRules.QueryKeys[i] ?? string.Empty;
                     var queryKeyValues = context.HttpContext.Request.Query[queryKey];
 
-                    if (ContainsDelimiters(queryKey))
-                    {
-                        return false;
-                    }
+                    // Delimiters are not checked in the keys since they are taken
+                    // from configuration
 
                     builder
                         .Append(KeyDelimiter)
@@ -287,8 +283,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
                 var routeValueValue = context.HttpContext.Request.RouteValues[routeValueName];
                 var stringRouteValue = Convert.ToString(routeValueValue, CultureInfo.InvariantCulture);
 
-                if (ContainsDelimiters(routeValueName) ||
-                    ContainsDelimiters(stringRouteValue))
+                // Delimiters are not checked in the keys since they are taken
+                // from configuration
+
+                if (ContainsDelimiters(stringRouteValue))
                 {
                     return false;
                 }

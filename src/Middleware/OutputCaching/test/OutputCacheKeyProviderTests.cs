@@ -297,7 +297,7 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
-    public void OutputCachingKeyProvider_CreateStorageKey_HeadersCantContainDelimiter()
+    public void OutputCachingKeyProvider_CreateStorageKey_HeaderValuesCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
@@ -325,12 +325,25 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
-    public void OutputCachingKeyProvider_CreateStorageKey_QueryStringCantContainDelimiter()
+    public void OutputCachingKeyProvider_CreateStorageKey_QueryStringValueCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.QueryString = new QueryString($"?QueryA=ValueA{KeyDelimiter}&QueryB=ValueB");
         context.CacheVaryByRules.QueryKeys = new string[] { "QueryA", "QueryC" };
+
+        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
+
+        Assert.Empty(cacheKey);
+    }
+
+    [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_QueryStringKeyCantContainDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString($"?QueryA{KeyDelimiter}=ValueA&QueryB=ValueB");
+        context.CacheVaryByRules.QueryKeys = new string[] { "*" };
 
         var cacheKey = cacheKeyProvider.CreateStorageKey(context);
 
