@@ -1027,8 +1027,10 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
 
         // Assert
-        Assert.True(_http1Connection.RequestHeaders.ContainsKey($"x-{HeaderNames.ContentLength}"));
-        Assert.Equal(contentLength, _http1Connection.RequestHeaders[$"x-{HeaderNames.ContentLength}"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+        Assert.Equal(contentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+        Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
         Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
     }
 

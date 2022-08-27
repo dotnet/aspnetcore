@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Net.Http.Headers;
 
@@ -175,8 +176,9 @@ internal abstract class Http1MessageBody : MessageBody
             // reasons, increase x-Content-Length so that the original Content-Length is still available.
             if (headers.ContentLength.HasValue)
             {
-                context.RequestHeaders.Add($"x-{HeaderNames.ContentLength}", context.RequestHeaders[HeaderNames.ContentLength]);
-                context.RequestHeaders.Remove(HeaderNames.ContentLength);
+                IHeaderDictionary headerDictionary = headers;
+                headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+                headers.ContentLength = null;
             }
 
             // TODO may push more into the wrapper rather than just calling into the message body
