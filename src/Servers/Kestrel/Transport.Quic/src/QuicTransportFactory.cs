@@ -20,15 +20,9 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
 
     public QuicTransportFactory(ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic");
         _log = logger;
@@ -44,10 +38,7 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
     /// <returns>A </returns>
     public async ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
     {
-        if (endpoint == null)
-        {
-            throw new ArgumentNullException(nameof(endpoint));
-        }
+        ArgumentNullException.ThrowIfNull(endpoint);
 
         var tlsConnectionOptions = features?.Get<TlsConnectionCallbackOptions>();
 

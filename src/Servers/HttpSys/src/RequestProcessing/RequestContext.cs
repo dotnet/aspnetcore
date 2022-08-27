@@ -262,10 +262,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
     internal unsafe void Delegate(DelegationRule destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
         if (Request.HasRequestBodyStarted)
         {
             throw new InvalidOperationException("This request cannot be delegated, the request body has already started.");
