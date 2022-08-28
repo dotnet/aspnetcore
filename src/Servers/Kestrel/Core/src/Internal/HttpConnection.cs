@@ -127,13 +127,6 @@ internal sealed class HttpConnection : ITimeoutHandler
         {
             previousState = _protocolSelectionState;
             Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
-
-            switch (_protocolSelectionState)
-            {
-                case ProtocolSelectionState.Selected:
-                case ProtocolSelectionState.Aborted:
-                    break;
-            }
         }
 
         switch (previousState)
@@ -153,13 +146,6 @@ internal sealed class HttpConnection : ITimeoutHandler
         {
             previousState = _protocolSelectionState;
             Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
-
-            switch (_protocolSelectionState)
-            {
-                case ProtocolSelectionState.Selected:
-                case ProtocolSelectionState.Aborted:
-                    break;
-            }
         }
 
         switch (previousState)

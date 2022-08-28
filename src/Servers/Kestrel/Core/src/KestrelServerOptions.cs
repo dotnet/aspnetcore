@@ -380,10 +380,7 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         Listen(new IPEndPoint(address, port), configure);
     }
@@ -420,14 +417,8 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(endPoint);
         ApplyEndpointDefaults(listenOptions);
@@ -447,10 +438,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenLocalhost(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new LocalhostListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -468,10 +456,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenAnyIP(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new AnyIPListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -493,19 +478,13 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenUnixSocket(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
 
         if (!Path.IsPathRooted(socketPath))
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(socketPath);
         ApplyEndpointDefaults(listenOptions);
@@ -527,10 +506,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenHandle(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(handle);
         ApplyEndpointDefaults(listenOptions);

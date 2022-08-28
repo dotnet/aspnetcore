@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Text;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -43,7 +42,7 @@ public class OkResultTests
     public void PopulateMetadata_AddsResponseTypeMetadata()
     {
         // Arrange
-        Ok MyApi() { throw new NotImplementedException(); }
+        static Ok MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
         var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
