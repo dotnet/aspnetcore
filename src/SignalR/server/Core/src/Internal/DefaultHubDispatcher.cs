@@ -324,9 +324,9 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                     if (hub.Clients is HubCallerClients hubCallerClients)
                     {
                         // Streaming invocations aren't involved with the semaphore.
-                        // Setting this to 0 avoids potential client result calls from the streaming hub method
+                        // Setting the semaphore released flag avoids potential client result calls from the streaming hub method
                         // releasing the semaphore which would cause a SemaphoreFullException.
-                        hubCallerClients.ShouldReleaseSemaphore = 0;
+                        hubCallerClients.TrySetSemaphoreReleased();
                     }
                 }
 
@@ -415,7 +415,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             {
                 if (hub?.Clients is HubCallerClients hubCallerClients)
                 {
-                    wasSemaphoreReleased = Interlocked.CompareExchange(ref hubCallerClients.ShouldReleaseSemaphore, 0, 1) == 0;
+                    wasSemaphoreReleased = !hubCallerClients.TrySetSemaphoreReleased();
                 }
                 await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
             }
