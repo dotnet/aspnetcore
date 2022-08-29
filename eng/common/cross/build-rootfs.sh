@@ -186,32 +186,27 @@ while :; do
             __UbuntuArch=i386
             __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
             ;;
-        lldb3.6)
-            __LLDB_Package="lldb-3.6-dev"
-            ;;
-        lldb3.8)
-            __LLDB_Package="lldb-3.8-dev"
-            ;;
-        lldb3.9)
-            __LLDB_Package="liblldb-3.9-dev"
-            ;;
-        lldb4.0)
-            __LLDB_Package="liblldb-4.0-dev"
-            ;;
-        lldb5.0)
-            __LLDB_Package="liblldb-5.0-dev"
-            ;;
-        lldb6.0)
-            __LLDB_Package="liblldb-6.0-dev"
+        lldb*)
+            version="${lowerI/lldb/}"
+            parts=(${version//./ })
+
+            # for versions > 6.0, lldb has dropped the minor version
+            if [[ "${parts[0]}" -gt 6 ]]; then
+                version="${parts[0]}"
+            fi
+
+            __LLDB_Package="liblldb-${version}-dev"
             ;;
         no-lldb)
             unset __LLDB_Package
             ;;
         llvm*)
-            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
+            version="${lowerI/llvm/}"
             parts=(${version//./ })
             __LLVM_MajorVersion="${parts[0]}"
             __LLVM_MinorVersion="${parts[1]}"
+
+            # for versions > 6.0, llvm has dropped the minor version
             if [[ -z "$__LLVM_MinorVersion" && "$__LLVM_MajorVersion" -le 6 ]]; then
                 __LLVM_MinorVersion=0;
             fi
@@ -229,6 +224,16 @@ while :; do
         bionic) # Ubuntu 18.04
             if [[ "$__CodeName" != "jessie" ]]; then
                 __CodeName=bionic
+            fi
+            ;;
+        focal) # Ubuntu 20.04
+            if [[ "$__CodeName" != "jessie" ]]; then
+                __CodeName=focal
+            fi
+            ;;
+        jammy) # Ubuntu 22.04
+            if [[ "$__CodeName" != "jessie" ]]; then
+                __CodeName=jammy
             fi
             ;;
         jessie) # Debian 8
