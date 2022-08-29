@@ -173,7 +173,7 @@ internal abstract class Http1MessageBody : MessageBody
             // remove the received Content-Length field prior to forwarding such
             // a message downstream.
             // We should remove the Content-Length request header in this case, for compatibility
-            // reasons, increase x-Content-Length so that the original Content-Length is still available.
+            // reasons, include x-Content-Length so that the original Content-Length is still available.
             if (headers.ContentLength.HasValue)
             {
                 IHeaderDictionary headerDictionary = headers;
