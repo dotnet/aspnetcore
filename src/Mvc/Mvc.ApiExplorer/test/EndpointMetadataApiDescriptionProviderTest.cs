@@ -1137,8 +1137,9 @@ public class EndpointMetadataApiDescriptionProviderTest
             {
                 Assert.Equal("name", parameter.Name);
                 Assert.NotNull(parameter.RouteInfo);
-                Assert.Empty(parameter.RouteInfo!.Constraints);
-                Assert.True(parameter.RouteInfo!.IsOptional);
+                Assert.NotNull(parameter.RouteInfo.Constraints);
+                Assert.Empty(parameter.RouteInfo.Constraints);
+                Assert.True(parameter.RouteInfo.IsOptional);
                 Assert.Equal("default", parameter.RouteInfo!.DefaultValue);
             });
     }
@@ -1164,7 +1165,8 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = Assert.Single(context.Results);
         var parameter = Assert.Single(apiDescription.ParameterDescriptions);
         Assert.NotNull(parameter.RouteInfo);
-        Assert.Collection(parameter.RouteInfo!.Constraints,
+        Assert.NotNull(parameter.RouteInfo.Constraints);
+        Assert.Collection(parameter.RouteInfo.Constraints,
             constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
             constraint => Assert.IsType<GuidRouteConstraint>(constraint),
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
