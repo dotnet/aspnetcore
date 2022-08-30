@@ -17,7 +17,9 @@ public static class ServerRetryHelper
     public static async Task BindPortsWithRetry(Func<int, Task> retryFunc, ILogger logger)
     {
         var retryCount = 0;
-        var nextPortAttempt = 5000;
+
+        // Add a random number to starting port to reduce chance of conflicts because of multiple tests using this retry.
+        var nextPortAttempt = 5000 + Random.Shared.Next(500);
 
         while (true)
         {
