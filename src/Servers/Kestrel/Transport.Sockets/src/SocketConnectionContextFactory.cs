@@ -30,15 +30,9 @@ public sealed class SocketConnectionContextFactory : IDisposable
     /// <param name="logger">The logger.</param>
     public SocketConnectionContextFactory(SocketConnectionFactoryOptions options, ILogger logger)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         _options = options;
         _logger = logger;

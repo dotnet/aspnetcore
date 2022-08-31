@@ -22,10 +22,7 @@ public static class WebHostBuilderIISExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseIIS(this IWebHostBuilder hostBuilder)
     {
-        if (hostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
 
         // Check if in process
         if (OperatingSystem.IsWindows() && NativeMethods.IsAspNetCoreModuleLoaded())
