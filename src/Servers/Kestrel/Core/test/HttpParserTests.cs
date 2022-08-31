@@ -574,7 +574,7 @@ public class HttpParserTests : LoggedTest
             ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined);
         });
 
-        Assert.Equal(badHttpRequestException.StatusCode, StatusCodes.Status400BadRequest);
+        Assert.Equal(StatusCodes.Status400BadRequest, badHttpRequestException.StatusCode);
         Assert.Equal(RequestRejectionReason.TlsOverHttpError, badHttpRequestException.Reason);
     }
 

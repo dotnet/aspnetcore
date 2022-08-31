@@ -188,7 +188,7 @@ public class UnixDomainSocketsTest : TestApplicationErrorLoggerLoggedTest
                     Assert.False(httpStatusEnd == -1, $"Second space not found in '{httpResponse}'.");
 
                     var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart), CultureInfo.InvariantCulture);
-                    Assert.Equal(httpStatus, StatusCodes.Status200OK);
+                    Assert.Equal(StatusCodes.Status200OK, httpStatus);
 
                 }
                 await host.StopAsync().DefaultTimeout();

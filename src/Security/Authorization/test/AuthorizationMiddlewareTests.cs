@@ -233,7 +233,7 @@ public class AuthorizationMiddlewareTests
             .Callback(() => getPolicyCount++);
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
             .Callback(() => getFallbackPolicyCount++);
-        policyProvider.Setup(p => p.CanCachePolicy).Returns(true);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
         var next = new TestRequestDelegate();
 
         var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
@@ -283,7 +283,7 @@ public class AuthorizationMiddlewareTests
             return Task.FromResult(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
         }
 
-        public override bool CanCachePolicy => _canCache;
+        public override bool AllowsCachingPolicies => _canCache;
     }
 
     [Theory]

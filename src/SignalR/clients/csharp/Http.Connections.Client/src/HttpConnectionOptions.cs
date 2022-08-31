@@ -262,6 +262,8 @@ public class HttpConnectionOptions
     /// <remarks>
     /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenProvider"/>
     /// has been applied.
+    /// <para />
+    /// If <c>ClientWebSocketOptions.HttpVersion</c> is set to <c>2.0</c> or higher, some options like <see cref="ClientWebSocketOptions.Cookies"/> will not be applied. Instead use <see cref="Cookies"/> or the corresponding option on <see cref="HttpConnectionOptions"/>.
     /// </remarks>
     [UnsupportedOSPlatform("browser")]
     public Action<ClientWebSocketOptions>? WebSocketConfiguration
