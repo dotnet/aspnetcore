@@ -39,7 +39,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private readonly AckHandler _ackHandler;
     private int _internalAckId;
-    private ulong _lastInvocationId;
 
     /// <summary>
     /// Constructs the <see cref="RedisHubLifetimeManager{THub}"/> with types from Dependency Injection.
@@ -72,7 +71,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         _logger = logger;
         _options = options.Value;
         _ackHandler = new AckHandler();
-        _channels = new RedisChannels(typeof(THub).FullName!);
+        _channels = new RedisChannels(typeof(THub).FullName!, _serverName);
         if (globalHubOptions != null && hubOptions != null)
         {
             _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, globalHubOptions.Value.SupportedProtocols, hubOptions.Value.SupportedProtocols));
@@ -416,8 +415,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         var connection = _connections[connectionId];
 
-        // Needs to be unique across servers, easiest way to do that is prefix with connection ID.
-        var invocationId = $"{connectionId}{Interlocked.Increment(ref _lastInvocationId)}";
+        // ID needs to be unique for each invocation and across servers, we generate a GUID every time, that should provide enough uniqueness guarantees.
+        var invocationId = GenerateInvocationId();
 
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection?.ConnectionAborted ?? default, out var linkedToken);
@@ -428,7 +427,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             if (connection == null)
             {
                 // TODO: Need to handle other server going away while waiting for connection result
-                var messageBytes = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults(_serverName));
+                var messageBytes = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults);
                 var received = await PublishAsync(_channels.Connection(connectionId), messageBytes);
                 if (received < 1)
                 {
@@ -674,7 +673,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private async Task SubscribeToReturnResultsAsync()
     {
-        var channel = await _bus!.SubscribeAsync(_channels.ReturnResults(_serverName));
+        var channel = await _bus!.SubscribeAsync(_channels.ReturnResults);
         channel.OnMessage((channelMessage) =>
         {
             var completion = RedisProtocol.ReadCompletion(channelMessage.Message);
@@ -700,6 +699,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             Debug.Assert(parseSuccess);
 
             var invocationInfo = _clientResultsManager.RemoveInvocation(((CompletionMessage)hubMessage!).InvocationId!);
+
             invocationInfo?.Completion(invocationInfo?.Tcs!, (CompletionMessage)hubMessage!);
         });
     }
@@ -782,6 +782,20 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         // Use the machine name for convenient diagnostics, but add a guid to make it unique.
         // Example: MyServerName_02db60e5fab243b890a847fa5c4dcb29
         return $"{Environment.MachineName}_{Guid.NewGuid():N}";
+    }
+
+    private static string GenerateInvocationId()
+    {
+        Span<byte> buffer = stackalloc byte[16];
+        var success = Guid.NewGuid().TryWriteBytes(buffer);
+        Debug.Assert(success);
+        // 16 * 4/3 = 21.333 which means base64 encoding will use 22 characters of actual data and 2 characters of padding ('=')
+        Span<char> base64 = stackalloc char[24];
+        success = Convert.TryToBase64Chars(buffer, base64, out var written);
+        Debug.Assert(success);
+        Debug.Assert(written == 24);
+        // Trim the two '=='
+        return new string(base64.Slice(0, base64.Length - 2));
     }
 
     private sealed class LoggerTextWriter : TextWriter
