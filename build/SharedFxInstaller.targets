@@ -4,14 +4,6 @@
   <Target Name="_EnsureInstallerPrerequisites">
     <MakeDir Directories="$(_InstallersOutputDir)" />
 
-    <!-- Check Docker server OS -->
-    <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" StandardOutputImportance="Normal" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="DockerHostOS" />
-    </Exec>
-
-    <Error
-      Text="Docker host must be using Linux containers."
-      Condition="'$(DockerHostOS)' != 'linux'"/>
     <Error
       Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-%(WindowsSharedFxRIDs.Identity).zip."
       Condition="'@(WindowsSharedFxRIDs)' != '' AND !Exists('$(SharedFxIntermediateArchiveFilePrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
