@@ -139,16 +139,19 @@ internal static class OutputCacheEntryFormatter
 
         foreach (var header in entry.Headers)
         {
-            WriteUTF8String(writer, header.Key);
-
-            if (header.Value == null)
-            {
-                continue;
-            }
+            writer.Write(header.Key);
 
             //     Values count: 7-bit encoded int
 
-            writer.Write7BitEncodedInt(header.Value.Length);
+            if (header.Value == null)
+            {
+                writer.Write7BitEncodedInt(0);
+                continue;
+            }
+            else
+            {
+                writer.Write7BitEncodedInt(header.Value.Length);
+            }
 
             //     For each header value:
             //       data byte length: 7-bit encoded int
@@ -156,12 +159,7 @@ internal static class OutputCacheEntryFormatter
 
             foreach (var value in header.Value)
             {
-                if (value == null)
-                {
-                    continue;
-                }
-
-                WriteUTF8String(writer, value);
+                writer.Write(value ?? "");
             }
         }
 
@@ -189,12 +187,7 @@ internal static class OutputCacheEntryFormatter
 
         foreach (var tag in entry.Tags)
         {
-            if (tag == null)
-            {
-                continue;
-            }
-
-            WriteUTF8String(writer, tag);
+            writer.Write(tag ?? "");
         }
     }
 
@@ -241,11 +234,11 @@ internal static class OutputCacheEntryFormatter
         //     UTF-8 encoded key name byte[]
         //     Values count: 7-bit encoded int
 
-        result.Headers = new Dictionary<string, string?[]>();
+        result.Headers = new Dictionary<string, string?[]>(headersCount);
 
         for (var i = 0; i < headersCount; i++)
         {
-            var key = ReadUTF8String(reader);
+            var key = reader.ReadString();
 
             var valuesCount = reader.Read7BitEncodedInt();
 
@@ -257,12 +250,11 @@ internal static class OutputCacheEntryFormatter
 
             for (var j = 0; j < valuesCount; j++)
             {
-                values[j] = ReadUTF8String(reader);
+                values[j] = reader.ReadString();
             }
 
             result.Headers[key] = values;
         }
-
 
         // Body:
         //   Segments count: 7-bit encoded int
@@ -307,19 +299,5 @@ internal static class OutputCacheEntryFormatter
 
         result.Tags = tags;
         return result;
-    }
-
-    private static void WriteUTF8String(BinaryWriter writer, string value)
-    {
-        var data = Encoding.UTF8.GetBytes(value);
-        writer.Write7BitEncodedInt(data.Length);
-        writer.Write(data);
-    }
-
-    private static string ReadUTF8String(BinaryReader reader)
-    {
-        var dataLength = reader.Read7BitEncodedInt();
-        var data = reader.ReadBytes(dataLength);
-        return Encoding.UTF8.GetString(data);
     }
 }

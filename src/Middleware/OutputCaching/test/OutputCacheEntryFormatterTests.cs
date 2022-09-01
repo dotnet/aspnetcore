@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
 public class OutputCacheEntryFormatterTests
 {
+    private static CachedResponseBody EmptyResponseBody = new(new List<byte[]>(), 0);
+
     [Fact]
     public async Task StoreAndGet_StoresEmptyValues()
     {
@@ -49,6 +52,55 @@ public class OutputCacheEntryFormatterTests
         var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
 
         AssertEntriesAreSame(entry, result);
+    }
+
+    [Fact]
+    public async Task StoreAndGet_StoresNullTags()
+    {
+        var store = new TestOutputCache();
+        var key = "abc";
+        var entry = new OutputCacheEntry()
+        {
+            Body = EmptyResponseBody,
+            Headers = new HeaderDictionary(),
+            Tags = new[] { null, null, "", "tag" }
+        };
+
+        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
+
+        var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
+
+        Assert.Equal(4, result.Tags.Length);
+        Assert.Equal("", result.Tags[0]);
+        Assert.Equal("", result.Tags[1]);
+        Assert.Equal("", result.Tags[2]);
+        Assert.Equal("tag", result.Tags[3]);
+    }
+
+    [Fact]
+    public async Task StoreAndGet_StoresNullHeaders()
+    {
+        var store = new TestOutputCache();
+        var key = "abc";
+        var entry = new OutputCacheEntry()
+        {
+            Body = EmptyResponseBody,
+            Headers = new HeaderDictionary { [""] = "", [HeaderNames.Accept] = new[] { null, null, "", "text/html" }, [HeaderNames.AcceptCharset] = new string[] { null } },
+            Tags = Array.Empty<string>()
+        };
+
+        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
+
+        var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
+
+        Assert.Equal(3, result.Headers.Count);
+        Assert.Equal("", result.Headers[""]);
+        Assert.Equal(4, result.Headers[HeaderNames.Accept].Count);
+        Assert.Equal("", result.Headers[HeaderNames.Accept][0]);
+        Assert.Equal("", result.Headers[HeaderNames.Accept][1]);
+        Assert.Equal("", result.Headers[HeaderNames.Accept][2]);
+        Assert.Equal("text/html", result.Headers[HeaderNames.Accept][3]);
+        Assert.Equal("", result.Headers[HeaderNames.AcceptCharset][0]);
     }
 
     private static void AssertEntriesAreSame(OutputCacheEntry expected, OutputCacheEntry actual)
