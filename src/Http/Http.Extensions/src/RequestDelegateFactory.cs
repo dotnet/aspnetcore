@@ -153,7 +153,7 @@ public static partial class RequestDelegateFactory
     /// The result returned from <see cref="InferMetadata(MethodInfo, RequestDelegateFactoryOptions?)"/> if that was used to inferring metadata before creating the final RequestDelegate.
     /// If <see langword="null"/>, this call to <see cref="Create(Delegate, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult?)"/> method will infer the metadata that
     /// <see cref="InferMetadata(MethodInfo, RequestDelegateFactoryOptions?)"/> would have inferred for the same <see cref="Delegate.Method"/> and populate <see cref="RequestDelegateFactoryOptions.EndpointBuilder"/>
-    /// with that metadata. Otherwise, this metadata inference be skipped as this step has already been done.
+    /// with that metadata. Otherwise, this metadata inference will be skipped as this step has already been done.
     /// </param>
     /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
     [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
@@ -210,7 +210,7 @@ public static partial class RequestDelegateFactory
     /// The result returned from <see cref="InferMetadata(MethodInfo, RequestDelegateFactoryOptions?)"/> if that was used to inferring metadata before creating the final RequestDelegate.
     /// If <see langword="null"/>, this call to <see cref="Create(Delegate, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult?)"/> method will infer the metadata that
     /// <see cref="InferMetadata(MethodInfo, RequestDelegateFactoryOptions?)"/> would have inferred for the same <see cref="Delegate.Method"/> and populate <see cref="RequestDelegateFactoryOptions.EndpointBuilder"/>
-    /// with that metadata. Otherwise, this metadata inference be skipped as this step has already been done.
+    /// with that metadata. Otherwise, this metadata inference will be skipped as this step has already been done.
     /// </param>
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
     [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
