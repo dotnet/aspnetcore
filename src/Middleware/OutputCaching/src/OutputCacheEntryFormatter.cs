@@ -223,7 +223,6 @@ internal static class OutputCacheEntryFormatter
 
         result.StatusCode = reader.Read7BitEncodedInt();
 
-
         // Headers:
         //   Headers count: 7-bit encoded int
 
