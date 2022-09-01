@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NET7_0_OR_GREATER
 using System.Runtime.Loader;
 #endif
 using Microsoft.Extensions.CommandLineUtils;
@@ -69,7 +69,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
             }
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NET7_0_OR_GREATER
         AssemblyLoadContext.Default.Resolving += (loadContext, assemblyName) =>
         {
             var name = assemblyName.Name;
