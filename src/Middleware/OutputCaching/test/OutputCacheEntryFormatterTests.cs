@@ -30,15 +30,18 @@ public class OutputCacheEntryFormatterTests
     [Fact]
     public async Task StoreAndGet_StoresAllValues()
     {
+        var bodySegment1 = "lorem"u8.ToArray();
+        var bodySegment2 = "こんにちは"u8.ToArray();
+
         var store = new TestOutputCache();
         var key = "abc";
         var entry = new OutputCacheEntry()
         {
-            Body = new CachedResponseBody(new List<byte[]>() { "lorem"u8.ToArray(), "ipsum"u8.ToArray() }, 10),
+            Body = new CachedResponseBody(new List<byte[]>() { bodySegment1, bodySegment2 }, bodySegment1.Length + bodySegment2.Length),
             Created = DateTimeOffset.UtcNow,
-            Headers = new HeaderDictionary { [HeaderNames.Accept] = "text/plain", [HeaderNames.AcceptCharset] = "utf8" },
+            Headers = new HeaderDictionary { [HeaderNames.Accept] = new[] { "text/plain", "text/html" }, [HeaderNames.AcceptCharset] = "utf8" },
             StatusCode = StatusCodes.Status201Created,
-            Tags = new[] { "tag1", "tag2" }
+            Tags = new[] { "tag", "タグ" }
         };
 
         await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
