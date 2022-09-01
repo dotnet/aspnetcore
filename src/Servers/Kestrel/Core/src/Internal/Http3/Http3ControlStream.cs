@@ -92,7 +92,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                 return;
             }
 
-            Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+            Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
 
             _errorCodeFeature.Error = (long)errorCode;
             _frameWriter.Abort(abortReason);

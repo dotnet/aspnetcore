@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
@@ -24,6 +26,8 @@ internal sealed partial class WebSocketsTransport : ITransport
     private readonly TimeSpan _closeTimeout;
     private volatile bool _aborted;
     private readonly HttpConnectionOptions _httpConnectionOptions;
+    private readonly HttpClient? _httpClient;
+    private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
 
     private IDuplexPipe? _transport;
 
@@ -33,7 +37,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider)
+    public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient)
     {
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
@@ -43,6 +47,8 @@ internal sealed partial class WebSocketsTransport : ITransport
         // We were given an updated delegate from the HttpConnection and we are updating what we have in httpOptions
         // options itself is copied object of user's options
         _httpConnectionOptions.AccessTokenProvider = accessTokenProvider;
+
+        _httpClient = httpClient;
     }
 
     private async ValueTask<WebSocket> DefaultWebSocketFactory(WebSocketConnectionContext context, CancellationToken cancellationToken)
@@ -115,8 +121,13 @@ internal sealed partial class WebSocketsTransport : ITransport
             }
         }
 
-        if (_httpConnectionOptions.AccessTokenProvider != null)
+        if (_httpConnectionOptions.AccessTokenProvider != null
+#if NET7_0_OR_GREATER
+            && webSocket.Options.HttpVersion < HttpVersion.Version20
+#endif
+            )
         {
+            // Apply access token logic when using HTTP/1.1 because we don't use the AccessTokenHttpMessageHandler via HttpClient unless the user specifies HTTP/2.0 or higher
             var accessToken = await _httpConnectionOptions.AccessTokenProvider().ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -129,16 +140,26 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
                 else
                 {
-#pragma warning disable CA1416 // Analyzer bug
                     webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
-#pragma warning restore CA1416 // Analyzer bug
                 }
             }
         }
 
         try
         {
-            await webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+#if NET7_0_OR_GREATER
+            // Only share the HttpClient if the user opts-in to HTTP/2 (or higher)
+            // This is because there is some non-obvious behavior changes when passing in an invoker to ConnectAsync
+            // and there isn't really any benefit to sharing the HttpClient in HTTP/1.1
+            if (webSocket.Options.HttpVersion > HttpVersion.Version11)
+            {
+                await webSocket.ConnectAsync(url, invoker: _httpClient, cancellationToken).ConfigureAwait(false);
+            }
+            else
+#endif
+            {
+                await webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch
         {
@@ -204,6 +225,8 @@ internal sealed partial class WebSocketsTransport : ITransport
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
 
+            _stopCts.CancelAfter(_closeTimeout);
+
             if (trigger == receiving)
             {
                 // We're waiting for the application to finish and there are 2 things it could be doing
@@ -213,22 +236,14 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // Cancel the application so that ReadAsync yields
                 _application.Input.CancelPendingRead();
 
-                using (var delayCts = new CancellationTokenSource())
+                var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, _stopCts.Token)).ConfigureAwait(false);
+
+                if (resultTask != sending)
                 {
-                    var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, delayCts.Token)).ConfigureAwait(false);
+                    _aborted = true;
 
-                    if (resultTask != sending)
-                    {
-                        _aborted = true;
-
-                        // Abort the websocket if we're stuck in a pending send to the client
-                        socket.Abort();
-                    }
-                    else
-                    {
-                        // Cancel the timeout
-                        delayCts.Cancel();
-                    }
+                    // Abort the websocket if we're stuck in a pending send to the client
+                    socket.Abort();
                 }
             }
             else
@@ -258,7 +273,7 @@ internal sealed partial class WebSocketsTransport : ITransport
             {
 #if NETSTANDARD2_1 || NETCOREAPP
                 // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
-                var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None).ConfigureAwait(false);
+                var result = await socket.ReceiveAsync(Memory<byte>.Empty, _stopCts.Token).ConfigureAwait(false);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -275,13 +290,13 @@ internal sealed partial class WebSocketsTransport : ITransport
                 var memory = _application.Output.GetMemory();
 #if NETSTANDARD2_1 || NETCOREAPP
                 // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
-                var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None).ConfigureAwait(false);
+                var receiveResult = await socket.ReceiveAsync(memory, _stopCts.Token).ConfigureAwait(false);
 #elif NETSTANDARD2_0 || NETFRAMEWORK
                 var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                 Debug.Assert(isArray);
 
                 // Exceptions are handled above where the send and receive tasks are being run.
-                var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None).ConfigureAwait(false);
+                var receiveResult = await socket.ReceiveAsync(arraySegment, _stopCts.Token).ConfigureAwait(false);
 #else
 #error TFMs need to be updated
 #endif
@@ -362,7 +377,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                             if (WebSocketCanSend(socket))
                             {
-                                await socket.SendAsync(buffer, _webSocketMessageType).ConfigureAwait(false);
+                                await socket.SendAsync(buffer, _webSocketMessageType, _stopCts.Token).ConfigureAwait(false);
                             }
                             else
                             {
@@ -400,7 +415,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 try
                 {
                     // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", _stopCts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -452,6 +467,9 @@ internal sealed partial class WebSocketsTransport : ITransport
         // Cancel any pending reads from the application, this should start the entire shutdown process
         _application.Input.CancelPendingRead();
 
+        // Start ungraceful close timer
+        _stopCts.CancelAfter(_closeTimeout);
+
         try
         {
             await Running.ConfigureAwait(false);
@@ -465,6 +483,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         finally
         {
             _webSocket?.Dispose();
+            _stopCts.Dispose();
         }
 
         Log.TransportStopped(_logger, null);

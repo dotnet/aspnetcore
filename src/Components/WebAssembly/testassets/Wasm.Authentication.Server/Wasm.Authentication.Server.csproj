@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <!-- IdentityServer packages are not strong named. -->
-    <NoWarn>CS8002</NoWarn>
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <IdentityDefaultUIFramework>Bootstrap5</IdentityDefaultUIFramework>

@@ -76,10 +76,10 @@ __FreeBSDPackages+=" openssl"
 __FreeBSDPackages+=" krb5"
 __FreeBSDPackages+=" terminfo-db"
 
-__IllumosPackages="icu-64.2nb2"
-__IllumosPackages+=" mit-krb5-1.16.2nb4"
-__IllumosPackages+=" openssl-1.1.1e"
-__IllumosPackages+=" zlib-1.2.11"
+__IllumosPackages="icu"
+__IllumosPackages+=" mit-krb5"
+__IllumosPackages+=" openssl"
+__IllumosPackages+=" zlib"
 
 __HaikuPackages="gmp"
 __HaikuPackages+=" gmp_devel"
@@ -186,32 +186,27 @@ while :; do
             __UbuntuArch=i386
             __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
             ;;
-        lldb3.6)
-            __LLDB_Package="lldb-3.6-dev"
-            ;;
-        lldb3.8)
-            __LLDB_Package="lldb-3.8-dev"
-            ;;
-        lldb3.9)
-            __LLDB_Package="liblldb-3.9-dev"
-            ;;
-        lldb4.0)
-            __LLDB_Package="liblldb-4.0-dev"
-            ;;
-        lldb5.0)
-            __LLDB_Package="liblldb-5.0-dev"
-            ;;
-        lldb6.0)
-            __LLDB_Package="liblldb-6.0-dev"
+        lldb*)
+            version="${lowerI/lldb/}"
+            parts=(${version//./ })
+
+            # for versions > 6.0, lldb has dropped the minor version
+            if [[ "${parts[0]}" -gt 6 ]]; then
+                version="${parts[0]}"
+            fi
+
+            __LLDB_Package="liblldb-${version}-dev"
             ;;
         no-lldb)
             unset __LLDB_Package
             ;;
         llvm*)
-            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
+            version="${lowerI/llvm/}"
             parts=(${version//./ })
             __LLVM_MajorVersion="${parts[0]}"
             __LLVM_MinorVersion="${parts[1]}"
+
+            # for versions > 6.0, llvm has dropped the minor version
             if [[ -z "$__LLVM_MinorVersion" && "$__LLVM_MajorVersion" -le 6 ]]; then
                 __LLVM_MinorVersion=0;
             fi
@@ -229,6 +224,16 @@ while :; do
         bionic) # Ubuntu 18.04
             if [[ "$__CodeName" != "jessie" ]]; then
                 __CodeName=bionic
+            fi
+            ;;
+        focal) # Ubuntu 20.04
+            if [[ "$__CodeName" != "jessie" ]]; then
+                __CodeName=focal
+            fi
+            ;;
+        jammy) # Ubuntu 22.04
+            if [[ "$__CodeName" != "jessie" ]]; then
+                __CodeName=jammy
             fi
             ;;
         jessie) # Debian 8
@@ -390,14 +395,18 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     if [[ "$__UseMirror" == 1 ]]; then
         BaseUrl=http://pkgsrc.smartos.skylime.net
     fi
-    BaseUrl="$BaseUrl/packages/SmartOS/2020Q1/${__illumosArch}/All"
+    BaseUrl="$BaseUrl/packages/SmartOS/trunk/${__illumosArch}/All"
+    echo "Downloading manifest"
+    wget "$BaseUrl"
     echo "Downloading dependencies."
     read -ra array <<<"$__IllumosPackages"
     for package in "${array[@]}"; do
-       echo "Installing $package..."
+        echo "Installing '$package'"
+        package="$(grep ">$package-[0-9]" All | sed -En 's/.*href="(.*)\.tgz".*/\1/p')"
+        echo "Resolved name '$package'"
         wget "$BaseUrl"/"$package".tgz
         ar -x "$package".tgz
-        tar --skip-old-files -xzf "$package".tmp.tgz -C "$__RootfsDir" 2>/dev/null
+        tar --skip-old-files -xzf "$package".tmp.tg* -C "$__RootfsDir" 2>/dev/null
     done
     echo "Cleaning up temporary files."
     popd

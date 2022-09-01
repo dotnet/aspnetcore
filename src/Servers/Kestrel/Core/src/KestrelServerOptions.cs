@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class KestrelServerOptions
 {
+    internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
@@ -173,6 +175,24 @@ public class KestrelServerOptions
             return _enableWebTransportAndH3Datagrams.Value;
         }
         set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// </summary>
+    private bool? _disableHttp1LineFeedTerminators;
+    internal bool DisableHttp1LineFeedTerminators
+    {
+        get
+        {
+            if (!_disableHttp1LineFeedTerminators.HasValue)
+            {
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch(DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled;
+            }
+
+            return _disableHttp1LineFeedTerminators.Value;
+        }
+        set => _disableHttp1LineFeedTerminators = value;
     }
 
     /// <summary>
@@ -360,10 +380,7 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         Listen(new IPEndPoint(address, port), configure);
     }
@@ -400,14 +417,8 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(endPoint);
         ApplyEndpointDefaults(listenOptions);
@@ -427,10 +438,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenLocalhost(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new LocalhostListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -448,10 +456,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenAnyIP(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new AnyIPListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -473,19 +478,13 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenUnixSocket(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
 
         if (!Path.IsPathRooted(socketPath))
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(socketPath);
         ApplyEndpointDefaults(listenOptions);
@@ -507,10 +506,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenHandle(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(handle);
         ApplyEndpointDefaults(listenOptions);

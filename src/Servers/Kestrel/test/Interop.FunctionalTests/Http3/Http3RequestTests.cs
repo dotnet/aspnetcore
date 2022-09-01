@@ -228,6 +228,8 @@ public class Http3RequestTests : LoggedTest
     public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         var builder = CreateHostBuilder(context =>
         {
             return Task.CompletedTask;
@@ -537,6 +539,58 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task POST_ServerAbortAfterWrite_ClientReceivesAbort()
+    {
+        // Arrange
+        var builder = CreateHostBuilder(async context =>
+        {
+            Logger.LogInformation("Server writing content.");
+            await context.Response.Body.WriteAsync(new byte[16]);
+
+            // Note that there is a race here on what is sent before the abort is processed.
+            // Abort may happen before or after response headers have been sent.
+            Logger.LogInformation("Server aborting.");
+            context.Abort();
+        }, protocol: HttpProtocols.Http3);
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync().DefaultTimeout();
+
+            for (var i = 0; i < 100; i++)
+            {
+                Logger.LogInformation($"Client sending request {i}");
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(HttpProtocols.Http3);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var sendTask = client.SendAsync(request, CancellationToken.None);
+
+                // Assert
+                var ex = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                {
+                    // Note that there is a race here on what is sent before the abort is processed.
+                    // Abort may happen before or after response headers have been sent.
+                    Logger.LogInformation($"Client awaiting response {i}");
+                    var response = await sendTask;
+
+                    Logger.LogInformation($"Client awaiting content {i}");
+                    await response.Content.ReadAsByteArrayAsync();
+                }).DefaultTimeout();
+
+                var protocolException = ex.GetProtocolException();
+                Assert.Equal((long)Http3ErrorCode.InternalError, protocolException.ErrorCode);
+            }
+
+            await host.StopAsync().DefaultTimeout();
+        }
+    }
+
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
@@ -651,6 +705,7 @@ public class Http3RequestTests : LoggedTest
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43374")]
     [MsQuicSupported]
     public async Task GET_ConnectionsMakingMultipleRequests_AllSuccess()
     {
@@ -659,7 +714,7 @@ public class Http3RequestTests : LoggedTest
 
         var builder = CreateHostBuilder(context =>
         {
-            requestCount++;
+            Interlocked.Increment(ref requestCount);
             return Task.CompletedTask;
         });
 

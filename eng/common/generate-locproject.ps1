@@ -33,6 +33,8 @@ $jsonTemplateFiles | ForEach-Object {
 
 $jsonWinformsTemplateFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "en\\strings\.json" } # current winforms pattern
 
+$wxlFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "\\.+\.wxl" -And -Not( $_.Directory.Name -Match "\d{4}" ) } # localized files live in four digit lang ID directories; this excludes them
+
 $xlfFiles = @()
 
 $allXlfFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory\*\*.xlf"
@@ -60,7 +62,7 @@ $locJson = @{
                     $outputPath = "$(($_.DirectoryName | Resolve-Path -Relative) + "\")"
                     $continue = $true
                     foreach ($exclusion in $exclusions.Exclusions) {
-                        if ($outputPath.Contains($exclusion))
+                        if ($_.FullName.Contains($exclusion))
                         {
                             $continue = $false
                         }
@@ -77,13 +79,38 @@ $locJson = @{
                                 CopyOption = "LangIDOnPath"
                                 OutputPath = "$($_.Directory.Parent.FullName | Resolve-Path -Relative)\"
                             }
-                        }
-                        else {
+                        } else {
                             return @{
                                 SourceFile = $sourceFile
                                 CopyOption = "LangIDOnName"
                                 OutputPath = $outputPath
                             }
+                        }
+                    }
+                }
+            )
+        },
+        @{
+            CloneLanguageSet = "WiX_CloneLanguages"
+            LssFiles = @( "wxl_loc.lss" )
+            LocItems = @(
+                $wxlFiles | ForEach-Object {
+                    $outputPath = "$($_.Directory.FullName | Resolve-Path -Relative)\"
+                    $continue = $true
+                    foreach ($exclusion in $exclusions.Exclusions) {
+                        if ($_.FullName.Contains($exclusion))
+                        {
+                            $continue = $false
+                        }
+                    }
+                    $sourceFile = ($_.FullName | Resolve-Path -Relative)
+                    if ($continue)
+                    {
+                        return @{
+                            SourceFile = $sourceFile
+                            CopyOption = "LangIDOnPath"
+                            OutputPath = $outputPath
+                            Languages = "cs-CZ;de-DE;es-ES;fr-FR;it-IT;ja-JP;ko-KR;pl-PL;pt-BR;ru-RU;tr-TR;zh-CN;zh-TW"
                         }
                     }
                 }
