@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -71,7 +72,10 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                 throw new InvalidOperationException(CoreStrings.InvalidPemKey);
             }
 
-            return (new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
+            fullChain.Import(certificatePath, certInfo.Password);
+            var certWithKey = fullChain.Single(c => c.HasPrivateKey);
+            fullChain.Remove(certWithKey);
+            return (certWithKey, fullChain);
         }
         else if (certInfo.IsStoreCert)
         {
