@@ -10,6 +10,20 @@ namespace Microsoft.AspNetCore.Routing;
 public class RouteEndpointBuilderTest
 {
     [Fact]
+    public void Constructor_AllowsNullRequestDelegate()
+    {
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+        Assert.Null(builder.RequestDelegate);
+    }
+
+    [Fact]
+    public void Constructor_DoesNotAllowNullRoutePattern()
+    {
+        var ex = Assert.Throws<ArgumentNullException>(() => new RouteEndpointBuilder(context => Task.CompletedTask, routePattern: null, order: 0));
+        Assert.Equal("routePattern", ex.ParamName);
+    }
+
+    [Fact]
     public void Build_AllValuesSet_EndpointCreated()
     {
         const int defaultOrder = 0;

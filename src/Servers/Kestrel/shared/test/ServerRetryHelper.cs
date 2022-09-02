@@ -2,34 +2,39 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Sockets;
+using System.Net.NetworkInformation;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing;
 
 public static class ServerRetryHelper
 {
-    private const int RetryCount = 10;
+    private const int RetryCount = 20;
 
     /// <summary>
     /// Retry a func. Useful when a test needs an explicit port and you want to avoid port conflicts.
     /// </summary>
     public static async Task BindPortsWithRetry(Func<int, Task> retryFunc, ILogger logger)
     {
-        var ports = GetFreePorts(RetryCount);
-
         var retryCount = 0;
+
+        // Add a random number to starting port to reduce chance of conflicts because of multiple tests using this retry.
+        var nextPortAttempt = 5000 + Random.Shared.Next(500);
+
         while (true)
         {
+            // Find a port that's available for TCP and UDP. Start with port 5000 and search upwards from there.
+            var port = GetAvailablePort(nextPortAttempt, logger);
 
             try
             {
-                await retryFunc(ports[retryCount]);
+                await retryFunc(port);
                 break;
             }
             catch (Exception ex)
             {
                 retryCount++;
+                nextPortAttempt = port + 1;
 
                 if (retryCount >= RetryCount)
                 {
@@ -43,34 +48,50 @@ public static class ServerRetryHelper
         }
     }
 
-    private static int[] GetFreePorts(int count)
+    private static int GetAvailablePort(int startingPort, ILogger logger)
     {
-        var sockets = new List<Socket>();
+        logger.LogInformation($"Searching for free port starting at {startingPort}.");
 
-        for (var i = 0; i < count; i++)
+        var unavailableEndpoints = new List<IPEndPoint>();
+
+        var properties = IPGlobalProperties.GetIPGlobalProperties();
+
+        // Ignore active connections
+        AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveTcpConnections().Select(c => c.LocalEndPoint));
+
+        // Ignore active tcp listners
+        AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveTcpListeners());
+
+        // Ignore active UDP listeners
+        AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveUdpListeners());
+
+        logger.LogInformation($"Found {unavailableEndpoints.Count} unavailable endpoints.");
+
+        for (var i = startingPort; i < ushort.MaxValue; i++)
         {
-            // Find a port that's free by binding port 0.
-            // Note that this port should be free when the test runs, but:
-            // - Something else could steal it before the test uses it.
-            // - UDP port with the same number could be in use.
-            // For that reason, some retries should be available.
-            var ipEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
-            var listenSocket = new Socket(ipEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            listenSocket.Bind(ipEndPoint);
-
-            sockets.Add(listenSocket);
+            var match = unavailableEndpoints.FirstOrDefault(ep => ep.Port == i);
+            if (match == null)
+            {
+                logger.LogInformation($"Port {i} free.");
+                return i;
+            }
+            else
+            {
+                logger.LogInformation($"Port {i} in use. End point: {match}");
+            }
         }
 
-        // Ports are calculated upfront. Rebinding with port 0 could result the same port
-        // being returned for each retry.
-        var ports = sockets.Select(s => (IPEndPoint)s.LocalEndPoint).Select(ep => ep.Port).ToArray();
+        throw new Exception($"Couldn't find a free port after {startingPort}.");
 
-        foreach (var socket in sockets)
+        static void AddEndpoints(int startingPort, List<IPEndPoint> endpoints, IEnumerable<IPEndPoint> activeEndpoints)
         {
-            socket.Dispose();
+            foreach (IPEndPoint endpoint in activeEndpoints)
+            {
+                if (endpoint.Port >= startingPort)
+                {
+                    endpoints.Add(endpoint);
+                }
+            }
         }
-
-        return ports;
     }
 }
