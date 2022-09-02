@@ -139,12 +139,12 @@ internal static class DebugProxyLauncher
     private static void CompleteTaskWhenServerIsReady(Process aspNetProcess, TaskCompletionSource<string> taskCompletionSource)
     {
         string? capturedUrl = null;
-        bool errorEncountered = false;
-
-        aspNetProcess.OutputDataReceived += OnOutputDataReceived;
-        aspNetProcess.BeginErrorReadLine();
+        var errorEncountered = false;
 
         aspNetProcess.ErrorDataReceived += OnErrorDataReceived;
+        aspNetProcess.BeginErrorReadLine();
+
+        aspNetProcess.OutputDataReceived += OnOutputDataReceived;
         aspNetProcess.BeginOutputReadLine();
 
         void OnErrorDataReceived(object sender, DataReceivedEventArgs eventArgs)
