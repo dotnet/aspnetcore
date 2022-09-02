@@ -6,8 +6,6 @@
     <Nullable>enable</Nullable>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
-    <!-- Suppress warnings about lowercase variable names in generated code -->
-    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
