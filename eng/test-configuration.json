@@ -14,8 +14,6 @@
     {"testName": {"contains": "TraceIdentifierIsUnique"}},
     {"testName": {"contains": "LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning"}},
     {"testName": {"contains": "ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug"}},
-    {"testName": {"contains": "Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade"}},
-    {"testName": {"contains": "Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade"}},
     {"testName": {"contains": "WebConfigAppendsHostingStartup_OutOfProcess"}},
     {"testName": {"contains": "HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate"}},
     {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
