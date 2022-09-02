@@ -55,10 +55,16 @@ cd src\Components
 
 <details>
  <summary>A brief interlude on Solution Files</summary>
-We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio doesn't currently handle projects of this scale very well. Instead, we have many Solution Filter (.slnf) files which include a sub-set of projects. For more information on solution files, you can review the [official Visual Studio doc](https://docs.microsoft.com/visualstudio/ide/filtered-solutions).These principles guide how we create and manage .slnf files:
-Solution files are not used by CI or command line build scripts. They are meant for use by developers only.
-Solution files group together projects which are frequently edited at the same time.
-Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
+
+We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio doesn't currently handle projects of this scale very well.
+
+Instead, we have many Solution Filter (.slnf) files which include a sub-set of projects. For more information on solution files, you can review the [official Visual Studio doc](https://docs.microsoft.com/visualstudio/ide/filtered-solutions).
+
+These principles guide how we create and manage .slnf files:
+* Solution files are not used by CI or command line build scripts. They are meant for use by developers only.
+* Solution files group together projects which are frequently edited at the same time.
+* Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
+
 </details>
 
 5. You can now build, debug, and test using Visual Studio. For more information on using Visual Studio to build and run projects, you can review the [official Visual Studio docs](https://docs.microsoft.com/en-us/visualstudio/get-started/csharp/run-program).
