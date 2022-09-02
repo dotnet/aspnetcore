@@ -7,7 +7,8 @@ If you want to download the latest daily build and use it in a project, then you
 * Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/installer#table).
 * Add a NuGet.Config to your project directory with the following content:
 
-**.NET 7**
+## .NET 7
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <configuration>
@@ -19,7 +20,8 @@ If you want to download the latest daily build and use it in a project, then you
   </configuration>
   ```
   
-**.NET 8**
+## .NET 8
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <configuration>
