@@ -70,6 +70,7 @@ public class HttpRequestJsonExtensionsTests
         var result = await context.Request.ReadFromJsonAsync<List<int>>(options);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
@@ -87,6 +88,7 @@ public class HttpRequestJsonExtensionsTests
         var result = await context.Request.ReadFromJsonAsync<List<int>>();
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
@@ -200,6 +202,7 @@ public class HttpRequestJsonExtensionsTests
         var result = (List<int>?)await context.Request.ReadFromJsonAsync(typeof(List<int>), options);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
