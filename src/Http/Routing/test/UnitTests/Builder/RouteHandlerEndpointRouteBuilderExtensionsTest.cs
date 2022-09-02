@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1005,26 +1006,6 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         // Trigger Endpoint build by calling getter.
         Assert.Single(dataSource.Endpoints);
         Assert.True(filterFactoryRan);
-    }
-
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
-    {
-        Assert.Throws<ArgumentNullException>("methodInfo", () => new EndpointFilterFactoryContext(null!, new List<object>(), new ServiceCollection().BuildServiceProvider()));
-    }
-
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
-    {
-        var handler = () => { };
-        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new EndpointFilterFactoryContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
-    }
-
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
-    {
-        var handler = () => { };
-        Assert.Throws<ArgumentNullException>("applicationServices", () => new EndpointFilterFactoryContext(handler.Method, new List<object>(), null!));
     }
 
     [Fact]
