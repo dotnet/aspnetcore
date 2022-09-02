@@ -5,7 +5,6 @@
   "retryOnRules": [
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
-    {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
     {"testName": {"contains": "Http3RequestTests"}},
     {"testName": {"contains": "Http3TlsTests"}},
     {"testName": {"contains": "StreamPool_StreamAbortedOnClientAndServer_NotPooled"}},
