@@ -97,9 +97,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     {
         var request = context.HttpContext.Request;
 
-        if (ContainsDelimiters(request.Method) ||
-            ContainsDelimiters(request.Scheme) ||
-            ContainsDelimiters(request.PathBase.Value) ||
+        if (ContainsDelimiters(request.PathBase.Value) ||
             ContainsDelimiters(request.Path.Value))
         {
             return false;

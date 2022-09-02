@@ -261,36 +261,11 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
-
-    public void OutputCachingKeyProvider_CreateStorageKey_MethodCantContainDelimiter()
-    {
-        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
-        var context = TestUtils.CreateTestContext();
-        context.HttpContext.Request.Method = "head" + KeyDelimiter;
-
-        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
-
-        Assert.Empty(cacheKey);
-    }
-
-    [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_PathCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
         var context = TestUtils.CreateTestContext();
         context.HttpContext.Request.Path = "/path" + KeyDelimiter;
-
-        var cacheKey = cacheKeyProvider.CreateStorageKey(context);
-
-        Assert.Empty(cacheKey);
-    }
-
-    [Fact]
-    public void OutputCachingKeyProvider_CreateStorageKey_SchemeCantContainDelimiter()
-    {
-        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
-        var context = TestUtils.CreateTestContext();
-        context.HttpContext.Request.Scheme = "https" + KeyDelimiter;
 
         var cacheKey = cacheKeyProvider.CreateStorageKey(context);
 
