@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -56,6 +55,28 @@ public class CompositeEndpointDataSourceTest
         var resolvedGroupEndpoints = Assert.Single(dataSource.ResolvedGroupedEndpoints);
         Assert.NotSame(groupedEndpoints, resolvedGroupEndpoints);
         Assert.Equal(groupedEndpoints, resolvedGroupEndpoints);
+    }
+
+    [Fact]
+    public void RepeatedlyThrows_WhenChildDataSourcesThrow()
+    {
+        var ex = new Exception();
+        var compositeDataSource = new CompositeEndpointDataSource(new[]
+        {
+            new EndpointThrowingDataSource(ex),
+        });
+        var groupContext = new RouteGroupContext
+        {
+            Prefix = RoutePatternFactory.Parse(""),
+            Conventions = Array.Empty<Action<EndpointBuilder>>(),
+            FinallyConventions = Array.Empty<Action<EndpointBuilder>>(),
+            ApplicationServices = new ServiceCollection().BuildServiceProvider(),
+        };
+
+        Assert.Same(ex, Assert.Throws<Exception>(() => compositeDataSource.Endpoints));
+        Assert.Same(ex, Assert.Throws<Exception>(() => compositeDataSource.Endpoints));
+        Assert.Same(ex, Assert.Throws<Exception>(() => compositeDataSource.GetGroupedEndpoints(groupContext)));
+        Assert.Same(ex, Assert.Throws<Exception>(() => compositeDataSource.GetGroupedEndpoints(groupContext)));
     }
 
     [Fact]
@@ -500,6 +521,19 @@ public class CompositeEndpointDataSourceTest
             return resolved;
         }
 
+        public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
+    }
+
+    private class EndpointThrowingDataSource : EndpointDataSource
+    {
+        private readonly Exception _ex;
+
+        public EndpointThrowingDataSource(Exception ex)
+        {
+            _ex = ex;
+        }
+
+        public override IReadOnlyList<Endpoint> Endpoints => throw _ex;
         public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
     }
 }
