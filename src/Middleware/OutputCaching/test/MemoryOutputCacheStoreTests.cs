@@ -70,8 +70,10 @@ public class MemoryOutputCacheStoreTests
         await store.SetAsync(key, value, tags, TimeSpan.FromDays(1), default);
         await store.EvictByTagAsync("tag1", default);
         var result = await store.GetAsync(key, default);
+        var exists = store.TaggedEntries.TryGetValue("tag1", out _);
 
         Assert.Null(result);
+        Assert.False(exists);
     }
 
     [Fact]
@@ -138,6 +140,40 @@ public class MemoryOutputCacheStoreTests
 
         Assert.Null(result1);
         Assert.Null(result2);
+    }
+
+    [Fact]
+    public async Task ExpiredEntries_AreRemovedFromTags()
+    {
+        var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
+        var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { SizeLimit = 1000, Clock = testClock, ExpirationScanFrequency = TimeSpan.FromMilliseconds(1) }));
+        var value = "abc"u8.ToArray();
+
+        await store.SetAsync("a", value, new[] { "tag1" }, TimeSpan.FromMilliseconds(5), default);
+        await store.SetAsync("b", value, new[] { "tag1", "tag2" }, TimeSpan.FromMilliseconds(5), default);
+
+        testClock.Advance(TimeSpan.FromMilliseconds(10));
+
+        await store.SetAsync("c", value, new[] { "tag2" }, TimeSpan.FromMilliseconds(10), default);
+        await Task.Delay(10);
+
+        var resulta = await store.GetAsync("a", default);
+        var resultb = await store.GetAsync("b", default);
+        var resultc = await store.GetAsync("c", default);
+
+        var tag1s = store.TaggedEntries["tag1"];
+        var tag2s = store.TaggedEntries["tag2"];
+
+        // The hashset for tag1 should have been removed
+        var tag1Exists = store.TaggedEntries.TryGetValue("tag1", out _);
+
+        Assert.Null(resulta);
+        Assert.Null(resultb);
+        Assert.NotNull(resultc);
+
+        Assert.Empty(tag1s);
+        Assert.Single(tag2s);
+        Assert.False(tag1Exists);
     }
 
     private class TestMemoryOptionsClock : Extensions.Internal.ISystemClock

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
@@ -742,13 +743,14 @@ public class OutputCacheMiddlewareTests
             })));
         var context = TestUtils.CreateTestContext();
         middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
-        middleware.ShimResponseStream(context);
 
         await context.HttpContext.Response.WriteAsync(new string('0', 101));
 
         context.CachedResponse = new OutputCacheEntry() { Headers = new HeaderDictionary() };
         context.CacheKey = "BaseKey";
-        context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+        context.CachedResponseValidFor = TimeSpan.FromSeconds(100);
+
+        middleware.ShimResponseStream(context);
 
         await middleware.FinalizeCacheBodyAsync(context);
 
