@@ -873,4 +873,31 @@ public class OutputCacheMiddlewareTests
 
         Assert.Equal(2, responseCounter);
     }
+
+    [Fact]
+    public async Task EmptyCacheKey_IsNotCached()
+    {
+        var cache = new TestOutputCache();
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
+        var context = TestUtils.CreateTestContext(cache: cache);
+
+        middleware.ShimResponseStream(context);
+        context.HttpContext.Response.ContentLength = 5;
+        context.HttpContext.Request.Method = "GET";
+
+        // A response to HEAD should not include a body, but it may be present
+        await context.HttpContext.Response.WriteAsync("Hello");
+
+        context.CachedResponse = new OutputCacheEntry { Headers = new() };
+        context.CacheKey = "";
+        context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+        await middleware.FinalizeCacheBodyAsync(context);
+
+        Assert.Equal(1, cache.SetCount);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.ResponseCached);
+    }
 }
