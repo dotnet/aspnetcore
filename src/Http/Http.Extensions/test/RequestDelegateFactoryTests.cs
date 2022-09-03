@@ -2179,6 +2179,32 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(default, structToBeZeroed);
     }
 
+    [Fact]
+    public void RequestDelegateFactoryThrowsForByRefReturnTypes()
+    {
+        ReadOnlySpan<byte> Method1() => "hello world"u8;
+        Span<byte> Method2() => "hello world"u8.ToArray();
+        RefStruct Method3() => new("hello world"u8);
+
+        var ex1 = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(Method1));
+        var ex2 = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(Method2));
+        var ex3 = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(Method3));
+
+        Assert.Equal("Unsupported return type: System.ReadOnlySpan<byte>", ex1.Message);
+        Assert.Equal("Unsupported return type: System.Span<byte>", ex2.Message);
+        Assert.Equal($"Unsupported return type: {typeof(RefStruct).FullName}", ex3.Message);
+    }
+
+    ref struct RefStruct
+    {
+        public ReadOnlySpan<byte> Buffer { get; }
+
+        public RefStruct(ReadOnlySpan<byte> buffer)
+        {
+            Buffer = buffer;
+        }
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
