@@ -78,7 +78,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         await serverConnection1.DisposeAsync().AsTask().DefaultTimeout();
 
         // Act & Assert 2
-        var serverFailureLogTask = WaitForLogMessage(m => m.EventId.Name == "ConnectionListenerAcceptConnectionFailed");
+        var serverFailureLogTask = WaitForLogMessage(m => m.EventId.Name == "ConnectionListenerHandshakeFailed");
 
         Logger.LogInformation("Client creating unsuccessful connection 2");
         var acceptTask2 = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -89,7 +89,8 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         }, "The remote certificate is invalid because of errors in the certificate chain: RemoteCertificateChainErrors");
 
         Assert.False(acceptTask2.IsCompleted, "Accept doesn't return for failed client connection.");
-        await serverFailureLogTask.DefaultTimeout();
+        var serverFailureLog = await serverFailureLogTask.DefaultTimeout();
+        Assert.NotNull(serverFailureLog.Exception);
 
         // Act & Assert 3
         Logger.LogInformation("Client creating successful connection 3");

@@ -232,8 +232,8 @@ internal static partial class QuicLog
         }
     }
 
-    [LoggerMessage(24, LogLevel.Debug, "QUIC listener accept connection failed.", EventName = "ConnectionListenerAcceptConnectionFailed")]
-    public static partial void ConnectionListenerAcceptConnectionFailed(ILogger logger, Exception exception);
+    [LoggerMessage(24, LogLevel.Debug, "QUIC listener connection handshake failed.", EventName = "ConnectionListenerHandshakeFailed")]
+    public static partial void ConnectionListenerHandshakeFailed(ILogger logger, Exception exception);
 
     private static StreamType GetStreamType(QuicStreamContext streamContext) =>
         streamContext.CanRead && streamContext.CanWrite
