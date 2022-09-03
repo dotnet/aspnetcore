@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -145,31 +146,42 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
             throw new InvalidOperationException($"The listener needs to be initialized by calling {nameof(CreateListenerAsync)}.");
         }
 
-        try
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
-
-            if (!_pendingConnections.TryGetValue(quicConnection, out var connectionContext))
+            try
             {
-                throw new InvalidOperationException("Couldn't find ConnectionContext for QuicConnection.");
+                var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
+
+                if (!_pendingConnections.TryGetValue(quicConnection, out var connectionContext))
+                {
+                    throw new InvalidOperationException("Couldn't find ConnectionContext for QuicConnection.");
+                }
+                else
+                {
+                    _pendingConnections.Remove(quicConnection);
+                }
+
+                // Verify the connection context was created and set correctly.
+                Debug.Assert(connectionContext != null);
+                Debug.Assert(connectionContext.GetInnerConnection() == quicConnection);
+
+                QuicLog.AcceptedConnection(_log, connectionContext);
+
+                return connectionContext;
             }
-            else
+            catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
             {
-                _pendingConnections.Remove(quicConnection);
+                QuicLog.ConnectionListenerAborted(_log, ex);
+                return null;
             }
-
-            // Verify the connection context was created and set correctly.
-            Debug.Assert(connectionContext != null);
-            Debug.Assert(connectionContext.GetInnerConnection() == quicConnection);
-
-            QuicLog.AcceptedConnection(_log, connectionContext);
-
-            return connectionContext;
+            catch (AuthenticationException ex)
+            {
+                // If the client rejects the connection because of an invalid cert then AcceptAsync throws.
+                // This is a recoverable error and we don't want to stop accepting connections because of this.
+                QuicLog.ConnectionListenerAcceptConnectionFailed(_log, ex);
+            }
         }
-        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
-        {
-            QuicLog.ConnectionListenerAborted(_log, ex);
-        }
+
         return null;
     }
 
