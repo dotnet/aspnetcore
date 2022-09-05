@@ -109,6 +109,53 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         Assert.Equal("Exception was thrown by handler.", responseJson2.RootElement.GetProperty("error").GetString());
         Assert.Equal(2, responseJson2.RootElement.GetProperty("code").GetInt32());
 
+        var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "ErrorExecutingServiceMethod");
+        Assert.Equal("Error when executing service method 'TestMethodName'.", exceptionWrite.Message);
+        Assert.Equal("Exception!", exceptionWrite.Exception.Message);
+
+        await callTask.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_MessageThenRpcException_MessageThenErrorReturned()
+    {
+        // Arrange
+        var debugException = new Exception("Error!");
+        ServerStreamingServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = async (s, r, w, c) =>
+        {
+            await w.WriteAsync(new HelloReply { Message = $"Hello {r.Name} 1" });
+            throw new RpcException(new Status(StatusCode.Aborted, "Detail!", debugException));
+        };
+
+        var pipe = new Pipe();
+
+        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        {
+            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var callHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext(bodyStream: pipe.Writer.AsStream());
+        httpContext.Request.RouteValues["name"] = "TestName!";
+
+        // Act
+        var callTask = callHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        var line1 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
+        using var responseJson1 = JsonDocument.Parse(line1!);
+        Assert.Equal("Hello TestName! 1", responseJson1.RootElement.GetProperty("message").GetString());
+
+        var line2 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
+        using var responseJson2 = JsonDocument.Parse(line2!);
+        Assert.Equal("Detail!", responseJson2.RootElement.GetProperty("message").GetString());
+        Assert.Equal("Detail!", responseJson2.RootElement.GetProperty("error").GetString());
+        Assert.Equal((int)StatusCode.Aborted, responseJson2.RootElement.GetProperty("code").GetInt32());
+
+        var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "RpcConnectionError");
+        Assert.Equal("Error status code 'Aborted' with detail 'Detail!' raised.", exceptionWrite.Message);
+        Assert.Equal(debugException, exceptionWrite.Exception);
+
         await callTask.DefaultTimeout();
     }
 
@@ -142,6 +189,10 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         Assert.Equal("Exception was thrown by handler. Exception: Exception!", responseJson.RootElement.GetProperty("message").GetString());
         Assert.Equal("Exception was thrown by handler. Exception: Exception!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal(2, responseJson.RootElement.GetProperty("code").GetInt32());
+
+        var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "ErrorExecutingServiceMethod");
+        Assert.Equal("Error when executing service method 'TestMethodName'.", exceptionWrite.Message);
+        Assert.Equal("Exception!", exceptionWrite.Exception.Message);
 
         await callTask.DefaultTimeout();
     }
