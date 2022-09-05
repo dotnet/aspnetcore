@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
-using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -76,10 +75,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                 var serverAuthenticationOptions = await _tlsConnectionCallbackOptions.OnConnection(context, cancellationToken);
 
                 // If the callback didn't set protocols then use the listener's list of protocols.
-                if (serverAuthenticationOptions.ApplicationProtocols == null)
-                {
-                    serverAuthenticationOptions.ApplicationProtocols = _tlsConnectionCallbackOptions.ApplicationProtocols;
-                }
+                serverAuthenticationOptions.ApplicationProtocols ??= _tlsConnectionCallbackOptions.ApplicationProtocols;
 
                 // If the SslServerAuthenticationOptions doesn't have a cert or protocols then the
                 // QUIC connection will fail and the client receives an unhelpful message.
@@ -193,10 +189,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         return null;
     }
 
-    public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-    {
-        await DisposeAsync();
-    }
+    public ValueTask UnbindAsync(CancellationToken cancellationToken = default) => DisposeAsync();
 
     public async ValueTask DisposeAsync()
     {
