@@ -80,7 +80,7 @@
           "condition": "(!PWA)",
           "exclude": [
             "Client/wwwroot/service-worker*.js",
-            "Client/wwwroot/manifest.json",
+            "Client/wwwroot/manifest.webmanifest",
             "Client/wwwroot/icon-512.png"
           ]
         }
