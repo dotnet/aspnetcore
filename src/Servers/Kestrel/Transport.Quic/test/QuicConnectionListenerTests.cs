@@ -78,7 +78,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         await serverConnection1.DisposeAsync().AsTask().DefaultTimeout();
 
         // Act & Assert 2
-        var serverFailureLogTask = WaitForLogMessage(m => m.EventId.Name == "ConnectionListenerConnectionFailed");
+        var serverFailureLogTask = WaitForLogMessage(m => m.EventId.Name == "ConnectionListenerAcceptConnectionFailed");
 
         Logger.LogInformation("Client creating unsuccessful connection 2");
         var acceptTask2 = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();

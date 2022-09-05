@@ -186,7 +186,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                 // If the client rejects the connection because of an invalid cert then AcceptConnectionAsync throws.
                 // An error thrown inside ConnectionOptionsCallback can also throw from AcceptConnectionAsync.
                 // These are recoverable errors and we don't want to stop accepting connections.
-                QuicLog.ConnectionListenerConnectionFailed(_log, ex);
+                QuicLog.ConnectionListenerAcceptConnectionFailed(_log, ex);
             }
         }
 
