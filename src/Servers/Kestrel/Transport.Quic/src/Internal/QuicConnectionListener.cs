@@ -171,14 +171,22 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
             }
             catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
             {
+                // OperationAborted is reported when an accept is in-progress and the listener is unbind/disposed.
                 QuicLog.ConnectionListenerAborted(_log, ex);
                 return null;
             }
-            catch (AuthenticationException ex)
+            catch (ObjectDisposedException ex)
             {
-                // If the client rejects the connection because of an invalid cert then AcceptAsync throws.
-                // This is a recoverable error and we don't want to stop accepting connections because of this.
-                QuicLog.ConnectionListenerHandshakeFailed(_log, ex);
+                // ObjectDisposedException is reported when an accept is started after the listener is unbind/disposed.
+                QuicLog.ConnectionListenerAborted(_log, ex);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                // If the client rejects the connection because of an invalid cert then AcceptConnectionAsync throws.
+                // An error thrown inside ConnectionOptionsCallback can also throw from AcceptConnectionAsync.
+                // These are recoverable errors and we don't want to stop accepting connections.
+                QuicLog.ConnectionListenerConnectionFailed(_log, ex);
             }
         }
 
