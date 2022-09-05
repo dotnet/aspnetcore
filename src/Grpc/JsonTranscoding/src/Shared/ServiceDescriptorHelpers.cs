@@ -17,6 +17,7 @@
 #endregion
 
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -345,6 +346,88 @@ internal static class ServiceDescriptorHelpers
         }
 
         return null;
+    }
+
+    public static Dictionary<string, FieldDescriptor> ResolveQueryParameterDescriptors(
+        Dictionary<string, List<FieldDescriptor>> routeParameters,
+        MethodDescriptor methodDescriptor,
+        MessageDescriptor? bodyDescriptor,
+        List<FieldDescriptor>? bodyFieldDescriptors)
+    {
+        var queryParameters = new Dictionary<string, FieldDescriptor>();
+        var existingParameters = new List<FieldDescriptor>();
+
+        if (routeParameters.Count > 0)
+        {
+            existingParameters.AddRange(routeParameters.Values.Last());
+        }
+
+        if (bodyDescriptor != null)
+        {
+            if (bodyFieldDescriptors != null)
+            {
+                // Body with field name. Note: might not be a field on root request message.
+                existingParameters.Add(bodyFieldDescriptors.Last());
+            }
+            else
+            {
+                // Body with wildcard. All parameters at in the body.
+                return queryParameters;
+            }
+        }
+
+        RecursiveVisitMessages(queryParameters, existingParameters, methodDescriptor.InputType, new List<FieldDescriptor>());
+        return queryParameters;
+
+        static void RecursiveVisitMessages(Dictionary<string, FieldDescriptor> queryParameters, List<FieldDescriptor> existingParameters, MessageDescriptor messageDescriptor, List<FieldDescriptor> path)
+        {
+            var messageFields = messageDescriptor.Fields.InFieldNumberOrder();
+
+            foreach (var fieldDescriptor in messageFields)
+            {
+                // If a field is set via route parameter or body then don't add query parameter.
+                if (existingParameters.Contains(fieldDescriptor))
+                {
+                    continue;
+                }
+
+                path.Add(fieldDescriptor);
+
+                switch (fieldDescriptor.FieldType)
+                {
+                    case FieldType.Double:
+                    case FieldType.Float:
+                    case FieldType.Int64:
+                    case FieldType.UInt64:
+                    case FieldType.Int32:
+                    case FieldType.Fixed64:
+                    case FieldType.Fixed32:
+                    case FieldType.Bool:
+                    case FieldType.String:
+                    case FieldType.Bytes:
+                    case FieldType.UInt32:
+                    case FieldType.SFixed32:
+                    case FieldType.SFixed64:
+                    case FieldType.SInt32:
+                    case FieldType.SInt64:
+                    case FieldType.Enum:
+                        var joinedPath = string.Join(".", path.Select(d => d.JsonName));
+                        queryParameters[joinedPath] = fieldDescriptor;
+                        break;
+                    case FieldType.Group:
+                    case FieldType.Message:
+                    default:
+                        // Complex repeated fields aren't valid query parameters.
+                        if (!fieldDescriptor.IsRepeated)
+                        {
+                            RecursiveVisitMessages(queryParameters, existingParameters, fieldDescriptor.MessageType, path);
+                        }
+                        break;
+                }
+
+                path.RemoveAt(path.Count - 1);
+            }
+        }
     }
 
     public sealed record BodyDescriptorInfo(
