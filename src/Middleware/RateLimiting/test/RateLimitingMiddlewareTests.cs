@@ -212,7 +212,7 @@ public class RateLimitingMiddlewareTests
             options.PermitLimit = 1;
             options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             options.QueueLimit = 0;
-            options.Window = TimeSpan.Zero;
+            options.Window = TimeSpan.FromSeconds(10);
             options.AutoReplenishment = false;
         });
         options.Value.OnRejected = (context, token) =>
