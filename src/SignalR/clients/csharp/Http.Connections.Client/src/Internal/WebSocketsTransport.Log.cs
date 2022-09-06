@@ -72,9 +72,5 @@ internal sealed partial class WebSocketsTransport
         [LoggerMessage(20, LogLevel.Warning, $"Configuring request headers using {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Headers)} is not supported when using websockets transport " +
                 "on the browser platform.", EventName = "HeadersNotSupported")]
         public static partial void HeadersNotSupported(ILogger logger);
-
-        [LoggerMessage(21, LogLevel.Debug, $"Setting UseDefaultCredentials, Credentials, ClientCertificates, RemoteCertificateValidationCallback, Cookies, or Proxy on {nameof(ClientWebSocketOptions)} " +
-                $"is not supported when using HTTP/2. Set options on {nameof(HttpConnectionOptions)} instead.", EventName = "SettingsWithHttp2NotSupported")]
-        public static partial void SettingsWithHttp2NotSupported(ILogger logger);
     }
 }

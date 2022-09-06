@@ -123,14 +123,28 @@ internal sealed partial class WebSocketsTransport : ITransport
 #if NET7_0_OR_GREATER
                 if (webSocket.Options.HttpVersion >= HttpVersion.Version20)
                 {
-                    // Setting any of these options will throw from ConnectAsync when passing in an HttpMessageInvoker which we do for HTTP/2
-                    webSocket.Options.UseDefaultCredentials = false;
-                    webSocket.Options.Credentials = null;
-                    webSocket.Options.ClientCertificates.Clear();
-                    webSocket.Options.RemoteCertificateValidationCallback = null;
-                    webSocket.Options.Cookies = null;
-                    webSocket.Options.Proxy = originalProxy;
-                    Log.SettingsWithHttp2NotSupported(_logger);
+                    // Reset options we set on the users' behalf since they are already on the HttpClient that we're passing to ConnectAsync
+                    // And ConnectAsync will throw if these options are set on the ClientWebSocketOptions
+                    if (ReferenceEquals(webSocket.Options.Cookies, context.Options.Cookies))
+                    {
+                        webSocket.Options.Cookies = null;
+                    }
+                    if (webSocket.Options.ClientCertificates == context.Options.ClientCertificates)
+                    {
+                        webSocket.Options.ClientCertificates.Clear();
+                    }
+                    if (webSocket.Options.Credentials == context.Options.Credentials)
+                    {
+                        webSocket.Options.Credentials = null;
+                    }
+                    if (webSocket.Options.UseDefaultCredentials == (context.Options.UseDefaultCredentials ?? false))
+                    {
+                        webSocket.Options.UseDefaultCredentials = false;
+                    }
+                    if (ReferenceEquals(webSocket.Options.Proxy, context.Options.Proxy))
+                    {
+                        webSocket.Options.Proxy = originalProxy;
+                    }
                 }
 #endif
             }
