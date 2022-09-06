@@ -97,7 +97,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                     webSocket.Options.Cookies = context.Options.Cookies;
                 }
 
-                if (context.Options.ClientCertificates != null)
+                if (context.Options.ClientCertificates is { Count: > 0 })
                 {
                     webSocket.Options.ClientCertificates.AddRange(context.Options.ClientCertificates);
                 }
@@ -107,6 +107,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                     webSocket.Options.Credentials = context.Options.Credentials;
                 }
 
+                var originalProxy = context.Options.Proxy;
                 if (context.Options.Proxy != null)
                 {
                     webSocket.Options.Proxy = context.Options.Proxy;
@@ -118,6 +119,20 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
 
                 context.Options.WebSocketConfiguration?.Invoke(webSocket.Options);
+
+#if NET7_0_OR_GREATER
+                if (webSocket.Options.HttpVersion >= HttpVersion.Version20)
+                {
+                    // Setting any of these options will throw from ConnectAsync when passing in an HttpMessageInvoker which we do for HTTP/2
+                    webSocket.Options.UseDefaultCredentials = false;
+                    webSocket.Options.Credentials = null;
+                    webSocket.Options.ClientCertificates.Clear();
+                    webSocket.Options.RemoteCertificateValidationCallback = null;
+                    webSocket.Options.Cookies = null;
+                    webSocket.Options.Proxy = originalProxy;
+                    Log.SettingsWithHttp2NotSupported(_logger);
+                }
+#endif
             }
         }
 
