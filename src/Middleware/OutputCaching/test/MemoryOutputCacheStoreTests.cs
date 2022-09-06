@@ -146,7 +146,8 @@ public class MemoryOutputCacheStoreTests
     public async Task ExpiredEntries_AreRemovedFromTags()
     {
         var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
-        var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { SizeLimit = 1000, Clock = testClock, ExpirationScanFrequency = TimeSpan.FromMilliseconds(1) }));
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 1000, Clock = testClock, ExpirationScanFrequency = TimeSpan.FromMilliseconds(1) });
+        var store = new MemoryOutputCacheStore(cache);
         var value = "abc"u8.ToArray();
 
         await store.SetAsync("a", value, new[] { "tag1" }, TimeSpan.FromMilliseconds(5), default);
@@ -154,26 +155,27 @@ public class MemoryOutputCacheStoreTests
 
         testClock.Advance(TimeSpan.FromMilliseconds(10));
 
+        // Force eviction of expired entries
+        cache.Compact(0);
+
         await store.SetAsync("c", value, new[] { "tag2" }, TimeSpan.FromMilliseconds(10), default);
-        await Task.Delay(10);
 
         var resulta = await store.GetAsync("a", default);
         var resultb = await store.GetAsync("b", default);
         var resultc = await store.GetAsync("c", default);
 
-        var tag1s = store.TaggedEntries["tag1"];
-        var tag2s = store.TaggedEntries["tag2"];
-
-        // The hashset for tag1 should have been removed
-        var tag1Exists = store.TaggedEntries.TryGetValue("tag1", out _);
+        store.TaggedEntries.TryGetValue("tag2", out var tag2s);
 
         Assert.Null(resulta);
         Assert.Null(resultb);
         Assert.NotNull(resultc);
 
-        Assert.Empty(tag1s);
+        // Wait for the hashset to be removed as it happens on a separate thread
+        var timeout = Task.Delay(1000);
+        while (store.TaggedEntries.TryGetValue("tag1", out _) && !timeout.IsCompleted) ;
+
+        Assert.False(timeout.IsCompleted);
         Assert.Single(tag2s);
-        Assert.False(tag1Exists);
     }
 
     private class TestMemoryOptionsClock : Extensions.Internal.ISystemClock

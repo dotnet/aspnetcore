@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -108,14 +109,12 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         {
             var tags = state as string[];
 
-            if (tags == null || tags.Length == 0)
-            {
-                return;
-            }
+            Debug.Assert(tags != null);
+            Debug.Assert(tags.Length > 0);
 
             lock (_tagsLock)
             {
-                foreach (var tag in tags)
+                foreach (var tag in tags!)
                 {
                     if (_taggedEntries.TryGetValue(tag, out var tagged) && tagged != null)
                     {
@@ -127,6 +126,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                             if (tagged.Count == 0)
                             {
                                 _taggedEntries.Remove(tag);
+                                break;
                             }
                         }
                     }
