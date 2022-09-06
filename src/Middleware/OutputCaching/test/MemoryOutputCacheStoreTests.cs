@@ -172,7 +172,7 @@ public class MemoryOutputCacheStoreTests
 
         // Wait for the hashset to be removed as it happens on a separate thread
         var timeout = Task.Delay(1000);
-        while (store.TaggedEntries.TryGetValue("tag1", out _) && !timeout.IsCompleted) ;
+        while (store.TaggedEntries.TryGetValue("tag1", out _) && !timeout.IsCompleted) { }
 
         Assert.False(timeout.IsCompleted);
         Assert.Single(tag2s);
