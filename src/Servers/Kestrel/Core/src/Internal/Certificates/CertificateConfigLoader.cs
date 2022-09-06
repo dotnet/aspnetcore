@@ -62,6 +62,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                         return (PersistKey(certificate), fullChain);
                     }
 
+//                    return (null, null);
                     return (certificate, fullChain);
                 }
                 else
@@ -71,6 +72,8 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
 
                 throw new InvalidOperationException(CoreStrings.InvalidPemKey);
             }
+
+            //return (null, null);
 
             fullChain.Import(certificatePath, certInfo.Password);
             var certWithKey = fullChain.Single(c => c.HasPrivateKey);
