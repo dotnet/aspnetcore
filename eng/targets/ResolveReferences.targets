@@ -253,7 +253,7 @@
   -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
       '$(MSBuildProjectName)' != 'RepoTasks' AND
-      '$(IsAspNetCoreApp)' != 'true' AND
+      '$(IsAspNetCoreApp)' == 'true' AND
       ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
         Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
