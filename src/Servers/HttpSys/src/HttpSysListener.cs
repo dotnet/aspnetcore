@@ -43,14 +43,8 @@ internal sealed partial class HttpSysListener : IDisposable
 
     public HttpSysListener(HttpSysOptions options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         if (!HttpApi.Supported)
         {

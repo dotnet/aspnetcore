@@ -193,7 +193,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains("Cannot find 'secret1' in the secret store.", _console.GetOutput());
     }
 
-    [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
+    [Fact]
     public void Remove_Is_Case_Insensitive()
     {
         var projectPath = _fixture.GetTempSecretProject();
@@ -267,7 +267,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
     }
 
-    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void Clear_Secrets(bool fromCurrentDirectory)
