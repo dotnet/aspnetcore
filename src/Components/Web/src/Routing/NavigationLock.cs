@@ -9,13 +9,12 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that can be used to intercept navigation events. 
 /// </summary>
-public sealed class NavigationLock : IComponent, IAsyncDisposable
+public sealed class NavigationLock : ComponentBase, IAsyncDisposable
 {
     private readonly string _id = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
 
     private IDisposable? _locationChangingRegistration;
-
-    private bool HasOnBeforeInternalNavigationCallback => OnBeforeInternalNavigation.HasDelegate;
+    private bool _lastConfirmExternalNavigation;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -36,28 +35,21 @@ public sealed class NavigationLock : IComponent, IAsyncDisposable
     [Parameter]
     public bool ConfirmExternalNavigation { get; set; }
 
-    void IComponent.Attach(RenderHandle renderHandle)
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-    }
-
-    async Task IComponent.SetParametersAsync(ParameterView parameters)
-    {
-        var lastHasOnBeforeInternalNavigationCallback = HasOnBeforeInternalNavigationCallback;
-        var lastConfirmExternalNavigation = ConfirmExternalNavigation;
-
-        parameters.SetParameterProperties(this);
-
-        var hasOnBeforeInternalNavigationCallback = HasOnBeforeInternalNavigationCallback;
-        if (hasOnBeforeInternalNavigationCallback != lastHasOnBeforeInternalNavigationCallback)
+        var lastHasLocationChangingHandler = _locationChangingRegistration is not null;
+        var hasLocationChangingHandler = OnBeforeInternalNavigation.HasDelegate;
+        if (lastHasLocationChangingHandler != hasLocationChangingHandler)
         {
             _locationChangingRegistration?.Dispose();
-            _locationChangingRegistration = hasOnBeforeInternalNavigationCallback
+            _locationChangingRegistration = hasLocationChangingHandler
                 ? NavigationManager.RegisterLocationChangingHandler(OnLocationChanging)
                 : null;
         }
 
         var confirmExternalNavigation = ConfirmExternalNavigation;
-        if (confirmExternalNavigation != lastConfirmExternalNavigation)
+        if (_lastConfirmExternalNavigation != confirmExternalNavigation)
         {
             if (confirmExternalNavigation)
             {
@@ -67,10 +59,12 @@ public sealed class NavigationLock : IComponent, IAsyncDisposable
             {
                 await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
             }
+
+            _lastConfirmExternalNavigation = confirmExternalNavigation;
         }
     }
 
-    async ValueTask OnLocationChanging(LocationChangingContext context)
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         await OnBeforeInternalNavigation.InvokeAsync(context);
     }
@@ -78,6 +72,10 @@ public sealed class NavigationLock : IComponent, IAsyncDisposable
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         _locationChangingRegistration?.Dispose();
-        await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
+
+        if (_lastConfirmExternalNavigation)
+        {
+            await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
+        }
     }
 }
