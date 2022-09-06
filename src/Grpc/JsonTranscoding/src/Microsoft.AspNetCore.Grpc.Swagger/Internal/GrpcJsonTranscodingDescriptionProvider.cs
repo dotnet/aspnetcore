@@ -5,6 +5,7 @@ using System.Linq;
 using Google.Api;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
+using Grpc.Gateway.Runtime;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
 using Microsoft.AspNetCore.Mvc;
@@ -65,7 +66,7 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             {
                 // Swagger uses this to group endpoints together.
                 // Group methods together using the service name.
-                ["controller"] = methodDescriptor.Service.FullName
+                ["controller"] = methodDescriptor.Service.Name
             },
             EndpointMetadata = routeEndpoint.Metadata.ToList()
         };
@@ -76,6 +77,12 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
             ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(methodDescriptor.OutputType.ClrType)),
             StatusCode = 200
+        });
+        apiDescription.SupportedResponseTypes.Add(new ApiResponseType
+        {
+            ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
+            ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(typeof(Error))),
+            IsDefaultResponse = true
         });
         var explorerSettings = routeEndpoint.Metadata.GetMetadata<ApiExplorerSettingsAttribute>();
         if (explorerSettings != null)
