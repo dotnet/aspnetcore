@@ -70,10 +70,16 @@ public class MemoryOutputCacheStoreTests
         await store.SetAsync(key, value, tags, TimeSpan.FromDays(1), default);
         await store.EvictByTagAsync("tag1", default);
         var result = await store.GetAsync(key, default);
-        var exists = store.TaggedEntries.TryGetValue("tag1", out _);
+
+        HashSet<string> tag1s;
+
+        // Wait for the hashset to be removed as it happens on a separate thread
+        var timeout = Task.Delay(1000);
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !timeout.IsCompleted) { }
 
         Assert.Null(result);
-        Assert.False(exists);
+        Assert.Null(tag1s);
+        Assert.False(timeout.IsCompleted);
     }
 
     [Fact]
@@ -164,17 +170,19 @@ public class MemoryOutputCacheStoreTests
         var resultb = await store.GetAsync("b", default);
         var resultc = await store.GetAsync("c", default);
 
-        store.TaggedEntries.TryGetValue("tag2", out var tag2s);
+        HashSet<string> tag1s, tag2s;
+
+        // Wait for the hashset to be removed as it happens on a separate thread
+        var timeout = Task.Delay(1000);
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !timeout.IsCompleted) { }
+        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && tag2s.Count == 2 && !timeout.IsCompleted) { }
 
         Assert.Null(resulta);
         Assert.Null(resultb);
         Assert.NotNull(resultc);
 
-        // Wait for the hashset to be removed as it happens on a separate thread
-        var timeout = Task.Delay(1000);
-        while (store.TaggedEntries.TryGetValue("tag1", out _) && !timeout.IsCompleted) { }
-
         Assert.False(timeout.IsCompleted);
+        Assert.Null(tag1s);
         Assert.Single(tag2s);
     }
 
