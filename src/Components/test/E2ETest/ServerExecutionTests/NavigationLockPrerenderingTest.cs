@@ -34,7 +34,7 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
         Browser.Click(By.Id("internal-navigation-link"));
         Browser.Equal("Prevented navigations: 1", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
 
-        // Assert that external navigations are blocked.
+        // Assert that external navigations are blocked
         Browser.Navigate().GoToUrl("about:blank");
         Browser.SwitchTo().Alert().Dismiss();
         Browser.Equal("Prevented navigations: 1", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
