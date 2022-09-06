@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>10.0</LangVersion>
 
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
