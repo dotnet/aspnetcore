@@ -1005,7 +1005,7 @@ public static partial class RequestDelegateFactory
             else
             {
                 // TODO: Handle custom awaitables
-                throw new NotSupportedException($"Unsupported return type: {returnType}");
+                throw new NotSupportedException($"Unsupported return type: {TypeNameHelper.GetTypeDisplayName(returnType)}");
             }
         }
         else if (typeof(IResult).IsAssignableFrom(returnType))
@@ -1020,6 +1020,11 @@ public static partial class RequestDelegateFactory
         else if (returnType == typeof(string))
         {
             return Expression.Call(StringResultWriteResponseAsyncMethod, HttpContextExpr, methodCall);
+        }
+        else if (returnType.IsByRefLike)
+        {
+            // Unsupported
+            throw new NotSupportedException($"Unsupported return type: {TypeNameHelper.GetTypeDisplayName(returnType)}");
         }
         else if (returnType.IsValueType)
         {
