@@ -4,6 +4,8 @@
     <PackageTags>gRPC RPC HTTP/2 REST Swagger OpenAPI</PackageTags>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <!-- Suppress warnings about lowercase variable names in generated code -->
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
