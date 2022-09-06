@@ -259,21 +259,24 @@ public class GroupTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
 
         var group = builder.MapGroup("/group");
-        var mapGetCalled = false;
+        var mapGetCallCount = 0;
         var replacementCalled = false;
 
         group.MapGet("/", () =>
         {
-            mapGetCalled = true;
+            mapGetCallCount++;
         });
 
         ((IEndpointConventionBuilder)group).Add(builder =>
         {
+            var originalRequestDelegate = builder.RequestDelegate!;
+
             builder.DisplayName = $"Prefixed! {builder.DisplayName}";
-            builder.RequestDelegate = ctx =>
+            builder.RequestDelegate = async ctx =>
             {
                 replacementCalled = true;
-                return Task.CompletedTask;
+                await originalRequestDelegate(ctx);
+                await originalRequestDelegate(ctx);
             };
 
             ((RouteEndpointBuilder)builder).Order = 42;
@@ -286,8 +289,8 @@ public class GroupTest
 
         await endpoint!.RequestDelegate!(httpContext);
 
-        Assert.False(mapGetCalled);
         Assert.True(replacementCalled);
+        Assert.Equal(2, mapGetCallCount);
         Assert.Equal("Prefixed! HTTP: GET /group/", endpoint.DisplayName);
 
         var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);

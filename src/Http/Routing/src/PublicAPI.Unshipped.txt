@@ -1,9 +1,11 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Routing.RouteEndpointBuilder.RouteEndpointBuilder(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! routePattern, int order) -> void
 Microsoft.AspNetCore.Builder.RouteHandlerBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
 Microsoft.AspNetCore.Http.EndpointFilterExtensions
 Microsoft.AspNetCore.Routing.CompositeEndpointDataSource.Dispose() -> void
 Microsoft.AspNetCore.Routing.HttpMethodMetadata.AcceptCorsPreflight.set -> void
 Microsoft.AspNetCore.Routing.IHttpMethodMetadata.AcceptCorsPreflight.set -> void
+Microsoft.AspNetCore.Routing.RouteEndpointBuilder.RouteEndpointBuilder(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! routePattern, int order) -> void
 Microsoft.AspNetCore.Routing.RouteGroupBuilder
 Microsoft.AspNetCore.Routing.RouteGroupContext
 Microsoft.AspNetCore.Routing.RouteGroupContext.ApplicationServices.get -> System.IServiceProvider!

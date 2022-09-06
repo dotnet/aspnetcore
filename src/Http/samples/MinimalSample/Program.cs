@@ -23,13 +23,15 @@ var inner = outer.MapGroup("/inner");
 
 inner.AddEndpointFilterFactory((routeContext, next) =>
 {
-    var tags = routeContext.EndpointMetadata.OfType<ITagsMetadata>().FirstOrDefault();
+    IReadOnlyList<string>? tags = null;
 
     return async invocationContext =>
     {
+        tags ??= invocationContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ITagsMetadata>()?.Tags ?? Array.Empty<string>();
+
         Console.WriteLine("Running filter!");
         var result = await next(invocationContext);
-        return ((string)result) + " | /inner filter! Tags:" + tags is null ? "(null)" : string.Join(", ", tags.Tags);
+        return $"{result} | /inner filter! Tags: {(tags.Count == 0 ? "(null)" : string.Join(", ", tags))}";
     };
 });
 
@@ -43,7 +45,7 @@ inner.AddEndpointFilterFactory((routeContext, next) =>
     {
         Console.WriteLine("Running filter!");
         var result = await next(invocationContext);
-        return ((string)result) + "| nested filter!";
+        return $"{result} | nested filter!";
     };
 });
 
@@ -62,7 +64,7 @@ app.MapGet("/json", Json).WithTags("json");
 string SayHello(string name) => $"Hello, {name}!";
 app.MapGet("/hello/{name}", SayHello);
 
-app.MapGet("/null-result", IResult () => null);
+app.MapGet("/null-result", IResult () => null!);
 
 app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound, BadRequest> (int id) => id switch
     {
@@ -71,7 +73,7 @@ app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound, BadRequest> (int id) => id 
         _ => TypedResults.NotFound()
     });
 
-var extensions = new Dictionary<string, object>() { { "traceId", "traceId123" } };
+var extensions = new Dictionary<string, object?>() { { "traceId", "traceId123" } };
 
 var errors = new Dictionary<string, string[]>() { { "Title", new[] { "The Title field is required." } } };
 
@@ -94,11 +96,11 @@ internal record Todo(int Id, string Title);
 public class TodoBindable : IBindableFromHttpContext<TodoBindable>
 {
     public int Id { get; set; }
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     public bool IsComplete { get; set; }
 
-    public static ValueTask<TodoBindable> BindAsync(HttpContext context, ParameterInfo parameter)
+    public static ValueTask<TodoBindable?> BindAsync(HttpContext context, ParameterInfo parameter)
     {
-        return ValueTask.FromResult(new TodoBindable { Id = 1, Title = "I was bound from IBindableFromHttpContext<TodoBindable>.BindAsync!" });
+        return ValueTask.FromResult<TodoBindable?>(new TodoBindable { Id = 1, Title = "I was bound from IBindableFromHttpContext<TodoBindable>.BindAsync!" });
     }
 }
