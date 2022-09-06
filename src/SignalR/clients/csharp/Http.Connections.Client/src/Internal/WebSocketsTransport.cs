@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,11 +130,11 @@ internal sealed partial class WebSocketsTransport : ITransport
                     {
                         webSocket.Options.Cookies = null;
                     }
-                    if (webSocket.Options.ClientCertificates == context.Options.ClientCertificates)
+                    if (IsX509CertificateCollectionEqual(webSocket.Options.ClientCertificates, context.Options.ClientCertificates))
                     {
                         webSocket.Options.ClientCertificates.Clear();
                     }
-                    if (webSocket.Options.Credentials == context.Options.Credentials)
+                    if (ReferenceEquals(webSocket.Options.Credentials, context.Options.Credentials))
                     {
                         webSocket.Options.Credentials = null;
                     }
@@ -145,6 +146,25 @@ internal sealed partial class WebSocketsTransport : ITransport
                     {
                         webSocket.Options.Proxy = originalProxy;
                     }
+                }
+
+                static bool IsX509CertificateCollectionEqual(X509CertificateCollection? left, X509CertificateCollection? right)
+                {
+                    var leftCount = left?.Count ?? 0;
+                    var rightCount = right?.Count ?? 0;
+                    if (leftCount == rightCount)
+                    {
+                        for (var i = 0; i < rightCount; ++i)
+                        {
+                            if (!ReferenceEquals(left![i], right![i]))
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    return false;
                 }
 #endif
             }
