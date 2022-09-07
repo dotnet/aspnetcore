@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
         private readonly HttpConnectionOptions _httpConnectionOptions;
+        private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
 
         private IDuplexPipe? _transport;
 
@@ -204,6 +205,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // Wait for send or receive to complete
                 var trigger = await Task.WhenAny(receiving, sending);
 
+                _stopCts.CancelAfter(_closeTimeout);
+
                 if (trigger == receiving)
                 {
                     // We're waiting for the application to finish and there are 2 things it could be doing
@@ -213,22 +216,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     // Cancel the application so that ReadAsync yields
                     _application.Input.CancelPendingRead();
 
-                    using (var delayCts = new CancellationTokenSource())
+                    var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, _stopCts.Token));
+
+                    if (resultTask != sending)
                     {
-                        var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, delayCts.Token));
+                        _aborted = true;
 
-                        if (resultTask != sending)
-                        {
-                            _aborted = true;
-
-                            // Abort the websocket if we're stuck in a pending send to the client
-                            socket.Abort();
-                        }
-                        else
-                        {
-                            // Cancel the timeout
-                            delayCts.Cancel();
-                        }
+                        // Abort the websocket if we're stuck in a pending send to the client
+                        socket.Abort();
                     }
                 }
                 else
@@ -258,7 +253,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 {
 #if NETSTANDARD2_1 || NETCOREAPP
                     // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
-                    var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
+                    var result = await socket.ReceiveAsync(Memory<byte>.Empty, _stopCts.Token);
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
@@ -275,13 +270,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     var memory = _application.Output.GetMemory();
 #if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
-                    var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
+                    var receiveResult = await socket.ReceiveAsync(memory, _stopCts.Token);
 #elif NETSTANDARD2_0 || NET461
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 
                     // Exceptions are handled above where the send and receive tasks are being run.
-                    var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
+                    var receiveResult = await socket.ReceiveAsync(arraySegment, _stopCts.Token);
 #else
 #error TFMs need to be updated
 #endif
@@ -400,7 +395,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     try
                     {
                         // We're done sending, send the close frame to the client if the websocket is still open
-                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", _stopCts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -452,6 +447,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             // Cancel any pending reads from the application, this should start the entire shutdown process
             _application.Input.CancelPendingRead();
 
+            // Start ungraceful close timer
+            _stopCts.CancelAfter(_closeTimeout);
+
             try
             {
                 await Running;
@@ -465,6 +463,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             finally
             {
                 _webSocket?.Dispose();
+                _stopCts.Dispose();
             }
 
             Log.TransportStopped(_logger, null);

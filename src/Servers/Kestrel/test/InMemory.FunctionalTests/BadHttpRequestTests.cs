@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -321,6 +321,191 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(badRequestEventListener.EventFired);
             Assert.Equal("Microsoft.AspNetCore.Server.Kestrel.BadRequest", eventProviderName);
             Assert.Contains(expectedExceptionMessage, exceptionString);
+        }
+
+        [Theory]
+        [InlineData("\r")]
+        [InlineData("\n")]
+        [InlineData("\r\n")]
+        [InlineData("\n\r")]
+        [InlineData("\r\n\r\n")]
+        [InlineData("\r\r\r\r\r")]
+        public async Task ExtraLinesBetweenRequestsIgnored(string extraLines)
+        {
+            BadHttpRequestException loggedException = null;
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ConnectionBadRequest" && context.Exception is BadHttpRequestException ex)
+                {
+                    loggedException = ex;
+                }
+            };
+
+            // Set up a listener to catch the BadRequest event
+            var diagListener = new DiagnosticListener("NotBadRequestTestsDiagListener");
+            var badRequestEventListener = new BadRequestEventListener(diagListener, (pair) => { });
+
+            await using (var server = new TestServer(context => context.Request.Body.DrainAsync(default), new TestServiceContext(LoggerFactory) { DiagnosticSource = diagListener }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "funny",
+                        extraLines);
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "funny");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+
+                    connection.ShutdownSend();
+
+                    await connection.ReceiveEnd();
+                }
+            }
+
+            Assert.Null(loggedException);
+            // Verify DiagnosticSource event for bad request
+            Assert.False(badRequestEventListener.EventFired);
+        }
+
+        [Fact]
+        public async Task ExtraLinesIgnoredBetweenAdjacentRequests()
+        {
+            BadHttpRequestException loggedException = null;
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ConnectionBadRequest" && context.Exception is BadHttpRequestException ex)
+                {
+                    loggedException = ex;
+                }
+            };
+
+            // Set up a listener to catch the BadRequest event
+            var diagListener = new DiagnosticListener("NotBadRequestTestsDiagListener");
+            var badRequestEventListener = new BadRequestEventListener(diagListener, (pair) => { });
+
+            await using (var server = new TestServer(context => context.Request.Body.DrainAsync(default), new TestServiceContext(LoggerFactory) { DiagnosticSource = diagListener }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "funny",
+                        "",
+                        "",
+                        "",
+                        "POST /"); // Split the request line
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+
+                    await connection.SendAll(
+                        " HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "funny");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+
+                    connection.ShutdownSend();
+
+                    await connection.ReceiveEnd();
+                }
+            }
+
+            Assert.Null(loggedException);
+            // Verify DiagnosticSource event for bad request
+            Assert.False(badRequestEventListener.EventFired);
+        }
+
+        [Theory]
+        [InlineData("\r")]
+        [InlineData("\n")]
+        [InlineData("\r\n")]
+        [InlineData("\n\r")]
+        [InlineData("\n\n")]
+        [InlineData("\r\n\r\n")]
+        [InlineData("\r\r\r\r\r")]
+        public async Task ExtraLinesAtEndOfConnectionIgnored(string extraLines)
+        {
+            BadHttpRequestException loggedException = null;
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ConnectionBadRequest" && context.Exception is BadHttpRequestException ex)
+                {
+                    loggedException = ex;
+                }
+            };
+
+            // Set up a listener to catch the BadRequest event
+            var diagListener = new DiagnosticListener("NotBadRequestTestsDiagListener");
+            var badRequestEventListener = new BadRequestEventListener(diagListener, (pair) => { });
+
+            await using (var server = new TestServer(context => context.Request.Body.DrainAsync(default), new TestServiceContext(LoggerFactory) { DiagnosticSource = diagListener }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "funny",
+                        extraLines);
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+
+                    connection.ShutdownSend();
+
+                    await connection.ReceiveEnd();
+                }
+            }
+
+            Assert.Null(loggedException);
+            // Verify DiagnosticSource event for bad request
+            Assert.False(badRequestEventListener.EventFired);
         }
 
         private async Task ReceiveBadRequestResponse(InMemoryConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue, string expectedAllowHeader = null)
