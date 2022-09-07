@@ -445,7 +445,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(expectedError, responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -484,7 +483,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(expectedError, responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -515,7 +513,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(expectedError, responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -540,7 +537,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Detail!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Detail!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -565,7 +561,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Detail!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Detail!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -591,7 +586,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(@"Detail!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(@"Detail!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -1000,7 +994,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
