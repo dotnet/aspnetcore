@@ -3,6 +3,8 @@
   "strings": {
     "name": "Razor-Klassenbibliothek",
     "description": "Eine Projektvorlage zum Erstellen einer Razor-Klassenbibliothek.",
-    "parameter.SupportPagesAndViews.name": "_Supportseiten und -ansichten"
+    "parameter.SupportPagesAndViews.name": "_Supportseiten und -ansichten",
+    "parameter.UseProgramMain.name": "Keine Anweisungen_der obersten Ebene verwenden",
+    "parameter.UseProgramMain.description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll."
   }
 }

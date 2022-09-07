@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Aplikacja serwera Blazor",
-    "description": "Szablon projektu służący do tworzenia aplikacji Blazor działającej po stronie serwera wewnątrz aplikacji platformy ASP.NET Core. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników."
+    "description": "Szablon projektu służący do tworzenia aplikacji Blazor działającej po stronie serwera wewnątrz aplikacji platformy ASP.NET Core. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników.",
+    "parameter.UseProgramMain.name": "Nie używaj ins_trukcji najwyższego poziomu",
+    "parameter.UseProgramMain.description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu."
   }
 }

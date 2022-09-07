@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Aplicación web de ASP.NET Core (Modelo-Vista-Controlador)",
-    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con controladores y vistas de ASP.NET Core MVC de ejemplo. Esta plantilla también puede usarse para servicios RESTful HTTP."
+    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con controladores y vistas de ASP.NET Core MVC de ejemplo. Esta plantilla también puede usarse para servicios RESTful HTTP.",
+    "parameter.UseProgramMain.name": "No usar instrucciones de _nivel superior",
+    "parameter.UseProgramMain.description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior."
   }
 }

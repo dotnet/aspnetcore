@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core (prázdné)",
-    "description": "Prázdná šablona projektu pro vytvoření aplikace ASP.NET Core. V této šabloně není žádný obsah."
+    "description": "Prázdná šablona projektu pro vytvoření aplikace ASP.NET Core. V této šabloně není žádný obsah.",
+    "parameter.UseProgramMain.name": "Nepoužívat _příkazy nejvyšší úrovně",
+    "parameter.UseProgramMain.description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core vacío",
-    "description": "Una plantilla de proyecto vacía para crear una aplicación ASP.NET Core. Esta plantilla no incluye ningún contenido."
+    "description": "Una plantilla de proyecto vacía para crear una aplicación ASP.NET Core. Esta plantilla no incluye ningún contenido.",
+    "parameter.UseProgramMain.name": "No usar instrucciones de _nivel superior",
+    "parameter.UseProgramMain.description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior."
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Worker Service",
-    "description": "Una plantilla de proyecto vacía para crear un servicio Worker."
+    "description": "Una plantilla de proyecto vacía para crear un servicio Worker.",
+    "parameter.UseProgramMain.name": "No usar instrucciones de _nivel superior",
+    "parameter.UseProgramMain.description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior."
   }
 }

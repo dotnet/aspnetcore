@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Progetto ASP.NET Core vuoto",
-    "description": "Modello di progetto vuoto per la creazione di un'applicazione ASP.NET Core. Questo modello non include alcun contenuto."
+    "description": "Modello di progetto vuoto per la creazione di un'applicazione ASP.NET Core. Questo modello non include alcun contenuto.",
+    "parameter.UseProgramMain.name": "Non usare_istruzioni di primo livello",
+    "parameter.UseProgramMain.description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello."
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ワーカー サービス",
-    "description": "Worker Service を作成するための空のプロジェクト テンプレート。"
+    "description": "Worker Service を作成するための空のプロジェクト テンプレート。",
+    "parameter.UseProgramMain.name": "最上位レベルのステートメントを使用しない(_T)",
+    "parameter.UseProgramMain.description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。"
   }
 }

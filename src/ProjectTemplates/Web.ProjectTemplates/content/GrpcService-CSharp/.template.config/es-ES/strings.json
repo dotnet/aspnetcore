@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Servicio gRPC de ASP.NET Core",
-    "description": "Plantilla de proyecto para crear un servicio gRPC de ASP.NET Core."
+    "description": "Plantilla de proyecto para crear un servicio gRPC de ASP.NET Core.",
+    "parameter.UseProgramMain.name": "No usar instrucciones de _nivel superior",
+    "parameter.UseProgramMain.description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior."
   }
 }

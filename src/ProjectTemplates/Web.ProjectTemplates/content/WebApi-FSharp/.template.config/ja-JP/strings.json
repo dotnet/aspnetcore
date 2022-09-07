@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core Web API",
-    "description": "RESTful HTTP サービスのサンプル コントローラーで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。このテンプレートは ASP.NET Core MVC のビューとコントローラーでも使用できます。"
+    "description": "RESTful HTTP サービスのサンプル コントローラーで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。このテンプレートは ASP.NET Core MVC のビューとコントローラーでも使用できます。",
+    "parameter.UseProgramMain.name": "最上位レベルのステートメントを使用しない(_T)",
+    "parameter.UseProgramMain.description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。"
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Worker Service",
-    "description": "用於建立 Worker Service 的空白專案範本。"
+    "description": "用於建立 Worker Service 的空白專案範本。",
+    "parameter.UseProgramMain.name": "不要使用最上層陳述式(_T)",
+    "parameter.UseProgramMain.description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。"
   }
 }

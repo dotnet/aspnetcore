@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Webová aplikace ASP.NET Core (Model-View-Controller)",
-    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovými zobrazeními a kontrolery ASP.NET Core MVC. Tato šablona se dá použít i pro služby RESTful HTTP."
+    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovými zobrazeními a kontrolery ASP.NET Core MVC. Tato šablona se dá použít i pro služby RESTful HTTP.",
+    "parameter.UseProgramMain.name": "Nepoužívat _příkazy nejvyšší úrovně",
+    "parameter.UseProgramMain.description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
   }
 }

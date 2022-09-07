@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Workerdienst",
-    "description": "Eine leere Projektvorlage zum Erstellen eines Workerdiensts."
+    "description": "Eine leere Projektvorlage zum Erstellen eines Workerdiensts.",
+    "parameter.UseProgramMain.name": "Keine Anweisungen_der obersten Ebene verwenden",
+    "parameter.UseProgramMain.description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll."
   }
 }

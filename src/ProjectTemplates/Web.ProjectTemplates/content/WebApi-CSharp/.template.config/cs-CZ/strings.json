@@ -6,6 +6,8 @@
     "parameter.DisableOpenAPI.name": "Povolit podporu _OpenAPI",
     "parameter.DisableOpenAPI.description": "Povolení podpory OpenAPI (Swagger)",
     "parameter.UseMinimalAPIs.name": "Používání kontrolérů (pokud chcete používat minimální rozhraní API, zrušte zaškrtnutí)",
-    "parameter.UseMinimalAPIs.description": "Určuje, jestli se místo kontrolérů mají používat minimální rozhraní API."
+    "parameter.UseMinimalAPIs.description": "Určuje, jestli se místo kontrolérů mají používat minimální rozhraní API.",
+    "parameter.UseProgramMain.name": "Nepoužívat _příkazy nejvyšší úrovně",
+    "parameter.UseProgramMain.description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
   }
 }
