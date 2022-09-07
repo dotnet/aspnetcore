@@ -82,11 +82,12 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         Logger.LogInformation("Client creating unsuccessful connection 2");
         var acceptTask2 = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
-        var ex = await ExceptionAssert.ThrowsAsync<AuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<AuthenticationException>(async () =>
         {
             await QuicConnection.ConnectAsync(
                 QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint, ignoreInvalidCertificate: false));
-        }, "The remote certificate is invalid because of errors in the certificate chain: RemoteCertificateChainErrors");
+        });
+        Assert.Contains("RemoteCertificateChainErrors", ex.Message);
 
         Assert.False(acceptTask2.IsCompleted, "Accept doesn't return for failed client connection.");
         var serverFailureLog = await serverFailureLogTask.DefaultTimeout();
@@ -257,15 +258,13 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal("Authentication failed because the remote party sent a TLS alert: 'UserCanceled'.", ex.Message);
 
         // Assert
-        Assert.False(acceptTask.IsCompleted);
+        Assert.False(acceptTask.IsCompleted, "Still waiting for non-errored connection.");
 
-        var clientConnection = await QuicConnection.ConnectAsync(options).DefaultTimeout();
-        var serverConnection = await acceptTask.DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options).DefaultTimeout();
+        await using var serverConnection = await acceptTask.DefaultTimeout();
 
-        //await Assert.ThrowsAsync<AuthenticationException>(() => QuicConnection.ConnectAsync(options).AsTask());
-        //Assert.Null(await acceptTask.AsTask().DefaultTimeout());
-
-        //Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
+        Assert.NotNull(serverConnection);
+        Assert.NotNull(clientConnection);
     }
 
     [ConditionalFact]
