@@ -795,7 +795,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         Debug.Assert(success);
         Debug.Assert(written == 24);
         // Trim the two '=='
-        return new string(base64.Slice(0, base64.Length - 2));
+        Debug.Assert(base64.EndsWith("=="));
+        return new string(base64[..^2]);
     }
 
     private sealed class LoggerTextWriter : TextWriter
