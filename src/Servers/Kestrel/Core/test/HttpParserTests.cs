@@ -558,8 +558,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(buffer.Slice(reader.Position).IsEmpty);
         }
 
-        private IHttpParser<RequestHandler> CreateParser(IKestrelTrace log, bool allowSpaceAfterRequestLine = false)
-            => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), allowSpaceAfterRequestLine);
+        private IHttpParser<RequestHandler> CreateParser(IKestrelTrace log, bool allowSpaceAfterRequestLine = false, bool enableHttp1LineFeedTerminators = false)
+            => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), allowSpaceAfterRequestLine, enableHttp1LineFeedTerminators);
 
         public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 
