@@ -98,12 +98,10 @@ internal sealed class DatabaseOperations : IDatabaseOperations
 
     public void DeleteExpiredCacheItems()
     {
-        var utcNow = SystemClock.UtcNow;
-
         using (var connection = new SqlConnection(ConnectionString))
         using (var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection))
         {
-            command.Parameters.AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+            command.Parameters.AddWithValue("UtcNow", SqlDbType.DateTimeOffset, SystemClock.UtcNow);
 
             connection.Open();
 
@@ -115,7 +113,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
     {
         var utcNow = SystemClock.UtcNow;
 
-        var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
+        var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(SystemClock.UtcNow, options);
         DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
         using (var connection = new SqlConnection(ConnectionString))
@@ -191,8 +189,6 @@ internal sealed class DatabaseOperations : IDatabaseOperations
 
     private byte[]? GetCacheItem(string key, bool includeValue)
     {
-        var utcNow = SystemClock.UtcNow;
-
         string query;
         if (includeValue)
         {
@@ -209,7 +205,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         {
             command.Parameters
                 .AddCacheItemId(key)
-                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, SystemClock.UtcNow);
 
             connection.Open();
 
@@ -237,8 +233,6 @@ internal sealed class DatabaseOperations : IDatabaseOperations
     {
         token.ThrowIfCancellationRequested();
 
-        var utcNow = SystemClock.UtcNow;
-
         string query;
         if (includeValue)
         {
@@ -255,7 +249,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         {
             command.Parameters
                 .AddCacheItemId(key)
-                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
+                .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, SystemClock.UtcNow);
 
             await connection.OpenAsync(token).ConfigureAwait(false);
 
