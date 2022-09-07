@@ -2562,7 +2562,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-alpha1"
+              "milestoneName": "8.0-preview1"
             }
           }
         ],
