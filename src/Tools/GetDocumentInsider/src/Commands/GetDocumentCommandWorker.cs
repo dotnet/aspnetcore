@@ -75,7 +75,7 @@ internal sealed class GetDocumentCommandWorker
         // Register a TCS to be invoked when the entrypoint (aka Program.Main)
         // has finished running. For minimal APIs, this means that all app.X
         // calls about the host has been built have been executed.
-        var waitForStartTcs = new TaskCompletionSource<object>();
+        var waitForStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         void OnEntryPointExit(Exception exception)
         {
             // If the entry point exited, we'll try to complete the wait
@@ -104,7 +104,7 @@ internal sealed class GetDocumentCommandWorker
                 HostFactoryResolver.CreateWebHostBuilder,
                 entryPointType));
 
-            return 4;
+            return 8;
         }
 
         try
@@ -120,10 +120,10 @@ internal sealed class GetDocumentCommandWorker
                     HostFactoryResolver.CreateWebHostBuilder,
                     entryPointType));
 
-                return 5;
+                return 9;
             }
 
-            // Wait for th application to start to ensure that all configurations
+            // Wait for the application to start to ensure that all configurations
             // on the WebApplicationBuilder have been processed.
             var applicationLifetime = services.GetRequiredService<IHostApplicationLifetime>();
             using (var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(null)))
@@ -132,14 +132,14 @@ internal sealed class GetDocumentCommandWorker
                 var success = GetDocuments(services);
                 if (!success)
                 {
-                    return 6;
+                    return 10;
                 }
             }
         }
         catch (Exception ex)
         {
             _reporter.WriteError(ex.ToString());
-            return 7;
+            return 11;
         }
 #else
         try
