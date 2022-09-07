@@ -106,7 +106,6 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         var line2 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
         using var responseJson2 = JsonDocument.Parse(line2!);
         Assert.Equal("Exception was thrown by handler.", responseJson2.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Exception was thrown by handler.", responseJson2.RootElement.GetProperty("error").GetString());
         Assert.Equal(2, responseJson2.RootElement.GetProperty("code").GetInt32());
 
         await callTask.DefaultTimeout();
@@ -140,7 +139,6 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         var line = await ReadLineAsync(pipe.Reader).DefaultTimeout();
         using var responseJson = JsonDocument.Parse(line!);
         Assert.Equal("Exception was thrown by handler. Exception: Exception!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Exception was thrown by handler. Exception: Exception!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal(2, responseJson.RootElement.GetProperty("code").GetInt32());
 
         await callTask.DefaultTimeout();

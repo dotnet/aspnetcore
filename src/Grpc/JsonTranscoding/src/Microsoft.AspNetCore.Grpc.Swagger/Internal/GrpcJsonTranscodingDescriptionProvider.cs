@@ -5,7 +5,6 @@ using System.Linq;
 using Google.Api;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
-using Grpc.Gateway.Runtime;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
 using Microsoft.AspNetCore.Mvc;
@@ -81,7 +80,7 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         apiDescription.SupportedResponseTypes.Add(new ApiResponseType
         {
             ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
-            ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(typeof(Error))),
+            ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(typeof(Google.Rpc.Status))),
             IsDefaultResponse = true
         });
         var explorerSettings = routeEndpoint.Metadata.GetMetadata<ApiExplorerSettingsAttribute>();
