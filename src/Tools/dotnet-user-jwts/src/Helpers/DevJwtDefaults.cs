@@ -5,9 +5,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal static class DevJwtsDefaults
 {
+    public static string Scheme => "Bearer";
     public static string Issuer => "dotnet-user-jwts";
 
-    public static string SigningKeyConfigurationKey => $"{Issuer}:KeyMaterial";
+    public static string SigningKeyConfigurationKey => "SigningKeys";
 
     public static int SigningKeyLength => 32;
 }

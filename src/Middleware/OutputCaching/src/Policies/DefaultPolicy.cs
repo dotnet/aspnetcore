@@ -46,7 +46,6 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         // Verify existence of cookie headers
         if (!StringValues.IsNullOrEmpty(response.Headers.SetCookie))
         {
-            context.Logger.ResponseWithSetCookieNotCacheable();
             context.AllowCacheStorage = false;
             return ValueTask.CompletedTask;
         }
@@ -54,7 +53,6 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         // Check response code
         if (response.StatusCode != StatusCodes.Status200OK)
         {
-            context.Logger.ResponseWithUnsuccessfulStatusCodeNotCacheable(response.StatusCode);
             context.AllowCacheStorage = false;
             return ValueTask.CompletedTask;
         }
@@ -64,21 +62,19 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
 
     private static bool AttemptOutputCaching(OutputCacheContext context)
     {
-        // Check if the current request fulfisls the requirements to be cached
+        // Check if the current request fulfills the requirements to be cached
 
         var request = context.HttpContext.Request;
 
         // Verify the method
         if (!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method))
         {
-            context.Logger.RequestMethodNotCacheable(request.Method);
             return false;
         }
 
         // Verify existence of authorization headers
         if (!StringValues.IsNullOrEmpty(request.Headers.Authorization) || request.HttpContext.User?.Identity?.IsAuthenticated == true)
         {
-            context.Logger.RequestWithAuthorizationNotCacheable();
             return false;
         }
 

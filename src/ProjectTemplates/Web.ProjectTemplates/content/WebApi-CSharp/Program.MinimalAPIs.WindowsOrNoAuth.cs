@@ -1,7 +1,3 @@
-#if (EnableOpenAPI)
-using Microsoft.AspNetCore.OpenApi;
-
-#endif
 #if (WindowsAuth)
 using Microsoft.AspNetCore.Authentication.Negotiate;
 
@@ -38,10 +34,6 @@ if (app.Environment.IsDevelopment())
 #if (HasHttpsProfile)
 
 app.UseHttpsRedirection();
-#endif
-#if (WindowsAuth)
-app.UseAuthentication();
-app.UseAuthorization();
 #endif
 
 var summaries = new[]

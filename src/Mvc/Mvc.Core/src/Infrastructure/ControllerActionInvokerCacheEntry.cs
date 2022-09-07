@@ -15,7 +15,8 @@ internal sealed class ControllerActionInvokerCacheEntry
         Func<ControllerContext, object, ValueTask>? controllerReleaser,
         ControllerBinderDelegate? controllerBinderDelegate,
         ObjectMethodExecutor objectMethodExecutor,
-        ActionMethodExecutor actionMethodExecutor)
+        ActionMethodExecutor actionMethodExecutor,
+        ActionMethodExecutor innerActionMethodExecutor)
     {
         ControllerFactory = controllerFactory;
         ControllerReleaser = controllerReleaser;
@@ -23,6 +24,7 @@ internal sealed class ControllerActionInvokerCacheEntry
         CachedFilters = cachedFilters;
         ObjectMethodExecutor = objectMethodExecutor;
         ActionMethodExecutor = actionMethodExecutor;
+        InnerActionMethodExecutor = innerActionMethodExecutor;
     }
 
     public FilterItem[] CachedFilters { get; }
@@ -35,5 +37,9 @@ internal sealed class ControllerActionInvokerCacheEntry
 
     internal ObjectMethodExecutor ObjectMethodExecutor { get; }
 
+    // This includes the execution of the filter delegate (if there's a filter)
     internal ActionMethodExecutor ActionMethodExecutor { get; }
+
+    // This is called inside of the filter delegate
+    internal ActionMethodExecutor InnerActionMethodExecutor { get; }
 }

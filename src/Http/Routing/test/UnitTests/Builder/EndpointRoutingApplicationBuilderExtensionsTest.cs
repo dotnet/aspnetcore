@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -359,6 +360,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         var listener = new DiagnosticListener("Microsoft.AspNetCore");
         services.AddSingleton(listener);
         services.AddSingleton<DiagnosticSource>(listener);
+        services.AddSingleton(Mock.Of<IHostEnvironment>());
 
         var serviceProvder = services.BuildServiceProvider();
 

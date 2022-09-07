@@ -131,7 +131,7 @@ public class JsonResultTests
         Assert.Equal(StatusCodes.Status500InternalServerError, httpContext.Response.StatusCode);
         stream.Position = 0;
         var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", responseDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", responseDetails.Type);
         Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
     }
@@ -160,9 +160,41 @@ public class JsonResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
         var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", responseDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
         Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_UsesDefaults_HttpStatusCodesWithoutTypes()
+    {
+        // Arrange
+        var details = new ProblemDetails()
+        {
+            Status = StatusCodes.Status418ImATeapot,
+        };
+
+        var result = new ProblemHttpResult(details);
+        var stream = new MemoryStream();
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices(),
+            Response =
+                {
+                    Body = stream,
+                },
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status418ImATeapot, httpContext.Response.StatusCode);
+        stream.Position = 0;
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
+        Assert.Null(responseDetails.Type);
+        Assert.Equal("I'm a teapot", responseDetails.Title);
+        Assert.Equal(StatusCodes.Status418ImATeapot, responseDetails.Status);
     }
 
     [Fact]
@@ -215,6 +247,65 @@ public class JsonResultTests
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new JsonHttpResult<string>(null, StatusCodes.Status200OK, contentType, null));
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, StatusCodes.Status202Accepted, contentType, null));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly_WithNullStatus()
+    {
+        // Arrange
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, statusCode: null, contentType, null));
+        Assert.Null(result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new JsonHttpResult<string>(value, statusCode: null, contentType, null));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new JsonHttpResult<string>(value, statusCode: null, contentType, null));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static IServiceProvider CreateServices()

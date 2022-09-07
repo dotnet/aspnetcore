@@ -70,7 +70,7 @@ public class RouteOptions
     /// </summary>
     public IDictionary<string, Type> ConstraintMap
     {
-        [RequiresUnreferencedCode($"The linker cannot determine what constraints are being added via the ConstraintMap property. Prefer {nameof(RouteOptions)}.{nameof(SetParameterPolicy)} instead for setting constraints. This warning can be suppressed if this property is being used to read of delete constraints.")]
+        [RequiresUnreferencedCode($"The linker cannot determine what constraints are being added via the ConstraintMap property. Prefer {nameof(RouteOptions)}.{nameof(SetParameterPolicy)} instead for setting constraints. This warning can be suppressed if this property is being used to read or delete constraints.")]
         get
         {
             return _constraintTypeMap;

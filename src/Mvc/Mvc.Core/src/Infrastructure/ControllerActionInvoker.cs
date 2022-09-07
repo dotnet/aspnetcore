@@ -390,7 +390,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
         var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
         var orderedArguments = PrepareArguments(_arguments, objectMethodExecutor);
 
-        var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, _instance!, orderedArguments);
+        var actionResultValueTask = actionMethodExecutor.Execute(ControllerContext, _mapper, objectMethodExecutor, _instance!, orderedArguments);
         if (actionResultValueTask.IsCompletedSuccessfully)
         {
             _result = actionResultValueTask.Result;
@@ -428,7 +428,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
                     controller);
                 Log.ActionMethodExecuting(logger, controllerContext, orderedArguments);
                 var stopwatch = ValueStopwatch.StartNew();
-                var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller!, orderedArguments);
+                var actionResultValueTask = actionMethodExecutor.Execute(controllerContext, invoker._mapper, objectMethodExecutor, controller!, orderedArguments);
                 if (actionResultValueTask.IsCompletedSuccessfully)
                 {
                     result = actionResultValueTask.Result;

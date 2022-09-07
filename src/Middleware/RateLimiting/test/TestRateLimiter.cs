@@ -4,6 +4,7 @@
 using System.Threading.RateLimiting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
+
 internal class TestRateLimiter : RateLimiter
 {
     private readonly bool _alwaysAccept;
@@ -15,17 +16,17 @@ internal class TestRateLimiter : RateLimiter
 
     public override TimeSpan? IdleDuration => throw new NotImplementedException();
 
-    public override int GetAvailablePermits()
+    public override RateLimiterStatistics GetStatistics()
     {
         throw new NotImplementedException();
     }
 
-    protected override RateLimitLease AcquireCore(int permitCount)
+    protected override RateLimitLease AttemptAcquireCore(int permitCount)
     {
         return new TestRateLimitLease(_alwaysAccept, null);
     }
 
-    protected override ValueTask<RateLimitLease> WaitAsyncCore(int permitCount, CancellationToken cancellationToken)
+    protected override ValueTask<RateLimitLease> AcquireAsyncCore(int permitCount, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return new ValueTask<RateLimitLease>(new TestRateLimitLease(_alwaysAccept, null));

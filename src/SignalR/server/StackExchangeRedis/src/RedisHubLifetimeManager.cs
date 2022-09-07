@@ -406,7 +406,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc/>
-    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         // send thing
         if (connectionId == null)
@@ -428,8 +428,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             if (connection == null)
             {
                 // TODO: Need to handle other server going away while waiting for connection result
-                var m = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults(_serverName));
-                var received = await PublishAsync(_channels.Connection(connectionId), m);
+                var messageBytes = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults(_serverName));
+                var received = await PublishAsync(_channels.Connection(connectionId), messageBytes);
                 if (received < 1)
                 {
                     throw new IOException($"Connection '{connectionId}' does not exist.");

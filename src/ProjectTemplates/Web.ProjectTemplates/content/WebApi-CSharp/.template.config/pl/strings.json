@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "1.0.0.0",
   "strings": {
     "name": "Internetowy interfejs API platformy ASP.NET Core",
@@ -6,6 +6,6 @@
     "parameter.DisableOpenAPI.name": "Włącz obsługę interfejsu _OpenAPI",
     "parameter.DisableOpenAPI.description": "Włącza obsługę interfejsu OpenAPI (Swagger)",
     "parameter.UseMinimalAPIs.name": "Użyj kontrolerów (usuń zaznaczenie, aby używać minimalnej ilości interfejsów API)",
-    "parameter.UseMinimalAPIs.description": "Określa, czy używać minimalnej ilości interfejsów API zamiast kontrolerów."
+    "parameter.UseMinimalAPIs.description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu."
   }
 }

@@ -17,7 +17,7 @@ public sealed class OutputCachePolicyBuilder
 
     private IOutputCachePolicy? _builtPolicy;
     private readonly List<IOutputCachePolicy> _policies = new();
-    private List<Func<OutputCacheContext, CancellationToken, Task<bool>>>? _requirements;
+    private List<Func<OutputCacheContext, CancellationToken, ValueTask<bool>>>? _requirements;
 
     /// <summary>
     /// Creates a new <see cref="OutputCachePolicyBuilder"/> instance.
@@ -57,7 +57,7 @@ public sealed class OutputCachePolicyBuilder
     /// Adds a requirement to the current policy.
     /// </summary>
     /// <param name="predicate">The predicate applied to the policy.</param>
-    public OutputCachePolicyBuilder With(Func<OutputCacheContext, CancellationToken, Task<bool>> predicate)
+    public OutputCachePolicyBuilder With(Func<OutputCacheContext, CancellationToken, ValueTask<bool>> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
@@ -77,7 +77,7 @@ public sealed class OutputCachePolicyBuilder
 
         _builtPolicy = null;
         _requirements ??= new();
-        _requirements.Add((c, t) => Task.FromResult(predicate(c)));
+        _requirements.Add((c, t) => ValueTask.FromResult(predicate(c)));
         return this;
     }
 
@@ -98,45 +98,84 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to vary the cached responses by header.
     /// </summary>
-    /// <param name="headers">The headers to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByHeader(params string[] headers)
+    /// <param name="headerNames">The header names to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder VaryByHeader(params string[] headerNames)
     {
-        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(headerNames);
 
-        return AddPolicy(new VaryByHeaderPolicy(headers));
+        return AddPolicy(new VaryByHeaderPolicy(headerNames));
     }
 
     /// <summary>
-    /// Adds a policy to vary the cached responses by custom values.
+    /// Adds a policy to vary the cached responses by route value.
     /// </summary>
-    /// <param name="varyBy">The value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
+    /// <param name="routeValueNames">The route value names to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder VaryByRouteValue(params string[] routeValueNames)
     {
-        ArgumentNullException.ThrowIfNull(varyBy);
+        ArgumentNullException.ThrowIfNull(routeValueNames);
 
-        return AddPolicy(new VaryByValuePolicy(varyBy));
+        return AddPolicy(new VaryByRouteValuePolicy(routeValueNames));
+    }
+
+    /// <summary>
+    /// Adds a policy that varies the cache key using the specified value.
+    /// </summary>
+    /// <param name="keyPrefix">The value to vary the cache key by.</param>
+    public OutputCachePolicyBuilder SetCacheKeyPrefix(string keyPrefix)
+    {
+        ArgumentNullException.ThrowIfNull(keyPrefix);
+
+        ValueTask<string> varyByKeyFunc(HttpContext context, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult(keyPrefix);
+        }
+
+        return AddPolicy(new SetCacheKeyPrefixPolicy(varyByKeyFunc));
+    }
+
+    /// <summary>
+    /// Adds a policy that varies the cache key using the specified value.
+    /// </summary>
+    /// <param name="keyPrefix">The value to vary the cache key by.</param>
+    public OutputCachePolicyBuilder SetCacheKeyPrefix(Func<HttpContext, string> keyPrefix)
+    {
+        ArgumentNullException.ThrowIfNull(keyPrefix);
+
+        ValueTask<string> varyByKeyFunc(HttpContext context, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult(keyPrefix(context));
+        }
+
+        return AddPolicy(new SetCacheKeyPrefixPolicy(varyByKeyFunc));
+    }
+
+    /// <summary>
+    /// Adds a policy that varies the cache key using the specified value.
+    /// </summary>
+    /// <param name="keyPrefix">The value to vary the cache key by.</param>
+    public OutputCachePolicyBuilder SetCacheKeyPrefix(Func<HttpContext, CancellationToken, ValueTask<string>> keyPrefix)
+    {
+        ArgumentNullException.ThrowIfNull(keyPrefix);
+
+        return AddPolicy(new SetCacheKeyPrefixPolicy(keyPrefix));
     }
 
     /// <summary>
     /// Adds a policy to vary the cached responses by custom key/value.
     /// </summary>
-    /// <param name="varyBy">The key/value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, ValueTask<KeyValuePair<string, string>>> varyBy)
+    /// <param name="key">The key to vary the cached responses by.</param>
+    /// <param name="value">The value to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder VaryByValue(string key, string value)
     {
-        ArgumentNullException.ThrowIfNull(varyBy);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
 
-        return AddPolicy(new VaryByValuePolicy(varyBy));
-    }
+        ValueTask<KeyValuePair<string, string>> varyByFunc(HttpContext context, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult(new KeyValuePair<string, string>(key, value));
+        }
 
-    /// <summary>
-    /// Adds a policy to vary the cached responses by custom values.
-    /// </summary>
-    /// <param name="varyBy">The value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, string> varyBy)
-    {
-        ArgumentNullException.ThrowIfNull(varyBy);
-
-        return AddPolicy(new VaryByValuePolicy(varyBy));
+        return AddPolicy(new VaryByValuePolicy(varyByFunc));
     }
 
     /// <summary>
@@ -144,6 +183,22 @@ public sealed class OutputCachePolicyBuilder
     /// </summary>
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
     public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, KeyValuePair<string, string>> varyBy)
+    {
+        ArgumentNullException.ThrowIfNull(varyBy);
+
+        ValueTask<KeyValuePair<string, string>> varyByFunc(HttpContext context, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult(varyBy(context));
+        }
+
+        return AddPolicy(new VaryByValuePolicy(varyByFunc));
+    }
+
+    /// <summary>
+    /// Adds a policy that vary the cached content based on the specified value.
+    /// </summary>
+    /// <param name="varyBy">The key/value to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, ValueTask<KeyValuePair<string, string>>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -204,6 +259,20 @@ public sealed class OutputCachePolicyBuilder
     {
         _policies.Clear();
         return AddPolicy(EnableCachePolicy.Disabled);
+    }
+
+    /// <summary>
+    /// Enables caching for the current request if not already enabled.
+    /// </summary>
+    public OutputCachePolicyBuilder Cache()
+    {
+        // If no custom policy is added, the DefaultPolicy is already "enabled".
+        if (_policies.Count != 1 || _policies[0] != DefaultPolicy.Instance)
+        {
+            AddPolicy(EnableCachePolicy.Enabled);
+        }
+
+        return this;
     }
 
     /// <summary>

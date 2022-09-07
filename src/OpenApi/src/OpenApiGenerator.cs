@@ -201,10 +201,31 @@ internal sealed class OpenApiGenerator
                 responseContent[contentType] = new OpenApiMediaType();
             }
 
-            responses[statusCode] = new OpenApiResponse { Content = responseContent };
+            responses[statusCode] = new OpenApiResponse
+            {
+                Content = responseContent,
+                Description = GetResponseDescription(statusCode)
+            };
         }
-
         return responses;
+    }
+
+    private static string GetResponseDescription(string statusCode)
+    {
+        if (statusCode.Length != 3)
+        {
+            return string.Empty;
+        }
+        var first = statusCode[0];
+        return first switch
+        {
+            '1' => "Information",
+            '2' => "Success",
+            '3' => "Redirection",
+            '4' => "Client error",
+            '5' => "Server error",
+            _ => string.Empty,
+        };
     }
 
     private static void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type? discoveredTypeAnnotation)
@@ -261,7 +282,6 @@ internal sealed class OpenApiGenerator
 
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
         var requestBodyContent = new Dictionary<string, OpenApiMediaType>();
-        var isRequired = false;
 
         if (acceptsMetadata is not null)
         {
@@ -269,16 +289,15 @@ internal sealed class OpenApiGenerator
             {
                 requestBodyContent[contentType] = new OpenApiMediaType();
             }
-            isRequired = !acceptsMetadata.IsOptional;
-        }
 
-        if (!hasFormOrBodyParameter)
-        {
-            return new OpenApiRequestBody()
+            if (!hasFormOrBodyParameter)
             {
-                Required = isRequired,
-                Content = requestBodyContent
-            };
+                return new OpenApiRequestBody()
+                {
+                    Required = !acceptsMetadata.IsOptional,
+                    Content = requestBodyContent
+                };
+            }
         }
 
         if (requestBodyParameter is not null)
@@ -361,16 +380,14 @@ internal sealed class OpenApiGenerator
                 throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
             }
 
-            var (isBodyOrFormParameter, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
+            var (_, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
 
-            // If the parameter isn't something that would be populated in RequestBody
-            // or doesn't have a valid ParameterLocation, then it must be a service
-            // parameter that we can ignore.
-            if (!isBodyOrFormParameter && parameterLocation is null)
+            // if the parameter doesn't have a valid location
+            // then we should ignore it
+            if (parameterLocation is null)
             {
                 continue;
             }
-
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;

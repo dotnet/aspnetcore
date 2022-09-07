@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Represents an <see cref="IResult"/> that when executed will
 /// write a file from a stream to the response.
 /// </summary>
-public sealed class FileStreamHttpResult : IResult
+public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTypeHttpResult
 {
     /// <summary>
     /// Creates a new <see cref="FileStreamHttpResult"/> instance with
@@ -108,7 +108,7 @@ public sealed class FileStreamHttpResult : IResult
     public long? FileLength { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the stream with the file that will be sent back as the response.
+    /// Gets the stream with the file that will be sent back as the response.
     /// </summary>
     public Stream FileStream { get; }
 

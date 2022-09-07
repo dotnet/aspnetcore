@@ -178,7 +178,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                 return AuthenticateResult.Fail(authenticationFailedContext.Exception);
             }
 
-            return AuthenticateResult.Fail("No SecurityTokenValidator available for token.");
+            return AuthenticateResults.ValidatorNotFound;
         }
         catch (Exception ex)
         {
@@ -310,34 +310,24 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
         {
             // Order sensitive, some of these exceptions derive from others
             // and we want to display the most specific message possible.
-            switch (ex)
+            string? message = ex switch
             {
-                case SecurityTokenInvalidAudienceException stia:
-                    messages.Add($"The audience '{stia.InvalidAudience ?? "(null)"}' is invalid");
-                    break;
-                case SecurityTokenInvalidIssuerException stii:
-                    messages.Add($"The issuer '{stii.InvalidIssuer ?? "(null)"}' is invalid");
-                    break;
-                case SecurityTokenNoExpirationException _:
-                    messages.Add("The token has no expiration");
-                    break;
-                case SecurityTokenInvalidLifetimeException stil:
-                    messages.Add("The token lifetime is invalid; NotBefore: "
-                        + $"'{stil.NotBefore?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'"
-                        + $", Expires: '{stil.Expires?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'");
-                    break;
-                case SecurityTokenNotYetValidException stnyv:
-                    messages.Add($"The token is not valid before '{stnyv.NotBefore.ToString(CultureInfo.InvariantCulture)}'");
-                    break;
-                case SecurityTokenExpiredException ste:
-                    messages.Add($"The token expired at '{ste.Expires.ToString(CultureInfo.InvariantCulture)}'");
-                    break;
-                case SecurityTokenSignatureKeyNotFoundException _:
-                    messages.Add("The signature key was not found");
-                    break;
-                case SecurityTokenInvalidSignatureException _:
-                    messages.Add("The signature is invalid");
-                    break;
+                SecurityTokenInvalidAudienceException stia => $"The audience '{stia.InvalidAudience ?? "(null)"}' is invalid",
+                SecurityTokenInvalidIssuerException stii => $"The issuer '{stii.InvalidIssuer ?? "(null)"}' is invalid",
+                SecurityTokenNoExpirationException _ => "The token has no expiration",
+                SecurityTokenInvalidLifetimeException stil => "The token lifetime is invalid; NotBefore: "
+                    + $"'{stil.NotBefore?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'"
+                    + $", Expires: '{stil.Expires?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'",
+                SecurityTokenNotYetValidException stnyv => $"The token is not valid before '{stnyv.NotBefore.ToString(CultureInfo.InvariantCulture)}'",
+                SecurityTokenExpiredException ste => $"The token expired at '{ste.Expires.ToString(CultureInfo.InvariantCulture)}'",
+                SecurityTokenSignatureKeyNotFoundException _ => "The signature key was not found",
+                SecurityTokenInvalidSignatureException _ => "The signature is invalid",
+                _ => null,
+            };
+
+            if (message is not null)
+            {
+                messages.Add(message);
             }
         }
 

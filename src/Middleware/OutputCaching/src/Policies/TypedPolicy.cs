@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.OutputCaching.Policies;
 
@@ -29,7 +30,8 @@ internal sealed class TypedPolicy : IOutputCachePolicy
 
     private IOutputCachePolicy? CreatePolicy(OutputCacheContext context)
     {
-        return _instance ??= ActivatorUtilities.CreateInstance(context.Options.ApplicationServices, _policyType) as IOutputCachePolicy;
+        var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OutputCacheOptions>>();
+        return _instance ??= ActivatorUtilities.CreateInstance(options.Value.ApplicationServices, _policyType) as IOutputCachePolicy;
     }
 
     /// <inheritdoc/>

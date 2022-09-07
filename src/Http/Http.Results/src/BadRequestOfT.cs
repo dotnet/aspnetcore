@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with Bad Request (400) status code.
 /// </summary>
 /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
-public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider
+public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BadRequest"/> class with the values
@@ -30,10 +32,14 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider
     /// </summary>
     public TValue? Value { get; }
 
+    object? IValueHttpResult.Value => Value;
+
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status400BadRequest"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
@@ -54,10 +60,11 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status400BadRequest, "application/json"));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status400BadRequest, "application/json"));
     }
 }

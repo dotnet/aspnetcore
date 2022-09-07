@@ -59,6 +59,16 @@ internal sealed class IpcSender
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.SendByteArrayToJS, id, data));
     }
 
+    public void SetHasLocationChangingListeners(bool hasListeners)
+    {
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.SetHasLocationChangingListeners, hasListeners));
+    }
+
+    public void EndLocationChanging(int callId, bool shouldContinueNavigation)
+    {
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.EndLocationChanging, callId, shouldContinueNavigation));
+    }
+
     public void NotifyUnhandledException(Exception exception)
     {
         // Send the serialized exception to the WebView for display

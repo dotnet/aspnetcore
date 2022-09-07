@@ -873,6 +873,28 @@ public class TypedResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
+    [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
+    public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
+        int statusCode,
+        string title,
+        string type)
+    {
+        // Act
+        var result = TypedResults.Problem(statusCode: statusCode);
+
+        // Assert
+        Assert.Null(result.ProblemDetails.Detail);
+        Assert.Null(result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.NotNull(result.ProblemDetails.Extensions);
+        Assert.Empty(result.ProblemDetails.Extensions);
+    }
+
     [Fact]
     public void Problem_WithNoArgs_ResultHasCorrectValues()
     {
@@ -885,7 +907,7 @@ public class TypedResultsTests
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         Assert.Equal("An error occurred while processing your request.", result.ProblemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", result.ProblemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", result.ProblemDetails.Type);
         Assert.Empty(result.ProblemDetails.Extensions);
     }
 
@@ -1069,6 +1091,39 @@ public class TypedResultsTests
         // Assert
         Assert.Null(result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void Text_WithUtf8ContentAndContentType_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content"u8.ToArray();
+        var contentType = "text/plain";
+
+        // Act
+        var result = TypedResults.Text(content, contentType);
+
+        // Assert
+        Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent.ToArray());
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void Text_WithUtf8ContentAndContentTypeAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content"u8.ToArray();
+        var contentType = "text/plain";
+        var statusCode = 201;
+
+        // Act
+        var result = TypedResults.Text(content, contentType, statusCode);
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(content, result.ResponseContent.ToArray());
         Assert.Equal(contentType, result.ContentType);
     }
 

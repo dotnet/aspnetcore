@@ -15,6 +15,17 @@ internal sealed class KeyCommand
         {
             cmd.Description = Resources.KeyCommand_Description;
 
+            var schemeOption = cmd.Option(
+                "--scheme",
+                Resources.KeyCommand_SchemeOption_Description,
+                CommandOptionType.SingleValue);
+
+            var issuerOption = cmd.Option(
+                "--issuer",
+                Resources.KeyCommand_IssuerOption_Description,
+                CommandOptionType.SingleValue
+            );
+
             var resetOption = cmd.Option(
                 "--reset",
                 Resources.KeyCommand_ResetOption_Description,
@@ -29,12 +40,16 @@ internal sealed class KeyCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), resetOption.HasValue(), forceOption.HasValue());
+                return Execute(cmd.Reporter,
+                    cmd.ProjectOption.Value(),
+                    schemeOption.Value() ?? DevJwtsDefaults.Scheme,
+                    issuerOption.Value() ?? DevJwtsDefaults.Issuer,
+                    resetOption.HasValue(), forceOption.HasValue());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool reset, bool force)
+    private static int Execute(IReporter reporter, string projectPath, string scheme, string issuer, bool reset, bool force)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -54,15 +69,12 @@ internal sealed class KeyCommand
                 }
             }
 
-            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, reset: true);
+            var key = SigningKeysHandler.CreateSigningKeyMaterial(userSecretsId, scheme, issuer, reset: true);
             reporter.Output(Resources.FormatKeyCommand_KeyCreated(Convert.ToBase64String(key)));
-            return 0; 
+            return 0;
         }
 
-        var projectConfiguration = new ConfigurationBuilder()
-            .AddUserSecrets(userSecretsId)
-            .Build();
-        var signingKeyMaterial = projectConfiguration[DevJwtsDefaults.SigningKeyConfigurationKey];
+        var signingKeyMaterial = SigningKeysHandler.GetSigningKeyMaterial(userSecretsId, scheme, issuer);
 
         if (signingKeyMaterial is null)
         {

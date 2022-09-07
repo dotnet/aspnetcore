@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="../FunctionalTest.props" />
 
@@ -34,6 +34,7 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Link="Shared\" />
   </ItemGroup>
 
   <ItemGroup>

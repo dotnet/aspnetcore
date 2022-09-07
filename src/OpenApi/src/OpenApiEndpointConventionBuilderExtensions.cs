@@ -25,7 +25,7 @@ public static class OpenApiEndpointConventionBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static TBuilder WithOpenApi<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
-        builder.Add(builder => AddAndConfigureOperationForEndpoint(builder));
+        builder.Finally(builder => AddAndConfigureOperationForEndpoint(builder));
         return builder;
     }
 
@@ -39,7 +39,7 @@ public static class OpenApiEndpointConventionBuilderExtensions
     public static TBuilder WithOpenApi<TBuilder>(this TBuilder builder, Func<OpenApiOperation, OpenApiOperation> configureOperation)
         where TBuilder : IEndpointConventionBuilder
     {
-        builder.Add(endpointBuilder => AddAndConfigureOperationForEndpoint(endpointBuilder, configureOperation));
+        builder.Finally(endpointBuilder => AddAndConfigureOperationForEndpoint(endpointBuilder, configureOperation));
         return builder;
     }
 

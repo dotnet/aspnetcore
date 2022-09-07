@@ -199,7 +199,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
                     ticket.Properties, Scheme.Name));
             }
 
-            return AuthenticateResult.Fail("Not authenticated");
+            return AuthenticateResult.NoResult();
         }
 
         return AuthenticateResult.Fail("Remote authentication does not directly support AuthenticateAsync");

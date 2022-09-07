@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Ok (200) status code.
 /// </summary>
-public sealed class Ok : IResult, IEndpointMetadataProvider
+public sealed class Ok : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Ok"/> class with the values.
@@ -24,6 +26,8 @@ public sealed class Ok : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status200OK"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status200OK;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
@@ -41,10 +45,11 @@ public sealed class Ok : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status200OK));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status200OK));
     }
 }

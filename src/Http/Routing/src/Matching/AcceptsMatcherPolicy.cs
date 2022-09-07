@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
 {
+    private static Endpoint? Http415Endpoint;
     internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
     internal const string AnyContentType = "*/*";
 
@@ -258,8 +259,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     private static Endpoint CreateRejectionEndpoint()
     {
-        return new Endpoint(
-            (context) =>
+        return Http415Endpoint ??= new Endpoint(context =>
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                 return Task.CompletedTask;

@@ -36,74 +36,74 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
-            new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
-            new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
-            new KeyValuePair<string, string>("accept-encoding", "gzip, deflate, br"),
-            new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
+        new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+        new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
+        new KeyValuePair<string, string>("accept-encoding", "gzip, deflate, br"),
+        new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
+    };
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _postRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+    };
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _expectContinueRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "127.0.0.1"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
+    };
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _requestTrailers = new[]
     {
-            new KeyValuePair<string, string>("trailer-one", "1"),
-            new KeyValuePair<string, string>("trailer-two", "2"),
-        };
+        new KeyValuePair<string, string>("trailer-one", "1"),
+        new KeyValuePair<string, string>("trailer-two", "2"),
+    };
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _oneContinuationRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("a", _4kHeaderValue),
-            new KeyValuePair<string, string>("b", _4kHeaderValue),
-            new KeyValuePair<string, string>("c", _4kHeaderValue),
-            new KeyValuePair<string, string>("d", _4kHeaderValue)
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        new KeyValuePair<string, string>("a", _4kHeaderValue),
+        new KeyValuePair<string, string>("b", _4kHeaderValue),
+        new KeyValuePair<string, string>("c", _4kHeaderValue),
+        new KeyValuePair<string, string>("d", _4kHeaderValue)
+    };
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _twoContinuationsRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("a", _4kHeaderValue),
-            new KeyValuePair<string, string>("b", _4kHeaderValue),
-            new KeyValuePair<string, string>("c", _4kHeaderValue),
-            new KeyValuePair<string, string>("d", _4kHeaderValue),
-            new KeyValuePair<string, string>("e", _4kHeaderValue),
-            new KeyValuePair<string, string>("f", _4kHeaderValue),
-            new KeyValuePair<string, string>("g", _4kHeaderValue),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        new KeyValuePair<string, string>("a", _4kHeaderValue),
+        new KeyValuePair<string, string>("b", _4kHeaderValue),
+        new KeyValuePair<string, string>("c", _4kHeaderValue),
+        new KeyValuePair<string, string>("d", _4kHeaderValue),
+        new KeyValuePair<string, string>("e", _4kHeaderValue),
+        new KeyValuePair<string, string>("f", _4kHeaderValue),
+        new KeyValuePair<string, string>("g", _4kHeaderValue),
+    };
 
     protected static IEnumerable<KeyValuePair<string, string>> ReadRateRequestHeaders(int expectedBytes) => new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/" + expectedBytes),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/" + expectedBytes),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+    };
 
     protected static readonly byte[] _helloBytes = Encoding.ASCII.GetBytes("hello");
     protected static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
@@ -343,7 +343,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _echoMethodNoBody = context =>
         {
             Assert.False(context.Request.CanHaveBody());
-            Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Method));
+            Assert.False(context.Request.Headers.ContainsKey(InternalHeaderNames.Method));
             context.Response.Headers["Method"] = context.Request.Method;
 
             return Task.CompletedTask;
@@ -351,7 +351,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _echoHost = context =>
         {
-            Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Authority));
+            Assert.False(context.Request.Headers.ContainsKey(InternalHeaderNames.Authority));
             context.Response.Headers.Host = context.Request.Headers.Host;
 
             return Task.CompletedTask;
@@ -359,7 +359,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _echoPath = context =>
         {
-            Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Path));
+            Assert.False(context.Request.Headers.ContainsKey(InternalHeaderNames.Path));
             context.Response.Headers["path"] = context.Request.Path.ToString();
             context.Response.Headers["rawtarget"] = context.Features.Get<IHttpRequestFeature>().RawTarget;
 
@@ -1294,20 +1294,20 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         foreach (var header in expectedHeaders)
         {
-            if (header.Key == HeaderNames.Method)
+            if (header.Key == InternalHeaderNames.Method)
             {
                 Assert.Equal(header.Value, _receivedRequestFields.Method);
             }
-            else if (header.Key == HeaderNames.Authority)
+            else if (header.Key == InternalHeaderNames.Authority)
             {
                 Assert.True(_receivedHeaders.TryGetValue(HeaderNames.Host, out var host), header.Key);
                 Assert.Equal(header.Value, host);
             }
-            else if (header.Key == HeaderNames.Scheme)
+            else if (header.Key == InternalHeaderNames.Scheme)
             {
                 Assert.Equal(header.Value, _receivedRequestFields.Scheme);
             }
-            else if (header.Key == HeaderNames.Path)
+            else if (header.Key == InternalHeaderNames.Path)
             {
                 Assert.Equal(header.Value, _receivedRequestFields.RawTarget);
             }

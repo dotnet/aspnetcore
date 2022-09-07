@@ -136,9 +136,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-app.UseAuthentication();
-#endif
 app.UseAuthorization();
 
 app.MapControllerRoute(

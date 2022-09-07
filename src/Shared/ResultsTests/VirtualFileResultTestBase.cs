@@ -31,10 +31,10 @@ public abstract class VirtualFileResultTestBase
         bool enableRangeProcessing = false);
 
     [Theory]
-    [InlineData(0, 3, 4)]
-    [InlineData(8, 13, 6)]
-    [InlineData(null, 4, 4)]
-    [InlineData(8, null, 25)]
+    [InlineData(0L, 3L, 4L)]
+    [InlineData(8L, 13L, 6L)]
+    [InlineData(null, 4L, 4L)]
+    [InlineData(8L, null, 25L)]
     public async Task WriteFileAsync_WritesRangeRequested(
         long? start,
         long? end,
@@ -314,10 +314,10 @@ public abstract class VirtualFileResultTestBase
     }
 
     [Theory]
-    [InlineData(0, 3, 4)]
-    [InlineData(8, 13, 6)]
-    [InlineData(null, 3, 3)]
-    [InlineData(8, null, 25)]
+    [InlineData(0L, 3L, 4L)]
+    [InlineData(8L, 13L, 6L)]
+    [InlineData(null, 3L, 3L)]
+    [InlineData(8L, null, 25L)]
     public async Task ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(long? start, long? end, long contentLength)
     {
         // Arrange

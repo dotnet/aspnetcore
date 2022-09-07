@@ -16,6 +16,7 @@ public class AccessTokenResult
     /// <param name="status">The status of the result.</param>
     /// <param name="token">The <see cref="AccessToken"/> in case it was successful.</param>
     /// <param name="redirectUrl">The redirect uri to go to for provisioning the token.</param>
+    [Obsolete("Use the AccessTokenResult(AccessTokenResultStatus, AccessToken, string, InteractiveRequestOptions)")]
     public AccessTokenResult(AccessTokenResultStatus status, AccessToken token, string redirectUrl)
     {
         Status = status;
@@ -24,14 +25,41 @@ public class AccessTokenResult
     }
 
     /// <summary>
-    /// Gets or sets the status of the current operation. See <see cref="AccessTokenResultStatus"/> for a list of statuses.
+    /// Initializes a new instance of <see cref="AccessTokenResult"/>.
+    /// </summary>
+    /// <param name="status">The status of the result.</param>
+    /// <param name="token">The <see cref="AccessToken"/> in case it was successful.</param>
+    /// <param name="interactiveRequestUrl">The redirect uri to go to for provisioning the token with <see cref="NavigationManagerExtensions.NavigateToLogin(NavigationManager, string, InteractiveRequestOptions)"/>.</param>
+    /// <param name="interactiveRequest">The <see cref="InteractiveRequestOptions"/> containing the parameters for the interactive authentication.</param>
+    public AccessTokenResult(AccessTokenResultStatus status, AccessToken token, string interactiveRequestUrl, InteractiveRequestOptions interactiveRequest)
+    {
+        Status = status;
+        _token = token;
+        InteractiveRequestUrl = interactiveRequestUrl;
+        InteractionOptions = interactiveRequest;
+    }
+
+    /// <summary>
+    /// Gets the status of the current operation. See <see cref="AccessTokenResultStatus"/> for a list of statuses.
     /// </summary>
     public AccessTokenResultStatus Status { get; }
 
     /// <summary>
-    /// Gets or sets the URL to redirect to if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
+    /// Gets the URL to redirect to if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
     /// </summary>
+    [Obsolete("Use 'InteractiveRequestUrl' and 'InteractiveRequest' instead.")]
     public string RedirectUrl { get; }
+
+    /// <summary>
+    /// Gets the URL to call <see cref="NavigationManagerExtensions.NavigateToLogin(NavigationManager, string, InteractiveRequestOptions)"/> if <see cref="Status"/> is
+    /// <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
+    /// </summary>
+    public string InteractiveRequestUrl { get; }
+
+    /// <summary>
+    /// Gets the <see cref="InteractiveRequestOptions"/> to use if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
+    /// </summary>
+    public InteractiveRequestOptions InteractionOptions { get; }
 
     /// <summary>
     /// Determines whether the token request was successful and makes the <see cref="AccessToken"/> available for use when it is.
