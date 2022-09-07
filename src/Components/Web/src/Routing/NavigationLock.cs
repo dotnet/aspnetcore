@@ -9,10 +9,11 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that can be used to intercept navigation events. 
 /// </summary>
-public sealed class NavigationLock : ComponentBase, IAsyncDisposable
+public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private readonly string _id = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
 
+    private RenderHandle _renderHandle;
     private IDisposable? _locationChangingRegistration;
     private bool _lastConfirmExternalNavigation;
 
@@ -35,8 +36,34 @@ public sealed class NavigationLock : ComponentBase, IAsyncDisposable
     [Parameter]
     public bool ConfirmExternalNavigation { get; set; }
 
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    void IComponent.Attach(RenderHandle renderHandle)
+    {
+        _renderHandle = renderHandle;
+    }
+
+    Task IComponent.SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            if (parameter.Name.Equals(nameof(OnBeforeInternalNavigation), StringComparison.OrdinalIgnoreCase))
+            {
+                OnBeforeInternalNavigation = (EventCallback<LocationChangingContext>)parameter.Value;
+            }
+            else if (parameter.Name.Equals(nameof(ConfirmExternalNavigation), StringComparison.OrdinalIgnoreCase))
+            {
+                ConfirmExternalNavigation = (bool)parameter.Value;
+            }
+            else
+            {
+                throw new ArgumentException($"The component '{nameof(NavigationLock)}' does not accept a parameter with the name '{parameter.Name}'.");
+            }
+        }
+
+        _renderHandle.Render(static builder => { });
+        return Task.CompletedTask;
+    }
+
+    async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         var lastHasLocationChangingHandler = _locationChangingRegistration is not null;
         var hasLocationChangingHandler = OnBeforeInternalNavigation.HasDelegate;
