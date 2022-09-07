@@ -108,7 +108,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                     webSocket.Options.Credentials = context.Options.Credentials;
                 }
 
-                var originalProxy = context.Options.Proxy;
+                var originalProxy = webSocket.Options.Proxy;
                 if (context.Options.Proxy != null)
                 {
                     webSocket.Options.Proxy = context.Options.Proxy;
