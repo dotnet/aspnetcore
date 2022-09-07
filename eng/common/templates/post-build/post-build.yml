@@ -28,7 +28,8 @@ stages:
     - job:
       displayName: NuGet Validation
       pool:
-        vmImage: 'windows-2019'
+        name: NetCore1ESPool-Svc-Internal
+        demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
         - task: DownloadBuildArtifacts@0
           displayName: Download Package Artifacts
@@ -47,7 +48,8 @@ stages:
     - job:
       displayName: Signing Validation
       pool:
-        vmImage: 'windows-2019'
+        name: NetCore1ESPool-Svc-Internal
+        demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -77,7 +79,8 @@ stages:
       variables:
         - template: common-variables.yml
       pool:
-        vmImage: 'windows-2019'
+        name: NetCore1ESPool-Svc-Internal
+        demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
         - task: DownloadBuildArtifacts@0
           displayName: Download Blob Artifacts
