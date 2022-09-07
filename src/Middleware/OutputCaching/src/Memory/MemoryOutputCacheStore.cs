@@ -126,7 +126,6 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                             if (tagged.Count == 0)
                             {
                                 _taggedEntries.Remove(tag);
-                                break;
                             }
                         }
                     }

@@ -158,28 +158,27 @@ public class MemoryOutputCacheStoreTests
 
         await store.SetAsync("a", value, new[] { "tag1" }, TimeSpan.FromMilliseconds(5), default);
         await store.SetAsync("b", value, new[] { "tag1", "tag2" }, TimeSpan.FromMilliseconds(5), default);
+        await store.SetAsync("c", value, new[] { "tag2" }, TimeSpan.FromMilliseconds(20), default);
 
         testClock.Advance(TimeSpan.FromMilliseconds(10));
 
-        // Force eviction of expired entries
-        cache.Compact(0);
-
-        await store.SetAsync("c", value, new[] { "tag2" }, TimeSpan.FromMilliseconds(10), default);
+        // Background expiration checks are triggered by misc cache activity.
+        _ = cache.Get("a");
 
         var resulta = await store.GetAsync("a", default);
         var resultb = await store.GetAsync("b", default);
         var resultc = await store.GetAsync("c", default);
 
-        HashSet<string> tag1s, tag2s;
-
-        // Wait for the hashset to be removed as it happens on a separate thread
-        var timeout = Task.Delay(1000);
-        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !timeout.IsCompleted) { }
-        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && tag2s.Count == 2 && !timeout.IsCompleted) { }
-
         Assert.Null(resulta);
         Assert.Null(resultb);
         Assert.NotNull(resultc);
+
+        HashSet<string> tag1s, tag2s;
+
+        // Wait for the hashset to be removed as it happens on a separate thread
+        var timeout = Task.Delay(2000);
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !timeout.IsCompleted) { }
+        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && tag2s.Count != 1 && !timeout.IsCompleted) { }
 
         Assert.False(timeout.IsCompleted);
         Assert.Null(tag1s);
