@@ -309,7 +309,7 @@ internal partial class HttpProtocol
 
         await FlushAsync();
 
-        return _bodyControl!.Upgrade();
+        return _bodyControl!.AcceptConnect();
     }
 
     void IHttpRequestLifetimeFeature.Abort()

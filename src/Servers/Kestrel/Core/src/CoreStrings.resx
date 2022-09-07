@@ -716,4 +716,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ErrorControlStreamClosed" xml:space="preserve">
     <value>A control stream used by the connection was closed or reset.</value>
   </data>
+  <data name="ConnectResponseCanNotHaveBody" xml:space="preserve">
+    <value>'CONNECT' requests with a 2XX success status code cannot have a response body.</value>
+  </data>
 </root>
