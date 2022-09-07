@@ -52,9 +52,7 @@ public abstract class EndpointDataSource
             // Make the full route pattern visible to IEndpointConventionBuilder extension methods called on the group.
             // This includes patterns from any parent groups.
             var fullRoutePattern = RoutePatternFactory.Combine(context.Prefix, routeEndpoint.RoutePattern);
-
-            // RequestDelegate can never be null on a RouteEndpoint. The nullability carries over from Endpoint.
-            var routeEndpointBuilder = new RouteEndpointBuilder(routeEndpoint.RequestDelegate!, fullRoutePattern, routeEndpoint.Order)
+            var routeEndpointBuilder = new RouteEndpointBuilder(routeEndpoint.RequestDelegate, fullRoutePattern, routeEndpoint.Order)
             {
                 DisplayName = routeEndpoint.DisplayName,
                 ApplicationServices = context.ApplicationServices,

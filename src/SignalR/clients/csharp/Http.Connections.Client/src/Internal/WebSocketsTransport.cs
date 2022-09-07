@@ -27,6 +27,7 @@ internal sealed partial class WebSocketsTransport : ITransport
     private volatile bool _aborted;
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly HttpClient? _httpClient;
+    private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
 
     private IDuplexPipe? _transport;
 
@@ -224,6 +225,8 @@ internal sealed partial class WebSocketsTransport : ITransport
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
 
+            _stopCts.CancelAfter(_closeTimeout);
+
             if (trigger == receiving)
             {
                 // We're waiting for the application to finish and there are 2 things it could be doing
@@ -233,22 +236,14 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // Cancel the application so that ReadAsync yields
                 _application.Input.CancelPendingRead();
 
-                using (var delayCts = new CancellationTokenSource())
+                var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, _stopCts.Token)).ConfigureAwait(false);
+
+                if (resultTask != sending)
                 {
-                    var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, delayCts.Token)).ConfigureAwait(false);
+                    _aborted = true;
 
-                    if (resultTask != sending)
-                    {
-                        _aborted = true;
-
-                        // Abort the websocket if we're stuck in a pending send to the client
-                        socket.Abort();
-                    }
-                    else
-                    {
-                        // Cancel the timeout
-                        delayCts.Cancel();
-                    }
+                    // Abort the websocket if we're stuck in a pending send to the client
+                    socket.Abort();
                 }
             }
             else
@@ -278,7 +273,7 @@ internal sealed partial class WebSocketsTransport : ITransport
             {
 #if NETSTANDARD2_1 || NETCOREAPP
                 // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
-                var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None).ConfigureAwait(false);
+                var result = await socket.ReceiveAsync(Memory<byte>.Empty, _stopCts.Token).ConfigureAwait(false);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -295,13 +290,13 @@ internal sealed partial class WebSocketsTransport : ITransport
                 var memory = _application.Output.GetMemory();
 #if NETSTANDARD2_1 || NETCOREAPP
                 // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
-                var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None).ConfigureAwait(false);
+                var receiveResult = await socket.ReceiveAsync(memory, _stopCts.Token).ConfigureAwait(false);
 #elif NETSTANDARD2_0 || NETFRAMEWORK
                 var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                 Debug.Assert(isArray);
 
                 // Exceptions are handled above where the send and receive tasks are being run.
-                var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None).ConfigureAwait(false);
+                var receiveResult = await socket.ReceiveAsync(arraySegment, _stopCts.Token).ConfigureAwait(false);
 #else
 #error TFMs need to be updated
 #endif
@@ -382,7 +377,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                             if (WebSocketCanSend(socket))
                             {
-                                await socket.SendAsync(buffer, _webSocketMessageType).ConfigureAwait(false);
+                                await socket.SendAsync(buffer, _webSocketMessageType, _stopCts.Token).ConfigureAwait(false);
                             }
                             else
                             {
@@ -420,7 +415,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 try
                 {
                     // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", _stopCts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -472,6 +467,9 @@ internal sealed partial class WebSocketsTransport : ITransport
         // Cancel any pending reads from the application, this should start the entire shutdown process
         _application.Input.CancelPendingRead();
 
+        // Start ungraceful close timer
+        _stopCts.CancelAfter(_closeTimeout);
+
         try
         {
             await Running.ConfigureAwait(false);
@@ -485,6 +483,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         finally
         {
             _webSocket?.Dispose();
+            _stopCts.Dispose();
         }
 
         Log.TransportStopped(_logger, null);

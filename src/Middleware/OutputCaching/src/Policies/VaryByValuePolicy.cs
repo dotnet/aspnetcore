@@ -10,62 +10,24 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByValuePolicy : IOutputCachePolicy
 {
-    private readonly Action<HttpContext, CacheVaryByRules>? _varyBy;
-    private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
-
-    /// <summary>
-    /// Creates a policy that doesn't vary the cached content based on values.
-    /// </summary>
-    public VaryByValuePolicy()
-    {
-    }
-
-    /// <summary>
-    /// Creates a policy that vary the cached content based on the specified value.
-    /// </summary>
-    public VaryByValuePolicy(Func<HttpContext, string> varyBy)
-    {
-        _varyBy = (context, rules) => rules.VaryByPrefix += varyBy(context);
-    }
-
-    /// <summary>
-    /// Creates a policy that vary the cached content based on the specified value.
-    /// </summary>
-    public VaryByValuePolicy(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
-    {
-        _varyByAsync = async (context, rules, token) => rules.VaryByPrefix += await varyBy(context, token);
-    }
-
-    /// <summary>
-    /// Creates a policy that vary the cached content based on the specified value.
-    /// </summary>
-    public VaryByValuePolicy(Func<HttpContext, KeyValuePair<string, string>> varyBy)
-    {
-        _varyBy = (context, rules) =>
-        {
-            var result = varyBy(context);
-            rules.VaryByCustom?.TryAdd(result.Key, result.Value);
-        };
-    }
+    private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask> _varyByAsync;
 
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
     public VaryByValuePolicy(Func<HttpContext, CancellationToken, ValueTask<KeyValuePair<string, string>>> varyBy)
     {
-        _varyBy = async (context, rules) =>
+        _varyByAsync = async (context, rules, cancellationToken) =>
         {
-            var result = await varyBy(context, context.RequestAborted);
-            rules.VaryByCustom?.TryAdd(result.Key, result.Value);
+            var result = await varyBy(context, cancellationToken);
+            rules.VaryByValues[result.Key] = result.Value;
         };
     }
 
     /// <inheritdoc/>
     ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        _varyBy?.Invoke(context.HttpContext, context.CacheVaryByRules);
-
-        return _varyByAsync?.Invoke(context.HttpContext, context.CacheVaryByRules, context.HttpContext.RequestAborted) ?? ValueTask.CompletedTask;
+        return _varyByAsync.Invoke(context.HttpContext, context.CacheVaryByRules, cancellationToken);
     }
 
     /// <inheritdoc/>

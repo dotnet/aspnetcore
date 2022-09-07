@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -13,34 +12,21 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class EndpointFilterFactoryContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="EndpointFilterFactoryContext"/>.
+    /// The <see cref="MethodInfo"/> associated with the current route handler, <see cref="RequestDelegate"/> or MVC action.
     /// </summary>
-    /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the current request.</param>
-    /// <param name="endpointMetadata">The <see cref="EndpointBuilder.Metadata"/> associated with the endpoint the filter is targeting.</param>
-    /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access the application services.</param>
-    public EndpointFilterFactoryContext(MethodInfo methodInfo, IList<object> endpointMetadata, IServiceProvider applicationServices)
-    {
-        ArgumentNullException.ThrowIfNull(methodInfo);
-        ArgumentNullException.ThrowIfNull(endpointMetadata);
-        ArgumentNullException.ThrowIfNull(applicationServices);
-
-        MethodInfo = methodInfo;
-        EndpointMetadata = endpointMetadata;
-        ApplicationServices = applicationServices;
-    }
-
-    /// <summary>
-    /// The <see cref="MethodInfo"/> associated with the current route handler.
-    /// </summary>
-    public MethodInfo MethodInfo { get; }
-
-    /// <summary>
-    /// The <see cref="EndpointMetadataCollection"/> associated with the current endpoint.
-    /// </summary>
-    public IList<object> EndpointMetadata { get; }
+    /// <remarks>
+    /// In the future this could support more endpoint types.
+    /// </remarks>
+    public required MethodInfo MethodInfo { get; init; }
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
     /// </summary>
-    public IServiceProvider ApplicationServices { get; }
+    public IServiceProvider ApplicationServices { get; init; } = EmptyServiceProvider.Instance;
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
+        public object? GetService(Type serviceType) => null;
+    }
 }

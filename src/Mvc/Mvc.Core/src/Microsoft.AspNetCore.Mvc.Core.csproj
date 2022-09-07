@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC core components. Contains common action result types, attribute routing, application model conventions, API explorer, application parts, filters, formatters, model binding, and more.
@@ -26,6 +26,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\*.cs" LinkBase="Shared" />

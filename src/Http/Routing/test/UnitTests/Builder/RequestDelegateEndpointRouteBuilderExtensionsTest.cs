@@ -115,7 +115,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
         {
-            routeHandlerContext.EndpointMetadata.Add(filterTag);
             return async invocationContext =>
             {
                 Assert.IsAssignableFrom<HttpContext>(Assert.Single(invocationContext.Arguments));
@@ -129,7 +128,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var endpoint = Assert.Single(dataSource.Endpoints);
 
         Assert.NotSame(initialRequestDelegate, endpoint.RequestDelegate);
-        Assert.Same(filterTag, endpoint.Metadata.GetMetadata<ITagsMetadata>());
 
         Assert.NotNull(endpoint.RequestDelegate);
         var requestDelegate = endpoint.RequestDelegate!;
@@ -147,11 +145,11 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
 
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
-        var filterTag = new TagsAttribute("filter");
+        var runCount = 0;
 
         var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory((routeHandlerContext, next) =>
         {
-            routeHandlerContext.EndpointMetadata.Add(filterTag);
+            runCount++;
             return next;
         });
 
@@ -159,7 +157,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var endpoint = Assert.Single(dataSource.Endpoints);
 
         Assert.Same(initialRequestDelegate, endpoint.RequestDelegate);
-        Assert.Same(filterTag, endpoint.Metadata.GetMetadata<ITagsMetadata>());
+        Assert.Equal(1, runCount);
     }
 
     [Fact]
@@ -306,9 +304,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         Assert.Collection(metadata,
             m => Assert.IsAssignableFrom<MethodInfo>(m),
-            m => Assert.Equal("System.Runtime.CompilerServices.NullableContextAttribute", m.ToString()),
-            m => Assert.IsAssignableFrom<Attribute1>(m),
-            m => Assert.IsAssignableFrom<Attribute2>(m),
             m => Assert.IsAssignableFrom<ParameterNameMetadata>(m),
             m =>
             {
@@ -319,7 +314,10 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
             {
                 Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
                 Assert.Equal(MetadataSource.ReturnType, ((CustomEndpointMetadata)m).Source);
-            });
+            },
+            m => Assert.Equal("System.Runtime.CompilerServices.NullableContextAttribute", m.ToString()),
+            m => Assert.IsAssignableFrom<Attribute1>(m),
+            m => Assert.IsAssignableFrom<Attribute2>(m));
     }
 
     [Attribute1]
@@ -351,9 +349,9 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class AddsCustomEndpointMetadataResult : IEndpointMetadataProvider, IResult
     {
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
@@ -361,16 +359,16 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static ValueTask<AddsCustomParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+        public static ValueTask<AddsCustomParameterMetadata?> BindAsync(HttpContext context, ParameterInfo parameter) => default;
 
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {
-            parameterContext.EndpointMetadata.Add(new ParameterNameMetadata { Name = parameterContext.Parameter.Name ?? string.Empty });
+            builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name ?? string.Empty });
         }
 
-        public static void PopulateMetadata(EndpointMetadataContext context)
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+            builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
     }
 

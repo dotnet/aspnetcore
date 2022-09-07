@@ -5,7 +5,7 @@ abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Arguments.get
 abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.GetArgument<T>(int index) -> T
 abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.set -> void
+Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.init -> void
 Microsoft.AspNetCore.Builder.EndpointBuilder.FilterFactories.get -> System.Collections.Generic.IList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>!
 Microsoft.AspNetCore.Builder.IEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Http.AsParametersAttribute
@@ -16,9 +16,10 @@ Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpoint
 Microsoft.AspNetCore.Http.EndpointFilterDelegate
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointFilterFactoryContext(System.Reflection.MethodInfo! methodInfo, System.Collections.Generic.IList<object!>! endpointMetadata, System.IServiceProvider! applicationServices) -> void
-Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.ApplicationServices.init -> void
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.EndpointFilterFactoryContext() -> void
 Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.MethodInfo.get -> System.Reflection.MethodInfo!
+Microsoft.AspNetCore.Http.EndpointFilterFactoryContext.MethodInfo.init -> void
 Microsoft.AspNetCore.Http.EndpointFilterInvocationContext
 Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.EndpointFilterInvocationContext() -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
@@ -68,6 +69,10 @@ abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider
+Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider.PopulateMetadata(System.Reflection.MethodInfo! method, Microsoft.AspNetCore.Builder.EndpointBuilder! builder) -> void
+Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider
+Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider.PopulateMetadata(System.Reflection.ParameterInfo! parameter, Microsoft.AspNetCore.Builder.EndpointBuilder! builder) -> void
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
 Microsoft.AspNetCore.Mvc.ProblemDetails
