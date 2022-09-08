@@ -312,6 +312,12 @@ internal sealed class OutputCacheMiddleware
     {
         CreateCacheKey(cacheContext);
 
+        // If the cache key can't be computed skip it
+        if (string.IsNullOrEmpty(cacheContext.CacheKey))
+        {
+            return false;
+        }
+
         // Locking cache lookups by default
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
@@ -408,14 +414,16 @@ internal sealed class OutputCacheMiddleware
                 }
 
                 context.CachedResponse.Body = cachedResponseBody;
-                _logger.ResponseCached();
 
                 if (string.IsNullOrEmpty(context.CacheKey))
                 {
-                    throw new InvalidOperationException("Cache key must be defined");
+                    _logger.ResponseNotCached();
                 }
-
-                await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, context.HttpContext.RequestAborted);
+                else
+                {
+                    _logger.ResponseCached();
+                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, context.HttpContext.RequestAborted);
+                }
             }
             else
             {

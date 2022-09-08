@@ -24,6 +24,8 @@ const nonBubblingEvents = toLookup([
   'loadstart',
   'mouseenter',
   'mouseleave',
+  'pointerenter',
+  'pointerleave',
   'pause',
   'play',
   'playing',
