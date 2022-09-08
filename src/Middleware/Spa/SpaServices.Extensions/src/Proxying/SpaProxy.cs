@@ -68,9 +68,10 @@ internal static class SpaProxy
         // when proxying to Angular CLI middleware: we won't know what port it's listening
         // on until it finishes starting up.
         var baseUri = await baseUriTask;
-        var targetUri = new Uri(
-			baseUri.AbsolutePath.EndsWith("/", StringComparison.OrdinalIgnoreCase) ? baseUri : new Uri(baseUri + "/"),
-            "." + context.Request.Path + context.Request.QueryString);
+        var targetUri = new Uri(baseUri,
+			baseUri.AbsoluteUri
+			+ (baseUri.AbsoluteUri.EndsWith("/", StringComparison.OrdinalIgnoreCase) ? context.Request.Path.Substring(1) : context.Request.Path)
+			+ context.Request.QueryString);
 
         try
         {
