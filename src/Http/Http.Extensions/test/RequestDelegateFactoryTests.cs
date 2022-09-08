@@ -2649,7 +2649,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal($"The by reference parameter 'out {typeName} foo' is not supported.", outParamException.Message);
         Assert.Equal($"The by reference parameter 'in {typeName} foo' is not supported.", inParamException.Message);
-        Assert.Equal($"The by reference parameter '{typeName} foo' is not supported.", refParamException.Message);
+        Assert.Equal($"The by reference parameter 'ref  {typeName} foo' is not supported.", refParamException.Message);
     }
 
     [Theory]
