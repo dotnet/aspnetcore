@@ -126,7 +126,7 @@ public class SocketTransportOptions
                 // the underlying socket is never closed and the transport manager can hang
                 // when it attempts to stop.
                 listenSocket = new Socket(
-                    new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
+                    new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: false)
                 );
                 break;
             case UnixDomainSocketEndPoint unix:
