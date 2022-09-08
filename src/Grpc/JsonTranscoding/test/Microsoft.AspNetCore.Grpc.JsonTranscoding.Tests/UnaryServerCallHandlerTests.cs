@@ -590,7 +590,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
 
         var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "ErrorExecutingServiceMethod");
@@ -621,7 +620,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Exception was thrown by handler. InvalidOperationException: Error!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Exception was thrown by handler. InvalidOperationException: Error!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
 
         var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "ErrorExecutingServiceMethod");
