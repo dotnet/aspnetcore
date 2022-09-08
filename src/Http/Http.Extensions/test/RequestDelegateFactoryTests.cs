@@ -2634,6 +2634,22 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    [Fact]
+    public void BuildRequestDelegateThrowsNotSupportedExceptionForByRefParameters()
+    {
+        void OutMethod(out string foo) { foo = ""; }
+        void InMethod(in string foo) { }
+        void RefMethod(ref string foo) { }
+
+        var outParamException = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(OutMethod));
+        var inParamException = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(InMethod));
+        var refParamException = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(RefMethod));
+
+        Assert.Equal($"The by reference parameter 'out {typeof(string).Name}& foo' is not supported.", outParamException.Message);
+        Assert.Equal($"The by reference parameter 'in {typeof(string).Name}& foo' is not supported.", inParamException.Message);
+        Assert.Equal($"The by reference parameter '{typeof(string).Name}& foo' is not supported.", refParamException.Message);
+    }
+
     [Theory]
     [MemberData(nameof(ImplicitFromServiceActions))]
     public async Task RequestDelegateRequiresServiceForAllImplicitFromServiceParameters(Delegate action)
