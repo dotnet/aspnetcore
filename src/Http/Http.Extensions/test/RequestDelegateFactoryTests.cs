@@ -2645,9 +2645,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         var inParamException = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(InMethod));
         var refParamException = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(RefMethod));
 
-        Assert.Equal($"The by reference parameter 'out {typeof(string).Name}& foo' is not supported.", outParamException.Message);
-        Assert.Equal($"The by reference parameter 'in {typeof(string).Name}& foo' is not supported.", inParamException.Message);
-        Assert.Equal($"The by reference parameter '{typeof(string).Name}& foo' is not supported.", refParamException.Message);
+        var typeName = typeof(string).MakeByRefType().Name;
+
+        Assert.Equal($"The by reference parameter 'out {typeName} foo' is not supported.", outParamException.Message);
+        Assert.Equal($"The by reference parameter 'in {typeName} foo' is not supported.", inParamException.Message);
+        Assert.Equal($"The by reference parameter '{typeName} foo' is not supported.", refParamException.Message);
     }
 
     [Theory]
