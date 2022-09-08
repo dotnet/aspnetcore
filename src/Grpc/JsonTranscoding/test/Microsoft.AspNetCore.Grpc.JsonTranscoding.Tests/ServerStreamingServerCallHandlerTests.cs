@@ -148,7 +148,6 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         var line2 = await ReadLineAsync(pipe.Reader).DefaultTimeout();
         using var responseJson2 = JsonDocument.Parse(line2!);
         Assert.Equal("Detail!", responseJson2.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Detail!", responseJson2.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Aborted, responseJson2.RootElement.GetProperty("code").GetInt32());
 
         var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "RpcConnectionError");
