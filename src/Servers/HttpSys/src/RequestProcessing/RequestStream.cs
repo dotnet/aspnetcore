@@ -96,10 +96,7 @@ internal sealed partial class RequestStream : Stream
 
     private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
         if ((uint)offset > (uint)buffer.Length)
         {
             throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
