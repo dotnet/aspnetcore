@@ -237,6 +237,36 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
+    public async Task AuthenticationManager_LoginCallback_OnlyExecutesOnInitialRender()
+    {
+        // Arrange
+        var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
+            "https://www.example.com/base/authentication/login-callback?code=1234");
+
+        authServiceMock.CompleteSignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
+        {
+            Status = RemoteAuthenticationStatus.Success,
+        });
+
+        var callbackInvocationCount = 0;
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [_action] = RemoteAuthenticationActions.LogInCallback,
+            [_onLogInSucceded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
+                remoteAuthenticator,
+                (state) => callbackInvocationCount++)
+        });
+
+        // Act
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
+
+        // Assert
+        Assert.Equal(1, callbackInvocationCount);
+    }
+
+    [Fact]
     public async Task AuthenticationManager_Logout_NavigatesToReturnUrlOnSuccess()
     {
         // Arrange
