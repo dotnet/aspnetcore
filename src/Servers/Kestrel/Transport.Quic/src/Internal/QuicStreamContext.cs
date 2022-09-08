@@ -465,7 +465,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
         finally
         {
-            ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
+            ShutdownWrite(shutdownReason);
 
             await waitForWritesClosedTask;
 
@@ -525,10 +525,14 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             lock (_shutdownLock)
             {
-                _shutdownReason = shutdownReason ?? SendGracefullyCompletedException;
+                _shutdownReason = _shutdownWriteReason ?? _shutdownReason ?? shutdownReason ?? SendGracefullyCompletedException;
                 QuicLog.StreamShutdownWrite(_log, this, _shutdownReason.Message);
 
-                _stream.CompleteWrites();
+                // Only complete writes for a graceful shutdown.
+                if (_shutdownReason == SendGracefullyCompletedException)
+                {
+                    _stream.CompleteWrites();
+                }
             }
         }
         catch (Exception ex)

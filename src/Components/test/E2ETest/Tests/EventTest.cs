@@ -105,6 +105,27 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void PointerEnterAndPointerLeave_CanTrigger()
+    {
+        Browser.MountTestComponent<MouseEventComponent>();
+
+        var input = Browser.Exists(By.Id("pointerenter_input"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Pointer enter the button and then pointer leave
+        Browser.ExecuteJavaScript($@"
+            var pointerEnterElement = document.getElementById('pointerenter_input');
+            var pointerEnterEvent = new PointerEvent('pointerenter');
+            var pointerLeaveEvent = new PointerEvent('pointerleave');
+            pointerEnterElement.dispatchEvent(pointerEnterEvent);
+            pointerEnterElement.dispatchEvent(pointerLeaveEvent);");
+
+        Browser.Equal("pointerenter,pointerleave,", () => output.Text);
+    }
+
+    [Fact]
     public void MouseMove_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();
