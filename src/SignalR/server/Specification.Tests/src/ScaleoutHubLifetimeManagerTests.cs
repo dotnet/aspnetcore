@@ -654,7 +654,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation.InvocationId, "wrong type")).DefaultTimeout();
 
             var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
-            Assert.Equal("Client result wasn't deserializable to Int32.", ex.Message);
+            Assert.StartsWith("Error trying to deserialize result to Int32.", ex.Message);
         }
     }
 }
