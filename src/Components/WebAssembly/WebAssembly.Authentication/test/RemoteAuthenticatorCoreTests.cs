@@ -237,7 +237,7 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
-    public async Task AuthenticationManager_LoginCallback_OnlyExecutesOnInitialRender()
+    public async Task AuthenticationManager_Callbacks_OnlyExecuteOncePerAction()
     {
         // Arrange
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
@@ -248,22 +248,41 @@ public class RemoteAuthenticatorCoreTests
             Status = RemoteAuthenticationStatus.Success,
         });
 
-        var callbackInvocationCount = 0;
+        authServiceMock.CompleteSignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
+        {
+            Status = RemoteAuthenticationStatus.Success,
+        });
 
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        var logInCallbackInvocationCount = 0;
+        var logOutCallbackInvocationCount = 0;
+
+        var parameterDictionary = new Dictionary<string, object>
         {
             [_action] = RemoteAuthenticationActions.LogInCallback,
             [_onLogInSucceded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
                 remoteAuthenticator,
-                (state) => callbackInvocationCount++)
-        });
+                (state) => logInCallbackInvocationCount++),
+            [_onLogOutSucceeded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
+                remoteAuthenticator,
+                (state) => logOutCallbackInvocationCount++)
+        };
+
+        var initialParameters = ParameterView.FromDictionary(parameterDictionary);
+
+        parameterDictionary[_action] = RemoteAuthenticationActions.LogOutCallback;
+
+        var finalParameters = ParameterView.FromDictionary(parameterDictionary);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
-        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(initialParameters));
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(initialParameters));
+
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(finalParameters));
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(finalParameters));
 
         // Assert
-        Assert.Equal(1, callbackInvocationCount);
+        Assert.Equal(1, logInCallbackInvocationCount);
+        Assert.Equal(1, logOutCallbackInvocationCount);
     }
 
     [Fact]
