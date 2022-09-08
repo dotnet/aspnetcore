@@ -397,6 +397,7 @@ internal static class ServiceDescriptorHelpers
                     continue;
                 }
 
+                // Add current field descriptor. It should be included in the path.
                 path.Add(fieldDescriptor);
 
                 switch (fieldDescriptor.FieldType)
@@ -431,6 +432,7 @@ internal static class ServiceDescriptorHelpers
                         break;
                 }
 
+                // Remove current field descriptor.
                 path.RemoveAt(path.Count - 1);
             }
         }
