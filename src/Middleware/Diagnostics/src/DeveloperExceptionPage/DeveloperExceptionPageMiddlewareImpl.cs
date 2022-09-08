@@ -190,7 +190,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 }),
                 Headers = httpContext.Request.Headers,
                 Error = errorContext.Exception.ToString(),
-                Path = httpContext.Request.Path,
+                Path = httpContext.Request.Path.ToString(),
                 Endpoint = httpContext.GetEndpoint()?.ToString(),
                 RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
             };
