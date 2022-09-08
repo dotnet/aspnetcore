@@ -74,12 +74,16 @@ public class MemoryOutputCacheStoreTests
         HashSet<string> tag1s;
 
         // Wait for the hashset to be removed as it happens on a separate thread
-        var timeout = Task.Delay(1000);
-        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !timeout.IsCompleted) { }
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
 
         Assert.Null(result);
         Assert.Null(tag1s);
-        Assert.False(timeout.IsCompleted);
     }
 
     [Fact]
@@ -176,11 +180,19 @@ public class MemoryOutputCacheStoreTests
         HashSet<string> tag1s, tag2s;
 
         // Wait for the hashset to be removed as it happens on a separate thread
-        var timeout = Task.Delay(2000);
-        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !timeout.IsCompleted) { }
-        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && tag2s.Count != 1 && !timeout.IsCompleted) { }
 
-        Assert.False(timeout.IsCompleted);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
+
+        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && tag2s.Count != 1 && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
+
         Assert.Null(tag1s);
         Assert.Single(tag2s);
     }

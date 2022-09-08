@@ -33,12 +33,25 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (keys != null && keys.Count > 0)
                 {
-                    // Clone the tags as the collection might be updated by the post eviction callback
-                    var keysArray = keys.ToArray();
+                    // Since eviction callbacks run inline, iterating over keys could throw
+                    // To prevent allocating a copy of the keys we check if the eviction callback ran,
+                    // and if it did we restart the loop.
 
-                    foreach (var key in keysArray)
+                    var i = keys.Count;
+                    while (i > 0)
                     {
-                        _cache.Remove(key);
+                        var oldCount = keys.Count;
+                        foreach (var key in keys)
+                        {
+                            _cache.Remove(key);
+                            i--;
+                            if (oldCount != keys.Count)
+                            {
+                                // eviction callback ran inline, we need to restart the loop to avoid
+                                // "collection modified while iterating" errors
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -80,59 +93,61 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                     keys.Add(key);
                 }
 
-                SetEntry();
+                SetEntry(key, value, tags, validFor);
             }
         }
         else
         {
-            SetEntry();
+            SetEntry(key, value, tags, validFor);
         }
 
-        void SetEntry()
+        return ValueTask.CompletedTask;
+    }
+
+    void SetEntry(string key, byte[] value, string[]? tags, TimeSpan validFor)
+    {
+        var options = new MemoryCacheEntryOptions
         {
-            var options = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = validFor,
-                Size = value.Length
-            };
+            AbsoluteExpirationRelativeToNow = validFor,
+            Size = value.Length
+        };
 
-            if (tags != null && tags.Length > 0)
-            {
-                // Remove cache keys from tag lists when the entry is evicted
-                options.RegisterPostEvictionCallback(RemoveFromTags, tags);
-            }
-
-            _cache.Set(key, value, options);
+        if (tags != null && tags.Length > 0)
+        {
+            // Remove cache keys from tag lists when the entry is evicted
+            options.RegisterPostEvictionCallback(RemoveFromTags, tags);
         }
 
-        void RemoveFromTags(object key, object? value, EvictionReason reason, object? state)
+        _cache.Set(key, value, options);
+    }
+
+    void RemoveFromTags(object key, object? value, EvictionReason reason, object? state)
+    {
+        var tags = state as string[];
+
+        Debug.Assert(tags != null);
+        Debug.Assert(tags.Length > 0);
+
+        if (key is not string stringKey)
         {
-            var tags = state as string[];
+            return;
+        }
 
-            Debug.Assert(tags != null);
-            Debug.Assert(tags.Length > 0);
-
-            lock (_tagsLock)
+        lock (_tagsLock)
+        {
+            foreach (var tag in tags!)
             {
-                foreach (var tag in tags!)
+                if (_taggedEntries.TryGetValue(tag, out var tagged) && tagged != null)
                 {
-                    if (_taggedEntries.TryGetValue(tag, out var tagged) && tagged != null)
-                    {
-                        if (key is string s)
-                        {
-                            tagged.Remove(s);
+                    tagged.Remove(stringKey);
 
-                            // Remove the collection if there is no more keys in it
-                            if (tagged.Count == 0)
-                            {
-                                _taggedEntries.Remove(tag);
-                            }
-                        }
+                    // Remove the collection if there is no more keys in it
+                    if (tagged.Count == 0)
+                    {
+                        _taggedEntries.Remove(tag);
                     }
                 }
             }
         }
-
-        return ValueTask.CompletedTask;
     }
 }
