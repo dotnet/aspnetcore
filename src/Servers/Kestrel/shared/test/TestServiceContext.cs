@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.Testing
             Initialize(kestrelTrace.LoggerFactory, kestrelTrace);
         }
 
-        public TestServiceContext(ILoggerFactory loggerFactory)
+        public TestServiceContext(ILoggerFactory loggerFactory, bool enableHttp1LineFeedTerminators = false)
         {
-            Initialize(loggerFactory, CreateLoggingTrace(loggerFactory));
+            Initialize(loggerFactory, CreateLoggingTrace(loggerFactory), enableHttp1LineFeedTerminators);
         }
 
-        public TestServiceContext(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        public TestServiceContext(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace, bool enableHttp1LineFeedTerminators = false)
         {
-            Initialize(loggerFactory, new CompositeKestrelTrace(kestrelTrace, CreateLoggingTrace(loggerFactory)));
+            Initialize(loggerFactory, new CompositeKestrelTrace(kestrelTrace, CreateLoggingTrace(loggerFactory)), enableHttp1LineFeedTerminators);
         }
 
         private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Testing
             SystemClock = heartbeatManager;
         }
 
-        private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace, bool enableHttp1LineFeedTerminators = false)
         {
             LoggerFactory = loggerFactory;
             Log = kestrelTrace;
@@ -60,7 +60,10 @@ namespace Microsoft.AspNetCore.Testing
             SystemClock = MockSystemClock;
             DateHeaderValueManager = new DateHeaderValueManager();
             ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
-            HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information));
+            HttpParser = new HttpParser<Http1ParsingHandler>(
+                Log.IsEnabled(LogLevel.Information),
+                allowSpaceAfterRequestLine: false,
+                enableHttp1LineFeedTerminators);
             ServerOptions = new KestrelServerOptions
             {
                 AddServerHeader = false

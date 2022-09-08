@@ -76,7 +76,9 @@ namespace Microsoft.AspNetCore.Testing
                 var httpVersions = new[]
                 {
                     "HTTP/1.0",
-                    "HTTP/1.1"
+                    "HTTP/1.1",
+                    " HTTP/1.1",
+                    "   HTTP/1.1"
                 };
 
                 return from method in methods
@@ -91,7 +93,7 @@ namespace Microsoft.AspNetCore.Testing
                            $"{path.Item1}",
                            $"{path.Item2}",
                            queryString,
-                           httpVersion
+                           httpVersion.Trim()
                        };
             }
         }
@@ -164,6 +166,12 @@ namespace Microsoft.AspNetCore.Testing
                     "GET / HTTP/1.1\n",
                     "GET / HTTP/1.0\rA\n",
                     "GET / HTTP/1.1\ra\n",
+                    "GET  / HTTP/1.1\r\n",
+                    "GET   / HTTP/1.1\r\n",
+                    "GET  /  HTTP/1.1\r\n",
+                    "GET   /   HTTP/1.1\r\n",
+                    "GET / HTTP/1.1 \r\n",
+                    "GET / HTTP/1.1  \r\n",
                     "GET / H\r\n",
                     "GET / HT\r\n",
                     "GET / HTT\r\n",
@@ -195,6 +203,12 @@ namespace Microsoft.AspNetCore.Testing
                     "CUSTOM / HTTP/1.1\n",
                     "CUSTOM / HTTP/1.0\rA\n",
                     "CUSTOM / HTTP/1.1\ra\n",
+                    "CUSTOM  / HTTP/1.1\r\n",
+                    "CUSTOM   / HTTP/1.1\r\n",
+                    "CUSTOM  /  HTTP/1.1\r\n",
+                    "CUSTOM   /   HTTP/1.1\r\n",
+                    "CUSTOM / HTTP/1.1 \r\n",
+                    "CUSTOM / HTTP/1.1  \r\n",
                     "CUSTOM / H\r\n",
                     "CUSTOM / HT\r\n",
                     "CUSTOM / HTT\r\n",

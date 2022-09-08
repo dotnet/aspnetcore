@@ -864,6 +864,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
         }
 
+        [Fact]
+        public async Task SingleLineFeedIsSupportedAnywhere()
+        {
+            // Exercises all combinations of LF and CRLF as line separators.
+            // Uses a bit mask for all the possible combinations.
+
+            var lines = new[]
+            {
+                $"GET / HTTP/1.1",
+                "Content-Length: 0",
+                $"Host: localhost",
+                "",
+            };
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, enableHttp1LineFeedTerminators: true)))
+            {
+                var mask = Math.Pow(2, lines.Length) - 1;
+
+                for (var m = 0; m <= mask; m++)
+                {
+                    using (var client = server.CreateConnection())
+                    {
+                        var sb = new StringBuilder();
+
+                        for (var pos = 0; pos < lines.Length; pos++)
+                        {
+                            sb.Append(lines[pos]);
+                            var separator = (m & (1 << pos)) != 0 ? "\n" : "\r\n";
+                            sb.Append(separator);
+                        }
+
+                        var text = sb.ToString();
+                        var writer = new StreamWriter(client.Stream, Encoding.GetEncoding("iso-8859-1"));
+                        await writer.WriteAsync(text).ConfigureAwait(false);
+                        await writer.FlushAsync().ConfigureAwait(false);
+                        await client.Stream.FlushAsync().ConfigureAwait(false);
+
+                        await client.Receive("HTTP/1.1 200");
+                    }
+                }
+            }
+        }
+
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
             var builder = TransportSelector.GetHostBuilder()
