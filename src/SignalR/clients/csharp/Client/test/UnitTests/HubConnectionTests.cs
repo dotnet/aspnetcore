@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client;
@@ -20,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -570,6 +565,40 @@ public partial class HubConnectionTests : VerifiableLoggedTest
 
     [Fact]
     [LogLevel(LogLevel.Trace)]
+    public async Task ActiveUploadStreamWhenConnectionClosesObservesException()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            var channel = Channel.CreateUnbounded<int>();
+            var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader);
+
+            var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.InvocationMessageType, invokeMessage["type"]);
+
+            // Not sure how to test for unobserved task exceptions, best I could come up with is to check that we log where there once was an unobserved task exception
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            TestSink.MessageLogged += wc =>
+            {
+                if (wc.EventId.Name == "CompletingStreamNotSent")
+                {
+                    tcs.SetResult();
+                }
+            };
+
+            await hubConnection.StopAsync();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() => invokeTask).DefaultTimeout();
+
+            await tcs.Task.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    [LogLevel(LogLevel.Trace)]
     public async Task InvocationCanCompleteBeforeStreamCompletes()
     {
         using (StartVerifiableLog())
@@ -735,6 +764,42 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             Assert.Same(originalOptions.AccessTokenProvider, accessTokenFactory);
             Assert.Same(resolvedOptions.Headers, originalOptions.Headers);
             Assert.Contains(fakeHeader, resolvedOptions.Headers);
+        }
+    }
+
+    [Fact]
+    [LogLevel(LogLevel.Trace)]
+    public async Task ClientResultResponseAfterConnectionCloseObservesException()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            var resultTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            hubConnection.On("Result", async () =>
+            {
+                await resultTcs.Task;
+                return 1;
+            });
+
+            await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+            // Not sure how to test for unobserved task exceptions, best I could come up with is to check that we log where there once was an unobserved task exception
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            TestSink.MessageLogged += wc =>
+            {
+                if (wc.EventId.Name == "ErrorSendingInvocationResult")
+                {
+                    tcs.SetResult();
+                }
+            };
+
+            await hubConnection.StopAsync();
+            resultTcs.SetResult();
+
+            await tcs.Task.DefaultTimeout();
         }
     }
 
