@@ -26,6 +26,7 @@
   },
   "resolutions": {
     "minimist": ">=1.2.6",
-    "ansi-regex": "^4.1.1"
+    "ansi-regex": "^4.1.1",
+    "json-schema": "^0.4.0"
   }
 }
