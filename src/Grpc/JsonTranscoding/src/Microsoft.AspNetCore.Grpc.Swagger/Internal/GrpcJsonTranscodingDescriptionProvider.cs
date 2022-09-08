@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Text;
 using Google.Api;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
@@ -69,7 +70,6 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             },
             EndpointMetadata = routeEndpoint.Metadata.ToList()
         };
-        apiDescription.RelativePath = pattern.TrimStart('/');
         apiDescription.SupportedRequestFormats.Add(new ApiRequestFormat { MediaType = "application/json" });
         apiDescription.SupportedResponseTypes.Add(new ApiResponseType
         {
@@ -91,11 +91,13 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
 
         var methodMetadata = routeEndpoint.Metadata.GetMetadata<GrpcMethodMetadata>()!;
         var httpRoutePattern = HttpRoutePattern.Parse(pattern);
-        var routeParameters = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(httpRoutePattern.Variables.Select(v => v.FieldPath).ToList(), methodDescriptor.InputType);
+        var routeParameters = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(httpRoutePattern.Variables, methodDescriptor.InputType);
+
+        apiDescription.RelativePath = ResolvePath(httpRoutePattern, routeParameters);
 
         foreach (var routeParameter in routeParameters)
         {
-            var field = routeParameter.Value.Last();
+            var field = routeParameter.Value.DescriptorsPath.Last();
             var parameterName = ServiceDescriptorHelpers.FormatUnderscoreName(field.Name, pascalCase: true, preservePeriod: false);
             var propertyInfo = field.ContainingType.ClrType.GetProperty(parameterName);
 
@@ -106,7 +108,7 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
 
             apiDescription.ParameterDescriptions.Add(new ApiParameterDescription
             {
-                Name = routeParameter.Key,
+                Name = routeParameter.Value.JsonPath,
                 ModelMetadata = new GrpcModelMetadata(identity),
                 Source = BindingSource.Path,
                 DefaultValue = string.Empty
@@ -154,6 +156,33 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         }
 
         return apiDescription;
+    }
+
+    private static string ResolvePath(HttpRoutePattern httpRoutePattern, Dictionary<string, RouteParameter> routeParameters)
+    {
+        var sb = new StringBuilder();
+        for (var i = 0; i < httpRoutePattern.Segments.Count; i++)
+        {
+            if (sb.Length > 0)
+            {
+                sb.Append('/');
+            }
+            var routeParameter = routeParameters.SingleOrDefault(kvp => kvp.Value.RouteVariable.StartSegment == i).Value;
+            if (routeParameter != null)
+            {
+                sb.Append('{');
+                sb.Append(routeParameter.JsonPath);
+                sb.Append('}');
+
+                // Skip segments if variable is multiple segment.
+                i = routeParameter.RouteVariable.EndSegment - 1;
+            }
+            else
+            {
+                sb.Append(httpRoutePattern.Segments[i]);
+            }
+        }
+        return sb.ToString();
     }
 
     public void OnProvidersExecuted(ApiDescriptionProviderContext context)

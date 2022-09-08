@@ -7,6 +7,9 @@ package params;
 
 import "google/api/annotations.proto";
 
+// Add go_package to keep protoc happy when testing generating OpenAPI from commandline.
+option go_package = "github.com/dotnet/aspnetcore/swagger";
+
 // HttpRule: https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#google.api.HttpRule
 
 service Parameters {
@@ -53,6 +56,19 @@ service Parameters {
       get: "/v1/parameters6"
     };
   }
+
+  // parameter_two & parameter_one.nested_parameter_three & parameter_one.nested_parameter_four should be query parameters
+  rpc DemoParametersSeven (RequestFour) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters7/{parameter_one.nested_parameter_one}/{parameter_one.nested_parameter_two}"
+    };
+  }
+
+  rpc DemoParametersEight (RequestFour) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters8/{parameter_one.nested_parameter_one=messages1/*}/{parameter_one.nested_parameter_two=shelves/*/books/*}"
+    };
+  }
 }
 
 message RequestOne {
@@ -75,8 +91,20 @@ message RequestThree {
   map<string, string> parameter_three = 3;
 }
 
+message RequestFour {
+  Nested parameter_one = 1;
+  string parameter_two = 2;
+
+  message Nested {
+    int64 nested_parameter_one = 1;
+    string nested_parameter_two = 2;
+    int64 nested_parameter_three = 3;
+    repeated int64 nested_parameter_four = 4;
+  }
+}
+
 message RequestBody {
-  string request_body = 1 ;
+  string request_body = 1;
 }
 
 message ParamResponse {

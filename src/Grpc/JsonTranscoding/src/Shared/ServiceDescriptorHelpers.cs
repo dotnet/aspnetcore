@@ -17,7 +17,6 @@
 #endregion
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -26,9 +25,6 @@ using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 using Type = System.Type;
 
@@ -289,18 +285,22 @@ internal static class ServiceDescriptorHelpers
         }
     }
 
-    public static Dictionary<string, List<FieldDescriptor>> ResolveRouteParameterDescriptors(List<List<string>> parameters, MessageDescriptor messageDescriptor)
+    public static Dictionary<string, RouteParameter> ResolveRouteParameterDescriptors(
+        List<HttpRouteVariable> variables,
+        MessageDescriptor messageDescriptor)
     {
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>(StringComparer.Ordinal);
-        foreach (var routeParameter in parameters)
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>(StringComparer.Ordinal);
+        foreach (var variable in variables)
         {
-            var completeFieldPath = string.Join(".", routeParameter);
-            if (!TryResolveDescriptors(messageDescriptor, routeParameter, out var fieldDescriptors))
+            var path = variable.FieldPath;
+            if (!TryResolveDescriptors(messageDescriptor, path, out var fieldDescriptors))
             {
-                throw new InvalidOperationException($"Couldn't find matching field for route parameter '{completeFieldPath}' on {messageDescriptor.Name}.");
+                throw new InvalidOperationException($"Couldn't find matching field for route parameter '{string.Join(".", path)}' on {messageDescriptor.Name}.");
             }
 
-            routeParameterDescriptors.Add(completeFieldPath, fieldDescriptors);
+            var completeFieldPath = string.Join(".", fieldDescriptors.Select(d => d.Name));
+            var completeJsonPath = string.Join(".", fieldDescriptors.Select(d => d.JsonName));
+            routeParameterDescriptors.Add(completeFieldPath, new RouteParameter(fieldDescriptors, variable, completeJsonPath));
         }
 
         return routeParameterDescriptors;
@@ -349,33 +349,39 @@ internal static class ServiceDescriptorHelpers
     }
 
     public static Dictionary<string, FieldDescriptor> ResolveQueryParameterDescriptors(
-        Dictionary<string, List<FieldDescriptor>> routeParameters,
+        Dictionary<string, RouteParameter> routeParameters,
         MethodDescriptor methodDescriptor,
         MessageDescriptor? bodyDescriptor,
         List<FieldDescriptor>? bodyFieldDescriptors)
     {
-        var queryParameters = new Dictionary<string, FieldDescriptor>();
         var existingParameters = new List<FieldDescriptor>();
 
-        if (routeParameters.Count > 0)
+        foreach (var routeParameter in routeParameters)
         {
-            existingParameters.AddRange(routeParameters.Values.Last());
+            // Each route field descriptors collection contains all the descriptors in the path.
+            // We only care about the final place the route value is set and so add only the last
+            // descriptor to the existing parameters collection.
+            existingParameters.Add(routeParameter.Value.DescriptorsPath.Last());
         }
 
         if (bodyDescriptor != null)
         {
             if (bodyFieldDescriptors != null)
             {
-                // Body with field name. Note: might not be a field on root request message.
+                // Body with field name.
+                // The body field descriptors collection contains all the descriptors in the path.
+                // We only care about the final place the body is set and so add only the last
+                // descriptor to the existing parameters collection.
                 existingParameters.Add(bodyFieldDescriptors.Last());
             }
             else
             {
-                // Body with wildcard. All parameters at in the body.
-                return queryParameters;
+                // Body with wildcard. All parameters are in the body so no query parameters.
+                return new Dictionary<string, FieldDescriptor>();
             }
         }
 
+        var queryParameters = new Dictionary<string, FieldDescriptor>();
         RecursiveVisitMessages(queryParameters, existingParameters, methodDescriptor.InputType, new List<FieldDescriptor>());
         return queryParameters;
 
@@ -493,3 +499,8 @@ internal static class ServiceDescriptorHelpers
         return result;
     }
 }
+
+internal record RouteParameter(
+    List<FieldDescriptor> DescriptorsPath,
+    HttpRouteVariable RouteVariable,
+    string JsonPath);

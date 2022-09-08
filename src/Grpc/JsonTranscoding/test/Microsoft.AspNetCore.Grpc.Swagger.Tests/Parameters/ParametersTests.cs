@@ -40,11 +40,11 @@ public class ParametersTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
 
         // Assert
-        var path = swagger.Paths["/v1/parameters2/{parameter_int}"];
+        var path = swagger.Paths["/v1/parameters2/{parameterInt}"];
         Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
         Assert.Equal(2, operation.Parameters.Count);
         Assert.Equal(ParameterLocation.Path, operation.Parameters[0].In);
-        Assert.Equal("parameter_int", operation.Parameters[0].Name);
+        Assert.Equal("parameterInt", operation.Parameters[0].Name);
         Assert.Equal(ParameterLocation.Query, operation.Parameters[1].In);
         Assert.Equal("parameterString", operation.Parameters[1].Name);
     }
@@ -56,11 +56,11 @@ public class ParametersTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
 
         // Assert
-        var path = swagger.Paths["/v1/parameters3/{parameter_one}"];
+        var path = swagger.Paths["/v1/parameters3/{parameterOne}"];
         Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
         Assert.Equal(3, operation.Parameters.Count);
         Assert.Equal(ParameterLocation.Path, operation.Parameters[0].In);
-        Assert.Equal("parameter_one", operation.Parameters[0].Name);
+        Assert.Equal("parameterOne", operation.Parameters[0].Name);
         Assert.Equal(ParameterLocation.Query, operation.Parameters[1].In);
         Assert.Equal("parameterTwo", operation.Parameters[1].Name);
         Assert.Equal(ParameterLocation.Query, operation.Parameters[2].In);
@@ -77,11 +77,11 @@ public class ParametersTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
 
         // Assert
-        var path = swagger.Paths["/v1/parameters4/{parameter_two}"];
+        var path = swagger.Paths["/v1/parameters4/{parameterTwo}"];
         Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
         Assert.Equal(1, operation.Parameters.Count);
         Assert.Equal(ParameterLocation.Path, operation.Parameters[0].In);
-        Assert.Equal("parameter_two", operation.Parameters[0].Name);
+        Assert.Equal("parameterTwo", operation.Parameters[0].Name);
         // body with four parameters
         Assert.NotNull(operation.RequestBody);
         Assert.Equal(4, swagger.Components.Schemas["RequestTwo"].Properties.Count);
@@ -94,7 +94,7 @@ public class ParametersTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
 
         // Assert
-        var path = swagger.Paths["/v1/parameters5/{parameter_one}"];
+        var path = swagger.Paths["/v1/parameters5/{parameterOne}"];
         Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
         Assert.Equal(4, operation.Parameters.Count);
         Assert.Equal(ParameterLocation.Query, operation.Parameters[3].In);
@@ -102,7 +102,7 @@ public class ParametersTests
     }
 
     [Fact]
-    public void RepeatedStringField_NestedQueryField()
+    public void RepeatedStringField_ArrayQueryField()
     {
         // Arrange & Act
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
@@ -115,5 +115,27 @@ public class ParametersTests
         Assert.Equal("parameterOne", operation.Parameters[0].Name);
         Assert.Equal("array", operation.Parameters[0].Schema.Type);
         Assert.Equal("integer", operation.Parameters[0].Schema.Items.Type);
+    }
+
+    [Fact]
+    public void MultipleRouteParameter_NestedFields_MissingFieldsAreQuery()
+    {
+        // Arrange & Act
+        var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
+
+        // Assert
+        var path = swagger.Paths["/v1/parameters7/{parameterOne.nestedParameterOne}/{parameterOne.nestedParameterTwo}"];
+        Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
+        Assert.Equal(5, operation.Parameters.Count);
+        Assert.Equal(ParameterLocation.Path, operation.Parameters[0].In);
+        Assert.Equal("parameterOne.nestedParameterOne", operation.Parameters[0].Name);
+        Assert.Equal(ParameterLocation.Path, operation.Parameters[1].In);
+        Assert.Equal("parameterOne.nestedParameterTwo", operation.Parameters[1].Name);
+        Assert.Equal(ParameterLocation.Query, operation.Parameters[2].In);
+        Assert.Equal("parameterOne.nestedParameterThree", operation.Parameters[2].Name);
+        Assert.Equal(ParameterLocation.Query, operation.Parameters[3].In);
+        Assert.Equal("parameterOne.nestedParameterFour", operation.Parameters[3].Name);
+        Assert.Equal(ParameterLocation.Query, operation.Parameters[4].In);
+        Assert.Equal("parameterTwo", operation.Parameters[4].Name);
     }
 }
