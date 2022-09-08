@@ -45,6 +45,8 @@ public class SpaProxyTests
     [InlineData("http://localhost:3000/spa/", "/test", "?a=b", "http://localhost:3000/spa/test?a=b")]
     [InlineData("http://localhost:3000", "///test", "?a=b", "http://localhost:3000///test?a=b")]
     [InlineData("http://localhost:3000/", "///test", "?a=b", "http://localhost:3000///test?a=b")]
+    [InlineData("http://localhost:3000/spa", "///test", "?a=b", "http://localhost:3000/spa///test?a=b")]
+    [InlineData("http://localhost:3000/spa/", "///test", "?a=b", "http://localhost:3000/spa///test?a=b")]
     public async Task PerformProxyRequest_TestUrlCombination(string baseUrl, string path, string queryString, string expected)
     {
         HttpRequestMessage forwardedRequestMessage = null;
