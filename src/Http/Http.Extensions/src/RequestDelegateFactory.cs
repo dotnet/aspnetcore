@@ -647,18 +647,18 @@ public static partial class RequestDelegateFactory
 
         if (parameter.ParameterType.IsByRef)
         {
-            var attribute = string.Empty;
+            var attribute = "ref";
 
             if (parameter.Attributes.HasFlag(ParameterAttributes.In))
             {
-                attribute = "in ";
+                attribute = "in";
             }
             else if (parameter.Attributes.HasFlag(ParameterAttributes.Out))
             {
-                attribute = "out ";
+                attribute = "out";
             }
 
-            throw new NotSupportedException($"The by reference parameter '{attribute}{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)} {parameter.Name}' is not supported.");
+            throw new NotSupportedException($"The by reference parameter '{attribute} {TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)} {parameter.Name}' is not supported.");
         }
 
         var parameterCustomAttributes = parameter.GetCustomAttributes();
