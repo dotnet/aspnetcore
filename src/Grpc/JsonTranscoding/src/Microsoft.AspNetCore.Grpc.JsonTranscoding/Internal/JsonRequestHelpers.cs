@@ -10,7 +10,6 @@ using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
-using Grpc.Gateway.Runtime;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Http;
@@ -96,9 +95,8 @@ internal static class JsonRequestHelpers
             response.ContentType = MediaType.ReplaceEncoding("application/json", encoding);
         }
 
-        var e = new Error
+        var e = new Google.Rpc.Status
         {
-            Error_ = status.Detail,
             Message = status.Detail,
             Code = (int)status.StatusCode
         };

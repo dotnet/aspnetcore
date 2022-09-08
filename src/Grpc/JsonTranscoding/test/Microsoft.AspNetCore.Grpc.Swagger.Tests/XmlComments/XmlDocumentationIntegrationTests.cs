@@ -30,7 +30,7 @@ public class XmlDocumentationIntegrationTests
         var swagger = GetOpenApiDocument<XmlDocServiceWithComments>();
 
         // Assert
-        Assert.Equal("xmldoc.XmlDoc", swagger.Tags[0].Name);
+        Assert.Equal("XmlDoc", swagger.Tags[0].Name);
         Assert.Equal("XmlDocServiceWithComments XML comment!", swagger.Tags[0].Description);
     }
 
@@ -41,7 +41,7 @@ public class XmlDocumentationIntegrationTests
         var swagger = GetOpenApiDocument<XmlDocService>();
 
         // Assert
-        Assert.Equal("xmldoc.XmlDoc", swagger.Tags[0].Name);
+        Assert.Equal("XmlDoc", swagger.Tags[0].Name);
         Assert.Equal("XmlDoc!", swagger.Tags[0].Description);
     }
 

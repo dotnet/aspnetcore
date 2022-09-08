@@ -11,6 +11,7 @@
   <PropertyGroup>
     <_TestingArchitecture>x64</_TestingArchitecture>
     <_TestingArchitecture Condition=" '$(IsArm64HelixQueue)' == 'true' ">arm64</_TestingArchitecture>
+    <TestDependsOnPlaywright Condition="'$(TestDependsOnPlaywright)' == ''">false</TestDependsOnPlaywright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
