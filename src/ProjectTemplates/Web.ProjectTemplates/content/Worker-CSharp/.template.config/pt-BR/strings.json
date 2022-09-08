@@ -4,6 +4,6 @@
     "name": "Worker Service",
     "description": "Um modelo de projeto vazio para criar um worker service.",
     "parameter.UseProgramMain.name": "Não use ins_truções de nível superior",
-    "parameter.UseProgramMain,description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
+    "parameter.UseProgramMain.description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
   }
 }

@@ -6,6 +6,6 @@
     "parameter.Hosted.name": "_hospedado no ASP.NET Core",
     "parameter.PWA.name": "Aplicativo Web _progressivo",
     "parameter.UseProgramMain.name": "Não use ins_truções de nível superior",
-    "parameter.UseProgramMain,description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
+    "parameter.UseProgramMain.description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
   }
 }
