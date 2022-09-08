@@ -583,7 +583,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             TestSink.MessageLogged += wc =>
             {
-                if (wc.EventId.Name == "SendStreamCompletionFailed")
+                if (wc.EventId.Name == "CompletingStreamNotSent")
                 {
                     tcs.SetResult();
                 }
@@ -790,7 +790,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             TestSink.MessageLogged += wc =>
             {
-                if (wc.EventId.Name == "ErrorProcessingInvocation")
+                if (wc.EventId.Name == "ErrorSendingInvocationResult")
                 {
                     tcs.SetResult();
                 }

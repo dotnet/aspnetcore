@@ -815,17 +815,25 @@ public partial class HubConnection : IAsyncDisposable
             responseError = $"Stream errored by client: '{ex}'";
         }
 
-        Log.CompletingStream(_logger, streamId);
-
+        // Don't use cancellation token here
+        // this is triggered by a cancellation token to tell the server that the client is done streaming
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try
         {
-            // Don't use cancellation token here
-            // this is triggered by a cancellation token to tell the server that the client is done streaming
-            await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+            // Avoid sending when the connection isn't active, likely happens if there is an active stream when the connection closes
+            if (_state.IsConnectionActive())
+            {
+                Log.CompletingStream(_logger, streamId);
+                await SendHubMessage(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+            }
+            else
+            {
+                Log.CompletingStreamNotSent(_logger, streamId);
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            Log.SendStreamCompletionFailed(_logger, streamId, ex);
+            _state.ReleaseConnectionLock();
         }
     }
 
@@ -1025,55 +1033,62 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task DispatchInvocationAsync(InvocationMessage invocation, ConnectionState connectionState)
     {
-        try
+        var expectsResult = !string.IsNullOrEmpty(invocation.InvocationId);
+        // Find the handler
+        if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
         {
-            var expectsResult = !string.IsNullOrEmpty(invocation.InvocationId);
-            // Find the handler
-            if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
+            if (expectsResult)
             {
-                if (expectsResult)
-                {
-                    Log.MissingResultHandler(_logger, invocation.Target);
-                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
-                }
-                else
-                {
-                    Log.MissingHandler(_logger, invocation.Target);
-                }
-                return;
-            }
-
-            // Grabbing the current handlers
-            var copiedHandlers = invocationHandlerList.GetHandlers();
-            object? result = null;
-            Exception? resultException = null;
-            var hasResult = false;
-            foreach (var handler in copiedHandlers)
-            {
+                Log.MissingResultHandler(_logger, invocation.Target);
                 try
                 {
-                    var task = handler.InvokeAsync(invocation.Arguments);
-                    if (handler.HasResult && task is Task<object?> resultTask)
-                    {
-                        result = await resultTask.ConfigureAwait(false);
-                        hasResult = true;
-                    }
-                    else
-                    {
-                        await task.ConfigureAwait(false);
-                    }
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    Log.ErrorInvokingClientSideMethod(_logger, invocation.Target, ex);
-                    if (handler.HasResult)
-                    {
-                        resultException = ex;
-                    }
+                    Log.ErrorSendingInvocationResult(_logger, invocation.InvocationId!, invocation.Target, ex);
                 }
             }
+            else
+            {
+                Log.MissingHandler(_logger, invocation.Target);
+            }
+            return;
+        }
 
-            if (expectsResult)
+        // Grabbing the current handlers
+        var copiedHandlers = invocationHandlerList.GetHandlers();
+        object? result = null;
+        Exception? resultException = null;
+        var hasResult = false;
+        foreach (var handler in copiedHandlers)
+        {
+            try
+            {
+                var task = handler.InvokeAsync(invocation.Arguments);
+                if (handler.HasResult && task is Task<object?> resultTask)
+                {
+                    result = await resultTask.ConfigureAwait(false);
+                    hasResult = true;
+                }
+                else
+                {
+                    await task.ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorInvokingClientSideMethod(_logger, invocation.Target, ex);
+                if (handler.HasResult)
+                {
+                    resultException = ex;
+                }
+            }
+        }
+
+        if (expectsResult)
+        {
+            try
             {
                 if (resultException is not null)
                 {
@@ -1089,17 +1104,14 @@ public partial class HubConnection : IAsyncDisposable
                     await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
                 }
             }
-            else if (hasResult)
+            catch (Exception ex)
             {
-                Log.ResultNotExpected(_logger, invocation.Target);
+                Log.ErrorSendingInvocationResult(_logger, invocation.InvocationId!, invocation.Target, ex);
             }
         }
-        catch (Exception ex)
+        else if (hasResult)
         {
-            // Avoid unobserved task exceptions
-            // Currently the only exceptions that should be able to occur are if a client result completion message is being sent and fails
-            // e.g. connection closed
-            Log.ErrorProcessingInvocation(_logger, invocation.InvocationId!, ex);
+            Log.ResultNotExpected(_logger, invocation.Target);
         }
     }
 
@@ -2093,13 +2105,20 @@ public partial class HubConnection : IAsyncDisposable
         {
             await WaitConnectionLockAsync(token, methodName).ConfigureAwait(false);
 
-            if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
+            if (!IsConnectionActive())
             {
                 ReleaseConnectionLock(methodName);
                 throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
             }
 
             return CurrentConnectionStateUnsynchronized;
+        }
+
+        [MemberNotNullWhen(true, nameof(CurrentConnectionStateUnsynchronized))]
+        public bool IsConnectionActive()
+        {
+            AssertInConnectionLock();
+            return CurrentConnectionStateUnsynchronized is not null && !CurrentConnectionStateUnsynchronized.Stopping;
         }
 
         public void ReleaseConnectionLock([CallerMemberName] string? memberName = null,

@@ -317,10 +317,10 @@ public partial class HubConnection
         [LoggerMessage(86, LogLevel.Warning, "Result given for '{Target}' method but server is not expecting a result.", EventName = "ResultNotExpected")]
         public static partial void ResultNotExpected(ILogger logger, string target);
 
-        [LoggerMessage(87, LogLevel.Trace, "Sending completion message for stream '{StreamId}' failed.", EventName = "SendStreamCompletionFailed")]
-        public static partial void SendStreamCompletionFailed(ILogger logger, string streamId, Exception exception);
+        [LoggerMessage(87, LogLevel.Trace, "Completion message for stream '{StreamId}' was not sent because the connection is closed.", EventName = "CompletingStreamNotSent")]
+        public static partial void CompletingStreamNotSent(ILogger logger, string streamId);
 
-        [LoggerMessage(88, LogLevel.Trace, "Error processing invocation '{InvocationId}'.", EventName = "ErrorProcessingInvocation")]
-        public static partial void ErrorProcessingInvocation(ILogger logger, string invocationId, Exception exception);
+        [LoggerMessage(88, LogLevel.Warning, "Error returning result for invocation '{InvocationId}' for method '{Target}' because the underlying connection is closed.", EventName = "ErrorSendingInvocationResult")]
+        public static partial void ErrorSendingInvocationResult(ILogger logger, string invocationId, string target, Exception exception);
     }
 }
