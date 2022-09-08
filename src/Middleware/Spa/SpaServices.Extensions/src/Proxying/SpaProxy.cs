@@ -70,7 +70,7 @@ internal static class SpaProxy
         var baseUri = await baseUriTask;
         var targetUri = new Uri(baseUri,
 			baseUri.AbsoluteUri
-			+ (baseUri.AbsoluteUri.EndsWith("/", StringComparison.OrdinalIgnoreCase) ? context.Request.Path.Substring(1) : context.Request.Path)
+			+ (baseUri.AbsoluteUri.EndsWith("/", StringComparison.OrdinalIgnoreCase) ? context.Request.Path.ToString().Substring(1) : context.Request.Path)
 			+ context.Request.QueryString);
 
         try
