@@ -15,7 +15,10 @@ public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDispo
 
     private RenderHandle _renderHandle;
     private IDisposable? _locationChangingRegistration;
-    private bool _lastConfirmExternalNavigation;
+    private bool _hasLocationChangingHandler;
+    private bool _confirmExternalNavigation;
+
+    private bool HasLocationChangingHandler => OnBeforeInternalNavigation.HasDelegate;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -59,26 +62,30 @@ public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDispo
             }
         }
 
-        _renderHandle.Render(static builder => { });
+        if (_hasLocationChangingHandler != HasLocationChangingHandler ||
+            _confirmExternalNavigation != ConfirmExternalNavigation)
+        {
+            _renderHandle.Render(static builder => { });
+        }
+
         return Task.CompletedTask;
     }
 
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
-        var lastHasLocationChangingHandler = _locationChangingRegistration is not null;
-        var hasLocationChangingHandler = OnBeforeInternalNavigation.HasDelegate;
-        if (lastHasLocationChangingHandler != hasLocationChangingHandler)
+        if (_hasLocationChangingHandler != HasLocationChangingHandler)
         {
+            _hasLocationChangingHandler = HasLocationChangingHandler;
             _locationChangingRegistration?.Dispose();
-            _locationChangingRegistration = hasLocationChangingHandler
+            _locationChangingRegistration = _hasLocationChangingHandler
                 ? NavigationManager.RegisterLocationChangingHandler(OnLocationChanging)
                 : null;
         }
 
-        var confirmExternalNavigation = ConfirmExternalNavigation;
-        if (_lastConfirmExternalNavigation != confirmExternalNavigation)
+        if (_confirmExternalNavigation != ConfirmExternalNavigation)
         {
-            if (confirmExternalNavigation)
+            _confirmExternalNavigation = ConfirmExternalNavigation;
+            if (_confirmExternalNavigation)
             {
                 await JSRuntime.InvokeVoidAsync(NavigationLockInterop.EnableNavigationPrompt, _id);
             }
@@ -86,8 +93,6 @@ public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDispo
             {
                 await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
             }
-
-            _lastConfirmExternalNavigation = confirmExternalNavigation;
         }
     }
 
@@ -100,7 +105,7 @@ public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDispo
     {
         _locationChangingRegistration?.Dispose();
 
-        if (_lastConfirmExternalNavigation)
+        if (_confirmExternalNavigation)
         {
             await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
         }
