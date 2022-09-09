@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -22,7 +23,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IList<IModelValidatorProvider> validatorProviders)
             : base(modelMetadataProvider, validatorProviders)
         {
+            MaxValidationDepth = ModelBindingSwitches.MaxValidationDepth;
         }
+
+        // Internal for testing
+        internal int MaxValidationDepth { get; set; }
 
         public override ValidationVisitor GetValidationVisitor(
             ActionContext actionContext,
@@ -31,12 +36,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
-            return new ValidationVisitor(
+            var visitor = new ValidationVisitor(
                 actionContext,
                 validatorProvider,
                 validatorCache,
                 metadataProvider,
                 validationState);
+
+            visitor.MaxValidationDepth = MaxValidationDepth;
+
+            return visitor;
         }
     }
 }

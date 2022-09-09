@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using FormatterWebSite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -181,6 +183,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("xyz", await response.Content.ReadAsStringAsync());
+        }
+
+
+        // Test for https://github.com/aspnet/Mvc/issues/7357
+        [Fact]
+        public async Task ValidationThrowsError_WhenValidationExceedsMaxValidationDepth()
+        {
+            // Arrange
+            var expected = $"ValidationVisitor exceeded the maximum configured validation depth '32' when validating property 'Value' on type '{typeof(RecursiveIdentifier)}'. " +
+                "This may indicate a very deep or infinitely recursive object graph. Consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxValidationDepth' or suppressing validation on the model type.";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "Validation/ValidationThrowsError_WhenValidationExceedsMaxValidationDepth")
+            {
+                Content = new StringContent(@"{ ""Id"": ""S-1-5-21-1004336348-1177238915-682003330-512"" }", Encoding.UTF8, "application/json"),
+            };
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Client.SendAsync(requestMessage));
+            Assert.Equal(expected, ex.Message);
         }
     }
 }

@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultMaxAllowedErrors = 200;
 
-        private const string MaxValidationDepth_ConfigKeyName = "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.MaxValidationDepth";
-        private const string MaxStateDepth_ConfigKeyName = "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.MaxStateDepth";
         // internal for testing
         internal const int DefaultMaxRecursionDepth = 32;
 
@@ -47,7 +45,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
         /// </summary>
         public ModelStateDictionary(int maxAllowedErrors)
-             : this(maxAllowedErrors, maxValidationDepth:  GetValidationDepth(), maxStateDepth: GetStateDepth())
+             : this(maxAllowedErrors,
+                   maxValidationDepth: ModelBindingSwitches.MaxModelStateValidationDepth,
+                   maxStateDepth: ModelBindingSwitches.MaxStateDepth)
         {
         }
 
@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="dictionary">The <see cref="ModelStateDictionary"/> to copy values from.</param>
         public ModelStateDictionary(ModelStateDictionary dictionary)
             : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors,
-                  dictionary?.MaxValidationDepth ?? GetValidationDepth(),
-                  dictionary?.MaxStateDepth ?? GetStateDepth())
+                  dictionary?.MaxValidationDepth ?? ModelBindingSwitches.MaxModelStateValidationDepth,
+                  dictionary?.MaxStateDepth ?? ModelBindingSwitches.MaxStateDepth)
         {
             if (dictionary == null)
             {
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         internal int? MaxValidationDepth { get; set; }
 
-        internal int? MaxStateDepth { get; set; }        
+        internal int? MaxStateDepth { get; set; }
 
         /// <summary>
         /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private ModelValidationState? GetValidity(ModelStateNode node, int currentDepth)
         {
-            if (node == null || 
+            if (node == null ||
                 (MaxValidationDepth != null && currentDepth >= MaxValidationDepth))
             {
                 return null;
@@ -877,24 +877,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             return new PrefixEnumerable(this, prefix);
-        }
-
-        private static int GetValidationDepth()
-        {
-            var validationDepth = AppContext.GetData(MaxValidationDepth_ConfigKeyName);
-
-            return (validationDepth is int validationDepthInt && validationDepthInt > 0) ?
-                validationDepthInt :
-                DefaultMaxRecursionDepth;
-        }
-
-        private static int GetStateDepth()
-        {
-            var stateDepth = AppContext.GetData(MaxStateDepth_ConfigKeyName);
-
-            return (stateDepth is int stateDepthInt && stateDepthInt > 0) ?
-                stateDepthInt :
-                DefaultMaxRecursionDepth;
         }
 
         private struct MatchResult

@@ -67,5 +67,11 @@ namespace FormatterWebSite
         {
             return Json(simpleTypePropertiesModel);
         }
+
+        [HttpPost]
+        public IActionResult ValidationThrowsError_WhenValidationExceedsMaxValidationDepth([FromBody] InfinitelyRecursiveModel model)
+        {
+            return Ok();
+        }
     }
 }

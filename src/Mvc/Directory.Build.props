@@ -6,4 +6,10 @@
     <WarningsNotAsErrors>xUnit1026:$(WarningsNotAsErrors)</WarningsNotAsErrors>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)MvcTests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+
+    <!-- Source code settings -->
+  <PropertyGroup>
+    <MvcSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</MvcSharedSourceRoot>
+  </PropertyGroup>
+
 </Project>

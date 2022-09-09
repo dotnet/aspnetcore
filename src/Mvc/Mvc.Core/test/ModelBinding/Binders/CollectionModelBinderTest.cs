@@ -65,6 +65,60 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.DoesNotContain(boundCollection, bindingContext.ValidationState.Keys);
         }
 
+        // Ensure CollectionModelBinder allows MaxModelBindingCollectionSize items.
+
+        [Fact]
+        public async Task BindComplexCollectionFromIndexes_BindItems_WhenMaxModelBindingCollectionSizeSet()
+        {
+            // Arrange
+            var valueProvider = new SimpleValueProvider
+            {
+                { "someName[0]", "42" },
+                { "someName[1]", "100" },
+                { "someName[2]", "200" },
+            };
+            var bindingContext = GetModelBindingContext(valueProvider);
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
+            binder.MaxModelBindingCollectionSize = valueProvider.Count;
+
+            // Act
+            var boundCollection = await binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
+
+            // Assert
+            Assert.Equal(new[] { 42, 100, 200 }, boundCollection.Model.ToArray());
+
+            // This uses the default IValidationStrategy
+            Assert.DoesNotContain(boundCollection, bindingContext.ValidationState.Keys);
+        }
+
+        // Ensure CollectionModelBinder disallows one more than MaxModelBindingCollectionSize items.
+        [Fact]
+        public async Task BindComplexCollectionFromIndexes_Throws_WhenMoreItemsThanMaxModelBindingCollectionSizeSet()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'someName' exceeded " +
+               $"MaxModelBindingCollectionSize (3). This limit is a " +
+               $"safeguard against incorrect model binders and models. Address issues in " +
+               $"'{typeof(int)}'. For example, this type may have a " +
+               $"property with a model binder that always succeeds. " +
+               $"Otherwise, consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxCollectionSize' to change the default size.";
+            var valueProvider = new SimpleValueProvider
+            {
+                { "someName[0]", "42" },
+                { "someName[1]", "100" },
+                { "someName[2]", "200" },
+                { "someName[3]", "300" },
+            };
+            var bindingContext = GetModelBindingContext(valueProvider);
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
+            binder.MaxModelBindingCollectionSize = valueProvider.Count - 1;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

@@ -2701,6 +2701,107 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10,20", entry.RawValue);
         }
 
+        private class LoopyModel
+        {
+            public bool IsBound { get; set; }
+
+            public LoopyModel SelfReference { get; set; }
+        }
+
+        // Regression test for #7052
+        [Fact]
+        public async Task ModelBindingSystem_ThrowsOn33Binders()
+        {
+            // Arrange
+            var expectedMessage = $"Model binding system exceeded " +
+                $"MaxModelBindingRecursionDepth (32). Reduce the " +
+                $"potential nesting of '{typeof(LoopyModel)}'. For example, this type may have a property with a " +
+                $"model binder that always succeeds. " +
+                $"Otherwise, consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxRecursionDepth' to change the default depth.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(LoopyModel),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = CreateLoopyQueryString(nameof(LoopyModel.SelfReference), nameof(LoopyModel.IsBound))
+            );
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        private static QueryString CreateLoopyQueryString(string prefix, string property)
+        {
+            var queryStringBuilder = new StringBuilder("?IsBound=true");
+
+            for (var i = 1; i < 32; i++)
+            {
+                queryStringBuilder.Append("&");
+                queryStringBuilder.Insert(queryStringBuilder.Length, $"{prefix}.", i);
+                queryStringBuilder.Append($"{property}=true");
+            }
+            
+            return new QueryString(queryStringBuilder.ToString());
+        }
+
+        private class LoopyModel1
+        {
+            public bool IsBound { get; set; }
+
+            public LoopyModel2 Inner { get; set; }
+        }
+
+        private class LoopyModel2
+        {
+            public bool IsBound { get; set; }
+
+            public LoopyModel3 Inner { get; set; }
+        }
+
+        private class LoopyModel3
+        {
+            public bool IsBound { get; set; }
+
+            public LoopyModel1 Inner { get; set; }
+        }
+
+        [Fact]
+        public async Task ModelBindingSystem_ThrowsOn33Binders_WithIndirectModelTypeLoop()
+        {
+            // Arrange
+            var expectedMessage = $"Model binding system exceeded " +
+                $"MaxModelBindingRecursionDepth (32). Reduce the " +
+                $"potential nesting of '{typeof(LoopyModel1)}'. For example, this type may have a property with a " +
+                $"model binder that always succeeds. " +
+                $"Otherwise, consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxRecursionDepth' to change the default depth.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(LoopyModel1),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request => request.QueryString = CreateLoopyQueryString(nameof(LoopyModel1.Inner), nameof(LoopyModel.IsBound))
+            );
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         private static void SetJsonBodyContent(HttpRequest request, string content)
         {
             var stream = new MemoryStream(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(content));
