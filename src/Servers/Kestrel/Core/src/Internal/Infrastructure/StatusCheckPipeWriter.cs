@@ -33,7 +33,7 @@ internal sealed class StatusCheckPipeWriter : PipeWriter
         Debug.Assert(_context != null);
         if (_context.StatusCode < 300)
         {
-            throw new InvalidOperationException(CoreStrings.ConnectResponseCanNotHaveBody);
+            throw new InvalidOperationException(CoreStrings.FormatConnectResponseCanNotHaveBody(_context.StatusCode));
         }
     }
 
