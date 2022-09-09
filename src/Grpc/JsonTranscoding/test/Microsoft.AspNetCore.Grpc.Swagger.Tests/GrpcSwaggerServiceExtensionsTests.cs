@@ -4,10 +4,10 @@
 using Count;
 using Greet;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -86,16 +86,6 @@ public class GrpcSwaggerServiceExtensionsTests
         Assert.Equal(2, swagger.Paths.Count);
         Assert.True(swagger.Paths["/v1/greeter/{name}"].Operations.ContainsKey(OperationType.Get));
         Assert.True(swagger.Paths["/v1/add/{value1}/{value2}"].Operations.ContainsKey(OperationType.Get));
-    }
-
-    private class TestWebHostEnvironment : IWebHostEnvironment
-    {
-        public IFileProvider WebRootFileProvider { get; set; }
-        public string WebRootPath { get; set; }
-        public string ApplicationName { get; set; }
-        public IFileProvider ContentRootFileProvider { get; set; }
-        public string ContentRootPath { get; set; }
-        public string EnvironmentName { get; set; }
     }
 
     private class GreeterService : Greeter.GreeterBase

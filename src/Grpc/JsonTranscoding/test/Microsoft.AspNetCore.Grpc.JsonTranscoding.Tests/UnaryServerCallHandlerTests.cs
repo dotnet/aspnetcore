@@ -33,6 +33,11 @@ public class UnaryServerCallHandlerTests : LoggedTest
 {
     public UnaryServerCallHandlerTests(ITestOutputHelper output) : base(output) { }
 
+    private static RouteParameter CreateRouteParameter(List<FieldDescriptor> descriptorPath)
+    {
+        return new RouteParameter(descriptorPath, new HttpRouteVariable(), string.Empty);
+    }
+
     [Fact]
     public async Task HandleCallAsync_MatchingRouteValue_SetOnRequestMessage()
     {
@@ -44,14 +49,14 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }),
-            ["sub.subfield"] = new List<FieldDescriptor>(new[]
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })),
+            ["sub.subfield"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
             {
                 HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.SubFieldNumber),
                 HelloRequest.Types.SubMessage.Descriptor.FindFieldByNumber(HelloRequest.Types.SubMessage.SubfieldFieldNumber)
-            })
+            }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
@@ -88,9 +93,9 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = r.Name });
         };
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             responseBodyDescriptor: HelloReply.Descriptor.FindFieldByNumber(HelloReply.MessageFieldNumber),
@@ -122,9 +127,9 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { NullableMessage = null });
         };
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             responseBodyDescriptor: HelloReply.Descriptor.FindFieldByNumber(HelloReply.NullableMessageFieldNumber),

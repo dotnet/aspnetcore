@@ -256,7 +256,7 @@ internal static class JsonRequestHelpers
                 var routeValue = serverCallContext.HttpContext.Request.RouteValues[parameterDescriptor.Key];
                 if (routeValue != null)
                 {
-                    ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, parameterDescriptor.Value, routeValue);
+                    ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, parameterDescriptor.Value.DescriptorsPath, routeValue);
                 }
             }
 

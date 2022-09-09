@@ -59,7 +59,7 @@ internal static class TestHelpers
 
     public static CallHandlerDescriptorInfo CreateDescriptorInfo(
         FieldDescriptor? responseBodyDescriptor = null,
-        Dictionary<string, List<FieldDescriptor>>? routeParameterDescriptors = null,
+        Dictionary<string, RouteParameter>? routeParameterDescriptors = null,
         MessageDescriptor? bodyDescriptor = null,
         bool? bodyDescriptorRepeated = null,
         List<FieldDescriptor>? bodyFieldDescriptors = null)
@@ -69,7 +69,7 @@ internal static class TestHelpers
             bodyDescriptor,
             bodyDescriptorRepeated ?? false,
             bodyFieldDescriptors,
-            routeParameterDescriptors ?? new Dictionary<string, List<FieldDescriptor>>(),
+            routeParameterDescriptors ?? new Dictionary<string, RouteParameter>(),
             JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")));
     }
 }

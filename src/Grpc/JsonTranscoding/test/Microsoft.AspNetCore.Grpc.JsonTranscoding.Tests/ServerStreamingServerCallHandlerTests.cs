@@ -12,6 +12,7 @@ using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Grpc.Core;
+using Grpc.Shared;
 using Grpc.Shared.Server;
 using Grpc.Tests.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
@@ -44,9 +45,10 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
 
         var pipe = new Pipe();
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var descriptorPath = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) });
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(descriptorPath)
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var callHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
@@ -74,6 +76,11 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         await callTask.DefaultTimeout();
     }
 
+    private static RouteParameter CreateRouteParameter(List<FieldDescriptor> descriptorPath)
+    {
+        return new RouteParameter(descriptorPath, new HttpRouteVariable(), string.Empty);
+    }
+
     [Fact]
     public async Task HandleCallAsync_MessageThenError_MessageThenErrorReturned()
     {
@@ -86,9 +93,9 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
 
         var pipe = new Pipe();
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var callHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
@@ -128,9 +135,9 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
 
         var pipe = new Pipe();
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var callHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
@@ -168,9 +175,9 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
 
         var pipe = new Pipe();
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var serviceOptions = new GrpcServiceOptions { EnableDetailedErrors = true };
@@ -217,9 +224,9 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
 
         var pipe = new Pipe();
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var callHandler = CreateCallHandler(
