@@ -229,7 +229,15 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                             }
                                             else
                                             {
-                                                result = PayloadSerializer.Deserialize(reader, returnType);
+                                                try
+                                                {
+                                                    result = PayloadSerializer.Deserialize(reader, returnType);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    error = $"Error trying to deserialize result to {returnType.Name}. {ex.Message}";
+                                                    hasResult = false;
+                                                }
                                             }
                                         }
                                     }
@@ -417,7 +425,15 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                             }
                             else
                             {
-                                result = resultToken.ToObject(returnType, PayloadSerializer);
+                                try
+                                {
+                                    result = resultToken.ToObject(returnType, PayloadSerializer);
+                                }
+                                catch (Exception ex)
+                                {
+                                    error = $"Error trying to deserialize result to {returnType.Name}. {ex.Message}";
+                                    hasResult = false;
+                                }
                             }
                         }
                     }
