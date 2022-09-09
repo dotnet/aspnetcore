@@ -171,6 +171,7 @@ public class Http2WebSocketTests : Http2TestBase
 
             Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[1]));
 
+            context.Response.StatusCode = StatusCodes.Status201Created; // Any 2XX should work
             var stream = await connectFeature.AcceptAsync();
             Assert.Equal(0, await stream.ReadAsync(new byte[1]));
             await stream.WriteAsync(new byte[] { 0x01 });
@@ -203,7 +204,7 @@ public class Http2WebSocketTests : Http2TestBase
         await SendDataAsync(1, Array.Empty<byte>(), endStream: true);
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-            withLength: 32,
+            withLength: 36,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
 
@@ -211,7 +212,7 @@ public class Http2WebSocketTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("201", _decodedHeaders[InternalHeaderNames.Status]);
 
         var dataFrame = await ExpectAsync(Http2FrameType.DATA,
             withLength: 1,
@@ -246,7 +247,7 @@ public class Http2WebSocketTests : Http2TestBase
 
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("201", _decodedHeaders[InternalHeaderNames.Status]);
 
         dataFrame = await ExpectAsync(Http2FrameType.DATA,
             withLength: 1,
