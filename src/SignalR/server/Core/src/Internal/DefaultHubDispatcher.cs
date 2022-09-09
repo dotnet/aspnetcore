@@ -321,13 +321,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
                 if (isStreamCall || isStreamResponse)
                 {
-                    if (hub.Clients is HubCallerClients hubCallerClients)
-                    {
-                        // Streaming invocations aren't involved with the semaphore.
-                        // Setting the semaphore released flag avoids potential client result calls from the streaming hub method
-                        // releasing the semaphore which would cause a SemaphoreFullException.
-                        hubCallerClients.TrySetSemaphoreReleased();
-                    }
+                    Debug.Assert(hub.Clients is HubCallerClients);
+                    // Streaming invocations aren't involved with the semaphore.
+                    // Setting the semaphore released flag avoids potential client result calls from the streaming hub method
+                    // releasing the semaphore which would cause a SemaphoreFullException.
+                    ((HubCallerClients)hub.Clients).TrySetSemaphoreReleased();
                 }
 
                 if (isStreamResponse)
