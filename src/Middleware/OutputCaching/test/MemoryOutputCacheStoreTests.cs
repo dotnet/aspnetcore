@@ -199,7 +199,6 @@ public class MemoryOutputCacheStoreTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
     public async Task Store_Throws_OnInvalidTag(string tag)
     {
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
