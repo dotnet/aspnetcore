@@ -298,7 +298,7 @@ describe("LongPollingTransport", () => {
                 .on("DELETE", async (r) => {
                     deleteAuthHeader = r.headers!.Authorization;
                     return new HttpResponse(202);
-                }), undefined, accessTokenFactory);
+                }), accessTokenFactory);
 
             const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
@@ -341,7 +341,7 @@ describe("LongPollingTransport", () => {
                 .on("DELETE", async (r) => {
                     deleteAuthHeader = r.headers!.Authorization;
                     return new HttpResponse(202);
-                }), undefined, undefined);
+                }), undefined);
 
             const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true,
                 headers: { Authorization: "Basic test" } });

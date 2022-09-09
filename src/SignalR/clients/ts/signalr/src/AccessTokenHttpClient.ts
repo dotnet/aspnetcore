@@ -10,11 +10,10 @@ export class AccessTokenHttpClient extends HttpClient {
     _accessToken: string | undefined;
     private _accessTokenFactory: (() => string | Promise<string>) | undefined;
 
-    constructor(innerClient: HttpClient, currentAccessToken: string | undefined, accessTokenFactory: (() => string | Promise<string>) | undefined) {
+    constructor(innerClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined) {
         super();
 
         this._innerClient = innerClient;
-        this._accessToken = currentAccessToken;
         this._accessTokenFactory = accessTokenFactory;
     }
 
@@ -36,7 +35,7 @@ export class AccessTokenHttpClient extends HttpClient {
         return response;
     }
 
-    public replaceAccessTokenFactory(accessTokenFactory: (() => string | Promise<string>) | undefined): void {
+    public _setAccessTokenFactory(accessTokenFactory: (() => string | Promise<string>) | undefined): void {
         this._accessTokenFactory = accessTokenFactory;
     }
 

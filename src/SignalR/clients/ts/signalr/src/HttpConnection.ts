@@ -109,7 +109,7 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        this._httpClient = new AccessTokenHttpClient(options.httpClient || new DefaultHttpClient(this._logger), undefined, options.accessTokenFactory);
+        this._httpClient = new AccessTokenHttpClient(options.httpClient || new DefaultHttpClient(this._logger), options.accessTokenFactory);
         this._connectionState = ConnectionState.Disconnected;
         this._connectionStarted = false;
         this._options = options;
@@ -226,7 +226,7 @@ export class HttpConnection implements IConnection {
         // as part of negotiating
         let url = this.baseUrl;
         this._accessTokenFactory = this._options.accessTokenFactory;
-        this._httpClient.replaceAccessTokenFactory(this._accessTokenFactory);
+        this._httpClient._setAccessTokenFactory(this._accessTokenFactory);
 
         try {
             if (this._options.skipNegotiation) {
@@ -269,7 +269,7 @@ export class HttpConnection implements IConnection {
                         this._accessTokenFactory = () => accessToken;
                         // set the factory to undefined so the httpClient won't retry with the same token, since we know it won't change until a connection restart
                         this._httpClient._accessToken = accessToken;
-                        this._httpClient.replaceAccessTokenFactory(undefined);
+                        this._httpClient._setAccessTokenFactory(undefined);
                     }
 
                     redirects++;

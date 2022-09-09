@@ -91,7 +91,7 @@ describe("ServerSentEventsTransport", () => {
             const httpClient = new AccessTokenHttpClient(new TestHttpClient().on((r) => {
                 request = r;
                 return "";
-            }), undefined, () => "secretToken");
+            }), () => "secretToken");
 
             const sse = await createAndStartSSE(logger, "http://example.com", () => "secretToken", { httpClient });
 
@@ -113,7 +113,7 @@ describe("ServerSentEventsTransport", () => {
                 }
                 request = r;
                 return "";
-            }), undefined, () => "secretToken" + requestCount);
+            }), () => "secretToken" + requestCount);
 
             // AccessTokenHttpClient assumes negotiate was called which would have called accessTokenFactory already
             // It also assumes the request shouldn't be retried if the factory was called, so we need to make a "negotiate" call
