@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
 {
-    internal const string CultureInvariantFieldName = "__Invariant";
-
     private readonly IFormCollection _values;
     private readonly HashSet<string?>? _invariantValueKeys;
     private PrefixContainer? _prefixContainer;
@@ -43,7 +41,7 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
 
         _values = values;
 
-        if (_values.TryGetValue(CultureInvariantFieldName, out var invariantKeys) && invariantKeys.Count > 0)
+        if (_values.TryGetValue(FormValueHelper.CultureInvariantFieldName, out var invariantKeys) && invariantKeys.Count > 0)
         {
             _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
         }
