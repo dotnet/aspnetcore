@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -25,17 +26,22 @@ public class AuthorizationMiddleware
     private readonly IAuthorizationPolicyProvider _policyProvider;
     private readonly bool _canCache;
     private readonly AuthorizationPolicyCache? _policyCache;
+    private readonly ILogger<AuthorizationMiddleware> _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
     /// </summary>
     /// <param name="next">The next middleware in the application middleware pipeline.</param>
     /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
-    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider,
+        ILogger<AuthorizationMiddleware> logger)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         _canCache = false;
+        _logger = logger;
     }
 
     /// <summary>
@@ -44,7 +50,8 @@ public class AuthorizationMiddleware
     /// <param name="next">The next middleware in the application middleware pipeline.</param>
     /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
     /// <param name="services">The <see cref="IServiceProvider"/>.</param>
-    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IServiceProvider services) : this(next, policyProvider)
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IServiceProvider services, ILogger<AuthorizationMiddleware> logger) : this(next, policyProvider, logger)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -108,7 +115,7 @@ public class AuthorizationMiddleware
         var policyEvaluator = context.RequestServices.GetRequiredService<IPolicyEvaluator>();
 
         var authenticateResult = await policyEvaluator.AuthenticateAsync(policy, context);
-
+        
         if (authenticateResult?.Succeeded ?? false)
         {
             if (context.Features.Get<IAuthenticateResultFeature>() is IAuthenticateResultFeature authenticateResultFeature)
@@ -128,6 +135,11 @@ public class AuthorizationMiddleware
         {
             await _next(context);
             return;
+        }
+
+        if (authenticateResult != null && !authenticateResult.Succeeded)
+        {
+            _logger.LogDebug("Policy authentication schemes {policyName} did not succeed", String.Join(", ", policy.AuthenticationSchemes));
         }
 
         object? resource;
