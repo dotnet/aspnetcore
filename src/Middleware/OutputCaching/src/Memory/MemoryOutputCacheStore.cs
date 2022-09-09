@@ -83,12 +83,10 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 foreach (var tag in tags)
                 {
-                    if (String.IsNullOrEmpty(tag))
+                    if (tag is null)
                     {
-                        throw new ArgumentException(Resources.TagCannotBeNullOrEmpty);
+                        throw new ArgumentException(Resources.TagCannotBeNull);
                     }
-
-                    ArgumentNullException.ThrowIfNull(tag);
 
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
