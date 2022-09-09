@@ -197,6 +197,18 @@ public class MemoryOutputCacheStoreTests
         Assert.Single(tag2s);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task Store_Throws_OnInvalidTag(string tag)
+    {
+        var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
+        var value = "abc"u8.ToArray();
+        var key = "abc";
+
+        await Assert.ThrowsAsync<ArgumentException>(async () => await store.SetAsync(key, value, new string[] { tag }, TimeSpan.FromMinutes(1), default));
+    }
+
     private class TestMemoryOptionsClock : Extensions.Internal.ISystemClock
     {
         public DateTimeOffset UtcNow { get; set; }

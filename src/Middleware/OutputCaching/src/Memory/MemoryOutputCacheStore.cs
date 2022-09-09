@@ -2,18 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.OutputCaching.Memory;
 
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
-    private readonly IMemoryCache _cache;
+    private readonly MemoryCache _cache;
     private readonly Dictionary<string, HashSet<string>> _taggedEntries = new();
     private readonly object _tagsLock = new();
 
-    internal MemoryOutputCacheStore(IMemoryCache cache)
+    internal MemoryOutputCacheStore(MemoryCache cache)
     {
         ArgumentNullException.ThrowIfNull(cache);
 
@@ -33,7 +32,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (keys != null && keys.Count > 0)
                 {
-                    // Since eviction callbacks run inline, iterating over keys could throw
+                    // If MemoryCache changed to run eviction callbacks run inline in Remove, iterating over keys could throw
                     // To prevent allocating a copy of the keys we check if the eviction callback ran,
                     // and if it did we restart the loop.
 
@@ -84,11 +83,20 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 foreach (var tag in tags)
                 {
+                    if (String.IsNullOrEmpty(tag))
+                    {
+                        throw new ArgumentException(Resources.TagCannotBeNullOrEmpty);
+                    }
+
+                    ArgumentNullException.ThrowIfNull(tag);
+
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
                         keys = new HashSet<string>();
                         _taggedEntries[tag] = keys;
                     }
+
+                    Debug.Assert(keys != null);
 
                     keys.Add(key);
                 }
@@ -106,6 +114,8 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
     void SetEntry(string key, byte[] value, string[]? tags, TimeSpan validFor)
     {
+        Debug.Assert(key != null);
+
         var options = new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = validFor,
@@ -127,19 +137,15 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
         Debug.Assert(tags != null);
         Debug.Assert(tags.Length > 0);
-
-        if (key is not string stringKey)
-        {
-            return;
-        }
+        Debug.Assert(key is string);
 
         lock (_tagsLock)
         {
-            foreach (var tag in tags!)
+            foreach (var tag in tags)
             {
-                if (_taggedEntries.TryGetValue(tag, out var tagged) && tagged != null)
+                if (_taggedEntries.TryGetValue(tag, out var tagged))
                 {
-                    tagged.Remove(stringKey);
+                    tagged.Remove((string)key);
 
                     // Remove the collection if there is no more keys in it
                     if (tagged.Count == 0)
