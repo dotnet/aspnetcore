@@ -226,7 +226,7 @@ export class HttpConnection implements IConnection {
         // as part of negotiating
         let url = this.baseUrl;
         this._accessTokenFactory = this._options.accessTokenFactory;
-        this._httpClient._setAccessTokenFactory(this._accessTokenFactory);
+        this._httpClient._accessTokenFactory = this._accessTokenFactory;
 
         try {
             if (this._options.skipNegotiation) {
@@ -267,9 +267,9 @@ export class HttpConnection implements IConnection {
                         // the returned access token
                         const accessToken = negotiateResponse.accessToken;
                         this._accessTokenFactory = () => accessToken;
-                        // set the factory to undefined so the httpClient won't retry with the same token, since we know it won't change until a connection restart
+                        // set the factory to undefined so the AccessTokenHttpClient won't retry with the same token, since we know it won't change until a connection restart
                         this._httpClient._accessToken = accessToken;
-                        this._httpClient._setAccessTokenFactory(undefined);
+                        this._httpClient._accessTokenFactory = undefined;
                     }
 
                     redirects++;

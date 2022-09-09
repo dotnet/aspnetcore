@@ -8,7 +8,7 @@ import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 export class AccessTokenHttpClient extends HttpClient {
     private _innerClient: HttpClient;
     _accessToken: string | undefined;
-    private _accessTokenFactory: (() => string | Promise<string>) | undefined;
+    _accessTokenFactory: (() => string | Promise<string>) | undefined;
 
     constructor(innerClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined) {
         super();
@@ -33,10 +33,6 @@ export class AccessTokenHttpClient extends HttpClient {
             return await this._innerClient.send(request);
         }
         return response;
-    }
-
-    public _setAccessTokenFactory(accessTokenFactory: (() => string | Promise<string>) | undefined): void {
-        this._accessTokenFactory = accessTokenFactory;
     }
 
     private _setAuthorizationHeader(request: HttpRequest) {
