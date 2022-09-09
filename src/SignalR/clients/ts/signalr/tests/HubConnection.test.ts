@@ -31,7 +31,7 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     await hubConnection.start();
-                    expect(connection.sentData.length).toBe(1);
+                    expect(connection.sentData.length).toBe(2);
                     expect(JSON.parse(connection.sentData[0])).toEqual({
                         protocol: "json",
                         version: 1,
@@ -448,7 +448,7 @@ describe("HubConnection", () => {
                     const subject = new Subject();
                     const invokePromise = hubConnection.invoke("testMethod", "arg", subject);
 
-                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
                         arguments: ["arg"],
                         invocationId: "1",
                         streamIds: ["0"],
@@ -460,7 +460,7 @@ describe("HubConnection", () => {
                     await new Promise<void>((resolve) => {
                         setTimeout(resolve, 50);
                     });
-                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
                         invocationId: "0",
                         item: "item numero uno",
                         type: MessageType.StreamItem,
@@ -485,7 +485,7 @@ describe("HubConnection", () => {
                     const subject = new Subject();
                     await hubConnection.send("testMethod", "arg", subject);
 
-                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
                         arguments: ["arg"],
                         streamIds: ["0"],
                         target: "testMethod",
@@ -496,7 +496,7 @@ describe("HubConnection", () => {
                     await new Promise<void>((resolve) => {
                         setTimeout(resolve, 50);
                     });
-                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
                         invocationId: "0",
                         item: "item numero uno",
                         type: MessageType.StreamItem,
@@ -528,7 +528,7 @@ describe("HubConnection", () => {
                         },
                     });
 
-                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
                         arguments: ["arg"],
                         invocationId: "1",
                         streamIds: ["0"],
@@ -540,7 +540,7 @@ describe("HubConnection", () => {
                     await new Promise<void>((resolve) => {
                         setTimeout(resolve, 50);
                     });
-                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
                         invocationId: "0",
                         item: "item numero uno",
                         type: MessageType.StreamItem,
@@ -1102,10 +1102,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].result).toEqual(10);
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].result).toEqual(10);
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1133,10 +1133,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].result).toBeNull();
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].result).toBeNull();
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1166,10 +1166,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].result).toEqual(13);
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].result).toEqual(13);
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1197,10 +1197,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].error).toEqual("Error: from callback");
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].error).toEqual("Error: from callback");
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1229,10 +1229,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].error).toEqual('Client provided multiple results.');
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].error).toEqual('Client provided multiple results.');
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1261,11 +1261,11 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].error).toEqual("Error: from callback");
-                    expect(connection.parsedSentData[1].result).toBeUndefined();
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].error).toEqual("Error: from callback");
+                    expect(connection.parsedSentData[2].result).toBeUndefined();
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1294,11 +1294,11 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].result).toEqual(3);
-                    expect(connection.parsedSentData[1].error).toBeUndefined();
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].result).toEqual(3);
+                    expect(connection.parsedSentData[2].error).toBeUndefined();
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1326,10 +1326,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].error).toEqual("Client didn't provide a result.");
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].error).toEqual("Client didn't provide a result.");
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1355,10 +1355,10 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(2);
-                    expect(connection.parsedSentData[1].type).toEqual(3);
-                    expect(connection.parsedSentData[1].error).toEqual("Client didn't provide a result.");
-                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                    expect(connection.parsedSentData.length).toEqual(3);
+                    expect(connection.parsedSentData[2].type).toEqual(3);
+                    expect(connection.parsedSentData[2].error).toEqual("Client didn't provide a result.");
+                    expect(connection.parsedSentData[2].invocationId).toEqual("1");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1386,7 +1386,7 @@ describe("HubConnection", () => {
                     // async here to guarantee the sent message is written
                     await delayUntil(1);
 
-                    expect(connection.parsedSentData.length).toEqual(1);
+                    expect(connection.parsedSentData.length).toEqual(2);
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1405,9 +1405,9 @@ describe("HubConnection", () => {
 
                     hubConnection.stream("testStream", "arg", 42);
 
-                    // Verify the message is sent (+ handshake)
-                    expect(connection.sentData.length).toBe(2);
-                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                    // Verify the message is sent (+ handshake + ping)
+                    expect(connection.sentData.length).toBe(3);
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
                         arguments: [
                             "arg",
                             42,
@@ -1416,9 +1416,6 @@ describe("HubConnection", () => {
                         target: "testStream",
                         type: MessageType.StreamInvocation,
                     });
-
-                    // Close the connection
-                    await hubConnection.stop();
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1592,10 +1589,10 @@ describe("HubConnection", () => {
                     expect(observer.itemsReceived).toEqual([1]);
 
                     // Close message sent asynchronously so we need to wait
-                    await delayUntil(1000, () => connection.sentData.length === 3);
+                    await delayUntil(1000, () => connection.sentData.length === 4);
                     // Verify the cancel is sent (+ handshake)
-                    expect(connection.sentData.length).toBe(3);
-                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                    expect(connection.sentData.length).toBe(4);
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
                         invocationId: connection.lastInvocationId,
                         type: MessageType.CancelInvocation,
                     });
@@ -1830,7 +1827,9 @@ class TestProtocol implements IHubProtocol {
     }
 
     public writeMessage(message: HubMessage): any {
-
+        if (message.type === 6) {
+            return "{\"type\": 6}" + TextMessageFormat.RecordSeparator;
+        }
     }
 }
 
