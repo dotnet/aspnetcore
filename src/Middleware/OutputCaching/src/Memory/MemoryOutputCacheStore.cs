@@ -32,7 +32,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (keys != null && keys.Count > 0)
                 {
-                    // If MemoryCache changed to run eviction callbacks run inline in Remove, iterating over keys could throw
+                    // If MemoryCache changed to run eviction callbacks inline in Remove, iterating over keys could throw
                     // To prevent allocating a copy of the keys we check if the eviction callback ran,
                     // and if it did we restart the loop.
 
