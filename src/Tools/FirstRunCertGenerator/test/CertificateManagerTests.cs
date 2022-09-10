@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -418,6 +419,51 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                 e => e.Critical == false &&
                     e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
                     e.RawData[0] == 1);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "https://github.com/dotnet/aspnetcore/issues/6720")]
+        public void EnsureCreateHttpsCertificate_CreatesFilesWithUserOnlyUnixFileMode()
+        {
+            _fixture.CleanupCertificates();
+
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_CreatesFilesWithUserOnlyUnixFileMode) + ".pem";
+            const string KeyName = nameof(EnsureCreateHttpsCertificate_CreatesFilesWithUserOnlyUnixFileMode) + ".key";
+
+            var certificatePassword = Guid.NewGuid().ToString();
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+
+            var result = _manager
+                .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, keyExportFormat: CertificateKeyExportFormat.Pem, isInteractive: false);
+
+            Assert.Equal(EnsureCertificateResult.Succeeded, result);
+
+            Assert.True(File.Exists(CertificateName));
+            //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(CertificateName));
+            AssertFileMode(CertificateName, "-rw-------");
+
+            Assert.True(File.Exists(KeyName));
+            //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(KeyName));
+            AssertFileMode(KeyName, "-rw-------");
+        }
+
+        private static void AssertFileMode(string path, string fileMode)
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "ls",
+                Arguments = $"-l {path}",
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
+            var process = Process.Start(processStartInfo);
+
+            Assert.NotNull(process);
+            var output = process!.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            Assert.StartsWith(fileMode, output);
         }
     }
 

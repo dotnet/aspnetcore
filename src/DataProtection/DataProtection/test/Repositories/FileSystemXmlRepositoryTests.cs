@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -155,6 +156,39 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
                 // Assert
                 Assert.Contains(Resources.FormatFileSystem_EphemeralKeysLocationInContainer(dirInfo.FullName), loggerFactory.ToString());
+            });
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+        public void StoreElement_CreatesFileWithUserOnlyUnixFileMode()
+        {
+            WithUniqueTempDirectory(dirInfo =>
+            {
+                // Arrange
+                var element = XElement.Parse("<element1 />");
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+
+                // Act
+                repository.StoreElement(element, "friendly-name");
+
+                // Assert
+                var fileInfo = Assert.Single(dirInfo.GetFiles());
+
+                //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, fileInfo.UnixFileMode);
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "ls",
+                    Arguments = $"-l {fileInfo.FullName}",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                };
+                var process = Process.Start(processStartInfo);
+
+                Assert.NotNull(process);
+                var output = process!.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                Assert.StartsWith("-rw-------", output);
             });
         }
 
