@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-    <String Id="BalCondition_NETFX451Required">Seçilen bazı özellikler .NET 4.5.1 gerektirir. Lütfen .NET 4.5.1 sürümünü yükleyin ve ardından bu ürünü yeniden yükleyin.</String>
-    <String Id="BalCondition_IISRequired">Bu ürün IIS 7.5 gerektirir. Lütfen IIS'yi yükleyin ve ardından bu ürünü yeniden yükleyin.</String>
-    <String Id="BalCondition_VS2015Update2Required">Bu ürün için Visual Studio 2015 Güncelleştirme 2 veya üzeri gerekiyor. Lütfen Visual Studio 2015 Güncelleştirme 2 veya sonraki bir sürümü yükleyin ve ardından bu ürünü yeniden yükleyin.</String>
-    <String Id="BalCondition_VS2015Update3Required">Bu ürün için Visual Studio 2015 Güncelleştirme 3 veya üzeri gerekiyor. Lütfen Visual Studio 2015 Güncelleştirme 3 veya sonraki bir sürümü yükleyin ve ardından bu ürünü yeniden yükleyin.</String>
-    <String Id="BalCondition_VS2015Update3Mismatch">Kurulum, Visual Studio 2015 Güncelleştirme 3'ün tam olarak yüklenmediğini algıladı. Lütfen Visual Studio 2015 Güncelleştirme 3'ü onarın ve ardından bu ürünü yeniden yükleyin.</String>
-    <String Id="BalCondition_WebDeveloperToolsRequired">Bu ürün için Visual Studio 2015 Web Geliştirici Araçları özelliği gerekiyor. Lütfen Windows'da Programlar ve Özellikler'e gidip özelliği etkinleştirin ve ardından Visual Studio 2015'i değiştirin.</String>
-    <String Id="BalCondition_VSVWDRequired">Bu ürünün yüklenebilmesi için Visual Studio 2015 veya Web için Visual Studio Express 2015 gerekiyor. Lütfen eksik ürünü yükleyin ve ardından bu ürünü yeniden yükleyin.</String>
+    <String Id="BalCondition_NETFX451Required">Some features that were selected requires .NET 4.5.1. Please install .NET 4.5.1, then install this product again.</String>
+    <String Id="BalCondition_IISRequired">This product requires IIS 7.5. Please install IIS, then install this product again.</String>
+    <String Id="BalCondition_VS2015Update2Required">This product requires Visual Studio 2015 Update 2 or later. Please install Visual Studio 2015 Update 2 or later, then install this product again.</String>
+    <String Id="BalCondition_VS2015Update3Required">This product requires Visual Studio 2015 Update 3 or later. Please install Visual Studio 2015 Update 3 or later, then install this product again.</String>
+    <String Id="BalCondition_VS2015Update3Mismatch">Setup has detected that Visual Studio 2015 Update 3 may not be completely installed. Please repair Visual Studio 2015 Update 3, then install this product again.</String>
+    <String Id="BalCondition_WebDeveloperToolsRequired">This product requires the Web Developer Tools feature in Visual Studio 2015. Please enable the feature by going to Programs and Features in Windows, then modify Visual Studio 2015.</String>
+    <String Id="BalCondition_VSVWDRequired">This product requires Visual Studio 2015 or Visual Studio Express 2015 for Web to be installed. Please install the missing product, then install this product again.</String>
 </WixLocalization>
