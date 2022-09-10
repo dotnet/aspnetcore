@@ -183,4 +183,10 @@
   <data name="AttributeRoute_TokenReplacement_UnescapedBraceInToken" xml:space="preserve">
     <value>An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape.</value>
   </data>
+  <data name="Unused_Route_parameter" xml:space="preserve">
+    <value>Unused route parameter</value>
+  </data>
+  <data name="Unused_Route_parameter_0" xml:space="preserve">
+    <value>Unused route parameter '{0}'</value>
+  </data>
 </root>

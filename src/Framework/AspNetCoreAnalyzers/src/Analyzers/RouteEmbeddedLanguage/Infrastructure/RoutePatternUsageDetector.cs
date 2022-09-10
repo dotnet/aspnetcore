@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal readonly record struct RoutePatternUsageContext(
     IMethodSymbol? MethodSymbol,
+    SyntaxNode MethodSyntax,
     bool IsMinimal,
     bool IsMvcAttribute);
 
@@ -48,7 +49,7 @@ internal static class RoutePatternUsageDetector
             // Get the map method delegate.
             var mapMethodSymbol = GetMethodInfo(semanticModel, mapMethodParts.Value.DelegateExpression, cancellationToken);
 
-            return new(MethodSymbol: mapMethodSymbol, IsMinimal: true, IsMvcAttribute: false);
+            return new(MethodSymbol: mapMethodSymbol, MethodSyntax: mapMethodParts.Value.DelegateExpression, IsMinimal: true, IsMvcAttribute: false);
         }
         else if (container.Parent.IsKind(SyntaxKind.AttributeArgument))
         {
@@ -63,13 +64,13 @@ internal static class RoutePatternUsageDetector
                 {
                     return default;
                 }
-                return new(MethodSymbol: actionMethodSymbol, IsMinimal: false, IsMvcAttribute: true);
+                return new(MethodSymbol: actionMethodSymbol, MethodSyntax: methodDeclarationSyntax, IsMinimal: false, IsMvcAttribute: true);
             }
             else if (attributeParent is ClassDeclarationSyntax classDeclarationSyntax)
             {
                 var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken);
 
-                return new(MethodSymbol: null, IsMinimal: false, IsMvcAttribute: MvcDetector.IsController(classSymbol, wellKnownTypes));
+                return new(MethodSymbol: null, MethodSyntax: null, IsMinimal: false, IsMvcAttribute: MvcDetector.IsController(classSymbol, wellKnownTypes));
             }
         }
 
@@ -217,7 +218,7 @@ internal static class RoutePatternUsageDetector
         return argumentList.Arguments[index];
     }
 
-    public static IMethodSymbol? GetMethodInfo(SemanticModel semanticModel, SyntaxNode syntaxNode, CancellationToken cancellationToken)
+    private static IMethodSymbol? GetMethodInfo(SemanticModel semanticModel, SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
         var delegateSymbolInfo = semanticModel.GetSymbolInfo(syntaxNode, cancellationToken);
         var delegateSymbol = delegateSymbolInfo.Symbol;

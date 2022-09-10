@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -16,7 +18,8 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
-        DiagnosticDescriptors.RoutePatternIssue
+        DiagnosticDescriptors.RoutePatternIssue,
+        DiagnosticDescriptors.RoutePatternUnusedParameter
     });
 
     public void Analyze(SemanticModelAnalysisContext context)
@@ -75,6 +78,34 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                         additionalLocations: null,
                         properties: null,
                         diag.Message));
+                }
+
+                if (usageContext.MethodSymbol != null)
+                {
+                    var routeParameterNames = new HashSet<string>(tree.RouteParameters.Keys, StringComparer.OrdinalIgnoreCase);
+                    foreach (var parameter in usageContext.MethodSymbol.Parameters)
+                    {
+                        routeParameterNames.Remove(parameter.Name);
+                    }
+
+                    foreach (var unusedParameterName in routeParameterNames)
+                    {
+                        var unusedParameter = tree.RouteParameters[unusedParameterName];
+                        var properties = new Dictionary<string, string>
+                        {
+                            ["RouteParameterName"] = unusedParameter.Name,
+                            ["RouteParameterPolicy"] = string.Join(string.Empty, unusedParameter.Policies),
+                            ["RouteParameterIsOptional"] = unusedParameter.IsOptional.ToString()
+                        };
+
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.RoutePatternUnusedParameter,
+                            Location.Create(context.SemanticModel.SyntaxTree, unusedParameter.Span),
+                            DiagnosticDescriptors.RoutePatternUnusedParameter.DefaultSeverity,
+                            additionalLocations: null,
+                            properties: properties.ToImmutableDictionary(),
+                            unusedParameterName));
+                    }
                 }
             }
         }

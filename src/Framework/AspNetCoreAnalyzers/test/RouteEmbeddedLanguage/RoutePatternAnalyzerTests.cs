@@ -259,4 +259,78 @@ public class TestController
                 Assert.Equal($"Route issue: {Resources.AttributeRoute_TokenReplacement_UnclosedToken}", d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
+
+    [Fact]
+    public async Task ControllerAction_UnusedRouteParameter_ReportedDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(@""{id}"")]
+    public object TestAction()
+    {
+        return null;
+    }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Collection(
+            diagnostics,
+            d =>
+            {
+                Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
+                Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+            });
+    }
+
+    [Fact]
+    public async Task ControllerAction_MatchedRouteParameter_NoDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(@""{id}"")]
+    public object TestAction(int id)
+    {
+        return null;
+    }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
 }

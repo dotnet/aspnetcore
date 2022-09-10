@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 
@@ -24,7 +25,7 @@ internal sealed class RoutePatternTree : EmbeddedSyntaxTree<RoutePatternKind, Ro
 
 internal readonly struct RouteParameter
 {
-    public RouteParameter(string name, bool encodeSlashes, string defaultValue, bool isOptional, bool isCatchAll, ImmutableArray<string> policies)
+    public RouteParameter(string name, bool encodeSlashes, string defaultValue, bool isOptional, bool isCatchAll, ImmutableArray<string> policies, TextSpan span)
     {
         Name = name;
         EncodeSlashes = encodeSlashes;
@@ -32,6 +33,7 @@ internal readonly struct RouteParameter
         IsOptional = isOptional;
         IsCatchAll = isCatchAll;
         Policies = policies;
+        Span = span;
     }
 
     public readonly string Name;
@@ -40,6 +42,7 @@ internal readonly struct RouteParameter
     public readonly bool IsOptional;
     public readonly bool IsCatchAll;
     public readonly ImmutableArray<string> Policies;
+    public readonly TextSpan Span;
 
     public override string ToString()
     {

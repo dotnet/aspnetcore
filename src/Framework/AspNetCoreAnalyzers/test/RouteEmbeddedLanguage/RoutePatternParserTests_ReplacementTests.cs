@@ -3,9 +3,6 @@
 
 #nullable disable
 
-using System.Text.RegularExpressions;
-using Xunit;
-
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 // These tests are mirrored from routing's AttributeRouteModelTests.cs
