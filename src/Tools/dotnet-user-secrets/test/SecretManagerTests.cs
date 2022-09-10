@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Tools.Internal;
@@ -335,6 +337,33 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
 
             Assert.DoesNotContain(Resources.FormatError_ProjectMissingId(project), _output.ToString());
             Assert.DoesNotContain("--help", _output.ToString());
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+        public void SetSecrets_CreatesFileWithUserOnlyUnixFileMode()
+        {
+            var projectPath = _fixture.GetTempSecretProject();
+            var secretManager = new Program(_console, projectPath);
+
+            secretManager.RunInternal("set", "key1", Guid.NewGuid().ToString(), "--verbose");
+
+            Assert.NotNull(secretManager.SecretsFilePath);
+
+            //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(secretManager.SecretsFilePath));
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "ls",
+                Arguments = $"-l {secretManager.SecretsFilePath}",
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
+            var process = Process.Start(processStartInfo);
+
+            Assert.NotNull(process);
+            var output = process!.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            Assert.StartsWith("-rw-------", output);
         }
     }
 }

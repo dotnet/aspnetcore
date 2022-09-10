@@ -383,6 +383,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     throw;
                 }
             }
+
+            // Create a temp file with the correct Unix file mode before moving it to the expected path.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var tempFilename = Path.GetTempFileName();
+                File.Move(tempFilename, path, overwrite: true);
+            }
+
             try
             {
                 diagnostics?.Debug($"Writing exported certificate to path '{path}'.");
@@ -668,6 +676,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             try
             {
                 var certBytes = certificate.Export(X509ContentType.Cert);
+
                 File.WriteAllBytes(certificatePath, certBytes);
                 var processInfo = new ProcessStartInfo(
                     MacOSRemoveCertificateTrustCommandLine,

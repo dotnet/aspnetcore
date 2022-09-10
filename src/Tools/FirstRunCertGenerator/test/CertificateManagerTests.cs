@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -240,6 +241,40 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             {
                 Assert.Empty(CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
             }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "https://github.com/dotnet/aspnetcore/issues/6720")]
+        public void EnsureCreateHttpsCertificate_CreatesFileWithUserOnlyUnixFileMode()
+        {
+            _fixture.CleanupCertificates();
+
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_CreatesFileWithUserOnlyUnixFileMode) + ".pfx";
+            var certificatePassword = Guid.NewGuid().ToString();
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+
+            var result = _manager
+                .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject, isInteractive: false);
+
+            Assert.Equal(EnsureCertificateResult.Succeeded, result.ResultCode);
+            Assert.True(File.Exists(CertificateName));
+
+            //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(CertificateName));
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "ls",
+                Arguments = $"-l {CertificateName}",
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
+            var process = Process.Start(processStartInfo);
+
+            Assert.NotNull(process);
+            var output = process!.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            Assert.StartsWith("-rw-------", output);
         }
     }
 
