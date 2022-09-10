@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -46,6 +47,9 @@ public class SecretsStore
 
     public int Count => _secrets.Count;
 
+    // For testing.
+    internal string SecretsFilePath => _secretsFilePath;
+
     public bool ContainsKey(string key) => _secrets.ContainsKey(key);
 
     public IEnumerable<KeyValuePair<string, string>> AsEnumerable() => _secrets;
@@ -73,6 +77,13 @@ public class SecretsStore
             {
                 contents[secret.Key] = secret.Value;
             }
+        }
+
+        // Create a temp file with the correct Unix file mode before moving it to the expected _filePath.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var tempFilename = Path.GetTempFileName();
+            File.Move(tempFilename, _secretsFilePath, overwrite: true);
         }
 
         File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);

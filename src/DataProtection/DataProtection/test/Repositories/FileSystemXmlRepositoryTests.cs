@@ -155,6 +155,25 @@ public class FileSystemXmlRepositoryTests
         });
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void StoreElement_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        WithUniqueTempDirectory(dirInfo =>
+        {
+            // Arrange
+            var element = XElement.Parse("<element1 />");
+            var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+
+            // Act
+            repository.StoreElement(element, "friendly-name");
+
+            // Assert
+            var fileInfo = Assert.Single(dirInfo.GetFiles());
+            Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, fileInfo.UnixFileMode);
+        });
+    }
+
     /// <summary>
     /// Runs a test and cleans up the temp directory afterward.
     /// </summary>
