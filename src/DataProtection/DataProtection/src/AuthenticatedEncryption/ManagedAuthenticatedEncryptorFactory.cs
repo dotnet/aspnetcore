@@ -103,8 +103,8 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
         }
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2068", Justification = "Reflecting over the async Task types contract")]
-    [UnconditionalSuppressMessage("Trimmer", "IL2070", Justification = "Reflecting over the async Task types contract")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2068", Justification = "Validating the specified type has a public parameterless constructor")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2070", Justification = "Validating the specified type has a public parameterless constructor")]
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     private static Type ValidateHasPublicParameterlessConstructor(Type type)
     {
