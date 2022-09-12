@@ -31,6 +31,9 @@ public class UpgradeTests : LoggedTest
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.Body.WriteAsync(new byte[1], 0, 1));
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
 
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.BodyWriter.WriteAsync(new byte[1]).AsTask());
+            Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
+
             using (var writer = new StreamWriter(stream))
             {
                 await writer.WriteLineAsync("New protocol data");
