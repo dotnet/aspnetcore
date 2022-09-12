@@ -48,7 +48,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
         var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
         var applicationScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
 
-        // Socket callbacks run on the threads polling for IO if we're using the old thread windows thread pool
+        // Socket callbacks run on the threads polling for IO if we're using the old Windows thread pool
         var dispatchSocketCallbacks = OperatingSystem.IsWindows() &&
                                       (Environment.GetEnvironmentVariable("DOTNET_ThreadPool_UsePortableThreadPoolForIO") == "0" ||
                                       Environment.GetEnvironmentVariable("COMPlus_ThreadPool_UsePortableThreadPoolForIO") == "0");
