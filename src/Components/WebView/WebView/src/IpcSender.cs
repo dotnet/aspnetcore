@@ -29,7 +29,12 @@ internal sealed class IpcSender
         {
             renderBatchWriter.Write(in renderBatch);
         }
-        var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch, batchId, Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
+
+        var data = arrayBuilder.Buffer.AsSpan(0, arrayBuilder.Count).ToArray();
+        var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch,
+            batchId,
+            data);
+
         DispatchMessageWithErrorHandling(message);
     }
 
