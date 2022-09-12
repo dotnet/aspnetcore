@@ -59,7 +59,7 @@
 
   </Target>
 
-  <Target Name="IncludeCompileJsOutput" BeforeTargets="_ResolveJsModuleInputs">
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="_ResolveJsModuleInputs" DependsOnTargets="CompileJs">
     <ItemGroup>
       <_JsBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
