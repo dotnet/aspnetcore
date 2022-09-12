@@ -44,10 +44,10 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheContext.OutputCacheContext() -> vo
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.ResponseTime.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddBasePolicy(Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy! policy) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddBasePolicy(System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build) -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddBasePolicy(System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build, bool useDefaultPolicy) -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddBasePolicy(System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build, bool excludeDefaultPolicy) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddPolicy(string! name, Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy! policy) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddPolicy(string! name, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build) -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddPolicy(string! name, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build, bool useDefaultPolicy) -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheOptions.AddPolicy(string! name, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! build, bool excludeDefaultPolicy) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.AddPolicy(System.Type! policyType) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.AddPolicy<T>() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
@@ -99,7 +99,7 @@ static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExte
 static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions.CacheOutput<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy! policy) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions.CacheOutput<TBuilder>(this TBuilder builder, string! policyName) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions.CacheOutput<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy) -> TBuilder
-static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions.CacheOutput<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy, bool useDefaultPolicy) -> TBuilder
+static Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions.CacheOutput<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy, bool excludeDefaultPolicy) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.OutputCacheServiceCollectionExtensions.AddOutputCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OutputCacheServiceCollectionExtensions.AddOutputCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCacheOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.CacheVaryByRules.get -> Microsoft.AspNetCore.OutputCaching.CacheVaryByRules!

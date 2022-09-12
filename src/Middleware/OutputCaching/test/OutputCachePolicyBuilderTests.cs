@@ -20,7 +20,7 @@ public class OutputCachePolicyBuilderTests
     [Fact]
     public void BuildPolicy_CreatedWithoutDefaultPolicy()
     {
-        var builder = new OutputCachePolicyBuilder(false);
+        var builder = new OutputCachePolicyBuilder(true);
         var policy = builder.Build();
 
         Assert.Equal(EmptyPolicy.Instance, policy);
@@ -76,11 +76,11 @@ public class OutputCachePolicyBuilderTests
         var options = new OutputCacheOptions();
         var name = "MyPolicy";
         var duration = 42;
-        options.AddPolicy(name, b => b.Expire(TimeSpan.FromSeconds(duration)), false);
+        options.AddPolicy(name, b => b.Expire(TimeSpan.FromSeconds(duration)), true);
 
         var context = TestUtils.CreateUninitializedContext(options: options);
 
-        var builder = new OutputCachePolicyBuilder(false);
+        var builder = new OutputCachePolicyBuilder(true);
         var policy = builder.AddPolicy(new NamedPolicy(name)).Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
@@ -288,7 +288,7 @@ public class OutputCachePolicyBuilderTests
     {
         var context = TestUtils.CreateUninitializedContext();
 
-        var builder = new OutputCachePolicyBuilder(false);
+        var builder = new OutputCachePolicyBuilder(true);
         var policy = builder.Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 

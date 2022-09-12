@@ -19,14 +19,14 @@ public sealed class OutputCachePolicyBuilder
     private readonly List<IOutputCachePolicy> _policies = new();
     private List<Func<OutputCacheContext, CancellationToken, ValueTask<bool>>>? _requirements;
 
-    internal OutputCachePolicyBuilder() : this(true)
+    internal OutputCachePolicyBuilder() : this(false)
     {
     }
 
-    internal OutputCachePolicyBuilder(bool useDefaultPolicy)
+    internal OutputCachePolicyBuilder(bool excludeDefaultPolicy)
     {
         _builtPolicy = null;
-        if (useDefaultPolicy)
+        if (!excludeDefaultPolicy)
         {
             _policies.Add(DefaultPolicy.Instance);
         }
