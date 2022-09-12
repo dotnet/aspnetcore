@@ -35,7 +35,7 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
         app = Browser.MountTestComponent<CustomElementsComponent>();
     }
 
-    [Fact]
+    [Fact(Skip = "Debugging in CI")]
     public void CanAddAndRemoveCustomElements()
     {
         // Custom elements can be added.
@@ -53,7 +53,7 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.DoesNotExist(By.Id("custom-element-0"));
     }
 
-    [Fact]
+    [Fact(Skip = "Debugging in CI")]
     public void CanUpdateSimpleParameters()
     {
         app.FindElement(By.Id("add-custom-element")).Click();
@@ -103,7 +103,7 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Debugging in CI")]
     public void CanUpdateComplexParameters()
     {
         app.FindElement(By.Id("add-custom-element")).Click();
