@@ -876,5 +876,36 @@ public partial class HubConnectionTests
                 await connection.DisposeAsync().DefaultTimeout();
             }
         }
+
+        [Fact]
+        public async Task ClientResultHandlerDoesNotBlockOtherHandlers()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.On("Result", async () =>
+                {
+                    await tcs.Task.DefaultTimeout();
+                    return 1;
+                });
+                hubConnection.On("Other", () => tcs.SetResult());
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+                await connection.ReceiveTextAsync("{\"type\":1,\"target\":\"Other\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":1}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
     }
 }
