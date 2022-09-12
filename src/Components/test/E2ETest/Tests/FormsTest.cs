@@ -809,6 +809,18 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Collection(logEntries, x => Assert.Equal("OnValidSubmit", x));
     }
 
+    [Fact]
+    public void ValidationSummaryContainsCustomCssClass()
+    {
+        var appElement = MountTypicalValidationComponent();
+
+        var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+        submitButton.Click();
+
+        var validationSummaryElement = appElement.FindElement(By.ClassName("validation-errors"));
+        EnsureAttributeValue(validationSummaryElement, "class", "validation-summary validation-errors");
+    }
+
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")
     {
         return () => appElement.FindElements(By.CssSelector(messageSelector))

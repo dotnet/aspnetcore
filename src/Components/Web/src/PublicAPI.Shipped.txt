@@ -142,6 +142,8 @@ Microsoft.AspNetCore.Components.Forms.ValidationSummary.AdditionalAttributes.get
 Microsoft.AspNetCore.Components.Forms.ValidationSummary.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.Forms.ValidationSummary.Model.get -> object?
 Microsoft.AspNetCore.Components.Forms.ValidationSummary.Model.set -> void
+Microsoft.AspNetCore.Components.Forms.ValidationSummary.CssClass.get -> string?
+Microsoft.AspNetCore.Components.Forms.ValidationSummary.CssClass.set -> void
 Microsoft.AspNetCore.Components.Forms.ValidationSummary.ValidationSummary() -> void
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventFieldInfo.get -> Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo?

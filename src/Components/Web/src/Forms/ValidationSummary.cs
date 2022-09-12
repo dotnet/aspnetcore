@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public class ValidationSummary : ComponentBase, IDisposable
 {
+    private const string DefaultValidationErrorsClass = "validation-errors";
+
     private EditContext? _previousEditContext;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
@@ -29,6 +31,11 @@ public class ValidationSummary : ComponentBase, IDisposable
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     [CascadingParameter] EditContext CurrentEditContext { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the computed CSS class to be appended to the <c>ul</c> element.
+    /// </summary>
+    protected string? CssClass { get; set; }
 
     /// <summary>`
     /// Constructs an instance of <see cref="ValidationSummary"/>.
@@ -54,6 +61,8 @@ public class ValidationSummary : ComponentBase, IDisposable
             CurrentEditContext.OnValidationStateChanged += _validationStateChangedHandler;
             _previousEditContext = CurrentEditContext;
         }
+
+        CssClass = AttributeUtilities.CombineClassNames(AdditionalAttributes, DefaultValidationErrorsClass);
     }
 
     /// <inheritdoc />
@@ -73,8 +82,8 @@ public class ValidationSummary : ComponentBase, IDisposable
                 first = false;
 
                 builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
-                builder.AddMultipleAttributes(2, AdditionalAttributes);
+                builder.AddMultipleAttributes(1, AdditionalAttributes);
+                builder.AddAttribute(2, "class", CssClass);
             }
 
             builder.OpenElement(3, "li");
