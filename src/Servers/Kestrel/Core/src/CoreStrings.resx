@@ -686,8 +686,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="AcceptCannotBeCalledMultipleTimes" xml:space="preserve">
     <value>IHttpExtendedConnectFeature.AcceptAsync was already called and can only be called once per request.</value>
   </data>
-  <data name="ConnectStatusMustBe200" xml:space="preserve">
-    <value>The response status code for a Extended CONNECT request must be 200.</value>
+  <data name="ConnectStatusMustBe2XX" xml:space="preserve">
+    <value>The response status code for a Extended CONNECT request must be 2XX.</value>
   </data>
   <data name="AttemptedToReadHeaderOnAbortedStream" xml:space="preserve">
     <value>Attempted to read header on aborted stream.</value>
@@ -715,5 +715,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http3ErrorControlStreamClosed" xml:space="preserve">
     <value>A control stream used by the connection was closed or reset.</value>
+  </data>
+  <data name="ConnectResponseCanNotHaveBody" xml:space="preserve">
+    <value>Responses to 'CONNECT' requests with the success status code '{StatusCode}' cannot have a response body. Use the 'IHttpExtendedConnectFeature' to accept and write to the 'CONNECT' stream.</value>
   </data>
 </root>
