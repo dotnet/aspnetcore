@@ -21,9 +21,6 @@
     {"testName": {"contains": "MvcTemplate_IdentityWeb_SingleOrg_BuildsAndPublishes"}},
     {"testName": {"contains": "WebApiTemplateCSharp_IdentityWeb_IndividualB2C_BuildsAndPublishes"}},
     {"testName": {"contains": "WebApiTemplateCSharp_IdentityWeb_SingleOrg_BuildsAndPublishes"}},
-    
-    
-    
     {"testAssembly": {"contains": "IIS"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
