@@ -12,27 +12,23 @@ internal sealed class VaryByRouteValuePolicy : IOutputCachePolicy
 {
     private readonly StringValues _routeValueNames;
 
-    /// <summary>
-    /// Creates a policy that doesn't vary the cached content based on route values.
-    /// </summary>
-    public VaryByRouteValuePolicy()
+    private VaryByRouteValuePolicy()
     {
     }
 
-    /// <summary>
-    /// Creates a policy that varies the cached content based on the specified route value name.
-    /// </summary>
-    public VaryByRouteValuePolicy(string routeValue)
+    public VaryByRouteValuePolicy(string routeValue, params string[] routeValueNames)
     {
         ArgumentNullException.ThrowIfNull(routeValue);
 
         _routeValueNames = routeValue;
+
+        if (routeValueNames != null && routeValueNames.Length > 0)
+        {
+            _routeValueNames = StringValues.Concat(_routeValueNames, routeValueNames);
+        }
     }
 
-    /// <summary>
-    /// Creates a policy that varies the cached content based on the specified route value names.
-    /// </summary>
-    public VaryByRouteValuePolicy(params string[] routeValueNames)
+    public VaryByRouteValuePolicy(string[] routeValueNames)
     {
         ArgumentNullException.ThrowIfNull(routeValueNames);
 
@@ -42,15 +38,7 @@ internal sealed class VaryByRouteValuePolicy : IOutputCachePolicy
     /// <inheritdoc />
     ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        // No vary by route value?
-        if (_routeValueNames.Count == 0)
-        {
-            context.CacheVaryByRules.RouteValueNames = _routeValueNames;
-            return ValueTask.CompletedTask;
-        }
-
-        context.CacheVaryByRules.RouteValueNames = StringValues.Concat(context.CacheVaryByRules.RouteValueNames, _routeValueNames);
-
+        context.CacheVaryByRules.RouteValueNames = _routeValueNames;
         return ValueTask.CompletedTask;
     }
 

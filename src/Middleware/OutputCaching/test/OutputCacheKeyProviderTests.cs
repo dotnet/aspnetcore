@@ -28,6 +28,23 @@ public class OutputCacheKeyProviderTests
     }
 
     [Fact]
+    public void OutputCachingKeyProvider_CreateStorageKey_IgnoresHost()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.CacheVaryByRules.VaryByHost = false;
+
+        context.HttpContext.Request.Method = "head";
+        context.HttpContext.Request.Path = "/path/subpath";
+        context.HttpContext.Request.Scheme = "https";
+        context.HttpContext.Request.Host = new HostString("example.com", 80);
+        context.HttpContext.Request.PathBase = "/pathBase";
+        context.HttpContext.Request.QueryString = new QueryString("?query.Key=a&query.Value=b");
+
+        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}*:*/PATHBASE/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_CaseInsensitivePath_NormalizesPath()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCacheOptions()
@@ -35,6 +52,7 @@ public class OutputCacheKeyProviderTests
             UseCaseSensitivePaths = false
         });
         var context = TestUtils.CreateTestContext();
+
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Path = "/Path";
 
