@@ -1601,6 +1601,163 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal("value1", property.RawValue);
         }
 
+
+        [Fact]
+        public void GetFieldValidationState_ReturnsUnvalidated_IfTreeHeightIsGreaterThanLimit()
+        {
+            // Arrange
+            var stackLimit = 5;
+            var dictionary = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stackLimit + 1));
+            dictionary.MaxValidationDepth = stackLimit;
+            dictionary.MaxStateDepth = null;
+            dictionary.MarkFieldValid(key);
+
+            // Act
+            var validationState = dictionary.GetFieldValidationState("foo");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Unvalidated, validationState);
+        }
+
+        [Fact]
+        public void IsValidProperty_ReturnsTrue_IfTreeHeightIsGreaterThanLimit()
+        {
+            // Arrange
+            var stackLimit = 5;
+            var dictionary = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stackLimit + 1));
+            dictionary.MaxValidationDepth = stackLimit;
+            dictionary.MaxStateDepth = null;
+            dictionary.AddModelError(key, "some error");
+
+            // Act
+            var isValid = dictionary.IsValid;
+            var validationState = dictionary.ValidationState;
+
+            // Assert
+            Assert.True(isValid);
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
+        [Fact]
+        public void TryAddModelException_Throws_IfKeyHasTooManySegments()
+        {
+            // Arrange
+            var exception = new TestException();
+
+            var stateDepth = 5;
+            var dictionary = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+            dictionary.MaxStateDepth = stateDepth;
+
+            // Act
+            var invalidException = Assert.Throws<InvalidOperationException>(() => dictionary.TryAddModelException(key, exception));
+
+            // Assert
+            Assert.Equal(
+                $"The specified key exceeded the maximum ModelState depth: {dictionary.MaxStateDepth}",
+                invalidException.Message);
+        }
+
+        [Fact]
+        public void TryAddModelError_Throws_IfKeyHasTooManySegments()
+        {
+            // Arrange
+            var stateDepth = 5;
+            var dictionary = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+            dictionary.MaxStateDepth = stateDepth;
+
+            // Act
+            var invalidException = Assert.Throws<InvalidOperationException>(() => dictionary.TryAddModelError(key, "errorMessage"));
+
+            // Assert
+            Assert.Equal(
+                $"The specified key exceeded the maximum ModelState depth: {dictionary.MaxStateDepth}",
+                invalidException.Message);
+        }
+
+        [Fact]
+        public void SetModelValue_Throws_IfKeyHasTooManySegments()
+        {
+            var stateDepth = 5;
+            var dictionary = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+            dictionary.MaxStateDepth = stateDepth;
+
+            // Act
+            var invalidException = Assert.Throws<InvalidOperationException>(() => dictionary.SetModelValue(key, string.Empty, string.Empty));
+
+            // Assert
+            Assert.Equal(
+                $"The specified key exceeded the maximum ModelState depth: {dictionary.MaxStateDepth}",
+                invalidException.Message);
+        }
+
+        [Fact]
+        public void MarkFieldValid_Throws_IfKeyHasTooManySegments()
+        {
+            // Arrange
+            var stateDepth = 5;
+            var source = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+            source.MaxStateDepth = stateDepth;
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() => source.MarkFieldValid(key));
+
+            // Assert
+            Assert.Equal(
+                $"The specified key exceeded the maximum ModelState depth: {source.MaxStateDepth}",
+                exception.Message);
+        }
+
+        [Fact]
+        public void MarkFieldSkipped_Throws_IfKeyHasTooManySegments()
+        {
+            // Arrange
+            var stateDepth = 5;
+            var source = new ModelStateDictionary();
+            var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+            source.MaxStateDepth = stateDepth;
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() => source.MarkFieldSkipped(key));
+
+            // Assert
+            Assert.Equal(
+                $"The specified key exceeded the maximum ModelState depth: {source.MaxStateDepth}",
+                exception.Message);
+        }
+
+        [Fact]
+        public void Constructor_SetsDefaultRecursionDepth()
+        {
+            // Arrange && Act
+            var dictionary = new ModelStateDictionary();
+
+            // Assert
+            Assert.Equal(ModelStateDictionary.DefaultMaxRecursionDepth, dictionary.MaxValidationDepth);
+            Assert.Equal(ModelStateDictionary.DefaultMaxRecursionDepth, dictionary.MaxStateDepth);
+        }
+
+        [Fact]
+        public void CopyConstructor_PreservesRecursionDepth()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary.MaxValidationDepth = 5;
+            dictionary.MaxStateDepth = 4;
+
+            // Act
+            var newDictionary = new ModelStateDictionary(dictionary);
+
+            // Assert
+            Assert.Equal(dictionary.MaxValidationDepth, newDictionary.MaxValidationDepth);
+            Assert.Equal(dictionary.MaxStateDepth, newDictionary.MaxStateDepth);
+        }
+
         private class OptionsAccessor : IOptions<MvcOptions>
         {
             public MvcOptions Value { get; } = new MvcOptions();
