@@ -39,4 +39,10 @@ public sealed class CacheVaryByRules
     /// Gets or sets a prefix to vary by.
     /// </summary>
     public string? CacheKeyPrefix { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to vary by the HOST header value or not.
+    /// </summary>
+    /// <remarks>Default is <c>true</c></remarks>
+    public bool VaryByHost { get; set; } = true;
 }

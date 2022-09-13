@@ -53,7 +53,7 @@ public class MemoryOutputCacheStoreTests
     {
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
         var value = default(byte[]);
-        string key = "abc";
+        var key = "abc";
 
         _ = await Assert.ThrowsAsync<ArgumentNullException>("value", () => store.SetAsync(key, value, null, TimeSpan.FromMilliseconds(5), default).AsTask());
     }

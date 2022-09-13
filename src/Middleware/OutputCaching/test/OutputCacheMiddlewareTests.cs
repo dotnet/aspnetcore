@@ -835,7 +835,7 @@ public class OutputCacheMiddlewareTests
         var task2Executing = new ManualResetEventSlim(false);
 
         var options = new OutputCacheOptions();
-        options.AddBasePolicy(build => build.Cache().AllowLocking(false));
+        options.AddBasePolicy(build => build.Cache().SetLocking(false));
 
         var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
         {

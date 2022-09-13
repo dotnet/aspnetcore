@@ -19,6 +19,17 @@ public class OutputCachePoliciesTests
     }
 
     [Fact]
+    public async Task DefaultCachePolicy_VariesByHost()
+    {
+        IOutputCachePolicy policy = DefaultPolicy.Instance;
+        var context = TestUtils.CreateUninitializedContext();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.True(context.CacheVaryByRules.VaryByHost);
+    }
+
+    [Fact]
     public async Task DefaultCachePolicy_AllowsLocking()
     {
         IOutputCachePolicy policy = DefaultPolicy.Instance;
@@ -50,6 +61,17 @@ public class OutputCachePoliciesTests
         await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.EnableOutputCaching);
+    }
+
+    [Fact]
+    public async Task VaryByHostPolicy_Disabled_UpdatesCacheVaryByRule()
+    {
+        IOutputCachePolicy policy = VaryByHostPolicy.Disabled;
+        var context = TestUtils.CreateUninitializedContext();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.False(context.CacheVaryByRules.VaryByHost);
     }
 
     [Fact]
@@ -162,7 +184,7 @@ public class OutputCachePoliciesTests
     {
         var context = TestUtils.CreateUninitializedContext();
 
-        IOutputCachePolicy policy = new VaryByHeaderPolicy();
+        IOutputCachePolicy policy = new VaryByHeaderPolicy(Array.Empty<string>());
 
         await policy.CacheRequestAsync(context, default);
 
@@ -200,7 +222,7 @@ public class OutputCachePoliciesTests
     {
         var context = TestUtils.CreateUninitializedContext();
 
-        IOutputCachePolicy policy = new VaryByQueryPolicy();
+        IOutputCachePolicy policy = new VaryByQueryPolicy(Array.Empty<string>());
 
         await policy.CacheRequestAsync(context, default);
 
@@ -222,6 +244,19 @@ public class OutputCachePoliciesTests
 
     [Fact]
     public async Task VaryByQueryPolicy_AddsMultipleHeaders()
+    {
+        var context = TestUtils.CreateUninitializedContext();
+        var queries = new[] { "query1", "query2" };
+
+        IOutputCachePolicy policy = new VaryByQueryPolicy("query1", "query2");
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.Equal(queries, context.CacheVaryByRules.QueryKeys);
+    }
+
+    [Fact]
+    public async Task VaryByQueryPolicy_AddsMultipleHeadersArray()
     {
         var context = TestUtils.CreateUninitializedContext();
         var queries = new[] { "query1", "query2" };
