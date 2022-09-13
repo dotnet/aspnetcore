@@ -24,7 +24,7 @@ public static class NavigationManagerExtensions
     /// Initiates a logout operation by navigating to the log out endpoint.
     /// </summary>
     /// <remarks>
-    /// The navigation includes stated that is added to the browser history entry to
+    /// The navigation includes state that is added to the browser history entry to
     /// prevent logout operations performed from different contexts.
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
@@ -46,7 +46,7 @@ public static class NavigationManagerExtensions
     /// Initiates a logout operation by navigating to the log out endpoint.
     /// </summary>
     /// <remarks>
-    /// The navigation includes stated that is added to the browser history entry to
+    /// The navigation includes state that is added to the browser history entry to
     /// prevent logout operations performed from different contexts.
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
@@ -64,7 +64,7 @@ public static class NavigationManagerExtensions
     /// Initiates a logout operation by navigating to the log out endpoint.
     /// </summary>
     /// <remarks>
-    /// The navigation includes stated that is added to the browser history entry to
+    /// The navigation includes state that is added to the browser history entry to
     /// prevent logout operations performed from different contexts.
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
