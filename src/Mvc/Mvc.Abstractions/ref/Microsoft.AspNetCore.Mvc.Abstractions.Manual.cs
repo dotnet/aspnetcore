@@ -8,3 +8,14 @@ namespace Microsoft.Extensions.Internal
         public static System.Type ExtractGenericInterface(System.Type queryType, System.Type interfaceType) { throw null; }
     }
 }
+
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
+{
+    public partial class ModelStateDictionary
+    {
+        internal const int DefaultMaxRecursionDepth = 32;
+
+        internal int? MaxValidationDepth { get; set; }
+        internal int? MaxStateDepth { get; set; }
+    }
+}
