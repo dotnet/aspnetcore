@@ -4,6 +4,8 @@
     "name": "Blazor WebAssembly Uygulaması",
     "description": "WebAssembly üzerinde çalışan ve isteğe bağlı olarak bir ASP.NET Core uygulamasında barındırılan Blazor uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
     "parameter.Hosted.name": "ASP.NET Core tarafından _barındırılan",
-    "parameter.PWA.name": "_Aşamalı Web Uygulaması"
+    "parameter.PWA.name": "_Aşamalı Web Uygulaması",
+    "parameter.UseProgramMain.name": "_Üst düzey deyimler kullanmayın",
+    "parameter.UseProgramMain.description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir."
   }
 }

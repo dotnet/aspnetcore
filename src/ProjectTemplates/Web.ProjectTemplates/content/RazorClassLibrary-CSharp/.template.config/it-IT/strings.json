@@ -3,6 +3,8 @@
   "strings": {
     "name": "Libreria di classi Razor",
     "description": "Modello di progetto per la creazione di una libreria di classi Razor.",
-    "parameter.SupportPagesAndViews.name": "_Supporta pagine e visualizzazioni"
+    "parameter.SupportPagesAndViews.name": "_Supporta pagine e visualizzazioni",
+    "parameter.UseProgramMain.name": "Non usare_istruzioni di primo livello",
+    "parameter.UseProgramMain.description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello."
   }
 }

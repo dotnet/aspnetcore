@@ -6,6 +6,8 @@
     "parameter.DisableOpenAPI.name": "Habilitar o suporte a _OpenAPI",
     "parameter.DisableOpenAPI.description": "Habilita o suporte a OpenAPI (Swagger)",
     "parameter.UseMinimalAPIs.name": "Usar controladores (desmarque para usar APIs mínimas)",
-    "parameter.UseMinimalAPIs.description": "Se usar APIs mínimas em vez de controladores."
+    "parameter.UseMinimalAPIs.description": "Se usar APIs mínimas em vez de controladores.",
+    "parameter.UseProgramMain.name": "Não use ins_truções de nível superior",
+    "parameter.UseProgramMain.description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
   }
 }

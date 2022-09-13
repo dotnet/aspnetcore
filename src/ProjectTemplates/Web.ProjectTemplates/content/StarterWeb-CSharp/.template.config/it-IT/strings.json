@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "App Web ASP.NET Core (Model-View-Controller)",
-    "description": "Modello di progetto per la creazione di un'applicazione ASP.NET Core con viste e controller ASP.NET Core MVC di esempio. È possibile usare questo modello anche per i servizi HTTP RESTful."
+    "description": "Modello di progetto per la creazione di un'applicazione ASP.NET Core con viste e controller ASP.NET Core MVC di esempio. È possibile usare questo modello anche per i servizi HTTP RESTful.",
+    "parameter.UseProgramMain.name": "Non usare_istruzioni di primo livello",
+    "parameter.UseProgramMain.description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello."
   }
 }

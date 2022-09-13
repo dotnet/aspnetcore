@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core (空)",
-    "description": "ASP.NET Core アプリケーションを作成するための空のプロジェクト テンプレートです。このテンプレートにはコンテンツが一切含まれていません。"
+    "description": "ASP.NET Core アプリケーションを作成するための空のプロジェクト テンプレートです。このテンプレートにはコンテンツが一切含まれていません。",
+    "parameter.UseProgramMain.name": "最上位レベルのステートメントを使用しない(_T)",
+    "parameter.UseProgramMain.description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。"
   }
 }

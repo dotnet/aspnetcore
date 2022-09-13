@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core Web 應用程式",
-    "description": "可用於使用範例 ASP.NET Razor 頁面內容建立 ASP.NET Core 應用程式的專案範本。"
+    "description": "可用於使用範例 ASP.NET Razor 頁面內容建立 ASP.NET Core 應用程式的專案範本。",
+    "parameter.UseProgramMain.name": "不要使用最上層陳述式(_T)",
+    "parameter.UseProgramMain.description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。"
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "App server Blazor",
-    "description": "Modello di progetto per la creazione di un'applicazione Blazor che viene eseguita lato server all'interno di un'applicazione ASP.NET Core. Questo modello può essere usato per applicazioni Web con interfacce utente dinamiche."
+    "description": "Modello di progetto per la creazione di un'applicazione Blazor che viene eseguita lato server all'interno di un'applicazione ASP.NET Core. Questo modello può essere usato per applicazioni Web con interfacce utente dinamiche.",
+    "parameter.UseProgramMain.name": "Non usare_istruzioni di primo livello",
+    "parameter.UseProgramMain.description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello."
   }
 }

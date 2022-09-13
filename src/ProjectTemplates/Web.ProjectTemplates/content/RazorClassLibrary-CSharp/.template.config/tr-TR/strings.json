@@ -3,6 +3,8 @@
   "strings": {
     "name": "Razor Sınıf Kitaplığı",
     "description": "Razor sınıf kütüphanesi yaratma projesi şablonu.",
-    "parameter.SupportPagesAndViews.name": "_Destek sayfaları ve görünümler"
+    "parameter.SupportPagesAndViews.name": "_Destek sayfaları ve görünümler",
+    "parameter.UseProgramMain.name": "_Üst düzey deyimler kullanmayın",
+    "parameter.UseProgramMain.description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir."
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core-Web-App",
-    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit Beispielinhalt für ASP.NET-Razor-Seiten."
+    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit Beispielinhalt für ASP.NET-Razor-Seiten.",
+    "parameter.UseProgramMain.name": "Keine Anweisungen_der obersten Ebene verwenden",
+    "parameter.UseProgramMain.description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll."
   }
 }

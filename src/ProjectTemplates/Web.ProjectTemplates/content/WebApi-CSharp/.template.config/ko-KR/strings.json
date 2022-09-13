@@ -6,6 +6,8 @@
     "parameter.DisableOpenAPI.name": "OpenAPI 지원 사용(_O)",
     "parameter.DisableOpenAPI.description": "OpenAPI(Swagger) 지원 사용",
     "parameter.UseMinimalAPIs.name": "컨트롤러 사용(최소 API 사용 선택 취소)",
-    "parameter.UseMinimalAPIs.description": "컨트롤러 대신 최소 API를 사용할지 여부"
+    "parameter.UseMinimalAPIs.description": "컨트롤러 대신 최소 API를 사용할지 여부",
+    "parameter.UseProgramMain.name": "최상위 문 사용 안 함(_T)",
+    "parameter.UseProgramMain.description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다."
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "App Blazor Server",
-    "description": "Modello di progetto per la creazione di un'app Blazor Server che viene eseguita lato server all'interno di un'app ASP.NET Core e gestisce le interazioni utente in una connessione SignalR. Questo modello può essere usato per app Web con interfacce utente dinamiche."
+    "description": "Modello di progetto per la creazione di un'app Blazor Server che viene eseguita lato server all'interno di un'app ASP.NET Core e gestisce le interazioni utente in una connessione SignalR. Questo modello può essere usato per app Web con interfacce utente dinamiche.",
+    "parameter.UseProgramMain.name": "Non usare_istruzioni di primo livello",
+    "parameter.UseProgramMain.description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello."
   }
 }

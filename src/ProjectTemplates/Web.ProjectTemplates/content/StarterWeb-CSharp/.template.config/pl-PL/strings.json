@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Aplikacja internetowa ASP.NET Core (Model-View-Controller)",
-    "description": "Szablon projektu służący do tworzenia aplikacji platformy ASP.NET Core z przykładowymi widokami i kontrolerami platformy ASP.NET Core MVC. Tego szablonu można także użyć dla usług HTTP RESTful."
+    "description": "Szablon projektu służący do tworzenia aplikacji platformy ASP.NET Core z przykładowymi widokami i kontrolerami platformy ASP.NET Core MVC. Tego szablonu można także użyć dla usług HTTP RESTful.",
+    "parameter.UseProgramMain.name": "Nie używaj ins_trukcji najwyższego poziomu",
+    "parameter.UseProgramMain.description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu."
   }
 }

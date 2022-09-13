@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Worker Service",
-    "description": "Šablona prázdného projektu pro vytvoření služby Worker Service"
+    "description": "Šablona prázdného projektu pro vytvoření služby Worker Service",
+    "parameter.UseProgramMain.name": "Nepoužívat _příkazy nejvyšší úrovně",
+    "parameter.UseProgramMain.description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
   }
 }

@@ -4,6 +4,8 @@
     "name": "Aplicativo Blazor no WebAssembly",
     "description": "Um modelo de projeto para criar um aplicativo Blazor que é executado no WebAssembly e, opcionalmente, é hospedado por um aplicativo ASP.NET Core. Esse modelo pode ser usado para aplicativos Web com IUs (interfaces do usuário) completas e dinâmicas.",
     "parameter.Hosted.name": "_hospedado no ASP.NET Core",
-    "parameter.PWA.name": "Aplicativo Web _progressivo"
+    "parameter.PWA.name": "Aplicativo Web _progressivo",
+    "parameter.UseProgramMain.name": "Não use ins_truções de nível superior",
+    "parameter.UseProgramMain.description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
   }
 }

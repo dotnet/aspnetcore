@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core-gRPC-Dienst",
-    "description": "Eine Projektvorlage für das Erstellen eines gRPC-ASP.NET Core-Diensts."
+    "description": "Eine Projektvorlage für das Erstellen eines gRPC-ASP.NET Core-Diensts.",
+    "parameter.UseProgramMain.name": "Keine Anweisungen_der obersten Ebene verwenden",
+    "parameter.UseProgramMain.description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll."
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core-Web-API",
-    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit einem Beispielcontroller für einen RESTful HTTP-Dienst. Diese Vorlage kann auch für ASP.NET Core-MVC-Ansichten und -Controller verwendet werden."
+    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit einem Beispielcontroller für einen RESTful HTTP-Dienst. Diese Vorlage kann auch für ASP.NET Core-MVC-Ansichten und -Controller verwendet werden.",
+    "parameter.UseProgramMain.name": "Keine Anweisungen_der obersten Ebene verwenden",
+    "parameter.UseProgramMain.description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll."
   }
 }

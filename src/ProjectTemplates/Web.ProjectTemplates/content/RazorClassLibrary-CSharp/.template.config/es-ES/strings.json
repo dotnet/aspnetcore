@@ -3,6 +3,8 @@
   "strings": {
     "name": "Biblioteca de clases de Razor",
     "description": "Plantilla de proyecto para crear una biblioteca de clases de Razor.",
-    "parameter.SupportPagesAndViews.name": "_Páginas y vistas de soporte técnico"
+    "parameter.SupportPagesAndViews.name": "_Páginas y vistas de soporte técnico",
+    "parameter.UseProgramMain.name": "No usar instrucciones de _nivel superior",
+    "parameter.UseProgramMain.description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior."
   }
 }

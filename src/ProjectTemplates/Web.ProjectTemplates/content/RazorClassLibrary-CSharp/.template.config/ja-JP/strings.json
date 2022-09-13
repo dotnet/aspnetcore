@@ -3,6 +3,8 @@
   "strings": {
     "name": "Razor クラス ライブラリ",
     "description": "Razor クラス ライブラリを作成するためのプロジェクト テンプレートです。",
-    "parameter.SupportPagesAndViews.name": "ページとビューのサポート(_S)"
+    "parameter.SupportPagesAndViews.name": "ページとビューのサポート(_S)",
+    "parameter.UseProgramMain.name": "最上位レベルのステートメントを使用しない(_T)",
+    "parameter.UseProgramMain.description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。"
   }
 }
