@@ -26,7 +26,7 @@ public class AuthorizationMiddleware
     private readonly IAuthorizationPolicyProvider _policyProvider;
     private readonly bool _canCache;
     private readonly AuthorizationPolicyCache? _policyCache;
-    private readonly ILogger<AuthorizationMiddleware> _logger;
+    private readonly ILogger<AuthorizationMiddleware>? _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
@@ -36,12 +36,22 @@ public class AuthorizationMiddleware
     /// <param name="logger">The <see cref="ILogger"/>.</param>
     public AuthorizationMiddleware(RequestDelegate next,
         IAuthorizationPolicyProvider policyProvider,
-        ILogger<AuthorizationMiddleware> logger)
+        ILogger<AuthorizationMiddleware> logger) : this(next, policyProvider)
+    {
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The next middleware in the application middleware pipeline.</param>
+    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         _canCache = false;
-        _logger = logger;
     }
 
     /// <summary>
@@ -51,7 +61,23 @@ public class AuthorizationMiddleware
     /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
     /// <param name="services">The <see cref="IServiceProvider"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IServiceProvider services, ILogger<AuthorizationMiddleware> logger) : this(next, policyProvider, logger)
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider,
+        IServiceProvider services,
+        ILogger<AuthorizationMiddleware> logger) : this(next, policyProvider, services)
+    {
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The next middleware in the application middleware pipeline.</param>
+    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider,
+        IServiceProvider services) : this(next, policyProvider)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -139,7 +165,7 @@ public class AuthorizationMiddleware
 
         if (authenticateResult != null && !authenticateResult.Succeeded)
         {
-            _logger.LogDebug("Policy authentication schemes {policyName} did not succeed", String.Join(", ", policy.AuthenticationSchemes));
+            _logger?.LogDebug("Policy authentication schemes {policyName} did not succeed", String.Join(", ", policy.AuthenticationSchemes));
         }
 
         object? resource;
