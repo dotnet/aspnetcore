@@ -116,7 +116,7 @@
      -->
     <When Condition=" ('$(Nullable)' == 'annotations' OR '$(Nullable)' == 'enable') AND
         '$(SuppressNullableAttributesImport)' != 'true' AND
-        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.1'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
         <NoWarn>$(NoWarn);nullable</NoWarn>
