@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
-    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\BlazorCustomElements.js" />
+    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\Microsoft.AspNetCore.Components.CustomElements.lib.module.js" />
 
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
@@ -47,7 +47,7 @@
     <ItemGroup>
       <FileWrites Include="$(JsCompilationCacheFile)" />
     </ItemGroup>
-    
+
   </Target>
 
   <Target Name="CompileJs" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(JsCompilationCacheFile)" Outputs="@(YarnOutputs)">
@@ -59,13 +59,13 @@
 
   </Target>
 
-  <Target Name="IncludeCompileJsOutput">
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="_ResolveJsModuleInputs" DependsOnTargets="CompileJs">
     <ItemGroup>
       <_JsBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
     <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''"
-      SourceType="Computed"
+      SourceType="Discovered"
       SourceId="$(PackageId)"
       ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"
       BasePath="_content\$(PackageId)"
