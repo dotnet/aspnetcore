@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Service Worker",
-    "description": "Modèle de projet vide pour la création d'un service Worker."
+    "description": "Modèle de projet vide pour la création d'un service Worker.",
+    "parameter.UseProgramMain.name": "N’utilisez pas _d’instructions de niveau supérieur.",
+    "parameter.UseProgramMain.description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur."
   }
 }

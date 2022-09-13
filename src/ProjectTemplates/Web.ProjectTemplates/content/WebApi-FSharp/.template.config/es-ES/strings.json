@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core Web API",
-    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con un controlador de ejemplo para un servicio RESTful HTTP. Esta plantilla también puede usarse para controladores y vistas de ASP.NET Core MVC."
+    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con un controlador de ejemplo para un servicio RESTful HTTP. Esta plantilla también puede usarse para controladores y vistas de ASP.NET Core MVC.",
+    "parameter.UseProgramMain.name": "No usar instrucciones de _nivel superior",
+    "parameter.UseProgramMain.description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior."
   }
 }

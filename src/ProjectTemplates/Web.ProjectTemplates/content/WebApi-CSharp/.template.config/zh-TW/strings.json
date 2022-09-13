@@ -6,6 +6,8 @@
     "parameter.DisableOpenAPI.name": "啟用 OpenAPI 支援(_O)",
     "parameter.DisableOpenAPI.description": "啟用 OpenAPI (Swagger) 支援",
     "parameter.UseMinimalAPIs.name": "使用控制器 (取消勾選以使用最低 API)",
-    "parameter.UseMinimalAPIs.description": "是否要使用迷你 API 而不是控制器。"
+    "parameter.UseMinimalAPIs.description": "是否要使用迷你 API 而不是控制器。",
+    "parameter.UseProgramMain.name": "不要使用最上層陳述式(_T)",
+    "parameter.UseProgramMain.description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。"
   }
 }

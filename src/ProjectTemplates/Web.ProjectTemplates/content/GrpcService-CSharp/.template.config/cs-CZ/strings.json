@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Služba ASP.NET Core gRPC",
-    "description": "Šablona projektu pro vytvoření služby gRPC ASP.NET Core"
+    "description": "Šablona projektu pro vytvoření služby gRPC ASP.NET Core",
+    "parameter.UseProgramMain.name": "Nepoužívat _příkazy nejvyšší úrovně",
+    "parameter.UseProgramMain.description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
   }
 }

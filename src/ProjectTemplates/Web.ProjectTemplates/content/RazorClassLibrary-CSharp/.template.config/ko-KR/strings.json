@@ -3,6 +3,8 @@
   "strings": {
     "name": "Razor 클래스 라이브러리",
     "description": "Razor 클래스 라이브러리를 만들기 위한 프로젝트 템플릿입니다.",
-    "parameter.SupportPagesAndViews.name": "지원 페이지 및 보기(_S)"
+    "parameter.SupportPagesAndViews.name": "지원 페이지 및 보기(_S)",
+    "parameter.UseProgramMain.name": "최상위 문 사용 안 함(_T)",
+    "parameter.UseProgramMain.description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다."
   }
 }

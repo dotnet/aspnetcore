@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Aplicativo Web ASP.NET Core",
-    "description": "Um modelo de projeto para a criação de um aplicativo ASP.NET Core, com conteúdo de páginas do ASP.NET Razor de exemplo."
+    "description": "Um modelo de projeto para a criação de um aplicativo ASP.NET Core, com conteúdo de páginas do ASP.NET Razor de exemplo.",
+    "parameter.UseProgramMain.name": "Não use ins_truções de nível superior",
+    "parameter.UseProgramMain.description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
   }
 }

@@ -4,6 +4,8 @@
     "name": "Blazor WebAssembly アプリ",
     "description": "WebAssembly 上で実行され、オプションで ASP.NET Core アプリによってホストされる Blazor アプリを作成するためのプロジェクト テンプレート。このテンプレートは、機能豊富で動的なユーザー インターフェイス (UI) を備えた Web アプリに使用できます。",
     "parameter.Hosted.name": "ASP.NET Core でホストされた(_h)",
-    "parameter.PWA.name": "プログレッシブ Web アプリケーション(_P)"
+    "parameter.PWA.name": "プログレッシブ Web アプリケーション(_P)",
+    "parameter.UseProgramMain.name": "最上位レベルのステートメントを使用しない(_T)",
+    "parameter.UseProgramMain.description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。"
   }
 }

@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Çalışan Hizmeti",
-    "description": "Çalışan hizmeti oluşturmaya yönelik boş proje şablonu."
+    "description": "Çalışan hizmeti oluşturmaya yönelik boş proje şablonu.",
+    "parameter.UseProgramMain.name": "_Üst düzey deyimler kullanmayın",
+    "parameter.UseProgramMain.description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir."
   }
 }

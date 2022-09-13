@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Worker Service",
-    "description": "Шаблон пустого проекта для создания службы Worker Service."
+    "description": "Шаблон пустого проекта для создания службы Worker Service.",
+    "parameter.UseProgramMain.name": "Не использовать _операторы верхнего уровня",
+    "parameter.UseProgramMain.description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня."
   }
 }

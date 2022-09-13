@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core Vazio",
-    "description": "Um modelo de projeto vazio para a criação de um aplicativo ASP.NET Core. Esse modelo não tem nenhum conteúdo."
+    "description": "Um modelo de projeto vazio para a criação de um aplicativo ASP.NET Core. Esse modelo não tem nenhum conteúdo.",
+    "parameter.UseProgramMain.name": "Não use ins_truções de nível superior",
+    "parameter.UseProgramMain.description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior."
   }
 }

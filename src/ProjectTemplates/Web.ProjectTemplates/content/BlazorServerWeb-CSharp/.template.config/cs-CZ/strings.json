@@ -2,6 +2,8 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Aplikace Blazor Server",
-    "description": "Šablona projektu pro vytvoření aplikace Blazor Server, která běží na straně serveru uvnitř aplikace ASP.NET Core a zpracovává interakce uživatele přes připojení SignalR. Tato šablona se dá využít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI)."
+    "description": "Šablona projektu pro vytvoření aplikace Blazor Server, která běží na straně serveru uvnitř aplikace ASP.NET Core a zpracovává interakce uživatele přes připojení SignalR. Tato šablona se dá využít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI).",
+    "parameter.UseProgramMain.name": "Nepoužívat _příkazy nejvyšší úrovně",
+    "parameter.UseProgramMain.description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main."
   }
 }
