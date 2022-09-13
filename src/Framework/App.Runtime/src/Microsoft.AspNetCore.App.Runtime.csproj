@@ -105,7 +105,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     -->
     <Crossgen2OsName>$(TargetOsName)</Crossgen2OsName>
     <Crossgen2OsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</Crossgen2OsName>
-    <Crossgen2OsName Condition=" '$(PortableBuild)' != 'true' ">$(TargetRuntimeIdentifier.Substring(0,$(TargetRuntimeIdentifier.IndexOf('-'))))</Crossgen2OsName>
+    <Crossgen2OsName Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier.Substring(0,$(TargetRuntimeIdentifier.IndexOf('-'))))</Crossgen2OsName>
     <Crossgen2BuildArchitecture Condition=" '$(Crossgen2OsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
     <Crossgen2BuildArchitecture Condition=" '$(Crossgen2BuildArchitecture)' == '' ">$(BuildArchitecture)</Crossgen2BuildArchitecture>
     <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(Crossgen2OsName.Replace('.', '_'))-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
