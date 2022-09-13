@@ -782,11 +782,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 responseError = $"Stream errored by client: '{ex}'";
             }
 
-            Log.CompletingStream(_logger, streamId);
-
             // Don't use cancellation token here
             // this is triggered by a cancellation token to tell the server that the client is done streaming
-            await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default);
+            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
+            try
+            {
+                // Avoid sending when the connection isn't active, likely happens if there is an active stream when the connection closes
+                if (_state.IsConnectionActive())
+                {
+                    Log.CompletingStream(_logger, streamId);
+                    await SendHubMessage(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+                }
+                else
+                {
+                    Log.CompletingStreamNotSent(_logger, streamId);
+                }
+            }
+            finally
+            {
+                _state.ReleaseConnectionLock();
+            }
         }
 
         private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
@@ -2007,13 +2022,20 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 await WaitConnectionLockAsync(token, methodName);
 
-                if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
+                if (!IsConnectionActive())
                 {
                     ReleaseConnectionLock(methodName);
                     throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
                 }
 
                 return CurrentConnectionStateUnsynchronized;
+            }
+
+            [MemberNotNullWhen(true, nameof(CurrentConnectionStateUnsynchronized))]
+            public bool IsConnectionActive()
+            {
+                AssertInConnectionLock();
+                return CurrentConnectionStateUnsynchronized is not null && !CurrentConnectionStateUnsynchronized.Stopping;
             }
 
             public void ReleaseConnectionLock([CallerMemberName] string? memberName = null,

@@ -546,6 +546,40 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         [Fact]
         [LogLevel(LogLevel.Trace)]
+        public async Task ActiveUploadStreamWhenConnectionClosesObservesException()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader);
+
+                var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invokeMessage["type"]);
+
+                // Not sure how to test for unobserved task exceptions, best I could come up with is to check that we log where there once was an unobserved task exception
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                TestSink.MessageLogged += wc =>
+                {
+                    if (wc.EventId.Name == "CompletingStreamNotSent")
+                    {
+                        tcs.SetResult();
+                    }
+                };
+
+                await hubConnection.StopAsync();
+
+                await Assert.ThrowsAsync<TaskCanceledException>(() => invokeTask).DefaultTimeout();
+
+                await tcs.Task.DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task InvocationCanCompleteBeforeStreamCompletes()
         {
             using (StartVerifiableLog())

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {
     public partial class HubConnection
     {
-        private static class Log
+        private static partial class Log
         {
             private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
 
@@ -253,6 +253,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private static readonly Action<ILogger, string, Exception?> _erroredStream =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(84, "ErroredStream"), "Client threw an error for stream '{StreamId}'.");
+
+            [LoggerMessage(87, LogLevel.Trace, "Completion message for stream '{StreamId}' was not sent because the connection is closed.", EventName = "CompletingStreamNotSent")]
+            public static partial void CompletingStreamNotSent(ILogger logger, string streamId);
+
+            // EventId 88 used in 7.0+
 
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
