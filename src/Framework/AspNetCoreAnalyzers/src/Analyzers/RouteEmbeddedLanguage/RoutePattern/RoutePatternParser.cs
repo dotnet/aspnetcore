@@ -259,7 +259,7 @@ internal partial struct RoutePatternParser
                             }
                         }
 
-                        var routeParameter = new RouteParameter(name, encodeSlashes, defaultValue, hasOptional, hasCatchAll, policies.ToImmutable(), parameterNode.GetSpan());
+                        var routeParameter = new RouteParameter(name, encodeSlashes, defaultValue, hasOptional, hasCatchAll, policies.ToImmutable(), parameterNode);
                         if (routeParameter.DefaultValue != null && routeParameter.IsOptional)
                         {
                             diagnostics.Add(new EmbeddedDiagnostic(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, parameterNode.GetSpan()));

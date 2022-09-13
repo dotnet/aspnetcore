@@ -144,6 +144,12 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string Guid = "System.Guid";
+        if (compilation.GetTypeByMetadataName(Guid) is not { } guid)
+        {
+            return false;
+        }
+
         wellKnownTypes = new()
         {
             IFromBodyMetadata = iFromBodyMetadata,
@@ -165,6 +171,7 @@ internal sealed class WellKnownTypes
             IFormFile = iFormFile,
             Stream = stream,
             PipeReader = pipeReader,
+            Guid = guid
         };
 
         return true;
@@ -189,6 +196,7 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol Stream { get; private init; }
     public INamedTypeSymbol PipeReader { get; private init; }
     public INamedTypeSymbol IFormFile { get; private init; }
+    public INamedTypeSymbol Guid { get; private init; }
 
     private INamedTypeSymbol[]? _parameterSpecialTypes;
     public INamedTypeSymbol[] ParameterSpecialTypes

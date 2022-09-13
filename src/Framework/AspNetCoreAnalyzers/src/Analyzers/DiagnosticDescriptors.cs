@@ -151,4 +151,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor RoutePatternAddParameterConstraint = new(
+        "RP0003",
+        new LocalizableResourceString(nameof(Resources.Add_Route_parameter_constraint), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Add_Route_parameter_constraint_0), Resources.ResourceManager, typeof(Resources)),
+        "Style",
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

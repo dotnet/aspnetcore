@@ -51,7 +51,7 @@ internal sealed class RoutePatternTree : EmbeddedSyntaxTree<RoutePatternKind, Ro
 
 internal readonly struct RouteParameter
 {
-    public RouteParameter(string name, bool encodeSlashes, string defaultValue, bool isOptional, bool isCatchAll, ImmutableArray<string> policies, TextSpan span)
+    public RouteParameter(string name, bool encodeSlashes, string defaultValue, bool isOptional, bool isCatchAll, ImmutableArray<string> policies, RoutePatternParameterNode parameterNode)
     {
         Name = name;
         EncodeSlashes = encodeSlashes;
@@ -59,7 +59,7 @@ internal readonly struct RouteParameter
         IsOptional = isOptional;
         IsCatchAll = isCatchAll;
         Policies = policies;
-        Span = span;
+        ParameterNode = parameterNode;
     }
 
     public readonly string Name;
@@ -68,7 +68,7 @@ internal readonly struct RouteParameter
     public readonly bool IsOptional;
     public readonly bool IsCatchAll;
     public readonly ImmutableArray<string> Policies;
-    public readonly TextSpan Span;
+    public readonly RoutePatternParameterNode ParameterNode;
 
     public override string ToString()
     {

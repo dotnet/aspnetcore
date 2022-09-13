@@ -381,7 +381,7 @@ public class PageData
     }
 
     [Fact]
-    public async Task ControllerAction_MatchedRouteParameter_NoDiagnostics()
+    public async Task ControllerAction_MatchedRouteParameter_NoPolicy_AddRouteParameterConstraintDiagnostics()
     {
         // Arrange
         var source = TestSource.Read(@"
@@ -400,6 +400,43 @@ class Program
 public class TestController
 {
     [HttpGet(@""{id}"")]
+    public object TestAction(/*MM*/int id)
+    {
+        return null;
+    }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Same(DiagnosticDescriptors.RoutePatternAddParameterConstraint, diagnostic.Descriptor);
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+        Assert.Equal(Resources.FormatAdd_Route_parameter_constraint_0("id"), diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task ControllerAction_MatchedRouteParameter_NoDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(@""{id:int}"")]
     public object TestAction(int id)
     {
         return null;

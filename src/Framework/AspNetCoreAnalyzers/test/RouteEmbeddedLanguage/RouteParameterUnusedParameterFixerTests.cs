@@ -8,7 +8,7 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
-public class RouteParameterUnusedParameterFixerTest
+public class RouteParameterUnusedParameterFixerTests
 {
     [Fact]
     public async Task Controller_UnusedParameter_AddToAction()

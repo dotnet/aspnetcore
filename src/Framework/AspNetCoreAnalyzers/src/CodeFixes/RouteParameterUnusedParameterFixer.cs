@@ -35,7 +35,7 @@ public class RouteParameterUnusedParameterFixer : CodeFixProvider
                 context.RegisterCodeFix(
                     CodeAction.Create($"Add parameter '{routeParameterName}'",
                         cancellationToken => AddRouteParameterAsync(diagnostic, context.Document, cancellationToken),
-                        equivalenceKey: DiagnosticDescriptors.RoutePatternUnusedParameter.Id),
+                        equivalenceKey: $"{DiagnosticDescriptors.RoutePatternUnusedParameter.Id}-{routeParameterName}"),
                     diagnostic);
             }
         }

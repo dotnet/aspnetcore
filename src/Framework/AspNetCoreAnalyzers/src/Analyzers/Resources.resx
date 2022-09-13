@@ -189,4 +189,10 @@
   <data name="Unused_Route_parameter_0" xml:space="preserve">
     <value>Unused route parameter '{0}'</value>
   </data>
+  <data name="Add_Route_parameter_constraint" xml:space="preserve">
+    <value>Add route parameter constraint</value>
+  </data>
+  <data name="Add_Route_parameter_constraint_0" xml:space="preserve">
+    <value>Add route parameter constraint '{0}'</value>
+  </data>
 </root>
