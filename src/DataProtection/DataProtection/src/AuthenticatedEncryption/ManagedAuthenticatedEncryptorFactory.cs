@@ -74,7 +74,7 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
         }
         else
         {
-            return AlgorithmActivator.CreateFactory<KeyedHashAlgorithm>(ValidateHasPublicParameterlessConstructor(configuration.ValidationAlgorithmType));
+            return AlgorithmActivator.CreateFactory<KeyedHashAlgorithm>(configuration.ValidationAlgorithmType);
         }
     }
 
@@ -99,21 +99,8 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
         }
         else
         {
-            return AlgorithmActivator.CreateFactory<SymmetricAlgorithm>(ValidateHasPublicParameterlessConstructor(configuration.EncryptionAlgorithmType));
+            return AlgorithmActivator.CreateFactory<SymmetricAlgorithm>(configuration.EncryptionAlgorithmType);
         }
-    }
-
-    [UnconditionalSuppressMessage("Trimmer", "IL2068", Justification = "Reflecting over the async Task types contract")]
-    [UnconditionalSuppressMessage("Trimmer", "IL2070", Justification = "Reflecting over the async Task types contract")]
-    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-    private static Type ValidateHasPublicParameterlessConstructor(Type type)
-    {
-        if (type.GetConstructor(Type.EmptyTypes) == null)
-        {
-            throw new InvalidOperationException($"Unable to find public parameterless constructor for type '{type.FullName}'. If the app is published with trimming then it may have been trimmed. Ensure the type's assembly is excluded from trimming.");
-        }
-
-        return type;
     }
 
     /// <summary>
@@ -124,7 +111,7 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
         /// <summary>
         /// Creates a factory that wraps a call to <see cref="Activator.CreateInstance{T}"/>.
         /// </summary>
-        public static Func<T> CreateFactory<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type implementation)
+        public static Func<T> CreateFactory<T>(Type implementation)
         {
             return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))!).Creator;
         }
