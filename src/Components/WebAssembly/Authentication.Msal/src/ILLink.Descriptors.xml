@@ -2,6 +2,6 @@
   <assembly fullname="Microsoft.Authentication.WebAssembly.Msal">
     <type fullname="Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions" preserve="all" />
     <type fullname="Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions" preserve="all" />
-    <type fullname="Microsoft.Authentication.WebAssembly.Msal.Models.MsalAuthenticationOptions" preserve="all" />
+    <type fullname="Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions" preserve="all" />
   </assembly>
 </linker>
