@@ -193,6 +193,8 @@ internal sealed class OpenApiGenerator
         foreach (var annotation in eligibileAnnotations)
         {
             var statusCode = annotation.Key.ToString(CultureInfo.InvariantCulture);
+
+            // TODO: Use the discarded response Type for schema generation
             var (_, contentTypes) = annotation.Value;
             var responseContent = new Dictionary<string, OpenApiMediaType>();
 
