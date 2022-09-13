@@ -626,4 +626,35 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
         var ex = await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("1234", "Result", new object[] { "test" }, cancellationToken: default)).DefaultTimeout();
         Assert.Equal("Connection '1234' does not exist.", ex.Message);
     }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task ClientReturnResultAcrossServersWithWrongReturnedTypeErrors()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        using (var client1 = new TestClient())
+        {
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+
+            await manager1.OnConnectedAsync(connection1).DefaultTimeout();
+
+            // Server2 asks for a result from client1 on Server1
+            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" }, cancellationToken: default);
+            var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+            Assert.NotNull(invocation.InvocationId);
+            Assert.Equal("test", invocation.Arguments[0]);
+
+            // Server1 gets the result from client1 and forwards to Server2
+            await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation.InvocationId, "wrong type")).DefaultTimeout();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            Assert.StartsWith("Error trying to deserialize result to Int32.", ex.Message);
+        }
+    }
 }

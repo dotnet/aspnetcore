@@ -76,7 +76,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         lock (_shutdownLock)
         {
             // Check if connection has already been already aborted.
-            if (_abortReason != null)
+            if (_abortReason != null || _closeTask != null)
             {
                 return;
             }
@@ -147,12 +147,26 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             lock (_shutdownLock)
             {
-                // This error should only happen when shutdown has been initiated by the server.
+                // OperationAborted should only happen when shutdown has been initiated by the server.
                 // If there is no abort reason and we have this error then the connection is in an
                 // unexpected state. Abort connection and throw reason error.
                 if (_abortReason == null)
                 {
                     Abort(new ConnectionAbortedException("Unexpected error when accepting stream.", ex));
+                }
+
+                _abortReason!.Throw();
+            }
+        }
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionTimeout)
+        {
+            lock (_shutdownLock)
+            {
+                // ConnectionTimeout can happen when the client app is shutdown without aborting the connection.
+                // For example, a console app makes a HTTP/3 request with HttpClient and then exits without disposing the client.
+                if (_abortReason == null)
+                {
+                    Abort(new ConnectionAbortedException("The connection timed out waiting for a response from the peer.", ex));
                 }
 
                 _abortReason!.Throw();

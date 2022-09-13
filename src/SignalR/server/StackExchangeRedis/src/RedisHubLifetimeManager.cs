@@ -695,13 +695,71 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             }
 
             var ros = completion.CompletionMessage;
-            var parseSuccess = protocol.TryParseMessage(ref ros, _clientResultsManager, out var hubMessage);
-            Debug.Assert(parseSuccess);
+            HubMessage? hubMessage = null;
+            bool retryForError = false;
+            try
+            {
+                var parseSuccess = protocol.TryParseMessage(ref ros, _clientResultsManager, out hubMessage);
+                retryForError = !parseSuccess;
+            }
+            catch
+            {
+                // Client returned wrong type? Or just an error from the HubProtocol, let's try with RawResult as the type and see if that works
+                retryForError = true;
+            }
+
+            if (retryForError)
+            {
+                try
+                {
+                    ros = completion.CompletionMessage;
+                    // if this works then we know there was an error with the type the client returned, we'll replace the CompletionMessage below and provide an error to the application code
+                    if (!protocol.TryParseMessage(ref ros, FakeInvocationBinder.Instance, out hubMessage))
+                    {
+                        RedisLog.ErrorParsingResult(_logger, completion.ProtocolName, null);
+                        return;
+                    }
+                }
+                // Exceptions here would mean the HubProtocol implementation very likely has a bug, the other server has already deserialized the message (with RawResult) so it should be deserializable
+                // We don't know the InvocationId, we should let the application developer know and potentially surface the issue to the HubProtocol implementor
+                catch (Exception ex)
+                {
+                    RedisLog.ErrorParsingResult(_logger, completion.ProtocolName, ex);
+                    return;
+                }
+            }
 
             var invocationInfo = _clientResultsManager.RemoveInvocation(((CompletionMessage)hubMessage!).InvocationId!);
 
+            if (retryForError && invocationInfo is not null)
+            {
+                hubMessage = CompletionMessage.WithError(((CompletionMessage)hubMessage!).InvocationId!, $"Client result wasn't deserializable to {invocationInfo?.Type.Name}.");
+            }
+
             invocationInfo?.Completion(invocationInfo?.Tcs!, (CompletionMessage)hubMessage!);
         });
+    }
+
+    private class FakeInvocationBinder : IInvocationBinder
+    {
+        public static readonly FakeInvocationBinder Instance = new FakeInvocationBinder();
+
+        private FakeInvocationBinder() { }
+
+        public IReadOnlyList<Type> GetParameterTypes(string methodName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Type GetReturnType(string invocationId)
+        {
+            return typeof(RawResult);
+        }
+
+        public Type GetStreamItemType(string streamId)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private async Task EnsureRedisServerConnection()

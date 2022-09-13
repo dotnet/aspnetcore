@@ -645,6 +645,22 @@ public static partial class RequestDelegateFactory
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
         }
 
+        if (parameter.ParameterType.IsByRef)
+        {
+            var attribute = "ref";
+
+            if (parameter.Attributes.HasFlag(ParameterAttributes.In))
+            {
+                attribute = "in";
+            }
+            else if (parameter.Attributes.HasFlag(ParameterAttributes.Out))
+            {
+                attribute = "out";
+            }
+
+            throw new NotSupportedException($"The by reference parameter '{attribute} {TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)} {parameter.Name}' is not supported.");
+        }
+
         var parameterCustomAttributes = parameter.GetCustomAttributes();
 
         if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)

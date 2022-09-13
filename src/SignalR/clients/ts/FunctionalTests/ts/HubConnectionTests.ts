@@ -376,7 +376,13 @@ describe("hubConnection", () => {
                 try {
                     await hubConnection.start();
                 } catch (error) {
-                    expect(error!.message).toEqual(expectedErrorMessage);
+                    if (error!.message.includes("404")) {
+                        // SSE can race with the connection closing and the initial ping being successful or failing with a 404.
+                        // LongPolling doesn't have pings and WebSockets is a synchronous API over a single HTTP request so it doesn't have the same issues
+                        expect(error!.message).toEqual("No Connection with that ID: Status code '404'");
+                    } else {
+                        expect(error!.message).toEqual(expectedErrorMessage);
+                    }
                     closePromise.resolve();
                 }
                 await closePromise;
