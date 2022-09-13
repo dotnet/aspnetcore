@@ -125,7 +125,20 @@ class MsalAuthorizeService implements AuthorizeService {
         }
 
         this._settings.system.loggerOptions = {
-            logLevel: _logger.trace ? Msal.LogLevel.Trace : (_logger.debug ? Msal.LogLevel.Verbose : Msal.LogLevel.Warning)
+            logLevel: _logger.trace ? Msal.LogLevel.Trace : (_logger.debug ? Msal.LogLevel.Verbose : Msal.LogLevel.Warning),
+            loggerCallback: (level, message, containsPii) => {
+                if (containsPii) {
+                    return;
+                }
+                if (level === Msal.LogLevel.Trace) {
+                    _logger.log(LogLevel.Trace, message);
+                    return;
+                }
+
+                // We only have Debug/Trace, so anything above, we only log when Debug is enabled.
+                _logger.log(LogLevel.Debug, message);
+                return;
+            }
         };
 
         this._msalApplication = new Msal.PublicClientApplication(this._settings);
@@ -221,7 +234,7 @@ class MsalAuthorizeService implements AuthorizeService {
             } else {
                 const request: Partial<Msal.AuthorizationUrlRequest> = {
                     redirectUri: this._settings.auth.redirectUri!,
-                    state: await this.saveState(context.state),
+                    state: this.saveState(context.state),
                     ...interactiveRequest?.additionalRequestParameters
                 };
 
@@ -284,44 +297,58 @@ class MsalAuthorizeService implements AuthorizeService {
         try {
             this.debug('Completing sign-in redirect.');
             var authenticationResult = await this._redirectCallback;
+            this.trace('completeSignIn-result', authenticationResult);
             if (authenticationResult) {
+                this.trace('completeSignIn-success', authenticationResult);
                 return authenticationResult;
             }
+            this.debug('No authentication result.');
             return this.operationCompleted();
+        } catch (e) {
+            this.debug(`completeSignIn-error:'${(e as Error).message}'`);
+            return this.error((e as Error).message);
+        }
+    }
+
+    async signOut(context: AuthenticationContext) {
+        this.trace('signOut', context);
+        try {
+            // Before we start any sign-in flow, clear out any previous state so that it doesn't pile up.
+            this.purgeState();
+
+            const { state, interactiveRequest } = context;
+
+            const request: Partial<Msal.EndSessionRequest> = {
+                postLogoutRedirectUri: this._settings.auth.postLogoutRedirectUri,
+                state: this.saveState(state),
+                ...interactiveRequest?.additionalRequestParameters
+            };
+            this.trace('signOut-Request', request);
+
+            await this._msalApplication.logoutRedirect(request);
+
+            // We are about to be redirected.
+            return this.redirect();
         } catch (e) {
             return this.error((e as Error).message);
         }
     }
 
-    async signOut(state: any) {
-        // We are about to sign out, so clear any state before we do so and leave just the sign out state for
-        // the current sign out flow.
-        this.purgeState();
-
-        const logoutStateId = await this.saveState(state);
-
-        // msal.js doesn't support providing logout state, so we shim it by putting the identifier in session storage
-        // and using that on the logout callback to workout the problems.
-        sessionStorage.setItem(`${AuthenticationService._infrastructureKey}.LogoutState`, logoutStateId);
-
-        await this._msalApplication.logoutRedirect();
-
-        // We are about to be redirected.
-        return this.redirect();
-    }
-
     async completeSignOut(url: string) {
-        const logoutStateId = sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
-        const updatedUrl = new URL(url);
-        updatedUrl.search = `?state=${logoutStateId}`;
-        const logoutState = await this.retrieveState(updatedUrl.href, null, /*isLogout*/ true);
-
-        sessionStorage.removeItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
-
-        if (logoutState) {
-            return this.success(logoutState);
-        } else {
+        this.trace('completeSignOut-request', url);
+        try {
+            this.debug('Completing sign-out redirect.');
+            var authenticationResult = await this._redirectCallback;
+            this.trace('completeSignOut-result', authenticationResult);
+            if (authenticationResult) {
+                this.trace('completeSignOut-success', authenticationResult);
+                return authenticationResult;
+            }
+            this.debug('No authentication result.');
             return this.operationCompleted();
+        } catch (e) {
+            this.debug(`completeSignOut-error:'${(e as Error).message}'`);
+            return this.error((e as Error).message);
         }
     }
 
@@ -388,22 +415,15 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     private handleResult(result: Msal.AuthenticationResult | null) {
+        const logoutState = this.retrieveState(location.href, undefined);
         if (result) {
             this._account = result.account;
             return this.success(this.retrieveState(null, result.state));
+        } else if (logoutState) {
+            return this.success(logoutState);
         } else {
             return this.operationCompleted();
         }
-    }
-
-    private getAccountState(state: string) {
-        if (state) {
-            const splitIndex = state.indexOf("|");
-            if (splitIndex > -1 && splitIndex + 1 < state.length) {
-                return state.substring(splitIndex + 1);
-            }
-        }
-        return state;
     }
 
     private isMsalError(resultOrError: any): resultOrError is Msal.AuthError {
