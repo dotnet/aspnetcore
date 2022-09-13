@@ -18,7 +18,7 @@ public static class HttpJsonServiceExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to configure options on.</param>
     /// <param name="configureOptions">The <see cref="Action{JsonOptions}"/> to configure the
-    /// <see cref="JsonOptions"/>, uses default values from <c>JsonSerializerDefaults.Web</c>.
+    /// <see cref="JsonOptions"/>, uses default values from <c>JsonSerializerDefaults.Web</c>.</param>
     /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection ConfigureHttpJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
     {
