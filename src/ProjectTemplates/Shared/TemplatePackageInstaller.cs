@@ -34,6 +34,7 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.ProjectTemplates.7.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.8.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
@@ -41,6 +42,7 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.8.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
@@ -139,7 +141,7 @@ internal static class TemplatePackageInstaller
         {
             var proc = await RunDotNetNew(output, $"\"{templateName}\"");
 
-            if (!proc.Error.Contains("No templates found matching:"))
+            if (!proc.Error.Contains("No templates or subcommands found matching:"))
             {
                 throw new InvalidOperationException($"Failed to uninstall previous templates. The template '{templateName}' could still be found.");
             }

@@ -434,10 +434,7 @@ internal partial class RequestContext :
 
     void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
         if (_onStartingActions == null)
         {
             throw new InvalidOperationException("Cannot register new callbacks, the response has already started.");
@@ -448,10 +445,7 @@ internal partial class RequestContext :
 
     void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
         if (_onCompletedActions == null)
         {
             throw new InvalidOperationException("Cannot register new callbacks, the response has already completed.");

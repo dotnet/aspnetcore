@@ -56,7 +56,7 @@ public class JQueryFormValueProviderTest : EnumerableValueProviderTest
         var currentCultureKey = "some";
         var values = new Dictionary<string, StringValues>(BackingStore)
         {
-            { FormValueProvider.CultureInvariantFieldName, new(invariantCultureKey) },
+            { FormValueHelper.CultureInvariantFieldName, new(invariantCultureKey) },
         };
         var valueProvider = GetEnumerableValueProvider(BindingSource.Query, values, culture);
 

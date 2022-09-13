@@ -524,10 +524,7 @@ internal sealed partial class ResponseBody : Stream
 
     public override void EndWrite(IAsyncResult asyncResult)
     {
-        if (asyncResult == null)
-        {
-            throw new ArgumentNullException(nameof(asyncResult));
-        }
+        ArgumentNullException.ThrowIfNull(asyncResult);
 
         TaskToApm.End(asyncResult);
     }
