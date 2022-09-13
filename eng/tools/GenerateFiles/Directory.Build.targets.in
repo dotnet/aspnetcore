@@ -56,22 +56,22 @@
       <DefaultRuntimeFrameworkVersion Condition=" ('$(IsServicingBuild)' != 'true' OR '$(NETCoreSdkVersion)' == '7.0.100-rtm.22478.12') AND
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
           '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
-      <RuntimePackRuntimeIdentifiers Condition=" '$(PortableBuild)' != 'true' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
     <KnownAppHostPack Update="Microsoft.NETCore.App">
       <AppHostPackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AppHostPackVersion>
-      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' != 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownAppHostPack>
 
     <KnownRuntimePack Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
-      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' != 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
 
-    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(PortableBuild)' != 'true' ">
+    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(PortableBuild)' == 'false' ">
       <Crossgen2PackVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</Crossgen2PackVersion>
       <Crossgen2RuntimeIdentifiers>$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>

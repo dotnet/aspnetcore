@@ -174,7 +174,7 @@
       freebsd-x64
     </SupportedRuntimeIdentifiers>
 
-    <SupportedRuntimeIdentifiers Condition=" '$(PortableBuild)' != 'true' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
+    <SupportedRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
 
     <!-- Playwright provides binaries for Windows (x86 and x64), macOS (x64) and Linux (x64, non musl). We can't use it on other architectures. -->
     <IsPlaywrightAvailable Condition="'$(TargetOsName)' == 'linux-musl' OR ('$(TargetArchitecture)' != 'x86' AND '$(TargetArchitecture)' != 'x64')">false</IsPlaywrightAvailable>
