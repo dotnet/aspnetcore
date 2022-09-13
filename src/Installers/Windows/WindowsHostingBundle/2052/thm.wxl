@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[WixBundleName] 安装</String>
+  <String Id="Caption">[WixBundleName]安装程序</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
   <String Id="InstallHeader">欢迎</String>
@@ -19,18 +19,18 @@
 /log log.txt - 向特定文件写入日志。默认在 %TEMP% 中创建日志文件。</String>
   <String Id="HelpCloseButton">关闭(&amp;C)</String>
   <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;许可条款&lt;/a&gt;。</String>
-  <String Id="InstallAcceptCheckbox">我同意许可条款和条件(&amp;A)</String>
+  <String Id="InstallAcceptCheckbox">我同意许可条款和条件( &amp;A)</String>
   <String Id="InstallOptionsButton">选项(&amp;O)</String>
   <String Id="InstallInstallButton">安装(&amp;I)</String>
   <String Id="InstallCloseButton">关闭(&amp;C)</String>
   <String Id="OptionsHeader">安装选项</String>
-  <String Id="OptionsLocationLabel">安装位置:</String>
+  <String Id="OptionsLocationLabel">安装位置: </String>
   <String Id="OptionsBrowseButton">浏览(&amp;B)</String>
   <String Id="OptionsOkButton">确定(&amp;O)</String>
   <String Id="OptionsCancelButton">取消(&amp;C)</String>
   <String Id="ProgressHeader">安装进度</String>
-  <String Id="ProgressLabel">正在处理:</String>
-  <String Id="OverallProgressPackageText">正在初始化…</String>
+  <String Id="ProgressLabel">正在处理: </String>
+  <String Id="OverallProgressPackageText">正在初始化...</String>
   <String Id="ProgressCancelButton">取消(&amp;C)</String>
   <String Id="ModifyHeader">修改安装程序</String>
   <String Id="ModifyRepairButton">修复(&amp;R)</String>
@@ -41,10 +41,10 @@
   <String Id="SuccessInstallHeader">成功完成了安装</String> 
   <String Id="SuccessHeader">设置成功</String>	
   <String Id="SuccessLaunchButton">启动(&amp;L)</String>
-  <String Id="SuccessRestartText">在使用此软件之前，您必须重新启动计算机。</String>
+  <String Id="SuccessRestartText">您必须先重新启动计算机，然后才能使用该软件。</String>
   <String Id="SuccessRestartButton">重新启动(&amp;R)</String>
   <String Id="SuccessCloseButton">关闭(&amp;C)</String>
-  <String Id="FailureHeader">设置失败</String>
+  <String Id="FailureHeader">安装失败</String>
   <String Id="FailureInstallHeader">安装失败</String>
   <String Id="FailureUninstallHeader">卸载失败</String>
   <String Id="FailureRepairHeader">修复失败</String> 
@@ -63,7 +63,7 @@
   <String Id="Welcome">欢迎使用 [WixBundleName] 安装程序。</String>
   <String Id="InstallResetIIS">请在安装完成后重启 IIS。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
   <String Id="InstallNoIIS">此计算机上未启用 IIS。如果打算通过 IIS 运行 ASP.NET Core 应用程序，必须先安装 IIS，然后再运行此安装程序。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;许可条件&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隐私声明&lt;/a&gt;。</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;许可条款&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隐私声明&lt;/a&gt;。</String>
   <String Id="ModifyResetIIS">请在安装完成后重启 IIS。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
   <String Id="ModifyNoIIS">此计算机上未启用 IIS。如果打算通过 IIS 运行 ASP.NET Core 应用程序，必须先安装 IIS，然后再运行此安装程序。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
 </WixLocalization>

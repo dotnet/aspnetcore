@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
     <String Id="BalCondition_NETFX451Required">선택한 일부 기능을 사용하려면 .NET 4.5.1이 필요합니다. .NET 4.5.1을 설치한 다음, 이 제품을 다시 설치하세요.</String>
     <String Id="BalCondition_IISRequired">이 제품을 사용하려면 IIS 7.5가 필요합니다. IIS를 설치한 다음, 이 제품을 다시 설치하세요.</String>

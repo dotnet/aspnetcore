@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">Configuración de [BundleNameFull]</String>
+  <String Id="Caption">[BundleNameFull] Setup</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Bienvenido</String>
+  <String Id="InstallHeader">Welcome</String>
   <String Id="InstallMessage">El programa de instalación instalará [WixBundleName] en el equipo. Haga clic en Instalar para continuar, en Opciones para establecer el directorio de instalación o en Cerrar para salir.</String>
   <String Id="InstallVersion">Versión [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar?</String>
+  <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar la operación?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versión anterior</String>
-  <String Id="HelpHeader">Ayuda de configuración</String>
+  <String Id="HelpHeader">Ayuda del programa de instalación</String>
   <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - instala, repara, desinstala o
    crea una copia local completa del paquete en el directorio. Install es la opción predeterminada.
 
@@ -36,28 +36,28 @@
   <String Id="ModifyRepairButton">&amp;Reparar</String>
   <String Id="ModifyUninstallButton">&amp;Desinstalar</String>
   <String Id="ModifyCloseButton">&amp;Cerrar</String>
-  <String Id="SuccessRepairHeader">La reparación se completó correctamente</String>
-  <String Id="SuccessUninstallHeader">La desinstalación se completó correctamente</String>
-  <String Id="SuccessInstallHeader">La instalación se completó correctamente</String> 
+  <String Id="SuccessRepairHeader">Repair Successfully Completed</String>
+  <String Id="SuccessUninstallHeader">Uninstall Successfully Completed</String>
+  <String Id="SuccessInstallHeader">Installation Successfully Completed</String> 
   <String Id="SuccessHeader">La instalación o desinstalación se realizó correctamente</String>	
   <String Id="SuccessLaunchButton">&amp;Iniciar</String>
   <String Id="SuccessRestartText">Debe reiniciar el equipo para poder usar el software.</String>
   <String Id="SuccessRestartButton">&amp;Reiniciar</String>
   <String Id="SuccessCloseButton">&amp;Cerrar</String>
   <String Id="FailureHeader">Error de instalación</String>
-  <String Id="FailureInstallHeader">No se pudo instalar</String>
-  <String Id="FailureUninstallHeader">No se pudo desinstalar</String>
-  <String Id="FailureRepairHeader">No se pudo reparar</String> 
+  <String Id="FailureInstallHeader">Setup Failed</String>
+  <String Id="FailureUninstallHeader">Uninstall Failed</String>
+  <String Id="FailureRepairHeader">Repair Failed</String> 
   <String Id="FailureHyperlinkLogText">Error de instalación debido a uno o varios problemas. Corrija los problemas e intente de nuevo la instalación. Para obtener más información, consulte el &lt;a href="#"&gt;archivo de registro&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Debe reiniciar el equipo para completar la reversión del software.</String>
   <String Id="FailureRestartButton">&amp;Reiniciar</String>
   <String Id="FailureCloseButton">&amp;Cerrar</String>
-  <String Id="FilesInUseHeader">Archivos en uso</String>
+  <String Id="FilesInUseHeader">Files In Use</String>
   <String Id="FilesInUseLabel">Las siguientes aplicaciones usan archivos que se deben actualizar:</String>
   <String Id="FilesInUseCloseRadioButton">Cerrar las &amp;aplicaciones e intentar reiniciarlas.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;No cerrar las aplicaciones. Será necesario un reinicio.</String>
-  <String Id="FilesInUseOkButton">&amp;Aceptar</String>
-  <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
+  <String Id="FilesInUseOkButton">&amp;OK</String>
+  <String Id="FilesInUseCancelButton">&amp;Cancel</String>
 
   <String Id="Welcome">Programa de instalación de [WixBundleName].</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Términos de licencia&lt;/a&gt; y &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;declaración de privacidad&lt;/a&gt;.</String>

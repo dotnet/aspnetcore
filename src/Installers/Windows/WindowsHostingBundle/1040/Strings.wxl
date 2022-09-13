@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
     <String Id="BalCondition_NETFX451Required">Alcune funzionalità selezionate richiedono .NET 4.5.1. Installare .NET 4.5.1, quindi installare di nuovo questo prodotto.</String>
     <String Id="BalCondition_IISRequired">Questo prodotto richiede IIS 7.5. Installare IIS, quindi installare di nuovo questo prodotto.</String>
