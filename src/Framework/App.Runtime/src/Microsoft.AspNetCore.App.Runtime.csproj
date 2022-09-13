@@ -96,18 +96,19 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Crossgen2ToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(Crossgen2ToolFileName).exe</Crossgen2ToolFileName>
 
     <!-- E.g. "PkgMicrosoft_NETCore_App_Runtime_win-x64" (set in obj/Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props). -->
-    <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
+    <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier.Replace('.', '_'))</RuntimePackageRootVariableName>
 
     <!--
       Determine the crossgen2 package path property name. Special case linux-musl-arm and linux-musl-arm64 because they
       are built on an Ubuntu container with cross compilation tools. linux-musl-x64 is built in an alpine container.
       Special case the crossgen2 package reference on Windows to avoid the x86 package when building in Visual Studio.
     -->
-    <BuildOsName>$(TargetOsName)</BuildOsName>
-    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</BuildOsName>
-    <Crossgen2BuildArchitecture Condition=" '$(BuildOsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
+    <Crossgen2OsName>$(TargetOsName)</Crossgen2OsName>
+    <Crossgen2OsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</Crossgen2OsName>
+    <Crossgen2OsName Condition=" '$(PortableBuild)' != 'true' ">$(TargetRuntimeIdentifier.Substring(0,$(TargetRuntimeIdentifier.IndexOf('-'))))</Crossgen2OsName>
+    <Crossgen2BuildArchitecture Condition=" '$(Crossgen2OsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
     <Crossgen2BuildArchitecture Condition=" '$(Crossgen2BuildArchitecture)' == '' ">$(BuildArchitecture)</Crossgen2BuildArchitecture>
-    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
+    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(Crossgen2OsName.Replace('.', '_'))-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
@@ -138,7 +139,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(GeneratePathProperty) and hacks in the _ExpandRuntimePackageRoot target work around the gaps.
     -->
     <Reference Condition="'$(CrossgenOutput)' == 'true'"
-        Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(Crossgen2BuildArchitecture)"
+        Include="Microsoft.NETCore.App.Crossgen2.$(Crossgen2OsName)-$(Crossgen2BuildArchitecture)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />
@@ -444,7 +445,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PropertyGroup>
       <!--
         Handle different names for the target OS on the crossgen2 command line. This often matches neither
-        $(TargetOsName) nor $(BuildOsName).
+        $(TargetOsName) nor $(Crossgen2OsName).
       -->
       <Crossgen2TargetOs>$(TargetOsName)</Crossgen2TargetOs>
       <Crossgen2TargetOs Condition="'$(TargetOsName)' == 'win'">windows</Crossgen2TargetOs>
