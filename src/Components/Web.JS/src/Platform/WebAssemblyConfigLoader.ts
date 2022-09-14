@@ -24,7 +24,7 @@ export class WebAssemblyConfigLoader {
     async function getConfigBytes(file: string): Promise<Uint8Array> {
       // Allow developers to override how the config is loaded
       if (startOptions.loadBootResource) {
-        const customLoadResult = startOptions.loadBootResource('config', file, file, '');
+        const customLoadResult = startOptions.loadBootResource('configuration', file, file, '');
         if (customLoadResult instanceof Promise) {
           // They are supplying an entire custom response, so just use that
           return new Uint8Array(await (await customLoadResult).arrayBuffer());
