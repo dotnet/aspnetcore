@@ -107,8 +107,17 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
             .AppendUpperInvariant(request.Method)
             .Append(KeyDelimiter)
             .AppendUpperInvariant(request.Scheme)
-            .Append(KeyDelimiter)
-            .AppendUpperInvariant(request.Host.Value);
+            .Append(KeyDelimiter);
+
+        if (context.CacheVaryByRules.VaryByHost)
+        {
+            builder.AppendUpperInvariant(request.Host.Value);
+        }
+        else
+        {
+            // Use a fake HOST header to prevent substitutions
+            builder.AppendUpperInvariant("*:*");
+        }
 
         if (_options.UseCaseSensitivePaths)
         {

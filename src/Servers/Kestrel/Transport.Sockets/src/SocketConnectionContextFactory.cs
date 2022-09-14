@@ -42,6 +42,14 @@ public sealed class SocketConnectionContextFactory : IDisposable
         var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
         var applicationScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
 
+        // Socket callbacks run on the threads polling for IO if we're using the old Windows thread pool
+        var dispatchSocketCallbacks = OperatingSystem.IsWindows() &&
+                                      (Environment.GetEnvironmentVariable("DOTNET_ThreadPool_UsePortableThreadPoolForIO") == "0" ||
+                                      Environment.GetEnvironmentVariable("COMPlus_ThreadPool_UsePortableThreadPoolForIO") == "0");
+
+        PipeScheduler SelectSocketsScheduler(PipeScheduler dispatchingScheduler) =>
+            dispatchSocketCallbacks ? dispatchingScheduler : PipeScheduler.Inline;
+
         if (_settingsCount > 0)
         {
             _settings = new QueueSettings[_settingsCount];
@@ -50,13 +58,14 @@ public sealed class SocketConnectionContextFactory : IDisposable
             {
                 var memoryPool = _options.MemoryPoolFactory();
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
+                var socketsScheduler = SelectSocketsScheduler(transportScheduler);
 
                 _settings[i] = new QueueSettings()
                 {
                     Scheduler = transportScheduler,
                     InputOptions = new PipeOptions(memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
                     OutputOptions = new PipeOptions(memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                    SocketSenderPool = new SocketSenderPool(transportScheduler),
+                    SocketSenderPool = new SocketSenderPool(socketsScheduler),
                     MemoryPool = memoryPool,
                 };
             }
@@ -65,6 +74,8 @@ public sealed class SocketConnectionContextFactory : IDisposable
         {
             var memoryPool = _options.MemoryPoolFactory();
             var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
+            var socketsScheduler = SelectSocketsScheduler(transportScheduler);
+
             _settings = new QueueSettings[]
             {
                 new QueueSettings()
@@ -72,7 +83,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
                     Scheduler = transportScheduler,
                     InputOptions = new PipeOptions(memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
                     OutputOptions = new PipeOptions(memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                    SocketSenderPool = new SocketSenderPool(PipeScheduler.Inline),
+                    SocketSenderPool = new SocketSenderPool(socketsScheduler),
                     MemoryPool = memoryPool,
                 }
             };
@@ -91,7 +102,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
 
         var connection = new SocketConnection(socket,
             setting.MemoryPool,
-            PipeScheduler.Inline,
+            setting.SocketSenderPool.Scheduler,
             _logger,
             setting.SocketSenderPool,
             setting.InputOptions,

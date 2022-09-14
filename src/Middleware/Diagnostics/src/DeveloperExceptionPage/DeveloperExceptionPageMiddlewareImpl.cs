@@ -179,18 +179,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 Status = httpContext.Response.StatusCode
             };
 
-            var exceptionDetails = _exceptionDetailsProvider.GetDetails(errorContext.Exception);
             problemDetails.Extensions["exception"] = new
             {
-                Details = exceptionDetails.Select(d => new
-                {
-                    Message = d.ErrorMessage ?? d.Error?.Message,
-                    Type = TypeNameHelper.GetTypeDisplayName(d.Error),
-                    StackFrames = d.StackFrames,
-                }),
+                Details = errorContext.Exception.ToString(),
                 Headers = httpContext.Request.Headers,
-                Error = errorContext.Exception.ToString(),
-                Path = httpContext.Request.Path,
+                Path = httpContext.Request.Path.ToString(),
                 Endpoint = httpContext.GetEndpoint()?.ToString(),
                 RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
             };
