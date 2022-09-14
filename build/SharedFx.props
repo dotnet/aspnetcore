@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
     <!-- directories -->
-    <_WorkRoot>$(RepositoryRoot).w\$(SharedFxRID)\</_WorkRoot>
+    <_WorkRoot Condition=" '$(SharedFxRID)' == '' ">$(RepositoryRoot).w\</_WorkRoot>
+    <_WorkRoot Condition=" '$(SharedFxRID)' != '' ">$(RepositoryRoot).w\$(SharedFxRID)\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
     <_MetapackageSrcRoot>$(RepositoryRoot)src\Packages\</_MetapackageSrcRoot>
