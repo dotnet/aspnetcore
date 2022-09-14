@@ -14,7 +14,7 @@ public static class HttpJsonServiceExtensions
     /// Configures options used for reading and writing JSON when using
     /// <see cref="O:Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync" />
     /// and <see cref="O:Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync" />.
-    /// <see cref="JsonOptions"/> uses default values from <c>JsonSerializerDefaults.Web</c>
+    /// <see cref="JsonOptions"/> uses default values from <c>JsonSerializerDefaults.Web</c>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to configure options on.</param>
     /// <param name="configureOptions">The <see cref="Action{JsonOptions}"/> to configure the
