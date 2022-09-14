@@ -1812,17 +1812,6 @@ public static partial class RequestDelegateFactory
         return Expression.Convert(boundValueExpr, parameter.ParameterType);
     }
 
-    private static void AddInferredProducesResponseTypeMetadata(RequestDelegateFactoryContext factoryContext, Type type, string[] contentTypes)
-    {
-        if (factoryContext.MetadataAlreadyInferred)
-        {
-            return;
-        }
-
-        // Type cannot be null, and contentTypes is either [ "application/json" ] or [ "text/plain" ] both of which are valid.
-        factoryContext.EndpointBuilder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(type, statusCode: 200, contentTypes));
-    }
-
     private static void AddInferredAcceptsMetadata(RequestDelegateFactoryContext factoryContext, Type type, string[] contentTypes)
     {
         if (factoryContext.MetadataAlreadyInferred)
