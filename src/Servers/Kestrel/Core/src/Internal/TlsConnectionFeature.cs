@@ -133,11 +133,12 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         {
             await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
         }
-        catch (Exception)
+        catch
         {
             // We can't tell which exceptions are fatal or recoverable. Consider them all fatal
-            // and close the connection to avoid over-caching. This allows recovery by starting
-            // a new connection https://github.com/dotnet/aspnetcore/issues/41369
+            // and close the connection to avoid over-caching and affecting future requests on this connection.
+            // This allows recovery by starting a new connection. The close is graceful to allow the server to
+            // send an error response like 401. https://github.com/dotnet/aspnetcore/issues/41369
             _context.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
             throw;
         }
