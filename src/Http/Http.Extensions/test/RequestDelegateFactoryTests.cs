@@ -6066,28 +6066,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(responseMetadata.Type);
     }
 
-    public static object[][] HttpContextAndHttpResponseParameterMethods => new[]
-    {
-        new object[] { (int foo, HttpContext context) => new object() },
-        new object[] { (HttpResponse response, int bar) => new object() },
-        new object[] { (HttpContext context, int baz) => "Hello" },
-        new object[] { (HttpResponse response) => "Hello" },
-        new object[] { (HttpContext context) => new object() },
-        new object[] { (HttpResponse response) => new object() },
-        new object[] { (HttpContext context) => "Hello" },
-        new object[] { (HttpResponse response) => "Hello" },
-    };
-
-    [Theory]
-    [MemberData(nameof(HttpContextAndHttpResponseParameterMethods))]
-    public void Create_DoesNotAddResponseType_AsMetadata_IfHasHttpContextOrHttpResponseParameter(Delegate @delegate)
-    {
-        var result = RequestDelegateFactory.Create(@delegate);
-
-        // Methods that have HttpContext or HttpResponse parameters are skipped because they might change the status code from 200.
-        Assert.Empty(result.EndpointMetadata);
-    }
-
     [Fact]
     public void Create_DoesNotAddAnythingBefore_ThePassedInEndpointMetadata()
     {
@@ -6192,7 +6170,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var @delegate = (HttpContext context) => new CountsDefaultEndpointMetadataResult();
+        var @delegate = () => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(new List<object>
@@ -6214,7 +6192,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_CombinesDefaultMetadata_AndMetadataFromTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var @delegate = (HttpContext context) => Task.FromResult(new CountsDefaultEndpointMetadataResult());
+        var @delegate = () => Task.FromResult(new CountsDefaultEndpointMetadataResult());
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(new List<object>
@@ -6236,7 +6214,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_CombinesDefaultMetadata_AndMetadataFromValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var @delegate = (HttpContext context) => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult());
+        var @delegate = () => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult());
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(new List<object>
@@ -6323,7 +6301,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
-        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(new List<object>
@@ -6344,7 +6322,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
             // Inferred ProducesResopnseTypeMetadata from RDF for complex type
-            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataResult), ((IProducesResponseTypeMetadata)m).Type),
+            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
@@ -6416,7 +6394,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
-        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(),
@@ -6432,7 +6410,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
             // Inferred ProducesResopnseTypeMetadata from RDF for complex type
-            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataResult), ((IProducesResponseTypeMetadata)m).Type),
+            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
@@ -6673,7 +6651,18 @@ public class RequestDelegateFactoryTests : LoggedTest
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 
-    private class CountsDefaultEndpointMetadataResult : IEndpointMetadataProvider
+    private class CountsDefaultEndpointMetadataResult : IEndpointMetadataProvider, IResult
+    {
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            var currentMetadataCount = builder.Metadata.Count;
+            builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+    }
+
+    private class CountsDefaultEndpointMetadataPoco : IEndpointMetadataProvider
     {
         public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         {

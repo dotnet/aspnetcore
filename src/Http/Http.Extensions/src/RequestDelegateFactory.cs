@@ -379,7 +379,7 @@ public static partial class RequestDelegateFactory
 
         if (!factoryContext.MetadataAlreadyInferred)
         {
-            PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.Parameters, factoryContext.EndpointBuilder);
+            PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
 
             // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
             EndpointMetadataPopulator.PopulateMetadata(methodInfo, factoryContext.EndpointBuilder, factoryContext.Parameters);
@@ -928,7 +928,7 @@ public static partial class RequestDelegateFactory
         return Expression.Block(localVariables, checkParamAndCallMethod);
     }
 
-    private static void PopulateBuiltInResponseTypeMetadata(Type returnType, IEnumerable<ParameterInfo> parameters, EndpointBuilder builder)
+    private static void PopulateBuiltInResponseTypeMetadata(Type returnType, EndpointBuilder builder)
     {
         if (returnType.IsByRefLike)
         {
@@ -957,15 +957,6 @@ public static partial class RequestDelegateFactory
         if (returnType == typeof(void) || typeof(IResult).IsAssignableFrom(returnType))
         {
             return;
-        }
-
-        // Skip methods that have HttpContext or HttpResponse parameters that might change the status code from 200.
-        foreach (var parameter in parameters)
-        {
-            if (parameter.ParameterType == typeof(HttpContext) || parameter.ParameterType == typeof(HttpResponse))
-            {
-                return;
-            }
         }
 
         if (returnType == typeof(string))
