@@ -13,8 +13,11 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class StaticFilesEndpointRouteBuilderExtensions
 {
+    // By explicitly stating the supported HTTP methods for static files,
+    // we limit the types of situations where the fallback to file is matched
+    // after an endpoint is discarded, for example, due to a mismatched content type.
     // See: https://github.com/dotnet/aspnetcore/issues/41060
-    private static readonly string[] _supportedHttpMethods = new[] { HttpMethods.Get };
+    private static readonly string[] _supportedHttpMethods = new[] { HttpMethods.Get, HttpMethods.Head };
 
     /// <summary>
     /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
