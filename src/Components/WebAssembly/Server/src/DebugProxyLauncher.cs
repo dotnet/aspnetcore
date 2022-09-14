@@ -164,7 +164,7 @@ internal static class DebugProxyLauncher
                 if (!errorEncountered)
                 {
                     taskCompletionSource.TrySetException(new InvalidOperationException(
-                        "No output has been recevied from the application."));
+                        "No output has been received from the application."));
                 }
                 return;
             }
