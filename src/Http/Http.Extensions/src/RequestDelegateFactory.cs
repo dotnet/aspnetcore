@@ -2189,16 +2189,11 @@ public static partial class RequestDelegateFactory
 
     private static Task WriteJsonResponse(HttpResponse response, object? value)
     {
-        if (value == null)
-        {
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default);
-        }
-
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value.GetType(), default);
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value?.GetType() ?? typeof(object), default);
 
     }
 
