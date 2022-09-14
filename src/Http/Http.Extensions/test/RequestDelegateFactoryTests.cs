@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -6033,7 +6032,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_DoesNotAddDelegateMethodInfo_AsMetadata()
     {
         // Arrange
-        var @delegate = () => "Hello";
+        var @delegate = () => { };
 
         // Act
         var result = RequestDelegateFactory.Create(@delegate);
@@ -6041,6 +6040,30 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Assert
         // RouteHandlerEndpointDataSource adds the MethodInfo as the first item in RouteHandlerOptions.EndointMetadata
         Assert.Empty(result.EndpointMetadata);
+    }
+
+    [Fact]
+    public void Create_AddJsonResponseType_AsMetadata()
+    {
+        var @delegate = () => new object();
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+
+        Assert.Equal("application/json", Assert.Single(responseMetadata.ContentTypes));
+        Assert.Equal(typeof(object), responseMetadata.Type);
+    }
+
+    [Fact]
+    public void Create_AddPlaintextResponseType_AsMetadata()
+    {
+        var @delegate = () => "Hello";
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+
+        Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
+        Assert.Null(responseMetadata.Type);
     }
 
     [Fact]
@@ -6278,7 +6301,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void Create_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
-        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(new List<object>
@@ -6298,12 +6321,14 @@ public class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
+            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 4 }));
+            m => Assert.True(m is MetadataCountMetadata { Count: 5 }));
     }
 
     [Fact]
@@ -6369,7 +6394,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
-        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
         var options = new RequestDelegateFactoryOptions
         {
             EndpointBuilder = CreateEndpointBuilder(),
@@ -6384,12 +6409,14 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Collection(result.EndpointMetadata,
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
+            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 3 }),
+            m => Assert.True(m is MetadataCountMetadata { Count: 4 }),
             // Entry-specific metadata added after a call to InferMetadata
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
@@ -6633,6 +6660,15 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+    }
+
+    private class CountsDefaultEndpointMetadataPoco : IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            var currentMetadataCount = builder.Metadata.Count;
+            builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+        }
     }
 
     private class RemovesAcceptsParameterMetadata : IEndpointParameterMetadataProvider
