@@ -136,8 +136,16 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         var groupDataSource = Assert.Single(builder.DataSources);
         var endpoint = Assert.Single(groupDataSource.Endpoints);
         var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
+
         Assert.NotNull(operation);
-        Assert.Equal("201", operation.Responses.Keys.SingleOrDefault());
+        Assert.Equal(2, operation.Responses.Count);
+
+        var defaultOperation = operation.Responses["200"];
+        Assert.True(defaultOperation.Content.ContainsKey("text/plain"));
+
+        var annotatedOperation = operation.Responses["201"];
+        // Produces doesn't special case string??
+        Assert.True(annotatedOperation.Content.ContainsKey("application/json"));
     }
 
     [Fact]
