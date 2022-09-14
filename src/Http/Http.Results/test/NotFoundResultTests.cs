@@ -52,6 +52,7 @@ public class NotFoundResultTests
         // Assert
         var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status404NotFound, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
     }
 
     [Fact]
