@@ -41,7 +41,9 @@ public class AcceptedResultTests
         PopulateMetadata<Accepted>(((Delegate)MyApi).GetMethodInfo(), builder);
 
         // Assert
-        Assert.Contains(builder.Metadata, m => m is ProducesResponseTypeMetadata { StatusCode: StatusCodes.Status202Accepted });
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status202Accepted, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
     }
 
     [Fact]
