@@ -180,4 +180,7 @@
   <data name="RecordTypeHasValidationOnProperties" xml:space="preserve">
     <value>Record type '{0}' has validation metadata defined on property '{1}' that will be ignored. '{1}' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.</value>
   </data>
+  <data name="ModelStateDictionary_MaxModelStateDepth" xml:space="preserve">
+    <value>The specified key exceeded the maximum ModelState depth: {0}</value>
+  </data>
 </root>
