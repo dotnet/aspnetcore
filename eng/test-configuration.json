@@ -17,6 +17,7 @@
     {"testName": {"contains": "HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate"}},
     {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
+    {"testName": {"contains": "AddsExpectedItems"}},
     {"testAssembly": {"contains": "IIS"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
