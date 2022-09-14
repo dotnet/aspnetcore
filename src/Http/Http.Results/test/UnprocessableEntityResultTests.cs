@@ -56,6 +56,7 @@ public class UnprocessableEntityResultTests
         // Assert
         var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
     }
 
     [Fact]

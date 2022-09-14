@@ -85,6 +85,7 @@ public class AcceptedAtRouteResultTests
         // Assert
         var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status202Accepted, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
     }
 
     [Fact]
