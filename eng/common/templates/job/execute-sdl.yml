@@ -53,7 +53,7 @@ jobs:
       demands: Cmd
     # If it's not devdiv, it's dnceng
     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-      name: NetCore1ESPool-Internal
+      name: NetCore1ESPool-Svc-Internal
       demands: ImageOverride -equals windows.vs2019.amd64
   steps:
   - checkout: self
