@@ -19,13 +19,17 @@ public sealed class OutputCachePolicyBuilder
     private readonly List<IOutputCachePolicy> _policies = new();
     private List<Func<OutputCacheContext, CancellationToken, ValueTask<bool>>>? _requirements;
 
-    /// <summary>
-    /// Creates a new <see cref="OutputCachePolicyBuilder"/> instance.
-    /// </summary>
-    public OutputCachePolicyBuilder()
+    internal OutputCachePolicyBuilder() : this(false)
+    {
+    }
+
+    internal OutputCachePolicyBuilder(bool excludeDefaultPolicy)
     {
         _builtPolicy = null;
-        _policies.Add(DefaultPolicy.Instance);
+        if (!excludeDefaultPolicy)
+        {
+            _policies.Add(DefaultPolicy.Instance);
+        }
     }
 
     internal OutputCachePolicyBuilder AddPolicy(IOutputCachePolicy policy)
@@ -84,11 +88,26 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to vary the cached responses by query strings.
     /// </summary>
-    /// <param name="queryKeys">The query keys to vary the cached responses by. Leave empty to ignore all query strings.</param>
+    /// <param name="queryKey">The query key to vary the cached responses by.</param>
+    /// <param name="queryKeys">The extra query keys to vary the cached responses by.</param>
     /// <remarks>
     /// By default all query keys vary the cache entries. However when specific query keys are specified only these are then taken into account.
     /// </remarks>
-    public OutputCachePolicyBuilder VaryByQuery(params string[] queryKeys)
+    public OutputCachePolicyBuilder SetVaryByQuery(string queryKey, params string[] queryKeys)
+    {
+        ArgumentNullException.ThrowIfNull(queryKey);
+
+        return AddPolicy(new VaryByQueryPolicy(queryKey, queryKeys));
+    }
+
+    /// <summary>
+    /// Adds a policy to vary the cached responses by query strings.
+    /// </summary>
+    /// <param name="queryKeys">The query keys to vary the cached responses by.</param>
+    /// <remarks>
+    /// By default all query keys vary the cache entries. However when specific query keys are specified only these are then taken into account.
+    /// </remarks>
+    public OutputCachePolicyBuilder SetVaryByQuery(string[] queryKeys)
     {
         ArgumentNullException.ThrowIfNull(queryKeys);
 
@@ -99,7 +118,17 @@ public sealed class OutputCachePolicyBuilder
     /// Adds a policy to vary the cached responses by header.
     /// </summary>
     /// <param name="headerNames">The header names to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByHeader(params string[] headerNames)
+    public OutputCachePolicyBuilder SetVaryByHeader(string headerName, params string[] headerNames)
+    {
+        ArgumentNullException.ThrowIfNull(headerName);
+
+        return AddPolicy(new VaryByHeaderPolicy(headerName, headerNames));
+    }
+    /// <summary>
+    /// Adds a policy to vary the cached responses by header.
+    /// </summary>
+    /// <param name="headerNames">The header names to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder SetVaryByHeader(string[] headerNames)
     {
         ArgumentNullException.ThrowIfNull(headerNames);
 
@@ -109,8 +138,20 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to vary the cached responses by route value.
     /// </summary>
+    /// <param name="routeValueName">The route value name to vary the cached responses by.</param>
+    /// <param name="routeValueNames">The extra route value names to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder SetVaryByRouteValue(string routeValueName, params string[] routeValueNames)
+    {
+        ArgumentNullException.ThrowIfNull(routeValueName);
+
+        return AddPolicy(new VaryByRouteValuePolicy(routeValueName, routeValueNames));
+    }
+
+    /// <summary>
+    /// Adds a policy to vary the cached responses by route value.
+    /// </summary>
     /// <param name="routeValueNames">The route value names to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByRouteValue(params string[] routeValueNames)
+    public OutputCachePolicyBuilder SetVaryByRouteValue(string[] routeValueNames)
     {
         ArgumentNullException.ThrowIfNull(routeValueNames);
 
@@ -229,25 +270,8 @@ public sealed class OutputCachePolicyBuilder
     /// Adds a policy to change the request locking strategy.
     /// </summary>
     /// <param name="lockResponse">Whether the request should be locked.</param>
-    public OutputCachePolicyBuilder AllowLocking(bool lockResponse = true)
-    {
-        return AddPolicy(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
-    }
-
-    /// <summary>
-    /// Clears the current policies.
-    /// </summary>
-    /// <remarks>It also removed the default cache policy.</remarks>
-    public OutputCachePolicyBuilder Clear()
-    {
-        _builtPolicy = null;
-        if (_requirements != null)
-        {
-            _requirements.Clear();
-        }
-        _policies.Clear();
-        return this;
-    }
+    /// <remarks>When the default policy is used, locking is enabled by default.</remarks>
+    public OutputCachePolicyBuilder SetLocking(bool enabled) => AddPolicy(enabled ? LockingPolicy.Enabled : LockingPolicy.Disabled);
 
     /// <summary>
     /// Clears the policies and adds one preventing any caching logic to happen.
@@ -276,6 +300,14 @@ public sealed class OutputCachePolicyBuilder
     }
 
     /// <summary>
+    /// Adds a policy setting whether to vary by the Host header ot not.
+    /// </summary>
+    public OutputCachePolicyBuilder SetVaryByHost(bool enabled)
+    {
+        return AddPolicy(enabled ? VaryByHostPolicy.Enabled : VaryByHostPolicy.Disabled);
+    }
+
+    /// <summary>
     /// Creates the <see cref="IOutputCachePolicy"/>.
     /// </summary>
     /// <returns>The<see cref="IOutputCachePolicy"/> instance.</returns>
@@ -286,10 +318,12 @@ public sealed class OutputCachePolicyBuilder
             return _builtPolicy;
         }
 
-        var policies = _policies.Count == 1
-            ? _policies[0]
-            : new CompositePolicy(_policies.ToArray())
-            ;
+        var policies = _policies.Count switch
+        {
+            0 => EmptyPolicy.Instance,
+            1 => _policies[0],
+            _ => new CompositePolicy(_policies.ToArray()),
+        };
 
         // If the policy was built with requirements, wrap it
         if (_requirements != null && _requirements.Any())

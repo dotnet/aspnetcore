@@ -80,17 +80,17 @@ public sealed class OutputCacheAttribute : Attribute
 
         if (VaryByQueryKeys != null)
         {
-            builder.VaryByQuery(VaryByQueryKeys);
+            builder.SetVaryByQuery(VaryByQueryKeys);
         }
 
         if (VaryByHeaderNames != null)
         {
-            builder.VaryByHeader(VaryByHeaderNames);
+            builder.SetVaryByHeader(VaryByHeaderNames);
         }
 
         if (VaryByRouteValueNames != null)
         {
-            builder.VaryByRouteValue(VaryByRouteValueNames);
+            builder.SetVaryByRouteValue(VaryByRouteValueNames);
         }
 
         if (_duration != null)
