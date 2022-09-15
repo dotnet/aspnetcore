@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.</Description>
@@ -17,6 +17,7 @@
     <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared"/>
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />

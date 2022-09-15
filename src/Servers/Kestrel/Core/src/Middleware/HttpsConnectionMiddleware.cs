@@ -138,7 +138,7 @@ internal sealed class HttpsConnectionMiddleware
             context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
         var sslStream = sslDuplexPipe.Stream;
 
-        var feature = new Core.Internal.TlsConnectionFeature(sslStream);
+        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context);
         // Set the mode if options were used. If the callback is used it will set the mode later.
         feature.AllowDelayedClientCertificateNegotation =
             _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
