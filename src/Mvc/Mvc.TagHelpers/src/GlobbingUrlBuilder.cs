@@ -304,7 +304,10 @@ public class GlobbingUrlBuilder
     {
         var ch = value[index];
 
-        if (ch > 32) return false;
+        if (ch > 32)
+        {
+            return false;
+        }
 
         // Valid whitespace characters defined by the HTML5 spec.
         const long BitMask =
