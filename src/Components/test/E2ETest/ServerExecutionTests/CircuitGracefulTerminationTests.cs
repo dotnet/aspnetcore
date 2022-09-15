@@ -61,6 +61,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44017")]
     public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
     {
         // Arrange & Act
