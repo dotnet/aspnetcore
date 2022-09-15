@@ -34,7 +34,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Routing.Internal;
 
-public class RequestDelegateFactoryTests : LoggedTest
+public partial class RequestDelegateFactoryTests : LoggedTest
 {
     public static IEnumerable<object[]> NoResult
     {
@@ -3011,6 +3011,46 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
         Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    }
+
+    public static IEnumerable<object[]> JsonContextActions
+    {
+        get
+        {
+            return ComplexResult.Concat(ChildResult);
+        }
+    }
+
+    [JsonSerializable(typeof(Todo))]
+    [JsonSerializable(typeof(TodoChild))]
+    private partial class TestJsonContext : JsonSerializerContext
+    { }
+
+    [Theory]
+    [MemberData(nameof(JsonContextActions))]
+    public async Task RequestDelegateWritesAsJsonResponseBody_WithJsonSerializerContext(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .ConfigureHttpJsonOptions(o => o.SerializerOptions.AddContext<TestJsonContext>())
+            .BuildServiceProvider();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
     public static IEnumerable<object[]> CustomResults
