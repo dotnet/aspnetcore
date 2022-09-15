@@ -54,7 +54,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                 });
 
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
 
             Assert.Collection(
                 problemDetails.Errors.OrderBy(kvp => kvp.Key),
