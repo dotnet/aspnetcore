@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -48,9 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 [HtmlTargetElement("video", Attributes = "[poster^='~/']")]
 public class UrlResolutionTagHelper : TagHelper
 {
-    // Valid whitespace characters defined by the HTML5 spec.
-    private static readonly char[] ValidAttributeWhitespaceChars =
-        new[] { '\t', '\n', '\u000C', '\r', ' ' };
     private static readonly Dictionary<string, string[]> ElementAttributeLookups =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -322,9 +320,20 @@ public class UrlResolutionTagHelper : TagHelper
         return input.Substring(start, len);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsCharWhitespace(char ch)
     {
-        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
+        if (ch > 32) return false;
+
+        // Valid whitespace characters defined by the HTML5 spec.
+        const long BitMask =
+            (1L << '\t')    //  9
+          | (1L << '\n')    // 10
+          | (1L << '\f')    // 12
+          | (1L << '\r')    // 13
+          | (1L << ' ');    // 32
+
+        return (BitMask & (1L << ch)) != 0;
     }
 
     private sealed class EncodeFirstSegmentContent : IHtmlContent

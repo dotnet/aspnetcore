@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
@@ -15,9 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 /// </summary>
 public class GlobbingUrlBuilder
 {
-    // Valid whitespace characters defined by the HTML5 spec.
-    private static readonly char[] ValidAttributeWhitespaceChars =
-        new[] { '\t', '\n', '\u000C', '\r', ' ' };
     private static readonly PathComparer DefaultPathComparer = new PathComparer();
     private static readonly char[] PatternSeparator = new[] { ',' };
     private static readonly char[] PathSeparator = new[] { '/' };
@@ -301,10 +299,22 @@ public class GlobbingUrlBuilder
         return value.Value;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsWhiteSpace(string value, int index)
     {
         var ch = value[index];
-        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
+
+        if (ch > 32) return false;
+
+        // Valid whitespace characters defined by the HTML5 spec.
+        const long BitMask =
+            (1L << '\t')    //  9
+          | (1L << '\n')    // 10
+          | (1L << '\f')    // 12
+          | (1L << '\r')    // 13
+          | (1L << ' ');    // 32
+
+        return (BitMask & (1L << ch)) != 0;
     }
 
     private static StringSegment Trim(StringSegment value)
