@@ -463,19 +463,6 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public void WebApplicationBuilderSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
-    {
-        var options = new WebApplicationOptions
-        {
-            ApplicationName = nameof(WebApplicationTests), // This is not a real assembly
-            EnvironmentName = Environments.Development
-        };
-
-        // Use secrets fails to load an invalid assembly name
-        Assert.Throws<FileNotFoundException>(() => WebApplication.CreateBuilder(options).Build());
-    }
-
-    [Fact]
     public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptions()
     {
         var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
