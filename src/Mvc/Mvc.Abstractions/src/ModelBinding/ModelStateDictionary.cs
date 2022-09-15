@@ -24,6 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultMaxAllowedErrors = 200;
 
+        // internal for testing
+        internal const int DefaultMaxRecursionDepth = 32;
+
         private const char DelimiterDot = '.';
         private const char DelimiterOpen = '[';
 
@@ -42,8 +45,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
         /// </summary>
         public ModelStateDictionary(int maxAllowedErrors)
+            : this(maxAllowedErrors, maxValidationDepth: DefaultMaxRecursionDepth, maxStateDepth: DefaultMaxRecursionDepth)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
+        /// </summary>
+        private ModelStateDictionary(int maxAllowedErrors, int maxValidationDepth, int maxStateDepth)
         {
             MaxAllowedErrors = maxAllowedErrors;
+            MaxValidationDepth = maxValidationDepth;
+            MaxStateDepth = maxStateDepth;
             var emptySegment = new StringSegment(buffer: string.Empty);
             _root = new ModelStateNode(subKey: emptySegment)
             {
@@ -57,7 +70,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="dictionary">The <see cref="ModelStateDictionary"/> to copy values from.</param>
         public ModelStateDictionary(ModelStateDictionary dictionary)
-            : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors)
+            : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors,
+                  dictionary?.MaxValidationDepth ?? DefaultMaxRecursionDepth,
+                  dictionary?.MaxStateDepth ?? DefaultMaxRecursionDepth)
         {
             if (dictionary == null)
             {
@@ -153,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public ModelValidationState ValidationState => GetValidity(_root) ?? ModelValidationState.Valid;
+        public ModelValidationState ValidationState => GetValidity(_root, currentDepth: 0) ?? ModelValidationState.Valid;
 
         /// <inheritdoc />
         public ModelStateEntry this[string key]
@@ -172,6 +187,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         // Flag that indicates if TooManyModelErrorException has already been added to this dictionary.
         private bool HasRecordedMaxModelError { get; set; }
+
+        internal int? MaxValidationDepth { get; set; }
+
+        internal int? MaxStateDepth { get; set; }
 
         /// <summary>
         /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
@@ -216,7 +235,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return false;
             }
 
-            ErrorCount++;
             AddModelErrorCore(key, exception);
             return true;
         }
@@ -325,7 +343,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return TryAddModelError(key, exception.Message);
             }
 
-            ErrorCount++;
             AddModelErrorCore(key, exception);
             return true;
         }
@@ -383,13 +400,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return false;
             }
 
-            ErrorCount++;
             var modelState = GetOrAddNode(key);
             Count += !modelState.IsContainerNode ? 0 : 1;
             modelState.ValidationState = ModelValidationState.Invalid;
             modelState.MarkNonContainerNode();
             modelState.Errors.Add(errorMessage);
 
+            ErrorCount++;
             return true;
         }
 
@@ -409,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var item = GetNode(key);
-            return GetValidity(item) ?? ModelValidationState.Unvalidated;
+            return GetValidity(item, currentDepth: 0) ?? ModelValidationState.Unvalidated;
         }
 
         /// <summary>
@@ -611,11 +628,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var current = _root;
             if (key.Length > 0)
             {
+                var currentDepth = 0;
                 var match = default(MatchResult);
                 do
                 {
+                    if (MaxStateDepth != null && currentDepth >= MaxStateDepth)
+                    {
+                        throw new InvalidOperationException(Resources.FormatModelStateDictionary_MaxModelStateDepth(MaxStateDepth));
+                    }
+
                     var subKey = FindNext(key, ref match);
                     current = current.GetOrAddNode(subKey);
+                    currentDepth++;
 
                 } while (match.Type != Delimiter.None);
 
@@ -661,9 +685,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new StringSegment(key, keyStart, index - keyStart);
         }
 
-        private static ModelValidationState? GetValidity(ModelStateNode node)
+        private ModelValidationState? GetValidity(ModelStateNode node, int currentDepth)
         {
-            if (node == null)
+            if (node == null ||
+                (MaxValidationDepth != null && currentDepth >= MaxValidationDepth))
             {
                 return null;
             }
@@ -686,9 +711,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (node.ChildNodes != null)
             {
+                currentDepth++;
+
                 for (var i = 0; i < node.ChildNodes.Count; i++)
                 {
-                    var entryState = GetValidity(node.ChildNodes[i]);
+                    var entryState = GetValidity(node.ChildNodes[i], currentDepth);
 
                     if (entryState == ModelValidationState.Unvalidated)
                     {
@@ -712,7 +739,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var exception = new TooManyModelErrorsException(Resources.ModelStateDictionary_MaxModelStateErrors);
                 AddModelErrorCore(string.Empty, exception);
                 HasRecordedMaxModelError = true;
-                ErrorCount++;
             }
         }
 
@@ -723,6 +749,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             modelState.ValidationState = ModelValidationState.Invalid;
             modelState.MarkNonContainerNode();
             modelState.Errors.Add(exception);
+
+            ErrorCount++;
         }
 
         /// <summary>

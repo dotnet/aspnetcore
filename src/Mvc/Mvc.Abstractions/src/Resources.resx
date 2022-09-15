@@ -177,4 +177,7 @@
   <data name="BinderType_MustBeIModelBinder" xml:space="preserve">
     <value>The type '{0}' must implement '{1}' to be used as a model binder.</value>
   </data>
+  <data name="ModelStateDictionary_MaxModelStateDepth" xml:space="preserve">
+    <value>The specified key exceeded the maximum ModelState depth: {0}</value>
+  </data>
 </root>
