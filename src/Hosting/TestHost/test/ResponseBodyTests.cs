@@ -122,6 +122,40 @@ namespace Microsoft.AspNetCore.TestHost.Tests
             Assert.Equal(contentBytes, responseBytes);
         }
 
+        [Fact]
+        public async Task BodyStream_ZeroByteRead_Success()
+        {
+            var emptyReadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var contentBytes = new byte[] { 32 };
+            using var host = await CreateHost(async httpContext =>
+            {
+                await httpContext.Response.Body.WriteAsync(contentBytes);
+                await emptyReadStarted.Task;
+                await httpContext.Response.Body.WriteAsync(contentBytes);
+            });
+
+            var client = host.GetTestServer().CreateClient();
+            var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            var stream = await response.Content.ReadAsStreamAsync();
+            var bytes = new byte[5];
+            var read = await stream.ReadAsync(bytes);
+            Assert.Equal(1, read);
+            Assert.Equal(contentBytes[0], bytes[0]);
+
+            // This will chain to the Memory overload, but that does less restrictive validation on the input.
+            // https://github.com/dotnet/aspnetcore/issues/41692#issuecomment-1248714684
+            var zeroByteRead = stream.ReadAsync(Array.Empty<byte>(), 0, 0);
+            Assert.False(zeroByteRead.IsCompleted);
+            emptyReadStarted.SetResult();
+            read = await zeroByteRead;
+            Assert.Equal(0, read);
+
+            read = await stream.ReadAsync(bytes);
+            Assert.Equal(1, read);
+            Assert.Equal(contentBytes[0], bytes[0]);
+        }
+
         private Task<IHost> CreateHost(RequestDelegate appDelegate)
         {
             return new HostBuilder()
