@@ -39,7 +39,7 @@ public class RateLimiterEndpointConventionBuilderExtensionsTests : LoggedTest
         var testConventionBuilder = new TestEndpointConventionBuilder();
 
         // Act
-        testConventionBuilder.RequireRateLimiting<TestEndpointConventionBuilder, string>(new TestRateLimiterPolicy("myKey", 404, false));
+        testConventionBuilder.RequireRateLimiting(new TestRateLimiterPolicy("myKey", 404, false));
 
         // Assert
         var addEnableRateLimitingAttribute = Assert.Single(testConventionBuilder.Conventions);
