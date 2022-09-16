@@ -62,9 +62,7 @@ public static partial class RequestDelegateFactory
     private static readonly PropertyInfo HeaderIndexerProperty = typeof(IHeaderDictionary).GetProperty("Item")!;
     private static readonly PropertyInfo FormFilesIndexerProperty = typeof(IFormFileCollection).GetProperty("Item")!;
 
-    // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-    // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-    private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object?, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync<object?>(response, value, default));
+    private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -110,8 +108,9 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "filterContext");
 
-    private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
+    private static readonly string[] DefaultAcceptsAndProducesContentType = new[] { JsonConstants.JsonContentType };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
+    private static readonly string[] PlaintextContentType = new[] { "text/plain" };
 
     /// <summary>
     /// Returns metadata inferred automatically for the <see cref="RequestDelegate"/> created by <see cref="Create(Delegate, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult?)"/>.
@@ -378,10 +377,10 @@ public static partial class RequestDelegateFactory
 
         if (!factoryContext.MetadataAlreadyInferred)
         {
+            PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
+
             // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
-            EndpointMetadataPopulator.PopulateMetadata(methodInfo,
-                factoryContext.EndpointBuilder,
-                factoryContext.Parameters);
+            EndpointMetadataPopulator.PopulateMetadata(methodInfo, factoryContext.EndpointBuilder, factoryContext.Parameters);
         }
 
         return args;
@@ -643,6 +642,22 @@ public static partial class RequestDelegateFactory
         if (parameter.Name is null)
         {
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
+        }
+
+        if (parameter.ParameterType.IsByRef)
+        {
+            var attribute = "ref";
+
+            if (parameter.Attributes.HasFlag(ParameterAttributes.In))
+            {
+                attribute = "in";
+            }
+            else if (parameter.Attributes.HasFlag(ParameterAttributes.Out))
+            {
+                attribute = "out";
+            }
+
+            throw new NotSupportedException($"The by reference parameter '{attribute} {TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)} {parameter.Name}' is not supported.");
         }
 
         var parameterCustomAttributes = parameter.GetCustomAttributes();
@@ -911,6 +926,47 @@ public static partial class RequestDelegateFactory
         return Expression.Block(localVariables, checkParamAndCallMethod);
     }
 
+    private static void PopulateBuiltInResponseTypeMetadata(Type returnType, EndpointBuilder builder)
+    {
+        if (returnType.IsByRefLike)
+        {
+            throw GetUnsupportedReturnTypeException(returnType);
+        }
+
+        if (returnType == typeof(Task) || returnType == typeof(ValueTask))
+        {
+            returnType = typeof(void);
+        }
+        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
+        {
+            var genericTypeDefinition = returnType.IsGenericType ? returnType.GetGenericTypeDefinition() : null;
+
+            if (genericTypeDefinition == typeof(Task<>) || genericTypeDefinition == typeof(ValueTask<>))
+            {
+                returnType = returnType.GetGenericArguments()[0];
+            }
+            else
+            {
+                throw GetUnsupportedReturnTypeException(returnType);
+            }
+        }
+
+        // Skip void returns and IResults. IResults might implement IEndpointMetadataProvider but otherwise we don't know what it might do.
+        if (returnType == typeof(void) || typeof(IResult).IsAssignableFrom(returnType))
+        {
+            return;
+        }
+
+        if (returnType == typeof(string))
+        {
+            builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(type: null, statusCode: 200, PlaintextContentType));
+        }
+        else
+        {
+            builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(returnType, statusCode: 200, DefaultAcceptsAndProducesContentType));
+        }
+    }
+
     private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType)
     {
         // Exact request delegate match
@@ -1005,7 +1061,7 @@ public static partial class RequestDelegateFactory
             else
             {
                 // TODO: Handle custom awaitables
-                throw new NotSupportedException($"Unsupported return type: {returnType}");
+                throw GetUnsupportedReturnTypeException(returnType);
             }
         }
         else if (typeof(IResult).IsAssignableFrom(returnType))
@@ -1021,14 +1077,18 @@ public static partial class RequestDelegateFactory
         {
             return Expression.Call(StringResultWriteResponseAsyncMethod, HttpContextExpr, methodCall);
         }
+        else if (returnType.IsByRefLike)
+        {
+            throw GetUnsupportedReturnTypeException(returnType);
+        }
         else if (returnType.IsValueType)
         {
             var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box);
         }
         else
         {
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall);
         }
     }
 
@@ -1828,7 +1888,7 @@ public static partial class RequestDelegateFactory
 
         factoryContext.JsonRequestBodyParameter = parameter;
         factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
-        AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, DefaultAcceptsContentType);
+        AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, DefaultAcceptsAndProducesContentType);
 
         if (!factoryContext.AllowEmptyRequestBody)
         {
@@ -1974,8 +2034,7 @@ public static partial class RequestDelegateFactory
         else
         {
             // Otherwise, we JSON serialize when we reach the terminal state
-            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-            return httpContext.Response.WriteAsJsonAsync<object?>(obj);
+            return WriteJsonResponse(httpContext.Response, obj);
         }
     }
 
@@ -1985,14 +2044,12 @@ public static partial class RequestDelegateFactory
 
         static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
         {
-            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-            await httpContext.Response.WriteAsJsonAsync<object?>(await task);
+            await WriteJsonResponse(httpContext.Response, await task);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-            return httpContext.Response.WriteAsJsonAsync<object?>(task.GetAwaiter().GetResult());
+            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult());
         }
 
         return ExecuteAwaited(task, httpContext);
@@ -2075,14 +2132,12 @@ public static partial class RequestDelegateFactory
     {
         static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
         {
-            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-            await httpContext.Response.WriteAsJsonAsync<object?>(await task);
+            await WriteJsonResponse(httpContext.Response, await task);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-            return httpContext.Response.WriteAsJsonAsync<object?>(task.GetAwaiter().GetResult());
+            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult());
         }
 
         return ExecuteAwaited(task, httpContext);
@@ -2131,6 +2186,22 @@ public static partial class RequestDelegateFactory
     {
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
     }
+
+    private static Task WriteJsonResponse(HttpResponse response, object? value)
+    {
+        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
+        // and avoid source generators issues.
+        // https://github.com/dotnet/aspnetcore/issues/43894
+        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value is null ? typeof(object) : value.GetType(), default);
+
+    }
+
+    private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
+    {
+        return new NotSupportedException($"Unsupported return type: {TypeNameHelper.GetTypeDisplayName(returnType)}");
+    }
+
     private static class RequestDelegateFactoryConstants
     {
         public const string RouteAttribute = "Route (Attribute)";

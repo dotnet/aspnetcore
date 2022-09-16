@@ -28,11 +28,10 @@ internal static partial class HttpResultsHelper
         }
 
         var declaredType = typeof(T);
-
-        Log.WritingResultAsJson(logger, declaredType.Name);
-
         if (declaredType.IsValueType)
         {
+            Log.WritingResultAsJson(logger, declaredType.Name);
+
             // In this case the polymorphism is not
             // relevant and we don't need to box.
             return httpContext.Response.WriteAsJsonAsync(
@@ -41,8 +40,17 @@ internal static partial class HttpResultsHelper
                         contentType: contentType);
         }
 
-        return httpContext.Response.WriteAsJsonAsync<object?>(
+        var runtimeType = value.GetType();
+
+        Log.WritingResultAsJson(logger, runtimeType.Name);
+
+        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
+        // and avoid source generators issues.
+        // https://github.com/dotnet/aspnetcore/issues/43894
+        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        return httpContext.Response.WriteAsJsonAsync(
             value,
+            runtimeType,
             options: jsonSerializerOptions,
             contentType: contentType);
     }

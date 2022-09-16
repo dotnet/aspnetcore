@@ -15,7 +15,7 @@ internal static partial class GrpcServerLog
     public static partial void ErrorExecutingServiceMethod(ILogger logger, string serviceMethod, Exception ex);
 
     [LoggerMessage(3, LogLevel.Information, "Error status code '{StatusCode}' with detail '{Detail}' raised.", EventName = "RpcConnectionError")]
-    public static partial void RpcConnectionError(ILogger logger, StatusCode statusCode, string detail);
+    public static partial void RpcConnectionError(ILogger logger, StatusCode statusCode, string detail, Exception? debugException);
 
     [LoggerMessage(4, LogLevel.Debug, "Reading message.", EventName = "ReadingMessage")]
     public static partial void ReadingMessage(ILogger logger);

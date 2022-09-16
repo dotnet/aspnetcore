@@ -1166,7 +1166,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
     }
 
-    internal async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
+    internal async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = uint.MaxValue)
     {
         var frame = new Http2FrameWithPayload();
 
@@ -1208,7 +1208,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     internal async Task<Http2FrameWithPayload> ExpectAsync(Http2FrameType type, int withLength, byte withFlags, int withStreamId)
     {
-        var frame = await ReceiveFrameAsync((uint)withLength);
+        var frame = await ReceiveFrameAsync();
 
         Assert.Equal(type, frame.Type);
         Assert.Equal(withStreamId, frame.StreamId);

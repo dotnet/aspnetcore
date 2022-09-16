@@ -1,3 +1,7 @@
+h1:focus {
+    outline: none;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

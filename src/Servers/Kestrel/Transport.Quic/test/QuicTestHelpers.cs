@@ -116,9 +116,9 @@ internal static class QuicTestHelpers
         return true;
     }
 
-    public static QuicClientConnectionOptions CreateClientConnectionOptions(EndPoint remoteEndPoint)
+    public static QuicClientConnectionOptions CreateClientConnectionOptions(EndPoint remoteEndPoint, bool? ignoreInvalidCertificate = null)
     {
-        return new QuicClientConnectionOptions
+        var options = new QuicClientConnectionOptions
         {
             MaxInboundBidirectionalStreams = 200,
             MaxInboundUnidirectionalStreams = 200,
@@ -128,12 +128,16 @@ internal static class QuicTestHelpers
                 ApplicationProtocols = new List<SslApplicationProtocol>
                 {
                     SslApplicationProtocol.Http3
-                },
-                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback
+                }
             },
             DefaultStreamErrorCode = 0,
             DefaultCloseErrorCode = 0,
         };
+        if (ignoreInvalidCertificate ?? true)
+        {
+            options.ClientAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
+        }
+        return options;
     }
 
     public static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection clientConnection, MultiplexedConnectionContext serverConnection, ILogger logger)

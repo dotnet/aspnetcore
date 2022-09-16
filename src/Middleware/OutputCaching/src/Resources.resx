@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Policy_InvalidType" xml:space="preserve">
-    <value>The type '{0}' is not a valid output policy.</value>
+  <data name="TagCannotBeNull" xml:space="preserve">
+    <value>A tag value cannot be null.</value>
   </data>
 </root>

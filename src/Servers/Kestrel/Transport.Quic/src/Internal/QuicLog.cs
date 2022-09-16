@@ -232,6 +232,9 @@ internal static partial class QuicLog
         }
     }
 
+    [LoggerMessage(24, LogLevel.Debug, "QUIC listener connection failed.", EventName = "ConnectionListenerAcceptConnectionFailed")]
+    public static partial void ConnectionListenerAcceptConnectionFailed(ILogger logger, Exception exception);
+
     private static StreamType GetStreamType(QuicStreamContext streamContext) =>
         streamContext.CanRead && streamContext.CanWrite
             ? StreamType.Bidirectional

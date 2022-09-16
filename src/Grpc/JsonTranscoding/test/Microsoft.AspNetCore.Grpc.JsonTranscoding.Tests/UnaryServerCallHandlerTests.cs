@@ -33,6 +33,11 @@ public class UnaryServerCallHandlerTests : LoggedTest
 {
     public UnaryServerCallHandlerTests(ITestOutputHelper output) : base(output) { }
 
+    private static RouteParameter CreateRouteParameter(List<FieldDescriptor> descriptorPath)
+    {
+        return new RouteParameter(descriptorPath, new HttpRouteVariable(), string.Empty);
+    }
+
     [Fact]
     public async Task HandleCallAsync_MatchingRouteValue_SetOnRequestMessage()
     {
@@ -44,14 +49,14 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }),
-            ["sub.subfield"] = new List<FieldDescriptor>(new[]
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })),
+            ["sub.subfield"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
             {
                 HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.SubFieldNumber),
                 HelloRequest.Types.SubMessage.Descriptor.FindFieldByNumber(HelloRequest.Types.SubMessage.SubfieldFieldNumber)
-            })
+            }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
         var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
@@ -88,9 +93,9 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = r.Name });
         };
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             responseBodyDescriptor: HelloReply.Descriptor.FindFieldByNumber(HelloReply.MessageFieldNumber),
@@ -122,9 +127,9 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { NullableMessage = null });
         };
 
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
         {
-            ["name"] = new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) })
+            ["name"] = CreateRouteParameter(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
         };
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             responseBodyDescriptor: HelloReply.Descriptor.FindFieldByNumber(HelloReply.NullableMessageFieldNumber),
@@ -445,7 +450,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(expectedError, responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -484,7 +488,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(expectedError, responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -515,7 +518,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(expectedError, responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -540,7 +542,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Detail!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Detail!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -548,9 +549,10 @@ public class UnaryServerCallHandlerTests : LoggedTest
     public async Task HandleCallAsync_RpcExceptionThrown_StatusReturned()
     {
         // Arrange
+        var debugException = new Exception("Error!");
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
         {
-            throw new RpcException(new Status(StatusCode.Unauthenticated, "Detail!"), "Message!");
+            throw new RpcException(new Status(StatusCode.Unauthenticated, "Detail!", debugException), "Message!");
         };
 
         var unaryServerCallHandler = CreateCallHandler(invoker);
@@ -565,8 +567,69 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Detail!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Detail!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
+
+        var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "RpcConnectionError");
+        Assert.Equal("Error status code 'Unauthenticated' with detail 'Detail!' raised.", exceptionWrite.Message);
+        Assert.Equal(debugException, exceptionWrite.Exception);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_OtherExceptionThrown_StatusReturned()
+    {
+        // Arrange
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            throw new InvalidOperationException("Error!");
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(invoker);
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal(500, httpContext.Response.StatusCode);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
+        Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("message").GetString());
+        Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
+
+        var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "ErrorExecutingServiceMethod");
+        Assert.Equal("Error when executing service method 'TestMethodName'.", exceptionWrite.Message);
+        Assert.Equal("Error!", exceptionWrite.Exception.Message);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_EnableDetailedErrors_OtherExceptionThrown_StatusReturned()
+    {
+        // Arrange
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            throw new InvalidOperationException("Error!");
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(
+            invoker,
+            serviceOptions: new GrpcServiceOptions { EnableDetailedErrors = true });
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal(500, httpContext.Response.StatusCode);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
+        Assert.Equal("Exception was thrown by handler. InvalidOperationException: Error!", responseJson.RootElement.GetProperty("message").GetString());
+        Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
+
+        var exceptionWrite = TestSink.Writes.Single(w => w.EventId.Name == "ErrorExecutingServiceMethod");
+        Assert.Equal("Error when executing service method 'TestMethodName'.", exceptionWrite.Message);
+        Assert.Equal("Error!", exceptionWrite.Exception.Message);
     }
 
     [Fact]
@@ -591,7 +654,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(@"Detail!", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal(@"Detail!", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -1000,7 +1062,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("message").GetString());
-        Assert.Equal("Exception was thrown by handler.", responseJson.RootElement.GetProperty("error").GetString());
         Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
@@ -1271,14 +1332,16 @@ public class UnaryServerCallHandlerTests : LoggedTest
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker,
         CallHandlerDescriptorInfo? descriptorInfo = null,
         List<(Type Type, object[] Args)>? interceptors = null,
-        GrpcJsonTranscodingOptions? jsonTranscodingOptions = null)
+        GrpcJsonTranscodingOptions? jsonTranscodingOptions = null,
+        GrpcServiceOptions? serviceOptions = null)
     {
         return CreateCallHandler(
             invoker,
             CreateServiceMethod("TestMethodName", HelloRequest.Parser, HelloReply.Parser),
             descriptorInfo,
             interceptors,
-            jsonTranscodingOptions);
+            jsonTranscodingOptions,
+            serviceOptions);
     }
 
     private UnaryServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse> CreateCallHandler<TRequest, TResponse>(
@@ -1286,11 +1349,12 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Method<TRequest, TResponse> method,
         CallHandlerDescriptorInfo? descriptorInfo = null,
         List<(Type Type, object[] Args)>? interceptors = null,
-        GrpcJsonTranscodingOptions? jsonTranscodingOptions = null)
+        GrpcJsonTranscodingOptions? jsonTranscodingOptions = null,
+        GrpcServiceOptions? serviceOptions = null)
         where TRequest : class, IMessage<TRequest>
         where TResponse : class, IMessage<TResponse>
     {
-        var serviceOptions = new GrpcServiceOptions();
+        serviceOptions ??= new GrpcServiceOptions();
         if (interceptors != null)
         {
             foreach (var interceptor in interceptors)
