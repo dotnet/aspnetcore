@@ -471,7 +471,7 @@ public class WebApplicationTests
             EnvironmentName = Environments.Development
         };
 
-        // Use secrets fails to load an invalid assembly name but not throws
+        // Use secrets fails to load an invalid assembly name but does not throw
         var webApplication = WebApplication.CreateBuilder(options).Build();
 
         Assert.Equal(nameof(WebApplicationTests), webApplication.Environment.ApplicationName);
