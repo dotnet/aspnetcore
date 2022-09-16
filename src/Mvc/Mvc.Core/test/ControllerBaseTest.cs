@@ -2313,7 +2313,7 @@ public class ControllerBaseTest
         Assert.Equal(400, badRequestResult.StatusCode);
         Assert.Equal(400, problemDetails.Status);
         Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
         Assert.Equal(new[] { "error1" }, problemDetails.Errors["key1"]);
     }
@@ -2411,7 +2411,7 @@ public class ControllerBaseTest
         Assert.Equal(500, actionResult.StatusCode);
         Assert.Equal(500, problemDetails.Status);
         Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
     }
 
@@ -2437,7 +2437,7 @@ public class ControllerBaseTest
         Assert.Equal(500, actionResult.StatusCode);
         Assert.Equal(500, problemDetails.Status);
         Assert.Equal(title, problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal(detail, problemDetails.Detail);
     }
 
@@ -2473,7 +2473,7 @@ public class ControllerBaseTest
                     [400] = new ClientErrorData
                     {
                         Title = "One or more validation errors occurred.",
-                        Link = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+                        Link = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
                     },
                     [422] = new ClientErrorData
                     {
@@ -2483,7 +2483,7 @@ public class ControllerBaseTest
                     [500] = new ClientErrorData
                     {
                         Title = "An error occurred while processing your request.",
-                        Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                        Link = "https://tools.ietf.org/html/rfc9110#section-15.6.1"
                     }
                 }
         };
