@@ -373,8 +373,8 @@ public class MvcTemplateTest : LoggedTest
         Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
         // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
-        buildResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, buildResult));
+        var publishResult = await project.RunDotNetPublishAsync();
+        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
         return project;
     }

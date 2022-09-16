@@ -67,14 +67,14 @@ public class RazorPagesTemplateTest : LoggedTest
         Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
         var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, createResult));
+        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
         var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, createResult));
+        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
         var pages = new List<Page>
             {
@@ -309,8 +309,8 @@ public class RazorPagesTemplateTest : LoggedTest
         Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
         // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
-        buildResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, buildResult));
+        var publishResult = await project.RunDotNetPublishAsync();
+        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
         return project;
     }
