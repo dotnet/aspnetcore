@@ -39,6 +39,9 @@ public class SpaProxyTests
     }
 
     [Theory]
+    [InlineData("http://localhost:3000", "", "", "http://localhost:3000/")]
+    [InlineData("http://localhost:3000", "", "?a=b", "http://localhost:3000/?a=b")]
+    [InlineData("http://localhost:3000/", "", "?a=b", "http://localhost:3000/?a=b")]
     [InlineData("http://localhost:3000", "/test", "?a=b", "http://localhost:3000/test?a=b")]
     [InlineData("http://localhost:3000/", "/test", "?a=b", "http://localhost:3000/test?a=b")]
     [InlineData("http://localhost:3000/spa", "/test", "?a=b", "http://localhost:3000/spa/test?a=b")]
