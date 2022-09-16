@@ -463,6 +463,22 @@ public class WebApplicationTests
     }
 
     [Fact]
+    public void WebApplicationBuilderSettingInvalidApplicationDoesNotThrowWhenAssemblyLoadForUserSecretsFail()
+    {
+        var options = new WebApplicationOptions
+        {
+            ApplicationName = nameof(WebApplicationTests), // This is not a real assembly
+            EnvironmentName = Environments.Development
+        };
+
+        // Use secrets fails to load an invalid assembly name but does not throw
+        var webApplication = WebApplication.CreateBuilder(options).Build();
+
+        Assert.Equal(nameof(WebApplicationTests), webApplication.Environment.ApplicationName);
+        Assert.Equal(Environments.Development, webApplication.Environment.EnvironmentName);
+    }
+
+    [Fact]
     public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptions()
     {
         var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
