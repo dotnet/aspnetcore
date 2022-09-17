@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
@@ -113,25 +112,33 @@ internal static class StringUtilities
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
+            // null ('\0') characters are considered invalid
             if (!TryGetLatin1String((byte*)state.ToPointer(), output, buffer.Length))
             {
-                // null characters are considered invalid
                 throw new InvalidOperationException();
             }
         }
     }
 
     public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
+        => TryGetStringCore<BytesInAsciiRangeCheck>(input, output, count);
+
+    public static unsafe bool TryGetLatin1String(byte* input, char* output, int count)
+        => TryGetStringCore<BytesNotNullCheck>(input, output, count);
+
+    private static unsafe bool TryGetStringCore<TByteCheck>(byte* input, char* output, int count) where TByteCheck : IBytesCheck
     {
         Debug.Assert(input != null);
         Debug.Assert(output != null);
 
         var end = input + count;
 
-        Debug.Assert((long)end >= Vector256<sbyte>.Count, "Address of input is below the expected address-range for vectorization.");
+        Debug.Assert((long)end >= Vector256<byte>.Count, "Address of input is below the expected address-range for vectorization.");
+
+        // Use byte/ushort instead of signed equivalents to ensure it doesn't fill based on the high bit.
 
         // If vectorization isn't possible do scalar-processing in order to don't penalize short inputs.
-        if (!Vector128.IsHardwareAccelerated || input > end - Vector128<sbyte>.Count)
+        if (!Vector128.IsHardwareAccelerated || input > end - Vector128<byte>.Count)
         {
             if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
             {
@@ -139,7 +146,7 @@ internal static class StringUtilities
                 while (input <= end - sizeof(long))
                 {
                     var value = *(long*)input;
-                    if (!CheckBytesInAsciiRange(value))
+                    if (!TByteCheck.CheckBytes(value))
                     {
                         return false;
                     }
@@ -147,7 +154,7 @@ internal static class StringUtilities
                     // BMI2 could be used, but this variant is faster on both Intel and AMD.
                     if (Vector128.IsHardwareAccelerated)
                     {
-                        var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+                        var vecNarrow = Vector128.CreateScalarUnsafe(value).AsByte();
                         var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
                         vecWide.Store((ulong*)output);
                     }
@@ -170,7 +177,7 @@ internal static class StringUtilities
                 if (input <= end - sizeof(int))
                 {
                     var value = *(int*)input;
-                    if (!CheckBytesInAsciiRange(value))
+                    if (!TByteCheck.CheckBytes(value))
                     {
                         return false;
                     }
@@ -187,7 +194,7 @@ internal static class StringUtilities
                 while (input <= end - sizeof(int))
                 {
                     var value = *(int*)input;
-                    if (!CheckBytesInAsciiRange(value))
+                    if (!TByteCheck.CheckBytes(value))
                     {
                         return false;
                     }
@@ -201,7 +208,7 @@ internal static class StringUtilities
 
             if (input <= end - sizeof(short))
             {
-                if (!CheckBytesInAsciiRange(((short*)input)[0]))
+                if (!TByteCheck.CheckBytes(((short*)input)[0]))
                 {
                     return false;
                 }
@@ -215,7 +222,7 @@ internal static class StringUtilities
 
             if (input < end)
             {
-                if (!CheckBytesInAsciiRange(((sbyte*)input)[0]))
+                if (!TByteCheck.CheckBytes(((sbyte*)input)[0]))
                 {
                     return false;
                 }
@@ -227,29 +234,26 @@ internal static class StringUtilities
 
         Debug.Assert(input + Vector128<sbyte>.Count <= end);
 
-        // PERF: so the JIT can reuse the zero from a register
-        var zero = Vector128<sbyte>.Zero;
-
-        if (Vector256.IsHardwareAccelerated && input <= end - Vector256<sbyte>.Count)
+        if (Vector256.IsHardwareAccelerated && input <= end - Vector256<byte>.Count)
         {
-            var avxZero = Vector256<sbyte>.Zero;
+            var zero256S = Vector256<sbyte>.Zero;
 
             do
             {
-                var vector = Vector256.Load(input).AsSByte();
-                if (!CheckBytesInAsciiRange(vector, avxZero))
+                var vector = Vector256.Load(input);
+                if (!TByteCheck.CheckBytes(vector.AsSByte(), zero256S))
                 {
                     return false;
                 }
 
                 var (out0, out1) = Vector256.Widen(vector);
 
-                out0.Store((short*)output);
-                out1.Store((short*)output + Vector256<short>.Count);
+                out0.Store((ushort*)output);
+                out1.Store((ushort*)output + Vector256<ushort>.Count);
 
-                input += Vector256<sbyte>.Count;
-                output += 2 * Vector256<short>.Count;
-            } while (input <= end - Vector256<sbyte>.Count);
+                input += Vector256<byte>.Count;
+                output += 2 * Vector256<ushort>.Count;
+            } while (input <= end - Vector256<byte>.Count);
 
             if (input == end)
             {
@@ -257,24 +261,26 @@ internal static class StringUtilities
             }
         }
 
-        if (input <= end - Vector128<sbyte>.Count)
+        var zero128S = Vector128<sbyte>.Zero;
+
+        if (input <= end - Vector128<byte>.Count)
         {
             do
             {
-                var vector = Vector128.Load(input).AsSByte();
-                if (!CheckBytesInAsciiRange(vector, zero))
+                var vector = Vector128.Load(input);
+                if (!TByteCheck.CheckBytes(vector.AsSByte(), zero128S))
                 {
                     return false;
                 }
 
                 var (out0, out1) = Vector128.Widen(vector);
 
-                out0.Store((short*)output);
-                out1.Store((short*)output + Vector128<short>.Count);
+                out0.Store((ushort*)output);
+                out1.Store((ushort*)output + Vector128<ushort>.Count);
 
-                input += Vector128<sbyte>.Count;
-                output += 2 * Vector128<short>.Count;
-            } while (input <= end - Vector128<sbyte>.Count);
+                input += Vector128<byte>.Count;
+                output += 2 * Vector128<ushort>.Count;
+            } while (input <= end - Vector128<byte>.Count);
 
             if (input == end)
             {
@@ -286,130 +292,25 @@ internal static class StringUtilities
         // The operation is idempotent, so we can perform one read from the very end instead
         // of doing the scalar paths below.
         {
-            var adjust = Vector128<sbyte>.Count - (end - input);
-            Debug.Assert(adjust > 0 && adjust < Vector128<sbyte>.Count);
+            var adjust = Vector128<byte>.Count - (end - input);
+            Debug.Assert(adjust > 0 && adjust < Vector128<byte>.Count);
 
             input -= adjust;
             output -= adjust;
 
-            var vector = Vector128.Load(input).AsSByte();
-            if (!CheckBytesInAsciiRange(vector, zero))
+            var vector = Vector128.Load(input);
+            if (!TByteCheck.CheckBytes(vector.AsSByte(), zero128S))
             {
                 return false;
             }
 
             var (out0, out1) = Vector128.Widen(vector);
 
-            out0.Store((short*)output);
-            out1.Store((short*)output + Vector128<short>.Count);
+            out0.Store((ushort*)output);
+            out1.Store((ushort*)output + Vector128<ushort>.Count);
 
             return true;
         }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public static unsafe bool TryGetLatin1String(byte* input, char* output, int count)
-    {
-        Debug.Assert(input != null);
-        Debug.Assert(output != null);
-
-        // Calculate end position
-        var end = input + count;
-        // Start as valid
-        var isValid = true;
-
-        do
-        {
-            // If Vector not-accelerated or remaining less than vector size
-            if (!Vector.IsHardwareAccelerated || input > end - Vector<sbyte>.Count)
-            {
-                if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
-                {
-                    // 64-bit: Loop longs by default
-                    while (input <= end - sizeof(long))
-                    {
-                        isValid &= CheckBytesNotNull(((long*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-                        output[4] = (char)input[4];
-                        output[5] = (char)input[5];
-                        output[6] = (char)input[6];
-                        output[7] = (char)input[7];
-
-                        input += sizeof(long);
-                        output += sizeof(long);
-                    }
-                    if (input <= end - sizeof(int))
-                    {
-                        isValid &= CheckBytesNotNull(((int*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-
-                        input += sizeof(int);
-                        output += sizeof(int);
-                    }
-                }
-                else
-                {
-                    // 32-bit: Loop ints by default
-                    while (input <= end - sizeof(int))
-                    {
-                        isValid &= CheckBytesNotNull(((int*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-
-                        input += sizeof(int);
-                        output += sizeof(int);
-                    }
-                }
-                if (input <= end - sizeof(short))
-                {
-                    isValid &= CheckBytesNotNull(((short*)input)[0]);
-
-                    output[0] = (char)input[0];
-                    output[1] = (char)input[1];
-
-                    input += sizeof(short);
-                    output += sizeof(short);
-                }
-                if (input < end)
-                {
-                    isValid &= CheckBytesNotNull(((sbyte*)input)[0]);
-                    output[0] = (char)input[0];
-                }
-
-                return isValid;
-            }
-
-            // do/while as entry condition already checked
-            do
-            {
-                // Use byte/ushort instead of signed equivalents to ensure it doesn't fill based on the high bit.
-                var vector = Unsafe.AsRef<Vector<byte>>(input);
-                isValid &= CheckBytesNotNull(vector);
-                Vector.Widen(
-                    vector,
-                    out Unsafe.AsRef<Vector<ushort>>(output),
-                    out Unsafe.AsRef<Vector<ushort>>(output + Vector<ushort>.Count));
-
-                input += Vector<byte>.Count;
-                output += Vector<byte>.Count;
-            } while (input <= end - Vector<byte>.Count);
-
-            // Vector path done, loop back to do non-Vector
-            // If is a exact multiple of vector size, bail now
-        } while (input < end);
-
-        return isValid;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -566,7 +467,7 @@ internal static class StringUtilities
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
         if (Vector128.IsHardwareAccelerated)
         {
-            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsByte();
             var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
             Unsafe.WriteUnaligned(output, vecWide.ToScalar());
         }
@@ -594,7 +495,7 @@ internal static class StringUtilities
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
         if (Vector128.IsHardwareAccelerated)
         {
-            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsByte();
             var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
             return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
                 vecWide.ToScalar();
@@ -633,7 +534,7 @@ internal static class StringUtilities
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
         if (Vector128.IsHardwareAccelerated)
         {
-            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsByte();
             var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt32();
             return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
                 vecWide.ToScalar();
@@ -848,37 +749,61 @@ internal static class StringUtilities
     private static bool CheckBytesInAsciiRange(sbyte check)
         => check > 0;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesNotNull(Vector<byte> check)
+    private interface IBytesCheck
     {
-        // Vectorized byte range check, signed byte != null
-        return !Vector.EqualsAny(check, Vector<byte>.Zero);
+        static abstract bool CheckBytes(Vector256<sbyte> value, Vector256<sbyte> zero);
+        static abstract bool CheckBytes(Vector128<sbyte> value, Vector128<sbyte> zero);
+        static abstract bool CheckBytes(long value);
+        static abstract bool CheckBytes(int value);
+        static abstract bool CheckBytes(short value);
+        static abstract bool CheckBytes(sbyte value);
     }
 
-    // Validate: bytes != 0
-    //  Subtract 1 from all bytes to move 0 to high bits
-    //  bitwise and with ~check so high bits are only set for bytes that were originally 0
-    //  mask off non high bits and check if 0
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesNotNull(long check)
+    private struct BytesInAsciiRangeCheck : IBytesCheck
     {
-        const long HighBits = unchecked((long)0x8080808080808080L);
-        return ((check - 0x0101010101010101L) & ~check & HighBits) == 0;
+        public static bool CheckBytes(Vector256<sbyte> value, Vector256<sbyte> zero) => CheckBytesInAsciiRange(value, zero);
+        public static bool CheckBytes(Vector128<sbyte> value, Vector128<sbyte> zero) => CheckBytesInAsciiRange(value, zero);
+        public static bool CheckBytes(long value) => CheckBytesInAsciiRange(value);
+        public static bool CheckBytes(int value) => CheckBytesInAsciiRange(value);
+        public static bool CheckBytes(short value) => CheckBytesInAsciiRange(value);
+        public static bool CheckBytes(sbyte value) => CheckBytesInAsciiRange(value);
     }
 
-    private static bool CheckBytesNotNull(int check)
+    private struct BytesNotNullCheck : IBytesCheck
     {
-        const int HighBits = unchecked((int)0x80808080);
-        return ((check - 0x01010101) & ~check & HighBits) == 0;
-    }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(Vector256<sbyte> value, Vector256<sbyte> zero) => !Vector256.EqualsAny(value, zero);
 
-    private static bool CheckBytesNotNull(short check)
-    {
-        const short HighBits = unchecked((short)0x8080);
-        return ((check - 0x0101) & ~check & HighBits) == 0;
-    }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(Vector128<sbyte> value, Vector128<sbyte> zero) => !Vector128.EqualsAny(value, zero);
 
-    private static bool CheckBytesNotNull(sbyte check)
-        => check != 0;
+        // Validate: bytes != 0
+        //  Subtract 1 from all bytes to move 0 to high bits
+        //  bitwise and with ~check so high bits are only set for bytes that were originally 0
+        //  mask off non high bits and check if 0
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(long value)
+        {
+            const long HighBits = unchecked((long)0x8080808080808080L);
+            return ((value - 0x0101010101010101L) & ~value & HighBits) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(int value)
+        {
+            const int HighBits = unchecked((int)0x80808080);
+            return ((value - 0x01010101) & ~value & HighBits) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(short value)
+        {
+            const short HighBits = unchecked((short)0x8080);
+            return ((value - 0x0101) & ~value & HighBits) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(sbyte value) => value != 0;
+    }
 }
