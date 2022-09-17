@@ -128,75 +128,139 @@ internal static class StringUtilities
 
         var end = input + count;
 
-        Debug.Assert((long)end >= Vector256<sbyte>.Count);
+        Debug.Assert((long)end >= Vector256<sbyte>.Count, "Address of input is below the expected address-range for vectorization.");
+
+        // If vectorization isn't possible do scalar-processing in order to don't penalize short inputs.
+        if (!Vector128.IsHardwareAccelerated || input > end - Vector128<sbyte>.Count)
+        {
+            if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
+            {
+                // 64-bit: Loop longs by default
+                while (input <= end - sizeof(long))
+                {
+                    var value = *(long*)input;
+                    if (!CheckBytesInAsciiRange(value))
+                    {
+                        return false;
+                    }
+
+                    // BMI2 could be used, but this variant is faster on both Intel and AMD.
+                    if (Vector128.IsHardwareAccelerated)
+                    {
+                        var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+                        var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
+                        vecWide.Store((ulong*)output);
+                    }
+                    else
+                    {
+                        output[0] = (char)input[0];
+                        output[1] = (char)input[1];
+                        output[2] = (char)input[2];
+                        output[3] = (char)input[3];
+                        output[4] = (char)input[4];
+                        output[5] = (char)input[5];
+                        output[6] = (char)input[6];
+                        output[7] = (char)input[7];
+                    }
+
+                    input += sizeof(long);
+                    output += sizeof(long);
+                }
+
+                if (input <= end - sizeof(int))
+                {
+                    var value = *(int*)input;
+                    if (!CheckBytesInAsciiRange(value))
+                    {
+                        return false;
+                    }
+
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
+
+                    input += sizeof(int);
+                    output += sizeof(int);
+                }
+            }
+            else
+            {
+                // 32-bit: Loop ints by default
+                while (input <= end - sizeof(int))
+                {
+                    var value = *(int*)input;
+                    if (!CheckBytesInAsciiRange(value))
+                    {
+                        return false;
+                    }
+
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
+
+                    input += sizeof(int);
+                    output += sizeof(int);
+                }
+            }
+
+            if (input <= end - sizeof(short))
+            {
+                if (!CheckBytesInAsciiRange(((short*)input)[0]))
+                {
+                    return false;
+                }
+
+                output[0] = (char)input[0];
+                output[1] = (char)input[1];
+
+                input += sizeof(short);
+                output += sizeof(short);
+            }
+
+            if (input < end)
+            {
+                if (!CheckBytesInAsciiRange(((sbyte*)input)[0]))
+                {
+                    return false;
+                }
+                output[0] = (char)input[0];
+            }
+
+            return true;
+        }
+
+        Debug.Assert(input + Vector128<sbyte>.Count <= end);
 
         // PERF: so the JIT can reuse the zero from a register
         var zero = Vector128<sbyte>.Zero;
 
-        if (Vector128.IsHardwareAccelerated && input <= end - Vector128<sbyte>.Count)
+        if (Vector256.IsHardwareAccelerated && input <= end - Vector256<sbyte>.Count)
         {
-            if (Vector256.IsHardwareAccelerated && input <= end - Vector256<sbyte>.Count)
+            var avxZero = Vector256<sbyte>.Zero;
+
+            do
             {
-                var avxZero = Vector256<sbyte>.Zero;
-
-                do
+                var vector = Vector256.Load(input).AsSByte();
+                if (!CheckBytesInAsciiRange(vector, avxZero))
                 {
-                    var vector = Vector256.Load(input).AsSByte();
-                    if (!CheckBytesInAsciiRange(vector, avxZero))
-                    {
-                        return false;
-                    }
-
-                    var (out0, out1) = Vector256.Widen(vector);
-
-                    out0.Store((short*)output);
-                    out1.Store((short*)output + Vector256<short>.Count);
-
-                    input += Vector256<sbyte>.Count;
-                    output += 2 * Vector256<short>.Count;
-                } while (input <= end - Vector256<sbyte>.Count);
-
-                if (input == end)
-                {
-                    return true;
+                    return false;
                 }
-            }
 
-            if (input <= end - Vector128<sbyte>.Count)
+                var (out0, out1) = Vector256.Widen(vector);
+
+                out0.Store((short*)output);
+                out1.Store((short*)output + Vector256<short>.Count);
+
+                input += Vector256<sbyte>.Count;
+                output += 2 * Vector256<short>.Count;
+            } while (input <= end - Vector256<sbyte>.Count);
+
+            if (input == end)
             {
-                do
-                {
-                    var vector = Vector128.Load(input).AsSByte();
-                    if (!CheckBytesInAsciiRange(vector, zero))
-                    {
-                        return false;
-                    }
-
-                    var (out0, out1) = Vector128.Widen(vector);
-
-                    out0.Store((short*)output);
-                    out1.Store((short*)output + Vector128<short>.Count);
-
-                    input += Vector128<sbyte>.Count;
-                    output += 2 * Vector128<short>.Count;
-                } while (input <= end - Vector128<sbyte>.Count);
-
-                if (input == end)
-                {
-                    return true;
-                }
+                return true;
             }
+        }
 
-            // Here we know that from the end at least Vector128<sbyte>.Count elements exists.
-            // The operation is idempotent, so we can perform one read from the very end instead
-            // of doing the scalar paths below.
+        if (input <= end - Vector128<sbyte>.Count)
+        {
+            do
             {
-                var adjust = Vector128<sbyte>.Count - (end - input);
-                Debug.Assert(adjust > 0 && adjust < Vector128<sbyte>.Count);
-
-                input -= adjust;
-                output -= adjust;
-
                 var vector = Vector128.Load(input).AsSByte();
                 if (!CheckBytesInAsciiRange(vector, zero))
                 {
@@ -208,100 +272,39 @@ internal static class StringUtilities
                 out0.Store((short*)output);
                 out1.Store((short*)output + Vector128<short>.Count);
 
+                input += Vector128<sbyte>.Count;
+                output += 2 * Vector128<short>.Count;
+            } while (input <= end - Vector128<sbyte>.Count);
+
+            if (input == end)
+            {
                 return true;
             }
         }
 
-        if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
+        // Here we know that from the end at least Vector128<sbyte>.Count elements exists.
+        // The operation is idempotent, so we can perform one read from the very end instead
+        // of doing the scalar paths below.
         {
-            // 64-bit: Loop longs by default
-            while (input <= end - sizeof(long))
-            {
-                var value = *(long*)input;
-                if (!CheckBytesInAsciiRange(value))
-                {
-                    return false;
-                }
+            var adjust = Vector128<sbyte>.Count - (end - input);
+            Debug.Assert(adjust > 0 && adjust < Vector128<sbyte>.Count);
 
-                // BMI2 could be used, but this variant is faster on both Intel and AMD.
-                if (Vector128.IsHardwareAccelerated)
-                {
-                    var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
-                    var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
-                    vecWide.Store((ulong*)output);
-                }
-                else
-                {
-                    output[0] = (char)input[0];
-                    output[1] = (char)input[1];
-                    output[2] = (char)input[2];
-                    output[3] = (char)input[3];
-                    output[4] = (char)input[4];
-                    output[5] = (char)input[5];
-                    output[6] = (char)input[6];
-                    output[7] = (char)input[7];
-                }
+            input -= adjust;
+            output -= adjust;
 
-                input += sizeof(long);
-                output += sizeof(long);
-            }
-
-            if (input <= end - sizeof(int))
-            {
-                var value = *(int*)input;
-                if (!CheckBytesInAsciiRange(value))
-                {
-                    return false;
-                }
-
-                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
-
-                input += sizeof(int);
-                output += sizeof(int);
-            }
-        }
-        else
-        {
-            // 32-bit: Loop ints by default
-            while (input <= end - sizeof(int))
-            {
-                var value = *(int*)input;
-                if (!CheckBytesInAsciiRange(value))
-                {
-                    return false;
-                }
-
-                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
-
-                input += sizeof(int);
-                output += sizeof(int);
-            }
-        }
-
-        if (input <= end - sizeof(short))
-        {
-            if (!CheckBytesInAsciiRange(((short*)input)[0]))
+            var vector = Vector128.Load(input).AsSByte();
+            if (!CheckBytesInAsciiRange(vector, zero))
             {
                 return false;
             }
 
-            output[0] = (char)input[0];
-            output[1] = (char)input[1];
+            var (out0, out1) = Vector128.Widen(vector);
 
-            input += sizeof(short);
-            output += sizeof(short);
+            out0.Store((short*)output);
+            out1.Store((short*)output + Vector128<short>.Count);
+
+            return true;
         }
-
-        if (input < end)
-        {
-            if (!CheckBytesInAsciiRange(((sbyte*)input)[0]))
-            {
-                return false;
-            }
-            output[0] = (char)input[0];
-        }
-
-        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
