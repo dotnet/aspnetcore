@@ -434,7 +434,7 @@ internal static class StringUtilities
             {
                 // Read a Vector length from the input as bytes
                 var bytesVector = Vector256.LoadUnsafe(ref bytes, (nuint)idx);
-                if (!CheckBytesInAsciiRange(bytesVector.AsSByte(), zero256S))
+                if (!BytesInAsciiRangeCheck.CheckBytes(bytesVector.AsSByte(), zero256S))
                 {
                     return false;
                 }
@@ -468,7 +468,7 @@ internal static class StringUtilities
         while (idx <= count - Vector128<byte>.Count)
         {
             var bytesVector = Vector128.LoadUnsafe(ref bytes, (nuint)idx);
-            if (!CheckBytesInAsciiRange(bytesVector.AsSByte(), zero128S))
+            if (!BytesInAsciiRangeCheck.CheckBytes(bytesVector.AsSByte(), zero128S))
             {
                 return false;
             }
@@ -502,7 +502,7 @@ internal static class StringUtilities
             Debug.Assert(idx + Vector128<byte>.Count == count);
 
             var bytesVector = Vector128.LoadUnsafe(ref bytes, (nuint)idx);
-            if (!CheckBytesInAsciiRange(bytesVector.AsSByte(), zero128S))
+            if (!BytesInAsciiRangeCheck.CheckBytes(bytesVector.AsSByte(), zero128S))
             {
                 return false;
             }
@@ -727,74 +727,6 @@ internal static class StringUtilities
         }
     }
 
-    // Vectorized byte range check, signed byte > 0 for 1-127
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesInAsciiRange(Vector<sbyte> check)
-    {
-        // JIT will dead-code eliminated not needed branches.
-
-        if (Vector256.IsHardwareAccelerated && Vector<sbyte>.Count == Vector256<sbyte>.Count)
-        {
-            return CheckBytesInAsciiRange(check.AsVector256(), Vector256<sbyte>.Zero);
-        }
-
-        if (Vector128.IsHardwareAccelerated && Vector<sbyte>.Count == Vector128<sbyte>.Count)
-        {
-            return CheckBytesInAsciiRange(check.AsVector128(), Vector128<sbyte>.Zero);
-        }
-
-        // Fallback safety net.
-        return Vector.GreaterThanAll(check, Vector<sbyte>.Zero);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(Vector256<sbyte> check, Vector256<sbyte> zero)
-    {
-        Debug.Assert(Vector256.IsHardwareAccelerated);
-
-        var mask = Vector256.GreaterThan(check, zero);
-        return mask.ExtractMostSignificantBits() == 0xFFFF_FFFF;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(Vector128<sbyte> check, Vector128<sbyte> zero)
-    {
-        Debug.Assert(Vector128.IsHardwareAccelerated);
-
-        var mask = Vector128.GreaterThan(check, zero);
-        return mask.ExtractMostSignificantBits() == 0xFFFF;
-    }
-
-    // Validate: bytes != 0 && bytes <= 127
-    //  Subtract 1 from all bytes to move 0 to high bits
-    //  bitwise or with self to catch all > 127 bytes
-    //  mask off non high bits and check if 0
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesInAsciiRange(long check)
-    {
-        const long HighBits = unchecked((long)0x8080808080808080L);
-        return (((check - 0x0101010101010101L) | check) & HighBits) == 0;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(int check)
-    {
-        const int HighBits = unchecked((int)0x80808080);
-        return (((check - 0x01010101) | check) & HighBits) == 0;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(short check)
-    {
-        const short HighBits = unchecked((short)0x8080);
-        return (((short)(check - 0x0101) | check) & HighBits) == 0;
-    }
-
-    private static bool CheckBytesInAsciiRange(sbyte check)
-        => check > 0;
-
     private interface IBytesCheck
     {
         static abstract bool CheckBytes(Vector256<sbyte> value, Vector256<sbyte> zero);
@@ -807,12 +739,54 @@ internal static class StringUtilities
 
     private struct BytesInAsciiRangeCheck : IBytesCheck
     {
-        public static bool CheckBytes(Vector256<sbyte> value, Vector256<sbyte> zero) => CheckBytesInAsciiRange(value, zero);
-        public static bool CheckBytes(Vector128<sbyte> value, Vector128<sbyte> zero) => CheckBytesInAsciiRange(value, zero);
-        public static bool CheckBytes(long value) => CheckBytesInAsciiRange(value);
-        public static bool CheckBytes(int value) => CheckBytesInAsciiRange(value);
-        public static bool CheckBytes(short value) => CheckBytesInAsciiRange(value);
-        public static bool CheckBytes(sbyte value) => CheckBytesInAsciiRange(value);
+        // Vectorized byte range check, signed byte > 0 for 1-127
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(Vector256<sbyte> value, Vector256<sbyte> zero)
+        {
+            Debug.Assert(Vector256.IsHardwareAccelerated);
+
+            var mask = Vector256.GreaterThan(value, zero);
+            return mask.ExtractMostSignificantBits() == 0xFFFF_FFFF;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(Vector128<sbyte> value, Vector128<sbyte> zero)
+        {
+            Debug.Assert(Vector128.IsHardwareAccelerated);
+
+            var mask = Vector128.GreaterThan(value, zero);
+            return mask.ExtractMostSignificantBits() == 0xFFFF;
+        }
+
+        // Validate: bytes != 0 && bytes <= 127
+        //  Subtract 1 from all bytes to move 0 to high bits
+        //  bitwise or with self to catch all > 127 bytes
+        //  mask off non high bits and check if 0
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(long value)
+        {
+            const long HighBits = unchecked((long)0x8080808080808080L);
+            return (((value - 0x0101010101010101L) | value) & HighBits) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(int value)
+        {
+            const int HighBits = unchecked((int)0x80808080);
+            return (((value - 0x01010101) | value) & HighBits) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(short value)
+        {
+            const short HighBits = unchecked((short)0x8080);
+            return (((short)(value - 0x0101) | value) & HighBits) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckBytes(sbyte value) => value > 0;
     }
 
     private struct BytesNotNullCheck : IBytesCheck
