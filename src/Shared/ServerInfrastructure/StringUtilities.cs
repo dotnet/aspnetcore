@@ -121,7 +121,6 @@ internal static class StringUtilities
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
     {
         Debug.Assert(input != null);
@@ -134,29 +133,24 @@ internal static class StringUtilities
         // PERF: so the JIT can reuse the zero from a register
         var zero = Vector128<sbyte>.Zero;
 
-        if (Sse2.IsSupported)
+        if (Vector128.IsHardwareAccelerated)
         {
-            if (Avx2.IsSupported && input <= end - Vector256<sbyte>.Count)
+            if (Vector256.IsHardwareAccelerated && input <= end - Vector256<sbyte>.Count)
             {
                 var avxZero = Vector256<sbyte>.Zero;
 
                 do
                 {
-                    var vector = Avx.LoadVector256(input).AsSByte();
+                    var vector = Vector256.Load(input).AsSByte();
                     if (!CheckBytesInAsciiRange(vector, avxZero))
                     {
                         return false;
                     }
 
-                    var tmp0 = Avx2.UnpackLow(vector, avxZero);
-                    var tmp1 = Avx2.UnpackHigh(vector, avxZero);
+                    var (out0, out1) = Vector256.Widen(vector);
 
-                    // Bring into the right order
-                    var out0 = Avx2.Permute2x128(tmp0, tmp1, 0x20);
-                    var out1 = Avx2.Permute2x128(tmp0, tmp1, 0x31);
-
-                    Avx.Store((ushort*)output, out0.AsUInt16());
-                    Avx.Store((ushort*)output + Vector256<ushort>.Count, out1.AsUInt16());
+                    out0.Store((short*)output);
+                    out1.Store((short*)output + Vector256<short>.Count);
 
                     input += Vector256<sbyte>.Count;
                     output += Vector256<sbyte>.Count;
@@ -172,17 +166,16 @@ internal static class StringUtilities
             {
                 do
                 {
-                    var vector = Sse2.LoadVector128(input).AsSByte();
+                    var vector = Vector128.Load(input).AsSByte();
                     if (!CheckBytesInAsciiRange(vector, zero))
                     {
                         return false;
                     }
 
-                    var c0 = Sse2.UnpackLow(vector, zero).AsUInt16();
-                    var c1 = Sse2.UnpackHigh(vector, zero).AsUInt16();
+                    var (out0, out1) = Vector128.Widen(vector);
 
-                    Sse2.Store((ushort*)output, c0);
-                    Sse2.Store((ushort*)output + Vector128<ushort>.Count, c1);
+                    out0.Store((short*)output);
+                    out1.Store((short*)output + Vector128<short>.Count);
 
                     input += Vector128<sbyte>.Count;
                     output += Vector128<sbyte>.Count;
@@ -192,30 +185,6 @@ internal static class StringUtilities
                 {
                     return true;
                 }
-            }
-        }
-        else if (Vector.IsHardwareAccelerated)
-        {
-            while (input <= end - Vector<sbyte>.Count)
-            {
-                var vector = Unsafe.AsRef<Vector<sbyte>>(input);
-                if (!CheckBytesInAsciiRange(vector))
-                {
-                    return false;
-                }
-
-                Vector.Widen(
-                    vector,
-                    out Unsafe.AsRef<Vector<short>>(output),
-                    out Unsafe.AsRef<Vector<short>>(output + Vector<short>.Count));
-
-                input += Vector<sbyte>.Count;
-                output += Vector<sbyte>.Count;
-            }
-
-            if (input == end)
-            {
-                return true;
             }
         }
 
@@ -231,11 +200,11 @@ internal static class StringUtilities
                 }
 
                 // BMI2 could be used, but this variant is faster on both Intel and AMD.
-                if (Sse2.X64.IsSupported)
+                if (Vector128.IsHardwareAccelerated)
                 {
-                    var vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
-                    var vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
-                    Sse2.Store((ulong*)output, vecWide);
+                    var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+                    var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
+                    vecWide.Store((ulong*)output);
                 }
                 else
                 {
@@ -785,6 +754,7 @@ internal static class StringUtilities
     }
 
     // Vectorized byte range check, signed byte > 0 for 1-127
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
     private static bool CheckBytesInAsciiRange(Vector<sbyte> check)
     {
