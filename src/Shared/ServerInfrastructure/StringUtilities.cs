@@ -133,7 +133,7 @@ internal static class StringUtilities
         // PERF: so the JIT can reuse the zero from a register
         var zero = Vector128<sbyte>.Zero;
 
-        if (Vector128.IsHardwareAccelerated)
+        if (Vector128.IsHardwareAccelerated && input <= end - Vector128<sbyte>.Count)
         {
             if (Vector256.IsHardwareAccelerated && input <= end - Vector256<sbyte>.Count)
             {
@@ -153,7 +153,7 @@ internal static class StringUtilities
                     out1.Store((short*)output + Vector256<short>.Count);
 
                     input += Vector256<sbyte>.Count;
-                    output += Vector256<sbyte>.Count;
+                    output += 2 * Vector256<short>.Count;
                 } while (input <= end - Vector256<sbyte>.Count);
 
                 if (input == end)
@@ -178,13 +178,37 @@ internal static class StringUtilities
                     out1.Store((short*)output + Vector128<short>.Count);
 
                     input += Vector128<sbyte>.Count;
-                    output += Vector128<sbyte>.Count;
+                    output += 2 * Vector128<short>.Count;
                 } while (input <= end - Vector128<sbyte>.Count);
 
                 if (input == end)
                 {
                     return true;
                 }
+            }
+
+            // Here we know that from the end at least Vector128<sbyte>.Count elements exists.
+            // The operation is idempotent, so we can perform one read from the very end instead
+            // of doing the scalar paths below.
+            {
+                var adjust = Vector128<sbyte>.Count - (end - input);
+                Debug.Assert(adjust > 0 && adjust < Vector128<sbyte>.Count);
+
+                input -= adjust;
+                output -= adjust;
+
+                var vector = Vector128.Load(input).AsSByte();
+                if (!CheckBytesInAsciiRange(vector, zero))
+                {
+                    return false;
+                }
+
+                var (out0, out1) = Vector128.Widen(vector);
+
+                out0.Store((short*)output);
+                out1.Store((short*)output + Vector128<short>.Count);
+
+                return true;
             }
         }
 
