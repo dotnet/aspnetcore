@@ -30,6 +30,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
+        // Ubuntu 20.04 disables TLS1.1 by default which SslStream requires in this scenario.
+        // For now, we test only on macOS because we don't have checks for the specific Linux version.
+        [OSSkipCondition(OperatingSystems.Linux)]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
             using (var server = new TestServer(context =>
