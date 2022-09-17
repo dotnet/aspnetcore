@@ -784,29 +784,42 @@ internal static class StringUtilities
         }
     }
 
+    // Vectorized byte range check, signed byte > 0 for 1-127
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
     private static bool CheckBytesInAsciiRange(Vector<sbyte> check)
     {
-        // Vectorized byte range check, signed byte > 0 for 1-127
+        // JIT will dead-code eliminated not needed branches.
+
+        if (Vector256.IsHardwareAccelerated && Vector<sbyte>.Count == Vector256<sbyte>.Count)
+        {
+            return CheckBytesInAsciiRange(check.AsVector256(), Vector256<sbyte>.Zero);
+        }
+
+        if (Vector128.IsHardwareAccelerated && Vector<sbyte>.Count == Vector128<sbyte>.Count)
+        {
+            return CheckBytesInAsciiRange(check.AsVector128(), Vector128<sbyte>.Zero);
+        }
+
+        // Fallback safety net.
         return Vector.GreaterThanAll(check, Vector<sbyte>.Zero);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool CheckBytesInAsciiRange(Vector256<sbyte> check, Vector256<sbyte> zero)
     {
-        Debug.Assert(Avx2.IsSupported);
+        Debug.Assert(Vector256.IsHardwareAccelerated);
 
-        var mask = Avx2.CompareGreaterThan(check, zero);
-        return (uint)Avx2.MoveMask(mask) == 0xFFFF_FFFF;
+        var mask = Vector256.GreaterThan(check, zero);
+        return mask.ExtractMostSignificantBits() == 0xFFFF_FFFF;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool CheckBytesInAsciiRange(Vector128<sbyte> check, Vector128<sbyte> zero)
     {
-        Debug.Assert(Sse2.IsSupported);
+        Debug.Assert(Vector128.IsHardwareAccelerated);
 
-        var mask = Sse2.CompareGreaterThan(check, zero);
-        return Sse2.MoveMask(mask) == 0xFFFF;
+        var mask = Vector128.GreaterThan(check, zero);
+        return mask.ExtractMostSignificantBits() == 0xFFFF;
     }
 
     // Validate: bytes != 0 && bytes <= 127
