@@ -261,7 +261,7 @@ internal static class StringUtilities
                     return false;
                 }
 
-                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
+                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
 
                 input += sizeof(int);
                 output += sizeof(int);
@@ -278,7 +278,7 @@ internal static class StringUtilities
                     return false;
                 }
 
-                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
+                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
 
                 input += sizeof(int);
                 output += sizeof(int);
@@ -565,14 +565,14 @@ internal static class StringUtilities
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value, Vector128<sbyte> zero)
+    private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value)
     {
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
-        if (Sse2.X64.IsSupported)
+        if (Vector128.IsHardwareAccelerated)
         {
-            var vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
-            var vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
-            Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
+            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+            var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
+            Unsafe.WriteUnaligned(output, vecWide.ToScalar());
         }
         else
         {
@@ -587,7 +587,7 @@ internal static class StringUtilities
     /// Given a DWORD which represents a buffer of 4 bytes, widens the buffer into 4 WORDs and
     /// compares them to the WORD buffer with machine endianness.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool WidenFourAsciiBytesToUtf16AndCompareToChars(ref char charStart, uint value)
     {
         if (!AllBytesInUInt32AreAscii(value))
@@ -596,12 +596,12 @@ internal static class StringUtilities
         }
 
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
-        if (Sse2.X64.IsSupported)
+        if (Vector128.IsHardwareAccelerated)
         {
-            var vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
-            var vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+            var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt64();
             return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                Sse2.X64.ConvertToUInt64(vecWide);
+                vecWide.ToScalar();
         }
         else
         {
@@ -635,12 +635,12 @@ internal static class StringUtilities
         }
 
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
-        if (Sse2.IsSupported)
+        if (Vector128.IsHardwareAccelerated)
         {
-            var vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
-            var vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
+            var vecNarrow = Vector128.CreateScalarUnsafe(value).AsSByte();
+            var vecWide = Vector128.Widen(vecNarrow).Lower.AsUInt32();
             return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                Sse2.ConvertToUInt32(vecWide);
+                vecWide.ToScalar();
         }
         else
         {
