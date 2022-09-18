@@ -2499,7 +2499,7 @@
                 {
                   "name": "isActivitySender",
                   "parameters": {
-                    "user": "dotnet-maestro-bot "
+                    "user": "dotnet-maestro-bot"
                   }
                 }
               ]
