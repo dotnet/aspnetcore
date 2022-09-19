@@ -105,24 +105,20 @@ public class IdentityUIPackageTest : LoggedTest
         var project = await ProjectFactory.CreateProject(Output);
         var useLocalDB = false;
 
-        var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, environmentVariables: packageOptions);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, environmentVariables: packageOptions);
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
         Assert.Contains(".db", projectFileContents);
 
-        var publishResult = await project.RunDotNetPublishAsync(packageOptions: packageOptions);
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync(packageOptions: packageOptions);
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync(packageOptions: packageOptions);
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync(packageOptions: packageOptions);
 
-        var migrationsResult = await project.RunDotNetEfCreateMigrationAsync("razorpages");
-        Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
+        await project.RunDotNetEfCreateMigrationAsync("razorpages");
         project.AssertEmptyMigration("razorpages");
 
         var versionValidator = "Bootstrap v5.1.0";
