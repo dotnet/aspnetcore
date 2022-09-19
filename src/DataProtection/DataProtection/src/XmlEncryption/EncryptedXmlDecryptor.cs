@@ -77,7 +77,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// <summary>
     /// Can decrypt the XML key data from an <see cref="X509Certificate2"/> that is not in stored in <see cref="X509Store"/>.
     /// </summary>
-    private class EncryptedXmlWithCertificateKeys : EncryptedXml
+    private sealed class EncryptedXmlWithCertificateKeys : EncryptedXml
     {
         private readonly XmlKeyDecryptionOptions? _options;
 

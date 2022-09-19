@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-internal class ApiResponseTypeProvider
+internal sealed class ApiResponseTypeProvider
 {
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IActionResultTypeMapper _mapper;
@@ -49,7 +50,8 @@ internal class ApiResponseTypeProvider
             defaultErrorType = ((ProducesErrorResponseTypeAttribute)result!).Type;
         }
 
-        var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, runtimeReturnType, defaultErrorType);
+        var producesResponseMetadata = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
+        var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType);
         return apiResponseTypes;
     }
 
@@ -72,6 +74,7 @@ internal class ApiResponseTypeProvider
 
     private ICollection<ApiResponseType> GetApiResponseTypes(
        IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+       IReadOnlyList<IProducesResponseTypeMetadata> producesResponseMetadata,
        Type? type,
        Type defaultErrorType)
     {
@@ -79,16 +82,30 @@ internal class ApiResponseTypeProvider
         var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
         var responseTypes = ReadResponseMetadata(
+            producesResponseMetadata,
+            type,
+            responseTypeMetadataProviders,
+            _modelMetadataProvider);
+
+        // Read response metadata from providers and
+        // overwrite responseTypes from the metadata based
+        // on the status code
+        var responseTypesFromProvider = ReadResponseMetadata(
             responseMetadataAttributes,
             type,
             defaultErrorType,
             contentTypes,
             responseTypeMetadataProviders);
 
+        foreach (var responseType in responseTypesFromProvider)
+        {
+            responseTypes[responseType.Key] = responseType.Value;
+        }
+
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
         {
-            responseTypes.Add(new ApiResponseType
+            responseTypes.Add(StatusCodes.Status200OK, new ApiResponseType
             {
                 StatusCode = StatusCodes.Status200OK,
                 Type = type,
@@ -105,16 +122,16 @@ internal class ApiResponseTypeProvider
             contentTypes.Add((string)null!);
         }
 
-        foreach (var apiResponse in responseTypes)
+        foreach (var apiResponse in responseTypes.Values)
         {
             CalculateResponseFormatForType(apiResponse, contentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
         }
 
-        return responseTypes;
+        return responseTypes.Values;
     }
 
     // Shared with EndpointMetadataApiDescriptionProvider
-    internal static List<ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
         Type defaultErrorType,
@@ -195,7 +212,55 @@ internal class ApiResponseTypeProvider
             }
         }
 
-        return results.Values.ToList();
+        return results;
+    }
+
+    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
+        IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
+        Type? type,
+        IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
+        IModelMetadataProvider? modelMetadataProvider = null)
+    {
+        var results = new Dictionary<int, ApiResponseType>();
+
+        foreach (var metadata in responseMetadata)
+        {
+            var statusCode = metadata.StatusCode;
+
+            var apiResponseType = new ApiResponseType
+            {
+                Type = metadata.Type,
+                StatusCode = statusCode,
+            };
+
+            if (apiResponseType.Type == typeof(void))
+            {
+                if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
+                {
+                    // Allow setting the response type from the return type of the method if it has
+                    // not been set explicitly by the method.
+                    apiResponseType.Type = type;
+                }
+            }
+
+            var attributeContentTypes = new MediaTypeCollection();
+            if (metadata.ContentTypes != null)
+            {
+                foreach (var contentType in metadata.ContentTypes)
+                {
+                    attributeContentTypes.Add(contentType);
+                }
+            }
+
+            CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders, modelMetadataProvider);
+
+            if (apiResponseType.Type != null)
+            {
+                results[apiResponseType.StatusCode] = apiResponseType;
+            }
+        }
+
+        return results;
     }
 
     // Shared with EndpointMetadataApiDescriptionProvider
@@ -284,9 +349,10 @@ internal class ApiResponseTypeProvider
             unwrappedType = declaredReturnType.GetGenericArguments()[0];
         }
 
-        // If the method is declared to return IActionResult or a derived class, that information
+        // If the method is declared to return IActionResult, IResult or a derived class, that information
         // isn't valuable to the formatter.
-        if (typeof(IActionResult).IsAssignableFrom(unwrappedType))
+        if (typeof(IActionResult).IsAssignableFrom(unwrappedType) ||
+            typeof(IResult).IsAssignableFrom(unwrappedType))
         {
             return null;
         }

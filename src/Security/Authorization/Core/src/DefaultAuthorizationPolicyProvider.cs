@@ -69,6 +69,13 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
         // MVC caches policies specifically for this class, so this method MUST return the same policy per
         // policyName for every request or it could allow undesired access. It also must return synchronously.
         // A change to either of these behaviors would require shipping a patch of MVC as well.
-        return Task.FromResult(_options.GetPolicy(policyName));
+        return _options.GetPolicyTask(policyName);
     }
+
+#if NETCOREAPP
+    /// <summary>
+    /// Determines if policies from this provider can be cached, which is true only for this type.
+    /// </summary>
+    public virtual bool AllowsCachingPolicies => GetType() == typeof(DefaultAuthorizationPolicyProvider);
+#endif
 }

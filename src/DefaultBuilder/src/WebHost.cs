@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
@@ -172,10 +173,13 @@ public static class WebHost
 
             if (env.IsDevelopment())
             {
-                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
-                if (appAssembly != null)
+                if (!string.IsNullOrEmpty(env.ApplicationName))
                 {
-                    config.AddUserSecrets(appAssembly, optional: true);
+                    var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                    if (appAssembly != null)
+                    {
+                        config.AddUserSecrets(appAssembly, optional: true);
+                    }
                 }
             }
 
@@ -266,6 +270,6 @@ public static class WebHost
     /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
     /// <param name="args">The command line args.</param>
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHostBuilder CreateDefaultBuilder<TStartup>(string[] args) where TStartup : class =>
+    public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
 }

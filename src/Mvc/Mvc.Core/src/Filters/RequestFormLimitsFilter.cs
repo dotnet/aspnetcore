@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// A filter that configures <see cref="FormOptions"/> for the current request.
 /// </summary>
-internal partial class RequestFormLimitsFilter : IAuthorizationFilter, IRequestFormLimitsPolicy
+internal sealed partial class RequestFormLimitsFilter : IAuthorizationFilter, IRequestFormLimitsPolicy
 {
     private readonly ILogger _logger;
 

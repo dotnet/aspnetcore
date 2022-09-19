@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.TestHost;
 
 namespace Microsoft.AspNetCore.Builder.Extensions;
 
@@ -126,11 +127,90 @@ public class UsePathBaseExtensionsTests
         return TestPathBase(registeredPathBase, pathBase, requestPath, expectedPathBase, expectedPath);
     }
 
+    [Theory]
+    [InlineData("/b%42", "", "/b%42/something%42", "/b%42", "/something%42")]
+    [InlineData("/b%42", "", "/B%42/something%42", "/B%42", "/something%42")]
+    [InlineData("/b%42", "", "/b%42/Something%42", "/b%42", "/Something%42")]
+    [InlineData("/b%42", "/oldb%42", "/b%42/something%42", "/oldb%42/b%42", "/something%42")]
+    [InlineData("/b%42", "/oldb%42", "/b%42/Something%42", "/oldb%42/b%42", "/Something%42")]
+    [InlineData("/b%42", "/oldb%42", "/B%42/something%42", "/oldb%42/B%42", "/something%42")]
+    public Task PathBaseCanHavePercentCharacters(string registeredPathBase, string pathBase, string requestPath, string expectedPathBase, string expectedPath)
+    {
+        return TestPathBase(registeredPathBase, pathBase, requestPath, expectedPathBase, expectedPath);
+    }
+
+    [Fact]
+    public async Task PathBaseWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UseRouting();
+
+        app.UsePathBase("/base");
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.Map("/path", context => context.Response.WriteAsync("Response"));
+        });
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
+    [Fact]
+    public async Task PathBaseWorksBeforeUseRoutingIfGlobalRouteBuilderUsed()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UsePathBase("/base");
+
+        app.UseRouting();
+
+        app.MapGet("/path", context => context.Response.WriteAsync("Response"));
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
+    [Fact]
+    public async Task PathBaseWorksWithoutUseRoutingWithWebApplication()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UsePathBase("/base");
+
+        app.MapGet("/path", context => context.Response.WriteAsync("Response"));
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
     private static async Task TestPathBase(string registeredPathBase, string pathBase, string requestPath, string expectedPathBase, string expectedPath)
     {
         HttpContext requestContext = CreateRequest(pathBase, requestPath);
         var builder = CreateBuilder()
-            .UsePathBase(registeredPathBase);
+            .UsePathBase(new PathString(registeredPathBase));
         builder.Run(context =>
         {
             context.Items["test.Path"] = context.Request.Path;

@@ -299,7 +299,7 @@ public class RouteTableFactoryTests
             new object[] { "/{value:decimal}", "/5.3", 5.3m },
             new object[] { "/{value:double}", "/0.1", 0.1d },
             new object[] { "/{value:float}", "/0.1", 0.1f },
-            new object[] { "/{value:guid}", "/1FCEF085-884F-416E-B0A1-71B15F3E206B", Guid.Parse("1FCEF085-884F-416E-B0A1-71B15F3E206B") },
+            new object[] { "/{value:guid}", "/1FCEF085-884F-416E-B0A1-71B15F3E206B", Guid.Parse("1FCEF085-884F-416E-B0A1-71B15F3E206B", CultureInfo.InvariantCulture) },
             new object[] { "/{value:int}", "/123", 123 },
             new object[] { "/{value:int}", "/-123", -123},
             new object[] { "/{value:long}", "/9223372036854775807", long.MaxValue },

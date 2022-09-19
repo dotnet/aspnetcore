@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 
-internal class ServerSentEventsServerTransport : IHttpTransport
+internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
 {
     private readonly PipeReader _application;
     private readonly string _connectionId;
@@ -83,14 +83,9 @@ internal class ServerSentEventsServerTransport : IHttpTransport
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, long, Exception?> _sseWritingMessage =
-            LoggerMessage.Define<long>(LogLevel.Trace, new EventId(1, "SSEWritingMessage"), "Writing a {Count} byte message.");
-
-        public static void SSEWritingMessage(ILogger logger, long count)
-        {
-            _sseWritingMessage(logger, count, null);
-        }
+        [LoggerMessage(1, LogLevel.Trace, "Writing a {Count} byte message.", EventName = "SSEWritingMessage")]
+        public static partial void SSEWritingMessage(ILogger logger, long count);
     }
 }

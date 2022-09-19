@@ -37,6 +37,10 @@ internal abstract class MessageBody
 
     public bool RequestUpgrade { get; protected set; }
 
+    public bool ExtendedConnect { get; protected set; }
+
+    public HttpProtocol Context => _context;
+
     public virtual bool IsEmpty => false;
 
     protected KestrelTrace Log => _context.ServiceContext.Log;
@@ -122,7 +126,7 @@ internal abstract class MessageBody
         OnReadStarting();
         _context.HasStartedConsumingRequestBody = true;
 
-        if (!RequestUpgrade)
+        if (!RequestUpgrade && !ExtendedConnect)
         {
             // Accessing TraceIdentifier will lazy-allocate a string ID.
             // Don't access TraceIdentifer unless logging is enabled.
@@ -150,7 +154,7 @@ internal abstract class MessageBody
 
         _stopped = true;
 
-        if (!RequestUpgrade)
+        if (!RequestUpgrade && !ExtendedConnect)
         {
             // Accessing TraceIdentifier will lazy-allocate a string ID
             // Don't access TraceIdentifer unless logging is enabled.

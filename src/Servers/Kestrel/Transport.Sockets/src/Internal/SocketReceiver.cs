@@ -12,37 +12,37 @@ internal sealed class SocketReceiver : SocketAwaitableEventArgs
     {
     }
 
-    public ValueTask<int> WaitForDataAsync(Socket socket)
+    public ValueTask<SocketOperationResult> WaitForDataAsync(Socket socket)
     {
         SetBuffer(Memory<byte>.Empty);
 
         if (socket.ReceiveAsync(this))
         {
-            return new ValueTask<int>(this, 0);
+            return new ValueTask<SocketOperationResult>(this, 0);
         }
 
         var bytesTransferred = BytesTransferred;
         var error = SocketError;
 
-        return error == SocketError.Success ?
-            new ValueTask<int>(bytesTransferred) :
-           ValueTask.FromException<int>(CreateException(error));
+        return error == SocketError.Success
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)));
     }
 
-    public ValueTask<int> ReceiveAsync(Socket socket, Memory<byte> buffer)
+    public ValueTask<SocketOperationResult> ReceiveAsync(Socket socket, Memory<byte> buffer)
     {
         SetBuffer(buffer);
 
         if (socket.ReceiveAsync(this))
         {
-            return new ValueTask<int>(this, 0);
+            return new ValueTask<SocketOperationResult>(this, 0);
         }
 
         var bytesTransferred = BytesTransferred;
         var error = SocketError;
 
-        return error == SocketError.Success ?
-            new ValueTask<int>(bytesTransferred) :
-           ValueTask.FromException<int>(CreateException(error));
+        return error == SocketError.Success
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)));
     }
 }

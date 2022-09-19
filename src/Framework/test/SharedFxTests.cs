@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
@@ -14,7 +16,6 @@ public class SharedFxTests
 {
     private readonly string _expectedTfm;
     private readonly string _expectedRid;
-    private readonly string _expectedVersionFileName;
     private readonly string _sharedFxRoot;
     private readonly ITestOutputHelper _output;
 
@@ -23,12 +24,11 @@ public class SharedFxTests
         _output = output;
         _expectedTfm = TestData.GetDefaultNetCoreTargetFramework();
         _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-        _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
-            ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
-            : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-        _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
-            ? ".version"
-            : "Microsoft.AspNetCore.App.versions.txt";
+        _sharedFxRoot = Path.Combine(
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+            "shared",
+            "Microsoft.AspNetCore.App",
+            TestData.GetSharedFxVersion());
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class SharedFxTests
 
         var target = $".NETCoreApp,Version=v{_expectedTfm.Substring(3)}/{_expectedRid}";
         var ridPackageId = $"Microsoft.AspNetCore.App.Runtime.{_expectedRid}";
-        var libraryId = $"{ridPackageId}/{TestData.GetTestDataValue("RuntimePackageVersion")}";
+        var libraryId = $"{ridPackageId}/{TestData.GetSharedFxVersion()}";
 
         AssertEx.FileExists(depsFilePath);
 
@@ -160,23 +160,29 @@ public class SharedFxTests
     [Fact]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {
-        // Only test managed assemblies from dotnet/aspnetcore.
+        // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
         var repoAssemblies = TestData.GetSharedFrameworkBinariesFromRepo()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
         var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
+        var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
+
         var dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
-            // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
-            if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            var name = Path.GetFileNameWithoutExtension(path);
+            if (string.Equals(name, "aspnetcorev2_inprocess", StringComparison.Ordinal))
             {
+                // Skip our native assembly.
                 return;
             }
+
+            var expectedVersion = repoAssemblies.Contains(name) ? aspnetcoreVersion : version;
 
             using var fileStream = File.OpenRead(path);
             using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
@@ -184,8 +190,21 @@ public class SharedFxTests
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
             // Assembly versions should all match Major.Minor.0.0
-            Assert.Equal(version.Major, assemblyDefinition.Version.Major);
-            Assert.Equal(version.Minor, assemblyDefinition.Version.Minor);
+            if (repoAssemblies.Contains(name))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
+            Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
             Assert.Equal(0, assemblyDefinition.Version.Build);
             Assert.Equal(0, assemblyDefinition.Version.Revision);
         });
@@ -228,22 +247,22 @@ public class SharedFxTests
     [Fact]
     public void ItContainsVersionFile()
     {
-        var versionFile = Path.Combine(_sharedFxRoot, _expectedVersionFileName);
+        var versionFile = Path.Combine(_sharedFxRoot, ".version");
         AssertEx.FileExists(versionFile);
         var lines = File.ReadAllLines(versionFile);
         Assert.Equal(2, lines.Length);
         Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
-        Assert.Equal(TestData.GetTestDataValue("RuntimePackageVersion"), lines[1]);
+        Assert.Equal(TestData.GetSharedFxVersion(), lines[1]);
     }
 
     [Fact]
-    public void RuntimeListListsContainsCorrectEntries()
+    public void RuntimeListContainsCorrectEntries()
     {
         var expectedAssemblies = TestData.GetSharedFxDependencies()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+        var runtimeListPath = "RuntimeList.xml";
         AssertEx.FileExists(runtimeListPath);
 
         var runtimeListDoc = XDocument.Load(runtimeListPath);
@@ -294,15 +313,21 @@ public class SharedFxTests
     }
 
     [Fact]
-    public void RuntimeListListsContainsCorrectPaths()
+    public void RuntimeListContainsCorrectPaths()
     {
-        var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+        var runtimeListPath = "RuntimeList.xml";
         AssertEx.FileExists(runtimeListPath);
 
         var runtimeListDoc = XDocument.Load(runtimeListPath);
         var runtimeListEntries = runtimeListDoc.Root.Descendants();
 
-        var sharedFxPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg"));
+        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
+        var sharedFxPath = Path.Combine(
+            packageFolder,
+            "Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg");
+        AssertEx.FileExists(sharedFxPath);
 
         ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 

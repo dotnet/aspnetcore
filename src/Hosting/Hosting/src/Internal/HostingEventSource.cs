@@ -72,6 +72,12 @@ internal sealed class HostingEventSource : EventSource
         WriteEvent(5);
     }
 
+    [Event(6, Level = EventLevel.Informational)]
+    public void ServerReady()
+    {
+        WriteEvent(6);
+    }
+
     internal void RequestFailed()
     {
         Interlocked.Increment(ref _failedRequests);

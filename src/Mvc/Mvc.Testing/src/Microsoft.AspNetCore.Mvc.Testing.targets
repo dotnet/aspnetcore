@@ -31,7 +31,7 @@
   <Target Name="_AddContentRootForProjectReferences" BeforeTargets="PrepareResources" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup Condition="'@(_ContentRootProjectReferences->Count())' != '0'">
       <_ManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
-        <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
+        <ContentRoot>$([System.IO.Path]::GetDirectoryName('%(_ContentRootProjectReferences.MSBuildSourceProjectFile)'))</ContentRoot>
       </_ManifestProjects>
     </ItemGroup>
 
@@ -46,7 +46,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+  <Target Name="_GeneratePublishTestManifest" Condition="$(IsPublishable) == 'true'" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup>
       <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
         <ContentRoot>~</ContentRoot>

@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -16,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -40,8 +35,8 @@ public class KestrelConfigurationLoaderTests
         var serverOptions = CreateServerOptions();
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:Found:Url", "http://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:Found:Url", "http://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("Found", endpointOptions => found = true)
             .Endpoint("NotFound", endpointOptions => throw new NotImplementedException())
@@ -101,8 +96,8 @@ public class KestrelConfigurationLoaderTests
         var serverOptions = CreateServerOptions();
         var config1 = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+        }).Build();
         serverOptions.Configure(config1)
             .LocalhostEndpoint(5001, endpointOptions => run1 = true);
 
@@ -112,8 +107,8 @@ public class KestrelConfigurationLoaderTests
         var run2 = false;
         var config2 = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End2:Url", "http://*:5002"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End2:Url", "http://*:5002"),
+        }).Build();
         serverOptions.Configure(config2)
             .LocalhostEndpoint(5003, endpointOptions => run2 = true);
 
@@ -140,6 +135,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureHttpsDefaults(opt =>
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
+            opt.ServerCertificateChain = TestResources.GetTestChain();
             opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
 
@@ -147,14 +143,16 @@ public class KestrelConfigurationLoaderTests
         var ran2 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
                 ran1 = true;
                 Assert.True(opt.IsHttps);
                 Assert.NotNull(opt.HttpsOptions.ServerCertificate);
+                Assert.NotNull(opt.HttpsOptions.ServerCertificateChain);
+                Assert.Equal(2, opt.HttpsOptions.ServerCertificateChain.Count);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
                 Assert.Equal(HttpProtocols.Http1, opt.ListenOptions.Protocols);
             })
@@ -191,8 +189,8 @@ public class KestrelConfigurationLoaderTests
         var ran2 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -262,10 +260,10 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                    new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
-                    new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-aspnet.key"))
-                }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
+            new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-aspnet.key"))
+        }).Build();
 
         var ex = Assert.Throws<ArgumentException>(() =>
         {
@@ -286,11 +284,11 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                    new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
-                    new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-ecdsa.key")),
-                    new KeyValuePair<string, string>("Certificates:Default:Password", "aspnetcore")
-                }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
+            new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-ecdsa.key")),
+            new KeyValuePair<string, string>("Certificates:Default:Password", "aspnetcore")
+        }).Build();
 
         var ex = Assert.Throws<ArgumentException>(() =>
         {
@@ -375,10 +373,10 @@ public class KestrelConfigurationLoaderTests
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", certificateFile)),
-                new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", certificateKey)),
-            }
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", certificateFile)),
+            new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", certificateKey)),
+        }
         .Concat(password != null ? new[] { new KeyValuePair<string, string>("Certificates:Default:Password", password) } : Array.Empty<KeyValuePair<string, string>>()))
         .Build();
 
@@ -409,8 +407,8 @@ public class KestrelConfigurationLoaderTests
 
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
-                    new KeyValuePair<string, string>("Certificates:Development:Password", "12341234"),
-                }).Build();
+                new KeyValuePair<string, string>("Certificates:Development:Password", "12341234"),
+            }).Build();
 
             serverOptions
                 .Configure(config)
@@ -465,46 +463,46 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                // We shouldn't need to specify a real cert, because KestrelConfigurationLoader should check whether the endpoint requires a cert before trying to load it.
-                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", "fakecert.pfx"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            // We shouldn't need to specify a real cert, because KestrelConfigurationLoader should check whether the endpoint requires a cert before trying to load it.
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", "fakecert.pfx"),
+        }).Build();
 
         var ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
         Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Certificate"), ex.Message);
 
         config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Subject", "example.org"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Subject", "example.org"),
+        }).Build();
 
         ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
         Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Certificate"), ex.Message);
 
         config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
+        }).Build();
 
         ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
         Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "ClientCertificateMode"), ex.Message);
 
         config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", SslProtocols.Tls13.ToString()),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", SslProtocols.Tls13.ToString()),
+        }).Build();
 
         ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
         Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "SslProtocols"), ex.Message);
 
         config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:Protocols", HttpProtocols.Http1.ToString()),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:Protocols", HttpProtocols.Http1.ToString()),
+        }).Build();
 
         ex = Assert.Throws<InvalidOperationException>(() => serverOptions.Configure(config).Load());
         Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Sni"), ex.Message);
@@ -517,9 +515,9 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
+        }).Build();
 
         var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
         var end1 = Assert.Single(endpointsToStart);
@@ -580,9 +578,9 @@ public class KestrelConfigurationLoaderTests
         var ran3 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("EndpointDefaults:Protocols", input),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("EndpointDefaults:Protocols", input),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -650,9 +648,9 @@ public class KestrelConfigurationLoaderTests
         var ran3 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Protocols", input),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Protocols", input),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -701,13 +699,15 @@ public class KestrelConfigurationLoaderTests
         var ran2 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 Assert.Equal(SslProtocols.Tls11, opt.HttpsOptions.SslProtocols);
+#pragma warning restore SYSLIB0039
                 ran1 = true;
             })
             .Load();
@@ -740,13 +740,15 @@ public class KestrelConfigurationLoaderTests
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 Assert.Equal(SslProtocols.Tls11, opt.HttpsOptions.SslProtocols);
+#pragma warning restore SYSLIB0039
                 ran1 = true;
             })
             .Load();
@@ -767,13 +769,15 @@ public class KestrelConfigurationLoaderTests
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 Assert.Equal(SslProtocols.Tls11, opt.HttpsOptions.SslProtocols);
+#pragma warning restore SYSLIB0039
                 ran1 = true;
             })
             .Load();
@@ -790,16 +794,18 @@ public class KestrelConfigurationLoaderTests
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
 
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
             Assert.Equal(SslProtocols.Tls11, opt.SslProtocols);
+#pragma warning restore SYSLIB0039
             opt.SslProtocols = SslProtocols.Tls12;
         });
 
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -830,9 +836,9 @@ public class KestrelConfigurationLoaderTests
         var ran2 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", "AllowCertificate"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", "AllowCertificate"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -864,13 +870,13 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Protocols", HttpProtocols.None.ToString()),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:SslProtocols:0", SslProtocols.Tls13.ToString()),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", certPath),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:KeyPath", keyPath),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Protocols", HttpProtocols.None.ToString()),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:SslProtocols:0", SslProtocols.Tls13.ToString()),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:ClientCertificateMode", ClientCertificateMode.RequireCertificate.ToString()),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:KeyPath", keyPath),
+        }).Build();
 
         var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
         var end1 = Assert.Single(endpointsToStart);
@@ -925,9 +931,9 @@ public class KestrelConfigurationLoaderTests
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -955,9 +961,9 @@ public class KestrelConfigurationLoaderTests
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+        }).Build();
         serverOptions.Configure(config)
             .Endpoint("End1", opt =>
             {
@@ -976,9 +982,9 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
-                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+        }).Build();
 
         serverOptions.Configure(config).Load();
 
@@ -988,10 +994,10 @@ public class KestrelConfigurationLoaderTests
 
         serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
-                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5002"),
-                new KeyValuePair<string, string>("Endpoints:C:Url", "http://*:5003"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5002"),
+            new KeyValuePair<string, string>("Endpoints:C:Url", "http://*:5003"),
+        }).Build();
 
         var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
 
@@ -1015,20 +1021,20 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:DefaultProtocol:Url", "http://*:5000"),
-                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Protocols", "Http1AndHttp2"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:DefaultProtocol:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Protocols", "Http1AndHttp2"),
+        }).Build();
 
         serverOptions.Configure(config).Load();
 
         serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:DefaultProtocol:Url", "http://*:5000"),
-                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Protocols", "Http1AndHttp2"),
-                new KeyValuePair<string, string>("EndpointDefaults:Protocols", "Http1"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:DefaultProtocol:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Protocols", "Http1AndHttp2"),
+            new KeyValuePair<string, string>("EndpointDefaults:Protocols", "Http1"),
+        }).Build();
 
         var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
 
@@ -1050,9 +1056,9 @@ public class KestrelConfigurationLoaderTests
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:Changed:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:Unchanged:Url", "http://*:5000"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:Changed:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:Unchanged:Url", "http://*:5000"),
+        }).Build();
 
         serverOptions.Configure(config)
             .Endpoint("Changed", endpointOptions => foundChangedCount++)
@@ -1065,9 +1071,9 @@ public class KestrelConfigurationLoaderTests
 
         serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:Changed:Url", "http://*:5002"),
-                new KeyValuePair<string, string>("Endpoints:Unchanged:Url", "http://*:5000"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:Changed:Url", "http://*:5002"),
+            new KeyValuePair<string, string>("Endpoints:Unchanged:Url", "http://*:5000"),
+        }).Build();
 
         serverOptions.ConfigurationLoader.Reload();
 

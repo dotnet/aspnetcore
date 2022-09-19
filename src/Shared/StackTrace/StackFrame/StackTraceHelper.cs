@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,8 +15,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.StackTrace.Sources;
 
-internal class StackTraceHelper
+internal sealed class StackTraceHelper
 {
+    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "MethodInfo for a stack frame might be incomplete or removed. GetFrames does the best it can to provide frame details.")]
     public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
     {
         if (exception == null)
@@ -43,13 +45,20 @@ internal class StackTraceHelper
             var frame = stackFrames[i];
             var method = frame.GetMethod();
 
+            // MethodInfo should always be available for methods in the stack, but double check for null here.
+            // Apps with trimming enabled may remove some metdata. Better to be safe than sorry.
+            if (method == null)
+            {
+                continue;
+            }
+
             // Always show last stackFrame
             if (!ShowInStackTrace(method) && i < stackFrames.Length - 1)
             {
                 continue;
             }
 
-            var stackFrame = new StackFrameInfo(frame.GetFileLineNumber(), frame.GetFileName(), frame, GetMethodDisplayString(frame.GetMethod()));
+            var stackFrame = new StackFrameInfo(frame.GetFileLineNumber(), frame.GetFileName(), frame, GetMethodDisplayString(method));
             frames.Add(stackFrame);
         }
 
@@ -140,10 +149,8 @@ internal class StackTraceHelper
         return methodDisplayInfo;
     }
 
-    private static bool ShowInStackTrace(MethodBase? method)
+    private static bool ShowInStackTrace(MethodBase method)
     {
-        Debug.Assert(method != null);
-
         // Don't show any methods marked with the StackTraceHiddenAttribute
         // https://github.com/dotnet/coreclr/pull/14652
         if (HasStackTraceHiddenAttribute(method))
@@ -185,6 +192,7 @@ internal class StackTraceHelper
         return true;
     }
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "Unable to require a method has all information on it to resolve state machine.")]
     private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type? declaringType)
     {
         Debug.Assert(method != null);

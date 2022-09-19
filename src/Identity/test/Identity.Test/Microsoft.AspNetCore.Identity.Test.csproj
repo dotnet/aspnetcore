@@ -22,10 +22,12 @@
 
   <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
-      <_IdentitUIDefaultUI Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+      <_IdentityUIDefaultUI Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+    </ItemGroup>
+    <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>Microsoft.AspNetCore.Testing.DefaultUIProjectPath</_Parameter1>
-        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentityUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>

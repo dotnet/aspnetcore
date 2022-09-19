@@ -53,20 +53,5 @@ public class Startup
             await context.Response.WriteAsync("</body></html>\r\n");
         });
     }
-
-    public static Task Main(string[] args)
-    {
-        var host = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>();
-            })
-            .Build();
-
-        return host.RunAsync();
-    }
 }
 

@@ -239,7 +239,7 @@ namespace System.Net.Http.QPack
             while (currentIndex < data.Length);
 
             // If a header range was set, but the value was not in the data, then copy the range
-            // to the name buffer. Must copy because because the data will be replaced and the range
+            // to the name buffer. Must copy because the data will be replaced and the range
             // will no longer be valid.
             if (_headerNameRange != null)
             {
@@ -710,7 +710,7 @@ namespace System.Net.Http.QPack
             _state = State.HeaderValueLength;
         }
 
-        private void OnIndexedHeaderNamePostBase(int index)
+        private static void OnIndexedHeaderNamePostBase(int index)
         {
             ThrowDynamicTableNotSupported();
             // TODO update with postbase index
@@ -718,7 +718,7 @@ namespace System.Net.Http.QPack
             // _state = State.HeaderValueLength;
         }
 
-        private void OnPostBaseIndex(int intResult, IHttpStreamHeadersHandler handler)
+        private static void OnPostBaseIndex(int intResult, IHttpStreamHeadersHandler handler)
         {
             ThrowDynamicTableNotSupported();
             // TODO

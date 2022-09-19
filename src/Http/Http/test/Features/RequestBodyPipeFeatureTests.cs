@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
+using Moq;
 
 namespace Microsoft.AspNetCore.Http.Features;
 
@@ -35,6 +36,30 @@ public class RequestBodyPipeFeatureTests
         context.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes(expectedString));
         var data = await feature.Reader.ReadAsync();
         Assert.Equal(expectedString, GetStringFromReadResult(data));
+    }
+
+    [Fact]
+    public async Task RequestBodyDoesZeroByteRead()
+    {
+        var context = new DefaultHttpContext();
+        var mockStream = new Mock<Stream>();
+
+        var bufferLengths = new List<int>();
+
+        mockStream.Setup(s => s.CanRead).Returns(true);
+        mockStream.Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Returns<Memory<byte>, CancellationToken>((buffer, token) =>
+        {
+            bufferLengths.Add(buffer.Length);
+            return ValueTask.FromResult(0);
+        });
+
+        context.Request.Body = mockStream.Object;
+        var feature = new RequestBodyPipeFeature(context);
+        var data = await feature.Reader.ReadAsync();
+
+        Assert.Equal(2, bufferLengths.Count);
+        Assert.Equal(0, bufferLengths[0]);
+        Assert.Equal(4096, bufferLengths[1]);
     }
 
     private static string GetStringFromReadResult(ReadResult data)

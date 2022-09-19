@@ -18,7 +18,7 @@ public partial class DisallowConfigureHostBuilderConfigureWebHostTest
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 var builder = WebApplication.CreateBuilder();
-builder.Host.ConfigureServices(services => { });
+builder.Host.ConfigureHostOptions(hostBuilder => { });
 ";
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source);
@@ -99,7 +99,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 var builder = WebApplication.CreateBuilder();
 builder.Host
-    .ConfigureServices(services => { }) // Because ConfigureServices() returns IHostBuilder, the type gets erased
+    .ConfigureHostOptions(hostBuilder => { }) // Because ConfigureHostOptions() returns IHostBuilder, the type gets erased
     .ConfigureWebHost(webHostBuilder => { });
 ");
         // Act

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -17,6 +18,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 {
     internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 };
 
+    private const byte ByteCR = (byte)'\r';
+    private const byte ByteLF = (byte)'\n';
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
     private const string Asterisk = "*";
@@ -150,6 +153,13 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         switch (_requestProcessingStatus)
         {
             case RequestProcessingStatus.RequestPending:
+                // Skip any empty lines (\r or \n) between requests.
+                // Peek first as a minor performance optimization; it's a quick inlined check.
+                if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
+                {
+                    reader.AdvancePastAny(ByteCR, ByteLF);
+                }
+
                 if (reader.End)
                 {
                     break;
@@ -432,7 +442,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
 
         // The authority-form of request-target is only used for CONNECT
-        // requests (https://tools.ietf.org/html/rfc7231#section-4.3.6).
+        // requests (https://tools.ietf.org/html/rfc9110#section-9.3.6).
         if (method != HttpMethod.Connect)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.ConnectMethodRequired);
@@ -476,7 +486,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.AsteriskForm;
 
         // The asterisk-form of request-target is only used for a server-wide
-        // OPTIONS request (https://tools.ietf.org/html/rfc7231#section-4.3.7).
+        // OPTIONS request (https://tools.ietf.org/html/rfc9110#section-9.3.7).
         if (method != HttpMethod.Options)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.OptionsMethodRequired);
@@ -511,9 +521,20 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             previousValue == null || previousValue.Length != target.Length ||
             !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
         {
-            // The previous string does not match what the bytes would convert to,
-            // so we will need to generate a new string.
-            RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            try
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            }
+            catch (InvalidOperationException)
+            {
+                // GetAsciiStringNonNullCharacters throws an InvalidOperationException if there are
+                // invalid characters in the string. This is hard to understand/diagnose, so let's
+                // catch it and instead throw a more meaningful error. This matches the behavior in
+                // the origin-form case.
+                ThrowRequestTargetRejected(target);
+            }
 
             // Validation of absolute URIs is slow, but clients
             // should not be sending this form anyways, so perf optimization
@@ -624,7 +645,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTimedOut = false;
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
-        _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+        _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 

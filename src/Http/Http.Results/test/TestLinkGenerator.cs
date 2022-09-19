@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 internal sealed class TestLinkGenerator : LinkGenerator
 {

@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNetCore.Identity.UI;
 
-internal class IdentityPageModelConvention<TUser> : IPageApplicationModelConvention where TUser : class
+internal sealed class IdentityPageModelConvention<TUser> : IPageApplicationModelConvention where TUser : class
 {
     public void Apply(PageApplicationModel model)
     {
-        var defaultUIAttribute = model.ModelType.GetCustomAttribute<IdentityDefaultUIAttribute>();
+        var defaultUIAttribute = model.ModelType?.GetCustomAttribute<IdentityDefaultUIAttribute>();
         if (defaultUIAttribute == null)
         {
             return;

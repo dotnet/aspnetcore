@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 // Ideally this type should be readonly and initialized with a constructor.
 // Tests use TestServiceContext which inherits from this type and sets properties.
 // Changing this type would be a lot of work.
+#pragma warning disable CA1852 // Seal internal types
 internal class ServiceContext
+#pragma warning restore CA1852 // Seal internal types
 {
     public KestrelTrace Log { get; set; } = default!;
 

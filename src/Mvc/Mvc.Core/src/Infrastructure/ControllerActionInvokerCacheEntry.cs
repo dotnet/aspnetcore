@@ -7,7 +7,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionInvokerCacheEntry
+internal sealed class ControllerActionInvokerCacheEntry
 {
     internal ControllerActionInvokerCacheEntry(
         FilterItem[] cachedFilters,
@@ -15,7 +15,8 @@ internal class ControllerActionInvokerCacheEntry
         Func<ControllerContext, object, ValueTask>? controllerReleaser,
         ControllerBinderDelegate? controllerBinderDelegate,
         ObjectMethodExecutor objectMethodExecutor,
-        ActionMethodExecutor actionMethodExecutor)
+        ActionMethodExecutor actionMethodExecutor,
+        ActionMethodExecutor innerActionMethodExecutor)
     {
         ControllerFactory = controllerFactory;
         ControllerReleaser = controllerReleaser;
@@ -23,6 +24,7 @@ internal class ControllerActionInvokerCacheEntry
         CachedFilters = cachedFilters;
         ObjectMethodExecutor = objectMethodExecutor;
         ActionMethodExecutor = actionMethodExecutor;
+        InnerActionMethodExecutor = innerActionMethodExecutor;
     }
 
     public FilterItem[] CachedFilters { get; }
@@ -35,5 +37,9 @@ internal class ControllerActionInvokerCacheEntry
 
     internal ObjectMethodExecutor ObjectMethodExecutor { get; }
 
+    // This includes the execution of the filter delegate (if there's a filter)
     internal ActionMethodExecutor ActionMethodExecutor { get; }
+
+    // This is called inside of the filter delegate
+    internal ActionMethodExecutor InnerActionMethodExecutor { get; }
 }

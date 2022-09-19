@@ -109,10 +109,16 @@ public class CookieAuthenticationEvents
     }
 
     /// <summary>
-    /// Invoked to validate the prinicipal.
+    /// Invoked to validate the principal.
     /// </summary>
     /// <param name="context">The <see cref="CookieValidatePrincipalContext"/>.</param>
     public virtual Task ValidatePrincipal(CookieValidatePrincipalContext context) => OnValidatePrincipal(context);
+
+    /// <summary>
+    /// Invoked to check if the cookie should be renewed.
+    /// </summary>
+    /// <param name="context">The <see cref="CookieSlidingExpirationContext"/>.</param>
+    public virtual Task CheckSlidingExpiration(CookieSlidingExpirationContext context) => OnCheckSlidingExpiration(context);
 
     /// <summary>
     /// Invoked during sign in.

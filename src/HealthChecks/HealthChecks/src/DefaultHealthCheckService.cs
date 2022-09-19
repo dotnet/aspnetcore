@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
-internal partial class DefaultHealthCheckService : HealthCheckService
+internal sealed partial class DefaultHealthCheckService : HealthCheckService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IOptions<HealthCheckServiceOptions> _options;
@@ -266,7 +266,7 @@ internal partial class DefaultHealthCheckService : HealthCheckService
         }
     }
 
-    internal class HealthCheckDataLogValue : IReadOnlyList<KeyValuePair<string, object>>
+    internal sealed class HealthCheckDataLogValue : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly string _name;
         private readonly List<KeyValuePair<string, object>> _values;

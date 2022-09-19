@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal class StaticComponentRenderer
+internal sealed class StaticComponentRenderer
 {
     private Task _initialized;
     private readonly HtmlRenderer _renderer;

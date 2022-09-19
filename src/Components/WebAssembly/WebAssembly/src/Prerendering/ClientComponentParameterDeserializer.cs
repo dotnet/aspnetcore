@@ -7,7 +7,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
-internal class WebAssemblyComponentParameterDeserializer
+internal sealed class WebAssemblyComponentParameterDeserializer
 {
     private readonly ComponentParametersTypeCache _parametersCache;
 
@@ -19,6 +19,7 @@ internal class WebAssemblyComponentParameterDeserializer
 
     public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
     {
         var parametersDictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -80,7 +81,7 @@ internal class WebAssemblyComponentParameterDeserializer
         return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
     }
 
-    [RequiresUnreferencedCode("This API attempts to JSON deserialize types which might be trimmed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     public static IList<object> GetParameterValues(string parameterValues)
     {
         return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;

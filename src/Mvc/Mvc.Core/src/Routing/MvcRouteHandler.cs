@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class MvcRouteHandler : IRouter
+internal sealed class MvcRouteHandler : IRouter
 {
     private readonly IActionInvokerFactory _actionInvokerFactory;
     private readonly IActionSelector _actionSelector;

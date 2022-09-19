@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -189,7 +189,7 @@ internal static class NameAndIdProvider
         return previousNameAndId.OutputFullName;
     }
 
-    private class PreviousNameAndId
+    private sealed class PreviousNameAndId
     {
         // Cached ambient input for NameAndIdProvider.GetFullHtmlFieldName(). TemplateInfo.HtmlFieldPrefix may
         // change during the lifetime of a ViewContext.

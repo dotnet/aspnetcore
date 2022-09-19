@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.ComponentModel;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -110,8 +113,6 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.False(apiParameterDescription.IsRequired);
     }
 
-#nullable enable
-
     [Fact]
     public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
     {
@@ -127,8 +128,6 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.True(apiParameterDescription.IsRequired);
     }
 
-#nullable disable
-
     [Fact]
     public void AddsJsonResponseFormatWhenFromBodyInferred()
     {
@@ -137,7 +136,7 @@ public class EndpointMetadataApiDescriptionProviderTest
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
             Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(expectedType, responseType.Type);
-            Assert.Equal(expectedType, responseType.ModelMetadata.ModelType);
+            Assert.Equal(expectedType, responseType.ModelMetadata?.ModelType);
 
             var responseFormat = Assert.Single(responseType.ApiResponseFormats);
             Assert.Equal("application/json", responseFormat.MediaType);
@@ -145,7 +144,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         }
 
         AssertJsonResponse(GetApiDescription(() => new InferredJsonClass()), typeof(InferredJsonClass));
-        AssertJsonResponse(GetApiDescription(() => (IInferredJsonInterface)null), typeof(IInferredJsonInterface));
+        AssertJsonResponse(GetApiDescription(() => (IInferredJsonInterface)null!), typeof(IInferredJsonInterface));
     }
 
     [Fact]
@@ -156,7 +155,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
         Assert.Equal(200, responseType.StatusCode);
         Assert.Equal(typeof(string), responseType.Type);
-        Assert.Equal(typeof(string), responseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(string), responseType.ModelMetadata?.ModelType);
 
         var responseFormat = Assert.Single(responseType.ApiResponseFormats);
         Assert.Equal("text/plain", responseFormat.MediaType);
@@ -171,7 +170,7 @@ public class EndpointMetadataApiDescriptionProviderTest
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
             Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(typeof(void), responseType.Type);
-            Assert.Equal(typeof(void), responseType.ModelMetadata.ModelType);
+            Assert.Equal(typeof(void), responseType.ModelMetadata?.ModelType);
 
             Assert.Empty(responseType.ApiResponseFormats);
         }
@@ -193,7 +192,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(201, responseType.StatusCode);
         Assert.Equal(typeof(TimeSpan), responseType.Type);
-        Assert.Equal(typeof(TimeSpan), responseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(TimeSpan), responseType.ModelMetadata?.ModelType);
 
         var responseFormat = Assert.Single(responseType.ApiResponseFormats);
         Assert.Equal("application/custom", responseFormat.MediaType);
@@ -213,7 +212,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(201, createdResponseType.StatusCode);
         Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
-        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
 
         var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
         Assert.Equal("application/json", createdResponseFormat.MediaType);
@@ -222,7 +221,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.Type);
-        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata?.ModelType);
 
         var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
         Assert.Equal("application/json", badRequestResponseFormat.MediaType);
@@ -242,7 +241,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(201, createdResponseType.StatusCode);
         Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
-        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
 
         var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
         Assert.Equal("application/json", createdResponseFormat.MediaType);
@@ -251,7 +250,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(void), badRequestResponseType.Type);
-        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
 
         Assert.Empty(badRequestResponseType.ApiResponseFormats);
     }
@@ -414,8 +413,6 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal(42, param.DefaultValue);
     }
 
-#nullable enable
-
     [Fact]
     public void AddsMultipleParameters()
     {
@@ -445,6 +442,48 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
 #nullable disable
+    [Fact]
+    public void AddsMultipleParametersFromParametersAttribute()
+    {
+        static void AssertParameters(ApiDescription apiDescription, string capturedName = "Foo")
+        {
+            Assert.Collection(
+                apiDescription.ParameterDescriptions,
+                param =>
+                {
+                    Assert.Equal(capturedName, param.Name);
+                    Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                    Assert.Equal(BindingSource.Path, param.Source);
+                    Assert.True(param.IsRequired);
+                },
+                param =>
+                {
+                    Assert.Equal("Bar", param.Name);
+                    Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                    Assert.Equal(BindingSource.Query, param.Source);
+                    Assert.True(param.IsRequired);
+                },
+                param =>
+                {
+                    Assert.Equal("FromBody", param.Name);
+                    Assert.Equal(typeof(InferredJsonClass), param.Type);
+                    Assert.Equal(typeof(InferredJsonClass), param.ModelMetadata.ModelType);
+                    Assert.Equal(BindingSource.Body, param.Source);
+                    Assert.False(param.IsRequired);
+                }
+            );
+        }
+
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClass req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+    }
+#nullable enable
 
     [Fact]
     public void TestParameterIsRequired()
@@ -485,9 +524,10 @@ public class EndpointMetadataApiDescriptionProviderTest
             .FirstOrDefault();
 
         Assert.NotNull(apiExplorerSettings);
-        Assert.True(apiExplorerSettings.IgnoreApi);
+        Assert.True(apiExplorerSettings!.IgnoreApi);
     }
 
+#nullable disable
     [Fact]
     public void TestParameterIsRequiredForObliviousNullabilityContext()
     {
@@ -534,6 +574,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.NotNull(description);
         Assert.Equal("The name.", description.Description);
     }
+#nullable enable
 
     [Fact]
     public void RespectsProducesProblemExtensionMethod()
@@ -730,11 +771,12 @@ public class EndpointMetadataApiDescriptionProviderTest
             });
     }
 
+#nullable disable
     [Fact]
     public void HandleAcceptsMetadataWithTypeParameter()
     {
         // Arrange
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/api/todos", (InferredJsonClass inferredJsonClass) => "")
             .Accepts(typeof(InferredJsonClass), "application/json");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
@@ -757,6 +799,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal("inferredJsonClass", bodyParameterDescription.Name);
         Assert.False(bodyParameterDescription.IsRequired);
     }
+#nullable enable
 
     [Fact]
     public void FavorsProducesMetadataOverAttribute()
@@ -789,15 +832,11 @@ public class EndpointMetadataApiDescriptionProviderTest
             });
     }
 
-#nullable enable
-
     [Fact]
     public void HandleDefaultIAcceptsMetadataForRequiredBodyParameter()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/api/todos", (InferredJsonClass inferredJsonClass) => "");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -829,9 +868,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HandleDefaultIAcceptsMetadataForOptionalBodyParameter()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/api/todos", (InferredJsonClass? inferredJsonClass) => "");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -863,9 +900,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HandleIAcceptsMetadataWithConsumesAttributeAndInferredOptionalFromBodyType()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/api/todos", [Consumes("application/xml")] (InferredJsonClass? inferredJsonClass) => "");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -897,9 +932,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HandleDefaultIAcceptsMetadataForRequiredFormFileParameter()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/file/upload", (IFormFile formFile) => "");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -928,9 +961,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HandleDefaultIAcceptsMetadataForOptionalFormFileParameter()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/file/upload", (IFormFile? inferredFormFile) => "");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -959,9 +990,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void AddsMultipartFormDataResponseFormatWhenFormFileSpecified()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
         builder.MapPost("/file/upload", (IFormFile file) => Results.NoContent());
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -1049,9 +1078,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         static void AssertFormFileCollection(Delegate handler, string expectedName)
         {
             // Arrange
-            var services = new ServiceCollection();
-            var serviceProvider = services.BuildServiceProvider();
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
             builder.MapPost("/file/upload", handler);
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -1075,8 +1102,6 @@ public class EndpointMetadataApiDescriptionProviderTest
             Assert.Null(defaultRequestFormat.Formatter);
         }
     }
-
-#nullable restore
 
     [Fact]
     public void ProducesRouteInfoOnlyForRouteParameters()
@@ -1112,8 +1137,9 @@ public class EndpointMetadataApiDescriptionProviderTest
             {
                 Assert.Equal("name", parameter.Name);
                 Assert.NotNull(parameter.RouteInfo);
-                Assert.Empty(parameter.RouteInfo!.Constraints);
-                Assert.True(parameter.RouteInfo!.IsOptional);
+                Assert.NotNull(parameter.RouteInfo.Constraints);
+                Assert.Empty(parameter.RouteInfo.Constraints);
+                Assert.True(parameter.RouteInfo.IsOptional);
                 Assert.Equal("default", parameter.RouteInfo!.DefaultValue);
             });
     }
@@ -1139,10 +1165,101 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = Assert.Single(context.Results);
         var parameter = Assert.Single(apiDescription.ParameterDescriptions);
         Assert.NotNull(parameter.RouteInfo);
-        Assert.Collection(parameter.RouteInfo!.Constraints,
+        Assert.NotNull(parameter.RouteInfo.Constraints);
+        Assert.Collection(parameter.RouteInfo.Constraints,
             constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
             constraint => Assert.IsType<GuidRouteConstraint>(constraint),
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
+    }
+
+    [Fact]
+    public void HandlesEndpointWithDescriptionAndSummary_WithExtensionMethods()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", (int id) => "").WithDescription("A description").WithSummary("A summary");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+        var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().SingleOrDefault();
+        Assert.NotNull(descriptionMetadata);
+        Assert.Equal("A description", descriptionMetadata!.Description);
+
+        var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
+        Assert.NotNull(summaryMetadata);
+        Assert.Equal("A summary", summaryMetadata!.Summary);
+    }
+
+    [Fact]
+    public void HandlesEndpointWithDescriptionAndSummary_WithAttributes()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", [EndpointSummary("A summary")][EndpointDescription("A description")] (int id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+        var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().SingleOrDefault();
+        Assert.NotNull(descriptionMetadata);
+        Assert.Equal("A description", descriptionMetadata!.Description);
+
+        var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
+        Assert.NotNull(summaryMetadata);
+        Assert.Equal("A summary", summaryMetadata!.Summary);
+    }
+
+    [Theory]
+    [InlineData("/todos/{id}", "id")]
+    [InlineData("/todos/{Id}", "Id")]
+    [InlineData("/todos/{id:minlen(2)}", "id")]
+    public void FavorsParameterCasingInRoutePattern(string pattern, string expectedName)
+    {
+        var builder = CreateBuilder();
+        builder.MapGet(pattern, (int Id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var parameter = Assert.Single(apiDescription.ParameterDescriptions);
+        Assert.Equal(expectedName, parameter.Name);
+        Assert.Equal(expectedName, parameter.ParameterDescriptor.Name);
     }
 
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
@@ -1154,9 +1271,9 @@ public class EndpointMetadataApiDescriptionProviderTest
 
     private static IList<ApiDescription> GetApiDescriptions(
         Delegate action,
-        string pattern = null,
-        IEnumerable<string> httpMethods = null,
-        string displayName = null)
+        string? pattern = null,
+        IEnumerable<string>? httpMethods = null,
+        string? displayName = null)
     {
         var methodInfo = action.Method;
         var attributes = methodInfo.GetCustomAttributes();
@@ -1185,9 +1302,9 @@ public class EndpointMetadataApiDescriptionProviderTest
             new ServiceProviderIsService());
 
     private static TestEndpointRouteBuilder CreateBuilder() =>
-        new TestEndpointRouteBuilder(new ApplicationBuilder(new TestServiceProvider()));
+        new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
 
-    private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null, IEnumerable<string> httpMethods = null) =>
+    private static ApiDescription GetApiDescription(Delegate action, string? pattern = null, string? displayName = null, IEnumerable<string>? httpMethods = null) =>
         Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName, httpMethods: httpMethods));
 
     private static void TestAction()
@@ -1217,10 +1334,10 @@ public class EndpointMetadataApiDescriptionProviderTest
 
     private class HostEnvironment : IHostEnvironment
     {
-        public string EnvironmentName { get; set; }
-        public string ApplicationName { get; set; }
-        public string ContentRootPath { get; set; }
-        public IFileProvider ContentRootFileProvider { get; set; }
+        public string EnvironmentName { get; set; } = null!;
+        public required string ApplicationName { get; set; }
+        public string ContentRootPath { get; set; } = null!;
+        public IFileProvider ContentRootFileProvider { get; set; } = null!;
     }
 
     private class TestEndpointRouteBuilder : IEndpointRouteBuilder
@@ -1260,13 +1377,49 @@ public class EndpointMetadataApiDescriptionProviderTest
             throw new NotImplementedException();
     }
 
+    private record ArgumentListRecord([FromRoute] int Foo, int Bar, InferredJsonClass? FromBody, HttpContext context);
+
+    private record struct ArgumentListRecordStruct([FromRoute] int Foo, int Bar, InferredJsonClass? FromBody, HttpContext context);
+
+    private record ArgumentListRecordWithoutAttributes(int Foo, int Bar, InferredJsonClass? FromBody, HttpContext context);
+
+    private record ArgumentListRecordWithoutPositionalParameters
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass? FromBody { get; set; }
+        public HttpContext Context { get; set; } = null!;
+    }
+
+    private class ArgumentListClass
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass? FromBody { get; set; }
+        public HttpContext Context { get; set; } = null!;
+    }
+
+    private class ArgumentListClassWithReadOnlyProperties : ArgumentListClass
+    {
+        public int ReadOnly { get; }
+    }
+
+    private struct ArgumentListStruct
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass? FromBody { get; set; }
+        public HttpContext Context { get; set; }
+    }
+
     private class TestServiceProvider : IServiceProvider
     {
-        public void Dispose()
-        {
-        }
+        public static TestServiceProvider Instance { get; } = new TestServiceProvider();
 
-        public object GetService(Type serviceType)
+        public object? GetService(Type serviceType)
         {
             if (serviceType == typeof(IOptions<RouteHandlerOptions>))
             {

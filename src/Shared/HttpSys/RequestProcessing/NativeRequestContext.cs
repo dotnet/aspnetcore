@@ -17,7 +17,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
+#pragma warning disable CA1852 // Seal internal types
 internal unsafe class NativeRequestContext : IDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
     private const int AlignmentPadding = 8;
     private const int DefaultBufferSize = 4096 - AlignmentPadding;

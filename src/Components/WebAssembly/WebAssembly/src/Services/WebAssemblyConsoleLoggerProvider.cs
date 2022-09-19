@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 /// <summary>
 /// A provider of <see cref="WebAssemblyConsoleLogger{T}"/> instances.
 /// </summary>
-internal class WebAssemblyConsoleLoggerProvider : ILoggerProvider
+internal sealed class WebAssemblyConsoleLoggerProvider : ILoggerProvider
 {
     private readonly ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers;
     private readonly WebAssemblyJSRuntime _jsRuntime;

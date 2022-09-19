@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class DynamicPageEndpointSelectorCache
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
     private readonly ConcurrentDictionary<int, DynamicPageEndpointSelector> _endpointSelectorCache = new();

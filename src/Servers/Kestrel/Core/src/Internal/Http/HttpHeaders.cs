@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -562,6 +561,14 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
                         offset += sizeof(uint) / 2;
                         transferEncodingOptions = TransferCoding.Chunked;
                     }
+                    else
+                    {
+                        transferEncodingOptions = TransferCoding.Other;
+                    }
+                }
+                else
+                {
+                    transferEncodingOptions = TransferCoding.Other;
                 }
 
                 if ((uint)offset >= (uint)values.Length)

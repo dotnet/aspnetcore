@@ -3,7 +3,7 @@
 
 namespace Wasm.Performance.Driver;
 
-class BenchmarkScenarioResult
+sealed class BenchmarkScenarioResult
 {
     public string Name { get; set; }
 
@@ -17,7 +17,7 @@ class BenchmarkScenarioResult
 
     public double Duration { get; set; }
 
-    public class BenchmarkDescriptor
+    public sealed class BenchmarkDescriptor
     {
         public string Name { get; set; }
 

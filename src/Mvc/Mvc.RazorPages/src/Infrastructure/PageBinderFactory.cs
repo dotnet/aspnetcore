@@ -91,8 +91,7 @@ internal static class PageBinderFactory
         IModelMetadataProvider modelMetadataProvider,
         IModelBinderFactory modelBinderFactory,
         CompiledPageActionDescriptor actionDescriptor,
-        HandlerMethodDescriptor handler,
-        MvcOptions mvcOptions)
+        HandlerMethodDescriptor handler)
     {
         if (handler.Parameters == null || handler.Parameters.Count == 0)
         {

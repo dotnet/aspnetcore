@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// An implementation of <see cref="IClientModelValidatorProvider"/> which provides client validators
 /// for specific numeric types.
 /// </summary>
-internal class NumericClientModelValidatorProvider : IClientModelValidatorProvider
+internal sealed class NumericClientModelValidatorProvider : IClientModelValidatorProvider
 {
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)

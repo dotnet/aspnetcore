@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionInvoker : ResourceInvoker, IActionInvoker
+internal sealed class PageActionInvoker : ResourceInvoker, IActionInvoker
 {
     private readonly IPageHandlerMethodSelector _selector;
     private readonly PageContext _pageContext;
@@ -272,7 +272,7 @@ internal class PageActionInvoker : ResourceInvoker, IActionInvoker
             try
             {
                 _result = await executor(_instance, arguments);
-                _logger.ExecutedHandlerMethod(_pageContext, handler, _result);
+                _logger.ExecutedHandlerMethod(handler, _result);
             }
             finally
             {

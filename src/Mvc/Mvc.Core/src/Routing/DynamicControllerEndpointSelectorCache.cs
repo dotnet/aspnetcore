@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class DynamicControllerEndpointSelectorCache
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
     private readonly ConcurrentDictionary<int, DynamicControllerEndpointSelector> _endpointSelectorCache = new();

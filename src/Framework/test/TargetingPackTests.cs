@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Testing;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -24,14 +25,11 @@ public class TargetingPackTests
         _output = output;
         _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
         _targetingPackTfm = TestData.GetDefaultNetCoreTargetFramework();
-        var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ?
-            TestData.GetTestDataValue("TargetingPackLayoutRoot") :
-            Environment.GetEnvironmentVariable("DOTNET_ROOT");
         _targetingPackRoot = Path.Combine(
-            root,
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
             "packs",
             "Microsoft.AspNetCore.App.Ref",
-            TestData.GetTestDataValue("TargetingPackVersion"));
+            TestData.GetSharedFxVersion());
     }
 
     [Fact]
@@ -40,7 +38,7 @@ public class TargetingPackTests
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
             .Select(Path.GetFileNameWithoutExtension)
             .ToHashSet();
-        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.Keys.ToHashSet();
+        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.ToHashSet();
 
         _output.WriteLine("==== actual assemblies ====");
         _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
@@ -62,11 +60,25 @@ public class TargetingPackTests
     [Fact]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
+        // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
+        var repoAssemblies = TestData.GetAspNetCoreTargetingPackDependencies()
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet();
+
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+        var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
+        var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
+
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
+            var expectedVersion = repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)) ?
+                aspnetcoreVersion :
+                version;
+
             var fileName = Path.GetFileNameWithoutExtension(path);
             var assemblyName = AssemblyName.GetAssemblyName(path);
             using var fileStream = File.OpenRead(path);
@@ -74,8 +86,24 @@ public class TargetingPackTests
             var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
-            TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
-            Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
+            // Assembly versions should all match Major.Minor.0.0
+            if (repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
+            Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
+            Assert.Equal(0, assemblyDefinition.Version.Build);
+            Assert.Equal(0, assemblyDefinition.Version.Revision);
         });
     }
 
@@ -255,7 +283,7 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsCorrectEntries()
+    public void FrameworkListContainsCorrectEntries()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
         var expectedAssemblies = TestData.GetTargetingPackDependencies()
@@ -322,13 +350,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsCorrectPaths()
+    public void FrameworkListContainsCorrectPaths()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
 
         AssertEx.FileExists(frameworkListPath);
@@ -336,7 +359,12 @@ public class TargetingPackTests
         var frameworkListDoc = XDocument.Load(frameworkListPath);
         var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
-        var targetingPackPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg"));
+        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
+        var targetingPackPath = Path.Combine(
+            packageFolder, "Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg");
+        AssertEx.FileExists(targetingPackPath);
 
         ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
 
@@ -364,13 +392,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsAnalyzerLanguage()
+    public void FrameworkListContainsAnalyzerLanguage()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
 
         AssertEx.FileExists(frameworkListPath);

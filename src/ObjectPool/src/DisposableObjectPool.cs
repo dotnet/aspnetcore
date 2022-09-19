@@ -46,24 +46,24 @@ internal sealed class DisposableObjectPool<T> : DefaultObjectPool<T>, IDisposabl
 
     private bool ReturnCore(T obj)
     {
-        bool returnedTooPool = false;
+        bool returnedToPool = false;
 
         if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))
         {
             if (_firstItem == null && Interlocked.CompareExchange(ref _firstItem, obj, null) == null)
             {
-                returnedTooPool = true;
+                returnedToPool = true;
             }
             else
             {
                 var items = _items;
-                for (var i = 0; i < items.Length && !(returnedTooPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
+                for (var i = 0; i < items.Length && !(returnedToPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
                 {
                 }
             }
         }
 
-        return returnedTooPool;
+        return returnedToPool;
     }
 
     public void Dispose()

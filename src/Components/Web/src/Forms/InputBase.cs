@@ -174,8 +174,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
         get
         {
-            var fieldClass = EditContext?.FieldCssClass(FieldIdentifier) ?? string.Empty;
-            return AttributeUtilities.CombineClassNames(AdditionalAttributes, fieldClass);
+            var fieldClass = EditContext?.FieldCssClass(FieldIdentifier);
+            return AttributeUtilities.CombineClassNames(AdditionalAttributes, fieldClass) ?? string.Empty;
         }
     }
 

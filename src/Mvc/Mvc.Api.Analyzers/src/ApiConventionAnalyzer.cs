@@ -45,7 +45,7 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
             }
 
             var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
-            var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, (IMethodBodyOperation)operationStartContext.Operation, operationStartContext.CancellationToken, out var actualResponseMetadata);
+            var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, (IMethodBodyOperation)operationStartContext.Operation, out var actualResponseMetadata);
 
             var hasUndocumentedStatusCodes = false;
             foreach (var actualMetadata in actualResponseMetadata)

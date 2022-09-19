@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -36,7 +35,7 @@ public abstract class Http3ConnectionBenchmarkBase
 
     protected abstract Task ProcessRequest(HttpContext httpContext);
 
-    private class DefaultTimeoutHandler : ITimeoutHandler
+    private sealed class DefaultTimeoutHandler : ITimeoutHandler
     {
         public void OnTimeout(TimeoutReason reason) { }
     }
@@ -48,10 +47,10 @@ public abstract class Http3ConnectionBenchmarkBase
         _httpFrame = new Http3FrameWithPayload();
 
         _httpRequestHeaders = new HttpRequestHeaders();
-        _httpRequestHeaders[HeaderNames.Method] = new StringValues("GET");
-        _httpRequestHeaders[HeaderNames.Path] = new StringValues("/");
-        _httpRequestHeaders[HeaderNames.Scheme] = new StringValues("http");
-        _httpRequestHeaders[HeaderNames.Authority] = new StringValues("localhost:80");
+        _httpRequestHeaders[InternalHeaderNames.Method] = new StringValues("GET");
+        _httpRequestHeaders[InternalHeaderNames.Path] = new StringValues("/");
+        _httpRequestHeaders[InternalHeaderNames.Scheme] = new StringValues("http");
+        _httpRequestHeaders[InternalHeaderNames.Authority] = new StringValues("localhost:80");
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
@@ -71,7 +70,7 @@ public abstract class Http3ConnectionBenchmarkBase
     {
         _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
 
-        var stream = await _http3.CreateRequestStream(_headerHandler);
+        var stream = await _http3.CreateRequestStream(_requestHeadersEnumerator, _headerHandler);
 
         await stream.SendHeadersAsync(_requestHeadersEnumerator);
 

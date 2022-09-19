@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/ide.host",
+  "order": 660,
+  "icon": "ide/icon.png",
+  "disableHttpsSymbol": "NoHttps",
+  "symbolInfo": [
+    {
+      "id": "Hosted",
+      "isVisible": "true",
+      "persistenceScope": "templateGroup"
+    },
+    {
+      "id": "PWA",
+      "isVisible": "true",
+      "persistenceScope": "templateGroup"
+    }
+  ],
+  "tags": [
+    {
+      "type": "projectType",
+      "add": [ "Blazor", "Cloud", "Web" ],
+      "remove": [ "*" ]
+    },
+    {
+      "type": "platform",
+      "add": [ "Linux", "macOS", "Windows" ]
+    }
+  ]
+}

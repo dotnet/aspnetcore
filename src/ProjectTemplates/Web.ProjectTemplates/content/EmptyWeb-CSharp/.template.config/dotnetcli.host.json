@@ -27,6 +27,10 @@
     "NoHttps": {
       "longName": "no-https",
       "shortName": ""
+    },
+    "UseProgramMain": {
+      "longName": "use-program-main",
+      "shortName": ""
     }
   },
   "usageExamples": [

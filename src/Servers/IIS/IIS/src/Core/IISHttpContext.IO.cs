@@ -135,6 +135,12 @@ internal partial class IISHttpContext
             AbortIO(clientDisconnect: true);
             error = ex;
         }
+        catch (Http.BadHttpRequestException ex)
+        {
+            // Similar to a ConnectionResetException, this shouldn't be logged as an "Unexpected exception."
+            // This should be logged by whatever catches it. Likely IISHttpContextOfT.ProcessRequestsAsync().
+            error = ex;
+        }
         catch (Exception ex)
         {
             error = ex;
@@ -149,6 +155,7 @@ internal partial class IISHttpContext
     private async Task WriteBody(bool flush = false)
     {
         Exception? error = null;
+
         try
         {
             while (true)
@@ -156,10 +163,18 @@ internal partial class IISHttpContext
                 var result = await _bodyOutput.Reader.ReadAsync();
 
                 var buffer = result.Buffer;
+
                 try
                 {
+                    if (_bodyOutput.Aborted)
+                    {
+                        break;
+                    }
+
                     if (!buffer.IsEmpty)
                     {
+                        // We are ignoring the result of the write operation here. If we fix this behavior,
+                        // we should also fix AsyncIOEngine.WriteDataOverChunksLimit.
                         await AsyncIO!.WriteAsync(buffer);
                     }
 
@@ -272,7 +287,7 @@ internal partial class IISHttpContext
 
     public void Abort(Exception reason)
     {
-        _bodyOutput.Abort(reason);
+        _bodyOutput.Abort();
         _streams.Abort(reason);
         NativeMethods.HttpCloseConnection(_requestNativeHandle);
 

@@ -9,9 +9,9 @@ namespace Microsoft.Extensions.Caching.SqlServer;
 
 internal interface IDatabaseOperations
 {
-    byte[] GetCacheItem(string key);
+    byte[]? GetCacheItem(string key);
 
-    Task<byte[]> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken));
+    Task<byte[]?> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken));
 
     void RefreshCacheItem(string key);
 

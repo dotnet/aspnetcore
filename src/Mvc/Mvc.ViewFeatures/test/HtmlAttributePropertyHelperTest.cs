@@ -16,7 +16,7 @@ public class HtmlAttributePropertyHelperTest
         var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
         // Act
-        var helper = new HtmlAttributePropertyHelper(property);
+        var helper = new HtmlAttributePropertyHelper(new(property));
 
         // Assert
         Assert.Equal("bar_baz", property.Name);
@@ -31,7 +31,7 @@ public class HtmlAttributePropertyHelperTest
         var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
         // Act
-        var helper = new HtmlAttributePropertyHelper(property);
+        var helper = new HtmlAttributePropertyHelper(new(property));
 
         // Assert
         Assert.Equal("foo", property.Name);
@@ -46,7 +46,7 @@ public class HtmlAttributePropertyHelperTest
         var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
         // Act
-        var helper = new HtmlAttributePropertyHelper(property);
+        var helper = new HtmlAttributePropertyHelper(new(property));
 
         // Assert
         Assert.Equal("bar", helper.Name);
@@ -61,7 +61,7 @@ public class HtmlAttributePropertyHelperTest
         var property = anonymous.GetType().GetTypeInfo().DeclaredProperties.First();
 
         // Act
-        var helper = new HtmlAttributePropertyHelper(property);
+        var helper = new HtmlAttributePropertyHelper(new(property));
 
         // Assert
         Assert.Equal("foo", helper.Name);
@@ -98,8 +98,8 @@ public class HtmlAttributePropertyHelperTest
         Assert.Single(helpers1);
         Assert.Single(helpers2);
 
-        Assert.NotEqual<PropertyHelper[]>(helpers1, helpers2);
-        Assert.NotEqual<PropertyHelper>(helpers1[0], helpers2[0]);
+        Assert.NotEqual<object[]>(helpers1, helpers2);
+        Assert.NotEqual<object>(helpers1[0], helpers2[0]);
 
         Assert.IsType<HtmlAttributePropertyHelper>(helpers1[0]);
         Assert.IsNotType<HtmlAttributePropertyHelper>(helpers2[0]);

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
-internal class DefaultCircuitAccessor : ICircuitAccessor
+internal sealed class DefaultCircuitAccessor : ICircuitAccessor
 {
     public Circuit Circuit { get; set; }
 }

@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing;
 
-public class LoggedTestBase : ILoggedTest, ITestMethodLifecycle
+public abstract class LoggedTestBase : ITestMethodLifecycle, IDisposable
 {
     private ExceptionDispatchInfo _initializationException;
 

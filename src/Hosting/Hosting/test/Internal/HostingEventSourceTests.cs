@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
@@ -17,7 +18,7 @@ public class HostingEventSourceTests
 
         // Assert
         Assert.Equal("Microsoft.AspNetCore.Hosting", eventSource.Name);
-        Assert.Equal(Guid.Parse("9ded64a4-414c-5251-dcf7-1e4e20c15e70"), eventSource.Guid);
+        Assert.Equal(Guid.Parse("9ded64a4-414c-5251-dcf7-1e4e20c15e70", CultureInfo.InvariantCulture), eventSource.Guid);
     }
 
     [Fact]

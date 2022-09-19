@@ -50,7 +50,7 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
     protected CompatibilityVersion Version { get; }
 
     /// <inheritdoc />
-    public virtual void PostConfigure(string name, TOptions options)
+    public virtual void PostConfigure(string? name, TOptions options)
     {
         if (name == null)
         {

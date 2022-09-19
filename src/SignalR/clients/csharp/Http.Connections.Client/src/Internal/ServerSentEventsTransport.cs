@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class ServerSentEventsTransport : ITransport
+internal sealed partial class ServerSentEventsTransport : ITransport
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
@@ -54,7 +55,12 @@ internal partial class ServerSentEventsTransport : ITransport
 
         Log.StartTransport(_logger, transferFormat);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+            Version = HttpVersion.Version20,
+#endif
+        };
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
         HttpResponseMessage? response = null;

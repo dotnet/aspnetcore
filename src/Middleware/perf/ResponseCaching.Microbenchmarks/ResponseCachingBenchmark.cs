@@ -109,7 +109,7 @@ public class ResponseCachingBenchmark
         await reader.CompleteAsync();
     }
 
-    private class PipeResponseBodyFeature : IHttpResponseBodyFeature
+    private sealed class PipeResponseBodyFeature : IHttpResponseBodyFeature
     {
         public PipeResponseBodyFeature(PipeWriter pipeWriter)
         {

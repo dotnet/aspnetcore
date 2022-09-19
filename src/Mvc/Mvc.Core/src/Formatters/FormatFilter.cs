@@ -110,7 +110,7 @@ public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilte
         // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
         if (!IsSuperSetOfAnySupportedMediaType(contentType, supportedMediaTypes))
         {
-            _logger.ActionDoesNotSupportFormatFilterContentType(contentType, supportedMediaTypes);
+            Log.ActionDoesNotSupportFormatFilterContentType(_logger, contentType, supportedMediaTypes);
             context.Result = new NotFoundResult();
         }
     }
@@ -184,6 +184,9 @@ public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilte
     {
         [LoggerMessage(1, LogLevel.Debug, "Could not find a media type for the format '{FormatFilterContentType}'.", EventName = "UnsupportedFormatFilterContentType")]
         public static partial void UnsupportedFormatFilterContentType(ILogger logger, string formatFilterContentType);
+
+        [LoggerMessage(2, LogLevel.Debug, "Current action does not support the content type '{FormatFilterContentType}'. The supported content types are '{SupportedMediaTypes}'.", EventName = "ActionDoesNotSupportFormatFilterContentType")]
+        public static partial void ActionDoesNotSupportFormatFilterContentType(ILogger logger, string formatFilterContentType, MediaTypeCollection supportedMediaTypes);
 
         [LoggerMessage(3, LogLevel.Debug, "Cannot apply content type '{FormatFilterContentType}' to the response as current action had explicitly set a preferred content type.", EventName = "CannotApplyFormatFilterContentType")]
         public static partial void CannotApplyFormatFilterContentType(ILogger logger, string formatFilterContentType);

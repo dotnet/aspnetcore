@@ -19,6 +19,7 @@ public class ResponseCompressionDefaults
             // Static files
             "text/css",
             "application/javascript",
+            "text/javascript",
             // MVC
             "text/html",
             "application/xml",

@@ -331,7 +331,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
     }
 
     [Fact]
-    public async Task AuthenticateWithoutCookieWillFail()
+    public async Task AuthenticateWithoutCookieWillReturnNoResult()
     {
         using var host = await CreateHost(o =>
         {
@@ -345,7 +345,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
             if (req.Path == new PathString("/auth"))
             {
                 var result = await context.AuthenticateAsync("Google");
-                Assert.NotNull(result.Failure);
+                Assert.True(result.None);
             }
         });
         using var server = host.GetTestServer();
@@ -1026,11 +1026,11 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
                         refresh_token = "Test Refresh Token"
                     });
                 }
-                else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/oauth2/v2/userinfo")
+                else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/oauth2/v3/userinfo")
                 {
                     return ReturnJsonResponse(new
                     {
-                        id = "Test User ID",
+                        sub = "Test User ID",
                         name = "Test Name",
                         given_name = "Test Given Name",
                         family_name = "Test Family Name",

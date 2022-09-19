@@ -121,7 +121,9 @@ public class MigrationsEndPointMiddleware
         var registeredContexts = context.RequestServices.GetServices<DbContextOptions>()
             .Select(o => o.ContextType);
 
-        if (!registeredContexts.Any(c => string.Equals(contextTypeName, c.AssemblyQualifiedName)))
+        var contextType = registeredContexts.FirstOrDefault(c => string.Equals(contextTypeName, c.AssemblyQualifiedName, StringComparison.Ordinal));
+
+        if (contextType is null)
         {
             var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextTypeName);
 
@@ -131,8 +133,6 @@ public class MigrationsEndPointMiddleware
 
             return null;
         }
-
-        var contextType = Type.GetType(contextTypeName)!;
 
         var db = (DbContext?)context.RequestServices.GetService(contextType);
 

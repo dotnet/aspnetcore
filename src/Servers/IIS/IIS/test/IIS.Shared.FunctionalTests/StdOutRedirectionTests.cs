@@ -47,11 +47,14 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
         StopServer();
 
         EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
+            @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            "To install missing framework, download:", Logger);
     }
 
     [ConditionalFact]
     [RequiresNewShim]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43087")]
     public async Task FrameworkNotFoundExceptionLogged_File()
     {
         var deploymentParameters =
@@ -69,10 +72,13 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
         StopServer();
 
         var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
-        var expectedString = "The framework 'Microsoft.NETCore.App', version '2.9.9' (x64) was not found.";
+        var missingFrameworkString = "To install missing framework, download:";
         EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
-        Assert.Contains(expectedString, contents);
+            @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            missingFrameworkString, Logger);
+        Assert.Contains(@"Framework: 'Microsoft.NETCore.App', version '2.9.9' (x64)", contents);
+        Assert.Contains(missingFrameworkString, contents);
     }
 
     [ConditionalFact]
@@ -102,6 +108,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42913")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [SkipIfDebug]
     [InlineData("CheckLargeStdErrWrites")]
@@ -126,6 +133,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42820")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [SkipIfDebug]
     [InlineData("CheckLargeStdErrWrites")]

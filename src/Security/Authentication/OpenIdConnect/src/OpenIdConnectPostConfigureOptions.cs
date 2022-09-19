@@ -31,8 +31,13 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
     /// </summary>
     /// <param name="name">The name of the options instance being configured.</param>
     /// <param name="options">The options instance to configure.</param>
-    public void PostConfigure(string name, OpenIdConnectOptions options)
+    public void PostConfigure(string? name, OpenIdConnectOptions options)
     {
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
         options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
 
         if (string.IsNullOrEmpty(options.SignOutScheme))
@@ -105,7 +110,7 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
         }
     }
 
-    private class StringSerializer : IDataSerializer<string>
+    private sealed class StringSerializer : IDataSerializer<string>
     {
         public string Deserialize(byte[] data)
         {

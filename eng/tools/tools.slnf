@@ -1,9 +1,10 @@
-﻿{
+{
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
-    "projects" : [
+    "projects": [
       "eng\\tools\\BaselineGenerator\\BaselineGenerator.csproj",
-      "eng\\tools\\RepoTasks\\RepoTasks.csproj"
+      "eng\\tools\\RepoTasks\\RepoTasks.csproj",
+      "eng\\tools\\HelixTestRunner\\HelixTestRunner.csproj"
     ]
   }
 }

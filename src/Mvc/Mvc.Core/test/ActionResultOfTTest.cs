@@ -31,6 +31,17 @@ public class ActionResultOfTTest
     }
 
     [Fact]
+    public void Constructor_WithIResult_ThrowsForInvalidType()
+    {
+        // Arrange
+        var result = new TestResult();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => new ActionResult<TestResult>(value: result));
+        Assert.Equal($"Invalid type parameter '{typeof(TestResult)}' specified for 'ActionResult<T>'.", ex.Message);
+    }
+
+    [Fact]
     public void Convert_ReturnsResultIfSet()
     {
         // Arrange
@@ -105,5 +116,11 @@ public class ActionResultOfTTest
 
     private class DerivedItem : BaseItem
     {
+    }
+
+    private class TestResult : IResult
+    {
+        public Task ExecuteAsync(HttpContext httpContext)
+            => Task.CompletedTask;
     }
 }

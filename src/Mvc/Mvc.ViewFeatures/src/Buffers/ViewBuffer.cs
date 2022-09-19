@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 /// An <see cref="IHtmlContentBuilder"/> that is backed by a buffer provided by <see cref="IViewBufferScope"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
-internal class ViewBuffer : IHtmlContentBuilder
+internal sealed class ViewBuffer : IHtmlContentBuilder
 {
     public const int PartialViewPageSize = 32;
     public const int TagHelperPageSize = 32;
@@ -385,7 +385,7 @@ internal class ViewBuffer : IHtmlContentBuilder
         Clear();
     }
 
-    private class EncodingWrapper : IHtmlContent
+    private sealed class EncodingWrapper : IHtmlContent
     {
         private readonly string _unencoded;
 

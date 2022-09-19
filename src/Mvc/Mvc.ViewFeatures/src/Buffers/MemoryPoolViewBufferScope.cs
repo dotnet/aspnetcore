@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 /// <summary>
 /// A <see cref="IViewBufferScope"/> that uses pooled memory.
 /// </summary>
-internal class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
+internal sealed class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
 {
     public const int MinimumSize = 16;
     private readonly ArrayPool<ViewBufferValue> _viewBufferPool;

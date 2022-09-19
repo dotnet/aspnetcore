@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Authentication.Twitter;
 
-internal class TwitterErrorResponse
+internal sealed class TwitterErrorResponse
 {
     public List<TwitterError>? Errors { get; set; }
 }

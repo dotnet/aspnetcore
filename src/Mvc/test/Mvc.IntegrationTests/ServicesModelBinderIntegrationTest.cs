@@ -332,6 +332,7 @@ public class ServicesModelBinderIntegrationTest
 
     private class Person
     {
+        [FromServices]
         public ITypeActivatorCache Service { get; set; }
     }
 
@@ -348,8 +349,7 @@ public class ServicesModelBinderIntegrationTest
         // Similar to a custom IBindingSourceMetadata implementation or [ModelBinder] subclass on a custom service.
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider
-            .ForProperty<Person>(nameof(Person.Service))
-            .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
+            .ForProperty<Person>(nameof(Person.Service));
 
         var testContext = ModelBindingTestHelper.GetTestContext(metadataProvider: metadataProvider);
         var modelState = testContext.ModelState;

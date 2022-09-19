@@ -57,11 +57,26 @@ public class AuthenticationOptions
     /// <param name="name">The name of the scheme being added.</param>
     /// <param name="displayName">The display name for the scheme.</param>
     public void AddScheme<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(string name, string? displayName) where THandler : IAuthenticationHandler
-        => AddScheme(name, b =>
+    {
+        var state = new AddSchemeState(typeof(THandler));
+        AddScheme(name, b =>
         {
             b.DisplayName = displayName;
-            b.HandlerType = typeof(THandler);
+            b.HandlerType = state.HandlerType;
         });
+    }
+
+    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
+    private readonly struct AddSchemeState
+    {
+        public AddSchemeState([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
+        {
+            HandlerType = handlerType;
+        }
+
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        public Type HandlerType { get; }
+    }
 
     /// <summary>
     /// Used as the fallback default scheme for all the other defaults.
@@ -98,4 +113,22 @@ public class AuthenticationOptions
     /// A user is considered authenticated if <see cref="ClaimsIdentity.IsAuthenticated"/> returns <see langword="true" /> for the <see cref="ClaimsPrincipal"/> associated with the HTTP request.
     /// </summary>
     public bool RequireAuthenticatedSignIn { get; set; } = true;
+
+    /// <summary>
+    /// If true, DefaultScheme will not automatically use a single registered scheme.
+    /// </summary>
+    private bool? _disableAutoDefaultScheme;
+    internal bool DisableAutoDefaultScheme
+    {
+        get
+        {
+            if (!_disableAutoDefaultScheme.HasValue)
+            {
+                _disableAutoDefaultScheme = AppContext.TryGetSwitch("Microsoft.AspNetCore.Authentication.SuppressAutoDefaultScheme", out var enabled) && enabled;
+            }
+
+            return _disableAutoDefaultScheme.Value;
+        }
+        set => _disableAutoDefaultScheme = value;
+    }
 }

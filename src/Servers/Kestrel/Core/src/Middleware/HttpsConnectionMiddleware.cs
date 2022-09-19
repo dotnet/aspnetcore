@@ -12,6 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -21,7 +22,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
-internal class HttpsConnectionMiddleware
+internal sealed class HttpsConnectionMiddleware
 {
     private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
@@ -53,10 +54,7 @@ internal class HttpsConnectionMiddleware
 
     public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
         {
@@ -103,7 +101,7 @@ internal class HttpsConnectionMiddleware
 
             // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
             // made to the server
-            _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
+            _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: options.ServerCertificateChain);
         }
 
         var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
@@ -140,7 +138,7 @@ internal class HttpsConnectionMiddleware
             context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
         var sslStream = sslDuplexPipe.Stream;
 
-        var feature = new Core.Internal.TlsConnectionFeature(sslStream);
+        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context);
         // Set the mode if options were used. If the callback is used it will set the mode later.
         feature.AllowDelayedClientCertificateNegotation =
             _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
@@ -513,7 +511,7 @@ internal class HttpsConnectionMiddleware
         var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
         {
             ServerCertificate = httpsOptions.ServerCertificate,
-            ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3, new SslApplicationProtocol("h3-29") },
+            ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3 },
             CertificateRevocationCheckMode = httpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
         };
 

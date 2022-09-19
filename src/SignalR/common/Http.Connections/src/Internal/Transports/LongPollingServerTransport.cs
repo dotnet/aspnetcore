@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 
-internal class LongPollingServerTransport : IHttpTransport
+internal sealed partial class LongPollingServerTransport : IHttpTransport
 {
     private readonly PipeReader _application;
     private readonly ILogger _logger;
@@ -111,46 +111,21 @@ internal class LongPollingServerTransport : IHttpTransport
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _longPolling204 =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(1, "LongPolling204"), "Terminating Long Polling connection by sending 204 response.");
+        [LoggerMessage(1, LogLevel.Debug, "Terminating Long Polling connection by sending 204 response.", EventName = "LongPolling204")]
+        public static partial void LongPolling204(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _pollTimedOut =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(2, "PollTimedOut"), "Poll request timed out. Sending 200 response to connection.");
+        [LoggerMessage(2, LogLevel.Debug, "Poll request timed out. Sending 200 response to connection.", EventName = "PollTimedOut")]
+        public static partial void PollTimedOut(ILogger logger);
 
-        private static readonly Action<ILogger, long, Exception?> _longPollingWritingMessage =
-            LoggerMessage.Define<long>(LogLevel.Trace, new EventId(3, "LongPollingWritingMessage"), "Writing a {Count} byte message to connection.");
+        [LoggerMessage(3, LogLevel.Trace, "Writing a {Count} byte message to connection.", EventName = "LongPollingWritingMessage")]
+        public static partial void LongPollingWritingMessage(ILogger logger, long count);
 
-        private static readonly Action<ILogger, Exception?> _longPollingDisconnected =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(4, "LongPollingDisconnected"), "Client disconnected from Long Polling endpoint for connection.");
+        [LoggerMessage(4, LogLevel.Debug, "Client disconnected from Long Polling endpoint for connection.", EventName = "LongPollingDisconnected")]
+        public static partial void LongPollingDisconnected(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _longPollingTerminated =
-            LoggerMessage.Define(LogLevel.Error, new EventId(5, "LongPollingTerminated"), "Long Polling transport was terminated due to an error on connection.");
-
-        public static void LongPolling204(ILogger logger)
-        {
-            _longPolling204(logger, null);
-        }
-
-        public static void PollTimedOut(ILogger logger)
-        {
-            _pollTimedOut(logger, null);
-        }
-
-        public static void LongPollingWritingMessage(ILogger logger, long count)
-        {
-            _longPollingWritingMessage(logger, count, null);
-        }
-
-        public static void LongPollingDisconnected(ILogger logger)
-        {
-            _longPollingDisconnected(logger, null);
-        }
-
-        public static void LongPollingTerminated(ILogger logger, Exception ex)
-        {
-            _longPollingTerminated(logger, ex);
-        }
+        [LoggerMessage(5, LogLevel.Error, "Long Polling transport was terminated due to an error on connection.", EventName = "LongPollingTerminated")]
+        public static partial void LongPollingTerminated(ILogger logger, Exception ex);
     }
 }

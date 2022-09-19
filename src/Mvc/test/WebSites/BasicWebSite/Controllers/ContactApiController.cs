@@ -128,6 +128,14 @@ public class ContactApiController : Controller
         });
     }
 
+    [HttpGet("[action]/{id}")]
+    public IResult ActionReturningObjectIResult(int id)
+        => Results.Ok(new Contact() { ContactId = id });
+
+    [HttpGet("[action]")]
+    public IResult ActionReturningStatusCodeIResult()
+        => Results.NoContent();
+
     private class TestModelBinder : IModelBinder
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)

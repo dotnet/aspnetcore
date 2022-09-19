@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class ConditionMatchSegment : PatternSegment
+internal sealed class ConditionMatchSegment : PatternSegment
 {
     private readonly int _index;
 

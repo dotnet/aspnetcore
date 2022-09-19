@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -438,9 +439,11 @@ public class HttpsTests : LoggedTest
 
         Assert.NotNull(bindFeatures);
 
-        var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
+        var sslOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
         Assert.NotNull(sslOptions);
-        Assert.Equal(_x509Certificate2, sslOptions.ServerCertificate);
+
+        var sslServerAuthenticationOptions = await sslOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
     [Fact]
@@ -480,9 +483,11 @@ public class HttpsTests : LoggedTest
 
         Assert.NotNull(bindFeatures);
 
-        var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
-        Assert.NotNull(sslOptions);
-        Assert.Equal(_x509Certificate2, sslOptions.ServerCertificate);
+        var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsOptions);
+
+        var sslServerAuthenticationOptions = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
     [Fact]
@@ -517,42 +522,6 @@ public class HttpsTests : LoggedTest
         }
 
         Assert.False(bindCalled);
-    }
-
-    [Fact]
-    public async Task Http2and3_NoUseHttps_Throws()
-    {
-        var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
-
-        var bindCalled = false;
-        var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
-        multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
-        {
-            bindCalled = true;
-        };
-
-        var testContext = new TestServiceContext(LoggerFactory);
-        testContext.ServerOptions = serverOptions;
-        var ex = await Assert.ThrowsAsync<IOException>(async () =>
-        {
-            await using var server = new TestServer(context => Task.CompletedTask,
-                testContext,
-                serverOptions =>
-                {
-                    serverOptions.ListenLocalhost(5001, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http3;
-                    });
-                },
-                services =>
-                {
-                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
-                });
-        });
-
-        Assert.False(bindCalled);
-        Assert.Equal("HTTP/3 requires HTTPS.", ex.InnerException.InnerException.Message);
     }
 
     [Fact]
@@ -592,44 +561,98 @@ public class HttpsTests : LoggedTest
     }
 
     [Fact]
-    public void Http3_ServerOptionsSelectionCallback_Throws()
+    public async Task Http3_ServerOptionsSelectionCallback_Works()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.DefaultCertificate = _x509Certificate2;
 
-        serverOptions.ListenLocalhost(5001, options =>
+        IFeatureCollection bindFeatures = null;
+        var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+        multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
         {
-            options.Protocols = HttpProtocols.Http3;
-            var exception = Assert.Throws<NotSupportedException>(() =>
-                options.UseHttps((SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+            bindFeatures = features;
+        };
+
+        var testState = new object();
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions = serverOptions;
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            serverOptions =>
+            {
+                serverOptions.ListenLocalhost(5001, listenOptions =>
                 {
-                    return ValueTask.FromResult((new SslServerAuthenticationOptions()));
-                }, state: null)
-            );
-            Assert.Equal("UseHttps with ServerOptionsSelectionCallback is not supported with HTTP/3.", exception.Message);
-        });
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps((SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+                    {
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions());
+                    }, state: testState);
+                });
+            },
+            services =>
+            {
+                services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+            }))
+        {
+        }
+
+        Assert.NotNull(bindFeatures);
+
+        var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsOptions);
+
+        Assert.Collection(tlsOptions.ApplicationProtocols, p => Assert.Equal(SslApplicationProtocol.Http3, p));
+
+        Assert.Equal(testState, tlsOptions.OnConnectionState);
     }
 
     [Fact]
-    public void Http3_TlsHandshakeCallbackOptions_Throws()
+    public async Task Http3_TlsHandshakeCallbackOptions_Works()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.DefaultCertificate = _x509Certificate2;
 
-        serverOptions.ListenLocalhost(5001, options =>
+        IFeatureCollection bindFeatures = null;
+        var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+        multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
         {
-            options.Protocols = HttpProtocols.Http3;
-            var exception = Assert.Throws<NotSupportedException>(() =>
-                options.UseHttps(new TlsHandshakeCallbackOptions()
+            bindFeatures = features;
+        };
+
+        var testState = new object();
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions = serverOptions;
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            serverOptions =>
+            {
+                serverOptions.ListenLocalhost(5001, listenOptions =>
                 {
-                    OnConnection = context =>
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
                     {
-                        return ValueTask.FromResult(new SslServerAuthenticationOptions());
-                    }
-                })
-            );
-            Assert.Equal("UseHttps with TlsHandshakeCallbackOptions is not supported with HTTP/3.", exception.Message);
-        });
+                        OnConnection = context =>
+                        {
+                            return ValueTask.FromResult(new SslServerAuthenticationOptions());
+                        },
+                        OnConnectionState = testState
+                    });
+                });
+            },
+            services =>
+            {
+                services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+            }))
+        {
+        }
+
+        Assert.NotNull(bindFeatures);
+
+        var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
+        Assert.Collection(tlsOptions.ApplicationProtocols, p => Assert.Equal(SslApplicationProtocol.Http3, p));
+
+        Assert.NotNull(tlsOptions.OnConnection);
+        Assert.Equal(testState, tlsOptions.OnConnectionState);
     }
 
     [Fact]
@@ -638,6 +661,7 @@ public class HttpsTests : LoggedTest
         var loggerProvider = new HandshakeErrorLoggerProvider();
         LoggerFactory.AddProvider(loggerProvider);
 
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         await using (var server = new TestServer(context => Task.CompletedTask,
             new TestServiceContext(LoggerFactory),
             listenOptions =>
@@ -658,6 +682,7 @@ public class HttpsTests : LoggedTest
                         checkCertificateRevocation: false));
             }
         }
+#pragma warning restore SYSLIB0039
 
         await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
         Assert.Equal(1, loggerProvider.FilterLogger.LastEventId);

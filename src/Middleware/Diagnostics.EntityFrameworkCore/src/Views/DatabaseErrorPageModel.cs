@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 
-internal class DatabaseErrorPageModel
+internal sealed class DatabaseErrorPageModel
 {
     public DatabaseErrorPageModel(
         Exception exception,
@@ -20,8 +20,8 @@ internal class DatabaseErrorPageModel
         PathBase = pathBase;
     }
 
-    public virtual Exception Exception { get; }
-    public virtual IEnumerable<DatabaseContextDetails> ContextDetails { get; }
-    public virtual DatabaseErrorPageOptions Options { get; }
-    public virtual PathString PathBase { get; }
+    public Exception Exception { get; }
+    public IEnumerable<DatabaseContextDetails> ContextDetails { get; }
+    public DatabaseErrorPageOptions Options { get; }
+    public PathString PathBase { get; }
 }

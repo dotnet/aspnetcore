@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
-internal class AnsiConsole
+internal sealed class AnsiConsole
 {
     private AnsiConsole(TextWriter writer, bool useConsoleColor)
     {

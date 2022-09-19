@@ -28,8 +28,13 @@ public class OAuthPostConfigureOptions<TOptions, THandler> : IPostConfigureOptio
     }
 
     /// <inheritdoc />
-    public void PostConfigure(string name, TOptions options)
+    public void PostConfigure(string? name, TOptions options)
     {
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
         options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
         if (options.Backchannel == null)
         {

@@ -164,7 +164,7 @@ public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> 
         return 0;
     }
 
-    private class DefaultComparer<T> : EndpointMetadataComparer<T> where T : class
+    private sealed class DefaultComparer<T> : EndpointMetadataComparer<T> where T : class
     {
     }
 }

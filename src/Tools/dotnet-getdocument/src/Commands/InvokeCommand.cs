@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands;
 
-internal class InvokeCommand : HelpCommandBase
+internal sealed class InvokeCommand : HelpCommandBase
 {
     private const string InsideManName = "GetDocument.Insider";
 
@@ -79,9 +79,16 @@ internal class InvokeCommand : HelpCommandBase
                             projectName,
                             targetFramework.Version));
                     }
+                    else if (targetFramework.Version >= new Version(7, 0))
+                    {
+                        toolsDirectory = Path.Combine(thisPath, $"net{targetFramework.Version}");
+                    }
+                    else
+                    {
+                        toolsDirectory = Path.Combine(thisPath, "netcoreapp2.1");
+                    }
 
                     executable = DotNetMuxer.MuxerPathOrDefault();
-                    toolsDirectory = Path.Combine(thisPath, "netcoreapp2.1");
 
                     args.Add("exec");
                     args.Add("--depsFile");

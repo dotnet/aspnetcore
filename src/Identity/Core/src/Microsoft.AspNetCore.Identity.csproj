@@ -7,12 +7,15 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsPackable>false</IsPackable>
-    <Nullable>disable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
+
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
 </Project>

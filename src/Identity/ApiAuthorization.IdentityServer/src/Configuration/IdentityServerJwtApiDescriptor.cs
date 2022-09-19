@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 
-internal class IdentityServerJwtDescriptor : IIdentityServerJwtDescriptor
+internal sealed class IdentityServerJwtDescriptor : IIdentityServerJwtDescriptor
 {
     public IdentityServerJwtDescriptor(IWebHostEnvironment environment)
     {

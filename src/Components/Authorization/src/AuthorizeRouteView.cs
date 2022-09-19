@@ -99,6 +99,8 @@ public sealed class AuthorizeRouteView : RouteView
         Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2110:RequiresUnreferencedCode",
         Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2118:RequiresUnreferencedCode",
+        Justification = "OpenComponent already has the right set of attributes")]
     private void RenderContentInDefaultLayout(RenderTreeBuilder builder, RenderFragment content)
     {
         builder.OpenComponent<LayoutView>(0);

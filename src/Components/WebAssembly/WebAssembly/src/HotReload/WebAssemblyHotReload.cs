@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
@@ -34,7 +35,9 @@ public static class WebAssemblyHotReload
             // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
 
             var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
+#pragma warning disable CS0618 // Type or member is obsolete
             await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
@@ -44,7 +47,7 @@ public static class WebAssemblyHotReload
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
-        var moduleId = Guid.Parse(moduleIdString);
+        var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
 
         _updateDeltas[0].ModuleId = moduleId;
         _updateDeltas[0].MetadataDelta = metadataDelta;

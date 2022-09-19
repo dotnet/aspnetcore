@@ -321,7 +321,7 @@ public class KestrelServerTests
         options.ListenAnyIP(0, options =>
         {
             options.UseHttps(TestResources.GetTestCertificate());
-            options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+            options.Protocols = HttpProtocols.Http1AndHttp2;
         });
 
         var mockTransportFactory = new MockTransportFactory();
@@ -336,16 +336,43 @@ public class KestrelServerTests
         await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
 
         var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
-        var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
 
         Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
-        Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
 
         // Should have been assigned a random value.
         Assert.NotEqual(0, ((IPEndPoint)transportEndPoint.BoundEndPoint).Port);
+    }
 
-        // Same random value should be used for both transports.
-        Assert.Equal(((IPEndPoint)transportEndPoint.BoundEndPoint).Port, ((IPEndPoint)multiplexedTransportEndPoint.BoundEndPoint).Port);
+    [Fact]
+    public async Task ListenIPWithEphemeralPort_MultiplexedTransportsGetIPv6Any()
+    {
+        var options = new KestrelServerOptions();
+        options.ApplicationServices = new ServiceCollection()
+           .AddLogging()
+           .BuildServiceProvider();
+        options.ListenAnyIP(0, options =>
+        {
+            options.UseHttps(TestResources.GetTestCertificate());
+            options.Protocols = HttpProtocols.Http3;
+        });
+
+        var mockTransportFactory = new MockTransportFactory();
+        var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
+
+        using var server = new KestrelServerImpl(
+            Options.Create(options),
+            new List<IConnectionListenerFactory>() { mockTransportFactory },
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
+            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
+
+        Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
+
+        // Should have been assigned a random value.
+        Assert.NotEqual(0, ((IPEndPoint)multiplexedTransportEndPoint.BoundEndPoint).Port);
     }
 
     [Fact]

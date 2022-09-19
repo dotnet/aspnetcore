@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Internal;
 
-internal abstract class InvocationRequest : IDisposable
+internal abstract partial class InvocationRequest : IDisposable
 {
     private readonly CancellationTokenRegistration _cancellationTokenRegistration;
 
@@ -65,7 +65,7 @@ internal abstract class InvocationRequest : IDisposable
         _cancellationTokenRegistration.Dispose();
     }
 
-    private class Streaming : InvocationRequest
+    private sealed class Streaming : InvocationRequest
     {
         private readonly Channel<object?> _channel = Channel.CreateUnbounded<object?>();
 
@@ -125,7 +125,7 @@ internal abstract class InvocationRequest : IDisposable
         }
     }
 
-    private class NonStreaming : InvocationRequest
+    private sealed class NonStreaming : InvocationRequest
     {
         private readonly TaskCompletionSource<object?> _completionSource = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -169,65 +169,33 @@ internal abstract class InvocationRequest : IDisposable
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
         // Category: Streaming and NonStreaming
-        private static readonly Action<ILogger, string, Exception?> _invocationCreated =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(1, "InvocationCreated"), "Invocation {InvocationId} created.");
 
-        private static readonly Action<ILogger, string, Exception?> _invocationDisposed =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(2, "InvocationDisposed"), "Invocation {InvocationId} disposed.");
+        [LoggerMessage(1, LogLevel.Trace, "Invocation {InvocationId} created.", EventName = "InvocationCreated")]
+        public static partial void InvocationCreated(ILogger logger, string invocationId);
 
-        private static readonly Action<ILogger, string, Exception?> _invocationCompleted =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, "InvocationCompleted"), "Invocation {InvocationId} marked as completed.");
+        [LoggerMessage(2, LogLevel.Trace, "Invocation {InvocationId} disposed.", EventName = "InvocationDisposed")]
+        public static partial void InvocationDisposed(ILogger logger, string invocationId);
 
-        private static readonly Action<ILogger, string, Exception?> _invocationFailed =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, "InvocationFailed"), "Invocation {InvocationId} marked as failed.");
+        [LoggerMessage(3, LogLevel.Trace, "Invocation {InvocationId} marked as completed.", EventName = "InvocationCompleted")]
+        public static partial void InvocationCompleted(ILogger logger, string invocationId);
+
+        [LoggerMessage(4, LogLevel.Trace, "Invocation {InvocationId} marked as failed.", EventName = "InvocationFailed")]
+        public static partial void InvocationFailed(ILogger logger, string invocationId);
 
         // Category: Streaming
-        private static readonly Action<ILogger, string, Exception> _errorWritingStreamItem =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, "ErrorWritingStreamItem"), "Invocation {InvocationId} caused an error trying to write a stream item.");
 
-        private static readonly Action<ILogger, string, Exception?> _receivedUnexpectedComplete =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(6, "ReceivedUnexpectedComplete"), "Invocation {InvocationId} received a completion result, but was invoked as a streaming invocation.");
+        [LoggerMessage(5, LogLevel.Error, "Invocation {InvocationId} caused an error trying to write a stream item.", EventName = "ErrorWritingStreamItem")]
+        public static partial void ErrorWritingStreamItem(ILogger logger, string invocationId, Exception exception);
+
+        [LoggerMessage(6, LogLevel.Error, "Invocation {InvocationId} received a completion result, but was invoked as a streaming invocation.", EventName = "ReceivedUnexpectedComplete")]
+        public static partial void ReceivedUnexpectedComplete(ILogger logger, string invocationId);
 
         // Category: NonStreaming
-        private static readonly Action<ILogger, string, Exception?> _streamItemOnNonStreamInvocation =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, "StreamItemOnNonStreamInvocation"), "Invocation {InvocationId} received stream item but was invoked as a non-streamed invocation.");
 
-        public static void InvocationCreated(ILogger logger, string invocationId)
-        {
-            _invocationCreated(logger, invocationId, null);
-        }
-
-        public static void InvocationDisposed(ILogger logger, string invocationId)
-        {
-            _invocationDisposed(logger, invocationId, null);
-        }
-
-        public static void InvocationCompleted(ILogger logger, string invocationId)
-        {
-            _invocationCompleted(logger, invocationId, null);
-        }
-
-        public static void InvocationFailed(ILogger logger, string invocationId)
-        {
-            _invocationFailed(logger, invocationId, null);
-        }
-
-        public static void ErrorWritingStreamItem(ILogger logger, string invocationId, Exception exception)
-        {
-            _errorWritingStreamItem(logger, invocationId, exception);
-        }
-
-        public static void ReceivedUnexpectedComplete(ILogger logger, string invocationId)
-        {
-            _receivedUnexpectedComplete(logger, invocationId, null);
-        }
-
-        public static void StreamItemOnNonStreamInvocation(ILogger logger, string invocationId)
-        {
-            _streamItemOnNonStreamInvocation(logger, invocationId, null);
-        }
+        [LoggerMessage(7, LogLevel.Error, "Invocation {InvocationId} received stream item but was invoked as a non-streamed invocation.", EventName = "StreamItemOnNonStreamInvocation")]
+        public static partial void StreamItemOnNonStreamInvocation(ILogger logger, string invocationId);
     }
 }

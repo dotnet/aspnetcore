@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<string, HubConnectionContext>>
+internal sealed class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<string, HubConnectionContext>>
 {
     private readonly ConcurrentDictionary<string, GroupConnectionList> _groups =
         new ConcurrentDictionary<string, GroupConnectionList>(StringComparer.Ordinal);
@@ -82,7 +82,7 @@ internal class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<string, H
     }
 }
 
-internal class GroupConnectionList : ConcurrentDictionary<string, HubConnectionContext>
+internal sealed class GroupConnectionList : ConcurrentDictionary<string, HubConnectionContext>
 {
     public override bool Equals(object? obj)
     {

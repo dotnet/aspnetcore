@@ -15,7 +15,7 @@ public class SqlServerCacheOptions : IOptions<SqlServerCacheOptions>
     /// <summary>
     /// An abstraction to represent the clock of a machine in order to enable unit testing.
     /// </summary>
-    public ISystemClock SystemClock { get; set; }
+    public ISystemClock SystemClock { get; set; } = new SystemClock();
 
     /// <summary>
     /// The periodic interval to scan and delete expired items in the cache. Default is 30 minutes.
@@ -25,17 +25,17 @@ public class SqlServerCacheOptions : IOptions<SqlServerCacheOptions>
     /// <summary>
     /// The connection string to the database.
     /// </summary>
-    public string ConnectionString { get; set; }
+    public string? ConnectionString { get; set; }
 
     /// <summary>
     /// The schema name of the table.
     /// </summary>
-    public string SchemaName { get; set; }
+    public string? SchemaName { get; set; }
 
     /// <summary>
     /// Name of the table where the cache items are stored.
     /// </summary>
-    public string TableName { get; set; }
+    public string? TableName { get; set; }
 
     /// <summary>
     /// The default sliding expiration set for a cache entry if neither Absolute or SlidingExpiration has been set explicitly.

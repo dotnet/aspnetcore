@@ -6,7 +6,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-internal class InputFileJsCallbacksRelay : IDisposable
+internal sealed class InputFileJsCallbacksRelay : IDisposable
 {
     private readonly IInputFileJsCallbacks _callbacks;
 

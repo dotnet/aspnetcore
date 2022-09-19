@@ -116,7 +116,7 @@ public class CacheControlHeaderValue
     /// before using it.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.4</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.4"/>.</remarks>
     public bool NoCache
     {
         get { return _noCache; }
@@ -144,7 +144,7 @@ public class CacheControlHeaderValue
     /// Configuring no-store indicates that the response may not be stored in any cache.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.5</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.5"/>.</remarks>
     public bool NoStore
     {
         get { return _noStore; }
@@ -157,7 +157,7 @@ public class CacheControlHeaderValue
     /// max-age specifies the maximum amount of time the response is considered fresh.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.1</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.1"/>.</remarks>
     public TimeSpan? MaxAge
     {
         get { return _maxAge; }
@@ -170,7 +170,7 @@ public class CacheControlHeaderValue
     /// Overrides <see cref="MaxAge">max-age</see>, but only for shared caches (such as proxies).
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.9</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.2.9"/>.</remarks>
     public TimeSpan? SharedMaxAge
     {
         get { return _sharedMaxAge; }
@@ -184,7 +184,7 @@ public class CacheControlHeaderValue
     /// is specified by <see cref="MaxStaleLimit"/>.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.2</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.2"/>.</remarks>
     public bool MaxStale
     {
         get { return _maxStale; }
@@ -197,7 +197,7 @@ public class CacheControlHeaderValue
     /// Indicates the maximum duration an HTTP client is willing to accept a response that has exceeded its expiration time.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.2</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.2"/>.</remarks>
     public TimeSpan? MaxStaleLimit
     {
         get { return _maxStaleLimit; }
@@ -210,7 +210,7 @@ public class CacheControlHeaderValue
     /// Indicates the freshness lifetime that an HTTP client is willing to accept a response.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.3</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.3"/>.</remarks>
     public TimeSpan? MinFresh
     {
         get { return _minFresh; }
@@ -223,7 +223,7 @@ public class CacheControlHeaderValue
     /// Forbids intermediate caches or proxies from editing the response payload.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.6</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.6"/>.</remarks>
     public bool NoTransform
     {
         get { return _noTransform; }
@@ -236,7 +236,7 @@ public class CacheControlHeaderValue
     /// Indicates that the client only wishes to obtain a stored response
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.1.7</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.1.7"/>.</remarks>
     public bool OnlyIfCached
     {
         get { return _onlyIfCached; }
@@ -249,7 +249,7 @@ public class CacheControlHeaderValue
     /// Indicates that the response may be stored by any cache.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.5</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.2.5"/>.</remarks>
     public bool Public
     {
         get { return _public; }
@@ -262,7 +262,7 @@ public class CacheControlHeaderValue
     /// Indicates that the response may not be stored by a shared cache.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.6</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.2.6"/>.</remarks>
     public bool Private
     {
         get { return _private; }
@@ -290,7 +290,7 @@ public class CacheControlHeaderValue
     /// Indicates that caches must revalidate the use of stale caches with the origin server before their use.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.1</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.2.1"/>.</remarks>
     public bool MustRevalidate
     {
         get { return _mustRevalidate; }
@@ -303,7 +303,7 @@ public class CacheControlHeaderValue
     /// Indicates that shared caches must revalidate the use of stale caches with the origin server before their use.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc7234#section-5.2.2.1</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc7234#section-5.2.2.1"/>.</remarks>
     public bool ProxyRevalidate
     {
         get { return _proxyRevalidate; }
@@ -502,7 +502,7 @@ public class CacheControlHeaderValue
     /// </summary>
     /// <param name="input">The value to parse.</param>
     /// <param name="parsedValue">The parsed value.</param>
-    /// <returns><see langword="true"/> if input is a valid <see cref="SetCookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if input is a valid <see cref="CacheControlHeaderValue"/>, otherwise <see langword="false"/>.</returns>
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CacheControlHeaderValue? parsedValue)
     {
         var index = 0;

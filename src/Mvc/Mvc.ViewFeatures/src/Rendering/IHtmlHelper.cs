@@ -346,7 +346,7 @@ public interface IHtmlHelper
     /// </summary>
     /// <param name="value">The value.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the return
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the return
     /// value.
     /// </param>
     /// <returns>A <see cref="string"/> containing the formatted value.</returns>
@@ -645,7 +645,7 @@ public interface IHtmlHelper
     /// <param name="expression">Expression name, relative to the current model.</param>
     /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the "value"
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the "value"
     /// attribute unless that came from model binding.
     /// </param>
     /// <param name="htmlAttributes">
@@ -722,7 +722,7 @@ public interface IHtmlHelper
     /// </summary>
     /// <param name="expression">Expression name, relative to the current model.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the return
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the return
     /// value unless that came from model binding.
     /// </param>
     /// <returns>A <see cref="string"/> containing the formatted value.</returns>

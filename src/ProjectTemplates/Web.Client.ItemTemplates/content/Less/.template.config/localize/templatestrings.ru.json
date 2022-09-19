@@ -1,6 +1,6 @@
-{
-  "author": "Microsoft",
-  "name": "LESS Style Sheet",
-  "description": "LESS is a language that compiles into CSS",
-  "postActions/openInEditor/description": "Opens styleSheet1.less in the editor"
+﻿{
+  "author": "Майкрософт",
+  "name": "Таблица стилей LESS",
+  "description": "LESS – это язык, компилируемый в CSS",
+  "postActions/openInEditor/description": "Открывает styleSheet1.less в редакторе"
 }

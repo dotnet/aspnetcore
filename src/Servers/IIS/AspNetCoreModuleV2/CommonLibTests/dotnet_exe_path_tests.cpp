@@ -34,7 +34,7 @@ namespace InprocessTests
             arguments,
             errorContext);
 
-        ASSERT_TRUE(ends_with(arguments[0], L"\\Fake\\hello-dotnet.exe", true));
+        ASSERT_TRUE(endsWith(arguments[0], L"\\Fake\\hello-dotnet.exe", true));
         ASSERT_STREQ(arguments[1].c_str(), L"-a");
         ASSERT_STREQ(arguments[2].c_str(), L"--tag");
         ASSERT_STREQ(arguments[3].c_str(), L"t");

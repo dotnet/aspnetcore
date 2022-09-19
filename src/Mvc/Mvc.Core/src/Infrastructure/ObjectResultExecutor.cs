@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// Executes an <see cref="ObjectResult"/> to write to the response.
 /// </summary>
-public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
+public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
 {
     /// <summary>
     /// Creates a new <see cref="ObjectResultExecutor"/>.
@@ -108,16 +110,28 @@ public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
             formatterContext,
             (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(),
             result.ContentTypes);
+
         if (selectedFormatter == null)
         {
             // No formatter supports this.
-            Logger.NoFormatter(formatterContext, result.ContentTypes);
+            Log.NoFormatter(Logger, formatterContext, result.ContentTypes);
 
-            context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+            const int statusCode = StatusCodes.Status406NotAcceptable;
+            context.HttpContext.Response.StatusCode = statusCode;
+
+            if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+            {
+                return problemDetailsService.WriteAsync(new()
+                {
+                    HttpContext = context.HttpContext,
+                    ProblemDetails = { Status = statusCode }
+                }).AsTask();
+            }
+
             return Task.CompletedTask;
         }
 
-        Logger.ObjectResultExecuting(result, value);
+        Log.ObjectResultExecuting(Logger, result, value);
 
         result.OnFormatting(context);
         return selectedFormatter.WriteAsync(formatterContext);
@@ -142,6 +156,41 @@ public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
         }
     }
 
-    // Removed Log.
-    // new EventId(1, "BufferingAsyncEnumerable")
+    // Internal for unit testing
+    internal static partial class Log
+    {
+        // Removed Log.
+        // new EventId(1, "BufferingAsyncEnumerable")
+
+        public static void ObjectResultExecuting(ILogger logger, ObjectResult result, object? value)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var objectResultType = result.GetType().Name;
+                var valueType = value == null ? "null" : value.GetType().FullName;
+                ObjectResultExecuting(logger, objectResultType, valueType);
+            }
+        }
+
+        [LoggerMessage(1, LogLevel.Information, "Executing {ObjectResultType}, writing value of type '{Type}'.", EventName = "ObjectResultExecuting", SkipEnabledCheck = true)]
+        private static partial void ObjectResultExecuting(ILogger logger, string objectResultType, string? type);
+
+        public static void NoFormatter(ILogger logger, OutputFormatterCanWriteContext context, MediaTypeCollection contentTypes)
+        {
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                var considered = new List<string?>(contentTypes);
+
+                if (context.ContentType.HasValue)
+                {
+                    considered.Add(Convert.ToString(context.ContentType, CultureInfo.InvariantCulture));
+                }
+
+                NoFormatter(logger, considered);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Warning, "No output formatter was found for content types '{ContentTypes}' to write the response.", EventName = "NoFormatter", SkipEnabledCheck = true)]
+        private static partial void NoFormatter(ILogger logger, List<string?> contentTypes);
+    }
 }

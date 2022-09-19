@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// A facade service for creating application models.
 /// </summary>
-internal class ApplicationModelFactory
+internal sealed class ApplicationModelFactory
 {
     private readonly IApplicationModelProvider[] _applicationModelProviders;
     private readonly IList<IApplicationModelConvention> _conventions;

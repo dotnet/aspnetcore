@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers;
 /// <summary>
 /// Default implementation for <see cref="IControllerFactory"/>.
 /// </summary>
-internal class DefaultControllerFactory : IControllerFactory
+internal sealed class DefaultControllerFactory : IControllerFactory
 {
     private readonly IControllerActivator _controllerActivator;
     private readonly IControllerPropertyActivator[] _propertyActivators;

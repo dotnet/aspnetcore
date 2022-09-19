@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 
 // This class is a "Proxy" or "front-controller" for the incoming messages from the Browser via the transport channel.
 // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
-internal class IpcReceiver
+internal sealed class IpcReceiver
 {
     private readonly Func<string, string, Task> _onAttachMessage;
 
@@ -52,7 +52,7 @@ internal class IpcReceiver
                     BeginInvokeDotNet(pageContext, args[0].GetString(), args[1].GetString(), args[2].GetString(), args[3].GetInt64(), args[4].GetString());
                     break;
                 case IpcCommon.IncomingMessageType.EndInvokeJS:
-                    EndInvokeJS(pageContext, args[0].GetInt64(), args[1].GetBoolean(), args[2].GetString());
+                    EndInvokeJS(pageContext, args[2].GetString());
                     break;
                 case IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS:
                     ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
@@ -61,7 +61,10 @@ internal class IpcReceiver
                     OnRenderCompleted(pageContext, args[0].GetInt64(), args[1].GetString());
                     break;
                 case IpcCommon.IncomingMessageType.OnLocationChanged:
-                    OnLocationChanged(pageContext, args[0].GetString(), args[1].GetBoolean());
+                    OnLocationChanged(pageContext, args[0].GetString(), args[1].GetString(), args[2].GetBoolean());
+                    break;
+                case IpcCommon.IncomingMessageType.OnLocationChanging:
+                    OnLocationChanging(pageContext, args[0].GetInt32(), args[1].GetString(), args[2].GetString(), args[3].GetBoolean());
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown message type '{messageType}'.");
@@ -77,7 +80,7 @@ internal class IpcReceiver
             argsJson);
     }
 
-    private static void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
+    private static void EndInvokeJS(PageContext pageContext, string argumentsOrError)
     {
         DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
     }
@@ -97,8 +100,13 @@ internal class IpcReceiver
         pageContext.Renderer.NotifyRenderCompleted(batchId);
     }
 
-    private static void OnLocationChanged(PageContext pageContext, string uri, bool intercepted)
+    private static void OnLocationChanged(PageContext pageContext, string uri, string? state, bool intercepted)
     {
-        pageContext.NavigationManager.LocationUpdated(uri, intercepted);
+        pageContext.NavigationManager.LocationUpdated(uri, state, intercepted);
+    }
+
+    private static void OnLocationChanging(PageContext pageContext, int callId, string uri, string? state, bool intercepted)
+    {
+        pageContext.NavigationManager.HandleLocationChanging(callId, uri, state, intercepted);
     }
 }

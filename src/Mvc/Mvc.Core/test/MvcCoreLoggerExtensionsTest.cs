@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 
@@ -15,19 +16,19 @@ public class MvcCoreLoggerExtensionsTest
 {
     public static object[][] RouteValuesTestData { get; } = new object[][]
     {
-            new object[]{ "{}" },
-            new object[]{ "{foo = \"bar\"}", new KeyValuePair<string, string>("foo", "bar") },
-            new object[]{ "{foo = \"bar\", other = \"value\"}",
-                new KeyValuePair<string, string>("foo", "bar"),
-                new KeyValuePair<string, string>("other", "value") },
+        new object[]{ "{}" },
+        new object[]{ "{foo = \"bar\"}", new KeyValuePair<string, string>("foo", "bar") },
+        new object[]{ "{foo = \"bar\", other = \"value\"}",
+            new KeyValuePair<string, string>("foo", "bar"),
+            new KeyValuePair<string, string>("other", "value") },
     };
 
     public static object[][] PageRouteValuesTestData { get; } = new object[][]
     {
-            new object[]{ "{page = \"bar\"}", new KeyValuePair<string, string>("page", "bar") },
-            new object[]{ "{page = \"bar\", other = \"value\"}",
-                new KeyValuePair<string, string>("page", "bar"),
-                new KeyValuePair<string, string>("other", "value") },
+        new object[]{ "{page = \"bar\"}", new KeyValuePair<string, string>("page", "bar") },
+        new object[]{ "{page = \"bar\", other = \"value\"}",
+            new KeyValuePair<string, string>("page", "bar"),
+            new KeyValuePair<string, string>("other", "value") },
     };
 
     [Theory]
@@ -52,7 +53,7 @@ public class MvcCoreLoggerExtensionsTest
         }
 
         // Act
-        logger.ExecutingAction(action);
+        ResourceInvoker.Log.ExecutingAction(logger, action);
 
         // Assert
         var write = Assert.Single(testSink.Writes);
@@ -82,7 +83,7 @@ public class MvcCoreLoggerExtensionsTest
         }
 
         // Act
-        logger.ExecutingAction(action);
+        ResourceInvoker.Log.ExecutingAction(logger, action);
 
         // Assert
         var write = Assert.Single(testSink.Writes);
@@ -111,7 +112,7 @@ public class MvcCoreLoggerExtensionsTest
         }
 
         // Act
-        logger.ExecutingAction(action);
+        ResourceInvoker.Log.ExecutingAction(logger, action);
 
         // Assert
         var write = Assert.Single(testSink.Writes);
@@ -412,7 +413,7 @@ public class MvcCoreLoggerExtensionsTest
         context.SetupGet(x => x.ContentType).Returns("application/json");
 
         // Act
-        logger.NoFormatter(context.Object, mediaTypes);
+        ObjectResultExecutor.Log.NoFormatter(logger, context.Object, mediaTypes);
 
         // Assert
         var write = Assert.Single(testSink.Writes);
@@ -441,7 +442,7 @@ public class MvcCoreLoggerExtensionsTest
         };
 
         // Act
-        logger.ExecutingControllerFactory(context);
+        ControllerActionInvoker.Log.ExecutingControllerFactory(logger, context);
 
         // Assert
         var write = Assert.Single(testSink.Writes);
@@ -469,7 +470,7 @@ public class MvcCoreLoggerExtensionsTest
         };
 
         // Act
-        logger.ExecutedControllerFactory(context);
+        ControllerActionInvoker.Log.ExecutedControllerFactory(logger, context);
 
         // Assert
         var write = Assert.Single(testSink.Writes);

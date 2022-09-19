@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.TestHost;
 public class ClientHandler : HttpMessageHandler
 {
     private readonly ApplicationWrapper _application;
+    private readonly Action<HttpContext> _additionalContextConfiguration;
     private readonly PathString _pathBase;
 
     /// <summary>
@@ -27,9 +28,11 @@ public class ClientHandler : HttpMessageHandler
     /// </summary>
     /// <param name="pathBase">The base path.</param>
     /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
-    internal ClientHandler(PathString pathBase, ApplicationWrapper application)
+    /// <param name="additionalContextConfiguration">The action to additionally configure <see cref="HttpContext"/>.</param>
+    internal ClientHandler(PathString pathBase, ApplicationWrapper application, Action<HttpContext>? additionalContextConfiguration = null)
     {
         _application = application ?? throw new ArgumentNullException(nameof(application));
+        _additionalContextConfiguration = additionalContextConfiguration ?? NoExtraConfiguration;
 
         // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
         if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
@@ -65,8 +68,6 @@ public class ClientHandler : HttpMessageHandler
 
         if (requestContent != null)
         {
-            // Read content from the request HttpContent into a pipe in a background task. This will allow the request
-            // delegate to start before the request HttpContent is complete. A background task allows duplex streaming scenarios.
             contextBuilder.SendRequestStream(async writer =>
             {
                 if (requestContent is StreamContent)
@@ -165,6 +166,8 @@ public class ClientHandler : HttpMessageHandler
             req.QueryString = QueryString.FromUriComponent(request.RequestUri);
         });
 
+        contextBuilder.Configure((context, _) => _additionalContextConfiguration(context));
+
         var response = new HttpResponseMessage();
 
         // Copy trailers to the response message when the response stream is complete
@@ -201,5 +204,10 @@ public class ClientHandler : HttpMessageHandler
             }
         }
         return response;
+    }
+
+    private static void NoExtraConfiguration(HttpContext context)
+    {
+        // Intentional no op
     }
 }

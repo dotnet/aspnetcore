@@ -55,6 +55,21 @@ public class InputRadioTest
         Assert.All(inputRadioComponents, inputRadio => Assert.Equal(groupName, inputRadio.GroupName));
     }
 
+    [Fact]
+    public async Task InputElementIsAssignedSuccessfully()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputRadioHostComponent<TestEnum>
+        {
+            EditContext = new EditContext(model),
+            InnerContent = RadioButtonsWithGroup(null, () => model.TestEnum)
+        };
+
+        var inputRadioComponents = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+        Assert.All(inputRadioComponents, inputRadio => Assert.NotNull(inputRadio.Element));
+    }
+
     private static RenderFragment RadioButtonsWithoutGroup(string name) => (builder) =>
     {
         foreach (var selectedValue in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
