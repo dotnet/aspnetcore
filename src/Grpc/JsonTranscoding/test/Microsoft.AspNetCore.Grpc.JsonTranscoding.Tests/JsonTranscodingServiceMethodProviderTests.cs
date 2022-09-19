@@ -153,6 +153,18 @@ public class JsonTranscodingServiceMethodProviderTests
     }
 
     [Fact]
+    public void AddMethod_BadResponseBody_Nested_ThrowError()
+    {
+        // Arrange & Act
+        var ex = Assert.Throws<InvalidOperationException>(() => MapEndpoints<JsonTranscodingInvalidNestedResponseBodyGreeterService>());
+
+        // Assert
+        Assert.Equal("Error binding gRPC service 'JsonTranscodingInvalidNestedResponseBodyGreeterService'.", ex.Message);
+        Assert.Equal("Error binding BadResponseBody on JsonTranscodingInvalidNestedResponseBodyGreeterService to HTTP API.", ex.InnerException!.InnerException!.Message);
+        Assert.Equal("The response body field 'sub.subfield' references a nested field. The field must be on the top-level response message.", ex.InnerException!.InnerException!.InnerException!.Message);
+    }
+
+    [Fact]
     public void AddMethod_BadBody_ThrowError()
     {
         // Arrange & Act
