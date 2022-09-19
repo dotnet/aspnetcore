@@ -21,11 +21,6 @@ message HttpBodySubField {
   google.api.HttpBody sub = 2;
 }
 
-message NestedHttpBodySubField {
-  string name = 1;
-  HttpBodySubField sub = 2;
-}
-
 message HelloWorldRequest {
   string name = 1;
 }
