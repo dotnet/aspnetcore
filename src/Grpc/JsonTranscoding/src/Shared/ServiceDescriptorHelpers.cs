@@ -319,7 +319,7 @@ internal static class ServiceDescriptorHelpers
             {
                 if (body.Contains('.', StringComparison.Ordinal))
                 {
-                    throw new InvalidOperationException($"The body field '{body}' references a nested field. The field must be on the top-level request message.");
+                    throw new InvalidOperationException($"The body field '{body}' references a nested field. The body field name must be on the top-level request message.");
                 }
                 var responseBodyDescriptor = methodDescriptor.InputType.FindFieldByName(body);
                 if (responseBodyDescriptor == null)
@@ -361,7 +361,7 @@ internal static class ServiceDescriptorHelpers
         Dictionary<string, RouteParameter> routeParameters,
         MethodDescriptor methodDescriptor,
         MessageDescriptor? bodyDescriptor,
-        List<FieldDescriptor>? bodyFieldDescriptors)
+        FieldDescriptor? bodyFieldDescriptor)
     {
         var existingParameters = new List<FieldDescriptor>();
 
@@ -375,13 +375,10 @@ internal static class ServiceDescriptorHelpers
 
         if (bodyDescriptor != null)
         {
-            if (bodyFieldDescriptors != null)
+            if (bodyFieldDescriptor != null)
             {
                 // Body with field name.
-                // The body field descriptors collection contains all the descriptors in the path.
-                // We only care about the final place the body is set and so add only the last
-                // descriptor to the existing parameters collection.
-                existingParameters.Add(bodyFieldDescriptors.Last());
+                existingParameters.Add(bodyFieldDescriptor);
             }
             else
             {
