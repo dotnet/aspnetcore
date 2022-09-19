@@ -1,11 +1,11 @@
 <Project>
   <!-- this file is shared between Helix.proj and .csproj files -->
   <PropertyGroup>
-    <HelixQueueAlpine314>(Alpine.314.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.14-helix-amd64-20210910135833-1848e19</HelixQueueAlpine314>
-    <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64-20211001171307-0ece9b3</HelixQueueDebian11>
-    <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210924174119-4f64125</HelixQueueFedora34>
-    <HelixQueueMariner>(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620</HelixQueueMariner>
-    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652</HelixQueueArmDebian11>
+    <HelixQueueAlpine314>(Alpine.314.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.14-helix-amd64-20210910135833-1848e19</HelixQueueAlpine314>
+    <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64-20211001171307-0ece9b3</HelixQueueDebian11>
+    <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210924174119-4f64125</HelixQueueFedora34>
+    <HelixQueueMariner>(Mariner)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620</HelixQueueMariner>
+    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)Ubuntu.2004.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652</HelixQueueArmDebian11>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
@@ -20,7 +20,7 @@
 
   <!-- x64 PR(ci.yaml) required queues for internal and public cases -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' != 'true'">
-    <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.11.Amd64.Client.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
   </ItemGroup>
@@ -29,7 +29,6 @@
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <!-- Linux -->
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
 
     <!-- Mac -->
     <HelixAvailableTargetQueue Include="OSX.1015.Amd64.Open" Platform="OSX" />
