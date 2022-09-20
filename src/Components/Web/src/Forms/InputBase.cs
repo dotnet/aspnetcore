@@ -17,7 +17,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
     private bool _hasInitializedParameters;
     private bool _parsingFailed;
-    private string? _currentValueAsString;
+    private string? _incomingValueBeforeParsing;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
@@ -85,21 +85,24 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
+    /// Gets the result of parsing of incoming value. If true, the parsing failed and <see cref="IncomingValueBeforeParsing"/> contains the incoming value.
+    /// </summary>
+    protected bool ParsingFailed => _parsingFailed;
+
+    /// <summary>
+    /// Gets incoming value (string) before it was parsed.
+    /// </summary>
+    protected string? IncomingValueBeforeParsing => _incomingValueBeforeParsing;
+
+    /// <summary>
     /// Gets or sets the current value of the input, represented as a string.
     /// </summary>
     protected string? CurrentValueAsString
     {
-        get
-        {
-            if (_parsingFailed)
-            {
-                return _currentValueAsString;
-            }
-            return FormatValueAsString(CurrentValue);
-        }
+        get => FormatValueAsString(CurrentValue);
         set
         {
-            _currentValueAsString = value;
+            _incomingValueBeforeParsing = value;
             _parsingValidationMessages?.Clear();
 
             if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))

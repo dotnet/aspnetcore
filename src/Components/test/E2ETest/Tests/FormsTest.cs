@@ -755,6 +755,19 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void DerivedInputTextPreservesEnteredInvalidValueInInputElementWhenParsingFails()
+    {
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var input = appElement.FindElement(By.Id("derived-input-text"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // should not replace the input contents with last known component value (null)
+        input.SendKeys("INVALID");
+        button.Click();
+        Browser.Equal("INVALID", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void InputTextareaUpdatesDotNetModelWhenDomValueChanges()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
@@ -775,6 +788,19 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         input.SendKeys("24h");              // replace content with new value
         button.Click();                     // raise onchange event
         Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void DerivedInputTextareaPreservesEnteredInvalidValueInInputElementWhenParsingFails()
+    {
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var input = appElement.FindElement(By.Id("derived-input-textarea"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // should not replace the input contents with last known component value (null)
+        input.SendKeys("INVALID");
+        button.Click();
+        Browser.Equal("INVALID", () => input.GetDomProperty("value"));
     }
 
     [Fact]

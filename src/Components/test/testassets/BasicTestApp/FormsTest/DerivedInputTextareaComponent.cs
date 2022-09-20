@@ -13,7 +13,13 @@ public class DerivedInputTextareaComponent : InputTextArea
 
     protected override bool TryParseValueFromString(string value, out string result, out string validationErrorMessage)
     {
-        if (value == "24h")
+        if (value == "INVALID")
+        {
+            result = default;
+            validationErrorMessage = "INVALID is not allowed value.";
+            return false;
+        }
+        else if (value == "24h")
         {
             result = "24:00:00";
         }
