@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
