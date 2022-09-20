@@ -229,8 +229,7 @@ internal static partial class HttpUtilities
     /// <returns><see cref="HttpMethod"/></returns>
     public static HttpMethod GetKnownMethod(string? value)
     {
-        // TODO: fix that comment
-        // For a description for that approach see https://github.com/dotnet/aspnetcore/pull/[0-9]+
+        // For a description for that approach see https://github.com/dotnet/aspnetcore/pull/44096
 
         const int MinWordLength = 3;
         const int MaxWordLength = 7;
