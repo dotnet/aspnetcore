@@ -967,7 +967,9 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
         }
 
+        // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
         StopProcessingNextRequest(serverInitiated: false);
+        _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
 
         return Task.CompletedTask;
     }
