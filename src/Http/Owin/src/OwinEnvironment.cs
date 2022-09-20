@@ -254,7 +254,38 @@ public class OwinEnvironment : IDictionary<string, object>
 
     void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
     {
-        throw new NotImplementedException();
+        if (array is null)
+        {
+            throw new ArgumentNullException(nameof(array));
+        }
+        if (arrayIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+        }
+        if (arrayIndex + _entries.Count + _context.Items.Count > array.Length)
+        {
+            throw new ArgumentException("Not enough available space in array", nameof(array));
+        }
+
+        // Simpler code and easier to read, but causes an allocation of the enumerator/iterator - is the trade off okay?
+        //foreach (var entryPair in this)
+        //{
+        //    array[arrayIndex++] = entryPair;
+        //}
+
+        // Same code as the iterator GetEnumerator but directly pushed the results into the array
+        foreach (var entryPair in _entries)
+        {
+            object value;
+            if (entryPair.Value.TryGet(_context, out value))
+            {
+                array[arrayIndex++] = new KeyValuePair<string, object>(entryPair.Key, value);
+            }
+        }
+        foreach (var entryPair in _context.Items)
+        {
+            array[arrayIndex++] = new KeyValuePair<string, object>(Convert.ToString(entryPair.Key, CultureInfo.InvariantCulture), entryPair.Value);
+        }
     }
 
     int ICollection<KeyValuePair<string, object>>.Count
