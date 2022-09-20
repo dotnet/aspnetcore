@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Sets up default options for <see cref="MvcOptions"/>.
 /// </summary>
-internal class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
+internal sealed class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
 {
     public void Configure(MvcOptions options)
     {

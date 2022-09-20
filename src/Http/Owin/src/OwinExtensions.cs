@@ -198,7 +198,7 @@ public static class OwinExtensions
         return app;
     }
 
-    private class EmptyProvider : IServiceProvider
+    private sealed class EmptyProvider : IServiceProvider
     {
         public object GetService(Type serviceType)
         {

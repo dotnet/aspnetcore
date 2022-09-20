@@ -88,7 +88,7 @@ public class ExternalLoginModel : PageModel
     public virtual Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
+internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;

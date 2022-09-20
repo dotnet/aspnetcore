@@ -101,7 +101,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
                         ?.GetService<IOptions<IdentityOptions>>()
                         ?.Value?.Stores;
 
-    private class PersonalDataConverter : ValueConverter<string, string>
+    private sealed class PersonalDataConverter : ValueConverter<string, string>
     {
         public PersonalDataConverter(IPersonalDataProtector protector) : base(s => protector.Protect(s), s => protector.Unprotect(s), default)
         { }

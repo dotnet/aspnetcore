@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SpaProxy;
 
-internal class SpaProxyLaunchManager : IDisposable
+internal sealed class SpaProxyLaunchManager : IDisposable
 {
     private readonly SpaDevelopmentServerOptions _options;
     private readonly ILogger<SpaProxyLaunchManager> _logger;
@@ -251,7 +251,7 @@ catch
     {
         var fileName = Guid.NewGuid().ToString("N") + ".sh";
         var scriptPath = Path.Combine(AppContext.BaseDirectory, fileName);
-        var stopScript = @$"function list_child_processes(){{
+        var stopScript = @$"function list_child_processes () {{
     local ppid=$1;
     local current_children=$(pgrep -P $ppid);
     local local_child;
@@ -282,7 +282,7 @@ do
 done;
 rm {scriptPath};
 ";
-        File.WriteAllText(scriptPath, stopScript);
+        File.WriteAllText(scriptPath, stopScript.ReplaceLineEndings());
 
         var stopScriptInfo = new ProcessStartInfo("/bin/bash", scriptPath)
         {
@@ -305,7 +305,7 @@ rm {scriptPath};
         return Task.CompletedTask;
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposedValue)
         {

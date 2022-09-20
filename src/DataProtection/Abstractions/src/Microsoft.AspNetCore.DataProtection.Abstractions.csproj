@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core data protection abstractions.
@@ -10,12 +10,14 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\shared\src\*.cs" />
+    <Compile Include="..\..\shared\src\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
 </Project>

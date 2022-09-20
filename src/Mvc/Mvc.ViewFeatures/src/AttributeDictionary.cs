@@ -384,7 +384,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
         }
     }
 
-    private class KeyCollection : ICollection<string>
+    private sealed class KeyCollection : ICollection<string>
     {
         private readonly AttributeDictionary _attributes;
 
@@ -497,7 +497,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
         }
     }
 
-    private class ValueCollection : ICollection<string?>
+    private sealed class ValueCollection : ICollection<string?>
     {
         private readonly AttributeDictionary _attributes;
 

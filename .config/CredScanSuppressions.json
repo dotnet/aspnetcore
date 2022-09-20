@@ -122,11 +122,11 @@
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\testCert.pfx",
+      "file": "\\src\\SignalR\\common\\Shared\\testCert.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\testCertECC.pfx",
+      "file": "\\src\\SignalR\\common\\Shared\\testCertECC.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
@@ -155,6 +155,22 @@
     },
     {
       "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-rsa.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\intermediate2_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\intermediate_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\leaf.com.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\root_ca.key",
       "_justification": "Legitimate key file used for testing"
     },
     {

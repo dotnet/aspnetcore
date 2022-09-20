@@ -14,7 +14,7 @@ public class Program
     {
         // By default we assume we're being run in the context of the <repo>/src/Http/Http.Results/src
         var pwd = Directory.GetCurrentDirectory();
-        var classTargetFilePath = Path.Combine(pwd, "ResultsOfT.cs");
+        var classTargetFilePath = Path.Combine(pwd, "ResultsOfT.Generated.cs");
         var testsTargetFilePath = Path.Combine(pwd, "..", "test", "ResultsOfTTests.Generated.cs");
 
         if (args.Length > 0)
@@ -60,11 +60,13 @@ public class Program
         writer.WriteLine();
 
         // Usings
+        writer.WriteLine("using System.Reflection;");
+        writer.WriteLine("using Microsoft.AspNetCore.Builder;");
         writer.WriteLine("using Microsoft.AspNetCore.Http.Metadata;");
         writer.WriteLine();
 
         // Namespace
-        writer.WriteLine("namespace Microsoft.AspNetCore.Http;");
+        writer.WriteLine("namespace Microsoft.AspNetCore.Http.HttpResults;");
         writer.WriteLine();
 
         // Skip 1 as we don't have a Results<TResult1> class
@@ -80,7 +82,7 @@ public class Program
             writer.WriteLine("/// <remarks>");
             writer.WriteLine("/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance");
             writer.WriteLine("/// from an instance of one of the declared type arguments, e.g.");
-            writer.WriteLine("/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>");
+            writer.WriteLine("/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>");
             writer.WriteLine("/// </remarks>");
 
             // Type params docs
@@ -104,7 +106,7 @@ public class Program
             writer.Write(">");
 
             // Interfaces
-            writer.WriteLine(" : IResult, IEndpointMetadataProvider");
+            writer.WriteLine(" : IResult, INestedHttpResult, IEndpointMetadataProvider");
 
             // Type arg constraints
             for (int j = 1; j <= i; j++)
@@ -137,7 +139,7 @@ public class Program
             writer.WriteIndentedLine("/// <inheritdoc/>");
             writer.WriteIndentedLine("public Task ExecuteAsync(HttpContext httpContext)");
             writer.WriteIndentedLine("{");
-            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext);");
             writer.WriteLine();
             writer.WriteIndentedLine(2, "if (Result is null)");
             writer.WriteIndentedLine(2, "{");
@@ -177,11 +179,14 @@ public class Program
 
             // IEndpointMetadataProvider.PopulateMetadata
             writer.WriteIndentedLine("/// <inheritdoc/>");
-            writer.WriteIndentedLine("static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)");
+            writer.WriteIndentedLine("static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)");
             writer.WriteIndentedLine("{");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(method);");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(builder);");
+            writer.WriteLine();
             for (int j = 1; j <= i; j++)
             {
-                writer.WriteIndentedLine(2, $"ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult{j}>(context);");
+                writer.WriteIndentedLine(2, $"ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult{j}>(method, builder);");
             }
             writer.WriteIndentedLine("}");
 
@@ -229,11 +234,11 @@ public class Program
 
         // Using statements
         writer.WriteLine("using System.Reflection;");
-        writer.WriteLine("using System.Threading.Tasks;");
+        writer.WriteLine("using Microsoft.AspNetCore.Builder;");
+        writer.WriteLine("using Microsoft.AspNetCore.Http.HttpResults;");
         writer.WriteLine("using Microsoft.AspNetCore.Http.Metadata;");
-        writer.WriteLine("using Microsoft.Extensions.DependencyInjection;");
-        writer.WriteLine("using Microsoft.Extensions.Logging;");
-        writer.WriteLine("using Microsoft.Extensions.Logging.Abstractions;");
+        writer.WriteLine("using Microsoft.AspNetCore.Routing;");
+        writer.WriteLine("using Microsoft.AspNetCore.Routing.Patterns;");
         writer.WriteLine();
 
         // Namespace
@@ -256,9 +261,10 @@ public class Program
             GenerateTest_ExecuteResult_ExecutesAssignedResult(writer, i);
             GenerateTest_Throws_ArgumentNullException_WhenHttpContextIsNull(writer, i);
             GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(writer, i);
-            Generate_AcceptsIResult_AsAnyTypeArg(writer, i);
-            Generate_AcceptsNestedResultsOfT_AsAnyTypeArg(writer, i);
-            Generate_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(writer, i);
+            GenerateTest_AcceptsIResult_AsAnyTypeArg(writer, i);
+            GenerateTest_AcceptsNestedResultsOfT_AsAnyTypeArg(writer, i);
+            GenerateTest_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(writer, i);
+            GenerateTest_PopulateMetadata_Throws_ArgumentNullException_WhenMethodOrBuilderIsNull(writer, i);
         }
 
         Generate_ChecksumResultClass(writer);
@@ -388,13 +394,13 @@ public class Program
         //public async Task ResultsOfTResult1TResult2_ExecuteResult_ExecutesAssignedResult(int input, object expected)
         //{
         //    // Arrange
-        //    Results<ChecksumResult1, ChecksumResult2, NoContentHttpResult> MyApi(int checksum)
+        //    Results<ChecksumResult1, ChecksumResult2, NoContent> MyApi(int checksum)
         //    {
         //        return checksum switch
         //        {
         //            1 => new ChecksumResult1(checksum),
         //            2 => new ChecksumResult2(checksum),
-        //            _ => (NoContentHttpResult)Results.NoContent()
+        //            _ => (NoContent)Results.NoContent()
         //        };
         //    }
         //    var httpContext = GetHttpContext();
@@ -478,7 +484,7 @@ public class Program
         //public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
         //{
         //    // Arrange
-        //    Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        //    Results<ChecksumResult1, NoContent> MyApi()
         //    {
         //        return new ChecksumResult1(1);
         //    }
@@ -507,7 +513,7 @@ public class Program
 
         // Arrange
         writer.WriteIndentedLine(2, "// Arrange");
-        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContentHttpResult> MyApi()");
+        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContent> MyApi()");
         writer.WriteIndentedLine(2, "{");
         writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
         writer.WriteIndentedLine(2, "}");
@@ -535,7 +541,7 @@ public class Program
         //public void ResultsOfTResult1TResult2_Throws_InvalidOperationException_WhenResultIsNull()
         //{
         //    // Arrange
-        //    Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        //    Results<ChecksumResult1, NoContent> MyApi()
         //    {
         //        return (ChecksumResult1)null;
         //    }
@@ -564,7 +570,7 @@ public class Program
 
         // Arrange
         writer.WriteIndentedLine(2, "// Arrange");
-        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContentHttpResult> MyApi()");
+        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContent> MyApi()");
         writer.WriteIndentedLine(2, "{");
         writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
         writer.WriteIndentedLine(2, "}");
@@ -586,15 +592,15 @@ public class Program
         writer.WriteLine();
     }
 
-    static void Generate_AcceptsIResult_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
+    static void GenerateTest_AcceptsIResult_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
     {
         for (int i = 1; i <= typeArgCount; i++)
         {
-            Generate_AcceptsIResult_AsNthTypeArg(writer, typeArgCount, i);
+            GenerateTest_AcceptsIResult_AsNthTypeArg(writer, typeArgCount, i);
         }
     }
 
-    static void Generate_AcceptsIResult_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
+    static void GenerateTest_AcceptsIResult_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
     {
         //[Theory]
         //[InlineData(1, typeof(ChecksumResult1))]
@@ -694,15 +700,15 @@ public class Program
         writer.WriteLine();
     }
 
-    static void Generate_AcceptsNestedResultsOfT_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
+    static void GenerateTest_AcceptsNestedResultsOfT_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
     {
         for (int i = 1; i <= typeArgCount; i++)
         {
-            Generate_AcceptsNestedResultsOfT_AsNthTypeArg(writer, typeArgCount, i);
+            GenerateTest_AcceptsNestedResultsOfT_AsNthTypeArg(writer, typeArgCount, i);
         }
     }
 
-    static void Generate_AcceptsNestedResultsOfT_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
+    static void GenerateTest_AcceptsNestedResultsOfT_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
     {
         //[Theory]
         //[InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2>))]
@@ -802,22 +808,21 @@ public class Program
         writer.WriteLine();
     }
 
-    static void Generate_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(StreamWriter writer, int typeArgNumber)
+    static void GenerateTest_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider(StreamWriter writer, int typeArgNumber)
     {
         //[Fact]
         //public void ResultsOfTResult1TResult2_PopulateMetadata_PopulatesMetadataFromTypeArgsThatImplementIEndpointMetadataProvider()
         //{
         //    // Arrange
         //    Results<ProvidesMetadataResult1, ProvidesMetadataResult2> MyApi() { throw new NotImplementedException(); }
-        //    var metadata = new List<object>();
-        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        //    var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse(""/""), order: 0);
 
         //    // Act
-        //    PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
+        //    PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(((Delegate)MyApi).GetMethodInfo(), builder);
 
         //    // Assert
-        //    Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
-        //    Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
+        //    Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
+        //    Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult2) });
         //}
 
         // Attributes
@@ -845,8 +850,7 @@ public class Program
             }
         }
         writer.WriteLine("> MyApi() { throw new NotImplementedException(); }");
-        writer.WriteIndentedLine(2, "var metadata = new List<object>();");
-        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);");
+        writer.WriteIndentedLine(2, @"var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse(""/""), order: 0);");
         writer.WriteLine();
 
         // Act
@@ -861,15 +865,68 @@ public class Program
                 writer.Write(", ");
             }
         }
-        writer.WriteLine(">>(context);");
+        writer.WriteLine(">>(((Delegate)MyApi).GetMethodInfo(), builder);");
         writer.WriteLine();
 
         // Assert
         writer.WriteIndentedLine(2, "// Assert");
         for (int j = 1; j <= typeArgNumber; j++)
         {
-            writer.WriteIndentedLine(2, $"Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata {{ SourceTypeName: nameof(ProvidesMetadataResult{j}) }});");
+            writer.WriteIndentedLine(2, $"Assert.Contains(builder.Metadata, m => m is ResultTypeProvidedMetadata {{ SourceTypeName: nameof(ProvidesMetadataResult{j}) }});");
         }
+
+        // Close method
+        writer.WriteIndentedLine(1, "}");
+        writer.WriteLine();
+    }
+
+    static void GenerateTest_PopulateMetadata_Throws_ArgumentNullException_WhenMethodOrBuilderIsNull(StreamWriter writer, int typeArgNumber)
+    {
+        //[Fact]
+        //public void ResultsOfTResult1TResult2_PopulateMetadata_Throws_ArgumentNullException_WhenMethodOrBuilderAreNull()
+        //{
+        //    // Act & Assert
+        //    Assert.Throws<ArgumentNullException>("method", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0)));
+        //    Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(((Delegate)MyApi).GetMethodInfo(), null));
+        //}
+
+        // Attributes
+        writer.WriteIndentedLine("[Fact]");
+
+        // Start method
+        writer.WriteIndent(1, "public void ResultsOf");
+        for (int j = 1; j <= typeArgNumber; j++)
+        {
+            writer.Write($"TResult{j}");
+        }
+        writer.WriteLine("_PopulateMetadata_Throws_ArgumentNullException_WhenMethodOrBuilderAreNull()");
+        writer.WriteIndentedLine("{");
+
+        // Act & Assert
+        writer.WriteIndentedLine(2, "// Act & Assert");
+        writer.WriteIndent(2, "Assert.Throws<ArgumentNullException>(\"method\", () => PopulateMetadata<Results<");
+        for (int j = 1; j <= typeArgNumber; j++)
+        {
+            writer.Write($"ProvidesMetadataResult{j}");
+
+            if (j != typeArgNumber)
+            {
+                writer.Write(", ");
+            }
+        }
+        writer.WriteLine(@">>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse(""/""), order: 0)));");
+
+        writer.WriteIndent(2, "Assert.Throws<ArgumentNullException>(\"builder\", () => PopulateMetadata<Results<");
+        for (int j = 1; j <= typeArgNumber; j++)
+        {
+            writer.Write($"ProvidesMetadataResult{j}");
+
+            if (j != typeArgNumber)
+            {
+                writer.Write(", ");
+            }
+        }
+        writer.WriteLine(">>(((Delegate)GeneratedCodeIsUpToDate).GetMethodInfo(), null));");
 
         // Close method
         writer.WriteIndentedLine(1, "}");
@@ -912,22 +969,22 @@ public class Program
 
     static void Generate_ProvidesMetadataResultClass(StreamWriter writer, int typeArgNumber)
     {
-        //private class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
+        //private sealed class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
         //{
         //    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
 
-        //    public static void PopulateMetadata(EndpointMetadataContext context)
+        //    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
         //    {
-        //        context.EndpointMetadata.Add(new ResultTypeProvidedMetadata { SourceTypeName = nameof(ProvidesMetadataResult1) });
+        //        builder.Metadata.Add(new ResultTypeProvidedMetadata { SourceTypeName = nameof(ProvidesMetadataResult1) });
         //    }
         //}
         writer.WriteIndentedLine(1, $"class ProvidesMetadataResult{typeArgNumber} : IResult, IEndpointMetadataProvider");
         writer.WriteIndentedLine(1, "{");
         writer.WriteIndentedLine(2, "public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;");
         writer.WriteLine();
-        writer.WriteIndentedLine(2, "public static void PopulateMetadata(EndpointMetadataContext context)");
+        writer.WriteIndentedLine(2, "public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)");
         writer.WriteIndentedLine(2, "{");
-        writer.WriteIndentedLine(3, $"context.EndpointMetadata.Add(new ResultTypeProvidedMetadata {{ SourceTypeName = nameof(ProvidesMetadataResult{typeArgNumber}) }});");
+        writer.WriteIndentedLine(3, $"builder.Metadata.Add(new ResultTypeProvidedMetadata {{ SourceTypeName = nameof(ProvidesMetadataResult{typeArgNumber}) }});");
         writer.WriteIndentedLine(2, "}");
         writer.WriteIndentedLine(1, "}");
     }

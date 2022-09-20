@@ -19,7 +19,7 @@ public class RazorViewEngineOptions
     /// <remarks>
     /// <para>
     /// The locations of the views returned from controllers that do not belong to an area.
-    /// Locations are format strings (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) which may contain
+    /// Locations are format strings (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) which may contain
     /// the following format items:
     /// </para>
     /// <list type="bullet">
@@ -45,7 +45,7 @@ public class RazorViewEngineOptions
     /// <remarks>
     /// <para>
     /// The locations of the views returned from controllers that belong to an area.
-    /// Locations are format strings (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) which may contain
+    /// Locations are format strings (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) which may contain
     /// the following format items:
     /// </para>
     /// <list type="bullet">
@@ -74,7 +74,7 @@ public class RazorViewEngineOptions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Locations are format strings (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) which may contain
+    /// Locations are format strings (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) which may contain
     /// the following format items:
     /// </para>
     /// <list type="bullet">
@@ -105,7 +105,7 @@ public class RazorViewEngineOptions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Locations are format strings (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) which may contain
+    /// Locations are format strings (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) which may contain
     /// the following format items:
     /// </para>
     /// <list type="bullet">

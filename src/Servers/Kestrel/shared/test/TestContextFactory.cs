@@ -92,8 +92,10 @@ internal static class TestContextFactory
             connectionFeatures ?? new FeatureCollection(),
             memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
             localEndPoint,
-            remoteEndPoint);
-        http3ConnectionContext.TimeoutControl = timeoutControl;
+            remoteEndPoint)
+        {
+            TimeoutControl = timeoutControl
+        };
 
         return http3ConnectionContext;
     }
@@ -141,7 +143,6 @@ internal static class TestContextFactory
         Http2PeerSettings serverPeerSettings = null,
         Http2FrameWriter frameWriter = null,
         InputFlowControl connectionInputFlowControl = null,
-        OutputFlowControl connectionOutputFlowControl = null,
         ITimeoutControl timeoutControl = null)
     {
         var context = new Http2StreamContext
@@ -159,8 +160,7 @@ internal static class TestContextFactory
             clientPeerSettings: clientPeerSettings ?? new Http2PeerSettings(),
             serverPeerSettings: serverPeerSettings ?? new Http2PeerSettings(),
             frameWriter: frameWriter,
-            connectionInputFlowControl: connectionInputFlowControl,
-            connectionOutputFlowControl: connectionOutputFlowControl
+            connectionInputFlowControl: connectionInputFlowControl
         );
         context.TimeoutControl = timeoutControl;
 
@@ -179,7 +179,21 @@ internal static class TestContextFactory
         ITimeoutControl timeoutControl = null,
         IHttp3StreamLifetimeHandler streamLifetimeHandler = null)
     {
-        var context = new Http3StreamContext
+        var http3ConnectionContext = CreateHttp3ConnectionContext(
+            null,
+            serviceContext,
+            connectionFeatures,
+            memoryPool,
+            localEndPoint,
+            remoteEndPoint,
+            timeoutControl);
+
+        var http3Conection = new Http3Connection(http3ConnectionContext)
+        {
+            _streamLifetimeHandler = streamLifetimeHandler
+        };
+
+        return new Http3StreamContext
         (
             connectionId: connectionId ?? "TestConnectionId",
             protocols: HttpProtocols.Http3,
@@ -190,15 +204,13 @@ internal static class TestContextFactory
             memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
             localEndPoint: localEndPoint,
             remoteEndPoint: remoteEndPoint,
-            streamLifetimeHandler: streamLifetimeHandler,
             streamContext: new DefaultConnectionContext(),
-            clientPeerSettings: new Http3PeerSettings(),
-            serverPeerSettings: null
-        );
-        context.TimeoutControl = timeoutControl;
-        context.Transport = transport;
-
-        return context;
+            connection: http3Conection
+        )
+        {
+            TimeoutControl = timeoutControl,
+            Transport = transport,
+        };
     }
 
     private class TestHttp2StreamLifetimeHandler : IHttp2StreamLifetimeHandler

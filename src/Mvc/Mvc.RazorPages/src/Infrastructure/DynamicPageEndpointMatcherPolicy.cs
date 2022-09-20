@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
+internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
 {
     private readonly DynamicPageEndpointSelectorCache _selectorCache;
     private readonly PageLoader _loader;

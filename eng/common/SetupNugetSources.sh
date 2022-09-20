@@ -105,53 +105,33 @@ if [ "$?" == "0" ]; then
     PackageSources+=('dotnet3.1-internal-transport')
 fi
 
-# Ensure dotnet5-internal and dotnet5-internal-transport are in the packageSources if the public dotnet5 feeds are present
-grep -i "<add key=\"dotnet5\"" $ConfigFile
-if [ "$?" == "0" ]; then
-    grep -i "<add key=\"dotnet5-internal\"" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet5-internal to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet5-internal\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal/nuget/v2\" />"
+DotNetVersions=('5' '6' '7')
 
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+for DotNetVersion in ${DotNetVersions[@]} ; do
+    FeedPrefix="dotnet${DotNetVersion}";
+    grep -i "<add key=\"$FeedPrefix\"" $ConfigFile
+    if [ "$?" == "0" ]; then
+        grep -i "<add key=\"$FeedPrefix-internal\"" $ConfigFile
+        if [ "$?" != "0" ]; then
+            echo "Adding $FeedPrefix-internal to the packageSources."
+            PackageSourcesNodeFooter="</packageSources>"
+            PackageSourceTemplate="${TB}<add key=\"$FeedPrefix-internal\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/$FeedPrefix-internal/nuget/v2\" />"
+
+            sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+        fi
+        PackageSources+=("$FeedPrefix-internal")
+
+        grep -i "<add key=\"$FeedPrefix-internal-transport\">" $ConfigFile
+        if [ "$?" != "0" ]; then
+            echo "Adding $FeedPrefix-internal-transport to the packageSources."
+            PackageSourcesNodeFooter="</packageSources>"
+            PackageSourceTemplate="${TB}<add key=\"$FeedPrefix-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/$FeedPrefix-internal-transport/nuget/v2\" />"
+
+            sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+        fi
+        PackageSources+=("$FeedPrefix-internal-transport")
     fi
-    PackageSources+=('dotnet5-internal')
-
-    grep -i "<add key=\"dotnet5-internal-transport\">" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet5-internal-transport to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet5-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet5-internal-transport')
-fi
-
-# Ensure dotnet6-internal and dotnet6-internal-transport are in the packageSources if the public dotnet6 feeds are present
-grep -i "<add key=\"dotnet6\"" $ConfigFile
-if [ "$?" == "0" ]; then
-    grep -i "<add key=\"dotnet6-internal\"" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet6-internal to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet6-internal\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet6-internal/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet6-internal')
-
-    grep -i "<add key=\"dotnet6-internal-transport\">" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet6-internal-transport to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet6-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet6-internal-transport/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet6-internal-transport')
-fi
+done
 
 # I want things split line by line
 PrevIFS=$IFS

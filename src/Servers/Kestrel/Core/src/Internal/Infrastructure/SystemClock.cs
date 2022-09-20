@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 /// <summary>
 /// Provides access to the normal system clock.
 /// </summary>
-internal class SystemClock : ISystemClock
+internal sealed class SystemClock : ISystemClock
 {
     /// <summary>
     /// Retrieves the current UTC system time.

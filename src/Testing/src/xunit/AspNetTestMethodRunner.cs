@@ -10,7 +10,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Testing;
 
-internal class AspNetTestMethodRunner : XunitTestMethodRunner
+internal sealed class AspNetTestMethodRunner : XunitTestMethodRunner
 {
     private readonly object[] _constructorArguments;
     private readonly IMessageSink _diagnosticMessageSink;

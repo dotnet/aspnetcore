@@ -49,7 +49,7 @@ public abstract class ForgotPasswordModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : class
+internal sealed class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly IEmailSender _emailSender;

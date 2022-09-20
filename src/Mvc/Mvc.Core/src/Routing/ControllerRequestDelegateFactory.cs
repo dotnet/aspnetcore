@@ -14,11 +14,13 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
+internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
 {
     private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
     private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
     private readonly int _maxModelValidationErrors;
+    private readonly int? _maxValidationDepth;
+    private readonly int _maxModelBindingRecursionDepth;
     private readonly ILogger _logger;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly IActionResultTypeMapper _mapper;
@@ -46,6 +48,8 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
         _controllerActionInvokerCache = controllerActionInvokerCache;
         _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
         _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
+        _maxValidationDepth = optionsAccessor.Value.MaxValidationDepth;
+        _maxModelBindingRecursionDepth = optionsAccessor.Value.MaxModelBindingRecursionDepth;
         _enableActionInvokers = optionsAccessor.Value.EnableActionInvokers;
         _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
         _diagnosticListener = diagnosticListener;
@@ -82,6 +86,8 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
             };
 
             controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+            controllerContext.ModelState.MaxValidationDepth = _maxValidationDepth;
+            controllerContext.ModelState.MaxStateDepth = _maxModelBindingRecursionDepth;
 
             var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
 

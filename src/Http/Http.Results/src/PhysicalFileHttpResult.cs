@@ -5,13 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// A <see cref="PhysicalFileHttpResult"/> on execution will write a file from disk to the response
 /// using mechanisms provided by the host.
 /// </summary>
-public sealed partial class PhysicalFileHttpResult : IResult
+public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult, IContentTypeHttpResult
 {
     /// <summary>
     /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
@@ -107,6 +107,8 @@ public sealed partial class PhysicalFileHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var fileInfo = GetFileInfoWrapper(FileName);
         if (!fileInfo.Exists)
         {

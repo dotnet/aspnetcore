@@ -8,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class ResponseCacheFilterExecutor
+internal sealed class ResponseCacheFilterExecutor
 {
     private readonly CacheProfile _cacheProfile;
     private int? _cacheDuration;

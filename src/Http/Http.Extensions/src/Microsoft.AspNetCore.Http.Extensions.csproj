@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
@@ -13,15 +14,19 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared"/>
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LingBase="Shared"/>
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
   </ItemGroup>

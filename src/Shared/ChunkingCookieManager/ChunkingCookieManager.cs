@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
 /// from requests.
 /// </summary>
-internal class ChunkingCookieManager
+internal sealed class ChunkingCookieManager
 {
 #endif
     /// <summary>
@@ -54,7 +54,7 @@ internal class ChunkingCookieManager
 
     /// <summary>
     /// The maximum size of cookie to send back to the client. If a cookie exceeds this size it will be broken down into multiple
-    /// cookies. Set this value to null to disable this behavior. The default is 4090 characters, which is supported by all
+    /// cookies. Set this value to null to disable this behavior. The default is 4050 characters, which is supported by all
     /// common browsers.
     ///
     /// Note that browsers may also have limits on the total size of all cookies per domain, and on the number of cookies per domain.
@@ -103,7 +103,7 @@ internal class ChunkingCookieManager
         var chunksCount = ParseChunksCount(value);
         if (chunksCount > 0)
         {
-            var chunks = new string[chunksCount];
+            var chunks = new List<string>(10); // The client may not have sent all of the chunks, don't allocate based on chunksCount.
             for (var chunkId = 1; chunkId <= chunksCount; chunkId++)
             {
                 var chunk = requestCookies[key + ChunkKeySuffix + chunkId.ToString(CultureInfo.InvariantCulture)];
@@ -128,7 +128,7 @@ internal class ChunkingCookieManager
                     return value;
                 }
 
-                chunks[chunkId - 1] = chunk;
+                chunks.Add(chunk);
             }
 
             return string.Join(string.Empty, chunks);
@@ -173,18 +173,7 @@ internal class ChunkingCookieManager
             return;
         }
 
-        var template = new SetCookieHeaderValue(key)
-        {
-            Domain = options.Domain,
-            Expires = options.Expires,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly,
-            Path = options.Path,
-            Secure = options.Secure,
-            MaxAge = options.MaxAge,
-        };
-
-        var templateLength = template.ToString().Length;
+        var templateLength = options.CreateCookieHeader(key, string.Empty).ToString().Length;
 
         // Normal cookie
         if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + value.Length)
@@ -252,17 +241,26 @@ internal class ChunkingCookieManager
         }
 
         var keys = new List<string>
-            {
-                key + "="
-            };
+        {
+            key + "="
+        };
 
-        var requestCookie = context.Request.Cookies[key];
-        var chunks = ParseChunksCount(requestCookie);
+        var requestCookies = context.Request.Cookies;
+        var requestCookie = requestCookies[key];
+        long chunks = ParseChunksCount(requestCookie);
         if (chunks > 0)
         {
             for (var i = 1; i <= chunks + 1; i++)
             {
                 var subkey = key + ChunkKeySuffix + i.ToString(CultureInfo.InvariantCulture);
+
+                // Only delete cookies we received. We received the chunk count cookie so we should have received the others too.
+                if (string.IsNullOrEmpty(requestCookies[subkey]))
+                {
+                    chunks = i - 1;
+                    break;
+                }
+
                 keys.Add(subkey + "=");
             }
         }
@@ -315,15 +313,9 @@ internal class ChunkingCookieManager
             keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);
         }
 
-        responseCookies.Append(keyValuePairs, new CookieOptions()
+        responseCookies.Append(keyValuePairs, new CookieOptions(options)
         {
-            Path = options.Path,
-            Domain = options.Domain,
-            SameSite = options.SameSite,
-            Secure = options.Secure,
-            IsEssential = options.IsEssential,
             Expires = DateTimeOffset.UnixEpoch,
-            HttpOnly = options.HttpOnly,
         });
     }
 }

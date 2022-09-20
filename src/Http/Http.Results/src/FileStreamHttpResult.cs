@@ -6,13 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
 /// write a file from a stream to the response.
 /// </summary>
-public sealed class FileStreamHttpResult : IResult
+public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTypeHttpResult
 {
     /// <summary>
     /// Creates a new <see cref="FileStreamHttpResult"/> instance with
@@ -108,13 +108,15 @@ public sealed class FileStreamHttpResult : IResult
     public long? FileLength { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the stream with the file that will be sent back as the response.
+    /// Gets the stream with the file that will be sent back as the response.
     /// </summary>
     public Stream FileStream { get; }
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileStreamResult");

@@ -1,0 +1,4 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions
+static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.WithOpenApi<TBuilder>(this TBuilder builder) -> TBuilder
+static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.WithOpenApi<TBuilder>(this TBuilder builder, System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.OpenApi.Models.OpenApiOperation!>! configureOperation) -> TBuilder

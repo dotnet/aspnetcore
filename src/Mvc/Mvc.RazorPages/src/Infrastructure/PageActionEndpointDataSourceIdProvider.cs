@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionEndpointDataSourceIdProvider
+internal sealed class PageActionEndpointDataSourceIdProvider
 {
     private int _nextId = 1;
 

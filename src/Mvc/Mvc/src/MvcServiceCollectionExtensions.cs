@@ -355,7 +355,7 @@ public static class MvcServiceCollectionExtensions
     }
 
     [DebuggerDisplay("{Name}")]
-    private class FrameworkAssemblyPart : AssemblyPart, ICompilationReferencesProvider
+    private sealed class FrameworkAssemblyPart : AssemblyPart, ICompilationReferencesProvider
     {
         public FrameworkAssemblyPart(Assembly assembly)
             : base(assembly)

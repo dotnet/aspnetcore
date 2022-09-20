@@ -50,7 +50,7 @@ public class DefaultViewComponentSelector : IViewComponentSelector
         }
     }
 
-    private class ViewComponentDescriptorCache
+    private sealed class ViewComponentDescriptorCache
     {
         private readonly ILookup<string, ViewComponentDescriptor> _lookupByShortName;
         private readonly ILookup<string, ViewComponentDescriptor> _lookupByFullName;

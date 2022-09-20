@@ -47,10 +47,9 @@ public class TestServiceImpl : TestService.TestServiceBase
 
         foreach (var responseParam in request.ResponseParameters)
         {
-            // TODO(JamesNK): Remove nullable override after Grpc.Core.Api update
             responseStream.WriteOptions = !(responseParam.Compressed?.Value ?? false)
                 ? new WriteOptions(WriteFlags.NoCompress)
-                : null!;
+                : null;
 
             var response = new StreamingOutputCallResponse { Payload = CreateZerosPayload(responseParam.Size) };
             await responseStream.WriteAsync(response);

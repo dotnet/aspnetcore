@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Allows fine grained configuration of MVC services.
 /// </summary>
-internal class MvcBuilder : IMvcBuilder
+internal sealed class MvcBuilder : IMvcBuilder
 {
     /// <summary>
     /// Initializes a new <see cref="MvcBuilder"/> instance.

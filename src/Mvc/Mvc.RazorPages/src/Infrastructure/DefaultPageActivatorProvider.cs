@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 /// <summary>
 /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
 /// </summary>
-internal class DefaultPageActivatorProvider : IPageActivatorProvider
+internal sealed class DefaultPageActivatorProvider : IPageActivatorProvider
 {
     private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
     private readonly Func<PageContext, ViewContext, object, ValueTask> _asyncDisposer = AsyncDispose;

@@ -68,7 +68,7 @@
     <ResourceCompile Include="outofprocessrequesthandler.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="OutOfProcessRhStaticHtml.htm">
+    <None Include="..\..\AspNetCore\ancm_error_page.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="Source.def" />

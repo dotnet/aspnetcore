@@ -12,7 +12,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal partial class RequestHeaders : IHeaderDictionary
+internal sealed partial class RequestHeaders : IHeaderDictionary
 {
     private IDictionary<string, StringValues>? _extra;
     private readonly NativeRequestContext _requestMemoryBlob;

@@ -144,9 +144,7 @@ public class RedirectHandler : DelegatingHandler
         {
             if (!location.IsAbsoluteUri && response.RequestMessage.RequestUri is Uri requestUri)
             {
-                location = new Uri(
-                    new Uri(requestUri.GetLeftPart(UriPartial.Authority)),
-                    location);
+                location = new Uri(requestUri, location);
             }
 
             redirect.RequestUri = location;

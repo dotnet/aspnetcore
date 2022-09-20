@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.CodeDom.Compiler;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Microsoft.AspNetCore.Http;
 

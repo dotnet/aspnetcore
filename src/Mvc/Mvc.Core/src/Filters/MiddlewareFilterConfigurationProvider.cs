@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// Calls into user provided 'Configure' methods for configuring a middleware pipeline. The semantics of finding
 /// the 'Configure' methods is similar to the application Startup class.
 /// </summary>
-internal class MiddlewareFilterConfigurationProvider
+internal sealed class MiddlewareFilterConfigurationProvider
 {
     public static Action<IApplicationBuilder> CreateConfigureDelegate(Type configurationType)
     {
@@ -76,7 +76,7 @@ internal class MiddlewareFilterConfigurationProvider
         return !modelType.IsAbstract && modelType.GetConstructor(Type.EmptyTypes) != null;
     }
 
-    private class ConfigureBuilder
+    private sealed class ConfigureBuilder
     {
         public ConfigureBuilder(MethodInfo configure)
         {

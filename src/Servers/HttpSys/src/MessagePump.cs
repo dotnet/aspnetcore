@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class MessagePump : IServer
+internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 {
     private readonly ILogger _logger;
     private readonly HttpSysOptions _options;
@@ -30,14 +30,8 @@ internal partial class MessagePump : IServer
 
     public MessagePump(IOptions<HttpSysOptions> options, ILoggerFactory loggerFactory, IAuthenticationSchemeProvider authentication)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
         _options = options.Value;
         Listener = new HttpSysListener(_options, loggerFactory);
         _logger = loggerFactory.CreateLogger<MessagePump>();
@@ -53,8 +47,7 @@ internal partial class MessagePump : IServer
 
         if (HttpApi.SupportsDelegation)
         {
-            var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
-            Features.Set<IServerDelegationFeature>(delegationProperty);
+            Features.Set<IServerDelegationFeature>(this);
         }
 
         _maxAccepts = _options.MaxAccepts;
@@ -70,10 +63,7 @@ internal partial class MessagePump : IServer
 
     public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {
-        if (application == null)
-        {
-            throw new ArgumentNullException(nameof(application));
-        }
+        ArgumentNullException.ThrowIfNull(application);
 
         var hostingUrlsPresent = _serverAddresses.Addresses.Count > 0;
         var serverAddressCopy = _serverAddresses.Addresses.ToList();
@@ -269,6 +259,13 @@ internal partial class MessagePump : IServer
         }
 
         return _shutdownSignal.Task;
+    }
+
+    public DelegationRule CreateDelegationRule(string queueName, string uri)
+    {
+        var rule = new DelegationRule(Listener.UrlGroup, queueName, uri, _logger);
+        Listener.UrlGroup.SetDelegationProperty(rule.Queue);
+        return rule;
     }
 
     public void Dispose()

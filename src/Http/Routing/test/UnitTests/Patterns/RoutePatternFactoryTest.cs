@@ -713,4 +713,133 @@ public class RoutePatternFactoryTest
         Assert.Same(paramPartC, actual.Parts[1]);
         Assert.Same(paramPartD, actual.Parts[2]);
     }
+
+    [Theory]
+    [InlineData("/a/b", "")]
+    [InlineData("/a/b", "/")]
+    [InlineData("/a/b/", "")]
+    [InlineData("/a/b/", "/")]
+    [InlineData("/a", "b/")]
+    [InlineData("/a/", "b/")]
+    [InlineData("/a", "/b/")]
+    [InlineData("/a/", "/b/")]
+    [InlineData("/", "a/b/")]
+    [InlineData("/", "/a/b/")]
+    [InlineData("", "a/b/")]
+    [InlineData("", "/a/b/")]
+    public void Combine_HandlesEmptyPatternsAndDuplicateSeperatorsInRawText(string leftTemplate, string rightTemplate)
+    {
+        var left = RoutePatternFactory.Parse(leftTemplate);
+        var right = RoutePatternFactory.Parse(rightTemplate);
+
+        var combined = RoutePatternFactory.Combine(left, right);
+
+        static Action<RoutePatternPathSegment> AssertLiteral(string literal)
+        {
+            return segment =>
+            {
+                var part = Assert.IsType<RoutePatternLiteralPart>(Assert.Single(segment.Parts));
+                Assert.Equal(literal, part.Content);
+            };
+        }
+
+        Assert.Equal("/a/b/", combined.RawText);
+        Assert.Collection(combined.PathSegments, AssertLiteral("a"), AssertLiteral("b"));
+    }
+
+    [Fact]
+    public void Combine_WithDuplicateParameters_Throws()
+    {
+        // Parameter names are case insensitive
+        var left = RoutePatternFactory.Parse("/{id}");
+        var right = RoutePatternFactory.Parse("/{ID}");
+
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternFactory.Combine(left, right));
+
+        Assert.Equal("/{id}/{ID}", ex.Pattern);
+        Assert.Equal("The route parameter name 'ID' appears more than one time in the route template.", ex.Message);
+    }
+
+    [Fact]
+    public void Combine_WithDuplicateDefaults_DoesNotThrow()
+    {
+        // Keys should be case insensitive.
+        var left = RoutePatternFactory.Parse("/a/{x=foo}");
+        var right = RoutePatternFactory.Parse("/b", defaults: new { X = "foo" }, parameterPolicies: null);
+
+        var combined = RoutePatternFactory.Combine(left, right);
+
+        Assert.Equal("/a/{x=foo}/b", combined.RawText);
+
+        var (key, value) = Assert.Single(combined.Defaults);
+        Assert.Equal("x", key);
+        Assert.Equal("foo", value);
+    }
+
+    [Fact]
+    public void Combine_WithDuplicateRequiredValues_DoesNotThrow()
+    {
+        // Keys should be case insensitive.
+        // The required value must be a parameter or a default to parse. Since we cannot repeat parameters, we set defaults instead.
+        var left = RoutePatternFactory.Parse("/a", defaults: new { x = "foo" }, parameterPolicies: null, requiredValues: new { x = "foo" });
+        var right = RoutePatternFactory.Parse("/b", defaults: new { X = "foo" }, parameterPolicies: null, requiredValues: new { X = "foo" });
+
+        var combined = RoutePatternFactory.Combine(left, right);
+
+        Assert.Equal("/a/b", combined.RawText);
+
+        var (key, value) = Assert.Single(combined.RequiredValues);
+        Assert.Equal("x", key);
+        Assert.Equal("foo", value);
+    }
+
+    [Fact]
+    public void Combine_WithDuplicateParameterPolicies_Throws()
+    {
+        // Since even the exact same instance and keys throw, we don't bother testing different key casing.
+        var policies = new { X = new RegexRouteConstraint("x"), };
+
+        var left = RoutePatternFactory.Parse("/a", defaults: null, parameterPolicies: policies);
+        var right = RoutePatternFactory.Parse("/b", defaults: null, parameterPolicies: policies);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Combine(left, right));
+        Assert.Equal("MapGroup cannot build a pattern for '/a/b' because the 'RoutePattern.ParameterPolicies' dictionary key 'X' has multiple values.", ex.Message);
+    }
+
+    [Fact]
+    public void Combine_WithConflictingDefaults_Throws()
+    {
+        // Keys should be case insensitive but not values.
+        // Value differs in casing. As long as object.Equals(object?, object?) returns false, there's a conflict.
+        var left = RoutePatternFactory.Parse("/a/{x=foo}");
+        var right = RoutePatternFactory.Parse("/b", defaults: new { X = "Foo" }, parameterPolicies: null);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Combine(left, right));
+        Assert.Equal("MapGroup cannot build a pattern for '/a/{x=foo}/b' because the 'RoutePattern.Defaults' dictionary key 'X' has multiple values.", ex.Message);
+    }
+
+    [Fact]
+    public void Combine_WithConflictingRequiredValues_Throws()
+    {
+        // Keys should be case insensitive but not values.
+        // Value differs in casing. As long as object.Equals(object?, object?) returns false, there's a conflict.
+        // The required value must be a parameter or a default to parse. Since we cannot repeat parameters, we set defaults instead.
+        var left = RoutePatternFactory.Parse("/a", defaults: new { x = "foo" }, parameterPolicies: null, requiredValues: new { x = "foo" });
+        var right = RoutePatternFactory.Parse("/b", defaults: new { X = "foo" }, parameterPolicies: null, requiredValues: new { X = "Foo" });
+
+        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Combine(left, right));
+        Assert.Equal("MapGroup cannot build a pattern for '/a/b' because the 'RoutePattern.RequiredValues' dictionary key 'X' has multiple values.", ex.Message);
+    }
+
+    [Fact]
+    public void Combine_WithConflictingParameterPolicies_Throws()
+    {
+        // Even the exact same policy instance throws, but this verifies theres a conflict even if the policy is defined via a pattern in one part.
+        // The policy is defined via a pattern in bot parts because parameters cannot be repeated.
+        var left = RoutePatternFactory.Parse("/a/{x:string}");
+        var right = RoutePatternFactory.Parse("/b", defaults: null, parameterPolicies: new { X = new RegexRouteConstraint("foo") });
+
+        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Combine(left, right));
+        Assert.Equal("MapGroup cannot build a pattern for '/a/{x:string}/b' because the 'RoutePattern.ParameterPolicies' dictionary key 'X' has multiple values.", ex.Message);
+    }
 }

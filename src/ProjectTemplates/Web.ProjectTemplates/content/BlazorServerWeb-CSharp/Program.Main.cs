@@ -37,7 +37,7 @@ using BlazorServerWeb_CSharp.Areas.Identity;
 #endif
 using BlazorServerWeb_CSharp.Data;
 
-namespace Company.WebApplication1;
+namespace BlazorServerWeb_CSharp;
 
 public class Program
 {
@@ -138,7 +138,7 @@ public class Program
         #endif
         {
             app.UseExceptionHandler("/Error");
-        #if (RequiresHttps)
+        #if (HasHttpsProfile)
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
@@ -153,8 +153,7 @@ public class Program
 
         app.UseRouting();
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
+        #if (IndividualAuth)
         app.UseAuthorization();
 
         #endif

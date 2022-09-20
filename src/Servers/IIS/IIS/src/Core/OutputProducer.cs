@@ -7,11 +7,12 @@ using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class OutputProducer
+internal sealed class OutputProducer
 {
-    // This locks access to _completed.
+    // This locks access to _completed and _aborted.
     private readonly object _contextLock = new object();
     private bool _completed;
+    private volatile bool _aborted;
 
     private readonly Pipe _pipe;
 
@@ -29,6 +30,8 @@ internal class OutputProducer
 
     public PipeReader Reader => _pipe.Reader;
 
+    public bool Aborted => _aborted;
+
     public Task FlushAsync(CancellationToken cancellationToken)
     {
         _pipe.Reader.CancelPendingRead();
@@ -40,7 +43,7 @@ internal class OutputProducer
     {
         lock (_contextLock)
         {
-            if (_completed)
+            if (_completed || _aborted)
             {
                 return;
             }
@@ -54,12 +57,12 @@ internal class OutputProducer
     {
         lock (_contextLock)
         {
-            if (_completed)
+            if (_completed || _aborted)
             {
                 return;
             }
 
-            _completed = true;
+            _aborted = true;
 
             _pipe.Reader.CancelPendingRead();
             _pipe.Writer.Complete();
@@ -70,7 +73,7 @@ internal class OutputProducer
     {
         lock (_contextLock)
         {
-            if (_completed)
+            if (_completed || _aborted)
             {
                 return Task.CompletedTask;
             }

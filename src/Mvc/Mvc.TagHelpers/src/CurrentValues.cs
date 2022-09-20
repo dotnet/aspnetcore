@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
-internal class CurrentValues
+internal sealed class CurrentValues
 {
     public CurrentValues(ICollection<string> values)
     {

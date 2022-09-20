@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class OrderedEndpointsSequenceProviderCache
+internal sealed class OrderedEndpointsSequenceProviderCache
 {
     private readonly ConcurrentDictionary<IEndpointRouteBuilder, OrderedEndpointsSequenceProvider> _sequenceProviderCache = new();
 

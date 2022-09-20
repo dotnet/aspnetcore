@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class HttpProtocolsFeature
+internal sealed class HttpProtocolsFeature
 {
     public HttpProtocolsFeature(HttpProtocols httpProtocols)
     {

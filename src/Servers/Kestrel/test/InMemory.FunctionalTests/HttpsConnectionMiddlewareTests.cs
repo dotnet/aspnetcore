@@ -1,18 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -545,7 +539,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             listenOptions.UseHttps(options =>
             {
                 options.ServerCertificate = _x509Certificate2;
-                options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                 options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
             });
@@ -632,7 +625,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                     return ValueTask.FromResult(new SslServerAuthenticationOptions()
                     {
                         ServerCertificate = _x509Certificate2,
-                        EnabledSslProtocols = SslProtocols.Tls12, // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                         ClientCertificateRequired = false,
                         RemoteCertificateValidationCallback = (_, _, _, _) => true,
                     });
@@ -676,7 +668,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             listenOptions.UseHttps(options =>
             {
                 options.ServerCertificate = _x509Certificate2;
-                options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                 options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
             });
@@ -717,64 +708,88 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Fails on OSX.")]
+    public async Task ServerCertificateChainInExtraStore()
+    {
+        var streams = new List<SslStream>();
+        CertHelper.CleanupCertificates(nameof(ServerCertificateChainInExtraStore));
+        (var clientCertificate, var clientChain) = CertHelper.GenerateCertificates(nameof(ServerCertificateChainInExtraStore), longChain: true, serverCertificate: false);
+
+        using (var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser))
+        {
+            // add chain certificate so we can construct chain since there is no way how to pass intermediates directly.
+            store.Open(OpenFlags.ReadWrite);
+            store.AddRange(clientChain);
+            store.Close();
+        }
+
+        using (var chain = new X509Chain())
+        {
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            chain.ChainPolicy.DisableCertificateDownloads = true;
+            var chainStatus = chain.Build(clientCertificate);
+        }
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                ServerCertificateChain = clientChain,
+                OnAuthenticate = (con, so) =>
+                {
+                    so.ClientCertificateRequired = true;
+                    so.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                    {
+                        Assert.NotEmpty(chain.ChainPolicy.ExtraStore);
+                        Assert.Contains(clientChain[0], chain.ChainPolicy.ExtraStore);
+                        return true;
+                    };
+                    so.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+                }
+            });
+        }
+
+        await using (var server = new TestServer(
+            context => context.Response.WriteAsync("hello world"),
+            new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                var stream = OpenSslStreamWithCert(connection.Stream, clientCertificate);
+                await stream.AuthenticateAsClientAsync("localhost");
+                await AssertConnectionResult(stream, true);
+            }
+        }
+
+        CertHelper.CleanupCertificates(nameof(ServerCertificateChainInExtraStore));
+        clientCertificate.Dispose();
+        var list = (System.Collections.IList)clientChain;
+        for (var i = 0; i < list.Count; i++)
+        {
+            var c = (X509Certificate)list[i];
+            c.Dispose();
+        }
+
+        foreach (var s in streams)
+        {
+            s.Dispose();
+        }
+    }
+
+    [ConditionalFact]
     // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
     // then the connection is aborted.
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
-    public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows_TLS12()
+    public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
             listenOptions.Protocols = HttpProtocols.Http1;
             listenOptions.UseHttps(options =>
             {
-                options.SslProtocols = SslProtocols.Tls12;
-                options.ServerCertificate = _x509Certificate2;
-                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
-                options.AllowAnyClientCertificate();
-            });
-        }
-
-        // Under 4kb can sometimes work because it fits into Kestrel's header parsing buffer.
-        var expectedBody = new string('a', 1024 * 4);
-
-        await using var server = new TestServer(async context =>
-        {
-            var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
-            Assert.NotNull(tlsFeature);
-            Assert.Null(tlsFeature.ClientCertificate);
-            Assert.Null(context.Connection.ClientCertificate);
-
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-            Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
-            Assert.Null(tlsFeature.ClientCertificate);
-            Assert.Null(context.Connection.ClientCertificate);
-        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
-
-        using var connection = server.CreateConnection();
-        // SslStream is used to ensure the certificate is actually passed to the server
-        // HttpClient might not send the certificate because it is invalid or it doesn't match any
-        // of the certificate authorities sent by the server in the SSL handshake.
-        // Use a random host name to avoid the TLS session resumption cache.
-        var stream = OpenSslStreamWithCert(connection.Stream);
-        await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
-        await AssertConnectionResult(stream, true, expectedBody);
-    }
-
-    [ConditionalFact]
-    // TLS 1.3 uses a new client cert negotiation extension that doesn't cause the connection to abort
-    // for this error.
-    [MinimumOSVersion(OperatingSystems.Windows, "10.0.20145")] // Needs a preview version with TLS 1.3 enabled.
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/runtime/issues/55757")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
-    public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows_TLS13()
-    {
-        void ConfigureListenOptions(ListenOptions listenOptions)
-        {
-            listenOptions.Protocols = HttpProtocols.Http1;
-            listenOptions.UseHttps(options =>
-            {
-                options.SslProtocols = SslProtocols.Tls13;
                 options.ServerCertificate = _x509Certificate2;
                 options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
@@ -912,7 +927,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             listenOptions.UseHttps(options =>
             {
                 options.ServerCertificate = _x509Certificate2;
-                options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                 options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
             });
@@ -946,6 +960,60 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var stream = OpenSslStreamWithCert(connection.Stream);
         await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
         await AssertConnectionResult(stream, true, expectedBody);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    public async Task RenegotationFailureCausesConnectionClose()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.Protocols = HttpProtocols.Http1;
+            listenOptions.UseHttps(options =>
+            {
+                options.ServerCertificate = _x509Certificate2;
+                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                options.AllowAnyClientCertificate();
+            });
+        }
+
+        var expectedBody = new string('a', 1024 * 4);
+
+        await using var server = new TestServer(async context =>
+        {
+            var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(tlsFeature);
+            Assert.Null(tlsFeature.ClientCertificate);
+            Assert.Null(context.Connection.ClientCertificate);
+
+            // Request the client cert while there's still body data in the buffers
+            var ioe = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
+            Assert.Equal("Client stream needs to be drained before renegotiation.", ioe.Message);
+
+            context.Response.ContentLength = 11;
+            await context.Response.WriteAsync("hello world");
+
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+        using var connection = server.CreateConnection();
+        // SslStream is used to ensure the certificate is actually passed to the server
+        // HttpClient might not send the certificate because it is invalid or it doesn't match any
+        // of the certificate authorities sent by the server in the SSL handshake.
+        // Use a random host name to avoid the TLS session resumption cache.
+        var stream = OpenSslStreamWithCert(connection.Stream);
+        await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
+
+        var request = Encoding.UTF8.GetBytes($"POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: {expectedBody.Length}\r\n\r\n{expectedBody}");
+        await stream.WriteAsync(request, 0, request.Length).DefaultTimeout();
+        var reader = new StreamReader(stream);
+        Assert.Equal("HTTP/1.1 200 OK", await reader.ReadLineAsync().DefaultTimeout());
+        Assert.Equal("Content-Length: 11", await reader.ReadLineAsync().DefaultTimeout());
+        Assert.Equal("Connection: close", await reader.ReadLineAsync().DefaultTimeout());
+        Assert.StartsWith("Date: ", await reader.ReadLineAsync().DefaultTimeout());
+        Assert.Equal("", await reader.ReadLineAsync().DefaultTimeout());
+        Assert.Equal("hello world", await reader.ReadLineAsync().DefaultTimeout());
+        Assert.Null(await reader.ReadLineAsync().DefaultTimeout());
     }
 
     [Fact]

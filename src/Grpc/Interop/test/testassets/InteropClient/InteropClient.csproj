@@ -1,9 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <!-- Suppress warnings about lowercase variable names in generated code -->
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +13,8 @@
     <Protobuf Include="..\Proto\grpc\testing\empty.proto" GrpcServices="None" Link="Protos\empty.proto" />
     <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
 
+    <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" />
+    
     <Reference Include="CommandLineParser" />
     <Reference Include="Google.Protobuf" />
     <Reference Include="Grpc.Auth" />

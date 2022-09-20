@@ -65,7 +65,7 @@ internal abstract partial class InvocationRequest : IDisposable
         _cancellationTokenRegistration.Dispose();
     }
 
-    private class Streaming : InvocationRequest
+    private sealed class Streaming : InvocationRequest
     {
         private readonly Channel<object?> _channel = Channel.CreateUnbounded<object?>();
 
@@ -125,7 +125,7 @@ internal abstract partial class InvocationRequest : IDisposable
         }
     }
 
-    private class NonStreaming : InvocationRequest
+    private sealed class NonStreaming : InvocationRequest
     {
         private readonly TaskCompletionSource<object?> _completionSource = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 

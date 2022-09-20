@@ -4,6 +4,7 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
@@ -19,13 +20,20 @@ public class TestServer : IServer
     private bool _disposed;
     private ApplicationWrapper? _application;
 
+    private static FeatureCollection CreateTestFeatureCollection()
+    {
+        var features = new FeatureCollection();
+        features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
+        return features;
+    }
+
     /// <summary>
     /// For use with IHostBuilder.
     /// </summary>
     /// <param name="services"></param>
     /// <param name="optionsAccessor"></param>
     public TestServer(IServiceProvider services, IOptions<TestServerOptions> optionsAccessor)
-        : this(services, new FeatureCollection(), optionsAccessor)
+        : this(services, CreateTestFeatureCollection(), optionsAccessor)
     {
     }
 
@@ -50,7 +58,7 @@ public class TestServer : IServer
     /// </summary>
     /// <param name="services"></param>
     public TestServer(IServiceProvider services)
-        : this(services, new FeatureCollection())
+        : this(services, CreateTestFeatureCollection())
     {
     }
 
@@ -71,7 +79,7 @@ public class TestServer : IServer
     /// </summary>
     /// <param name="builder"></param>
     public TestServer(IWebHostBuilder builder)
-        : this(builder, new FeatureCollection())
+        : this(builder, CreateTestFeatureCollection())
     {
     }
 
@@ -138,13 +146,30 @@ public class TestServer : IServer
         get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
     }
 
+    private PathString PathBase => BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
+
     /// <summary>
     /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
     /// </summary>
     public HttpMessageHandler CreateHandler()
     {
-        var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-        return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
+        return new ClientHandler(PathBase, Application)
+        {
+            AllowSynchronousIO = AllowSynchronousIO,
+            PreserveExecutionContext = PreserveExecutionContext
+        };
+    }
+
+    /// <summary>
+    /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with custom configuration with the test server.
+    /// </summary>
+    public HttpMessageHandler CreateHandler(Action<HttpContext> additionalContextConfiguration)
+    {
+        return new ClientHandler(PathBase, Application, additionalContextConfiguration)
+        {
+            AllowSynchronousIO = AllowSynchronousIO,
+            PreserveExecutionContext = PreserveExecutionContext
+        };
     }
 
     /// <summary>
@@ -227,10 +252,7 @@ public class TestServer : IServer
     {
         _application = new ApplicationWrapper<TContext>(application, () =>
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         });
 
         return Task.CompletedTask;

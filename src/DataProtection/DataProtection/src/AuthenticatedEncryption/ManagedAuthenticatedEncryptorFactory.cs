@@ -111,7 +111,7 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
         /// <summary>
         /// Creates a factory that wraps a call to <see cref="Activator.CreateInstance{T}"/>.
         /// </summary>
-        public static Func<T> CreateFactory<T>(Type implementation)
+        public static Func<T> CreateFactory<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type implementation)
         {
             return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))!).Creator;
         }
@@ -121,7 +121,7 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
             Func<T> Creator { get; }
         }
 
-        private class AlgorithmActivatorCore<T> : IActivator<T> where T : new()
+        private sealed class AlgorithmActivatorCore<T> : IActivator<T> where T : new()
         {
             public Func<T> Creator { get; } = Activator.CreateInstance<T>;
         }

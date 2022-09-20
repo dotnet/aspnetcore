@@ -286,7 +286,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     protected internal async Task<bool> TryUpdateModelAsync<TModel>(
         TModel model,
         string name,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (model == null)
@@ -375,7 +375,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         TModel model,
         string name,
         IValueProvider valueProvider,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (model == null)

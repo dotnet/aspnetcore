@@ -561,6 +561,14 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
                         offset += sizeof(uint) / 2;
                         transferEncodingOptions = TransferCoding.Chunked;
                     }
+                    else
+                    {
+                        transferEncodingOptions = TransferCoding.Other;
+                    }
+                }
+                else
+                {
+                    transferEncodingOptions = TransferCoding.Other;
                 }
 
                 if ((uint)offset >= (uint)values.Length)

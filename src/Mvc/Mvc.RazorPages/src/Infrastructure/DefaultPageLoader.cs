@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DefaultPageLoader : PageLoader
+internal sealed class DefaultPageLoader : PageLoader
 {
     private readonly IViewCompilerProvider _viewCompilerProvider;
     private readonly CompiledPageActionDescriptorFactory _compiledPageActionDescriptorFactory;
@@ -87,6 +87,9 @@ internal class DefaultPageLoader : PageLoader
                         }
                     },
             },
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
 
         // In some test scenarios there's no route so the endpoint isn't created. This is fine because

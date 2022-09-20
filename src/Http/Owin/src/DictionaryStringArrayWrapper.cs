@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Owin;
 
-internal class DictionaryStringArrayWrapper : IDictionary<string, string[]>
+internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[]>
 {
     public DictionaryStringArrayWrapper(IHeaderDictionary inner)
     {

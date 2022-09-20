@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite;
 
-internal class RedirectToNonWwwRule : IRule
+internal sealed class RedirectToNonWwwRule : IRule
 {
     private const string WwwDot = "www.";
 

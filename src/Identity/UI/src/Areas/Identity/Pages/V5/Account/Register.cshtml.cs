@@ -90,7 +90,7 @@ public abstract class RegisterModel : PageModel
     public virtual Task<IActionResult> OnPostAsync(string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class RegisterModel<TUser> : RegisterModel where TUser : class
+internal sealed class RegisterModel<TUser> : RegisterModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Html;
 
 /// <summary>
 /// An <see cref="IHtmlContent"/> implementation of composite string formatting
-/// (see https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx) which HTML encodes
+/// (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx"/>) which HTML encodes
 /// formatted arguments.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]

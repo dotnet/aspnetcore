@@ -124,7 +124,7 @@ public partial class ForbidResult : ActionResult
             }
         }
 
-        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).", EventName = "ForbidResultExecuting", SkipEnabledCheck =  true)]
+        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).", EventName = "ForbidResultExecuting", SkipEnabledCheck = true)]
         private static partial void ForbidResultExecuting(ILogger logger, string[] schemes);
     }
 }

@@ -22,7 +22,7 @@ public static class GoogleDefaults
     /// The default endpoint used to perform Google authentication.
     /// </summary>
     /// <remarks>
-    /// For more details about this endpoint, see https://developers.google.com/identity/protocols/oauth2/web-server#httprest
+    /// For more details about this endpoint, see <see href="https://developers.google.com/identity/protocols/oauth2/web-server#httprest"/>.
     /// </remarks>
     public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 
@@ -34,8 +34,5 @@ public static class GoogleDefaults
     /// <summary>
     /// The Google endpoint that is used to gather additional user information.
     /// </summary>
-    /// <remarks>
-    /// For more details about this endpoint, see https://developers.google.com/apis-explorer/#search/oauth2/oauth2/v2/.
-    /// </remarks>
-    public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
+    public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
 }

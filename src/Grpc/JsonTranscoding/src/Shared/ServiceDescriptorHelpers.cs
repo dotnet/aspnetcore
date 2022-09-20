@@ -24,8 +24,9 @@ using System.Reflection;
 using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
-using Microsoft.AspNetCore.Routing.Patterns;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Primitives;
+using Type = System.Type;
 
 namespace Grpc.Shared;
 
@@ -62,28 +63,13 @@ internal static class ServiceDescriptorHelpers
         throw new InvalidOperationException($"Get not find Descriptor property on {serviceReflectionType.Name}.");
     }
 
-    public static bool TryResolveDescriptors(MessageDescriptor messageDescriptor, string variable, [NotNullWhen(true)]out List<FieldDescriptor>? fieldDescriptors)
+    public static bool TryResolveDescriptors(MessageDescriptor messageDescriptor, IList<string> path, [NotNullWhen(true)]out List<FieldDescriptor>? fieldDescriptors)
     {
         fieldDescriptors = null;
-        var path = variable.AsSpan();
         MessageDescriptor? currentDescriptor = messageDescriptor;
 
-        while (path.Length > 0)
+        foreach (var fieldName in path)
         {
-            var separator = path.IndexOf('.');
-
-            string fieldName;
-            if (separator != -1)
-            {
-                fieldName = path.Slice(0, separator).ToString();
-                path = path.Slice(separator + 1);
-            }
-            else
-            {
-                fieldName = path.ToString();
-                path = ReadOnlySpan<char>.Empty;
-            }
-
             var field = currentDescriptor?.FindFieldByName(fieldName);
             if (field == null)
             {
@@ -105,7 +91,6 @@ internal static class ServiceDescriptorHelpers
             {
                 currentDescriptor = null;
             }
-
         }
 
         return fieldDescriptors != null;
@@ -165,6 +150,11 @@ internal static class ServiceDescriptorHelpers
             case FieldType.Message:
                 if (IsWrapperType(descriptor.MessageType))
                 {
+                    if (value == null)
+                    {
+                        return null;
+                    }
+
                     return ConvertValue(value, descriptor.MessageType.FindFieldByName("value"));
                 }
                 break;
@@ -219,7 +209,17 @@ internal static class ServiceDescriptorHelpers
                     }
                     else if (values is IMessage message)
                     {
-                        field.Accessor.SetValue(currentValue, message);
+                        if (IsWrapperType(message.Descriptor))
+                        {
+                            const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
+
+                            var wrappedValue = message.Descriptor.Fields[WrapperValueFieldNumber].Accessor.GetValue(message);
+                            field.Accessor.SetValue(currentValue, wrappedValue);
+                        }
+                        else
+                        {
+                            field.Accessor.SetValue(currentValue, message);
+                        }
                     }
                     else
                     {
@@ -285,17 +285,22 @@ internal static class ServiceDescriptorHelpers
         }
     }
 
-    public static Dictionary<string, List<FieldDescriptor>> ResolveRouteParameterDescriptors(RoutePattern pattern, MessageDescriptor messageDescriptor)
+    public static Dictionary<string, RouteParameter> ResolveRouteParameterDescriptors(
+        List<HttpRouteVariable> variables,
+        MessageDescriptor messageDescriptor)
     {
-        var routeParameterDescriptors = new Dictionary<string, List<FieldDescriptor>>(StringComparer.Ordinal);
-        foreach (var routeParameter in pattern.Parameters)
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>(StringComparer.Ordinal);
+        foreach (var variable in variables)
         {
-            if (!TryResolveDescriptors(messageDescriptor, routeParameter.Name, out var fieldDescriptors))
+            var path = variable.FieldPath;
+            if (!TryResolveDescriptors(messageDescriptor, path, out var fieldDescriptors))
             {
-                throw new InvalidOperationException($"Couldn't find matching field for route parameter '{routeParameter.Name}' on {messageDescriptor.Name}.");
+                throw new InvalidOperationException($"Couldn't find matching field for route parameter '{string.Join(".", path)}' on {messageDescriptor.Name}.");
             }
 
-            routeParameterDescriptors.Add(routeParameter.Name, fieldDescriptors);
+            var completeFieldPath = string.Join(".", fieldDescriptors.Select(d => d.Name));
+            var completeJsonPath = string.Join(".", fieldDescriptors.Select(d => d.JsonName));
+            routeParameterDescriptors.Add(completeFieldPath, new RouteParameter(fieldDescriptors, variable, completeJsonPath));
         }
 
         return routeParameterDescriptors;
@@ -307,7 +312,8 @@ internal static class ServiceDescriptorHelpers
         {
             if (!string.Equals(body, "*", StringComparison.Ordinal))
             {
-                if (!TryResolveDescriptors(methodDescriptor.InputType, body, out var bodyFieldDescriptors))
+                var bodyFieldPath = body.Split('.');
+                if (!TryResolveDescriptors(methodDescriptor.InputType, bodyFieldPath, out var bodyFieldDescriptors))
                 {
                     throw new InvalidOperationException($"Couldn't find matching field for body '{body}' on {methodDescriptor.InputType.Name}.");
                 }
@@ -342,7 +348,97 @@ internal static class ServiceDescriptorHelpers
         return null;
     }
 
-    public record BodyDescriptorInfo(
+    public static Dictionary<string, FieldDescriptor> ResolveQueryParameterDescriptors(
+        Dictionary<string, RouteParameter> routeParameters,
+        MethodDescriptor methodDescriptor,
+        MessageDescriptor? bodyDescriptor,
+        List<FieldDescriptor>? bodyFieldDescriptors)
+    {
+        var existingParameters = new List<FieldDescriptor>();
+
+        foreach (var routeParameter in routeParameters)
+        {
+            // Each route field descriptors collection contains all the descriptors in the path.
+            // We only care about the final place the route value is set and so add only the last
+            // descriptor to the existing parameters collection.
+            existingParameters.Add(routeParameter.Value.DescriptorsPath.Last());
+        }
+
+        if (bodyDescriptor != null)
+        {
+            if (bodyFieldDescriptors != null)
+            {
+                // Body with field name.
+                // The body field descriptors collection contains all the descriptors in the path.
+                // We only care about the final place the body is set and so add only the last
+                // descriptor to the existing parameters collection.
+                existingParameters.Add(bodyFieldDescriptors.Last());
+            }
+            else
+            {
+                // Body with wildcard. All parameters are in the body so no query parameters.
+                return new Dictionary<string, FieldDescriptor>();
+            }
+        }
+
+        var queryParameters = new Dictionary<string, FieldDescriptor>();
+        RecursiveVisitMessages(queryParameters, existingParameters, methodDescriptor.InputType, new List<FieldDescriptor>());
+        return queryParameters;
+
+        static void RecursiveVisitMessages(Dictionary<string, FieldDescriptor> queryParameters, List<FieldDescriptor> existingParameters, MessageDescriptor messageDescriptor, List<FieldDescriptor> path)
+        {
+            var messageFields = messageDescriptor.Fields.InFieldNumberOrder();
+
+            foreach (var fieldDescriptor in messageFields)
+            {
+                // If a field is set via route parameter or body then don't add query parameter.
+                if (existingParameters.Contains(fieldDescriptor))
+                {
+                    continue;
+                }
+
+                // Add current field descriptor. It should be included in the path.
+                path.Add(fieldDescriptor);
+
+                switch (fieldDescriptor.FieldType)
+                {
+                    case FieldType.Double:
+                    case FieldType.Float:
+                    case FieldType.Int64:
+                    case FieldType.UInt64:
+                    case FieldType.Int32:
+                    case FieldType.Fixed64:
+                    case FieldType.Fixed32:
+                    case FieldType.Bool:
+                    case FieldType.String:
+                    case FieldType.Bytes:
+                    case FieldType.UInt32:
+                    case FieldType.SFixed32:
+                    case FieldType.SFixed64:
+                    case FieldType.SInt32:
+                    case FieldType.SInt64:
+                    case FieldType.Enum:
+                        var joinedPath = string.Join(".", path.Select(d => d.JsonName));
+                        queryParameters[joinedPath] = fieldDescriptor;
+                        break;
+                    case FieldType.Group:
+                    case FieldType.Message:
+                    default:
+                        // Complex repeated fields aren't valid query parameters.
+                        if (!fieldDescriptor.IsRepeated)
+                        {
+                            RecursiveVisitMessages(queryParameters, existingParameters, fieldDescriptor.MessageType, path);
+                        }
+                        break;
+                }
+
+                // Remove current field descriptor.
+                path.RemoveAt(path.Count - 1);
+            }
+        }
+    }
+
+    public sealed record BodyDescriptorInfo(
         MessageDescriptor Descriptor,
         List<FieldDescriptor>? FieldDescriptors,
         bool IsDescriptorRepeated,
@@ -405,3 +501,8 @@ internal static class ServiceDescriptorHelpers
         return result;
     }
 }
+
+internal record RouteParameter(
+    List<FieldDescriptor> DescriptorsPath,
+    HttpRouteVariable RouteVariable,
+    string JsonPath);

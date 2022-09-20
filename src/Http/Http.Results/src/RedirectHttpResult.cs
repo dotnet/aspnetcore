@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// An <see cref="IResult"/> that returns a Found (302), Moved Permanently (301), Temporary Redirect (307),
@@ -58,16 +58,6 @@ public sealed partial class RedirectHttpResult : IResult
     /// and will throw an exception when the supplied URL is not considered local.</param>
     internal RedirectHttpResult(string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
-
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(url));
-        }
-
         Url = url;
         Permanent = permanent;
         PreserveMethod = preserveMethod;
@@ -97,6 +87,8 @@ public sealed partial class RedirectHttpResult : IResult
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.RedirectResult");

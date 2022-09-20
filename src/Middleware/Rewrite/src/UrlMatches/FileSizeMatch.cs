@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class FileSizeMatch : UrlMatch
+internal sealed class FileSizeMatch : UrlMatch
 {
     public FileSizeMatch(bool negate)
     {

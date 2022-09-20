@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class OptionsAnalysis
+internal sealed class OptionsAnalysis
 {
     public OptionsAnalysis(IMethodSymbol configureServicesMethod, ImmutableArray<OptionsItem> options)
     {

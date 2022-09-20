@@ -23,7 +23,7 @@ public interface IObjectAdapterWithTest : IObjectAdapter
     /// For example:
     /// { "op": "test", "path": "/a/b/c", "value": "foo" }
     ///
-    /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-7
+    /// See RFC 6902 <see href="https://tools.ietf.org/html/rfc6902#page-7"/>
     /// </summary>
     /// <param name="operation">The test operation.</param>
     /// <param name="objectToApplyTo">Object to apply the operation to.</param>

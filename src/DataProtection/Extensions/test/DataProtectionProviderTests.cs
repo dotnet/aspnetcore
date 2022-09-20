@@ -226,7 +226,8 @@ public class DataProtectionProviderTests
 
             // Step 2: instantiate the system and round-trip a payload
             var protector = DataProtectionProvider.Create(directory, certificate).CreateProtector("purpose");
-            Assert.Equal("payload", protector.Unprotect(protector.Protect("payload")));
+            Assert.Equal("payload",
+                protector.Unprotect(protector.Protect("payload")));
 
             // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate
             var allFiles = directory.GetFiles();

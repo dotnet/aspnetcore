@@ -403,8 +403,8 @@ public static class HeaderUtilities
         return long.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
     }
 
-    // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)
-    // See https://tools.ietf.org/html/rfc7231#section-5.3.1
+    // Strict and fast RFC9110 12.4.2 Quality value parser (and without memory allocation)
+    // See https://tools.ietf.org/html/rfc9110#section-12.4.2
     // Check is made to verify if the value is between 0 and 1 (and it returns False if the check fails).
     internal static bool TryParseQualityDouble(StringSegment input, int startIndex, out double quality, out int length)
     {
@@ -553,7 +553,7 @@ public static class HeaderUtilities
             return string.Create(31, dateTime, (span, dt) =>
             {
                 span[0] = span[30] = '"';
-                dt.TryFormat(span.Slice(1), out _, "r");
+                dt.TryFormat(span.Slice(1), out _, "r", CultureInfo.InvariantCulture);
             });
         }
 

@@ -47,7 +47,7 @@ public sealed class HttpMethodMetadata : IHttpMethodMetadata
     /// <summary>
     /// Returns a value indicating whether the associated endpoint should accept CORS preflight requests.
     /// </summary>
-    public bool AcceptCorsPreflight { get; }
+    public bool AcceptCorsPreflight { get; set; }
 
     /// <summary>
     /// Returns a read-only collection of HTTP methods used during routing.

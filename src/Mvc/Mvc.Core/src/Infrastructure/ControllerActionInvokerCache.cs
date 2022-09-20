@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionInvokerCache
+internal sealed class ControllerActionInvokerCache
 {
     private readonly ParameterBinder _parameterBinder;
     private readonly IModelBinderFactory _modelBinderFactory;
@@ -69,6 +69,9 @@ internal class ControllerActionInvokerCache
                 _mvcOptions);
 
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+            var filterExecutor = actionDescriptor.FilterDelegate is not null
+                ? ActionMethodExecutor.GetFilterExecutor(actionDescriptor)
+                : null;
 
             cacheEntry = new ControllerActionInvokerCacheEntry(
                 filterFactoryResult.CacheableFilters,
@@ -76,6 +79,7 @@ internal class ControllerActionInvokerCache
                 controllerReleaser,
                 propertyBinderFactory,
                 objectMethodExecutor,
+                filterExecutor ?? actionMethodExecutor,
                 actionMethodExecutor);
 
             actionDescriptor.CacheEntry = cacheEntry;

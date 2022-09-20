@@ -253,7 +253,9 @@
   -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
       '$(MSBuildProjectName)' != 'RepoTasks' AND
-      ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+      ('$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR
+      (('$(IsAspNetCoreApp)' == 'true' OR '$(UseAspNetCoreSharedRuntime)' == 'true') AND
+      $(_CompileTfmUsingReferenceAssemblies))) ">
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
         Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
         IsImplicitlyDefined="true"

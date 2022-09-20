@@ -217,7 +217,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public abstract string? Description { get; }
 
     /// <summary>
-    /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the
+    /// Gets the format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to display the
     /// model.
     /// </summary>
     public abstract string? DisplayFormatString { get; }
@@ -228,7 +228,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public abstract string? DisplayName { get; }
 
     /// <summary>
-    /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
+    /// Gets the format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to edit the model.
     /// </summary>
     public abstract string? EditFormatString { get; }
 
@@ -545,6 +545,13 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
     {
+        if (modelType.IsByRef)
+        {
+            // ByRef is no supported in this case and
+            // will be reported later for the user.
+            return null;
+        }
+
         modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
         return ParameterBindingMethodCache.FindTryParseMethod(modelType);
     }
