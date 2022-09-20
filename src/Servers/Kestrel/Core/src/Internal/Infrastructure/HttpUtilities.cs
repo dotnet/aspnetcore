@@ -227,78 +227,106 @@ internal static partial class HttpUtilities
     /// The Known Methods (CONNECT, DELETE, GET, HEAD, PATCH, POST, PUT, OPTIONS, TRACE)
     /// </remarks>
     /// <returns><see cref="HttpMethod"/></returns>
-    public static HttpMethod GetKnownMethod(string value)
+    public static HttpMethod GetKnownMethod(string? value)
     {
-        // Called by http/2
-        if (value == null)
+        // TODO: fix that comment
+        // For a description for that approach see https://github.com/dotnet/aspnetcore/pull/[0-9]+
+
+        const int MinWordLength = 3;
+        const int MaxWordLength = 7;
+        const int MaxHashValue = 12;
+
+        if (value is null || ((uint)(value.Length - MinWordLength) > (MaxWordLength - MinWordLength)))
         {
             return HttpMethod.None;
         }
 
-        var length = value.Length;
-        if (length == 0)
+        var methodsLookup = Methods();
+
+        Debug.Assert(s_wordListForPerfectHashOfMethods.Length == (MaxHashValue + 1) && methodsLookup.Length == (MaxHashValue + 1));
+
+        var index = PerfectHash(value);
+
+        return index < (uint)s_wordListForPerfectHashOfMethods.Length
+            && s_wordListForPerfectHashOfMethods[index] == value
+            && index < (uint)methodsLookup.Length
+            ? (HttpMethod)methodsLookup[(int)index]
+            : HttpMethod.Custom;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static uint PerfectHash(ReadOnlySpan<char> str)
         {
-            return HttpMethod.None;
+            ReadOnlySpan<byte> associatedValues = new byte[]
+            {
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13,  5,  0, 13,
+                13,  0,  0, 13, 13, 13, 13, 13, 13,  0,
+                 5, 13, 13, 13,  0, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13
+            };
+
+            var c = MemoryMarshal.GetReference(str);
+
+            Debug.Assert(char.IsAscii(c), "Must already be valiated");
+
+            return (uint)str.Length + associatedValues[c];
         }
 
-        // Start with custom and assign if known method is found
-        var method = HttpMethod.Custom;
-
-        var firstChar = value[0];
-        if (length == 3)
+        static ReadOnlySpan<byte> Methods() => new byte[]
         {
-            if (firstChar == 'G' && string.Equals(value, HttpMethods.Get, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Get;
-            }
-            else if (firstChar == 'P' && string.Equals(value, HttpMethods.Put, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Put;
-            }
-        }
-        else if (length == 4)
-        {
-            if (firstChar == 'H' && string.Equals(value, HttpMethods.Head, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Head;
-            }
-            else if (firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Post;
-            }
-        }
-        else if (length == 5)
-        {
-            if (firstChar == 'T' && string.Equals(value, HttpMethods.Trace, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Trace;
-            }
-            else if (firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Patch;
-            }
-        }
-        else if (length == 6)
-        {
-            if (firstChar == 'D' && string.Equals(value, HttpMethods.Delete, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Delete;
-            }
-        }
-        else if (length == 7)
-        {
-            if (firstChar == 'C' && string.Equals(value, HttpMethods.Connect, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Connect;
-            }
-            else if (firstChar == 'O' && string.Equals(value, HttpMethods.Options, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Options;
-            }
-        }
-
-        return method;
+            (byte)HttpMethod.None,
+            (byte)HttpMethod.None,
+            (byte)HttpMethod.None,
+            (byte)HttpMethod.Get,
+            (byte)HttpMethod.Head,
+            (byte)HttpMethod.Trace,
+            (byte)HttpMethod.Delete,
+            (byte)HttpMethod.Options,
+            (byte)HttpMethod.Put,
+            (byte)HttpMethod.Post,
+            (byte)HttpMethod.Patch,
+            (byte)HttpMethod.None,
+            (byte)HttpMethod.Connect
+        };
     }
+
+    private static readonly string[] s_wordListForPerfectHashOfMethods =
+    {
+        "",
+        "",
+        "",
+        "GET",
+        "HEAD",
+        "TRACE",
+        "DELETE",
+        "OPTIONS",
+        "PUT",
+        "POST",
+        "PATCH",
+        "",
+        "CONNECT"
+    };
 
     /// <summary>
     /// Checks 9 bytes from <paramref name="span"/>  correspond to a known HTTP version.
