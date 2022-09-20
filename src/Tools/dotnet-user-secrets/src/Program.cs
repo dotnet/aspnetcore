@@ -27,6 +27,9 @@ public class Program
         _workingDirectory = workingDirectory;
     }
 
+    // For testing.
+    internal string SecretsFilePath { get; private set; }
+
     public bool TryRun(string[] args, out int returnCode)
     {
         try
@@ -85,6 +88,10 @@ public class Program
         var store = new SecretsStore(userSecretsId, reporter);
         var context = new Internal.CommandContext(store, reporter, _console);
         options.Command.Execute(context);
+
+        // For testing.
+        SecretsFilePath = store.SecretsFilePath;
+
         return 0;
     }
 
