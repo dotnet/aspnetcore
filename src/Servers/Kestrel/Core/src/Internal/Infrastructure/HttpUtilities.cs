@@ -229,7 +229,15 @@ internal static partial class HttpUtilities
     /// <returns><see cref="HttpMethod"/></returns>
     public static HttpMethod GetKnownMethod(string? value)
     {
-        // For a description for that approach see https://github.com/dotnet/aspnetcore/pull/44096
+        // A perfect hash is used to get an index into a lookup-table for know HTTP-methods.
+        //
+        // If value is not null or an empty string, then local function PerfectHash is called.
+        // This perfect hashing is done by lookup up 'associatedValues' from a pre-generated lookup-table.
+        // The generation of that table was done by GNU gperf tool.
+        // Once we have that perfect hash we use another lookup-table to get the know HTTP-method if found
+        // or return HttpMethod.Custom if not found.
+        // 
+        // Further info and how to call gperf see https://github.com/dotnet/aspnetcore/pull/44096
 
         const int MinWordLength = 3;
         const int MaxWordLength = 7;
@@ -242,12 +250,12 @@ internal static partial class HttpUtilities
 
         var methodsLookup = Methods();
 
-        Debug.Assert(s_wordListForPerfectHashOfMethods.Length == (MaxHashValue + 1) && methodsLookup.Length == (MaxHashValue + 1));
+        Debug.Assert(WordListForPerfectHashOfMethods.Length == (MaxHashValue + 1) && methodsLookup.Length == (MaxHashValue + 1));
 
         var index = PerfectHash(value);
 
-        return index < (uint)s_wordListForPerfectHashOfMethods.Length
-            && s_wordListForPerfectHashOfMethods[index] == value
+        return index < (uint)WordListForPerfectHashOfMethods.Length
+            && WordListForPerfectHashOfMethods[index] == value
             && index < (uint)methodsLookup.Length
             ? (HttpMethod)methodsLookup[(int)index]
             : HttpMethod.Custom;
@@ -255,6 +263,7 @@ internal static partial class HttpUtilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static uint PerfectHash(ReadOnlySpan<char> str)
         {
+            // This uses C#'s optimization to refer to static data of assembly, and doesn't allocate.
             ReadOnlySpan<byte> associatedValues = new byte[]
             {
                 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
@@ -292,6 +301,7 @@ internal static partial class HttpUtilities
             return (uint)str.Length + associatedValues[c];
         }
 
+        // This uses C#'s optimization to refer to static data of assembly, and doesn't allocate.
         static ReadOnlySpan<byte> Methods() => new byte[]
         {
             (byte)HttpMethod.None,
@@ -310,7 +320,7 @@ internal static partial class HttpUtilities
         };
     }
 
-    private static readonly string[] s_wordListForPerfectHashOfMethods =
+    private static readonly string[] WordListForPerfectHashOfMethods =
     {
         "",
         "",
