@@ -243,22 +243,28 @@ internal static partial class HttpUtilities
         const int MaxWordLength = 7;
         const int MaxHashValue = 12;
 
-        if (value is null || ((uint)(value.Length - MinWordLength) > (MaxWordLength - MinWordLength)))
+        if (string.IsNullOrEmpty(value))
         {
             return HttpMethod.None;
         }
 
-        var methodsLookup = Methods();
+        if (((uint)(value.Length - MinWordLength) <= (MaxWordLength - MinWordLength)))
+        {
+            var methodsLookup = Methods();
 
-        Debug.Assert(WordListForPerfectHashOfMethods.Length == (MaxHashValue + 1) && methodsLookup.Length == (MaxHashValue + 1));
+            Debug.Assert(WordListForPerfectHashOfMethods.Length == (MaxHashValue + 1) && methodsLookup.Length == (MaxHashValue + 1));
 
-        var index = PerfectHash(value);
+            var index = PerfectHash(value);
 
-        return index < (uint)WordListForPerfectHashOfMethods.Length
-            && WordListForPerfectHashOfMethods[index] == value
-            && index < (uint)methodsLookup.Length
-            ? (HttpMethod)methodsLookup[(int)index]
-            : HttpMethod.Custom;
+            if (index < (uint)WordListForPerfectHashOfMethods.Length
+                && WordListForPerfectHashOfMethods[index] == value
+                && index < (uint)methodsLookup.Length)
+            {
+                return (HttpMethod)methodsLookup[(int)index];
+            }
+        }
+
+        return HttpMethod.Custom;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static uint PerfectHash(ReadOnlySpan<char> str)
