@@ -52,6 +52,8 @@
         <!-- Windows -->
         <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />
 
+        <HelixAvailableTargetQueue Include="Windows.11.Arm64.Open" Platform="Windows" />
+        
         <!-- IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on its setup scripts. -->
         <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows"
             Condition=" '$(IsWindowsOnlyTest)' != 'true' "/>
