@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata minClientVersion="2.8">
     $CommonMetadataElements$
@@ -12,5 +12,6 @@
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net462\*.*" target="tools\net462" />
     <file src="$artifactsBinDir$\GetDocument.Insider\x86\$configuration$\net462\*.*" target="tools\net462-x86" />
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\netcoreapp2.1\publish\*.*" target="tools\netcoreapp2.1" />
+    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net7.0\publish\*.*" target="tools\net7.0" />
   </files>
 </package>
