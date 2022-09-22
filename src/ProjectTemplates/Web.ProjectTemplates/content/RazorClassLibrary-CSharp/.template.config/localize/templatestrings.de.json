@@ -3,7 +3,7 @@
   "name": "Razor Klassenbibliothek",
   "description": "Ein Projekt zum Erstellen einer Razor Klassenbibliothek, die auf .NET Standard abzielt",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
+  "symbols/Framework/choices/net7.0/description": "Ziel net7.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/SupportPagesAndViews/displayName": "Seiten und Ansichten unterstützen",
   "symbols/SupportPagesAndViews/description": "Ob das Hinzufügen herkömmlicher Razor Seiten und Ansichten zusätzlich zu Komponenten zu dieser Bibliothek unterstützt werden soll.",
