@@ -12,9 +12,9 @@
     "language": "",
     "type": "item"
   },
-  "groupIdentity": "Microsoft.Web.Grpc.Protobuf.6.0",
+  "groupIdentity": "Microsoft.Web.Grpc.Protobuf",
   "precedence": "600",
-  "identity": "Microsoft.Web.Grpc.Protobuf",
+  "identity": "Microsoft.Web.Grpc.Protobuf.7.0",
   "shortname": "proto",
   "sourceName": "protobuf",
   "primaryOutputs": [
