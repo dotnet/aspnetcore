@@ -115,4 +115,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor UseHeaderDictionaryPropertiesInsteadOfIndexer = new(
+        "ASP0015",
+        "Suggest using IHeaderDictionary properties",
+        "The header '{0}' can be accessed using the {1} property",
+        "Usage",
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
