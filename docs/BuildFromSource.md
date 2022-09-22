@@ -4,7 +4,7 @@ If you're reading these instructions, you're probably a contributor looking to u
 
 To get started, you'll need to have a fork of the repo cloned locally. This workflow assumes that you have [git installed on your development machine](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-1. Create your own fork, click the **Fork** button from our GitHub repo as a signed-in user and your own fork will be created. For more information on managing forks, you can review the [GitHub docs on working with forks](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks).
+1. To create your own fork, click the **Fork** button from our GitHub repo as a signed-in user and your own fork will be created. For more information on managing forks, you can review the [GitHub docs on working with forks](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks).
 
 2. Clone the repo locally using the `git clone` command. Since this repo contains submodules, you'll need to pass the `--recursive` flag to pull the sources for the submodules locally.
 
@@ -22,7 +22,7 @@ git clone --recursive https://github.com/YOUR_USERNAME/aspnetcore
 
 The experience for building the repo is slightly different based on what environment you are looking to develop in. Select one of the links below to navigate to the instructions for your environment of choice.
 
-- [Visual Studio on Windows](#visual-studio-in-windows)
+- [Visual Studio on Windows](#visual-studio-on-windows)
 - [VS Code (or other editors) on Windows, Linux, Mac](#visual-studio-code-on-windows-linux-mac)
 - [Codespaces on GitHub](#codespaces-on-github)
 
