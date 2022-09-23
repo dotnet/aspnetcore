@@ -18,6 +18,7 @@
     {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testAssembly": {"contains": "IIS"}},
+    {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
   ],
