@@ -136,7 +136,7 @@ internal sealed partial class Request
             {
                 // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
                 var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
-                if (transferEncoding != null && string.Equals("chunked", transferEncoding.Split(',')[0].Trim(), StringComparison.OrdinalIgnoreCase))
+                if (transferEncoding != null && string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
                 {
                     _contentBoundaryType = BoundaryType.Chunked;
 
