@@ -10,6 +10,7 @@ public sealed class GrpcJsonSettings
 {
     /// <summary>
     /// Gets or sets a value that indicates whether fields with default values are ignored during serialization.
+    /// This setting only affects fields which don't support "presence", such as singular non-optional proto3 primitive fields.
     /// Default value is false.
     /// </summary>
     public bool IgnoreDefaultValues { get; set; }
