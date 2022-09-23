@@ -34,6 +34,8 @@ internal sealed class ChangeDetection
     // time. So we don't want a huge list of types to check (or would have to move to
     // a hashtable lookup, which is differently expensive). It's better not to include
     // uncommon types here even if they are known to be immutable.
+    // This logic assumes that no new System.TypeCode enum entries have been declared since 7.0, or at least that any new ones
+    // represent immutable types. If System.TypeCode changes, review this logic to ensure it is still correct.
     private static bool IsKnownImmutableType(Type type)
         => Type.GetTypeCode(type) != TypeCode.Object
         || type == typeof(Type)
