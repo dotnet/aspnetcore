@@ -35,11 +35,7 @@ internal sealed class ChangeDetection
     // a hashtable lookup, which is differently expensive). It's better not to include
     // uncommon types here even if they are known to be immutable.
     private static bool IsKnownImmutableType(Type type)
-        => type.IsPrimitive
-        || type == typeof(string)
-        || type == typeof(DateTime)
+        => Type.GetTypeCode(type) != TypeCode.Object
         || type == typeof(Type)
-        || type == typeof(decimal)
-        || type == typeof(Guid)
-		|| type.IsEnum;
+        || type == typeof(Guid);
 }
