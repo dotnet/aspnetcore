@@ -54,7 +54,6 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43087")]
     public async Task FrameworkNotFoundExceptionLogged_File()
     {
         var deploymentParameters =
@@ -108,7 +107,6 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42913")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [SkipIfDebug]
     [InlineData("CheckLargeStdErrWrites")]
@@ -133,7 +131,6 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42820")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [SkipIfDebug]
     [InlineData("CheckLargeStdErrWrites")]

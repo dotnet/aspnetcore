@@ -9,4 +9,4 @@
 [submodule "src/submodules/spa-templates"]
 	path = src/submodules/spa-templates
 	url = https://github.com/dotnet/spa-templates.git
-	branch = release/7.0
+	branch = main

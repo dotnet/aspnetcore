@@ -52,8 +52,7 @@ public abstract class BlazorTemplateTest : LoggedTest
             project.TargetFramework = targetFramework;
         }
 
-        var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
 
         if (serverProject || auth is null)
         {
@@ -78,8 +77,7 @@ public abstract class BlazorTemplateTest : LoggedTest
                 targetProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
             }
 
-            var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: false);
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", targetProject, publishResult));
+            await targetProject.RunDotNetPublishAsync(noRestore: false);
         }
 
         return project;
