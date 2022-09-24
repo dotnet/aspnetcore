@@ -1,7 +1,6 @@
 # Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
 # See https://help.github.com/articles/about-code-owners/
 
-*                                                                                 @Pilchie
 /global.json                                                                      @dotnet/aspnet-build
 /.azure/                                                                          @dotnet/aspnet-build
 /.config/                                                                         @dotnet/aspnet-build
