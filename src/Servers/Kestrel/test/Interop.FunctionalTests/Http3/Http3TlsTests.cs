@@ -210,7 +210,6 @@ public class Http3TlsTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42388")]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
         var builder = CreateHostBuilder(async context =>

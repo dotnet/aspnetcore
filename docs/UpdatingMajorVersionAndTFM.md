@@ -18,7 +18,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
-* In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs], update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
+* In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://docs.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
 
 ### Validation
 
@@ -49,6 +49,7 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   1. Create & merge a PR like [this one](https://github.com/dotnet/spa-templates/pull/39) in dotnet/spa-templates updating `precedence` and `identity` elements in all template.json files.
   2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
   3. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
+* In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs](/src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs), update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 
 ### Validation
 

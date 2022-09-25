@@ -12,6 +12,8 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="System.Net.Http" />
     <Content Include="js\**\*" />
   </ItemGroup>
 
