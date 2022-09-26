@@ -73,6 +73,18 @@ internal sealed partial class GenericWebHostService : IHostedService
                 urls = Options.WebHostOptions.ServerUrls;
             }
 
+            if (string.IsNullOrEmpty(urls))
+            {
+                // HTTP_PORTS and HTTPS_PORTS, these are lower priority than Urls.
+                var httpPorts = Configuration[WebHostDefaults.HttpPortKey];
+                var httpUrls = httpPorts?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                    .Select(port => $"http://*:{port}").Aggregate((s1, s2) => string.Concat(s1, ";", s2));
+                var httpsPorts = Configuration[WebHostDefaults.HttpsPortKey];
+                var httpsUrls = httpsPorts?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                    .Select(port => $"https://*:{port}").Aggregate((s1, s2) => string.Concat(s1, ";", s2));
+                urls = string.Join(';', httpUrls, httpsUrls);
+            }
+
             if (!string.IsNullOrEmpty(urls))
             {
                 // We support reading "preferHostingUrls" from app configuration
