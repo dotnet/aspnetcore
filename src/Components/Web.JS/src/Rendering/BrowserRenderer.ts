@@ -136,7 +136,7 @@ export class BrowserRenderer {
           // disposed event handler IDs are delivered separately (in the 'disposedEventHandlerIds' array)
           const siblingIndex = editReader.siblingIndex(edit);
           const element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-          if (element instanceof HTMLElement) {
+          if (element instanceof Element) {
             const attributeName = editReader.removedAttributeName(edit)!;
             // First try to remove any special property we use for this attribute
             if (!this.tryApplySpecialProperty(batch, element, attributeName, null)) {
