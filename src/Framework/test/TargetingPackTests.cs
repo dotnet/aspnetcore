@@ -87,7 +87,20 @@ public class TargetingPackTests
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
             // Assembly versions should all match Major.Minor.0.0
-            Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            if (repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
             Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
             Assert.Equal(0, assemblyDefinition.Version.Build);
             Assert.Equal(0, assemblyDefinition.Version.Revision);

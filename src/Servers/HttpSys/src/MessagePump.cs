@@ -30,14 +30,8 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     public MessagePump(IOptions<HttpSysOptions> options, ILoggerFactory loggerFactory, IAuthenticationSchemeProvider authentication)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
         _options = options.Value;
         Listener = new HttpSysListener(_options, loggerFactory);
         _logger = loggerFactory.CreateLogger<MessagePump>();
@@ -69,10 +63,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {
-        if (application == null)
-        {
-            throw new ArgumentNullException(nameof(application));
-        }
+        ArgumentNullException.ThrowIfNull(application);
 
         var hostingUrlsPresent = _serverAddresses.Addresses.Count > 0;
         var serverAddressCopy = _serverAddresses.Addresses.ToList();
