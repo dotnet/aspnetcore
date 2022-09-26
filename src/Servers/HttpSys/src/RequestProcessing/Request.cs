@@ -98,6 +98,8 @@ internal sealed partial class Request
 
         Headers = new RequestHeaders(RequestContext);
 
+        RemoveContentLengthIfTransferEncodingContainsChunked();
+
         User = RequestContext.GetUser();
 
         if (IsHttps)
@@ -118,7 +120,7 @@ internal sealed partial class Request
 
     // No ulongs in public APIs...
     public long ConnectionId => RawConnectionId != 0 ? (long)RawConnectionId : (long)UConnectionId;
-    
+
     internal ulong RequestId { get; }
 
     private SslStatus SslStatus { get; }
@@ -139,26 +141,6 @@ internal sealed partial class Request
                 if (transferEncoding != null && string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
                 {
                     _contentBoundaryType = BoundaryType.Chunked;
-
-                    // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
-                    // A sender MUST NOT send a Content-Length header field in any message
-                    // that contains a Transfer-Encoding header field.
-                    // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
-                    // If a message is received with both a Transfer-Encoding and a
-                    // Content-Length header field, the Transfer-Encoding overrides the
-                    // Content-Length.  Such a message might indicate an attempt to
-                    // perform request smuggling (Section 9.5) or response splitting
-                    // (Section 9.4) and ought to be handled as an error.  A sender MUST
-                    // remove the received Content-Length field prior to forwarding such
-                    // a message downstream.
-                    // We should remove the Content-Length request header in this case, for compatibility
-                    // reasons, include X-Content-Length so that the original Content-Length is still available.
-                    if (!StringValues.IsNullOrEmpty(Headers.ContentLength))
-                    {
-                        IHeaderDictionary headerDictionary = Headers;
-                        headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
-                        Headers.ContentLength = StringValues.Empty;
-                    }
                 }
                 else
                 {
@@ -479,5 +461,33 @@ internal sealed partial class Request
     {
         [LoggerMessage(LoggerEventIds.ErrorInReadingCertificate, LogLevel.Debug, "An error occurred reading the client certificate.", EventName = "ErrorInReadingCertificate")]
         public static partial void ErrorInReadingCertificate(ILogger logger, Exception exception);
+    }
+
+    private void RemoveContentLengthIfTransferEncodingContainsChunked()
+    {
+        if (StringValues.IsNullOrEmpty(Headers.ContentLength)) { return; }
+
+        var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
+        if (transferEncoding == null || !string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+        // A sender MUST NOT send a Content-Length header field in any message
+        // that contains a Transfer-Encoding header field.
+        // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+        // If a message is received with both a Transfer-Encoding and a
+        // Content-Length header field, the Transfer-Encoding overrides the
+        // Content-Length.  Such a message might indicate an attempt to
+        // perform request smuggling (Section 9.5) or response splitting
+        // (Section 9.4) and ought to be handled as an error.  A sender MUST
+        // remove the received Content-Length field prior to forwarding such
+        // a message downstream.
+        // We should remove the Content-Length request header in this case, for compatibility
+        // reasons, include X-Content-Length so that the original Content-Length is still available.
+        IHeaderDictionary headerDictionary = Headers;
+        headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+        Headers.ContentLength = StringValues.Empty;
     }
 }
