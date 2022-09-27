@@ -21,7 +21,7 @@
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
+    <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
