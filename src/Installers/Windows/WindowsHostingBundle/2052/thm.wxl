@@ -19,7 +19,7 @@
 /log log.txt - 向特定文件写入日志。默认在 %TEMP% 中创建日志文件。</String>
   <String Id="HelpCloseButton">关闭(&amp;C)</String>
   <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;许可条款&lt;/a&gt;。</String>
-  <String Id="InstallAcceptCheckbox">我同意许可条款和条件( &amp;A)</String>
+  <String Id="InstallAcceptCheckbox">我同意许可条款和条件(&amp;A)</String>
   <String Id="InstallOptionsButton">选项(&amp;O)</String>
   <String Id="InstallInstallButton">安装(&amp;I)</String>
   <String Id="InstallCloseButton">关闭(&amp;C)</String>

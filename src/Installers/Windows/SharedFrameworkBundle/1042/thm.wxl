@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] Setup</String>
+  <String Id="Caption">[BundleNameFull] 설치</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Welcome</String>
-  <String Id="InstallMessage">Setup will install [WixBundleName] on your computer. Click install to continue, options to set the install directory or Close to exit.</String>
+  <String Id="InstallHeader">시작</String>
+  <String Id="InstallMessage">설치 프로그램이 컴퓨터에 [WixBundleName]을(를) 설치합니다. 계속하려면 설치를 클릭한 뒤 원하는 경우 옵션에서 설치 디렉터리를 설정하고, 아니면 닫기를 클릭하여 종료합니다.</String>
   <String Id="InstallVersion">버전 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>

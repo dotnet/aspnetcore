@@ -4,7 +4,7 @@
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
   <String Id="InstallHeader">歡迎</String>
-  <String Id="InstallMessage">Setup will install [WixBundleName] on your computer. Click install to continue, options to set the install directory or Close to exit.</String>
+  <String Id="InstallMessage">安裝程式將在電腦上安裝 [WixBundleName]。請按一下 [\[]安裝[\]] 以繼續，該選項會設定安裝目錄，或按一下 [\[]關閉[\]] 以結束。</String>
   <String Id="InstallVersion">版本 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">您確定要取消嗎?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">前一版</String>

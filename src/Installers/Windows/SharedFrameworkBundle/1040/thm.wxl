@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] Setup</String>
+  <String Id="Caption">Installazione di [BundleNameFull]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Welcome</String>
+  <String Id="InstallHeader">Benvenuti</String>
   <String Id="InstallMessage">Il programma di installazione installerà [WixBundleName] nel computer. Fare clic su Installa per continuare, su Opzioni per impostare la directory di installazione o su Chiudi per uscire.</String>
   <String Id="InstallVersion">Versione [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Annullare?</String>
@@ -36,28 +36,28 @@
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
-  <String Id="SuccessRepairHeader">Repair Successfully Completed</String>
-  <String Id="SuccessUninstallHeader">Uninstall Successfully Completed</String>
-  <String Id="SuccessInstallHeader">Installation Successfully Completed</String> 
-  <String Id="SuccessHeader">Setup Successful</String>	
+  <String Id="SuccessRepairHeader">La riparazione è stata completata</String>
+  <String Id="SuccessUninstallHeader">La disinstallazione è stata completata</String>
+  <String Id="SuccessInstallHeader">L'installazione è stata completata</String> 
+  <String Id="SuccessHeader">Installazione completata</String>	
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
   <String Id="SuccessRestartText">È necessario riavviare il computer prima di utilizzare il software.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
   <String Id="SuccessCloseButton">&amp;Chiudi</String>
   <String Id="FailureHeader">Installazione non riuscita</String>
-  <String Id="FailureInstallHeader">Setup Failed</String>
-  <String Id="FailureUninstallHeader">Uninstall Failed</String>
-  <String Id="FailureRepairHeader">Repair Failed</String> 
+  <String Id="FailureInstallHeader">L'installazione non è riuscita</String>
+  <String Id="FailureUninstallHeader">La disinstallazione non è riuscita</String>
+  <String Id="FailureRepairHeader">La riparazione non è riuscita</String> 
   <String Id="FailureHyperlinkLogText">Installazione non riuscita a causa di uno o più problemi. Risolvere i problemi e ritentare l'installazione. Per ulteriori informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
   <String Id="FailureRestartText">È necessario riavviare il computer per completare il rollback del software.</String>
   <String Id="FailureRestartButton">&amp;Riavvia</String>
   <String Id="FailureCloseButton">&amp;Chiudi</String>
-  <String Id="FilesInUseHeader">Files In Use</String>
+  <String Id="FilesInUseHeader">File in uso</String>
   <String Id="FilesInUseLabel">Le applicazioni seguenti usano file che necessitano di aggiornamento:</String>
   <String Id="FilesInUseCloseRadioButton">Chiudere le &amp;applicazioni e provare a riavviarle.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Non chiudere le applicazioni; sarà necessario riavviare il sistema</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
-  <String Id="FilesInUseCancelButton">&amp;Cancel</String>
+  <String Id="FilesInUseCancelButton">&amp;Annulla</String>
 
   <String Id="Welcome">Installazione di [WixBundleName].</String>
   <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;informativa sulla privacy&lt;/a&gt; di [WixBundleName].</String>

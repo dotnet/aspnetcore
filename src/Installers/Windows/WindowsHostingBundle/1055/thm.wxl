@@ -3,7 +3,7 @@
   <String Id="Caption">[WixBundleName] Kurulumu</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Welcome</String>
+  <String Id="InstallHeader">Hoş Geldiniz</String>
   <String Id="InstallMessage">Kurulum, [WixBundleName] paketini bilgisayarınıza yükler. Devam etmek için Yükle'ye, yükleme dizinini ayarlamak için Seçenekler'e veya çıkmak için Kapat'a tıklayın.</String>
   <String Id="InstallVersion">[WixBundleVersion] Sürümü</String>
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
@@ -36,28 +36,28 @@
   <String Id="ModifyRepairButton">&amp;Onar</String>
   <String Id="ModifyUninstallButton">&amp;Kaldır</String>
   <String Id="ModifyCloseButton">&amp;Kapat</String>
-  <String Id="SuccessRepairHeader">Repair Successfully Completed</String>
-  <String Id="SuccessUninstallHeader">Uninstall Successfully Completed</String>
-  <String Id="SuccessInstallHeader">Installation Successfully Completed</String> 
+  <String Id="SuccessRepairHeader">Onarım Başarıyla Tamamlandı</String>
+  <String Id="SuccessUninstallHeader">Kaldırma Başarıyla Tamamlandı</String>
+  <String Id="SuccessInstallHeader">Yükleme Başarıyla Tamamlandı</String> 
   <String Id="SuccessHeader">Kurulum Başarılı</String>	
   <String Id="SuccessLaunchButton">&amp;Başlat</String>
   <String Id="SuccessRestartText">Yazılımı kullanabilmeniz için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
   <String Id="SuccessRestartButton">&amp;Yeniden Başlat</String>
   <String Id="SuccessCloseButton">&amp;Kapat</String>
   <String Id="FailureHeader">Kurulum Başarısız</String>
-  <String Id="FailureInstallHeader">Setup Failed</String>
-  <String Id="FailureUninstallHeader">Uninstall Failed</String>
-  <String Id="FailureRepairHeader">Repair Failed</String> 
+  <String Id="FailureInstallHeader">Kurulum Başarısız</String>
+  <String Id="FailureUninstallHeader">Kaldırma Başarısız</String>
+  <String Id="FailureRepairHeader">Onarım Başarısız</String> 
   <String Id="FailureHyperlinkLogText">Bir ya da daha fazla sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href="#"&gt;günlük dosyasına&lt;/a&gt; bakın.</String>
   <String Id="FailureRestartText">Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
   <String Id="FailureRestartButton">&amp;Yeniden Başlat</String>
   <String Id="FailureCloseButton">&amp;Kapat</String>
-  <String Id="FilesInUseHeader">Files In Use</String>
+  <String Id="FilesInUseHeader">Kullanımda Olan Dosyalar</String>
   <String Id="FilesInUseLabel">Şu uygulamalar güncelleştirilmesi gereken dosyaları kullanıyor:</String>
   <String Id="FilesInUseCloseRadioButton">&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Uygulamaları kapatmayın. Sistemi yeniden başlatmanız gerekir.</String>
-  <String Id="FilesInUseOkButton">&amp;OK</String>
-  <String Id="FilesInUseCancelButton">&amp;Cancel</String>
+  <String Id="FilesInUseOkButton">&amp;Tamam</String>
+  <String Id="FilesInUseCancelButton">İ&amp;ptal</String>
 
   <!-- Custom UI strings -->
   <String Id="Welcome">[WixBundleName] Kurulumu'na Hoş Geldiniz.</String>

@@ -3,8 +3,8 @@
   <String Id="Caption">[WixBundleName] 설치 프로그램</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Welcome</String>
-  <String Id="InstallMessage">Setup will install [WixBundleName] on your computer. Click install to continue, options to set the install directory or Close to exit.</String>
+  <String Id="InstallHeader">환영</String>
+  <String Id="InstallMessage">설치 프로그램이 컴퓨터에 [WixBundleName]을(를) 설치합니다. 계속하려면 설치를 클릭하고, 설치 디렉터리를 설정하는 옵션을 선택하거나, 종료하려면 닫기를 클릭합니다.</String>
   <String Id="InstallVersion">버전 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
