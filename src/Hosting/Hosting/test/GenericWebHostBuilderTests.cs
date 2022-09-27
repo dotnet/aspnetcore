@@ -101,7 +101,7 @@ public class GenericWebHostBuilderTests
     [InlineData("", "", "5001;5003;5005", "https://*:5001;https://*:5003;https://*:5005")]
     [InlineData("", "5000", "5001", "http://*:5000;https://*:5001")]
     [InlineData("", "5000;5002", "5001;5003", "http://*:5000;http://*:5002;https://*:5001;https://*:5003")]
-    public void ReadsUrlsOrPorts(string urls, string httpPort, string httpsPort, string expected)
+    public void ReadsUrlsOrPorts(string urls, string httpPorts, string httpsPorts, string expected)
     {
         var server = new TestServer();
 
@@ -111,8 +111,8 @@ public class GenericWebHostBuilderTests
                 config.AddInMemoryCollection(new[]
                 {
                     new KeyValuePair<string, string>("urls", urls),
-                    new KeyValuePair<string, string>("http_port", httpPort),
-                    new KeyValuePair<string, string>("https_port", httpsPort),
+                    new KeyValuePair<string, string>("http_ports", httpPorts),
+                    new KeyValuePair<string, string>("https_ports", httpsPorts),
                 });
             })
             .ConfigureWebHost(webHostBuilder =>

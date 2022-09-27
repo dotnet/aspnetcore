@@ -76,13 +76,16 @@ internal sealed partial class GenericWebHostService : IHostedService
             if (string.IsNullOrEmpty(urls))
             {
                 // HTTP_PORTS and HTTPS_PORTS, these are lower priority than Urls.
-                var httpPorts = Configuration[WebHostDefaults.HttpPortKey];
-                var httpUrls = httpPorts?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                    .Select(port => $"http://*:{port}").Aggregate((s1, s2) => string.Concat(s1, ";", s2));
-                var httpsPorts = Configuration[WebHostDefaults.HttpsPortKey];
-                var httpsUrls = httpsPorts?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                    .Select(port => $"https://*:{port}").Aggregate((s1, s2) => string.Concat(s1, ";", s2));
-                urls = string.Join(';', httpUrls, httpsUrls);
+                static string ExpandPorts(string ports, string scheme)
+                {
+                    return string.Join(';',
+                        ports.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                        .Select(port => $"{scheme}://*:{port}"));
+                }
+
+                var httpUrls = ExpandPorts(Configuration[WebHostDefaults.HttpPortsKey] ?? string.Empty, Uri.UriSchemeHttp);
+                var httpsUrls = ExpandPorts(Configuration[WebHostDefaults.HttpsPortsKey] ?? string.Empty, Uri.UriSchemeHttps);
+                urls = $"{httpUrls};{httpsUrls}";
             }
 
             if (!string.IsNullOrEmpty(urls))
