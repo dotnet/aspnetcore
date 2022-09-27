@@ -153,6 +153,18 @@ public class JsonTranscodingServiceMethodProviderTests
     }
 
     [Fact]
+    public void AddMethod_BadResponseBody_Nested_ThrowError()
+    {
+        // Arrange & Act
+        var ex = Assert.Throws<InvalidOperationException>(() => MapEndpoints<JsonTranscodingInvalidNestedResponseBodyGreeterService>());
+
+        // Assert
+        Assert.Equal("Error binding gRPC service 'JsonTranscodingInvalidNestedResponseBodyGreeterService'.", ex.Message);
+        Assert.Equal("Error binding BadResponseBody on JsonTranscodingInvalidNestedResponseBodyGreeterService to HTTP API.", ex.InnerException!.InnerException!.Message);
+        Assert.Equal("The response body field 'sub.subfield' references a nested field. The response body field name must be on the top-level response message.", ex.InnerException!.InnerException!.InnerException!.Message);
+    }
+
+    [Fact]
     public void AddMethod_BadBody_ThrowError()
     {
         // Arrange & Act
@@ -162,6 +174,18 @@ public class JsonTranscodingServiceMethodProviderTests
         Assert.Equal("Error binding gRPC service 'JsonTranscodingInvalidBodyGreeterService'.", ex.Message);
         Assert.Equal("Error binding BadBody on JsonTranscodingInvalidBodyGreeterService to HTTP API.", ex.InnerException!.InnerException!.Message);
         Assert.Equal("Couldn't find matching field for body 'NoMatch' on HelloRequest.", ex.InnerException!.InnerException!.InnerException!.Message);
+    }
+
+    [Fact]
+    public void AddMethod_BadBody_Nested_ThrowError()
+    {
+        // Arrange & Act
+        var ex = Assert.Throws<InvalidOperationException>(() => MapEndpoints<JsonTranscodingInvalidNestedBodyGreeterService>());
+
+        // Assert
+        Assert.Equal("Error binding gRPC service 'JsonTranscodingInvalidNestedBodyGreeterService'.", ex.Message);
+        Assert.Equal("Error binding BadBody on JsonTranscodingInvalidNestedBodyGreeterService to HTTP API.", ex.InnerException!.InnerException!.Message);
+        Assert.Equal("The body field 'sub.subfield' references a nested field. The body field name must be on the top-level request message.", ex.InnerException!.InnerException!.InnerException!.Message);
     }
 
     [Fact]

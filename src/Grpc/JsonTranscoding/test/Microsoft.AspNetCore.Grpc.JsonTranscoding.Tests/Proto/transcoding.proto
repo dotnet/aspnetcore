@@ -76,11 +76,29 @@ service JsonTranscodingInvalidResponseBodyGreeter {
   }
 }
 
+service JsonTranscodingInvalidNestedResponseBodyGreeter {
+  rpc BadResponseBody (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+      response_body: "sub.subfield"
+    };
+  }
+}
+
 service JsonTranscodingInvalidBodyGreeter {
   rpc BadBody (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
       get: "/v1/greeter/{name}"
       body: "NoMatch"
+    };
+  }
+}
+
+service JsonTranscodingInvalidNestedBodyGreeter {
+  rpc BadBody (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+      body: "sub.subfield"
     };
   }
 }
@@ -181,13 +199,19 @@ message HelloRequest {
   google.protobuf.NullValue null_value = 20;
   google.protobuf.FieldMask field_mask_value = 21;
   string field_name = 22 [json_name="json_customized_name"];
+  google.protobuf.FloatValue float_value = 23;
 }
 
 message HelloReply {
+  message SubMessage {
+    string subfield = 1;
+    repeated string subfields = 2;
+  }
   string message = 1;
   repeated string values = 2;
   google.protobuf.StringValue nullable_message = 3;
   google.protobuf.Any any_message = 4;
+  SubMessage sub = 5;
 }
 
 message NullValueContainer {
