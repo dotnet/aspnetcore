@@ -34,7 +34,9 @@ The experience for building the repo is slightly different based on what environ
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-2. In order to install Visual Studio on your machine, you can use the official installer script in the repo. Even if you have the appropriate Visual Studio installed on your machine, we recommend running this installation script so that the correct components are installed.
+2. In order to install Visual Studio on your machine, you can use the official installer script in the repo.
+
+> ⚠️ Even if you have the appropriate Visual Studio installed on your machine, we recommend running this installation script so that the correct Visual Studio components are installed.
 
 ```powershell
 ./eng/scripts/InstallVisualStudio.ps1
@@ -184,12 +186,12 @@ To support building and testing all the projects in the repo, various dependenci
 
 ### Optional Dependencies
 
-| Dependency                                                   | Use                                                                                                                                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Selenium](https://www.selenium.dev/)                        | Used to run integration tests in the `Components` (aka Blazor) project.                                                                                       |
-| [Playwright](https://playwright.dev/)                        | Used to run template tests defined in the `ProjectTemplates` work.                                                                                            |
-| [Chrome](https://www.google.com/chrome/)                     | Required when running tests with Selenium or Playwright in the projects above. When using Playwright, the dependency is automatically installed.              |
-| [Java Development Kit (v11 or newer)](https://jdk.java.net/) | Required when building the Java SignalR client. Can be installed using the `./eng/scripts/InstallJdk.ps1` script on Windows.                                  |
-| [Wix](https://wixtoolset.org/releases/)                      | Required when working with the Windows installers in the [Windows installers project](https://github.com/dotnet/aspnetcore/tree/main/src/Installers/Windows). |
-| [NodeJS](https://nodejs.org/en/)                             | Used for building JavaScript assets in the repo, such as those in Blazor and SignalR.                                                                         |
-| [Yarn](https://yarnpkg.com/)                                 | Used for installing JavaScript dependencies in the repo, such as those in Blazor and SignalR.                                                                 |
+| Dependency                                                   | Use                                                                                                                                                           | Notes                                                                                                                                               |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Selenium](https://www.selenium.dev/)                        | Used to run integration tests in the `Components` (aka Blazor) project.                                                                                       |                                                                                                                                                     |
+| [Playwright](https://playwright.dev/)                        | Used to run template tests defined in the `ProjectTemplates` work.                                                                                            |                                                                                                                                                     |
+| [Chrome](https://www.google.com/chrome/)                     | Required when running tests with Selenium or Playwright in the projects above. When using Playwright, the dependency is automatically installed.              |                                                                                                                                                     |
+| [Java Development Kit (v11 or newer)](https://jdk.java.net/) | Required when building the Java SignalR client. Can be installed using the `./eng/scripts/InstallJdk.ps1` script on Windows.                                  | Ensure that the `JAVA_HOME` directory points to the installation and that the `PATH` has been updated to include the `$(jdkInstallDir)/bin` folder. |
+| [Wix](https://wixtoolset.org/releases/)                      | Required when working with the Windows installers in the [Windows installers project](https://github.com/dotnet/aspnetcore/tree/main/src/Installers/Windows). |                                                                                                                                                     |
+| [NodeJS](https://nodejs.org/en/)                             | Used for building JavaScript assets in the repo, such as those in Blazor and SignalR.                                                                         | Required a minimum version of the current NodeJS LTS.                                                                                               |
+| [Yarn](https://yarnpkg.com/)                                 | Used for installing JavaScript dependencies in the repo, such as those in Blazor and SignalR.                                                                 |                                                                                                                                                     |
