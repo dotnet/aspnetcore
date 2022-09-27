@@ -98,8 +98,6 @@ internal sealed partial class Request
 
         Headers = new RequestHeaders(RequestContext);
 
-        RemoveContentLengthIfTransferEncodingContainsChunked();
-
         User = RequestContext.GetUser();
 
         if (IsHttps)
@@ -112,6 +110,8 @@ internal sealed partial class Request
         // Finished directly accessing the HTTP_REQUEST structure.
         RequestContext.ReleasePins();
         // TODO: Verbose log parameters
+
+        RemoveContentLengthIfTransferEncodingContainsChunked();
     }
 
     internal ulong UConnectionId { get; }
