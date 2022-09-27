@@ -1,20 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -526,8 +520,8 @@ public class KeyRingProviderTests
         mockCacheableKeyRingProvider.Setup(o => o.GetCacheableKeyRing(updatedKeyRingTime))
             .Returns<DateTimeOffset>(dto =>
             {
-                    // at this point we're inside the critical section - spawn the background thread now
-                    var backgroundGetKeyRingTask = Task.Run(() =>
+                // at this point we're inside the critical section - spawn the background thread now
+                var backgroundGetKeyRingTask = Task.Run(() =>
                 {
                     keyRingReturnedToBackgroundThread = keyRingProvider.GetCurrentKeyRingCore(updatedKeyRingTime);
                 });

@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
 {
+    private static Endpoint? Http415Endpoint;
     internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
     internal const string AnyContentType = "*/*";
 
@@ -251,16 +252,14 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             edges.Add(string.Empty, anyEndpoints.ToList());
         }
 
-
         return edges
             .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
             .ToArray();
     }
 
-    private Endpoint CreateRejectionEndpoint()
+    private static Endpoint CreateRejectionEndpoint()
     {
-        return new Endpoint(
-            (context) =>
+        return Http415Endpoint ??= new Endpoint(context =>
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                 return Task.CompletedTask;
@@ -378,7 +377,6 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             var destinations = _destinations;
             for (var i = 0; i < destinations.Length; i++)
             {
-
                 var destination = destinations[i].mediaType;
                 if (requestMediaType.IsSubsetOf(destination))
                 {

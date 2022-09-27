@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.Linq;
 using GlobalizationWasmApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -56,7 +53,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal(culture.ToString(), cultureDisplay.Text);
 
         var dateDisplay = Browser.Exists(By.Id("dateTime"));
-        Assert.Equal("2020. 9. 2. 오전 12:00:00", dateDisplay.Text);
+        Assert.Equal("2020. 9. 2. 00:00:00", dateDisplay.Text);
 
         var localizedDisplay = Browser.Exists(By.Id("localizedString"));
         // The app has a "ko" resx file. This test verifies that we can walk up the culture hierarchy correctly.

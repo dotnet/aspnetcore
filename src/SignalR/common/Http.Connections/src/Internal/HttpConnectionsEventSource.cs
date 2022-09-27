@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Tracing;
-using System.Threading;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal class HttpConnectionsEventSource : EventSource
+internal sealed class HttpConnectionsEventSource : EventSource
 {
     public static readonly HttpConnectionsEventSource Log = new HttpConnectionsEventSource();
 

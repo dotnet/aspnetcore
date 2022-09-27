@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure;
 
@@ -778,7 +776,6 @@ public class CorsServiceTests
         Assert.Equal("foo", httpContext.Response.Headers["Access-Control-Allow-Headers"]);
     }
 
-
     [Fact]
     public void ApplyResult_NoAllowExposedHeaders_ExposedHeadersHeaderNotAdded()
     {
@@ -840,7 +837,6 @@ public class CorsServiceTests
         // Assert
         Assert.Equal("foo,bar", httpContext.Response.Headers[CorsConstants.AccessControlExposeHeaders]);
     }
-
 
     [Fact]
     public void ApplyResult_OneAllowExposedHeaders_ExposedHeadersHeaderAdded()

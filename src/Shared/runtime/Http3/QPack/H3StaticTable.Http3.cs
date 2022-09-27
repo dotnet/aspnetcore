@@ -48,7 +48,7 @@ namespace System.Net.Http.QPack
         // TODO: just use Dictionary directly to avoid interface dispatch.
         public static IReadOnlyDictionary<HttpMethod, int> MethodIndex => s_methodIndex;
 
-        public static ref HeaderField Get(int index) => ref s_staticTable[index];
+        public static ref readonly HeaderField Get(int index) => ref s_staticTable[index];
 
         private static readonly HeaderField[] s_staticTable = new HeaderField[]
         {
@@ -146,7 +146,7 @@ namespace System.Net.Http.QPack
             CreateHeaderField("purpose", "prefetch"), // 91
             CreateHeaderField("server", ""), // 92
             CreateHeaderField("timing-allow-origin", "*"), // 93
-            CreateHeaderField("upgrading-insecure-requests", "1"), // 94
+            CreateHeaderField("upgrade-insecure-requests", "1"), // 94
             CreateHeaderField("user-agent", ""), // 95
             CreateHeaderField("x-forwarded-for", ""), // 96
             CreateHeaderField("x-frame-options", "deny"), // 97

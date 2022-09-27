@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -996,7 +994,7 @@ public class ModelStateDictionaryTest
         var expected = "Hmm, the supplied value is not valid for Length.";
         var dictionary = new ModelStateDictionary();
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetUnknownValueIsInvalidAccessor(
@@ -1022,7 +1020,7 @@ public class ModelStateDictionaryTest
         var expected = "Hmm, the supplied value is not valid.";
         var dictionary = new ModelStateDictionary();
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(
@@ -1050,7 +1048,7 @@ public class ModelStateDictionaryTest
         var expected = "Hmm, the supplied value is not valid.";
         var dictionary = new ModelStateDictionary();
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(
@@ -1111,7 +1109,7 @@ public class ModelStateDictionaryTest
         var dictionary = new ModelStateDictionary();
         dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
@@ -1138,7 +1136,7 @@ public class ModelStateDictionaryTest
         var dictionary = new ModelStateDictionary();
         dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
@@ -1167,7 +1165,7 @@ public class ModelStateDictionaryTest
         var dictionary = new ModelStateDictionary();
         dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
@@ -1600,6 +1598,165 @@ public class ModelStateDictionaryTest
         // Assert
         Assert.Equal("value1", property.RawValue);
     }
+
+    [Fact]
+    public void GetFieldValidationState_ReturnsUnvalidated_IfTreeHeightIsGreaterThanLimit()
+    {
+        // Arrange
+        var stackLimit = 5;
+        var dictionary = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stackLimit + 1));
+        dictionary.MaxValidationDepth = stackLimit;
+        dictionary.MaxStateDepth = null;
+        dictionary.MarkFieldValid(key);
+
+        // Act
+        var validationState = dictionary.GetFieldValidationState("foo");
+
+        // Assert
+        Assert.Equal(ModelValidationState.Unvalidated, validationState);
+    }
+
+    [Fact]
+    public void IsValidProperty_ReturnsTrue_IfTreeHeightIsGreaterThanLimit()
+    {
+        // Arrange
+        var stackLimit = 5;
+        var dictionary = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stackLimit + 1));
+        dictionary.MaxValidationDepth = stackLimit;
+        dictionary.MaxStateDepth = null;
+        dictionary.AddModelError(key, "some error");
+
+        // Act
+        var isValid = dictionary.IsValid;
+        var validationState = dictionary.ValidationState;
+
+        // Assert
+        Assert.True(isValid);
+        Assert.Equal(ModelValidationState.Valid, validationState);
+    }
+
+    [Fact]
+    public void TryAddModelException_Throws_IfKeyHasTooManySegments()
+    {
+        // Arrange
+        var exception = new TestException();
+
+        var stateDepth = 5;
+        var dictionary = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+        dictionary.MaxStateDepth = stateDepth;
+
+        // Act
+        var invalidException = Assert.Throws<InvalidOperationException>(() => dictionary.TryAddModelException(key, exception));
+
+        // Assert
+        Assert.Equal(
+            $"The specified key exceeded the maximum ModelState depth: {dictionary.MaxStateDepth}",
+            invalidException.Message);
+    }
+
+    [Fact]
+    public void TryAddModelError_Throws_IfKeyHasTooManySegments()
+    {
+        // Arrange
+        var stateDepth = 5;
+        var dictionary = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+        dictionary.MaxStateDepth = stateDepth;
+
+        // Act
+        var invalidException = Assert.Throws<InvalidOperationException>(() => dictionary.TryAddModelError(key, "errorMessage"));
+
+        // Assert
+        Assert.Equal(
+            $"The specified key exceeded the maximum ModelState depth: {dictionary.MaxStateDepth}",
+            invalidException.Message);
+    }
+
+    [Fact]
+    public void SetModelValue_Throws_IfKeyHasTooManySegments()
+    {
+        var stateDepth = 5;
+        var dictionary = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+        dictionary.MaxStateDepth = stateDepth;
+
+        // Act
+        var invalidException = Assert.Throws<InvalidOperationException>(() => dictionary.SetModelValue(key, string.Empty, string.Empty));
+
+        // Assert
+        Assert.Equal(
+            $"The specified key exceeded the maximum ModelState depth: {dictionary.MaxStateDepth}",
+            invalidException.Message);
+    }
+
+    [Fact]
+    public void MarkFieldValid_Throws_IfKeyHasTooManySegments()
+    {
+        // Arrange
+        var stateDepth = 5;
+        var source = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+        source.MaxStateDepth = stateDepth;
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() => source.MarkFieldValid(key));
+
+        // Assert
+        Assert.Equal(
+            $"The specified key exceeded the maximum ModelState depth: {source.MaxStateDepth}",
+            exception.Message);
+    }
+
+    [Fact]
+    public void MarkFieldSkipped_Throws_IfKeyHasTooManySegments()
+    {
+        // Arrange
+        var stateDepth = 5;
+        var source = new ModelStateDictionary();
+        var key = string.Join(".", Enumerable.Repeat("foo", stateDepth + 1));
+        source.MaxStateDepth = stateDepth;
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() => source.MarkFieldSkipped(key));
+
+        // Assert
+        Assert.Equal(
+            $"The specified key exceeded the maximum ModelState depth: {source.MaxStateDepth}",
+            exception.Message);
+    }
+
+    [Fact]
+    public void Constructor_SetsDefaultRecursionDepth()
+    {
+        // Arrange && Act
+        var dictionary = new ModelStateDictionary();
+
+        // Assert
+        Assert.Equal(ModelStateDictionary.DefaultMaxRecursionDepth, dictionary.MaxValidationDepth);
+        Assert.Equal(ModelStateDictionary.DefaultMaxRecursionDepth, dictionary.MaxStateDepth);
+    }
+
+    [Fact]
+    public void CopyConstructor_PreservesRecursionDepth()
+    {
+        // Arrange
+        var dictionary = new ModelStateDictionary();
+        dictionary.MaxValidationDepth = 5;
+        dictionary.MaxStateDepth = 4;
+
+        // Act
+        var newDictionary = new ModelStateDictionary(dictionary);
+
+        // Assert
+        Assert.Equal(dictionary.MaxValidationDepth, newDictionary.MaxValidationDepth);
+        Assert.Equal(dictionary.MaxStateDepth, newDictionary.MaxStateDepth);
+    }
+
+    private DefaultBindingMetadataProvider CreateBindingMetadataProvider()
+        => new DefaultBindingMetadataProvider();
 
     private class OptionsAccessor : IOptions<MvcOptions>
     {

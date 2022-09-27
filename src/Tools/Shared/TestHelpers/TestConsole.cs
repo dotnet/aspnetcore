@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Tools.Internal;
 public class TestConsole : IConsole
 {
     private event ConsoleCancelEventHandler _cancelKeyPress = default!;
-    private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new TaskCompletionSource<bool>();
+    private readonly TaskCompletionSource _cancelKeySubscribed = new TaskCompletionSource();
     private readonly TestOutputWriter _testWriter;
 
     public TestConsole(ITestOutputHelper output)
@@ -29,7 +29,7 @@ public class TestConsole : IConsole
         add
         {
             _cancelKeyPress += value;
-            _cancelKeySubscribed.TrySetResult(true);
+            _cancelKeySubscribed.TrySetResult();
         }
         remove => _cancelKeyPress -= value;
     }
@@ -69,7 +69,7 @@ public class TestConsole : IConsole
         _testWriter.ClearOutput();
     }
 
-    private class TestOutputWriter : TextWriter
+    private sealed class TestOutputWriter : TextWriter
     {
         private readonly ITestOutputHelper _output;
         private readonly StringBuilder _sb = new StringBuilder();

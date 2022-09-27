@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 구성 요소",
+  "description": "Razor로 구현된 재사용 가능한 UI 구성 요소",
+  "postActions/openInEditor/description": "편집기에서 Component1.razor를 엽니다."
+}

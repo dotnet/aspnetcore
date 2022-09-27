@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 
 namespace Microsoft.AspNetCore.BrowserTesting;
 
@@ -47,20 +47,12 @@ public class BrowserManager
 
         async Task InitializeCore()
         {
-            var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-            if (!string.IsNullOrEmpty(driverPath))
-            {
-                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
-            }
-            else
-            {
-                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
-            }
+            Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
             foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
             {
                 if (!_launchBrowsers.ContainsKey(browserName))
                 {
-                    var effectiveLaunchOptions = _browserManagerConfiguration.GetLaunchOptions(options.BrowserLaunchOptions);
+                    var effectiveLaunchOptions = _browserManagerConfiguration.GetBrowserTypeLaunchOptions(options.BrowserLaunchOptions);
 
                     var browser = options.BrowserKind switch
                     {
@@ -108,10 +100,10 @@ public class BrowserManager
             contextInfo);
     }
 
-    public Task<IBrowserContext> GetBrowserInstance(BrowserKind browserInstance, string contextName, BrowserContextOptions options, ContextInformation contextInfo) =>
+    public Task<IBrowserContext> GetBrowserInstance(BrowserKind browserInstance, string contextName, BrowserNewContextOptions options, ContextInformation contextInfo) =>
         GetBrowserInstance(browserInstance.ToString(), contextName, options, contextInfo);
 
-    public Task<IBrowserContext> GetBrowserInstance(string browserInstance, string contextName, BrowserContextOptions options, ContextInformation contextInfo)
+    public Task<IBrowserContext> GetBrowserInstance(string browserInstance, string contextName, BrowserNewContextOptions options, ContextInformation contextInfo)
     {
         if (_launchBrowsers.TryGetValue(browserInstance, out var browser))
         {
@@ -126,9 +118,10 @@ public class BrowserManager
     private async Task<IBrowserContext> AttachContextInfo(Task<IBrowserContext> browserContextTask, ContextInformation contextInfo)
     {
         var context = await browserContextTask;
-        context.DefaultTimeout = HasFailedTests ?
+        var defaultTimeout = HasFailedTests ?
             _browserManagerConfiguration.TimeoutAfterFirstFailureInMilliseconds :
             _browserManagerConfiguration.TimeoutInMilliseconds;
+        context.SetDefaultTimeout(defaultTimeout);
 
         contextInfo.Attach(context);
         return context;

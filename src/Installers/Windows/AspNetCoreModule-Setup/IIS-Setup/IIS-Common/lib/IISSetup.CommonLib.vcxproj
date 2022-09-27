@@ -4,6 +4,14 @@
   <Import Project="..\..\..\build\settings.props" />
 
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -30,7 +38,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -55,17 +63,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="acache.cxx" />
-    <ClCompile Include="ahutil.cpp" />
-    <ClCompile Include="base64.cxx" />
-    <ClCompile Include="datetime.cxx" />
-    <ClCompile Include="multisz.cxx" />
-    <ClCompile Include="multisza.cxx" />
-    <ClCompile Include="normalize.cxx" />
-    <ClCompile Include="stringa.cpp" />
-    <ClCompile Include="stringu.cpp" />
-    <ClCompile Include="ulparse.cxx" />
-    <ClCompile Include="util.cxx" />
+    <ClCompile Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\ahutil.cpp" />
+    <ClCompile Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\stringa.cpp" />
+    <ClCompile Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\stringu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />

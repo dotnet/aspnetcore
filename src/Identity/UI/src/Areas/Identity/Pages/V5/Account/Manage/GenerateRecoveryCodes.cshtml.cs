@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -22,14 +20,14 @@ public abstract class GenerateRecoveryCodesModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string[] RecoveryCodes { get; set; }
+    public string[]? RecoveryCodes { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string StatusMessage { get; set; }
+    public string? StatusMessage { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -44,7 +42,7 @@ public abstract class GenerateRecoveryCodesModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class GenerateRecoveryCodesModel<TUser> : GenerateRecoveryCodesModel where TUser : class
+internal sealed class GenerateRecoveryCodesModel<TUser> : GenerateRecoveryCodesModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<GenerateRecoveryCodesModel> _logger;
@@ -89,7 +87,7 @@ internal class GenerateRecoveryCodesModel<TUser> : GenerateRecoveryCodesModel wh
         }
 
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-        RecoveryCodes = recoveryCodes.ToArray();
+        RecoveryCodes = recoveryCodes!.ToArray();
 
         _logger.LogInformation(LoggerEventIds.TwoFARecoveryGenerated, "User has generated new 2FA recovery codes.");
         StatusMessage = "You have generated new recovery codes.";

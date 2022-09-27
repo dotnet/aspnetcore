@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
-using System.Threading;
 
 #nullable enable
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
-internal class IOQueue : PipeScheduler, IThreadPoolWorkItem
+internal sealed class IOQueue : PipeScheduler, IThreadPoolWorkItem
 {
     private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
     private int _doingWork;

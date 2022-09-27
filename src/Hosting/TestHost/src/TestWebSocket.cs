@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class TestWebSocket : WebSocket
+internal sealed class TestWebSocket : WebSocket
 {
     private readonly ReceiverSenderBuffer _receiveBuffer;
     private readonly ReceiverSenderBuffer _sendBuffer;
@@ -77,7 +72,7 @@ internal class TestWebSocket : WebSocket
         ThrowIfOutputClosed();
 
         var message = new Message(closeStatus, statusDescription);
-        await _sendBuffer.SendAsync(message, cancellationToken);
+        await _sendBuffer.SendAsync(message);
 
         if (State == WebSocketState.Open)
         {
@@ -166,7 +161,7 @@ internal class TestWebSocket : WebSocket
         }
 
         var message = new Message(buffer, messageType, endOfMessage);
-        return _sendBuffer.SendAsync(message, cancellationToken);
+        return _sendBuffer.SendAsync(message);
     }
 
     private void Close()
@@ -177,10 +172,7 @@ internal class TestWebSocket : WebSocket
 
     private void ThrowIfDisposed()
     {
-        if (_state >= WebSocketState.Closed) // or Aborted
-        {
-            throw new ObjectDisposedException(typeof(TestWebSocket).FullName);
-        }
+        ObjectDisposedException.ThrowIf(_state >= WebSocketState.Closed, typeof(TestWebSocket)); // or Aborted
     }
 
     private void ThrowIfOutputClosed()
@@ -199,7 +191,7 @@ internal class TestWebSocket : WebSocket
         }
     }
 
-    private void ValidateSegment(ArraySegment<byte> buffer)
+    private static void ValidateSegment(ArraySegment<byte> buffer)
     {
         if (buffer.Array == null)
         {
@@ -223,7 +215,7 @@ internal class TestWebSocket : WebSocket
         _sendBuffer = writeBuffer;
     }
 
-    private class Message
+    private sealed class Message
     {
         public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage)
         {
@@ -250,7 +242,7 @@ internal class TestWebSocket : WebSocket
         public WebSocketMessageType MessageType { get; set; }
     }
 
-    private class ReceiverSenderBuffer
+    private sealed class ReceiverSenderBuffer
     {
         private bool _receiverClosed;
         private bool _senderClosed;
@@ -264,7 +256,7 @@ internal class TestWebSocket : WebSocket
             _messageQueue = new Queue<Message>();
         }
 
-        public virtual async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -283,14 +275,12 @@ internal class TestWebSocket : WebSocket
             }
         }
 
-        public virtual Task SendAsync(Message message, CancellationToken cancellationToken)
+        public Task SendAsync(Message message)
         {
             lock (_messageQueue)
             {
-                if (_senderClosed)
-                {
-                    throw new ObjectDisposedException(typeof(TestWebSocket).FullName);
-                }
+                ObjectDisposedException.ThrowIf(_senderClosed, typeof(TestWebSocket));
+
                 if (_receiverClosed)
                 {
                     throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
@@ -340,14 +330,10 @@ internal class TestWebSocket : WebSocket
 
         private void ThrowNoReceive()
         {
-            if (_receiverClosed)
-            {
-                throw new ObjectDisposedException(typeof(TestWebSocket).FullName);
-            }
-            else // _senderClosed
-            {
-                throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
-            }
+            ObjectDisposedException.ThrowIf(_receiverClosed, typeof(TestWebSocket));
+            
+            // _senderClosed must be true.
+            throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
         }
     }
 }

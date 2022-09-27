@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ValidationProblemDetailsJsonConverter : JsonConverter<ValidationProblemDetails>
+internal sealed class ValidationProblemDetailsJsonConverter : JsonConverter<ValidationProblemDetails>
 {
     public override ValidationProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -15,7 +15,6 @@ internal class ValidationProblemDetailsJsonConverter : JsonConverter<ValidationP
         HttpValidationProblemDetailsJsonConverter.ReadProblemDetails(ref reader, options, problemDetails);
         return problemDetails;
     }
-
 
     public override void Write(Utf8JsonWriter writer, ValidationProblemDetails value, JsonSerializerOptions options)
     {

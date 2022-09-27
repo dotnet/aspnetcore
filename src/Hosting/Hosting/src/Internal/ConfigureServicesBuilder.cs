@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class ConfigureServicesBuilder
+internal sealed class ConfigureServicesBuilder
 {
     public ConfigureServicesBuilder(MethodInfo? configureServices)
     {

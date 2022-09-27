@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class AsyncIOEngine
 {
-    private class AsyncWriteOperation : AsyncWriteOperationBase
+    private sealed class AsyncWriteOperation : AsyncWriteOperationBase
     {
         private readonly AsyncIOEngine _engine;
 

@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
 namespace MvcSandbox;
 
 public class Startup
@@ -25,11 +19,24 @@ public class Startup
         app.UseStaticFiles();
 
         app.UseRouting();
+
+        static void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapGet("/MapGet", () => "MapGet");
+
+            endpoints.MapControllers();
+            endpoints.MapControllerRoute(
+                Guid.NewGuid().ToString(),
+                "{controller=Home}/{action=Index}/{id?}");
+
+            endpoints.MapRazorPages();
+        }
+
         app.UseEndpoints(builder =>
         {
-            builder.MapControllers();
-            builder.MapDefaultControllerRoute();
-            builder.MapRazorPages();
+            ConfigureEndpoints(builder);
+            var group = builder.MapGroup("/group");
+            ConfigureEndpoints(group);
         });
     }
 

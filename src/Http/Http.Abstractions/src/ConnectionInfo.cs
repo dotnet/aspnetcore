@@ -3,8 +3,6 @@
 
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -54,6 +52,5 @@ public abstract class ConnectionInfo
     /// </summary>
     public virtual void RequestClose()
     {
-
     }
 }

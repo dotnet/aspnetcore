@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -81,7 +79,7 @@ class Program
         }
     }
 
-    private async Task<string> GetJwtToken(string userId)
+    private static async Task<string> GetJwtToken(string userId)
     {
         var httpResponse = await new HttpClient().GetAsync(ServerUrl + $"/generatetoken?user={userId}");
         httpResponse.EnsureSuccessStatusCode();

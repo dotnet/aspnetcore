@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionEndpointDataSourceFactory
+internal sealed class PageActionEndpointDataSourceFactory
 {
     private readonly PageActionEndpointDataSourceIdProvider _dataSourceIdProvider;
     private readonly IActionDescriptorCollectionProvider _actions;

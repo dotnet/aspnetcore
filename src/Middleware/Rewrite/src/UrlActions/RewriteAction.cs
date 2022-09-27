@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlActions;
 
-internal class RewriteAction : UrlAction
+internal sealed class RewriteAction : UrlAction
 {
     public RuleResult Result { get; }
     public bool QueryStringAppend { get; }
@@ -59,16 +58,14 @@ internal class RewriteAction : UrlAction
             pattern = Uri.EscapeDataString(pattern);
         }
 
-
         // TODO PERF, substrings, object creation, etc.
-        if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) >= 0)
+        if (pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
         {
             string scheme;
             HostString host;
             PathString path;
             QueryString query;
-            FragmentString fragment;
-            UriHelper.FromAbsolute(pattern, out scheme, out host, out path, out query, out fragment);
+            UriHelper.FromAbsolute(pattern, out scheme, out host, out path, out query, out _);
 
             if (query.HasValue)
             {

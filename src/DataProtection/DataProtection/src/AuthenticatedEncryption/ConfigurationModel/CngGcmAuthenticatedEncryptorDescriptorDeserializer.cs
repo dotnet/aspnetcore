@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
 
@@ -14,7 +15,6 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 [SupportedOSPlatform("windows")]
 public sealed class CngGcmAuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
 {
-
     /// <summary>
     /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>

@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "프로토콜 버퍼 파일",
+  "description": "gRPC의 메시지 및 서비스를 설명하는 프로토콜 버퍼 파일입니다.",
+  "symbols/namespace/description": "생성된 코드의 네임스페이스",
+  "postActions/openInEditor/description": "편집기에서 protobuf.proto를 엽니다."
+}

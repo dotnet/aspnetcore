@@ -47,7 +47,6 @@ public class OperationBase
 
     public OperationBase()
     {
-
     }
 
     public OperationBase(string op, string path, string from)

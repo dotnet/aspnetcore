@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.IIS;
@@ -24,10 +22,7 @@ public static class WebHostBuilderIISExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseIIS(this IWebHostBuilder hostBuilder)
     {
-        if (hostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
 
         // Check if in process
         if (OperatingSystem.IsWindows() && NativeMethods.IsAspNetCoreModuleLoaded())

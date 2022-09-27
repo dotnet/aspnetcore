@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
@@ -44,6 +43,7 @@ public static class MvcCoreMvcBuilderExtensions
 
     /// <summary>
     /// Configures <see cref="JsonOptions"/> for the specified <paramref name="builder"/>.
+    /// Uses default values from <c>JsonSerializerDefaults.Web</c>.
     /// </summary>
     /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
     /// <param name="configure">An <see cref="Action"/> to configure the <see cref="JsonOptions"/>.</param>

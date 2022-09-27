@@ -1,11 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
@@ -63,7 +61,6 @@ public class FilterFactoryTest
                     new FilterDescriptor(staticFilter2, FilterScope.Action),
                 });
         var filterProviders = new[] { new DefaultFilterProvider() };
-
 
         // Act - 1
         var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);

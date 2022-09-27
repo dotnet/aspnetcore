@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -31,6 +28,17 @@ public class ActionResultOfTTest
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => new ActionResult<FileStreamResult>(result: actionResult));
         Assert.Equal($"Invalid type parameter '{typeof(FileStreamResult)}' specified for 'ActionResult<T>'.", ex.Message);
+    }
+
+    [Fact]
+    public void Constructor_WithIResult_ThrowsForInvalidType()
+    {
+        // Arrange
+        var result = new TestResult();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => new ActionResult<TestResult>(value: result));
+        Assert.Equal($"Invalid type parameter '{typeof(TestResult)}' specified for 'ActionResult<T>'.", ex.Message);
     }
 
     [Fact]
@@ -108,5 +116,11 @@ public class ActionResultOfTTest
 
     private class DerivedItem : BaseItem
     {
+    }
+
+    private class TestResult : IResult
+    {
+        public Task ExecuteAsync(HttpContext httpContext)
+            => Task.CompletedTask;
     }
 }

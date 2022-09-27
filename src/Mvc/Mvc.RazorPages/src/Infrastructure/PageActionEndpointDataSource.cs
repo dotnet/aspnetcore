@@ -1,18 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionEndpointDataSource : ActionEndpointDataSourceBase
+internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBase
 {
     private readonly ActionEndpointFactory _endpointFactory;
     private readonly OrderedEndpointsSequenceProvider _orderSequence;
@@ -27,7 +26,7 @@ internal class PageActionEndpointDataSource : ActionEndpointDataSourceBase
         DataSourceId = dataSourceIdProvider.CreateId();
         _endpointFactory = endpointFactory;
         _orderSequence = orderedEndpoints;
-        DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions);
+        DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions, FinallyConventions);
 
         // IMPORTANT: this needs to be the last thing we do in the constructor.
         // Change notifications can happen immediately!
@@ -42,7 +41,13 @@ internal class PageActionEndpointDataSource : ActionEndpointDataSourceBase
     // selection. Set to true by builder methods that do dynamic/fallback selection.
     public bool CreateInertEndpoints { get; set; }
 
-    protected override List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
+    protected override List<Endpoint> CreateEndpoints(
+        RoutePattern? groupPrefix,
+        IReadOnlyList<ActionDescriptor> actions,
+        IReadOnlyList<Action<EndpointBuilder>> conventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -50,7 +55,16 @@ internal class PageActionEndpointDataSource : ActionEndpointDataSourceBase
         {
             if (actions[i] is PageActionDescriptor action)
             {
-                _endpointFactory.AddEndpoints(endpoints, routeNames, action, Array.Empty<ConventionalRouteEntry>(), conventions, CreateInertEndpoints);
+                _endpointFactory.AddEndpoints(endpoints,
+                    routeNames,
+                    action,
+                    Array.Empty<ConventionalRouteEntry>(),
+                    conventions: conventions,
+                    groupConventions: groupConventions,
+                    finallyConventions: finallyConventions,
+                    groupFinallyConventions: groupFinallyConventions,
+                    CreateInertEndpoints,
+                    groupPrefix);
             }
         }
 

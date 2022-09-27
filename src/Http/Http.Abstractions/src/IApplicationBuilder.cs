@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -21,6 +19,9 @@ public interface IApplicationBuilder
     /// <summary>
     /// Gets the set of HTTP features the application's server provides.
     /// </summary>
+    /// <remarks>
+    /// An empty collection is returned if a server wasn't specified for the application builder.
+    /// </remarks>
     IFeatureCollection ServerFeatures { get; }
 
     /// <summary>

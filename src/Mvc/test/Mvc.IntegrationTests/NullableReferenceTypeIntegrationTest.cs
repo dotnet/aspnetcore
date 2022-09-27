@@ -1,18 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -61,8 +53,8 @@ public class NullableReferenceTypeIntegrationTest
                 Assert.Equal("FirstName", kvp.Key);
                 Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
 
-                    // Not validating framework error message.
-                    Assert.Single(kvp.Value.Errors);
+                // Not validating framework error message.
+                Assert.Single(kvp.Value.Errors);
             });
     }
 
@@ -203,8 +195,8 @@ public class NullableReferenceTypeIntegrationTest
                 Assert.Equal("param1", kvp.Key);
                 Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
 
-                    // Not validating framework error message.
-                    Assert.Single(kvp.Value.Errors);
+                // Not validating framework error message.
+                Assert.Single(kvp.Value.Errors);
             });
     }
 }

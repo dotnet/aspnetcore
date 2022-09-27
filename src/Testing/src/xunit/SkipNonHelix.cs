@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -35,6 +34,6 @@ public class SkipNonHelixAttribute : Attribute, ITestCondition
         }
     }
 
-    public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());
-    public static string GetTargetHelixQueue() => Environment.GetEnvironmentVariable("helix");
+    public static bool OnHelix() => HelixHelper.OnHelix();
+    public static string GetTargetHelixQueue() => HelixHelper.GetTargetHelixQueue();
 }

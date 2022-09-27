@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering;
 

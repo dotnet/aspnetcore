@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.Routing;
 
 /// <summary>
@@ -30,4 +28,9 @@ public class LocationChangedEventArgs : EventArgs
     /// Gets a value that determines if navigation for the link was intercepted.
     /// </summary>
     public bool IsNavigationIntercepted { get; }
+
+    /// <summary>
+    /// Gets the state associated with the current history entry.
+    /// </summary>
+    public string? HistoryEntryState { get; internal init; }
 }

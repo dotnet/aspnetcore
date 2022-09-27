@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
@@ -121,7 +116,6 @@ public class ServerComponentDeserializerTest
         Assert.Contains("First", firstParameters.Keys);
         Assert.Equal("Value", firstParameters["First"]);
 
-
         var secondDescriptor = descriptors[1];
         Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
         Assert.Equal(1, secondDescriptor.Sequence);
@@ -151,7 +145,6 @@ public class ServerComponentDeserializerTest
         Assert.Single(firstParameters);
         Assert.Contains("First", firstParameters.Keys);
         Assert.Equal("Value", firstParameters["First"]);
-
 
         var secondDescriptor = descriptors[1];
         Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);

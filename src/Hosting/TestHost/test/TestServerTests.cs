@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -19,9 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
-using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost;
 
@@ -276,12 +269,29 @@ public class TestServerTests
                 Assert.Contains(serverAddressesFeature.Addresses, s => string.Equals(s, url, StringComparison.Ordinal));
             });
 
-
         var featureCollection = new FeatureCollection();
         featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 
         // Act
         new TestServer(builder, featureCollection);
+
+        // Assert
+        // Is inside configure callback
+    }
+
+    [Fact]
+    public void TestServerConstructedWithoutFeatureCollectionHasServerAddressesFeature()
+    {
+        // Arrange
+        var builder = new WebHostBuilder()
+            .Configure(applicationBuilder =>
+            {
+                var serverAddressesFeature = applicationBuilder.ServerFeatures.Get<IServerAddressesFeature>();
+                Assert.NotNull(serverAddressesFeature);
+            });
+
+        // Act
+        new TestServer(builder);
 
         // Assert
         // Is inside configure callback
@@ -673,7 +683,7 @@ public class TestServerTests
                               {
                                   app.Run(context =>
                                   {
-                                      TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+                                      TaskCompletionSource tcs = new TaskCompletionSource();
                                       tcs.SetCanceled();
                                       return tcs.Task;
                                   });

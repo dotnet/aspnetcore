@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Service Worker",
-    "description": "Modèle de projet vide pour la création d'un service Worker."
-  }
-}

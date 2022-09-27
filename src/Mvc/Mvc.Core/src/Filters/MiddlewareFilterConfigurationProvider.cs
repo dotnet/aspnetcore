@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
@@ -14,9 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// Calls into user provided 'Configure' methods for configuring a middleware pipeline. The semantics of finding
 /// the 'Configure' methods is similar to the application Startup class.
 /// </summary>
-internal class MiddlewareFilterConfigurationProvider
+internal sealed class MiddlewareFilterConfigurationProvider
 {
-    public Action<IApplicationBuilder> CreateConfigureDelegate(Type configurationType)
+    public static Action<IApplicationBuilder> CreateConfigureDelegate(Type configurationType)
     {
         if (configurationType == null)
         {
@@ -77,7 +76,7 @@ internal class MiddlewareFilterConfigurationProvider
         return !modelType.IsAbstract && modelType.GetConstructor(Type.EmptyTypes) != null;
     }
 
-    private class ConfigureBuilder
+    private sealed class ConfigureBuilder
     {
         public ConfigureBuilder(MethodInfo configure)
         {

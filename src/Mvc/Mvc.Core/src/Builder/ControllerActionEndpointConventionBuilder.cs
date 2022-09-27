@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
@@ -17,11 +14,13 @@ public sealed class ControllerActionEndpointConventionBuilder : IEndpointConvent
     // The lock is shared with the data source.
     private readonly object _lock;
     private readonly List<Action<EndpointBuilder>> _conventions;
+    private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
-    internal ControllerActionEndpointConventionBuilder(object @lock, List<Action<EndpointBuilder>> conventions)
+    internal ControllerActionEndpointConventionBuilder(object @lock, List<Action<EndpointBuilder>> conventions, List<Action<EndpointBuilder>> finallyConventions)
     {
         _lock = @lock;
         _conventions = conventions;
+        _finallyConventions = finallyConventions;
     }
 
     /// <summary>
@@ -41,5 +40,16 @@ public sealed class ControllerActionEndpointConventionBuilder : IEndpointConvent
         {
             _conventions.Add(convention);
         }
+    }
+
+    /// <inheritdoc />
+    public void Finally(Action<EndpointBuilder> finalConvention)
+    {
+        ArgumentNullException.ThrowIfNull(nameof(finalConvention));
+
+        lock (_lock)
+        {
+            _finallyConventions.Add(finalConvention);
+        };
     }
 }

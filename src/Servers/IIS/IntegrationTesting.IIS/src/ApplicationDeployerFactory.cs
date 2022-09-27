@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 
@@ -20,15 +19,9 @@ public class IISApplicationDeployerFactory
     /// <returns></returns>
     public static ApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
     {
-        if (deploymentParameters == null)
-        {
-            throw new ArgumentNullException(nameof(deploymentParameters));
-        }
+        ArgumentNullException.ThrowIfNull(deploymentParameters);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         switch (deploymentParameters.ServerType)
         {

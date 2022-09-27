@@ -1,8 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Razor 類別庫",
-    "description": "用於建立 Razor 類別庫的專案範本。",
-    "parameter.SupportPagesAndViews.name": "_Support 頁面與檢視"
-  }
-}

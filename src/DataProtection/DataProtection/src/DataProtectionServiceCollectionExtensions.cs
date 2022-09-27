@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
@@ -96,8 +95,8 @@ public static class DataProtectionServiceCollectionExtensions
 
             IDataProtectionProvider dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyRingProvider, loggerFactory);
 
-                // Link the provider to the supplied discriminator
-                if (!string.IsNullOrEmpty(dpOptions.Value.ApplicationDiscriminator))
+            // Link the provider to the supplied discriminator
+            if (!string.IsNullOrEmpty(dpOptions.Value.ApplicationDiscriminator))
             {
                 dataProtectionProvider = dataProtectionProvider.CreateProtector(dpOptions.Value.ApplicationDiscriminator);
             }

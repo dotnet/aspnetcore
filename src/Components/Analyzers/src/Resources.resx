@@ -174,4 +174,10 @@
   <data name="DoNotUseRenderTreeTypes_Title" xml:space="preserve">
     <value>Do not use RenderTree types</value>
   </data>
+  <data name="ComponentParametersShouldBeAutoProperties_Message" xml:space="preserve">
+    <value>Component parameter '{0}' should be auto property</value>
+  </data>
+  <data name="ComponentParametersShouldBeAutoProperties_Title" xml:space="preserve">
+    <value>Component parameters should be auto properties</value>
+  </data>
 </root>

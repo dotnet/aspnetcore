@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor Server-App",
-    "description": "Eine Projektvorlage für das Erstellen einer Blazor Server-App, die serverseitig innerhalb einer ASP.NET Core-App ausgeführt wird und die Benutzerinteraktionen über eine SignalR-Verbindung verarbeitet. Diese Vorlage kann für Web-Apps mit umfangreichen dynamischen Benutzeroberflächen verwendet werden."
-  }
-}

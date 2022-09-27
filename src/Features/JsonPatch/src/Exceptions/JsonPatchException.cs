@@ -11,10 +11,8 @@ public class JsonPatchException : Exception
     public Operation FailedOperation { get; private set; }
     public object AffectedObject { get; private set; }
 
-
     public JsonPatchException()
     {
-
     }
 
     public JsonPatchException(JsonPatchError jsonPatchError, Exception innerException)
@@ -32,6 +30,5 @@ public class JsonPatchException : Exception
     public JsonPatchException(string message, Exception innerException)
         : base(message, innerException)
     {
-
     }
 }

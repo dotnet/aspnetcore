@@ -1,26 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate.Test;
 
@@ -30,7 +25,7 @@ public class ClientCertificateAuthenticationTests
     [Fact]
     public async Task VerifySchemeDefaults()
     {
-        var services = new ServiceCollection();
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication().AddCertificate();
         var sp = services.BuildServiceProvider();
         var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
@@ -159,7 +154,8 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = $"All.Ubuntu;{HelixConstants.RedhatAmd64}")]
     public async Task VerifyExpiredSelfSignedFails()
     {
         using var host = await CreateHost(
@@ -194,7 +190,7 @@ public class ClientCertificateAuthenticationTests
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = $"All.Ubuntu;{HelixConstants.RedhatAmd64}")]
     public async Task VerifyNotYetValidSelfSignedFails()
     {
         using var host = await CreateHost(
@@ -330,7 +326,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39669")]
     public async Task VerifyValidClientCertWithTrustedChainAuthenticates()
     {
         using var host = await CreateHost(
@@ -347,7 +343,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39669")]
     public async Task VerifyValidClientCertWithAdditionalCertificatesAuthenticates()
     {
         using var host = await CreateHost(
@@ -578,8 +574,8 @@ public class ClientCertificateAuthenticationTests
                     {
                         validationCount++;
 
-                            // Make sure we get the validated principal
-                            Assert.NotNull(context.Principal);
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
 
                         var claims = new[]
                         {
@@ -650,8 +646,8 @@ public class ClientCertificateAuthenticationTests
                 {
                     OnCertificateValidated = context =>
                     {
-                            // Make sure we get the validated principal
-                            Assert.NotNull(context.Principal);
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
                         var claims = new[]
                         {
                                 new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer)
@@ -811,7 +807,6 @@ public class ClientCertificateAuthenticationTests
                             return next(context);
                         });
 
-
                         if (wireUpHeaderMiddleware)
                         {
                             app.UseCertificateForwarding();
@@ -849,7 +844,7 @@ public class ClientCertificateAuthenticationTests
                     AuthenticationBuilder authBuilder;
                     if (configureOptions != null)
                     {
-                        authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
+                        authBuilder = services.AddAuthentication().AddCertificate(options =>
                         {
                             options.CustomTrustStore = configureOptions.CustomTrustStore;
                             options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
@@ -864,7 +859,7 @@ public class ClientCertificateAuthenticationTests
                     }
                     else
                     {
-                        authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                        authBuilder = services.AddAuthentication().AddCertificate();
                     }
                     if (useCache)
                     {
@@ -933,42 +928,5 @@ public class ClientCertificateAuthenticationTests
             return Task.CompletedTask;
         }
     };
-
-    private static class Certificates
-    {
-        public static X509Certificate2 SelfSignedPrimaryRoot { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedPrimaryRootCertificate.cer"));
-
-        public static X509Certificate2 SignedSecondaryRoot { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSignedSecondaryRootCertificate.cer"));
-
-        public static X509Certificate2 SignedClient { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSignedClientCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedClientEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithNoEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedNoEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithServerEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedServerEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedNotYetValid { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateNotValidYet.cer"));
-
-        public static X509Certificate2 SelfSignedExpired { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateExpired.cer"));
-
-        private static string GetFullyQualifiedFilePath(string filename)
-        {
-            var filePath = Path.Combine(AppContext.BaseDirectory, filename);
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException(filePath);
-            }
-            return filePath;
-        }
-    }
 }
 

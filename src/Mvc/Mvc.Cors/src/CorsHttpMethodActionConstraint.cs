@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors;
 
-internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
+internal sealed class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
 {
     private readonly string OriginHeader = "Origin";
     private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";

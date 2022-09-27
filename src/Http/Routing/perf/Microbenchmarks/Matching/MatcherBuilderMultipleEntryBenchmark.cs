@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -103,7 +100,7 @@ public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBench
         return new TestUberPolicy(order);
     }
 
-    private class TestUberPolicy : TestMatcherPolicyBase, INodeBuilderPolicy, IEndpointComparerPolicy
+    private sealed class TestUberPolicy : TestMatcherPolicyBase, INodeBuilderPolicy, IEndpointComparerPolicy
     {
         public TestUberPolicy(int order) : base(order)
         {
@@ -127,7 +124,7 @@ public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBench
         }
     }
 
-    private class TestNodeBuilderPolicy : TestMatcherPolicyBase, INodeBuilderPolicy
+    private sealed class TestNodeBuilderPolicy : TestMatcherPolicyBase, INodeBuilderPolicy
     {
         public TestNodeBuilderPolicy(int order) : base(order)
         {
@@ -149,7 +146,7 @@ public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBench
         }
     }
 
-    private class TestEndpointComparerPolicy : TestMatcherPolicyBase, IEndpointComparerPolicy
+    private sealed class TestEndpointComparerPolicy : TestMatcherPolicyBase, IEndpointComparerPolicy
     {
         public TestEndpointComparerPolicy(int order) : base(order)
         {
@@ -168,7 +165,7 @@ public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBench
         }
     }
 
-    private class TestEndpointSelectorPolicy : TestMatcherPolicyBase, IEndpointSelectorPolicy
+    private sealed class TestEndpointSelectorPolicy : TestMatcherPolicyBase, IEndpointSelectorPolicy
     {
         public TestEndpointSelectorPolicy(int order) : base(order)
         {
@@ -197,7 +194,7 @@ public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBench
         public override int Order { get { return _order; } }
     }
 
-    private class TestEndpointComparer : IComparer<Endpoint>
+    private sealed class TestEndpointComparer : IComparer<Endpoint>
     {
         public int Compare(Endpoint x, Endpoint y)
         {

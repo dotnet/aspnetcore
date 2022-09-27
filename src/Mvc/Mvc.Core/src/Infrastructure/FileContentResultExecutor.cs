@@ -3,9 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -14,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{FileContentResult}"/>
 /// </summary>
-public class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
+public partial class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
 {
     /// <summary>
     /// Intializes a new <see cref="FileContentResultExecutor"/>.
@@ -38,7 +35,7 @@ public class FileContentResultExecutor : FileResultExecutorBase, IActionResultEx
             throw new ArgumentNullException(nameof(result));
         }
 
-        Logger.ExecutingFileResult(result);
+        Log.ExecutingFileResult(Logger, result);
 
         var (range, rangeLength, serveBody) = SetHeadersAndLog(
             context,
@@ -82,10 +79,28 @@ public class FileContentResultExecutor : FileResultExecutorBase, IActionResultEx
 
         if (range != null)
         {
-            Logger.WritingRangeToBody();
+            Log.WritingRangeToBody(Logger);
         }
 
         var fileContentStream = new MemoryStream(result.FileContents);
         return WriteFileAsync(context.HttpContext, fileContentStream, range, rangeLength);
+    }
+
+    private static partial class Log
+    {
+        public static void ExecutingFileResult(ILogger logger, FileResult fileResult)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var fileResultType = fileResult.GetType().Name;
+                ExecutingFileResultWithNoFileName(logger, fileResultType, fileResult.FileDownloadName);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Information, "Executing {FileResultType}, sending file with download name '{FileDownloadName}' ...", EventName = "ExecutingFileResultWithNoFileName", SkipEnabledCheck = true)]
+        private static partial void ExecutingFileResultWithNoFileName(ILogger logger, string fileResultType, string fileDownloadName);
+
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

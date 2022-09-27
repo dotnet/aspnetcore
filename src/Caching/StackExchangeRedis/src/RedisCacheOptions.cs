@@ -17,28 +17,28 @@ public class RedisCacheOptions : IOptions<RedisCacheOptions>
     /// <summary>
     /// The configuration used to connect to Redis.
     /// </summary>
-    public string Configuration { get; set; }
+    public string? Configuration { get; set; }
 
     /// <summary>
     /// The configuration used to connect to Redis.
     /// This is preferred over Configuration.
     /// </summary>
-    public ConfigurationOptions ConfigurationOptions { get; set; }
+    public ConfigurationOptions? ConfigurationOptions { get; set; }
 
     /// <summary>
     /// Gets or sets a delegate to create the ConnectionMultiplexer instance.
     /// </summary>
-    public Func<Task<IConnectionMultiplexer>> ConnectionMultiplexerFactory { get; set; }
+    public Func<Task<IConnectionMultiplexer>>? ConnectionMultiplexerFactory { get; set; }
 
     /// <summary>
     /// The Redis instance name.
     /// </summary>
-    public string InstanceName { get; set; }
+    public string? InstanceName { get; set; }
 
     /// <summary>
     /// The Redis profiling session
     /// </summary>
-    public Func<ProfilingSession> ProfilingSession { get; set; }
+    public Func<ProfilingSession>? ProfilingSession { get; set; }
 
     RedisCacheOptions IOptions<RedisCacheOptions>.Value
     {

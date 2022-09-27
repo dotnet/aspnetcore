@@ -3,4 +3,4 @@
 
 using Microsoft.AspNetCore.Testing;
 
-[assembly:Retry]
+[assembly: Retry]

@@ -22,7 +22,7 @@ public class ServerTests
     public async Task Server_TokenRegisteredAfterClientDisconnects_CallCanceled()
     {
         var interval = TimeSpan.FromSeconds(1);
-        var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var canceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
@@ -38,7 +38,7 @@ public class ServerTests
 
                 var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-                ct.Register(() => canceled.SetResult(0));
+                ct.Register(() => canceled.SetResult());
                 await canceled.Task.TimeoutAfter(interval);
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 
@@ -51,7 +51,7 @@ public class ServerTests
     public async Task Server_TokenRegisteredAfterResponseSent_Success()
     {
         var interval = TimeSpan.FromSeconds(1);
-        var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var canceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
@@ -69,7 +69,7 @@ public class ServerTests
 
                 var ct = context.DisconnectToken;
                 Assert.False(ct.CanBeCanceled, "CanBeCanceled");
-                ct.Register(() => canceled.SetResult(0));
+                ct.Register(() => canceled.SetResult());
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
 
                 Assert.False(canceled.Task.IsCompleted, "canceled");
@@ -81,7 +81,7 @@ public class ServerTests
     public async Task Server_ConnectionCloseHeader_CancellationTokenFires()
     {
         var interval = TimeSpan.FromSeconds(1);
-        var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var canceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
@@ -92,7 +92,7 @@ public class ServerTests
             var ct = context.DisconnectToken;
             Assert.True(ct.CanBeCanceled, "CanBeCanceled");
             Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-            ct.Register(() => canceled.SetResult(0));
+            ct.Register(() => canceled.SetResult());
 
             context.Response.Headers["Connection"] = "close";
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 helixQueue="$3"
-installPlaywright="$8"
+installPlaywright="$7"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -13,18 +13,20 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
+# Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
+unset ASPNETCORE_ENVIRONMENT
+
 export PATH="$PATH:$DIR:$DIR/node/bin"
 
 # Set playwright stuff
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
 if [[ "$helixQueue" == *"OSX"* ]]; then
-    export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/osx/native/playwright.sh"
     PLAYWRIGHT_NODE_PATH=$DIR/.playwright/osx/native/node
 else
     export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
     PLAYWRIGHT_NODE_PATH=$DIR/.playwright/unix/native/node
 fi
-export InstallPlaywright="$installPlaywright"
+
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
     if [[ "$helixQueue" != *"OSX"* ]]; then
         echo "Installing Playwright requirements..."
@@ -76,11 +78,8 @@ sync
 
 exit_code=0
 
-echo "Restore: dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
-dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
-
-echo "Running tests: dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7"
-dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7
+echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
+dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

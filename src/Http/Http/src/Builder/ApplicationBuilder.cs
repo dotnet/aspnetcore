@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Internal;
@@ -24,10 +21,8 @@ public class ApplicationBuilder : IApplicationBuilder
     /// Initializes a new instance of <see cref="ApplicationBuilder"/>.
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> for application services.</param>
-    public ApplicationBuilder(IServiceProvider serviceProvider)
+    public ApplicationBuilder(IServiceProvider serviceProvider) : this(serviceProvider, new FeatureCollection())
     {
-        Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
-        ApplicationServices = serviceProvider;
     }
 
     /// <summary>
@@ -36,8 +31,10 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> for application services.</param>
     /// <param name="server">The server instance that hosts the application.</param>
     public ApplicationBuilder(IServiceProvider serviceProvider, object server)
-        : this(serviceProvider)
     {
+        Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
+        ApplicationServices = serviceProvider;
+
         SetProperty(ServerFeaturesKey, server);
     }
 
@@ -64,6 +61,9 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <summary>
     /// Gets the <see cref="IFeatureCollection"/> for server features.
     /// </summary>
+    /// <remarks>
+    /// An empty collection is returned if a server wasn't specified for the application builder.
+    /// </remarks>
     public IFeatureCollection ServerFeatures
     {
         get
@@ -119,9 +119,9 @@ public class ApplicationBuilder : IApplicationBuilder
     {
         RequestDelegate app = context =>
         {
-                // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
-                // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
-                var endpoint = context.GetEndpoint();
+            // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
+            // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
+            var endpoint = context.GetEndpoint();
             var endpointRequestDelegate = endpoint?.RequestDelegate;
             if (endpointRequestDelegate != null)
             {

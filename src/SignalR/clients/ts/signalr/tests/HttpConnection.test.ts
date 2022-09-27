@@ -7,7 +7,7 @@ import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 import { getUserAgentHeader } from "../src/Utils";
 
-import { HttpError } from "../src/Errors";
+import { AbortError, HttpError } from "../src/Errors";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { NullLogger } from "../src/Loggers";
 import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
@@ -161,9 +161,12 @@ describe("HttpConnection", () => {
 
             await stopPromise;
 
-            await expect(startPromise)
-                .rejects
-                .toThrow("The connection was stopped during negotiation.");
+            try {
+                await startPromise
+            } catch (e) {
+                expect(e).toBeInstanceOf(AbortError);
+                expect((e as AbortError).message).toBe("The connection was stopped during negotiation.");
+            }
         },
         "Failed to start the connection: Error: The connection was stopped during negotiation.");
     });
@@ -665,6 +668,7 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (logger) => {
             let firstNegotiate = true;
             let firstPoll = true;
+            const pollingPromiseSource = new PromiseSource();
             const httpClient = new TestHttpClient()
                 .on("POST", /\/negotiate/, (r) => {
                     if (firstNegotiate) {
@@ -686,7 +690,7 @@ describe("HttpConnection", () => {
                         connectionId: "0rge0d00-0040-0030-0r00-000q00r00e00",
                     };
                 })
-                .on("GET", (r) => {
+                .on("GET", async (r) => {
                     if (r.headers && r.headers.Authorization !== "Bearer secondSecret") {
                         return new HttpResponse(401, "Unauthorized", "");
                     }
@@ -695,6 +699,7 @@ describe("HttpConnection", () => {
                         firstPoll = false;
                         return "";
                     }
+                    await pollingPromiseSource.promise;
                     return new HttpResponse(204, "No Content", "");
                 })
                 .on("DELETE", () => new HttpResponse(202));
@@ -716,6 +721,8 @@ describe("HttpConnection", () => {
                 expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
                 expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
+
+                pollingPromiseSource.resolve();
             } finally {
                 await connection.stop();
             }
@@ -765,8 +772,11 @@ describe("HttpConnection", () => {
                         httpClientGetCount++;
                         const authorizationValue = r.headers![HeaderNames.Authorization];
                         if (httpClientGetCount === 1) {
+                            // Auth failure to cause a retry with a call to accessTokenFactory
+                            return new HttpResponse(401);
+                        } else if (httpClientGetCount === 2) {
                             if (authorizationValue) {
-                                fail("First long poll request should have a authorization header.");
+                                fail("First long poll request should have no authorization header.");
                             }
                             // First long polling request must succeed so start completes
                             return "";

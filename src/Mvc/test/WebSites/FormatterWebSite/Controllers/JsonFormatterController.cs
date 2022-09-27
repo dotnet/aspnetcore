@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
@@ -47,6 +44,19 @@ public class JsonFormatterController : Controller
         return objectResult;
     }
 
+#nullable enable
+    [HttpPost]
+    public IActionResult ReturnNonNullableInput([FromBody] DummyClass dummyObject)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
+    }
+#nullable restore
+
     [HttpPost]
     public IActionResult ReturnInput([FromBody] DummyClass dummyObject)
     {
@@ -55,7 +65,7 @@ public class JsonFormatterController : Controller
             return BadRequest(ModelState);
         }
 
-        return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
+        return Content(dummyObject?.SampleInt.ToString(CultureInfo.InvariantCulture));
     }
 
     [HttpPost]
@@ -104,7 +114,9 @@ public class JsonFormatterController : Controller
     public ActionResult<SimpleModelWithValidation> RoundtripModelWithValidation([FromBody] SimpleModelWithValidation model)
     {
         if (!ModelState.IsValid)
+        {
             return ValidationProblem();
+        }
         return model;
     }
 }

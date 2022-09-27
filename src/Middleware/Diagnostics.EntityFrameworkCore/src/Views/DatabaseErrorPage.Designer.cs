@@ -32,7 +32,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 #line default
 #line hidden
 #nullable disable
-    internal class DatabaseErrorPage : Microsoft.Extensions.RazorViews.BaseView
+    internal sealed class DatabaseErrorPage : Microsoft.Extensions.RazorViews.BaseView
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

@@ -68,13 +68,13 @@ public class HttpConnectionFactory : IConnectionFactory
 
         try
         {
-            await connection.StartAsync(cancellationToken);
+            await connection.StartAsync(cancellationToken).ConfigureAwait(false);
             return connection;
         }
         catch
         {
             // Make sure the connection is disposed, in case it allocated any resources before failing.
-            await connection.DisposeAsync();
+            await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }
     }

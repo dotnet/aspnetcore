@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Infrastructure;
@@ -38,8 +36,10 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
     /// <inheritdoc />
     public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
     {
-        var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
-        var previousWebRoot = _context.HostingEnvironment.WebRootPath;
+        var previousContentRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.ContentRootPath);
+        var previousContentRootConfig = _configuration[WebHostDefaults.ContentRootKey];
+        var previousWebRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.WebRootPath, previousContentRoot);
+        var previousWebRootConfig = _configuration[WebHostDefaults.WebRootKey];
         var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
         var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
         var previousHostingStartupAssemblies = _configuration[WebHostDefaults.HostingStartupAssembliesKey];
@@ -48,7 +48,8 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         // Run these immediately so that they are observable by the imperative code
         configureDelegate(_context, _configuration);
 
-        if (!string.Equals(HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot), HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.WebRootKey], previousContentRoot), StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(previousWebRootConfig, _configuration[WebHostDefaults.WebRootKey], StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot), HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.WebRootKey], previousContentRoot), StringComparison.OrdinalIgnoreCase))
         {
             // Diasllow changing the web root for consistency with other types.
             throw new NotSupportedException($"The web root changed from \"{HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot)}\" to \"{HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.WebRootKey], previousContentRoot)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
@@ -58,7 +59,8 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
             // Disallow changing any host configuration
             throw new NotSupportedException($"The application name changed from \"{previousApplication}\" to \"{_configuration[WebHostDefaults.ApplicationKey]}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
         }
-        else if (!string.Equals(previousContentRoot, HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey]), StringComparison.OrdinalIgnoreCase))
+        else if (!string.Equals(previousContentRootConfig, _configuration[WebHostDefaults.ContentRootKey], StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(previousContentRoot, HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey]), StringComparison.OrdinalIgnoreCase))
         {
             // Disallow changing any host configuration
             throw new NotSupportedException($"The content root changed from \"{previousContentRoot}\" to \"{HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey])}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
@@ -111,8 +113,8 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
             return this;
         }
 
-        var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
-        var previousWebRoot = _context.HostingEnvironment.WebRootPath;
+        var previousContentRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.ContentRootPath);
+        var previousWebRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.WebRootPath);
         var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
         var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
         var previousHostingStartupAssemblies = _configuration[WebHostDefaults.HostingStartupAssembliesKey];
@@ -123,7 +125,6 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         {
             // Disallow changing any host configuration
             throw new NotSupportedException($"The web root changed from \"{HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot)}\" to \"{HostingPathResolver.ResolvePath(value, previousContentRoot)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
-
         }
         else if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(previousApplication, value, StringComparison.OrdinalIgnoreCase))
@@ -172,7 +173,7 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         throw new NotSupportedException("Configure() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
     }
 
-    IWebHostBuilder ISupportsStartup.UseStartup(Type startupType)
+    IWebHostBuilder ISupportsStartup.UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
     {
         throw new NotSupportedException("UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
     }

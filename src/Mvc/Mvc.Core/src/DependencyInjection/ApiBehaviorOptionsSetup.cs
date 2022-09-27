@@ -1,15 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
+internal sealed class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
 {
     private ProblemDetailsFactory? _problemDetailsFactory;
 
@@ -22,9 +21,9 @@ internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
 
         options.InvalidModelStateResponseFactory = context =>
         {
-                // ProblemDetailsFactory depends on the ApiBehaviorOptions instance. We intentionally avoid constructor injecting
-                // it in this options setup to to avoid a DI cycle.
-                _problemDetailsFactory ??= context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+            // ProblemDetailsFactory depends on the ApiBehaviorOptions instance. We intentionally avoid constructor injecting
+            // it in this options setup to to avoid a DI cycle.
+            _problemDetailsFactory ??= context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
             return ProblemDetailsInvalidModelStateResponse(_problemDetailsFactory, context);
         };
 

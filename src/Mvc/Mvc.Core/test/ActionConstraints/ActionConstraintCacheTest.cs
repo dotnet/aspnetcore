@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 
@@ -160,7 +158,8 @@ public class ActionConstraintCacheTest
     {
         var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
             Enumerable.Empty<IActionDescriptorProvider>(),
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
         return new ActionConstraintCache(descriptorProvider, providers);
     }
 }

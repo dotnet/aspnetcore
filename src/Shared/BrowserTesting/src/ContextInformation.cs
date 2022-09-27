@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 
 namespace Microsoft.AspNetCore.BrowserTesting;
 
@@ -26,7 +26,7 @@ public class ContextInformation
         context.Page += AttachToPage;
     }
 
-    private void AttachToPage(object sender, PageEventArgs args)
+    private void AttachToPage(object sender, IPage page)
     {
         var logger = _factory.CreateLogger<PageInformation>();
         if (_harPath != null)
@@ -34,15 +34,14 @@ public class ContextInformation
             logger.LogInformation($"Network trace will be saved at '{_harPath}'");
         }
 
-        var pageInfo = new PageInformation(args.Page, logger);
-        Pages.Add(args.Page, pageInfo);
-        args.Page.Close += CleanupPage;
-        args.Page.Crash += CleanupPage;
+        var pageInfo = new PageInformation(page, logger);
+        Pages.Add(page, pageInfo);
+        page.Close += CleanupPage;
+        page.Crash += CleanupPage;
     }
 
-    private void CleanupPage(object sender, EventArgs e)
+    private void CleanupPage(object sender, IPage page)
     {
-        var page = (IPage)sender;
         if (Pages.TryGetValue(page, out var info))
         {
             info.Dispose();
@@ -50,23 +49,23 @@ public class ContextInformation
         }
     }
 
-    internal BrowserContextOptions ConfigureUniqueHarPath(BrowserContextOptions browserContextOptions)
+    internal BrowserNewContextOptions ConfigureUniqueHarPath(BrowserNewContextOptions browserContextOptions)
     {
         var uploadDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-        if (browserContextOptions?.RecordHar?.Path != null)
+        if (browserContextOptions?.RecordHarPath != null)
         {
             var identifier = Guid.NewGuid().ToString("N");
-            browserContextOptions.RecordHar.Path = Path.Combine(
-                string.IsNullOrEmpty(uploadDir) ? browserContextOptions.RecordHar.Path : uploadDir,
+            browserContextOptions.RecordHarPath = Path.Combine(
+                string.IsNullOrEmpty(uploadDir) ? browserContextOptions.RecordHarPath : uploadDir,
                 $"{identifier}.har");
-            _harPath = browserContextOptions.RecordHar.Path;
+            _harPath = browserContextOptions.RecordHarPath;
         }
 
-        if (browserContextOptions?.RecordVideo?.Dir != null)
+        if (browserContextOptions?.RecordVideoDir != null)
         {
             if (!string.IsNullOrEmpty(uploadDir))
             {
-                browserContextOptions.RecordVideo.Dir = uploadDir;
+                browserContextOptions.RecordVideoDir = uploadDir;
             }
         }
 

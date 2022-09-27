@@ -1,17 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
 /// <summary>
 /// A filter which executes a user configured middleware pipeline.
 /// </summary>
-internal class MiddlewareFilter : IAsyncResourceFilter
+internal sealed class MiddlewareFilter : IAsyncResourceFilter
 {
     private readonly RequestDelegate _middlewarePipeline;
 

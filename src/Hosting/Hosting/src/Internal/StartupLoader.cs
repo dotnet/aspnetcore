@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -12,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class StartupLoader
+internal sealed class StartupLoader
 {
     // Creates an <see cref="StartupMethods"/> instance with the actions to run for configuring the application services and the
     // request pipeline of the application.
@@ -70,7 +68,7 @@ internal class StartupLoader
         public abstract Func<IServiceCollection, IServiceProvider> Build();
     }
 
-    private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
+    private sealed class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
     {
         public ConfigureServicesDelegateBuilder(
             IServiceProvider hostingServiceProvider,
@@ -333,7 +331,6 @@ internal class StartupLoader
                     methodNameWithEnv,
                     methodNameWithNoEnv,
                     startupType.FullName));
-
             }
             return null;
         }

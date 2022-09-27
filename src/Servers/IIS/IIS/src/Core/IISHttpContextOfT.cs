@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
@@ -13,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
-internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
+internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
 
@@ -63,7 +60,7 @@ internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : not
                 // Dispose
             }
 
-            if (!success && HasResponseStarted && NativeMethods.HttpHasResponse4(_requestNativeHandle))
+            if (!success && HasResponseStarted && AdvancedHttp2FeaturesSupported())
             {
                 // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
                 // Otherwise the default is Cancel = 0x8 (h2) or 0x010c (h3).

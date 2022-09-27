@@ -241,14 +241,14 @@ public class PolicyHttpMessageHandlerTest
         var expected = new HttpResponseMessage();
         handler.OnSendAsync = (req, c, ct) =>
         {
-                // The inner cancellation token is created by Polly, it will trigger the timeout.
-                Assert.True(ct.CanBeCanceled);
+            // The inner cancellation token is created by Polly, it will trigger the timeout.
+            Assert.True(ct.CanBeCanceled);
             if (callCount == 0)
             {
                 callCount++;
                 @event.Wait(ct);
                 throw null; // unreachable, previous line should throw
-                }
+            }
             else if (callCount == 1)
             {
                 callCount++;
@@ -398,8 +398,8 @@ public class PolicyHttpMessageHandlerTest
 
             SingleThreadedSynchronizationContext.Run(() =>
             {
-                    // Act
-                    var request = new HttpRequestMessage();
+                // Act
+                var request = new HttpRequestMessage();
                 handler.SendAsync(request, CancellationToken.None).GetAwaiter().GetResult();
                 hangs = false;
             });

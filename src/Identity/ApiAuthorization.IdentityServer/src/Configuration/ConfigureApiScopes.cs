@@ -6,14 +6,14 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 
-internal class ConfigureApiScopes : IPostConfigureOptions<ApiAuthorizationOptions>
+internal sealed class ConfigureApiScopes : IPostConfigureOptions<ApiAuthorizationOptions>
 {
     public void PostConfigure(string name, ApiAuthorizationOptions options)
     {
         AddResourceScopesToApiScopes(options);
     }
 
-    private void AddResourceScopesToApiScopes(ApiAuthorizationOptions options)
+    private static void AddResourceScopesToApiScopes(ApiAuthorizationOptions options)
     {
         foreach (var resource in options.ApiResources)
         {

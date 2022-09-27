@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewEngines;
 
@@ -48,7 +45,6 @@ public class CompositeViewEngineTest
             () => compositeViewEngine.FindView(actionContext, viewName, isMainPage: true));
         Assert.Equal(expected, exception.Message);
     }
-
 
     [Fact]
     public void FindView_IsMainPage_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
@@ -177,7 +173,6 @@ public class CompositeViewEngineTest
             () => compositeViewEngine.GetView("~/Index.html", viewName, isMainPage));
         Assert.Equal(expected, exception.Message);
     }
-
 
     [Theory]
     [InlineData(false)]

@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -16,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 /// An <see cref="IHtmlContentBuilder"/> that is backed by a buffer provided by <see cref="IViewBufferScope"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
-internal class ViewBuffer : IHtmlContentBuilder
+internal sealed class ViewBuffer : IHtmlContentBuilder
 {
     public const int PartialViewPageSize = 32;
     public const int TagHelperPageSize = 32;
@@ -378,20 +374,18 @@ internal class ViewBuffer : IHtmlContentBuilder
                 // Now we can return the source page, and it can be reused in the scope of this request.
                 Array.Clear(page.Buffer, 0, page.Count);
                 _bufferScope.ReturnSegment(page.Buffer);
-
             }
             else
             {
                 // Otherwise, let's just add the source page to the other buffer.
                 destination.AddPage(page);
             }
-
         }
 
         Clear();
     }
 
-    private class EncodingWrapper : IHtmlContent
+    private sealed class EncodingWrapper : IHtmlContent
     {
         private readonly string _unencoded;
 

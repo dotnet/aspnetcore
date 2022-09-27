@@ -1,0 +1,44 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@this" autocomplete="off">
+    <DataAnnotationsValidator />
+
+    <p class="the-quiz">
+        Name something you can put in a salad:
+        <input @bind="SaladIngredient" class="@context.FieldCssClass(() => SaladIngredient)" />
+    </p>
+
+    <button type="submit">Submit</button>
+    <ul class="validation-errors">
+        @foreach (var message in context.GetValidationMessages())
+        {
+            <li class="validation-message">@message</li>
+        }
+    </ul>
+
+</EditForm>
+
+@code {
+    [SaladChefValidator]
+    public string SaladIngredient { get; set; }
+
+    public class SaladChefValidatorAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var saladChef = validationContext.GetRequiredService<SaladChef>();
+            if (saladChef.ThingsYouCanPutInASalad.Contains(value.ToString()))
+            {
+                return ValidationResult.Success;    
+            }
+            return new ValidationResult("You should not put that in a salad!");
+        }
+    }
+   
+    // Simple class to check if DI can be used in Validation attributes
+    public class SaladChef
+    {
+        public string[] ThingsYouCanPutInASalad = { "Strawberries", "Pineapple", "Honeydew", "Watermelon", "Grapes" };
+    }
+}

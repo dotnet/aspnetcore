@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging;
@@ -23,6 +20,11 @@ public sealed class HttpLoggingOptions
     /// <p>
     /// If a request header is not present in the <see cref="RequestHeaders"/>,
     /// the header name will be logged with a redacted value.
+    /// Request headers can contain authentication tokens,
+    /// or private information which may have regulatory concerns
+    /// under GDPR and other laws. Arbitrary request headers
+    /// should not be logged unless logs are secure and
+    /// access controlled and the privacy impact assessed.
     /// </p>
     /// </summary>
     public ISet<string> RequestHeaders => _internalRequestHeaders;
@@ -84,7 +86,6 @@ public sealed class HttpLoggingOptions
             HeaderNames.LastModified,
             HeaderNames.Location,
             HeaderNames.Server,
-            HeaderNames.Status,
             HeaderNames.TransferEncoding,
             HeaderNames.Upgrade,
             HeaderNames.XPoweredBy

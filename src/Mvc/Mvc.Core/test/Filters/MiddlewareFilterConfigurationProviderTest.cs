@@ -1,13 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Castle.Core.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
@@ -23,7 +21,7 @@ public class MiddlewareFilterConfigurationProviderTest
         var provider = new MiddlewareFilterConfigurationProvider();
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => provider.CreateConfigureDelegate(configurationType));
+        var exception = Assert.Throws<InvalidOperationException>(() => MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(configurationType));
 
         // Assert
         Assert.Equal($"Unable to create an instance of type '{configurationType}'. The type specified in configurationType must not be abstract and must have a parameterless constructor.", exception.Message);
@@ -36,7 +34,7 @@ public class MiddlewareFilterConfigurationProviderTest
         var provider = new MiddlewareFilterConfigurationProvider();
 
         // Act
-        var configureDelegate = provider.CreateConfigureDelegate(typeof(ValidConfigure_WithNoEnvironment));
+        var configureDelegate = MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(typeof(ValidConfigure_WithNoEnvironment));
 
         // Assert
         Assert.NotNull(configureDelegate);
@@ -54,7 +52,7 @@ public class MiddlewareFilterConfigurationProviderTest
         var provider = new MiddlewareFilterConfigurationProvider();
 
         // Act
-        var configureDelegate = provider.CreateConfigureDelegate(typeof(ValidConfigure_WithNoEnvironment_AdditionalServices));
+        var configureDelegate = MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(typeof(ValidConfigure_WithNoEnvironment_AdditionalServices));
 
         // Assert
         Assert.NotNull(configureDelegate);
@@ -71,7 +69,7 @@ public class MiddlewareFilterConfigurationProviderTest
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
         {
-            provider.CreateConfigureDelegate(type);
+            MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(type);
         });
         Assert.Equal(expected, exception.Message);
     }
@@ -87,7 +85,7 @@ public class MiddlewareFilterConfigurationProviderTest
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
         {
-            provider.CreateConfigureDelegate(type);
+            MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(type);
         });
         Assert.Equal(expected, exception.Message);
     }

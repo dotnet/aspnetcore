@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.Http;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -70,5 +66,27 @@ public class EndpointMetadataCollectionTests
 
         Assert.Same(ordered1, ordered2);
         Assert.Equal(new string[] { "1", "2" }, ordered1);
+    }
+
+    [Fact]
+    public void GetRequiredMetadata_CanReturnMetadata()
+    {
+        // Arrange
+        var metadata = new EndpointMetadataCollection(1, "2");
+
+        // Act
+        var requiredMetadata = metadata.GetRequiredMetadata<string>();
+
+        Assert.Equal("2", requiredMetadata);
+    }
+
+    [Fact]
+    public void GetRequiredMetadata_ThrowsWhenMetadataNotFound()
+    {
+        // Arrange
+        var metadata = new EndpointMetadataCollection(1, 2);
+
+        // Act
+        Assert.Throws<InvalidOperationException>(() => metadata.GetRequiredMetadata<string>());
     }
 }

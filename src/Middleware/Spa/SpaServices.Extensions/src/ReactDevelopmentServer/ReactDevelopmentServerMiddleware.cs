@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.NodeServices.Npm;
 using Microsoft.AspNetCore.NodeServices.Util;
@@ -51,19 +46,19 @@ internal static class ReactDevelopmentServerMiddleware
 
         SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, async () =>
         {
-                // On each request, we create a separate startup task with its own timeout. That way, even if
-                // the first request times out, subsequent requests could still work.
-                var timeout = spaBuilder.Options.StartupTimeout;
+            // On each request, we create a separate startup task with its own timeout. That way, even if
+            // the first request times out, subsequent requests could still work.
+            var timeout = spaBuilder.Options.StartupTimeout;
             var port = await portTask.WithTimeout(timeout, "The create-react-app server did not start listening for requests " +
                 $"within the timeout period of {timeout.TotalSeconds} seconds. " +
                 "Check the log output for error information.");
 
-                // Everything we proxy is hardcoded to target http://localhost because:
-                // - the requests are always from the local machine (we're not accepting remote
-                //   requests that go directly to the create-react-app server)
-                // - given that, there's no reason to use https, and we couldn't even if we
-                //   wanted to, because in general the create-react-app server has no certificate
-                return new UriBuilder("http", "localhost", port).Uri;
+            // Everything we proxy is hardcoded to target http://localhost because:
+            // - the requests are always from the local machine (we're not accepting remote
+            //   requests that go directly to the create-react-app server)
+            // - given that, there's no reason to use https, and we couldn't even if we
+            //   wanted to, because in general the create-react-app server has no certificate
+            return new UriBuilder("http", "localhost", port).Uri;
         });
     }
 

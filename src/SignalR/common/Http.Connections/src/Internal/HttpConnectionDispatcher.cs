@@ -1,19 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
@@ -23,7 +15,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal partial class HttpConnectionDispatcher
+internal sealed partial class HttpConnectionDispatcher
 {
     private static readonly AvailableTransport _webSocketAvailableTransport =
         new AvailableTransport
@@ -84,9 +76,9 @@ internal partial class HttpConnectionDispatcher
             if (HttpMethods.IsPost(context.Request.Method))
             {
                 // POST /{path}
-                await ProcessSend(context, options);
+                await ProcessSend(context);
             }
-            else if (HttpMethods.IsGet(context.Request.Method))
+            else if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsConnect(context.Request.Method))
             {
                 // GET /{path}
                 await ExecuteAsync(context, connectionDelegate, options, logScope);
@@ -144,7 +136,7 @@ internal partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.ServerSentEvents, supportedTransports, logScope, options))
+            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.ServerSentEvents, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
@@ -170,7 +162,7 @@ internal partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope, options))
+            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
@@ -199,7 +191,7 @@ internal partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.LongPolling, supportedTransports, logScope, options))
+            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.LongPolling, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
@@ -393,7 +385,7 @@ internal partial class HttpConnectionDispatcher
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
-    private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
+    private async Task ProcessSend(HttpContext context)
     {
         var connection = await GetConnectionAsync(context);
         if (connection == null)
@@ -514,7 +506,7 @@ internal partial class HttpConnectionDispatcher
         context.Response.ContentType = "text/plain";
     }
 
-    private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionDispatcherOptions options)
+    private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope)
     {
         if ((supportedTransports & transportType) == 0)
         {
@@ -639,16 +631,18 @@ internal partial class HttpConnectionDispatcher
         // The reason we're copying the base features instead of the HttpContext properties is
         // so that we can get all of the logic built into DefaultHttpContext to extract higher level
         // structure from the low level properties
-        var existingRequestFeature = context.Features.Get<IHttpRequestFeature>()!;
+        var existingRequestFeature = context.Features.GetRequiredFeature<IHttpRequestFeature>();
 
-        var requestFeature = new HttpRequestFeature();
-        requestFeature.Protocol = existingRequestFeature.Protocol;
-        requestFeature.Method = existingRequestFeature.Method;
-        requestFeature.Scheme = existingRequestFeature.Scheme;
-        requestFeature.Path = existingRequestFeature.Path;
-        requestFeature.PathBase = existingRequestFeature.PathBase;
-        requestFeature.QueryString = existingRequestFeature.QueryString;
-        requestFeature.RawTarget = existingRequestFeature.RawTarget;
+        var requestFeature = new HttpRequestFeature
+        {
+            Protocol = existingRequestFeature.Protocol,
+            Method = existingRequestFeature.Method,
+            Scheme = existingRequestFeature.Scheme,
+            Path = existingRequestFeature.Path,
+            PathBase = existingRequestFeature.PathBase,
+            QueryString = existingRequestFeature.QueryString,
+            RawTarget = existingRequestFeature.RawTarget
+        };
         var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var header in existingRequestFeature.Headers)
         {
@@ -757,7 +751,7 @@ internal partial class HttpConnectionDispatcher
         response.Headers.Expires = HeaderValueEpochDate;
     }
 
-    private class EmptyServiceProvider : IServiceProvider
+    private sealed class EmptyServiceProvider : IServiceProvider
     {
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;

@@ -1,14 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace TestServer;
 
@@ -47,12 +40,12 @@ public class InternationalizationStartup
                 options.AddSupportedCultures("en-US", "fr-FR");
                 options.AddSupportedUICultures("en-US", "fr-FR");
 
-                    // Cookie culture provider is included by default, but we want it to be the only one.
-                    options.RequestCultureProviders.Clear();
+                // Cookie culture provider is included by default, but we want it to be the only one.
+                options.RequestCultureProviders.Clear();
                 options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
 
-                    // We want the default to be en-US so that the tests for bind can work consistently.
-                    options.SetDefaultCulture("en-US");
+                // We want the default to be en-US so that the tests for bind can work consistently.
+                options.SetDefaultCulture("en-US");
             });
 
             app.UseRouting();

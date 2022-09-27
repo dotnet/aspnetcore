@@ -47,8 +47,8 @@ public class AzureAppendBlobTests
         var stage = 0;
         var testMessageHandler = new TestMessageHandler(async message =>
         {
-                // First PUT request
-                if (stage == 0)
+            // First PUT request
+            if (stage == 0)
             {
                 Assert.Equal(HttpMethod.Put, message.Method);
                 Assert.Equal("https://host/container/blob/path?query=1&comp=appendblock", message.RequestUri.ToString());
@@ -60,8 +60,8 @@ public class AzureAppendBlobTests
                 stage++;
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
-                // Create request
-                if (stage == 1)
+            // Create request
+            if (stage == 1)
             {
                 Assert.Equal(HttpMethod.Put, message.Method);
                 Assert.Equal("https://host/container/blob/path?query=1", message.RequestUri.ToString());
@@ -73,8 +73,8 @@ public class AzureAppendBlobTests
                 stage++;
                 return new HttpResponseMessage(createStatusCode);
             }
-                // First PUT request
-                if (stage == 2)
+            // First PUT request
+            if (stage == 2)
             {
                 Assert.Equal(HttpMethod.Put, message.Method);
                 Assert.Equal("https://host/container/blob/path?query=1&comp=appendblock", message.RequestUri.ToString());
@@ -101,8 +101,8 @@ public class AzureAppendBlobTests
         var stage = 0;
         var testMessageHandler = new TestMessageHandler(async message =>
         {
-                // First PUT request
-                if (stage == 0)
+            // First PUT request
+            if (stage == 0)
             {
                 Assert.Equal(HttpMethod.Put, message.Method);
                 Assert.Equal("https://host/container/blob/path?query=1&comp=appendblock", message.RequestUri.ToString());
@@ -130,8 +130,8 @@ public class AzureAppendBlobTests
         var stage = 0;
         var testMessageHandler = new TestMessageHandler(async message =>
         {
-                // First PUT request
-                if (stage == 0)
+            // First PUT request
+            if (stage == 0)
             {
                 Assert.Equal(HttpMethod.Put, message.Method);
                 Assert.Equal("https://host/container/blob/path?query=1&comp=appendblock", message.RequestUri.ToString());
@@ -143,8 +143,8 @@ public class AzureAppendBlobTests
                 stage++;
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
-                // Create request
-                if (stage == 1)
+            // Create request
+            if (stage == 1)
             {
                 Assert.Equal(HttpMethod.Put, message.Method);
                 Assert.Equal("https://host/container/blob/path?query=1", message.RequestUri.ToString());
@@ -165,7 +165,6 @@ public class AzureAppendBlobTests
 
         Assert.Equal(2, stage);
     }
-
 
     private class TestMessageHandler : HttpMessageHandler
     {

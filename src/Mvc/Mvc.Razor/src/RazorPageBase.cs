@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -253,7 +249,6 @@ public abstract class RazorPageBase : IRazorPage
         // We need to replace the ViewContext's Writer to ensure that all content (including content written
         // from HTML helpers) is redirected.
         viewContext.Writer = _valueBuffer;
-
     }
 
     /// <summary>

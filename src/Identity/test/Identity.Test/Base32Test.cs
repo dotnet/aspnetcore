@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
@@ -27,7 +25,6 @@ public class Base32Test
         data = GetRandomByteArray(length);
         Assert.Equal<byte>(data, Base32.FromBase32(Base32.ToBase32(data)));
     }
-
 
     private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 

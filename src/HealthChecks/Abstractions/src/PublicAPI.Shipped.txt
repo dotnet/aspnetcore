@@ -18,6 +18,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Tags.get -
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Timeout.get -> System.TimeSpan
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Timeout.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.HealthCheckResult() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Data.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Description.get -> string?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Exception.get -> System.Exception?
@@ -30,6 +31,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport.HealthReport(System.C
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport.Status.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport.TotalDuration.get -> System.TimeSpan
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Data.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Description.get -> string?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Duration.get -> System.TimeSpan

@@ -1,21 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class CookieActionFactory
+internal sealed class CookieActionFactory
 {
     /// <summary>
     ///  Creates a <see cref="ChangeCookieAction" /> <see href="https://httpd.apache.org/docs/current/rewrite/flags.html#flag_co" /> for details.
     /// </summary>
     /// <param name="flagValue">The flag</param>
     /// <returns>The action</returns>
-    public ChangeCookieAction Create(string flagValue)
+    public static ChangeCookieAction Create(string flagValue)
     {
         if (string.IsNullOrEmpty(flagValue))
         {

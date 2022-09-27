@@ -86,9 +86,9 @@ internal class TestServer : IAsyncDisposable, IStartup
                         services.AddSingleton(context.LoggerFactory);
                         services.AddSingleton<IServer>(sp =>
                         {
-                                // Manually configure options on the TestServiceContext.
-                                // We're doing this so we can use the same instance that was passed in
-                                var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
+                            // Manually configure options on the TestServiceContext.
+                            // We're doing this so we can use the same instance that was passed in
+                            var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
                             foreach (var c in configureOptions)
                             {
                                 c.Configure(context.ServerOptions);

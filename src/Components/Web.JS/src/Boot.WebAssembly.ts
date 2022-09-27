@@ -1,8 +1,11 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /* eslint-disable array-element-newline */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
-import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
+import { byteArrayBeingTransferred, Module, BINDING, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
@@ -16,7 +19,6 @@ import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescrip
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
-declare let Module: EmscriptenModule;
 let started = false;
 
 async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
@@ -27,6 +29,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   started = true;
 
   if (inAuthRedirectIframe()) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => {}); // See inAuthRedirectIframe for explanation
   }
 
@@ -41,8 +44,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
-    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
+  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => {
+    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta);
   };
 
   Blazor._internal.getApplyUpdateCapabilities = () => DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
@@ -76,13 +79,24 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
   Blazor._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
 
-  Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, intercepted: boolean): Promise<void> => {
+  Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
       'NotifyLocationChanged',
       uri,
+      state,
       intercepted
     );
+  }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+    const shouldContinueNavigation = await DotNet.invokeMethodAsync<boolean>(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChangingAsync',
+      uri,
+      state,
+      intercepted
+    );
+
+    Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });
 
   const candidateOptions = options ?? {};
@@ -108,7 +122,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
-  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
@@ -138,6 +152,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
+// obsolete, legacy, don't use for new code!
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
   const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
   const resultType = monoPlatform.readInt32Field(callInfo, 4);
@@ -184,7 +199,7 @@ function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, r
 }
 
 function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
-  const idLong = id as any as number;
+  const idLong = id as unknown as number;
   const dataByteArray = monoPlatform.toUint8Array(data);
   DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
 }

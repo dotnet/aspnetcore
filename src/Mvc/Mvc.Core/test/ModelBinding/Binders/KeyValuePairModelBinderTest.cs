@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -136,7 +132,7 @@ public class KeyValuePairModelBinderTest
         var binder = new KeyValuePairModelBinder<int, string>(innerBinder, innerBinder, NullLoggerFactory.Instance);
 
         // Act
-        var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "Key", "someName.Key");
+        var result = await KeyValuePairModelBinder<int, string>.TryBindStrongModel<int>(bindingContext, innerBinder, "Key", "someName.Key");
 
         // Assert
         Assert.Equal(innerResult, result);

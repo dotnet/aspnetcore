@@ -100,6 +100,49 @@ public class MapSignalRTests
     }
 
     [Fact]
+    public void MapHubFindsMetadataPolicyOnHub()
+    {
+        var authCount = 0;
+        var policy1 = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var req = new TestRequirement();
+        using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
+        {
+            authCount += options.AuthorizationData.Count;
+        })
+        .RequireAuthorization(policy1)
+        .RequireAuthorization(policy => policy.AddRequirements(req))))
+        {
+            host.Start();
+
+            var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+            // We register 2 endpoints (/negotiate and /)
+            Assert.Collection(dataSource.Endpoints,
+                endpoint =>
+                {
+                    Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
+                    Assert.Equal(2, policies.Count);
+                    Assert.Equal(policy1, policies[0]);
+                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Equal(req, policies[1].Requirements.First());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path", endpoint.DisplayName);
+                    Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
+                    Assert.Equal(2, policies.Count);
+                    Assert.Equal(policy1, policies[0]);
+                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Equal(req, policies[1].Requirements.First());
+                });
+        }
+
+        Assert.Equal(0, authCount);
+    }
+
+    [Fact]
     public void MapHubFindsAuthAttributeOnInheritedHub()
     {
         var authCount = 0;
@@ -342,6 +385,10 @@ public class MapSignalRTests
 
     [Authorize]
     private class AuthHub : Hub
+    {
+    }
+
+    private class TestRequirement : IAuthorizationRequirement
     {
     }
 

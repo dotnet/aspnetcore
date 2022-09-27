@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 #nullable enable
 
@@ -76,6 +70,7 @@ public class HttpRequestJsonExtensionsTests
         var result = await context.Request.ReadFromJsonAsync<List<int>>(options);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
@@ -93,6 +88,7 @@ public class HttpRequestJsonExtensionsTests
         var result = await context.Request.ReadFromJsonAsync<List<int>>();
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
@@ -206,6 +202,7 @@ public class HttpRequestJsonExtensionsTests
         var result = (List<int>?)await context.Request.ReadFromJsonAsync(typeof(List<int>), options);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));

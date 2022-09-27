@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
@@ -12,6 +11,8 @@ namespace Microsoft.AspNetCore.Authentication;
 /// </summary>
 public class AuthenticateResult
 {
+    private static readonly AuthenticateResult _noResult = new() { None = true };
+
     /// <summary>
     /// Creates a new <see cref="AuthenticateResult"/> instance.
     /// </summary>
@@ -90,7 +91,7 @@ public class AuthenticateResult
     /// <returns>The result.</returns>
     public static AuthenticateResult NoResult()
     {
-        return new AuthenticateResult() { None = true };
+        return _noResult;
     }
 
     /// <summary>

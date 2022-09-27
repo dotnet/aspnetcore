@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +32,7 @@ public abstract partial class RouteBase : IRouter, INamedRouter
     /// <param name="constraints">The constraints for the route.</param>
     /// <param name="dataTokens">The data tokens for the route.</param>
     public RouteBase(
-        string? template,
+        [StringSyntax("Route")] string? template,
         string? name,
         IInlineConstraintResolver constraintResolver,
         RouteValueDictionary? defaults,
@@ -328,7 +325,6 @@ public abstract partial class RouteBase : IRouter, INamedRouter
                 _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName!);
                 _logger = factory.CreateLogger(typeof(RouteBase).FullName!);
             }
-
         }
 
         Debug.Assert(_constraintLogger != null);

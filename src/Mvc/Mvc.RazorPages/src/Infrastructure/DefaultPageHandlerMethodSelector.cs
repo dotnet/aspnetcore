@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
+internal sealed class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
 {
     private const string Handler = "handler";
 
@@ -63,7 +61,7 @@ internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
         return null;
     }
 
-    private List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
+    private static List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
     {
         var handlers = context.ActionDescriptor.HandlerMethods;
         var candidates = new List<HandlerMethodDescriptor>();

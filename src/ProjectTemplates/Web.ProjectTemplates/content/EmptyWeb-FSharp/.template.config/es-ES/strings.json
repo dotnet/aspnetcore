@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core vacío",
-    "description": "Una plantilla de proyecto vacía para crear una aplicación ASP.NET Core. Esta plantilla no incluye ningún contenido."
-  }
-}

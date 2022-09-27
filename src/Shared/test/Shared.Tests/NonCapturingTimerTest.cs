@@ -22,8 +22,8 @@ public class NonCapturingTimerTest
         // Act
         var timer = NonCapturingTimer.Create((_) =>
         {
-                // Observe the value based on the current execution context
-                tcs.SetResult(message.Value);
+            // Observe the value based on the current execution context
+            tcs.SetResult(message.Value);
         }, state: null, dueTime: TimeSpan.FromMilliseconds(1), Timeout.InfiniteTimeSpan);
 
         // Assert

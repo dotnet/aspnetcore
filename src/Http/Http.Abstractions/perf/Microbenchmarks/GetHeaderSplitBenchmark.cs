@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks;
@@ -18,12 +14,12 @@ public class GetHeaderSplitBenchmark
     public void GlobalSetup()
     {
         var dict = new Dictionary<string, StringValues>()
-            {
-                { "singleValue", new StringValues("single") },
-                { "singleValueQuoted", new StringValues("\"single\"") },
-                { "doubleValue", new StringValues(new [] { "first", "second" }) },
-                { "manyValue", new StringValues(new [] { "first", "second", "third", "fourth", "fifth", "sixth" }) }
-            };
+        {
+            { "singleValue", new StringValues("single") },
+            { "singleValueQuoted", new StringValues("\"single\"") },
+            { "doubleValue", new StringValues(new [] { "first", "second" }) },
+            { "manyValue", new StringValues(new [] { "first", "second", "third", "fourth", "fifth", "sixth" }) }
+        };
         _dictionary = new HeaderDictionary(dict);
     }
 
@@ -32,7 +28,9 @@ public class GetHeaderSplitBenchmark
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "singleValue");
         if (values.Count != 1)
+        {
             throw new Exception();
+        }
     }
 
     [Benchmark]
@@ -40,7 +38,9 @@ public class GetHeaderSplitBenchmark
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "singleValueQuoted");
         if (values.Count != 1)
+        {
             throw new Exception();
+        }
     }
 
     [Benchmark]
@@ -48,7 +48,9 @@ public class GetHeaderSplitBenchmark
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "doubleValue");
         if (values.Count != 2)
+        {
             throw new Exception();
+        }
     }
 
     [Benchmark]
@@ -56,6 +58,8 @@ public class GetHeaderSplitBenchmark
     {
         var values = ParsingHelpers.GetHeaderSplit(_dictionary, "manyValue");
         if (values.Count != 6)
+        {
             throw new Exception();
+        }
     }
 }

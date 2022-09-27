@@ -2,17 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
 using XmlFormattersWebSite;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -151,7 +148,6 @@ public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<
             result);
     }
 
-
     [Theory]
     [InlineData("http://localhost/IEnumerable/WrappedTypes_NullInstance")]
     [InlineData("http://localhost/IQueryable/WrappedTypes_NullInstance")]
@@ -201,7 +197,7 @@ public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<
             var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
                 "<status>404</status>" +
                 "<title>Not Found</title>" +
-                "<type>https://tools.ietf.org/html/rfc7231#section-6.5.4</type>" +
+                "<type>https://tools.ietf.org/html/rfc9110#section-15.5.5</type>" +
                 $"<traceId>{Activity.Current.Id}</traceId>" +
                 "</problem>";
 
@@ -214,7 +210,7 @@ public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<
             var root = XDocument.Parse(content).Root;
             Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
             Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", root.Element(root.Name.Namespace.GetName("type"))?.Value);
             // Activity is not null
             Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
         }

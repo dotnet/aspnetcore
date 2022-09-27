@@ -3,9 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -121,7 +118,6 @@ public static class WebHostExtensions
             {
                 Console.WriteLine($"Hosting environment: {hostingEnvironment?.EnvironmentName}");
                 Console.WriteLine($"Content root path: {hostingEnvironment?.ContentRootPath}");
-
 
                 var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
                 if (serverAddresses != null)

@@ -1,22 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpsPolicy;
 
 /// <summary>
 /// Enables HTTP Strict Transport Security (HSTS)
-/// See https://tools.ietf.org/html/rfc6797.
+/// See <see href="https://tools.ietf.org/html/rfc6797"/>.
 /// </summary>
 public class HstsMiddleware
 {

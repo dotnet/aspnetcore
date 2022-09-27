@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Owin;
 
-internal class DictionaryStringArrayWrapper : IDictionary<string, string[]>
+internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[]>
 {
     public DictionaryStringArrayWrapper(IHeaderDictionary inner)
     {
@@ -18,11 +17,9 @@ internal class DictionaryStringArrayWrapper : IDictionary<string, string[]>
 
     public readonly IHeaderDictionary Inner;
 
-    private KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new KeyValuePair<string, StringValues>(item.Key, item.Value);
+    private static KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new KeyValuePair<string, StringValues>(item.Key, item.Value);
 
-    private KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
-
-    private StringValues Convert(string[] item) => item;
+    private static KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
 
     private string[] Convert(StringValues item) => item;
 

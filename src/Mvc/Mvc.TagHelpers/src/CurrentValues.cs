@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
-internal class CurrentValues
+internal sealed class CurrentValues
 {
     public CurrentValues(ICollection<string> values)
     {

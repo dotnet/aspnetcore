@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -12,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
+internal sealed class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
 {
     private readonly RuntimeCompilationFileProvider _fileProvider;
     private readonly string[] _searchPatterns;

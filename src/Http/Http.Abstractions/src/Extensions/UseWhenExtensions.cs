@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -45,9 +44,9 @@ public static class UseWhenExtensions
 
         return app.Use(main =>
         {
-                // This is called only when the main application builder
-                // is built, not per request.
-                branchBuilder.Run(main);
+            // This is called only when the main application builder
+            // is built, not per request.
+            branchBuilder.Run(main);
             var branch = branchBuilder.Build();
 
             return context =>

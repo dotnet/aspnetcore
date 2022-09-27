@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 /// <summary>
 /// Summary description for Disposable
 /// </summary>
-internal class Disposable : IDisposable
+internal sealed class Disposable : IDisposable
 {
     private Action? _dispose;
     private bool _disposedValue; // To detect redundant calls
@@ -18,7 +16,7 @@ internal class Disposable : IDisposable
         _dispose = dispose;
     }
 
-    protected virtual void Dispose(bool disposing)
+    void Dispose(bool disposing)
     {
         if (!_disposedValue)
         {

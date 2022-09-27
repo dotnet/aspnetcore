@@ -11,7 +11,6 @@ public class Operation<TModel> : Operation where TModel : class
 {
     public Operation()
     {
-
     }
 
     public Operation(string op, string path, string from, object value)
@@ -41,7 +40,6 @@ public class Operation<TModel> : Operation where TModel : class
         {
             throw new ArgumentNullException(nameof(path));
         }
-
     }
 
     public void Apply(TModel objectToApplyTo, IObjectAdapter adapter)

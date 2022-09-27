@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// and the intermediate states (such as the queue of components still to
 /// be rendered).
 /// </summary>
-internal class RenderBatchBuilder : IDisposable
+internal sealed class RenderBatchBuilder : IDisposable
 {
     // A value that, if changed, causes expiry of all ParameterView instances issued
     // for this RenderBatchBuilder. This is to prevent invalid reads from arrays that

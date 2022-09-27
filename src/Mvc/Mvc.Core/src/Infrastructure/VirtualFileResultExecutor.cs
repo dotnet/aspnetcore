@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -17,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{VirtualFileResult}"/> for <see cref="VirtualFileResult"/>.
 /// </summary>
-public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
+public partial class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
 {
     private readonly IWebHostEnvironment _hostingEnvironment;
 
@@ -57,7 +53,7 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
                 Resources.FormatFileResult_InvalidPath(result.FileName), result.FileName);
         }
 
-        Logger.ExecutingFileResult(result, result.FileName);
+        Log.ExecutingFileResult(Logger, result, result.FileName);
 
         var lastModified = result.LastModified ?? fileInfo.LastModified;
         var (range, rangeLength, serveBody) = SetHeadersAndLog(
@@ -108,7 +104,7 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
 
         if (range != null)
         {
-            logger.WritingRangeToBody();
+            Log.WritingRangeToBody(logger);
         }
 
         if (range != null)
@@ -161,5 +157,23 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
     protected virtual Stream GetFileStream(IFileInfo fileInfo)
     {
         return fileInfo.CreateReadStream();
+    }
+
+    private static partial class Log
+    {
+        public static void ExecutingFileResult(ILogger logger, FileResult fileResult, string fileName)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var fileResultType = fileResult.GetType().Name;
+                ExecutingFileResult(logger, fileResultType, fileName, fileResult.FileDownloadName);
+            }
+        }
+
+        [LoggerMessage(1, LogLevel.Information, "Executing {FileResultType}, sending file '{FileDownloadPath}' with download name '{FileDownloadName}' ...", EventName = "ExecutingFileResult", SkipEnabledCheck = true)]
+        private static partial void ExecutingFileResult(ILogger logger, string fileResultType, string fileDownloadPath, string fileDownloadName);
+
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

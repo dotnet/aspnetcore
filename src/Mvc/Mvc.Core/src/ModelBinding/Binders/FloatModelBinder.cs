@@ -3,17 +3,15 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 /// <summary>
-/// An <see cref="IModelBinder"/> for <see cref="decimal"/> and <see cref="Nullable{T}"/> where <c>T</c> is
-/// <see cref="decimal"/>.
+/// An <see cref="IModelBinder"/> for <see cref="float"/> and <see cref="Nullable{T}"/> where <c>T</c> is
+/// <see cref="float"/>.
 /// </summary>
 public class FloatModelBinder : IModelBinder
 {

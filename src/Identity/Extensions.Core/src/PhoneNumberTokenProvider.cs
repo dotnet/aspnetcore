@@ -33,9 +33,9 @@ public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvid
             throw new ArgumentNullException(nameof(manager));
         }
 
-        var phoneNumber = await manager.GetPhoneNumberAsync(user);
+        var phoneNumber = await manager.GetPhoneNumberAsync(user).ConfigureAwait(false);
 
-        return !string.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user);
+        return !string.IsNullOrWhiteSpace(phoneNumber) && await manager.IsPhoneNumberConfirmedAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvid
             throw new ArgumentNullException(nameof(manager));
         }
 
-        var phoneNumber = await manager.GetPhoneNumberAsync(user);
+        var phoneNumber = await manager.GetPhoneNumberAsync(user).ConfigureAwait(false);
 
         return $"PhoneNumber:{purpose}:{phoneNumber}";
     }

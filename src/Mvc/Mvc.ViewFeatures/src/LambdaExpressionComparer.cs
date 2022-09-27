@@ -1,16 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 // This comparer is tightly coupled with the logic of ExpressionHelper.GetExpressionText.
 // It is not designed to accurately compare any two arbitrary LambdaExpressions.
-internal class LambdaExpressionComparer : IEqualityComparer<LambdaExpression>
+internal sealed class LambdaExpressionComparer : IEqualityComparer<LambdaExpression>
 {
     public static readonly LambdaExpressionComparer Instance = new LambdaExpressionComparer();
 

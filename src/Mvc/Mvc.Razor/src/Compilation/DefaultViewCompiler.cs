@@ -13,8 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation;
 /// <summary>
 /// Caches the result of runtime compilation of Razor files for the duration of the application lifetime.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 // This name is hardcoded in RazorRuntimeCompilationMvcCoreBuilderExtensions. Make sure it's updated if this is ever renamed.
-internal class DefaultViewCompiler : IViewCompiler
+internal partial class DefaultViewCompiler : IViewCompiler
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly ApplicationPartManager _applicationPartManager;
     private readonly ConcurrentDictionary<string, string> _normalizedPathCache;
@@ -53,7 +55,7 @@ internal class DefaultViewCompiler : IViewCompiler
 
         foreach (var compiledView in viewsFeature.ViewDescriptors)
         {
-            logger.ViewCompilerLocatedCompiledView(compiledView.RelativePath);
+            Log.ViewCompilerLocatedCompiledView(logger, compiledView.RelativePath);
 
             if (!compiledViews.ContainsKey(compiledView.RelativePath))
             {
@@ -65,7 +67,7 @@ internal class DefaultViewCompiler : IViewCompiler
 
         if (compiledViews.Count == 0)
         {
-            logger.ViewCompilerNoCompiledViewsFound();
+            Log.ViewCompilerNoCompiledViewsFound(logger);
         }
 
         // Safe races should be ok. We would end up logging multiple times
@@ -96,19 +98,19 @@ internal class DefaultViewCompiler : IViewCompiler
         // normalized and a cache entry exists.
         if (_compiledViews.TryGetValue(relativePath, out var cachedResult))
         {
-            _logger.ViewCompilerLocatedCompiledViewForPath(relativePath);
+            Log.ViewCompilerLocatedCompiledViewForPath(_logger, relativePath);
             return cachedResult;
         }
 
         var normalizedPath = GetNormalizedPath(relativePath);
         if (_compiledViews.TryGetValue(normalizedPath, out cachedResult))
         {
-            _logger.ViewCompilerLocatedCompiledViewForPath(normalizedPath);
+            Log.ViewCompilerLocatedCompiledViewForPath(_logger, normalizedPath);
             return cachedResult;
         }
 
         // Entry does not exist. Attempt to create one.
-        _logger.ViewCompilerCouldNotFindFileAtPath(relativePath);
+        Log.ViewCompilerCouldNotFindFileAtPath(_logger, relativePath);
         return Task.FromResult(new CompiledViewDescriptor
         {
             RelativePath = normalizedPath,
@@ -131,5 +133,20 @@ internal class DefaultViewCompiler : IViewCompiler
         }
 
         return normalizedPath;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(3, LogLevel.Debug, "Initializing Razor view compiler with compiled view: '{ViewName}'.", EventName = "ViewCompilerLocatedCompiledView")]
+        public static partial void ViewCompilerLocatedCompiledView(ILogger logger, string viewName);
+
+        [LoggerMessage(4, LogLevel.Debug, "Initializing Razor view compiler with no compiled views.", EventName = "ViewCompilerNoCompiledViewsFound")]
+        public static partial void ViewCompilerNoCompiledViewsFound(ILogger logger);
+
+        [LoggerMessage(5, LogLevel.Trace, "Located compiled view for view at path '{Path}'.", EventName = "ViewCompilerLocatedCompiledViewForPath")]
+        public static partial void ViewCompilerLocatedCompiledViewForPath(ILogger logger, string path);
+
+        [LoggerMessage(7, LogLevel.Trace, "Could not find a file for view at path '{Path}'.", EventName = "ViewCompilerCouldNotFindFileAtPath")]
+        public static partial void ViewCompilerCouldNotFindFileAtPath(ILogger logger, string path);
     }
 }

@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class IISRewriteMapCollection : IEnumerable<IISRewriteMap>
+internal sealed class IISRewriteMapCollection : IEnumerable<IISRewriteMap>
 {
     private readonly Dictionary<string, IISRewriteMap> _rewriteMaps = new Dictionary<string, IISRewriteMap>();
 

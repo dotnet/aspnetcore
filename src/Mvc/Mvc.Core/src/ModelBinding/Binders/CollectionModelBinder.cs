@@ -3,16 +3,14 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -21,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <see cref="IModelBinder"/> implementation for binding collection values.
 /// </summary>
 /// <typeparam name="TElement">Type of elements in the collection.</typeparam>
-public class CollectionModelBinder<TElement> : ICollectionModelBinder
+public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
 {
     private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
     private readonly int _maxModelBindingCollectionSize = MvcOptions.DefaultMaxModelBindingCollectionSize;
@@ -129,10 +127,10 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
             Logger.FoundNoValueInRequest(bindingContext);
 
             // If we failed to find data for a top-level model, then generate a
-            // default 'empty' model (or use existing Model) and return it.
+            // default 'empty' model (or use existing Model when not null or a default value is available) and return it.
             if (bindingContext.IsTopLevelObject)
             {
-                if (model == null)
+                if (model == null && !bindingContext.ModelMetadata.HasDefaultValue)
                 {
                     model = CreateEmptyCollection(bindingContext.ModelType);
                 }
@@ -154,7 +152,7 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
         CollectionResult result;
         if (valueProviderResult == ValueProviderResult.None)
         {
-            Logger.NoNonIndexBasedFormatFoundForCollection(bindingContext);
+            Log.NoNonIndexBasedFormatFoundForCollection(Logger, bindingContext);
             result = await BindComplexCollection(bindingContext);
         }
         else
@@ -275,16 +273,10 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
         var boundCollection = new List<TElement?>();
 
         var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
+        var valueProvider = bindingContext.ValueProvider;
 
         foreach (var value in values)
         {
-            bindingContext.ValueProvider = new CompositeValueProvider
-                {
-                    // our temporary provider goes at the front of the list
-                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
-                    bindingContext.ValueProvider
-                };
-
             // Enter new scope to change ModelMetadata and isolate element binding operations.
             using (bindingContext.EnterNestedScope(
                 elementMetadata,
@@ -292,6 +284,13 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
                 modelName: bindingContext.ModelName,
                 model: null))
             {
+                bindingContext.ValueProvider = new CompositeValueProvider
+                {
+                    // our temporary provider goes at the front of the list
+                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
+                    valueProvider
+                };
+
                 await ElementBinder.BindModelAsync(bindingContext);
 
                 if (bindingContext.Result.IsModelSet)
@@ -308,7 +307,7 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
     // Used when the ValueProvider contains the collection to be bound as multiple elements, e.g. foo[0], foo[1].
     private Task<CollectionResult> BindComplexCollection(ModelBindingContext bindingContext)
     {
-        Logger.AttemptingToBindCollectionUsingIndices(bindingContext);
+        Log.AttemptingToBindCollectionUsingIndices(Logger, bindingContext);
 
         var indexPropertyName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "index");
 
@@ -416,7 +415,7 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
     }
 
     // Internal for testing.
-    internal record CollectionResult(IEnumerable<TElement?> Model)
+    internal sealed record CollectionResult(IEnumerable<TElement?> Model)
     {
         public IValidationStrategy? ValidationStrategy { get; init; }
     }
@@ -488,5 +487,55 @@ public class CollectionModelBinder<TElement> : ICollectionModelBinder
     {
         var indexes = (string[]?)valueProviderResult;
         return (indexes == null || indexes.Length == 0) ? null : indexes;
+    }
+
+    private static partial class Log
+    {
+        public static void AttemptingToBindCollectionUsingIndices(ILogger logger, ModelBindingContext bindingContext)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var modelName = bindingContext.ModelName;
+
+            var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(bindingContext.ModelType, typeof(IEnumerable<>));
+            if (enumerableType != null)
+            {
+                var elementType = enumerableType.GenericTypeArguments[0];
+                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+                {
+                    AttemptingToBindCollectionOfKeyValuePair(logger, modelName);
+                    return;
+                }
+            }
+
+            AttemptingToBindCollectionUsingIndices(logger, modelName);
+        }
+
+        [LoggerMessage(29, LogLevel.Debug,
+            "Attempting to bind model using indices. Example formats include: " +
+            "[0]=value1&[1]=value2, " +
+            "{ModelName}[0]=value1&{ModelName}[1]=value2, " +
+            "{ModelName}.index=zero&{ModelName}.index=one&{ModelName}[zero]=value1&{ModelName}[one]=value2",
+            EventName = "AttemptingToBindCollectionUsingIndices",
+            SkipEnabledCheck = true)]
+        private static partial void AttemptingToBindCollectionUsingIndices(ILogger logger, string modelName);
+
+        [LoggerMessage(30, LogLevel.Debug,
+            "Attempting to bind collection of KeyValuePair. Example formats include: " +
+            "[0].Key=key1&[0].Value=value1&[1].Key=key2&[1].Value=value2, " +
+            "{ModelName}[0].Key=key1&{ModelName}[0].Value=value1&{ModelName}[1].Key=key2&{ModelName}[1].Value=value2, " +
+            "{ModelName}[key1]=value1&{ModelName}[key2]=value2",
+            EventName = "AttemptingToBindCollectionOfKeyValuePair",
+            SkipEnabledCheck = true)]
+        private static partial void AttemptingToBindCollectionOfKeyValuePair(ILogger logger, string modelName);
+
+        public static void NoNonIndexBasedFormatFoundForCollection(ILogger logger, ModelBindingContext bindingContext)
+            => NoNonIndexBasedFormatFoundForCollection(logger, bindingContext.ModelName);
+
+        [LoggerMessage(28, LogLevel.Debug, "Could not bind to collection using a format like {ModelName}=value1&{ModelName}=value2", EventName = "NoNonIndexBasedFormatFoundForCollection")]
+        private static partial void NoNonIndexBasedFormatFoundForCollection(ILogger logger, string modelName);
     }
 }

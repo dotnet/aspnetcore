@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
-internal class ValidatableObjectAdapter : IModelValidator
+internal sealed class ValidatableObjectAdapter : IModelValidator
 {
     public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
     {
@@ -44,7 +42,7 @@ internal class ValidatableObjectAdapter : IModelValidator
         return ConvertResults(validatable.Validate(validationContext));
     }
 
-    private IEnumerable<ModelValidationResult> ConvertResults(IEnumerable<ValidationResult> results)
+    private static IEnumerable<ModelValidationResult> ConvertResults(IEnumerable<ValidationResult> results)
     {
         foreach (var result in results)
         {

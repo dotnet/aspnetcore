@@ -3,7 +3,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
-<RemoteAuthenticatorViewCore TAuthenticationState="RemoteAppState"
+<RemoteAuthenticatorViewCore TAuthenticationState="Wasm.Authentication.Client.RemoteAppState"
                              AuthenticationState="AppState"
                              OnLogInSucceeded="CompleteLogin"
                              Action="@Action" />

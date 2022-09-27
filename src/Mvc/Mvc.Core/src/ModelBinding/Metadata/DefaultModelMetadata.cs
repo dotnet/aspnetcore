@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -472,6 +470,9 @@ public class DefaultModelMetadata : ModelMetadata
     }
 
     internal override bool PropertyHasValidators => ValidationMetadata.PropertyHasValidators;
+
+    /// <inheritdoc />
+    internal override string? ValidationModelName => ValidationMetadata.ValidationModelName;
 
     internal static bool CalculateHasValidators(HashSet<DefaultModelMetadata> visited, ModelMetadata metadata)
     {

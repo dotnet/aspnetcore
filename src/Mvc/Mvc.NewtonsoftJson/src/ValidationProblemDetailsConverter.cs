@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
@@ -48,7 +46,7 @@ public sealed class ValidationProblemDetailsConverter : JsonConverter
         serializer.Serialize(writer, annotatedProblemDetails);
     }
 
-    private class AnnotatedValidationProblemDetails : AnnotatedProblemDetails
+    private sealed class AnnotatedValidationProblemDetails : AnnotatedProblemDetails
     {
         /// <remarks>
         /// Required for JSON.NET deserialization.

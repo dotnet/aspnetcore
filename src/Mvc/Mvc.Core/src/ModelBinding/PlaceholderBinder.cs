@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 //
 // When a cycle is detected by a call to Create(...), we create an instance of this class and return it
 // to break the cycle. Later when the 'real' binder is created we set Inner to point to that.
-internal class PlaceholderBinder : IModelBinder
+internal sealed class PlaceholderBinder : IModelBinder
 {
     public IModelBinder? Inner { get; set; }
 

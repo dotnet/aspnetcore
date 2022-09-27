@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Threading;
 using Microsoft.Extensions.Primitives;
 
 namespace HtmlGenerationWebSite;

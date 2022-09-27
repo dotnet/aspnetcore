@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
@@ -9,7 +8,6 @@ using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
@@ -27,7 +25,7 @@ public class CertificateXmlEncryptorTests
             .Returns<EncryptedXml, XmlElement>((encryptedXml, element) =>
             {
                 encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
-                    return encryptedXml.Encrypt(element, "theKey");
+                return encryptedXml.Encrypt(element, "theKey");
             });
 
         var mockInternalDecryptor = new Mock<IInternalEncryptedXmlDecryptor>();
@@ -35,7 +33,7 @@ public class CertificateXmlEncryptorTests
             .Callback<EncryptedXml>(encryptedXml =>
             {
                 encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
-                });
+            });
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IInternalEncryptedXmlDecryptor>(mockInternalDecryptor.Object);

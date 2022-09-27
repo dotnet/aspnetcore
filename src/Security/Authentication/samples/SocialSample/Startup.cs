@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
@@ -18,12 +14,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.Twitter;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace SocialSample;
@@ -74,7 +65,7 @@ public class Startup
                 o.ClientId = Configuration["google:clientid"];
                 o.ClientSecret = Configuration["google:clientsecret"];
                 o.AuthorizationEndpoint += "?prompt=consent"; // Hack so we always get a refresh token, it only comes on the first authorization response
-                    o.AccessType = "offline";
+                o.AccessType = "offline";
                 o.SaveTokens = true;
                 o.Events = new OAuthEvents()
                 {
@@ -90,9 +81,9 @@ public class Startup
             {
                 o.ConsumerKey = Configuration["twitter:consumerkey"];
                 o.ConsumerSecret = Configuration["twitter:consumersecret"];
-                    // http://stackoverflow.com/questions/22627083/can-we-get-email-id-from-twitter-oauth-api/32852370#32852370
-                    // http://stackoverflow.com/questions/36330675/get-users-email-from-twitter-api-for-external-login-authentication-asp-net-mvc?lq=1
-                    o.RetrieveUserDetails = true;
+                // http://stackoverflow.com/questions/22627083/can-we-get-email-id-from-twitter-oauth-api/32852370#32852370
+                // http://stackoverflow.com/questions/36330675/get-users-email-from-twitter-api-for-external-login-authentication-asp-net-mvc?lq=1
+                o.RetrieveUserDetails = true;
                 o.SaveTokens = true;
                 o.ClaimActions.MapJsonKey("urn:twitter:profilepicture", "profile_image_url", ClaimTypes.Uri);
                 o.Events = new TwitterEvents()
@@ -131,8 +122,8 @@ public class Startup
                 o.UserInformationEndpoint = "https://api.github.com/user";
                 o.ClaimsIssuer = "OAuth2-Github";
                 o.SaveTokens = true;
-                    // Retrieving user information is unique to each provider.
-                    o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                // Retrieving user information is unique to each provider.
+                o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
                 o.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
                 o.ClaimActions.MapJsonKey("urn:github:name", "name");
                 o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
@@ -142,8 +133,8 @@ public class Startup
                     OnRemoteFailure = HandleOnRemoteFailure,
                     OnCreatingTicket = async context =>
                     {
-                            // Get the GitHub user
-                            var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        // Get the GitHub user
+                        var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
                         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -186,8 +177,8 @@ public class Startup
                 o.ClaimsIssuer = "IdentityServer";
                 o.SaveTokens = true;
                 o.UsePkce = true;
-                    // Retrieving user information is unique to each provider.
-                    o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
+                // Retrieving user information is unique to each provider.
+                o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
                 o.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
                 o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
                 o.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
@@ -203,8 +194,8 @@ public class Startup
                     OnRemoteFailure = HandleOnRemoteFailure,
                     OnCreatingTicket = async context =>
                     {
-                            // Get the user
-                            var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        // Get the user
+                        var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
                         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
                         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -259,9 +250,9 @@ public class Startup
                 var authType = context.Request.Query["authscheme"];
                 if (!string.IsNullOrEmpty(authType))
                 {
-                        // By default the client will be redirect back to the URL that issued the challenge (/login?authtype=foo),
-                        // send them to the home page instead (/).
-                        await context.ChallengeAsync(authType, new AuthenticationProperties() { RedirectUri = "/" });
+                    // By default the client will be redirect back to the URL that issued the challenge (/login?authtype=foo),
+                    // send them to the home page instead (/).
+                    await context.ChallengeAsync(authType, new AuthenticationProperties() { RedirectUri = "/" });
                     return;
                 }
 
@@ -285,28 +276,28 @@ public class Startup
             {
                 var response = context.Response;
 
-                    // Setting DefaultAuthenticateScheme causes User to be set
-                    // var user = context.User;
+                // Setting DefaultAuthenticateScheme causes User to be set
+                // var user = context.User;
 
-                    // This is what [Authorize] calls
-                    var userResult = await context.AuthenticateAsync();
+                // This is what [Authorize] calls
+                var userResult = await context.AuthenticateAsync();
                 var user = userResult.Principal;
                 var authProperties = userResult.Properties;
 
-                    // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
-                    // var user = await context.AuthenticateAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+                // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
+                // var user = await context.AuthenticateAsync(MicrosoftAccountDefaults.AuthenticationScheme);
 
-                    // Deny anonymous request beyond this point.
-                    if (!userResult.Succeeded || user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                // Deny anonymous request beyond this point.
+                if (!userResult.Succeeded || user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
                 {
-                        // This is what [Authorize] calls
-                        // The cookie middleware will handle this and redirect to /login
-                        await context.ChallengeAsync();
+                    // This is what [Authorize] calls
+                    // The cookie middleware will handle this and redirect to /login
+                    await context.ChallengeAsync();
 
-                        // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
-                        // await context.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+                    // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
+                    // await context.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme);
 
-                        return;
+                    return;
                 }
 
                 var currentAuthType = user.Identities.First().AuthenticationType;
@@ -342,8 +333,8 @@ public class Startup
                     using (var payload = JsonDocument.Parse(await refreshResponse.Content.ReadAsStringAsync()))
                     {
 
-                            // Persist the new acess token
-                            authProperties.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                        // Persist the new acess token
+                        authProperties.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
                         refreshToken = payload.RootElement.GetString("refresh_token");
                         if (!string.IsNullOrEmpty(refreshToken))
                         {
@@ -360,8 +351,8 @@ public class Startup
                     }
                     return;
                 }
-                    // https://developers.facebook.com/docs/facebook-login/access-tokens/expiration-and-extension
-                    else if (string.Equals(FacebookDefaults.AuthenticationScheme, currentAuthType))
+                // https://developers.facebook.com/docs/facebook-login/access-tokens/expiration-and-extension
+                else if (string.Equals(FacebookDefaults.AuthenticationScheme, currentAuthType))
                 {
                     var options = await GetOAuthOptionsAsync(context, currentAuthType);
 
@@ -428,33 +419,32 @@ public class Startup
             });
         });
 
-
         app.Run(async context =>
         {
-                // Setting DefaultAuthenticateScheme causes User to be set
-                var user = context.User;
+            // Setting DefaultAuthenticateScheme causes User to be set
+            var user = context.User;
 
+            // This is what [Authorize] calls
+            // var user = await context.AuthenticateAsync();
+
+            // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
+            // var user = await context.AuthenticateAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+
+            // Deny anonymous request beyond this point.
+            if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+            {
                 // This is what [Authorize] calls
-                // var user = await context.AuthenticateAsync();
+                // The cookie middleware will handle this and redirect to /login
+                await context.ChallengeAsync();
 
                 // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
-                // var user = await context.AuthenticateAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+                // await context.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme);
 
-                // Deny anonymous request beyond this point.
-                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
-            {
-                    // This is what [Authorize] calls
-                    // The cookie middleware will handle this and redirect to /login
-                    await context.ChallengeAsync();
-
-                    // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
-                    // await context.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme);
-
-                    return;
+                return;
             }
 
-                // Display user information
-                var response = context.Response;
+            // Display user information
+            var response = context.Response;
             response.ContentType = "text/html";
             await response.WriteAsync("<html><body>");
             await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");

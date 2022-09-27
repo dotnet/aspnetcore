@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Security.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
@@ -35,15 +31,8 @@ public class GlobbingUrlBuilder
     /// <param name="requestPathBase">The request path base.</param>
     public GlobbingUrlBuilder(IFileProvider fileProvider, IMemoryCache cache, PathString requestPathBase)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
-
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
+        ArgumentNullException.ThrowIfNull(cache);
 
         FileProvider = fileProvider;
         Cache = cache;
@@ -180,7 +169,7 @@ public class GlobbingUrlBuilder
         return (matchedUrls, sizeInBytes);
     }
 
-    private class PathComparer : IComparer<string>
+    private sealed class PathComparer : IComparer<string>
     {
         public int Compare(string x, string y)
         {
@@ -237,10 +226,9 @@ public class GlobbingUrlBuilder
             var result = 0;
             var xEnumerator = new StringTokenizer(xNoExt, PathSeparator).GetEnumerator();
             var yEnumerator = new StringTokenizer(yNoExt, PathSeparator).GetEnumerator();
-            StringSegment ySegment;
             while (TryGetNextSegment(ref xEnumerator, out var xSegment))
             {
-                if (!TryGetNextSegment(ref yEnumerator, out ySegment))
+                if (!TryGetNextSegment(ref yEnumerator, out var ySegment))
                 {
                     // Different path depths (right is shorter), so shallower path wins.
                     return 1;
@@ -263,7 +251,7 @@ public class GlobbingUrlBuilder
                     StringComparison.Ordinal);
             }
 
-            if (TryGetNextSegment(ref yEnumerator, out ySegment))
+            if (TryGetNextSegment(ref yEnumerator, out _))
             {
                 // Different path depths (left is shorter). Shallower path wins.
                 return -1;
@@ -315,15 +303,8 @@ public class GlobbingUrlBuilder
 
     private static bool IsWhiteSpace(string value, int index)
     {
-        for (var i = 0; i < ValidAttributeWhitespaceChars.Length; i++)
-        {
-            if (value[index] == ValidAttributeWhitespaceChars[i])
-            {
-                return true;
-            }
-        }
-
-        return false;
+        var ch = value[index];
+        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
     }
 
     private static StringSegment Trim(StringSegment value)
@@ -369,7 +350,6 @@ public class GlobbingUrlBuilder
         {
             return string.Equals(Include, other.Include, StringComparison.Ordinal) &&
                 string.Equals(Exclude, other.Exclude, StringComparison.Ordinal);
-
         }
 
         public override int GetHashCode()

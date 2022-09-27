@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCompression.Tests;
 
@@ -26,7 +21,6 @@ public class ResponseCompressionBodyTest
         var stream = new ResponseCompressionBody(httpContext, new MockResponseCompressionProvider(flushable: true), new StreamResponseBodyFeature(new MemoryStream()));
 
         stream.Write(new byte[] { }, 0, 0);
-
 
         Assert.Equal(expectedVaryHeader, httpContext.Response.Headers.Vary);
     }
@@ -120,7 +114,6 @@ public class ResponseCompressionBodyTest
             return true;
         }
     }
-
 
     private class MockCompressionProvider : ICompressionProvider
     {

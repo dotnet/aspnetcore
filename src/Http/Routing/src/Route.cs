@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -22,7 +20,7 @@ public class Route : RouteBase
     /// <param name="inlineConstraintResolver">An <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
     public Route(
         IRouter target,
-        string routeTemplate,
+        [StringSyntax("Route")] string routeTemplate,
         IInlineConstraintResolver inlineConstraintResolver)
         : this(
             target,
@@ -45,7 +43,7 @@ public class Route : RouteBase
     /// <param name="inlineConstraintResolver">An <see cref="IInlineConstraintResolver"/> used for resolving inline constraints.</param>
     public Route(
         IRouter target,
-        string routeTemplate,
+        [StringSyntax("Route")] string routeTemplate,
         RouteValueDictionary? defaults,
         IDictionary<string, object>? constraints,
         RouteValueDictionary? dataTokens,
@@ -67,7 +65,7 @@ public class Route : RouteBase
     public Route(
         IRouter target,
         string? routeName,
-        string? routeTemplate,
+        [StringSyntax("Route")] string? routeTemplate,
         RouteValueDictionary? defaults,
         IDictionary<string, object>? constraints,
         RouteValueDictionary? dataTokens,

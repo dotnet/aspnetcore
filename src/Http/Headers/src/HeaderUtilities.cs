@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -405,8 +403,8 @@ public static class HeaderUtilities
         return long.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
     }
 
-    // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)
-    // See https://tools.ietf.org/html/rfc7231#section-5.3.1
+    // Strict and fast RFC9110 12.4.2 Quality value parser (and without memory allocation)
+    // See https://tools.ietf.org/html/rfc9110#section-12.4.2
     // Check is made to verify if the value is between 0 and 1 (and it returns False if the check fails).
     internal static bool TryParseQualityDouble(StringSegment input, int startIndex, out double quality, out int length)
     {
@@ -416,8 +414,6 @@ public static class HeaderUtilities
         var inputLength = input.Length;
         var current = startIndex;
         var limit = startIndex + _qualityValueMaxCharCount;
-
-        var intPart = 0;
         var decPart = 0;
         var decPow = 1;
 
@@ -428,6 +424,7 @@ public static class HeaderUtilities
 
         var ch = input[current];
 
+        int intPart;
         if (ch >= '0' && ch <= '1') // Only values between 0 and 1 are accepted, according to RFC
         {
             intPart = ch - '0';
@@ -556,7 +553,7 @@ public static class HeaderUtilities
             return string.Create(31, dateTime, (span, dt) =>
             {
                 span[0] = span[30] = '"';
-                dt.TryFormat(span.Slice(1), out _, "r");
+                dt.TryFormat(span.Slice(1), out _, "r", CultureInfo.InvariantCulture);
             });
         }
 
@@ -614,13 +611,13 @@ public static class HeaderUtilities
                 int nextIndex = i + 1;
                 if ((uint)nextIndex < (uint)segment.Length && segment[i] == '\\')
                 {
-                        // If there is an backslash character as the last character in the string,
-                        // we will assume that it should be included literally in the unescaped string
-                        // Ex: "hello\\" => "hello\\"
-                        // Also, if a sender adds a quoted pair like '\\''n',
-                        // we will assume it is over escaping and just add a n to the string.
-                        // Ex: "he\\llo" => "hello"
-                        span[spanIndex] = segment[nextIndex];
+                    // If there is an backslash character as the last character in the string,
+                    // we will assume that it should be included literally in the unescaped string
+                    // Ex: "hello\\" => "hello\\"
+                    // Also, if a sender adds a quoted pair like '\\''n',
+                    // we will assume it is over escaping and just add a n to the string.
+                    // Ex: "he\\llo" => "hello"
+                    span[spanIndex] = segment[nextIndex];
                     i++;
                 }
                 else
@@ -677,8 +674,8 @@ public static class HeaderUtilities
         // 2 for quotes
         return string.Create(input.Length + backSlashCount + 2, input, (span, segment) =>
         {
-                // Helps to elide the bounds check for span[0]
-                span[span.Length - 1] = span[0] = '\"';
+            // Helps to elide the bounds check for span[0]
+            span[span.Length - 1] = span[0] = '\"';
 
             var spanIndex = 1;
             for (var i = 0; i < segment.Length; i++)
@@ -689,9 +686,9 @@ public static class HeaderUtilities
                 }
                 else if ((segment[i] <= 0x1F || segment[i] == 0x7F) && segment[i] != 0x09)
                 {
-                        // Control characters are not allowed in a quoted-string, which include all characters
-                        // below 0x1F (except for 0x09 (TAB)) and 0x7F.
-                        throw new FormatException($"Invalid control character '{segment[i]}' in input.");
+                    // Control characters are not allowed in a quoted-string, which include all characters
+                    // below 0x1F (except for 0x09 (TAB)) and 0x7F.
+                    throw new FormatException($"Invalid control character '{segment[i]}' in input.");
                 }
                 span[spanIndex++] = segment[i];
             }

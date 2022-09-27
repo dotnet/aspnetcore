@@ -1,20 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal class ResponseBody : Stream
+#pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'. Fixing this is too gnarly.
+internal sealed partial class ResponseBody : Stream
+#pragma warning restore CA1844
 {
     private readonly RequestContext _requestContext;
     private long _leftToWrite = long.MinValue;
@@ -277,7 +274,7 @@ internal class ResponseBody : Stream
         chunkIndex++;
     }
 
-    private void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+    private static void FreeDataBuffers(List<GCHandle> pinnedBuffers)
     {
         foreach (var pin in pinnedBuffers)
         {
@@ -320,7 +317,7 @@ internal class ResponseBody : Stream
 
         // Make sure all validation is performed before this computes the headers
         var flags = ComputeLeftToWrite(data.Count);
-        uint statusCode = 0;
+        uint statusCode;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
         uint bytesSent = 0;
@@ -380,7 +377,7 @@ internal class ResponseBody : Stream
         if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion.
-            asyncResult.IOCompleted(statusCode, bytesSent);
+            asyncResult.IOCompleted(statusCode);
         }
 
         // Last write, cache it for special cancellation handling.
@@ -527,10 +524,7 @@ internal class ResponseBody : Stream
 
     public override void EndWrite(IAsyncResult asyncResult)
     {
-        if (asyncResult == null)
-        {
-            throw new ArgumentNullException(nameof(asyncResult));
-        }
+        ArgumentNullException.ThrowIfNull(asyncResult);
 
         TaskToApm.End(asyncResult);
     }
@@ -679,7 +673,7 @@ internal class ResponseBody : Stream
         if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion.
-            asyncResult.IOCompleted(statusCode, bytesSent);
+            asyncResult.IOCompleted(statusCode);
         }
 
         // Last write, cache it for special cancellation handling.
@@ -729,76 +723,33 @@ internal class ResponseBody : Stream
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _fewerBytesThanExpected =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
+        [LoggerMessage(LoggerEventIds.FewerBytesThanExpected, LogLevel.Error, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.", EventName = "FewerBytesThanExpected")]
+        public static partial void FewerBytesThanExpected(ILogger logger);
 
-        private static readonly Action<ILogger, Exception> _writeError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.WriteError, "Flush");
+        [LoggerMessage(LoggerEventIds.WriteError, LogLevel.Error, "Flush", EventName = "WriteError")]
+        public static partial void WriteError(ILogger logger, IOException exception);
 
-        private static readonly Action<ILogger, uint, Exception?> _writeErrorIgnored =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteErrorIgnored, "Flush; Ignored write exception: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.WriteErrorIgnored, LogLevel.Debug, "Flush; Ignored write exception: {StatusCode}", EventName = "WriteFlushedIgnored")]
+        public static partial void WriteErrorIgnored(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, Exception> _errorWhenFlushAsync =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhenFlushAsync, "FlushAsync");
+        [LoggerMessage(LoggerEventIds.ErrorWhenFlushAsync, LogLevel.Debug, "FlushAsync", EventName = "ErrorWhenFlushAsync")]
+        public static partial void ErrorWhenFlushAsync(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, uint, Exception?> _writeFlushCancelled =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteFlushCancelled, "FlushAsync; Write cancelled with error code: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.WriteFlushCancelled, LogLevel.Debug, "FlushAsync; Write cancelled with error code: {StatusCode}", EventName = "WriteFlushCancelled")]
+        public static partial void WriteFlushCancelled(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, Exception> _fileSendAsyncError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FileSendAsyncError, "SendFileAsync");
+        [LoggerMessage(LoggerEventIds.FileSendAsyncError, LogLevel.Error, "SendFileAsync", EventName = "FileSendAsyncError")]
+        public static partial void FileSendAsyncError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, uint, Exception?> _fileSendAsyncCancelled =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncCancelled, "SendFileAsync; Write cancelled with error code: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.FileSendAsyncCancelled, LogLevel.Debug, "SendFileAsync; Write cancelled with error code: {StatusCode}", EventName = "FileSendAsyncCancelled")]
+        public static partial void FileSendAsyncCancelled(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, uint, Exception?> _fileSendAsyncErrorIgnored =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncErrorIgnored, "SendFileAsync; Ignored write exception: {StatusCode}");
-
-        public static void FewerBytesThanExpected(ILogger logger)
-        {
-            _fewerBytesThanExpected(logger, null);
-        }
-
-        public static void WriteError(ILogger logger, IOException exception)
-        {
-            _writeError(logger, exception);
-        }
-
-        public static void WriteErrorIgnored(ILogger logger, uint statusCode)
-        {
-            _writeErrorIgnored(logger, statusCode, null);
-        }
-
-        public static void ErrorWhenFlushAsync(ILogger logger, Exception exception)
-        {
-            _errorWhenFlushAsync(logger, exception);
-        }
-
-        public static void WriteFlushCancelled(ILogger logger, uint statusCode)
-        {
-            _writeFlushCancelled(logger, statusCode, null);
-        }
-
-        public static void FileSendAsyncError(ILogger logger, Exception exception)
-        {
-            _fileSendAsyncError(logger, exception);
-        }
-
-        public static void FileSendAsyncCancelled(ILogger logger, uint statusCode)
-        {
-            _fileSendAsyncCancelled(logger, statusCode, null);
-        }
-
-        public static void FileSendAsyncErrorIgnored(ILogger logger, uint statusCode)
-        {
-            _fileSendAsyncErrorIgnored(logger, statusCode, null);
-        }
+        [LoggerMessage(LoggerEventIds.FileSendAsyncErrorIgnored, LogLevel.Debug, "SendFileAsync; Ignored write exception: {StatusCode}", EventName = "FileSendAsyncErrorIgnored")]
+        public static partial void FileSendAsyncErrorIgnored(ILogger logger, uint statusCode);
     }
 }

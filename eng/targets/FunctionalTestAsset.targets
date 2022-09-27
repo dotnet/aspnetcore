@@ -1,9 +1,0 @@
-<Project>
-  <Target Name="CollectFunctionalTestPayload" DependsOnTargets="Publish" Returns="@(DependencyPayload)" >
-    <ItemGroup>
-      <DependencyPayload Include="@(ResolvedFileToPublish)">
-        <RelativePath>$(MSBuildProjectName)\%(ResolvedFileToPublish.RelativePath)</RelativePath>
-      </DependencyPayload>
-    </ItemGroup>
-  </Target>
-</Project>

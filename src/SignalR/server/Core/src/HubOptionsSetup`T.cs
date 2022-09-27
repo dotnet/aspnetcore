@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -39,6 +37,7 @@ public class HubOptionsSetup<THub> : IConfigureOptions<HubOptions<THub>> where T
         options.MaximumReceiveMessageSize = _hubOptions.MaximumReceiveMessageSize;
         options.StreamBufferCapacity = _hubOptions.StreamBufferCapacity;
         options.MaximumParallelInvocationsPerClient = _hubOptions.MaximumParallelInvocationsPerClient;
+        options.DisableImplicitFromServicesParameters = _hubOptions.DisableImplicitFromServicesParameters;
 
         options.UserHasSetValues = true;
 

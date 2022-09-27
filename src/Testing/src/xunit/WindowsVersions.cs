@@ -52,6 +52,11 @@ public static class WindowsVersions
     public const string Win10_20H2 = "10.0.19042";
 
     /// <summary>
+    /// 21H2, 22000
+    /// </summary>
+    public const string Win11_21H2 = "10.0.22000";
+
+    /// <summary>
     /// 2022, 20348
     /// </summary>
     public const string Win_Server_2022 = "10.0.20348";

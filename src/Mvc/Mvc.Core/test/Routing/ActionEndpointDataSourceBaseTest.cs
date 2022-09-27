@@ -1,18 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
@@ -134,7 +130,8 @@ public abstract class ActionEndpointDataSourceBaseTest
         {
             actions = new DefaultActionDescriptorCollectionProvider(
                 Array.Empty<IActionDescriptorProvider>(),
-                Array.Empty<IActionDescriptorChangeProvider>());
+                Array.Empty<IActionDescriptorChangeProvider>(),
+                NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
         }
 
         var services = new ServiceCollection();
@@ -149,7 +146,7 @@ public abstract class ActionEndpointDataSourceBaseTest
 
         var serviceProvider = services.BuildServiceProvider();
 
-        var endpointFactory = new ActionEndpointFactory(serviceProvider.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(serviceProvider.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), serviceProvider);
 
         return CreateDataSource(actions, endpointFactory);
     }

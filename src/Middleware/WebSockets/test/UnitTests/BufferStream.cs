@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;
 
@@ -23,14 +19,14 @@ public class BufferStream : Stream
     private ArraySegment<byte> _topBuffer;
     private readonly SemaphoreSlim _readLock;
     private readonly SemaphoreSlim _writeLock;
-    private TaskCompletionSource<object> _readWaitingForData;
+    private TaskCompletionSource _readWaitingForData;
 
     internal BufferStream()
     {
         _readLock = new SemaphoreSlim(1, 1);
         _writeLock = new SemaphoreSlim(1, 1);
         _bufferedData = new ConcurrentQueue<byte[]>();
-        _readWaitingForData = new TaskCompletionSource<object>();
+        _readWaitingForData = new TaskCompletionSource();
     }
 
     public override bool CanRead
@@ -91,7 +87,7 @@ public class BufferStream : Stream
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            TaskCompletionSource tcs = new TaskCompletionSource();
             tcs.TrySetCanceled();
             return tcs.Task;
         }
@@ -264,7 +260,7 @@ public class BufferStream : Stream
         VerifyBuffer(buffer, offset, count, allowEmpty: true);
         if (cancellationToken.IsCancellationRequested)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.TrySetCanceled();
             return tcs.Task;
         }
@@ -289,17 +285,17 @@ public class BufferStream : Stream
     private void SignalDataAvailable()
     {
         // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
-        Task.Factory.StartNew(() => _readWaitingForData.TrySetResult(null));
+        Task.Factory.StartNew(() => _readWaitingForData.TrySetResult());
     }
 
     private Task WaitForDataAsync()
     {
-        _readWaitingForData = new TaskCompletionSource<object>();
+        _readWaitingForData = new TaskCompletionSource();
 
         if (!_bufferedData.IsEmpty || _disposed)
         {
             // Race, data could have arrived before we created the TCS.
-            _readWaitingForData.TrySetResult(null);
+            _readWaitingForData.TrySetResult();
         }
 
         return _readWaitingForData.Task;
@@ -334,7 +330,7 @@ public class BufferStream : Stream
         {
             // Throw for further writes, but not reads.  Allow reads to drain the buffered data and then return 0 for further reads.
             _disposed = true;
-            _readWaitingForData.TrySetResult(null);
+            _readWaitingForData.TrySetResult();
         }
 
         base.Dispose(disposing);
@@ -342,9 +338,6 @@ public class BufferStream : Stream
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

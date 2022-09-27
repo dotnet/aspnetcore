@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
-internal class IISSetupFilter : IStartupFilter
+internal sealed class IISSetupFilter : IStartupFilter
 {
     private readonly string _pairingToken;
     private readonly PathString _pathBase;

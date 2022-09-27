@@ -4,16 +4,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite;
 
-internal class RedirectToHttpsRule : IRule
+internal sealed class RedirectToHttpsRule : IRule
 {
     public int? SSLPort { get; set; }
     public int StatusCode { get; set; }
 
-    public virtual void ApplyRule(RewriteContext context)
+    public void ApplyRule(RewriteContext context)
     {
         if (!context.HttpContext.Request.IsHttps)
         {

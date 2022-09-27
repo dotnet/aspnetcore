@@ -22,10 +22,10 @@ public class RequestHeaderTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var requestHeaders = httpContext.Request.Headers;
-                    // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
-                    // Assert.Equal(2, requestHeaders.Count);
-                    // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
-                    Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
+                // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
+                // Assert.Equal(2, requestHeaders.Count);
+                // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
+                Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
                 Assert.True(StringValues.IsNullOrEmpty(requestHeaders["Accept"]));
                 return Task.FromResult(0);
             }))
@@ -45,8 +45,8 @@ public class RequestHeaderTests
                 Assert.Equal(4, requestHeaders.Count);
                 Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
                 Assert.Equal("close", requestHeaders["Connection"]);
-                    // Apparently Http.Sys squashes request headers together.
-                    Assert.Single(requestHeaders["Custom-Header"]);
+                // Apparently Http.Sys squashes request headers together.
+                Assert.Single(requestHeaders["Custom-Header"]);
                 Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"]);
                 Assert.Single(requestHeaders["Spacer-Header"]);
                 Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);

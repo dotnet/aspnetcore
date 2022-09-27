@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
@@ -92,7 +87,7 @@ public class TargetPickerUi
         if (matchingTabs.Count == 1)
         {
             // We know uniquely which tab to debug, so just redirect
-            var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(request, matchingTabs.Single());
+            var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(matchingTabs.Single());
             context.Response.Redirect(devToolsUrlWithProxy);
         }
         else if (matchingTabs.Count == 0)
@@ -139,7 +134,7 @@ public class TargetPickerUi
 
             foreach (var tab in matchingTabs)
             {
-                var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(request, tab);
+                var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(tab);
                 await context.Response.WriteAsync(
                     $"<a class='inspectable-page' href='{WebUtility.HtmlEncode(devToolsUrlWithProxy)}'>"
                     + $"<h3>{WebUtility.HtmlEncode(tab.Title)}</h3>{WebUtility.HtmlEncode(tab.Url)}"
@@ -148,7 +143,7 @@ public class TargetPickerUi
         }
     }
 
-    private string GetDevToolsUrlWithProxy(HttpRequest request, BrowserTab tabToDebug)
+    private string GetDevToolsUrlWithProxy(BrowserTab tabToDebug)
     {
         var underlyingV8Endpoint = new Uri(tabToDebug.WebSocketDebuggerUrl);
         var proxyEndpoint = new Uri(_debugProxyUrl);
@@ -204,24 +199,6 @@ public class TargetPickerUi
         }
     }
 
-    private static Uri GetProxyEndpoint(HttpRequest incomingRequest, string browserEndpoint)
-    {
-        var builder = new UriBuilder(
-            schemeName: incomingRequest.IsHttps ? "wss" : "ws",
-            hostName: incomingRequest.Host.Host)
-        {
-            Path = $"{incomingRequest.PathBase}/ws-proxy",
-            Query = $"browser={WebUtility.UrlEncode(browserEndpoint)}"
-        };
-
-        if (incomingRequest.Host.Port.HasValue)
-        {
-            builder.Port = incomingRequest.Host.Port.Value;
-        }
-
-        return builder.Uri;
-    }
-
     private async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
     {
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
@@ -229,7 +206,7 @@ public class TargetPickerUi
         return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions)!;
     }
 
-    record BrowserTab
+    private sealed record BrowserTab
     (
         string Id,
         string Type,

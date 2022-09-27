@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Net.Http;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -34,17 +33,8 @@ public class IISDeploymentResult : DeploymentResult
     {
         return new HttpClient(new LoggingHandler(messageHandler, Logger))
         {
-            BaseAddress = base.HttpClient.BaseAddress
-        };
-    }
-
-    private HttpClient CreateRetryClient(HttpMessageHandler messageHandler)
-    {
-        var loggingHandler = new LoggingHandler(messageHandler, Logger);
-        var retryHandler = new RetryHandler(loggingHandler, Logger);
-        return new HttpClient(retryHandler)
-        {
-            BaseAddress = base.HttpClient.BaseAddress
+            BaseAddress = base.HttpClient.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
         };
     }
 

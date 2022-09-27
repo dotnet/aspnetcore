@@ -33,8 +33,8 @@ public class Startup
         // Add an exception handler that prevents throwing due to large request body size
         app.Use(async (context, next) =>
         {
-                // Limit the request body to 1kb
-                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 1024;
+            // Limit the request body to 1kb
+            context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 1024;
 
             try
             {
@@ -45,10 +45,10 @@ public class Startup
 
         app.Run(async context =>
         {
-                // Drain the request body
-                // await context.Request.Body.CopyToAsync(Stream.Null);
+            // Drain the request body
+            // await context.Request.Body.CopyToAsync(Stream.Null);
 
-                var cert = await context.Connection.GetClientCertificateAsync();
+            var cert = await context.Connection.GetClientCertificateAsync();
 
             var connectionFeature = context.Connection;
             logger.LogDebug($"Peer: {connectionFeature.RemoteIpAddress?.ToString()}:{connectionFeature.RemotePort}"
@@ -87,15 +87,20 @@ public class Startup
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
                             httpsOptions.SslProtocols = SslProtocols.Tls12;
-                            httpsOptions.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+
+                            if (!OperatingSystem.IsMacOS())
+                            {
+                                // Delayed client certificate negotiation is not supported on macOS.
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                            }
                         });
 
                         options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                         {
-                                // Uncomment the following to enable Nagle's algorithm for this endpoint.
-                                //listenOptions.NoDelay = false;
+                            // Uncomment the following to enable Nagle's algorithm for this endpoint.
+                            //listenOptions.NoDelay = false;
 
-                                listenOptions.UseConnectionLogging();
+                            listenOptions.UseConnectionLogging();
                         });
 
                         options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
@@ -107,8 +112,8 @@ public class Startup
 
                         options.ListenLocalhost(basePort + 2, listenOptions =>
                         {
-                                // Use default dev cert
-                                listenOptions.UseHttps();
+                            // Use default dev cert
+                            listenOptions.UseHttps();
                         });
 
                         options.ListenAnyIP(basePort + 3);
@@ -124,8 +129,8 @@ public class Startup
 
                             listenOptions.UseHttps((stream, clientHelloInfo, state, cancellationToken) =>
                             {
-                                    // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
-                                    var serverName = clientHelloInfo.ServerName;
+                                // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
+                                var serverName = clientHelloInfo.ServerName;
                                 if (serverName != null && serverName != "localhost")
                                 {
                                     throw new AuthenticationException($"The endpoint is not configured for server name '{clientHelloInfo.ServerName}'.");
@@ -144,23 +149,23 @@ public class Startup
                             .LocalhostEndpoint(basePort + 7)
                             .Load();
 
-                            // reloadOnChange: true is the default
-                            options
-                            .Configure(context.Configuration.GetSection("Kestrel"), reloadOnChange: true)
-                            .Endpoint("NamedEndpoint", opt =>
-                            {
+                        // reloadOnChange: true is the default
+                        options
+                        .Configure(context.Configuration.GetSection("Kestrel"), reloadOnChange: true)
+                        .Endpoint("NamedEndpoint", opt =>
+                        {
 
-                            })
-                            .Endpoint("NamedHttpsEndpoint", opt =>
-                            {
-                                opt.HttpsOptions.SslProtocols = SslProtocols.Tls12;
-                            });
+                        })
+                        .Endpoint("NamedHttpsEndpoint", opt =>
+                        {
+                            opt.HttpsOptions.SslProtocols = SslProtocols.Tls12;
+                        });
 
                         options.UseSystemd();
 
-                            // The following section should be used to demo sockets
-                            //options.ListenUnixSocket("/tmp/kestrel-test.sock");
-                        })
+                        // The following section should be used to demo sockets
+                        //options.ListenUnixSocket("/tmp/kestrel-test.sock");
+                    })
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .UseStartup<Startup>();
             })

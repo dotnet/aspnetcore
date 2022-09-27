@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing.DecisionTree;
@@ -195,7 +193,7 @@ internal static class DecisionTreeBuilder<TItem>
         };
     }
 
-    private class TreeBuilderContext
+    private sealed class TreeBuilderContext
     {
         public TreeBuilderContext()
         {
@@ -215,7 +213,7 @@ internal static class DecisionTreeBuilder<TItem>
     }
 
     // Subclass just to give a logical name to a mess of generics
-    private class Criterion : Dictionary<DecisionCriterionValue, List<ItemDescriptor<TItem>>>
+    private sealed class Criterion : Dictionary<DecisionCriterionValue, List<ItemDescriptor<TItem>>>
     {
         public Criterion(DecisionCriterionValueEqualityComparer comparer)
             : base(comparer)

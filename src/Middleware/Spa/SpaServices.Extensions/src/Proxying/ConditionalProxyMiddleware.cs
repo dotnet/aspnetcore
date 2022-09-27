@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 
@@ -14,7 +11,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy;
 // the project templates without waiting for 2.1 to ship. When 2.1 is ready to ship,
 // merge the additional proxying features (e.g., proxying websocket connections) back
 // into the SpaServices proxying code. It's all internal.
-internal class ConditionalProxyMiddleware
+internal sealed class ConditionalProxyMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly Task<Uri> _baseUriTask;

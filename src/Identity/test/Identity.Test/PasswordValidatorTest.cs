@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace Microsoft.AspNetCore.Identity.Test;
 
 public class PasswordValidatorTest
@@ -33,7 +27,6 @@ public class PasswordValidatorTest
         await Assert.ThrowsAsync<ArgumentNullException>("password", () => validator.ValidateAsync(null, null, null));
         await Assert.ThrowsAsync<ArgumentNullException>("manager", () => validator.ValidateAsync(null, null, "foo"));
     }
-
 
     [Theory]
     [InlineData("")]

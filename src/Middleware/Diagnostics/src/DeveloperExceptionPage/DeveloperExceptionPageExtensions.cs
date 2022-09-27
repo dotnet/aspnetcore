@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +26,8 @@ public static class DeveloperExceptionPageExtensions
             throw new ArgumentNullException(nameof(app));
         }
 
-        return app.UseMiddleware<DeveloperExceptionPageMiddleware>();
+        app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware";
+        return app.UseMiddleware<DeveloperExceptionPageMiddlewareImpl>();
     }
 
     /// <summary>
@@ -53,6 +53,7 @@ public static class DeveloperExceptionPageExtensions
             throw new ArgumentNullException(nameof(options));
         }
 
-        return app.UseMiddleware<DeveloperExceptionPageMiddleware>(Options.Create(options));
+        app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware";
+        return app.UseMiddleware<DeveloperExceptionPageMiddlewareImpl>(Options.Create(options));
     }
 }

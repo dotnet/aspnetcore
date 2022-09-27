@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -181,7 +177,6 @@ public class ActionSelectorBenchmark
                 throw new InvalidOperationException("This should have at least one match.");
             }
 
-
             data.Add(new KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>(routeValues, matches));
         }
 
@@ -236,7 +231,7 @@ public class ActionSelectorBenchmark
             NullLoggerFactory.Instance);
     }
 
-    private class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
+    private sealed class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
     {
         public MockActionDescriptorCollectionProvider(ActionDescriptor[] actions)
         {
@@ -246,7 +241,7 @@ public class ActionSelectorBenchmark
         public ActionDescriptorCollection ActionDescriptors { get; }
     }
 
-    private class MockRouter : IRouter
+    private sealed class MockRouter : IRouter
     {
         public static readonly IRouter Instance = new MockRouter();
 

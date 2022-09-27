@@ -1,9 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor WebAssembly App",
-    "description": "A project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template can be used for web apps with rich dynamic user interfaces (UIs).",
-    "parameter.Hosted.name": "ASP.NET Core _hosted",
-    "parameter.PWA.name": "_Progressive Web Application"
-  }
-}

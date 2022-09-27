@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class ExactMatch : UrlMatch
+internal sealed class ExactMatch : UrlMatch
 {
     private readonly bool _ignoreCase;
     private readonly string _stringMatch;

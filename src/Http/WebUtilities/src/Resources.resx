@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FormPipeReader_KeyOrValueTooLarge" xml:space="preserve">
+    <value>Form key length limit {0} or value length limit {1} exceeded.</value>
+  </data>
+  <data name="FormPipeReader_KeyTooLarge" xml:space="preserve">
+    <value>Form key length limit {0} exceeded.</value>
+  </data>
+  <data name="FormPipeReader_ValueTooLarge" xml:space="preserve">
+    <value>Form value length limit {0} exceeded.</value>
+  </data>
   <data name="HttpRequestStreamReader_StreamNotReadable" xml:space="preserve">
     <value>The stream must support reading.</value>
   </data>

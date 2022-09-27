@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -10,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class HttpMultiplexedConnectionMiddleware<TContext> where TContext : notnull
+internal sealed class HttpMultiplexedConnectionMiddleware<TContext> where TContext : notnull
 {
     private readonly ServiceContext _serviceContext;
     private readonly IHttpApplication<TContext> _application;

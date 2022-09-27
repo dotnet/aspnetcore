@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
@@ -110,7 +109,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         fieldName = memberExpression.Member.Name;
 
         // Get a reference to the model object
-        // i.e., given an value like "(something).MemberName", determine the runtime value of "(something)",
+        // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
         if (memberExpression.Expression is ConstantExpression constantExpression)
         {
             if (constantExpression.Value is null)

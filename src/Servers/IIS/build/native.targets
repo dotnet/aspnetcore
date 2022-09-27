@@ -4,7 +4,7 @@
     <IncludePath>$(IncludePath);$(IntDir)</IncludePath>
   </PropertyGroup>
 
-  <ItemGroup Condition="@(MessageFile->Count()) != 0">
+  <ItemGroup Condition="'@(MessageFile->Count())' != '0'">
     <!-- Checking if the IntDir exists is a local development optimization. Normally, each time the build runs,
       the aspnetcore_msg.h file is auto generated. The compiler notices that the file has been updated, and recompiles c++ files.
       These files never update (they define message types, which aren't changed). Therefore, if the IntDir exists, don't recreate

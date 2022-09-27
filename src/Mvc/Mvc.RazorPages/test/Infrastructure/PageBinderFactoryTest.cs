@@ -1,11 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -15,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
@@ -596,8 +592,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var page = new PageWithProperty
         {
@@ -640,8 +635,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var page = new PageWithProperty
         {
@@ -684,8 +678,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var page = new PageWithProperty
         {
@@ -729,8 +722,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var pageContext = GetPageContext();
         var page = new PageWithProperty
@@ -758,7 +750,6 @@ public class PageBinderFactoryTest
 
         Assert.Equal("Some error", error.ErrorMessage);
     }
-
 
     private static CompiledPageActionDescriptor GetActionDescriptorWithHandlerMethod(Type type, string method)
     {
@@ -847,6 +838,9 @@ public class PageBinderFactoryTest
         }
     }
 
+    private interface ITestService
+    { }
+
     private class PageModelWithNoBoundProperties : PageModel
     {
     }
@@ -864,6 +858,9 @@ public class PageBinderFactoryTest
         [FromQuery]
         protected string FromQuery { get; set; }
 
+        [FromServices]
+        protected ITestService FromService { get; set; }
+
         [FromRoute]
         public static int FromRoute { get; set; }
 
@@ -877,6 +874,9 @@ public class PageBinderFactoryTest
 
         [FromQuery]
         protected string FromQuery { get; set; }
+
+        [FromServices]
+        protected ITestService FromService { get; set; }
 
         [FromRoute]
         public static int FromRoute { get; set; }
@@ -907,6 +907,9 @@ public class PageBinderFactoryTest
         [FromForm]
         public string PropertyWithNoValue { get; set; }
 
+        [FromServices]
+        public ITestService FromService { get; set; }
+
         public override Task ExecuteAsync() => Task.FromResult(0);
     }
 
@@ -920,6 +923,10 @@ public class PageBinderFactoryTest
 
         [FromForm]
         public string PropertyWithNoValue { get; set; }
+
+        [FromServices]
+        public ITestService FromService { get; set; }
+
     }
 
     private class PageModelWithDefaultValue

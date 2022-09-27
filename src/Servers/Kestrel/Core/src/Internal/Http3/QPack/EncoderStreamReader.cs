@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 
-internal class EncoderStreamReader
+internal sealed class EncoderStreamReader
 {
     private enum State
     {
@@ -31,7 +30,6 @@ internal class EncoderStreamReader
     private const byte DynamicTableCapacityRepresentation = 0x20;
     private const byte DynamicTableCapacityPrefixMask = 0x1F;
     private const int DynamicTableCapacityPrefix = 5;
-
 
     //0   1   2   3   4   5   6   7
     //+---+---+---+---+---+---+---+---+
@@ -241,7 +239,6 @@ internal class EncoderStreamReader
         }
     }
 
-
     private void OnStringLength(int length, State nextState)
     {
         if (length > _stringOctets.Length)
@@ -259,7 +256,7 @@ internal class EncoderStreamReader
         OnString(nextState: State.Ready);
         var headerNameSpan = new Span<byte>(_headerName, 0, _headerNameLength);
         var headerValueSpan = new Span<byte>(_headerValueOctets, 0, _headerValueLength);
-        _dynamicTable.Insert(headerNameSpan, headerValueSpan);
+        DynamicTable.Insert(headerNameSpan, headerValueSpan);
     }
 
     private void OnString(State nextState)
@@ -308,7 +305,7 @@ internal class EncoderStreamReader
     private void OnDynamicTableCapacity(int dynamicTableSize)
     {
         // Call Decoder to update the table size.
-        _dynamicTable.Resize(dynamicTableSize);
+        DynamicTable.Resize(dynamicTableSize);
         _state = State.Ready;
     }
 

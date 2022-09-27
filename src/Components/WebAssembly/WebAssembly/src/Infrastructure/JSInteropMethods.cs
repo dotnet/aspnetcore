@@ -1,15 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.JSInterop;
 
@@ -25,9 +17,25 @@ public static class JSInteropMethods
     /// <summary>
     /// For framework use only.
     /// </summary>
-    [JSInvokable(nameof(NotifyLocationChanged))]
+    [Obsolete("This API is for framework use only and is no longer used in the current version")]
     public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
+        => WebAssemblyNavigationManager.Instance.SetLocation(uri, null, isInterceptedLink);
+
+    /// <summary>
+    /// For framework use only.
+    /// </summary>
+    [JSInvokable(nameof(NotifyLocationChanged))]
+    public static void NotifyLocationChanged(string uri, string? state, bool isInterceptedLink)
     {
-        WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
+        WebAssemblyNavigationManager.Instance.SetLocation(uri, state, isInterceptedLink);
+    }
+
+    /// <summary>
+    /// For framework use only.
+    /// </summary>
+    [JSInvokable(nameof(NotifyLocationChangingAsync))]
+    public static async ValueTask<bool> NotifyLocationChangingAsync(string uri, string? state, bool isInterceptedLink)
+    {
+        return await WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(uri, state, isInterceptedLink);
     }
 }

@@ -20,7 +20,7 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
     /// <returns>True if the user has an authenticator key set, otherwise false.</returns>
     public virtual async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
     {
-        var key = await manager.GetAuthenticatorKeyAsync(user);
+        var key = await manager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false);
 
         return !string.IsNullOrWhiteSpace(key);
     }
@@ -47,7 +47,7 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
     /// <returns></returns>
     public virtual async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user)
     {
-        var key = await manager.GetAuthenticatorKeyAsync(user);
+        var key = await manager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false);
         int code;
         if (key == null || !int.TryParse(token, out code))
         {

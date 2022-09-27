@@ -66,7 +66,6 @@ public class MessagePackHubProtocol : IHubProtocol
     public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         => _worker.WriteMessage(message, output);
 
-
     /// <inheritdoc />
     public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         => _worker.GetMessageBytes(message);
@@ -77,7 +76,7 @@ public class MessagePackHubProtocol : IHubProtocol
             .WithResolver(SignalRResolver.Instance)
             .WithSecurity(MessagePackSecurity.UntrustedData);
 
-    internal class SignalRResolver : IFormatterResolver
+    internal sealed class SignalRResolver : IFormatterResolver
     {
         public static readonly IFormatterResolver Instance = new SignalRResolver();
 

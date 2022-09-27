@@ -99,13 +99,13 @@ internal class ManifestDirectory : ManifestEntry
     private ManifestEntry[] CopyChildren()
     {
         var list = new List<ManifestEntry>(Children.Count);
-        for (int i = 0; i < Children.Count; i++)
+        for (var i = 0; i < Children.Count; i++)
         {
             var child = Children[i];
             switch (child)
             {
-                case ManifestSinkDirectory s:
-                case ManifestRootDirectory r:
+                case ManifestSinkDirectory:
+                case ManifestRootDirectory:
                     throw new InvalidOperationException("Unexpected manifest node.");
                 case ManifestDirectory d:
                     var grandChildren = d.CopyChildren();

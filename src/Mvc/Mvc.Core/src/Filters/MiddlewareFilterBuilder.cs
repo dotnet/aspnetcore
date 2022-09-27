@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// Builds a middleware pipeline after receiving the pipeline from a pipeline provider
 /// </summary>
-internal class MiddlewareFilterBuilder
+internal sealed class MiddlewareFilterBuilder
 {
     // 'GetOrAdd' call on the dictionary is not thread safe and we might end up creating the pipeline more than
     // once. To prevent this Lazy<> is used. In the worst case multiple Lazy<> objects are created for multiple
@@ -50,7 +50,7 @@ internal class MiddlewareFilterBuilder
         var nestedAppBuilder = ApplicationBuilder.New();
 
         // Get the 'Configure' method from the user provided type.
-        var configureDelegate = _configurationProvider.CreateConfigureDelegate(middlewarePipelineProviderType);
+        var configureDelegate = MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(middlewarePipelineProviderType);
         configureDelegate(nestedAppBuilder);
 
         // The middleware resource filter, after receiving the request executes the user configured middleware
@@ -61,12 +61,7 @@ internal class MiddlewareFilterBuilder
         // middleware filter -> user-middleware1 -> user-middleware2 -> end-middleware -> resource filters or model binding
         nestedAppBuilder.Run(async (httpContext) =>
         {
-            var feature = httpContext.Features.Get<IMiddlewareFilterFeature>();
-            if (feature == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatMiddlewareFilterBuilder_NoMiddlewareFeature(nameof(IMiddlewareFilterFeature)));
-            }
+            var feature = httpContext.Features.GetRequiredFeature<IMiddlewareFilterFeature>();
 
             var resourceExecutionDelegate = feature.ResourceExecutionDelegate!;
 
@@ -76,16 +71,16 @@ internal class MiddlewareFilterBuilder
                 return;
             }
 
-                // Ideally we want the experience of a middleware pipeline to behave the same as if it was registered
-                // in Startup. In this scenario, an Exception thrown in a middleware later in the pipeline gets
-                // propagated back to earlier middleware. So, check if a later resource filter threw an Exception and
-                // propagate that back to the middleware pipeline.
-                resourceExecutedContext.ExceptionDispatchInfo?.Throw();
+            // Ideally we want the experience of a middleware pipeline to behave the same as if it was registered
+            // in Startup. In this scenario, an Exception thrown in a middleware later in the pipeline gets
+            // propagated back to earlier middleware. So, check if a later resource filter threw an Exception and
+            // propagate that back to the middleware pipeline.
+            resourceExecutedContext.ExceptionDispatchInfo?.Throw();
             if (resourceExecutedContext.Exception != null)
             {
-                    // This line is rarely reachable because ResourceInvoker captures thrown Exceptions using
-                    // ExceptionDispatchInfo. That said, filters could set only resourceExecutedContext.Exception.
-                    throw resourceExecutedContext.Exception;
+                // This line is rarely reachable because ResourceInvoker captures thrown Exceptions using
+                // ExceptionDispatchInfo. That said, filters could set only resourceExecutedContext.Exception.
+                throw resourceExecutedContext.Exception;
             }
         });
 

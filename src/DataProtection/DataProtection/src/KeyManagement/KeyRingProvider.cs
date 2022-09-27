@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
@@ -260,7 +261,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
         // we don't need a secure PRNG for this.
 #if NET6_0_OR_GREATER
-            var random = Random.Shared;
+        var random = Random.Shared;
 #else
         var random = new Random();
 #endif

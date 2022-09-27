@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Buffers.Text;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -19,7 +17,7 @@ namespace Microsoft.Net.Http.Headers;
 /// Represents the value of a <c>Content-Disposition</c> header.
 /// </summary>
 /// <remarks>
-/// Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+/// Note this is for use both in HTTP (<see href="https://tools.ietf.org/html/rfc6266"/>) and MIME (<see href="https://tools.ietf.org/html/rfc2183"/>).
 /// </remarks>
 public class ContentDispositionHeaderValue
 {
@@ -34,8 +32,8 @@ public class ContentDispositionHeaderValue
     private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
     private static readonly char[] EscapeChars = new char[] { '\\', '"' };
-    private static ReadOnlySpan<byte> MimePrefix => new byte[] { (byte)'"', (byte)'=', (byte)'?', (byte)'u', (byte)'t', (byte)'f', (byte)'-', (byte)'8', (byte)'?', (byte)'B', (byte)'?' };
-    private static ReadOnlySpan<byte> MimeSuffix => new byte[] { (byte)'?', (byte)'=', (byte)'"' };
+    private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
+    private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
 
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
@@ -437,7 +435,7 @@ public class ContentDispositionHeaderValue
         }
         else
         {
-            var processedValue = StringSegment.Empty;
+            StringSegment processedValue;
             if (parameter.EndsWith("*", StringComparison.Ordinal))
             {
                 processedValue = Encode5987(value);
@@ -496,7 +494,7 @@ public class ContentDispositionHeaderValue
     }
 
     // Replaces characters not suitable for HTTP headers with '_' rather than MIME encoding them.
-    private StringSegment Sanitize(StringSegment input)
+    private static StringSegment Sanitize(StringSegment input)
     {
         var result = input;
 
@@ -575,7 +573,7 @@ public class ContentDispositionHeaderValue
     }
 
     // Attempt to decode MIME encoded strings
-    private bool TryDecodeMime(StringSegment input, [NotNullWhen(true)] out string? output)
+    private static bool TryDecodeMime(StringSegment input, [NotNullWhen(true)] out string? output)
     {
         Contract.Assert(input != null);
 

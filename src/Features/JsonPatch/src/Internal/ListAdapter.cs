@@ -63,7 +63,7 @@ public class ListAdapter : IAdapter
     {
         var list = (IList)target;
 
-        if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
+        if (!TryGetListTypeArgument(list, out _, out errorMessage))
         {
             value = null;
             return false;
@@ -96,7 +96,7 @@ public class ListAdapter : IAdapter
     {
         var list = (IList)target;
 
-        if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
+        if (!TryGetListTypeArgument(list, out _, out errorMessage))
         {
             return false;
         }
@@ -208,8 +208,7 @@ public class ListAdapter : IAdapter
             return false;
         }
 
-        var index = -1;
-        if (!int.TryParse(segment, out index))
+        if (!int.TryParse(segment, out var index))
         {
             value = null;
             errorMessage = Resources.FormatInvalidIndexValue(segment);
@@ -307,8 +306,7 @@ public class ListAdapter : IAdapter
             return true;
         }
 
-        var position = -1;
-        if (int.TryParse(segment, out position))
+        if (int.TryParse(segment, out var position))
         {
             if (position >= 0 && position < list.Count)
             {

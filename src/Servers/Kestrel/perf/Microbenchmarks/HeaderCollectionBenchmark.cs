@@ -308,7 +308,6 @@ public class HeaderCollectionBenchmark
             value = headers.Server;
             value = headers.ContentType;
 
-
             value = headers.Link;
             value = headers.XUACompatible;
             value = headers.XPoweredBy;

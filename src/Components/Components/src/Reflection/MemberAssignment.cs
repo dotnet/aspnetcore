@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -10,7 +8,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection;
 
-internal class MemberAssignment
+internal sealed class MemberAssignment
 {
     public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
         [DynamicallyAccessedMembers(Component)] Type type,

@@ -11,10 +11,7 @@
       "src\\Components\\Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
       "src\\Components\\Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
-      "src\\Components\\Ignitor\\src\\Ignitor.csproj",
-      "src\\Components\\Ignitor\\test\\Ignitor.Test.csproj",
       "src\\Components\\Samples\\BlazorServerApp\\BlazorServerApp.csproj",
-      "src\\Components\\Samples\\IgnitorSample\\IgnitorSample.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
       "src\\Components\\WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",
@@ -50,8 +47,10 @@
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
       "src\\Components\\test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
       "src\\Components\\test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
+      "src\\Components\\test\\testassets\\ComponentsApp.App\\ComponentsApp.App.csproj",
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
+      "src\\Components\\test\\testassets\\LazyTestContentPackage\\LazyTestContentPackage.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
       "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj"
     ]

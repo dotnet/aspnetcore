@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -19,5 +18,5 @@ public interface IPasswordValidator<TUser> where TUser : class
     /// <param name="user">The user whose password should be validated.</param>
     /// <param name="password">The password supplied for validation</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password);
+    Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string? password);
 }

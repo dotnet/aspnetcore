@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -83,12 +79,8 @@ public partial class HubConnectionContext
         _systemClock = contextOptions.SystemClock ?? new SystemClock();
         _lastSendTick = _systemClock.CurrentTicks;
 
-        // We'll be avoiding using the semaphore when the limit is set to 1, so no need to allocate it
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
-        if (maxInvokeLimit != 1)
-        {
-            ActiveInvocationLimit = new SemaphoreSlim(maxInvokeLimit, maxInvokeLimit);
-        }
+        ActiveInvocationLimit = new ChannelBasedSemaphore(maxInvokeLimit);
     }
 
     internal StreamTracker StreamTracker
@@ -106,11 +98,10 @@ public partial class HubConnectionContext
     }
 
     internal HubCallerContext HubCallerContext { get; }
-    internal HubCallerClients HubCallerClients { get; set; } = null!;
 
     internal Exception? CloseException { get; private set; }
 
-    internal SemaphoreSlim? ActiveInvocationLimit { get; }
+    internal ChannelBasedSemaphore ActiveInvocationLimit { get; }
 
     /// <summary>
     /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
@@ -670,7 +661,7 @@ public partial class HubConnectionContext
 
                 if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                 {
-                    Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
+                    Log.ClientTimeout(_logger, TimeSpan.FromMilliseconds(_clientTimeoutInterval));
                     AbortAllowReconnect();
                 }
             }

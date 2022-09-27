@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -23,6 +19,7 @@ internal sealed class Http2MessageBody : MessageBody
         : base(context)
     {
         _context = context;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     protected override void OnReadStarting()
@@ -55,6 +52,7 @@ internal sealed class Http2MessageBody : MessageBody
     {
         base.Reset();
         _readResult = default;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
@@ -66,7 +64,12 @@ internal sealed class Http2MessageBody : MessageBody
 
         // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
         _context.OnDataRead((int)newlyExaminedBytes);
-        AddAndCheckObservedBytes(newlyExaminedBytes);
+
+        // Don't limit extended CONNECT requests to the MaxRequestBodySize.
+        if (!ExtendedConnect)
+        {
+            AddAndCheckObservedBytes(newlyExaminedBytes);
+        }
     }
 
     public override bool TryRead(out ReadResult readResult)

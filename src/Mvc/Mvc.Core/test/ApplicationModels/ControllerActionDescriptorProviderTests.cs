@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -17,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
@@ -759,42 +755,27 @@ public class ControllerActionDescriptorProviderTests
         // Arrange
         var sameNameType = typeof(SameNameDifferentTemplatesController).GetTypeInfo();
         var provider = GetProvider(sameNameType);
-
         var assemblyName = sameNameType.Assembly.GetName().Name;
-        var expectedMessage =
-            "The following errors occurred with attribute routing information:"
-            + Environment.NewLine + Environment.NewLine +
-            "Error 1:" + Environment.NewLine +
-            "Attribute routes with the same name 'Products' must have the same template:"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.Get ({assemblyName})' - Template: 'Products'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.Get ({assemblyName})' - Template: 'Products/{{id}}'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.Put ({assemblyName})' - Template: 'Products/{{id}}'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.Post ({assemblyName})' - Template: 'Products'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.Delete ({assemblyName})' - Template: 'Products/{{id}}'"
-            + Environment.NewLine + Environment.NewLine +
-            "Error 2:" + Environment.NewLine +
-            "Attribute routes with the same name 'Items' must have the same template:"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.GetItems ({assemblyName})' - Template: 'Items/{{id}}'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.PostItems ({assemblyName})' - Template: 'Items'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.PutItems ({assemblyName})' - Template: 'Items/{{id}}'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.DeleteItems ({assemblyName})' - Template: 'Items/{{id}}'"
-            + Environment.NewLine +
-            $"Action: '{sameNameType.FullName}.PatchItems ({assemblyName})' - Template: 'Items'";
 
         // Act
         var ex = Assert.Throws<InvalidOperationException>(() => { provider.GetDescriptors(); });
 
         // Assert
-        Assert.Equal(expectedMessage, ex.Message);
+        Assert.Contains("The following errors occurred with attribute routing information:", ex.Message);
+        Assert.Contains("Error 1:", ex.Message);
+        Assert.Contains("Attribute routes with the same name 'Products' must have the same template:", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.Get ({assemblyName})' - Template: 'Products'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.Get ({assemblyName})' - Template: 'Products/{{id}}'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.Put ({assemblyName})' - Template: 'Products/{{id}}'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.Post ({assemblyName})' - Template: 'Products'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.Delete ({assemblyName})' - Template: 'Products/{{id}}'", ex.Message);
+        Assert.Contains("Error 2:", ex.Message);
+        Assert.Contains("Attribute routes with the same name 'Items' must have the same template:", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.GetItems ({assemblyName})' - Template: 'Items/{{id}}'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.PostItems ({assemblyName})' - Template: 'Items'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.PutItems ({assemblyName})' - Template: 'Items/{{id}}'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.DeleteItems ({assemblyName})' - Template: 'Items/{{id}}'", ex.Message);
+        Assert.Contains($"Action: '{sameNameType.FullName}.PatchItems ({assemblyName})' - Template: 'Items'", ex.Message);
     }
 
     [Fact]

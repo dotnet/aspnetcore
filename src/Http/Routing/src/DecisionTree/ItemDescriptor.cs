@@ -3,11 +3,9 @@
 
 #nullable disable
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Routing.DecisionTree;
 
-internal class ItemDescriptor<TItem>
+internal sealed class ItemDescriptor<TItem>
 {
     public IDictionary<string, DecisionCriterionValue> Criteria { get; set; }
 

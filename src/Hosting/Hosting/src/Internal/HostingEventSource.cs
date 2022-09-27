@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -24,7 +22,6 @@ internal sealed class HostingEventSource : EventSource
     internal HostingEventSource()
         : this("Microsoft.AspNetCore.Hosting")
     {
-
     }
 
     // Used for testing
@@ -73,6 +70,12 @@ internal sealed class HostingEventSource : EventSource
     public void UnhandledException()
     {
         WriteEvent(5);
+    }
+
+    [Event(6, Level = EventLevel.Informational)]
+    public void ServerReady()
+    {
+        WriteEvent(6);
     }
 
     internal void RequestFailed()

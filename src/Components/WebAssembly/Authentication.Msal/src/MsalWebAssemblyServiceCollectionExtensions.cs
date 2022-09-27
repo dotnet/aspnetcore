@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Authentication.WebAssembly.Msal;
@@ -36,7 +35,9 @@ public static class MsalWebAssemblyServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddMsalAuthentication<TRemoteAuthenticationState>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddMsalAuthentication<
+    [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(
+        this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
         return AddMsalAuthentication<TRemoteAuthenticationState, RemoteUserAccount>(services, configure);
@@ -50,7 +51,9 @@ public static class MsalWebAssemblyServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddMsalAuthentication<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddMsalAuthentication<
+        [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
+        this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         where TAccount : RemoteUserAccount
     {
@@ -61,7 +64,7 @@ public static class MsalWebAssemblyServiceCollectionExtensions
     }
 }
 
-internal class MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount> : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount>
+internal sealed class MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount> : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount>
     where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     where TRemoteUserAccount : RemoteUserAccount
 {

@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.HttpsPolicy;
 
 /// <summary>
@@ -16,7 +13,7 @@ public class HstsOptions
     /// </summary>
     /// <remarks>
     /// Max-age is required; defaults to 30 days.
-    /// See: https://tools.ietf.org/html/rfc6797#section-6.1.1
+    /// See: <see href="https://tools.ietf.org/html/rfc6797#section-6.1.1"/>
     /// </remarks>
     public TimeSpan MaxAge { get; set; } = TimeSpan.FromDays(30);
 
@@ -24,7 +21,7 @@ public class HstsOptions
     /// Enables includeSubDomain parameter of the Strict-Transport-Security header.
     /// </summary>
     /// <remarks>
-    /// See: https://tools.ietf.org/html/rfc6797#section-6.1.2
+    /// See: <see href="https://tools.ietf.org/html/rfc6797#section-6.1.2"/>
     /// </remarks>
     public bool IncludeSubDomains { get; set; }
 

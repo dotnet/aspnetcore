@@ -159,7 +159,6 @@ public static class Program
                         .UseStartup<ThrowingStartup>();
                     });
 
-
                     host.Build().Run();
                     return 0;
                 }

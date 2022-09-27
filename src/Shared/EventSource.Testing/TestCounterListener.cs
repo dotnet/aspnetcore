@@ -8,7 +8,7 @@ using System.Threading.Channels;
 
 namespace Microsoft.AspNetCore.Internal;
 
-internal class TestCounterListener : EventListener
+internal sealed class TestCounterListener : EventListener
 {
     private readonly Dictionary<string, Channel<double>> _counters = new Dictionary<string, Channel<double>>();
 

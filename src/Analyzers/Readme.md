@@ -1,6 +1,6 @@
 # Analyzers
 
-This directory contains sources for analyers used internally by ASP.NET Core.
+This directory contains sources for analyzers used internally by ASP.NET Core.
 
 ## Description
 

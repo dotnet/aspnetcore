@@ -33,7 +33,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// Consequently, we have to account for reconnects and disconnects occuring simultaneously as well as appearing out of order.
 /// To manage this, we use a critical section to manage all state transitions.
 /// </remarks>
+#pragma warning disable CA1852 // Seal internal types
 internal partial class CircuitRegistry
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly object CircuitRegistryLock = new object();
     private readonly CircuitOptions _options;
@@ -198,9 +200,9 @@ internal partial class CircuitRegistry
             {
                 if (previouslyConnected)
                 {
-                        // During reconnects, we may transition from Connect->Connect i.e.without ever having invoking OnConnectionDownAsync during
-                        // a formal client disconnect. To allow authors of CircuitHandlers to have reasonable expectations will pair the connection up with a connection down.
-                        await circuitHost.OnConnectionDownAsync(cancellationToken);
+                    // During reconnects, we may transition from Connect->Connect i.e.without ever having invoking OnConnectionDownAsync during
+                    // a formal client disconnect. To allow authors of CircuitHandlers to have reasonable expectations will pair the connection up with a connection down.
+                    await circuitHost.OnConnectionDownAsync(cancellationToken);
                 }
 
                 await circuitHost.OnConnectionUpAsync(cancellationToken);

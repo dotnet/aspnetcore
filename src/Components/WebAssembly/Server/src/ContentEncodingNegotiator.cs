@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -12,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-internal class ContentEncodingNegotiator
+internal sealed class ContentEncodingNegotiator
 {
     // List of encodings by preference order with their associated extension so that we can easily handle "*".
     private static readonly StringSegment[] _preferredEncodings =

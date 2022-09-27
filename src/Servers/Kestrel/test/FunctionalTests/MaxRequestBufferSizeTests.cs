@@ -11,9 +11,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -105,8 +105,9 @@ public class MaxRequestBufferSizeTests : LoggedTest
             var sslValues = new[] { true, false };
 
             return from maxRequestBufferSize in maxRequestBufferSizeValues
-                    from ssl in sslValues
-                    select new object[] {
+                   from ssl in sslValues
+                   select new object[]
+                   {
                         maxRequestBufferSize.Item1,
                         ssl,
                         maxRequestBufferSize.Item2

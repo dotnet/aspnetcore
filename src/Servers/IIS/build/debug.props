@@ -1,0 +1,30 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Common debug configuration -->
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <!-- there is no debug version of libnethost.lib currently -->
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <StringPooling>true</StringPooling>
+      <Optimization>Disabled</Optimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <!-- Default runtime is static multithreaded debug but we need to use MT due libnethost not having a debug version -->
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+
+      <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+
+    <Link>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+
+</Project>

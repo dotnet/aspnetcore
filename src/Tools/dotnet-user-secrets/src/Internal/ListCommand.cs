@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
-internal class ListCommand : ICommand
+internal sealed class ListCommand : ICommand
 {
     private readonly bool _jsonOutput;
 
@@ -51,7 +51,7 @@ internal class ListCommand : ICommand
         }
     }
 
-    private void ReportJson(CommandContext context)
+    private static void ReportJson(CommandContext context)
     {
         var jObject = new JObject();
         foreach (var item in context.SecretStore.AsEnumerable())

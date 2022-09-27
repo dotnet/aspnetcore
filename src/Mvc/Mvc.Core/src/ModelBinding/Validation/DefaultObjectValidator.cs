@@ -3,14 +3,14 @@
 
 #nullable enable
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 /// <summary>
 /// The default implementation of <see cref="IObjectModelValidator"/>.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class DefaultObjectValidator : ObjectModelValidator
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly MvcOptions _mvcOptions;
 

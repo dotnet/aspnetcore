@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "LESS Stil Sayfası",
+  "description": "LESS, CSS ile derlenen bir dildir",
+  "postActions/openInEditor/description": "Düzenleyicide styleSheet1.less dosyasını açar"
+}

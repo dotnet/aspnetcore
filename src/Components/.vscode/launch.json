@@ -25,23 +25,6 @@
       },
     },
     {
-      "name": "IgnitorSample",
-      "type": "coreclr",
-      "preLaunchTask": "IgnitorSample-build",
-      "request": "launch",
-      "program": "${workspaceFolder}/../../artifacts/bin/IgnitorSample/Debug/${env:TARGET}/IgnitorSample.dll",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "stopAtEntry": false,
-      "serverReadyAction": {
-        "action": "openExternally",
-        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-      },
-      "env": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-    },
-    {
       "name": "BasicTestApp",
       "type": "coreclr",
       "preLaunchTask": "BasicTestApp-build",

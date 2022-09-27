@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
@@ -79,7 +78,6 @@ public class DynamicObjectAdapter : IAdapter
 
         errorMessage = null;
         return true;
-
     }
 
     public virtual bool TryReplace(
@@ -94,7 +92,7 @@ public class DynamicObjectAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, property.GetType(), out var convertedValue))
+        if (!TryConvertValue(value, property.GetType(), contractResolver, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -126,7 +124,7 @@ public class DynamicObjectAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, property.GetType(), out var convertedValue))
+        if (!TryConvertValue(value, property.GetType(), contractResolver, out var convertedValue))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -238,7 +236,12 @@ public class DynamicObjectAdapter : IAdapter
 
     protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType);
+        return TryConvertValue(value, propertyType, null, out convertedValue);
+    }
+
+    protected virtual bool TryConvertValue(object value, Type propertyType, IContractResolver contractResolver, out object convertedValue)
+    {
+        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, contractResolver);
         if (!conversionResult.CanBeConverted)
         {
             convertedValue = null;

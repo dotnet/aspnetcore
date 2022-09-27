@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -36,6 +33,14 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     /// </summary>
     [Parameter] public string? Name { get; set; }
 
+    /// <summary>
+    /// Gets or sets the associated <see cref="ElementReference"/>.
+    /// <para>
+    /// May be <see langword="null"/> if accessed before the component is rendered.
+    /// </para>
+    /// </summary>
+    [DisallowNull] public ElementReference? Element { get; protected set; }
+
     [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
     /// <inheritdoc />
@@ -63,6 +68,7 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
         builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value));
         builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
+        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 }

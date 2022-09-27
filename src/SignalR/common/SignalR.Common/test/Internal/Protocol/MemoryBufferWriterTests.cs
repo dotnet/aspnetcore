@@ -282,7 +282,6 @@ public class MemoryBufferWriterTests
         }
     }
 
-
     [Fact]
     public void CopyToWithExactlyFullSegmentsWorks_CopyTo()
     {
@@ -329,7 +328,6 @@ public class MemoryBufferWriterTests
             }
         }
     }
-
 
     [Fact]
     public void CopyToWithSomeFullSegmentsWorks_CopyTo()

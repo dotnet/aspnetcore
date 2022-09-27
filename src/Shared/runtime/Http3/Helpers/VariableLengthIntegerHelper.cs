@@ -109,13 +109,13 @@ namespace System.Net.Http
                             InitialTwoByteLengthMask => 2,
                             InitialFourByteLengthMask => 4,
                             _ => 8 // LengthEightByte
-                    };
+                        };
 
                     Span<byte> temp = (stackalloc byte[8])[..length];
                     if (reader.TryCopyTo(temp))
                     {
                         bool result = TryRead(temp, out value, out int bytesRead);
-                        Debug.Assert(result == true);
+                        Debug.Assert(result);
                         Debug.Assert(bytesRead == length);
 
                         reader.Advance(bytesRead);
@@ -190,7 +190,7 @@ namespace System.Net.Http
         public static int WriteInteger(Span<byte> buffer, long longToEncode)
         {
             bool res = TryWrite(buffer, longToEncode, out int bytesWritten);
-            Debug.Assert(res == true);
+            Debug.Assert(res);
             return bytesWritten;
         }
 

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-
 namespace Microsoft.AspNetCore.Http.Features;
 
 /// <summary>
@@ -11,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 public class HttpRequestFeature : IHttpRequestFeature
 {
     /// <summary>
-    /// Initiaizes a new instance of <see cref="HttpRequestFeature"/>.
+    /// Initializes a new instance of <see cref="HttpRequestFeature"/>.
     /// </summary>
     public HttpRequestFeature()
     {

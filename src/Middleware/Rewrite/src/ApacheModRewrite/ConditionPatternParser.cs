@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 /// Parses the "CondPattern" portion of the RewriteCond.
 /// RewriteCond TestString CondPattern
 /// </summary>
-internal class ConditionPatternParser
+internal sealed class ConditionPatternParser
 {
     private const char Not = '!';
     private const char Dash = '-';
@@ -26,7 +25,7 @@ internal class ConditionPatternParser
     /// </summary>
     /// <param name="condition">The CondPattern portion of a mod_rewrite RewriteCond.</param>
     /// <returns>A new parsed condition.</returns>
-    public ParsedModRewriteInput ParseActionCondition(string condition)
+    public static ParsedModRewriteInput ParseActionCondition(string condition)
     {
         if (condition == null)
         {
@@ -216,8 +215,7 @@ internal class ConditionPatternParser
         if (results.ConditionType == ConditionType.IntComp)
         {
             // If the type is an integer, verify operand is actually an int
-            int res;
-            if (!int.TryParse(results.Operand, NumberStyles.None, CultureInfo.InvariantCulture, out res))
+            if (!int.TryParse(results.Operand, NumberStyles.None, CultureInfo.InvariantCulture, out _))
             {
                 return false;
             }

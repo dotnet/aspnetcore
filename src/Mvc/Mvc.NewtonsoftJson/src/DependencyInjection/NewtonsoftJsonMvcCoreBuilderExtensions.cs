@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -71,7 +70,6 @@ public static class NewtonsoftJsonMvcCoreBuilderExtensions
             ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, NewtonsoftJsonMvcOptionsSetup>());
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApiDescriptionProvider, JsonPatchOperationsArrayProvider>());
-
 
         var jsonResultExecutor = services.FirstOrDefault(f =>
            f.ServiceType == typeof(IActionResultExecutor<JsonResult>) &&

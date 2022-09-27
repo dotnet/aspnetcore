@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-
 namespace Microsoft.Net.Http.Headers;
 
 public class NameValueHeaderValueTest
@@ -610,7 +605,6 @@ public class NameValueHeaderValueTest
         Assert.Equal(expected, actual);
     }
 
-
     [Theory]
     [InlineData("\n")]
     [InlineData("\b")]
@@ -650,7 +644,6 @@ public class NameValueHeaderValueTest
 
         Assert.NotEqual(input, actual);
     }
-
 
     #region Helper methods
 

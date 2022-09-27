@@ -1,33 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -37,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
 public class RuntimePerformanceBenchmarkBase
 {
-    private class NullLoggerFactory : ILoggerFactory, ILogger
+    private sealed class NullLoggerFactory : ILoggerFactory, ILogger
     {
         void ILoggerFactory.AddProvider(ILoggerProvider provider) { }
         ILogger ILoggerFactory.CreateLogger(string categoryName) => this;
@@ -47,7 +36,7 @@ public class RuntimePerformanceBenchmarkBase
         void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
     }
 
-    private class BenchmarkViewExecutor : ViewExecutor
+    private sealed class BenchmarkViewExecutor : ViewExecutor
     {
         public BenchmarkViewExecutor(IOptions<MvcViewOptions> viewOptions, IHttpResponseStreamWriterFactory writerFactory, ICompositeViewEngine viewEngine, ITempDataDictionaryFactory tempDataFactory, DiagnosticListener diagnosticListener, IModelMetadataProvider modelMetadataProvider)
             : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
@@ -76,12 +65,10 @@ public class RuntimePerformanceBenchmarkBase
                 await ExecuteAsync(viewContext, contentType, statusCode);
                 await stringWriter.FlushAsync();
             }
-
         }
     }
 
-
-    private class BenchmarkHostingEnvironment : IWebHostEnvironment
+    private sealed class BenchmarkHostingEnvironment : IWebHostEnvironment
     {
         public BenchmarkHostingEnvironment()
         {

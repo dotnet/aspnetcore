@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationFailure
 {
+    private static readonly AuthorizationFailure _explicitFailure = new() { FailCalled = true };
+
     private AuthorizationFailure() { }
 
     /// <summary>
@@ -33,11 +35,7 @@ public class AuthorizationFailure
     /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail()"/> being called.
     /// </summary>
     /// <returns>The failure.</returns>
-    public static AuthorizationFailure ExplicitFail()
-        => new AuthorizationFailure
-        {
-            FailCalled = true
-        };
+    public static AuthorizationFailure ExplicitFail() => _explicitFailure;
 
     /// <summary>
     /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail(AuthorizationFailureReason)"/> being called.
@@ -57,5 +55,4 @@ public class AuthorizationFailure
     /// <returns>The failure.</returns>
     public static AuthorizationFailure Failed(IEnumerable<IAuthorizationRequirement> failed)
         => new AuthorizationFailure { FailedRequirements = failed };
-
 }

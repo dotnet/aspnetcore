@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -34,11 +31,11 @@ public class ModelPrefixSelectionIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // This will cause selection of the "parameter" prefix.
-                request.QueryString = new QueryString("?parameter=");
+            // This will cause selection of the "parameter" prefix.
+            request.QueryString = new QueryString("?parameter=");
 
-                // This value won't be used, because we select the "parameter" prefix.
-                request.Form = new FormCollection(new Dictionary<string, StringValues>()
+            // This value won't be used, because we select the "parameter" prefix.
+            request.Form = new FormCollection(new Dictionary<string, StringValues>()
             {
                     { "Name", "Billy" },
             });
@@ -83,11 +80,11 @@ public class ModelPrefixSelectionIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // This will cause selection of the "parameter" prefix.
-                request.QueryString = new QueryString("?parameter=");
+            // This will cause selection of the "parameter" prefix.
+            request.QueryString = new QueryString("?parameter=");
 
-                // This value won't be used, because we select the "parameter" prefix.
-                request.Form = new FormCollection(new Dictionary<string, StringValues>()
+            // This value won't be used, because we select the "parameter" prefix.
+            request.Form = new FormCollection(new Dictionary<string, StringValues>()
             {
                     { "Name", "Billy" },
             });
@@ -128,8 +125,8 @@ public class ModelPrefixSelectionIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // This can't be used because of [FromForm] on the property.
-                request.QueryString = new QueryString("?Name=");
+            // This can't be used because of [FromForm] on the property.
+            request.QueryString = new QueryString("?Name=");
         });
 
         var modelState = testContext.ModelState;
@@ -171,11 +168,11 @@ public class ModelPrefixSelectionIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // This will only match empty prefix, but can't be used because of [FromForm] on the property.
-                request.QueryString = new QueryString("?Name=");
+            // This will only match empty prefix, but can't be used because of [FromForm] on the property.
+            request.QueryString = new QueryString("?Name=");
 
-                // This value won't be used to select a prefix, because we're only looking at the query string.
-                request.Form = new FormCollection(new Dictionary<string, StringValues>()
+            // This value won't be used to select a prefix, because we're only looking at the query string.
+            request.Form = new FormCollection(new Dictionary<string, StringValues>()
             {
                     { "parameter", string.Empty },
             });
@@ -220,8 +217,8 @@ public class ModelPrefixSelectionIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // This value won't be used to select a prefix, because we're only looking at the query string.
-                request.Form = new FormCollection(new Dictionary<string, StringValues>()
+            // This value won't be used to select a prefix, because we're only looking at the query string.
+            request.Form = new FormCollection(new Dictionary<string, StringValues>()
             {
                     { "parameter", string.Empty },
             });

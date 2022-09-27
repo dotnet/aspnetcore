@@ -109,7 +109,7 @@ public class OpaqueUpgradeTests
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.NotNull(opaqueFeature);
             Assert.True(opaqueFeature.IsUpgradableRequest);
             await opaqueFeature.UpgradeAsync();
@@ -135,8 +135,8 @@ public class OpaqueUpgradeTests
             Assert.False(feature.IsReadOnly);
             Assert.Null(feature.MaxRequestBodySize); // GET/Upgrade requests don't actually have an entity body, so they can't set the limit.
 
-                httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.NotNull(opaqueFeature);
             Assert.True(opaqueFeature.IsUpgradableRequest);
             var stream = await opaqueFeature.UpgradeAsync();
@@ -169,7 +169,7 @@ public class OpaqueUpgradeTests
                 return Task.FromResult(0);
             }, null);
             httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.NotNull(opaqueFeature);
             Assert.True(opaqueFeature.IsUpgradableRequest);
             await opaqueFeature.UpgradeAsync();
@@ -216,7 +216,7 @@ public class OpaqueUpgradeTests
             try
             {
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 var opaqueStream = await opaqueFeature.UpgradeAsync();
@@ -298,6 +298,70 @@ public class OpaqueUpgradeTests
             request.Content = new StringContent("Hello World");
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+    public async Task OpaqueUpgrade_Http10_ThrowsIfUpgraded()
+    {
+        var upgrade = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (Utilities.CreateHttpServer(out string address, async httpContext =>
+        {
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            Assert.NotNull(opaqueFeature);
+            Assert.False(opaqueFeature.IsUpgradableRequest);
+            try
+            {
+                await opaqueFeature.UpgradeAsync();
+            }
+            catch (Exception ex)
+            {
+                upgrade.TrySetException(ex);
+                throw;
+            }
+            upgrade.TrySetResult();
+        }))
+        {
+            // Connect with a socket
+            Uri uri = new Uri(address);
+            TcpClient client = new TcpClient();
+
+            try
+            {
+                await client.ConnectAsync(uri.Host, uri.Port);
+                NetworkStream stream = client.GetStream();
+
+                // Send an HTTP GET request
+                StringBuilder builder = new StringBuilder();
+                builder.Append("GET");
+                builder.Append(" ");
+                builder.Append(uri.PathAndQuery);
+                builder.Append(" HTTP/1.0");
+                builder.AppendLine();
+
+                builder.Append("Host: ");
+                builder.Append(uri.Host);
+                builder.Append(':');
+                builder.Append(uri.Port);
+                builder.AppendLine();
+
+                builder.AppendLine();
+                var requestBytes = Encoding.ASCII.GetBytes(builder.ToString());
+                await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => upgrade.Task);
+                Assert.Equal("Upgrade requires HTTP/1.1.", ex.Message);
+
+                // Read the response headers, fail if it's not a 101
+                ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ParseResponseAsync(stream));
+                Assert.EndsWith("HTTP/1.1 500 Internal Server Error", ex.Message);
+            }
+            catch (Exception)
+            {
+                ((IDisposable)client).Dispose();
+                throw;
+            }
         }
     }
 

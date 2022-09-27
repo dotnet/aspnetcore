@@ -1,11 +1,12 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /* eslint-disable no-console */
 
 import { Logger, LogLevel } from './Logger';
 
 export class NullLogger implements Logger {
   public static instance: Logger = new NullLogger();
-
-  private constructor() { }
 
   public log(_logLevel: LogLevel, _message: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
   }

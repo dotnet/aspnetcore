@@ -1,17 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
 
@@ -52,24 +47,23 @@ public class HostingApplicationDiagnosticsTests
 
         diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair =>
         {
-                // This should not fire
-                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start")
+            // This should not fire
+            if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start")
             {
                 startFired = true;
             }
 
-                // This should not fire
-                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop")
+            // This should not fire
+            if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop")
             {
                 stopFired = true;
             }
         }),
         (s, o, arg3) =>
         {
-                // The events are off
-                return false;
+            // The events are off
+            return false;
         });
-
 
         // Act
         var context = hostingApplication.CreateContext(features);
@@ -362,7 +356,6 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value4");
     }
 
-
     [Fact]
     public void ActivityBaggagePreservesItemsOrder()
     {
@@ -466,6 +459,50 @@ public class HostingApplicationDiagnosticsTests
     }
 
     [Fact]
+    public void SamplersReceiveCorrectParentAndTraceIds()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource);
+        var parentId = "";
+        var parentSpanId = "";
+        var traceId = "";
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) => ComputeActivitySamplingResult(ref options),
+            ActivityStarted = activity =>
+            {
+                parentId = activity.ParentId;
+                parentSpanId = activity.ParentSpanId.ToHexString();
+                traceId = activity.TraceId.ToHexString();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+                {
+                    {"traceparent", "00-35aae61e3e99044eb5ea5007f2cd159b-40a8bd87c078cb4c-00"},
+                }
+        });
+
+        hostingApplication.CreateContext(features);
+        Assert.Equal("00-35aae61e3e99044eb5ea5007f2cd159b-40a8bd87c078cb4c-00", parentId);
+        Assert.Equal("40a8bd87c078cb4c", parentSpanId);
+        Assert.Equal("35aae61e3e99044eb5ea5007f2cd159b", traceId);
+
+        static ActivitySamplingResult ComputeActivitySamplingResult(ref ActivityCreationOptions<ActivityContext> options)
+        {
+            Assert.Equal("35aae61e3e99044eb5ea5007f2cd159b", options.TraceId.ToHexString());
+            Assert.Equal("40a8bd87c078cb4c", options.Parent.SpanId.ToHexString());
+
+            return ActivitySamplingResult.AllDataAndRecorded;
+        }
+    }
+
+    [Fact]
     public void ActivityOnImportHookIsCalled()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -524,7 +561,6 @@ public class HostingApplicationDiagnosticsTests
         hostingApplication.CreateContext(features);
         Assert.Equal("0123456789abcdef", parentSpanId);
     }
-
 
     private static void AssertProperty<T>(object o, string name)
     {

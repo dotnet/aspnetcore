@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { AccessTokenHttpClient } from "../src/AccessTokenHttpClient";
 import { HttpResponse } from "../src/HttpClient";
 import { TransferFormat } from "../src/ITransport";
 import { LongPollingTransport } from "../src/LongPollingTransport";
@@ -40,7 +41,7 @@ describe("LongPollingTransport", () => {
                     }
                 })
                 .on("DELETE", () => new HttpResponse(202));
-            const transport = new LongPollingTransport(client, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
+            const transport = new LongPollingTransport(client, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://example.com", TransferFormat.Text);
             const stopPromise = transport.stop();
@@ -64,7 +65,7 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(204);
                     }
                 });
-            const transport = new LongPollingTransport(client, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
+            const transport = new LongPollingTransport(client, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             const stopPromise = makeClosedPromise(transport);
 
@@ -97,7 +98,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
+            const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -146,7 +147,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
+            const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -203,7 +204,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, { logMessageContent: false, withCredentials: true, headers });
+            const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true, headers });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -251,7 +252,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger,
+            const transport = new LongPollingTransport(httpClient, logger,
                 { logMessageContent: false, withCredentials: true, headers: {}, timeout: 123 });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
@@ -266,6 +267,109 @@ describe("LongPollingTransport", () => {
 
             // Wait for stop to complete
             await stopPromise;
+        });
+    });
+
+    it("removes Authorization header when accessTokenFactory returns empty", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            let secondPoll = false;
+            let firstAuthHeader = "";
+            let secondAuthHeader = "";
+            let deleteAuthHeader = "";
+            const accessTokenFactory = () => {
+                if (firstAuthHeader) {
+                    return "";
+                }
+                return "value";
+            };
+            const pollingPromiseSource = new PromiseSource();
+            const readyToStopPromiseSource = new PromiseSource();
+            const httpClient = new AccessTokenHttpClient(new TestHttpClient()
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        secondPoll = true;
+                        firstAuthHeader = r.headers!.Authorization;
+                        return new HttpResponse(200);
+                    } else if (secondPoll) {
+                        secondPoll = false;
+                        // force a retry so the access token factory is called again
+                        return new HttpResponse(401);
+                    } else {
+                        readyToStopPromiseSource.resolve();
+                        secondAuthHeader = r.headers!.Authorization;
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("DELETE", async (r) => {
+                    deleteAuthHeader = r.headers!.Authorization;
+                    return new HttpResponse(202);
+                }), accessTokenFactory);
+
+            const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true, headers: {} });
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            await readyToStopPromiseSource.promise;
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
+
+            expect(firstAuthHeader).toEqual("Bearer value");
+            expect(deleteAuthHeader).toBeUndefined();
+            expect(secondAuthHeader).toBeUndefined();
+        });
+    });
+
+    it("keeps user provided Authorization header when no accessTokenFactory", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            let firstAuthHeader = "";
+            let secondAuthHeader = "";
+            let deleteAuthHeader = "";
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new AccessTokenHttpClient(new TestHttpClient()
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        firstAuthHeader = r.headers!.Authorization;
+                        return new HttpResponse(200);
+                    } else {
+                        secondAuthHeader = r.headers!.Authorization;
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("DELETE", async (r) => {
+                    deleteAuthHeader = r.headers!.Authorization;
+                    return new HttpResponse(202);
+                }), undefined);
+
+            const transport = new LongPollingTransport(httpClient, logger, { logMessageContent: false, withCredentials: true,
+                headers: { Authorization: "Basic test" } });
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
+
+            expect(firstAuthHeader).toEqual("Basic test");
+            expect(deleteAuthHeader).toEqual("Basic test");
+            expect(secondAuthHeader).toEqual("Basic test");
         });
     });
 });

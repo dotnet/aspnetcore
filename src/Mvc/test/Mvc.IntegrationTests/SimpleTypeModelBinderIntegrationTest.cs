@@ -1,18 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -419,9 +413,9 @@ public class SimpleTypeModelBinderIntegrationTest
             .ForType(parameterType)
             .BindingDetails(binding =>
             {
-                    // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
-                    (value) => $"Hmm, '{ value }' is not a valid value.");
+                // A real details provider could customize message based on BindingMetadataProviderContext.
+                binding.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
+                (value) => $"Hmm, '{ value }' is not a valid value.");
             });
 
         var testContext = ModelBindingTestHelper.GetTestContext(
@@ -522,9 +516,9 @@ public class SimpleTypeModelBinderIntegrationTest
             .ForType(parameterType)
             .BindingDetails(binding =>
             {
-                    // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
-                    value => $"Hurts when '{ value }' is provided.");
+                // A real details provider could customize message based on BindingMetadataProviderContext.
+                binding.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+                value => $"Hurts when '{ value }' is provided.");
             });
 
         var testContext = ModelBindingTestHelper.GetTestContext(

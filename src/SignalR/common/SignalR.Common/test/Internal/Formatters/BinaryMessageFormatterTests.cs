@@ -148,7 +148,6 @@ public partial class BinaryMessageFormatterTests
         yield return new[] { CreatePayload(0xc0de) };
     }
 
-
     private static byte[] CreatePayload(int size) =>
         Enumerable.Range(0, size).Select(n => (byte)(n & 0xff)).ToArray();
 }

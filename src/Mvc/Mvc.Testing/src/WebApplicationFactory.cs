@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
@@ -607,7 +603,7 @@ public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable 
         GC.SuppressFinalize(this);
     }
 
-    private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
+    private sealed class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
     {
         private readonly Func<IWebHostBuilder, TestServer> _createServer;
         private readonly Func<IHostBuilder, IHost> _createHost;

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal;
 
@@ -20,7 +18,7 @@ public class TypedClientBuilderBenchmark
 
     public interface ITestClient { }
 
-    private class DummyProxy : IClientProxy
+    private sealed class DummyProxy : IClientProxy
     {
         public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {

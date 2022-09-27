@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -13,7 +11,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -22,7 +19,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -526,8 +522,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     // Not for us?
                     return HandleRequestResult.SkipHandler();
                 }
-                return HandleRequestResult.Fail("An OpenID Connect response cannot contain an " +
-                        "identity token or an access token when using response_mode=query");
+                return HandleRequestResults.UnexpectedParams;
             }
         }
         // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
@@ -552,7 +547,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 // Not for us?
                 return HandleRequestResult.SkipHandler();
             }
-            return HandleRequestResult.Fail("No message.");
+            return HandleRequestResults.NoMessage;
         }
 
         AuthenticationProperties? properties = null;

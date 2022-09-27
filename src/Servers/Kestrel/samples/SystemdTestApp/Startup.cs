@@ -53,10 +53,10 @@ public class Startup
 
                         options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                         {
-                                // Uncomment the following to enable Nagle's algorithm for this endpoint.
-                                //listenOptions.NoDelay = false;
+                            // Uncomment the following to enable Nagle's algorithm for this endpoint.
+                            //listenOptions.NoDelay = false;
 
-                                listenOptions.UseConnectionLogging();
+                            listenOptions.UseConnectionLogging();
                         });
 
                         options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
@@ -67,9 +67,9 @@ public class Startup
 
                         options.UseSystemd();
 
-                            // The following section should be used to demo sockets
-                            //options.ListenUnixSocket("/tmp/kestrel-test.sock");
-                        })
+                        // The following section should be used to demo sockets
+                        //options.ListenUnixSocket("/tmp/kestrel-test.sock");
+                    })
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .UseStartup<Startup>();
             })

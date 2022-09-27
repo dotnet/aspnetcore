@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;
 
@@ -583,8 +579,8 @@ public class WebSocketMiddlewareTests : LoggedTest
             Assert.True(context.WebSockets.IsWebSocketRequest);
             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
-                // Use ReferenceEquals and test against the constants
-                Assert.Same(HeaderNames.Upgrade, context.Request.Headers.Connection.ToString());
+            // Use ReferenceEquals and test against the constants
+            Assert.Same(HeaderNames.Upgrade, context.Request.Headers.Connection.ToString());
             Assert.Same(Constants.Headers.UpgradeWebSocket, context.Request.Headers.Upgrade.ToString());
             Assert.Same(Constants.Headers.SupportedVersion, context.Request.Headers.SecWebSocketVersion.ToString());
         }))

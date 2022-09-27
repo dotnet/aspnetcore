@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -143,7 +141,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
         return ForProperty(typeof(TContainer), propertyName);
     }
 
-    private class TestModelMetadataDetailsProvider :
+    private sealed class TestModelMetadataDetailsProvider :
         IBindingMetadataProvider,
         IDisplayMetadataProvider,
         IValidationMetadataProvider
@@ -184,7 +182,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
         IMetadataBuilder ValidationDetails(Action<ValidationMetadata> action);
     }
 
-    private class MetadataBuilder : IMetadataBuilder
+    private sealed class MetadataBuilder : IMetadataBuilder
     {
         private readonly List<Action<BindingMetadata>> _bindingActions = new List<Action<BindingMetadata>>();
         private readonly List<Action<DisplayMetadata>> _displayActions = new List<Action<DisplayMetadata>>();

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder.Extensions;
@@ -64,7 +62,7 @@ public class MapMiddleware
         return _next(context);
     }
 
-    private async Task InvokeCore(HttpContext context, string matchedPath, string remainingPath)
+    private async Task InvokeCore(HttpContext context, PathString matchedPath, PathString remainingPath)
     {
         var path = context.Request.Path;
         var pathBase = context.Request.PathBase;

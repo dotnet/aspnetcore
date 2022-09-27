@@ -1,14 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-internal class ApiParameterContext
+internal sealed class ApiParameterContext
 {
     public ApiParameterContext(
         IModelMetadataProvider metadataProvider,

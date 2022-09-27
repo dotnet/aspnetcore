@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -13,7 +11,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
@@ -85,7 +82,7 @@ internal static class ModelBindingHelper
         IModelBinderFactory modelBinderFactory,
         IValueProvider valueProvider,
         IObjectModelValidator objectModelValidator,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (includeExpressions == null)
@@ -366,7 +363,7 @@ internal static class ModelBindingHelper
     /// <param name="expressions">Expressions identifying the properties to allow for binding.</param>
     /// <returns>An expression which can be used with <see cref="IPropertyFilterProvider"/>.</returns>
     public static Expression<Func<ModelMetadata, bool>> GetPropertyFilterExpression<TModel>(
-        Expression<Func<TModel, object>>[] expressions)
+        Expression<Func<TModel, object?>>[] expressions)
     {
         if (expressions.Length == 0)
         {
@@ -388,7 +385,7 @@ internal static class ModelBindingHelper
     }
 
     private static Expression<Func<ModelMetadata, bool>> GetPredicateExpression<TModel>(
-        Expression<Func<TModel, object>> expression)
+        Expression<Func<TModel, object?>> expression)
     {
         var propertyName = GetPropertyName(expression.Body);
 

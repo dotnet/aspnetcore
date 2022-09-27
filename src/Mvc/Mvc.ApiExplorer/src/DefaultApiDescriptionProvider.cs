@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -11,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
@@ -116,8 +115,6 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             apiDescription.ParameterDescriptions.Add(parameter);
         }
 
-        var requestMetadataAttributes = GetRequestMetadataAttributes(action);
-
         var apiResponseTypes = _responseTypeProvider.GetApiResponseTypes(action);
         foreach (var apiResponseType in apiResponseTypes)
         {
@@ -128,7 +125,11 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         // could end up with duplicate data.
         if (apiDescription.ParameterDescriptions.Count > 0)
         {
-            var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes);
+            // Get the most significant accepts metadata
+            var acceptsMetadata = action.EndpointMetadata.OfType<IAcceptsMetadata>().LastOrDefault();
+            var requestMetadataAttributes = GetRequestMetadataAttributes(action);
+
+            var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes, acceptsMetadata);
             foreach (var parameter in apiDescription.ParameterDescriptions)
             {
                 if (parameter.Source == BindingSource.Body)
@@ -242,11 +243,13 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             routeParameters.Add(routeParameter.Name!, CreateRouteInfo(routeParameter));
         }
 
-        foreach (var parameter in context.Results)
+        for (var i = context.Results.Count - 1; i >= 0; i--)
         {
+            var parameter = context.Results[i];
+
             if (parameter.Source == BindingSource.Path ||
-                parameter.Source == BindingSource.ModelBinding ||
-                parameter.Source == BindingSource.Custom)
+               parameter.Source == BindingSource.ModelBinding ||
+               parameter.Source == BindingSource.Custom)
             {
                 if (routeParameters.TryGetValue(parameter.Name, out var routeInfo))
                 {
@@ -259,6 +262,20 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         // If we didn't see any information about the parameter, but we have
                         // a route parameter that matches, let's switch it to path.
                         parameter.Source = BindingSource.Path;
+                    }
+                }
+                else
+                {
+                    if (parameter.Source == BindingSource.Path &&
+                        parameter.ModelMetadata is DefaultModelMetadata defaultModelMetadata &&
+                        !defaultModelMetadata.Attributes.Attributes.OfType<IFromRouteMetadata>().Any())
+                    {
+                        // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
+                        // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
+                        // probably because another route to this action contains it as route parameter and
+                        // will be removed from the API description
+                        // https://github.com/dotnet/aspnetcore/issues/26234
+                        context.Results.RemoveAt(i);
                     }
                 }
             }
@@ -434,11 +451,23 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         return results;
     }
 
-    internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes)
+    internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes, IAcceptsMetadata? acceptsMetadata)
     {
+        var contentTypes = new MediaTypeCollection();
+
+        // Walking the content types from the accepts metadata first
+        // to allow any RequestMetadataProvider to see or override any accepts metadata
+        // keeping the current behavior.
+        if (acceptsMetadata != null)
+        {
+            foreach (var contentType in acceptsMetadata.ContentTypes)
+            {
+                contentTypes.Add(contentType);
+            }
+        }
+
         // Walk through all 'filter' attributes in order, and allow each one to see or override
         // the results of the previous ones. This is similar to the execution path for content-negotiation.
-        var contentTypes = new MediaTypeCollection();
         if (requestMetadataAttributes != null)
         {
             foreach (var metadataAttribute in requestMetadataAttributes)
@@ -480,7 +509,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         return endpointGroupName?.EndpointGroupName ?? extensionData.GroupName;
     }
 
-    private class ApiParameterDescriptionContext
+    private sealed class ApiParameterDescriptionContext
     {
         public ModelMetadata ModelMetadata { get; }
 
@@ -506,7 +535,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
     }
 
-    private class PseudoModelBindingVisitor
+    private sealed class PseudoModelBindingVisitor
     {
         public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)
         {
@@ -657,7 +686,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             }
         }
 
-        private class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
+        private sealed class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
         {
             public bool Equals(PropertyKey x, PropertyKey y)
             {

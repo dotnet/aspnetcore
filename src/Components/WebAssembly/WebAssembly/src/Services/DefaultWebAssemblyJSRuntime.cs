@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -46,9 +41,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
         {
-                // This is not expected to throw, as it takes care of converting any unhandled user code
-                // exceptions into a failure on the Task that was returned when calling InvokeAsync.
-                DotNetDispatcher.EndInvokeJS(Instance, argsJson);
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the Task that was returned when calling InvokeAsync.
+            DotNetDispatcher.EndInvokeJS(Instance, argsJson);
         });
     }
 
@@ -74,9 +69,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
         WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
         {
-                // This is not expected to throw, as it takes care of converting any unhandled user code
-                // exceptions into a failure on the JS Promise object.
-                DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the JS Promise object.
+            DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
         });
     }
 
@@ -86,12 +81,14 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     /// Notifies .NET of an array that's available for transfer from JS to .NET
     ///
     /// Ideally that byte array would be transferred directly as a parameter on this
-    /// call, however that's not currently possible due to: https://github.com/dotnet/runtime/issues/53378
+    /// call, however that's not currently possible due to: <see href="https://github.com/dotnet/runtime/issues/53378"/>.
     /// </summary>
     /// <param name="id">Id of the byte array</param>
     public static void NotifyByteArrayAvailable(int id)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
+#pragma warning restore CS0618 // Type or member is obsolete
 
         DotNetDispatcher.ReceiveByteArray(Instance, id, data);
     }

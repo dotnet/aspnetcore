@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 
@@ -34,10 +33,10 @@ public class ExternalLoginInfo : UserLoginInfo
     /// <summary>
     /// The <see cref="AuthenticationToken"/>s associated with this login.
     /// </summary>
-    public IEnumerable<AuthenticationToken> AuthenticationTokens { get; set; }
+    public IEnumerable<AuthenticationToken>? AuthenticationTokens { get; set; }
 
     /// <summary>
     /// The <see cref="Authentication.AuthenticationProperties"/> associated with this login.
     /// </summary>
-    public AuthenticationProperties AuthenticationProperties { get; set; }
+    public AuthenticationProperties? AuthenticationProperties { get; set; }
 }

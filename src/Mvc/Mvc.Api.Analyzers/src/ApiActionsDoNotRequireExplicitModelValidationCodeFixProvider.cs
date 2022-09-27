@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -40,7 +39,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckCodeFixProvider :
         return Task.CompletedTask;
     }
 
-    private class MyCodeAction : CodeAction
+    private sealed class MyCodeAction : CodeAction
     {
         private readonly Document _document;
         private readonly TextSpan _ifBlockSpan;

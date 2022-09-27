@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <NoWarn>$(NoWarn);IDE0161</NoWarn>
+    <NoWarn>$(NoWarn);IDE0011;IDE0055;IDE0161</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,14 +3,13 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Web;
 
-internal class WebEventData
+internal sealed class WebEventData
 {
     // This class represents the second half of parsing incoming event data,
     // once the event ID (and possibly the type of the eventArgs) becomes known.

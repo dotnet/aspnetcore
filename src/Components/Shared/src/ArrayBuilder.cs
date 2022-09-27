@@ -3,14 +3,11 @@
 
 #nullable disable warnings
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-#if IGNITOR
-namespace Ignitor;
-#elif BLAZOR_WEBVIEW
+#if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
 #elif COMPONENTS_SERVER
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
@@ -29,7 +26,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// components can be long-lived and re-render frequently, with the rendered size
 /// varying dramatically depending on the user's navigation in the app.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class ArrayBuilder<T> : IDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
     // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
     protected T[] _items;
@@ -79,10 +78,13 @@ internal class ArrayBuilder<T> : IDisposable
     }
 
     internal int Append(T[] source, int startIndex, int length)
+        => Append(source.AsSpan(startIndex, length));
+
+    internal int Append(ReadOnlySpan<T> source)
     {
         // Expand storage if needed. Using same doubling approach as would
         // be used if you inserted the items one-by-one.
-        var requiredCapacity = _itemsInUse + length;
+        var requiredCapacity = _itemsInUse + source.Length;
         if (_items.Length < requiredCapacity)
         {
             var candidateCapacity = Math.Max(_items.Length * 2, _minCapacity);
@@ -94,9 +96,9 @@ internal class ArrayBuilder<T> : IDisposable
             GrowBuffer(candidateCapacity);
         }
 
-        Array.Copy(source, startIndex, _items, _itemsInUse, length);
+        source.CopyTo(_items.AsSpan(_itemsInUse));
         var startIndexOfAppendedItems = _itemsInUse;
-        _itemsInUse += length;
+        _itemsInUse += source.Length;
         return startIndexOfAppendedItems;
     }
 
@@ -172,10 +174,7 @@ internal class ArrayBuilder<T> : IDisposable
         // If someone tries to do something that would require non-zero storage then
         // this is a use-after-free. Throwing here is an easy way to prevent that without
         // introducing overhead to every method.
-        if (_disposed)
-        {
-            ThrowObjectDisposedException();
-        }
+        ObjectDisposedException.ThrowIf(_disposed, null);
 
         var newCapacity = Math.Max(desiredCapacity, _minCapacity);
         Debug.Assert(newCapacity > _items.Length);
@@ -213,10 +212,5 @@ internal class ArrayBuilder<T> : IDisposable
     private static void ThrowIndexOutOfBoundsException()
     {
         throw new ArgumentOutOfRangeException("index");
-    }
-
-    private static void ThrowObjectDisposedException()
-    {
-        throw new ObjectDisposedException(objectName: null);
     }
 }

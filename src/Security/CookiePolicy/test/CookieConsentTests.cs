@@ -1,18 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.CookiePolicy.Test;
 
@@ -247,6 +244,7 @@ public class CookieConsentTests
                 Assert.Equal(Http.SameSiteMode.Strict, context.CookieOptions.SameSite);
                 context.CookieName += "1";
                 context.CookieValue += "1";
+                context.CookieOptions.Extensions.Add("extension");
             };
         },
         requestContext => { },
@@ -273,6 +271,7 @@ public class CookieConsentTests
         Assert.Equal("yes1", consentCookie.Value);
         Assert.Equal(Net.Http.Headers.SameSiteMode.Strict, consentCookie.SameSite);
         Assert.NotNull(consentCookie.Expires);
+        Assert.Contains("extension", consentCookie.Extensions);
     }
 
     [Fact]
@@ -479,8 +478,8 @@ public class CookieConsentTests
             Assert.False(feature.HasConsent);
             Assert.False(feature.CanTrack);
 
-                // Doesn't throw the normal InvalidOperationException because the cookie is never written
-                context.Response.Cookies.Append("Test", "Value2");
+            // Doesn't throw the normal InvalidOperationException because the cookie is never written
+            context.Response.Cookies.Append("Test", "Value2");
 
             await context.Response.WriteAsync("Withdrawn.");
         });
@@ -640,6 +639,64 @@ public class CookieConsentTests
         Assert.Equal(consentCookie.Value, manualCookie.Value);
         Assert.Equal(consentCookie.SameSite, manualCookie.SameSite);
         Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
+    }
+
+    [Fact]
+    public async Task CreateConsentCookieMatchesGrantConsentCookieWhenCookieValueIsCustom()
+    {
+        var httpContext = await RunTestAsync(options =>
+        {
+            options.CheckConsentNeeded = context => true;
+            options.ConsentCookieValue = "true";
+        },
+        requestContext => { },
+        context =>
+        {
+            var feature = context.Features.Get<ITrackingConsentFeature>();
+            Assert.True(feature.IsConsentNeeded);
+            Assert.False(feature.HasConsent);
+            Assert.False(feature.CanTrack);
+
+            feature.GrantConsent();
+
+            Assert.True(feature.IsConsentNeeded);
+            Assert.True(feature.HasConsent);
+            Assert.True(feature.CanTrack);
+
+            var cookie = feature.CreateConsentCookie();
+            context.Response.Headers["ManualCookie"] = cookie;
+
+            return Task.CompletedTask;
+        });
+
+        var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
+        Assert.Equal(1, cookies.Count);
+        var consentCookie = cookies[0];
+        Assert.Equal(".AspNet.Consent", consentCookie.Name);
+        Assert.Equal("true", consentCookie.Value);
+        Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, consentCookie.SameSite);
+        Assert.NotNull(consentCookie.Expires);
+
+        cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers["ManualCookie"]);
+        Assert.Equal(1, cookies.Count);
+        var manualCookie = cookies[0];
+        Assert.Equal(consentCookie.Name, manualCookie.Name);
+        Assert.Equal(consentCookie.Value, manualCookie.Value);
+        Assert.Equal(consentCookie.SameSite, manualCookie.SameSite);
+        Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void CreateCookiePolicyOptionsWithEmptyConsentCookieValueThrows(string value)
+    {
+        var options = new CookiePolicyOptions();
+
+        ExceptionAssert.ThrowsArgument(
+            () => options.ConsentCookieValue = value,
+            "value",
+            "Value cannot be null or empty string.");
     }
 
     private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)

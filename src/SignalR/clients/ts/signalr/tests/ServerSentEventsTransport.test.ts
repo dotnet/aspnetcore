@@ -4,7 +4,7 @@
 import { MessageHeaders } from "../src/IHubProtocol";
 import { TransferFormat } from "../src/ITransport";
 
-import { HttpClient, HttpRequest } from "../src/HttpClient";
+import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient";
 import { ILogger } from "../src/ILogger";
 import { ServerSentEventsTransport } from "../src/ServerSentEventsTransport";
 import { getUserAgentHeader } from "../src/Utils";
@@ -13,6 +13,7 @@ import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 import { TestHttpClient } from "./TestHttpClient";
 import { registerUnhandledRejectionHandler } from "./Utils";
 import { IHttpConnectionOptions } from "signalr/src/IHttpConnectionOptions";
+import { AccessTokenHttpClient } from "../src/AccessTokenHttpClient";
 
 registerUnhandledRejectionHandler();
 
@@ -87,10 +88,10 @@ describe("ServerSentEventsTransport", () => {
     it("sets Authorization header on sends", async () => {
         await VerifyLogger.run(async (logger) => {
             let request: HttpRequest;
-            const httpClient = new TestHttpClient().on((r) => {
+            const httpClient = new AccessTokenHttpClient(new TestHttpClient().on((r) => {
                 request = r;
                 return "";
-            });
+            }), () => "secretToken");
 
             const sse = await createAndStartSSE(logger, "http://example.com", () => "secretToken", { httpClient });
 
@@ -98,6 +99,35 @@ describe("ServerSentEventsTransport", () => {
 
             expect(request!.headers!.Authorization).toBe("Bearer secretToken");
             expect(request!.url).toBe("http://example.com");
+        });
+    });
+
+    it("retries 401 requests on sends", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request: HttpRequest;
+            let requestCount = 0;
+            const httpClient = new AccessTokenHttpClient(new TestHttpClient().on((r) => {
+                requestCount++;
+                if (requestCount === 2) {
+                    return new HttpResponse(401);
+                }
+                request = r;
+                return "";
+            }), () => "secretToken" + requestCount);
+
+            // AccessTokenHttpClient assumes negotiate was called which would have called accessTokenFactory already
+            // It also assumes the request shouldn't be retried if the factory was called, so we need to make a "negotiate" call
+            // to test the retry behavior for send requests
+            await httpClient.post("");
+            expect(request!.headers!.Authorization).toBe("Bearer secretToken0");
+
+            const sse = await createAndStartSSE(logger, "http://example.com", () => "secretToken", { httpClient });
+
+            await sse.send("");
+
+            expect(request!.headers!.Authorization).toBe("Bearer secretToken2");
+            expect(request!.url).toBe("http://example.com");
+            expect(requestCount).toEqual(3);
         });
     });
 
@@ -267,7 +297,12 @@ describe("ServerSentEventsTransport", () => {
 });
 
 async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), options?: IHttpConnectionOptions): Promise<ServerSentEventsTransport> {
-    const sse = new ServerSentEventsTransport(options?.httpClient || new TestHttpClient(), accessTokenFactory, logger,
+    let token;
+    // SSE assumes (correctly) that negotiate will already create the token we want to use on connection startup, so simulate that here when creating the SSE transport
+    if (accessTokenFactory) {
+        token = await accessTokenFactory();
+    }
+    const sse = new ServerSentEventsTransport(options?.httpClient || new TestHttpClient(), token, logger,
         { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, timeout: 10205, ...options });
 
     const connectPromise = sse.connect(url || "http://example.com", TransferFormat.Text);

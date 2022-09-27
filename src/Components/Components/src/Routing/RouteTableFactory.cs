@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -32,6 +31,7 @@ internal static class RouteTableFactory
 
     public static void ClearCaches() => Cache.Clear();
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
     private static List<Type> GetRouteableComponents(RouteKey routeKey)
     {
         var routeableComponents = new List<Type>();
@@ -44,7 +44,11 @@ internal static class RouteTableFactory
         {
             foreach (var assembly in routeKey.AdditionalAssemblies)
             {
-                GetRouteableComponents(routeableComponents, assembly);
+                // We don't need process the assembly if it's the app assembly.
+                if (assembly != routeKey.AppAssembly)
+                {
+                    GetRouteableComponents(routeableComponents, assembly);
+                }
             }
         }
 
@@ -84,6 +88,7 @@ internal static class RouteTableFactory
         return Create(templatesByHandler);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
     internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler)
     {
         var routes = new List<RouteEntry>();

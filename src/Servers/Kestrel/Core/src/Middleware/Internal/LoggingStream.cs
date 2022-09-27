@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -80,28 +76,40 @@ internal sealed class LoggingStream : Stream
     public override int Read(byte[] buffer, int offset, int count)
     {
         int read = _inner.Read(buffer, offset, count);
-        Log("Read", new ReadOnlySpan<byte>(buffer, offset, read));
+        if (count > 0)
+        {
+            Log("Read", new ReadOnlySpan<byte>(buffer, offset, read));
+        }
         return read;
     }
 
     public override int Read(Span<byte> destination)
     {
         int read = _inner.Read(destination);
-        Log("Read", destination.Slice(0, read));
+        if (!destination.IsEmpty)
+        {
+            Log("Read", destination.Slice(0, read));
+        }
         return read;
     }
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         int read = await _inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
-        Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));
+        if (count > 0)
+        {
+            Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));
+        }
         return read;
     }
 
     public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
     {
         int read = await _inner.ReadAsync(destination, cancellationToken);
-        Log("ReadAsync", destination.Span.Slice(0, read));
+        if (!destination.IsEmpty)
+        {
+            Log("ReadAsync", destination.Span.Slice(0, read));
+        }
         return read;
     }
 

@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +49,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="startupAssemblyName">The name of the assembly containing the startup type.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    [RequiresUnreferencedCode("Types and members the loaded assembly depends on might be removed.")]
+    [RequiresUnreferencedCode("This API searches the specified assembly for a startup type using reflection. The startup type may be trimmed. Please use UseStartup<TStartup>() to specify the startup type explicitly.")]
     public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, string startupAssemblyName)
     {
         if (startupAssemblyName == null)
@@ -79,9 +77,9 @@ public static class HostingAbstractionsWebHostBuilderExtensions
 
         return hostBuilder.ConfigureServices(services =>
         {
-                // It would be nicer if this was transient but we need to pass in the
-                // factory instance directly
-                services.AddSingleton(server);
+            // It would be nicer if this was transient but we need to pass in the
+            // factory instance directly
+            services.AddSingleton(server);
         });
     }
 

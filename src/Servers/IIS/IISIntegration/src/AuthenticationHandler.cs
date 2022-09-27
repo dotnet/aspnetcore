@@ -3,13 +3,12 @@
 
 using System.Diagnostics;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
-internal class AuthenticationHandler : IAuthenticationHandler
+internal sealed class AuthenticationHandler : IAuthenticationHandler
 {
     private WindowsPrincipal? _user;
     private HttpContext? _context;

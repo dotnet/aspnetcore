@@ -10,7 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class RemoteRenderer : WebRenderer
+#pragma warning restore CA1852 // Seal internal types
 {
     private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -273,9 +275,9 @@ internal partial class RemoteRenderer : WebRenderer
             // We return the task in here, but the caller doesn't await it.
             return Dispatcher.InvokeAsync(() =>
             {
-                    // Now we're on the sync context, check again whether we got disposed since this
-                    // work item was queued. If so there's nothing to do.
-                    if (!_disposing)
+                // Now we're on the sync context, check again whether we got disposed since this
+                // work item was queued. If so there's nothing to do.
+                if (!_disposing)
                 {
                     ProcessPendingRender();
                 }

@@ -14,7 +14,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void Read_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var detail = "Product not found";
@@ -59,7 +59,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void Read_WithSomeMissingValues_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
@@ -100,7 +100,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void ReadUsingJsonSerializerWorks()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
@@ -137,9 +137,9 @@ public class ValidationProblemDetailsJsonConverterTest
     [Fact]
     public void WriteWorks()
     {
-        var problemDetails = new ValidationProblemDetails(new Dictionary<string, string[]>() { { "Property",  new string[]{ "error0" } }})
+        var problemDetails = new ValidationProblemDetails(new Dictionary<string, string[]>() { { "Property", new string[] { "error0" } } })
         {
-            Title  = "One or more validation errors occurred.",
+            Title = "One or more validation errors occurred.",
             Status = 400
         };
 
@@ -170,7 +170,7 @@ public class ValidationProblemDetailsJsonConverterTest
         };
         var problemDetails = new ValidationProblemDetails(errors)
         {
-            Title  = "One or more validation errors occurred.",
+            Title = "One or more validation errors occurred.",
             Status = 400
         };
 

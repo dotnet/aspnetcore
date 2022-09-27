@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 
@@ -24,7 +23,7 @@ public class EmptyModelMetadataProvider : DefaultModelMetadataProvider
     {
     }
 
-    private class OptionsAccessor : IOptions<MvcOptions>
+    private sealed class OptionsAccessor : IOptions<MvcOptions>
     {
         public MvcOptions Value { get; } = new MvcOptions();
     }

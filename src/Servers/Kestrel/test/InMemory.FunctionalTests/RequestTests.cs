@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -81,6 +82,36 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task RequestBodyPipeReaderDoesZeroByteReads()
+    {
+        await using (var server = new TestServer(async context =>
+        {
+            var bufferLengths = new List<int>();
+
+            var mockStream = new Mock<Stream>();
+
+            mockStream.Setup(s => s.CanRead).Returns(true);
+            mockStream.Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Returns<Memory<byte>, CancellationToken>((buffer, token) =>
+            {
+                bufferLengths.Add(buffer.Length);
+                return ValueTask.FromResult(0);
+            });
+
+            context.Request.Body = mockStream.Object;
+            var data = await context.Request.BodyReader.ReadAsync();
+
+            Assert.Equal(2, bufferLengths.Count);
+            Assert.Equal(0, bufferLengths[0]);
+            Assert.Equal(4096, bufferLengths[1]);
+
+            await context.Response.WriteAsync("hello, world");
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
+        }
+    }
+
+    [Fact]
     public async Task RequestBodyReadAsyncCanBeCancelled()
     {
         var helloTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -100,8 +131,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
             catch (Exception ex)
             {
-                    // This shouldn't fail
-                    helloTcs.TrySetException(ex);
+                // This shouldn't fail
+                helloTcs.TrySetException(ex);
             }
 
             try
@@ -444,13 +475,13 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             {
                 local.Value.Value++;
                 Assert.Equal(2, local.Value.Value); // Second
-                });
+            });
 
             context.Response.OnCompleted(async () =>
             {
                 local.Value.Value++;
                 Assert.Equal(4, local.Value.Value); // Fourth
-                });
+            });
 
             local.Value.Value++;
             Assert.Equal(1, local.Value.Value); // First
@@ -890,8 +921,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
         await using (var server = new TestServer(async httpContext =>
         {
-                // This will hang if 0 content length is not assumed by the server
-                Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
+            // This will hang if 0 content length is not assumed by the server
+            Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -937,8 +968,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             var readResult = await httpContext.Request.BodyReader.ReadAsync().AsTask().DefaultTimeout();
-                // This will hang if 0 content length is not assumed by the server
-                Assert.True(readResult.IsCompleted);
+            // This will hang if 0 content length is not assumed by the server
+            Assert.True(readResult.IsCompleted);
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -984,8 +1015,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             var readResult = await httpContext.Request.BodyReader.ReadAsync();
-                // This will hang if 0 content length is not assumed by the server
-                Assert.Equal(5, readResult.Buffer.Length);
+            // This will hang if 0 content length is not assumed by the server
+            Assert.Equal(5, readResult.Buffer.Length);
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
         }, testContext))
         {
@@ -1016,8 +1047,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             var readResult = await httpContext.Request.BodyReader.ReadAsync();
-                // This will hang if 0 content length is not assumed by the server
-                Assert.Equal(5, readResult.Buffer.Length);
+            // This will hang if 0 content length is not assumed by the server
+            Assert.Equal(5, readResult.Buffer.Length);
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.Equal(5, readResult.Buffer.Length);
@@ -1051,8 +1082,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             var readResult = await httpContext.Request.BodyReader.ReadAsync();
-                // This will hang if 0 content length is not assumed by the server
-                Assert.Equal(5, readResult.Buffer.Length);
+            // This will hang if 0 content length is not assumed by the server
+            Assert.Equal(5, readResult.Buffer.Length);
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
             for (var i = 0; i < 2; i++)
@@ -1146,24 +1177,24 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
         await using (var server = new TestServer(async httpContext =>
         {
-                // Buffer 3 bytes.
-                var readResult = await ReadAtLeastAsync(httpContext.Request.BodyReader, numBytes: 3);
+            // Buffer 3 bytes.
+            var readResult = await ReadAtLeastAsync(httpContext.Request.BodyReader, numBytes: 3);
             Assert.Equal(3, readResult.Buffer.Length);
             tcs.SetResult();
 
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
-                // Buffer 1 more byte.
-                readResult = await httpContext.Request.BodyReader.ReadAsync();
+            // Buffer 1 more byte.
+            readResult = await httpContext.Request.BodyReader.ReadAsync();
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             tcs2.SetResult();
 
-                // Buffer 1 last byte.
-                readResult = await httpContext.Request.BodyReader.ReadAsync();
+            // Buffer 1 last byte.
+            readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.Equal(5, readResult.Buffer.Length);
 
-                // Do one more read to ensure completion is always observed.
-                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+            // Do one more read to ensure completion is always observed.
+            httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.True(readResult.IsCompleted);
         }, testContext))
@@ -1586,7 +1617,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-
     [Fact]
     public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
     {
@@ -1604,16 +1634,16 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             {
                 appEvent.SetResult();
 
-                    // Read once to go through one set of TryPauseTimingReads()/TryResumeTimingReads() calls
-                    await stream.ReadAsync(new byte[1], 0, 1);
+                // Read once to go through one set of TryPauseTimingReads()/TryResumeTimingReads() calls
+                await stream.ReadAsync(new byte[1], 0, 1);
 
                 await delayEvent.Task.DefaultTimeout();
 
-                    // Read again to check that the connection is still alive
-                    await stream.ReadAsync(new byte[1], 0, 1);
+                // Read again to check that the connection is still alive
+                await stream.ReadAsync(new byte[1], 0, 1);
 
-                    // Send a response to distinguish from the timeout case where the 101 is still received, but without any content
-                    var response = Encoding.ASCII.GetBytes("hello");
+                // Send a response to distinguish from the timeout case where the 101 is still received, but without any content
+                var response = Encoding.ASCII.GetBytes("hello");
                 await stream.WriteAsync(response, 0, response.Length);
             }
         }, serviceContext))
@@ -1657,11 +1687,11 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             var buffer = new byte[6];
             var offset = 0;
 
-                // The request body is 5 bytes long. The 6th byte (buffer[5]) is only used for writing the response body.
-                buffer[5] = (byte)'1';
+            // The request body is 5 bytes long. The 6th byte (buffer[5]) is only used for writing the response body.
+            buffer[5] = (byte)'1';
 
-                // Synchronous reads throw.
-                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
+            // Synchronous reads throw.
+            var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
             Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
 
             var ioEx2 = Assert.Throws<InvalidOperationException>(() => context.Request.Body.CopyTo(Stream.Null));
@@ -1753,8 +1783,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
             Assert.False(bodyControlFeature.AllowSynchronousIO);
 
-                // Synchronous reads now throw.
-                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
+            // Synchronous reads now throw.
+            var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
             Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
 
             var ioEx2 = Assert.Throws<InvalidOperationException>(() => context.Request.Body.CopyTo(Stream.Null));
@@ -2250,6 +2280,49 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     $"Date: {testContext.DateHeaderValue}",
                     "",
                     "");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SingleLineFeedIsSupportedAnywhere()
+    {
+        // Exercises all combinations of LF and CRLF as line separators.
+        // Uses a bit mask for all the possible combinations.
+
+        var lines = new[]
+        {
+                $"GET / HTTP/1.1",
+                "Content-Length: 0",
+                $"Host: localhost",
+                "",
+            };
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: false)))
+        {
+            var mask = Math.Pow(2, lines.Length) - 1;
+
+            for (var m = 0; m <= mask; m++)
+            {
+                using (var client = server.CreateConnection())
+                {
+                    var sb = new StringBuilder();
+
+                    for (var pos = 0; pos < lines.Length; pos++)
+                    {
+                        sb.Append(lines[pos]);
+                        var separator = (m & (1 << pos)) != 0 ? "\n" : "\r\n";
+                        sb.Append(separator);
+                    }
+
+                    var text = sb.ToString();
+                    var writer = new StreamWriter(client.Stream, Encoding.GetEncoding("iso-8859-1"));
+                    await writer.WriteAsync(text).ConfigureAwait(false);
+                    await writer.FlushAsync().ConfigureAwait(false);
+                    await client.Stream.FlushAsync().ConfigureAwait(false);
+
+                    await client.Receive("HTTP/1.1 200");
+                }
             }
         }
     }

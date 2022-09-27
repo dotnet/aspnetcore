@@ -1,22 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
+internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
 {
     private readonly SslStream _sslStream;
+    private readonly ConnectionContext _context;
     private X509Certificate2? _clientCert;
     private ReadOnlyMemory<byte>? _applicationProtocol;
     private SslProtocols? _protocol;
@@ -28,14 +26,19 @@ internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProt
     private int? _keyExchangeStrength;
     private Task<X509Certificate2?>? _clientCertTask;
 
-    public TlsConnectionFeature(SslStream sslStream)
+    public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
     {
         if (sslStream is null)
         {
             throw new ArgumentNullException(nameof(sslStream));
         }
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
 
         _sslStream = sslStream;
+        _context = context;
     }
 
     internal bool AllowDelayedClientCertificateNegotation { get; set; }
@@ -126,7 +129,20 @@ internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProt
 
     private async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
     {
-        await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+        try
+        {
+            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+        }
+        catch
+        {
+            // We can't tell which exceptions are fatal or recoverable. Consider them all recoverable only given a new connection
+            // and close the connection gracefully to avoid over-caching and affecting future requests on this connection.
+            // This allows recovery by starting a new connection. The close is graceful to allow the server to
+            // send an error response like 401. https://github.com/dotnet/aspnetcore/issues/41369
+            _context.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
+            throw;
+        }
+
         return ClientCertificate;
     }
 

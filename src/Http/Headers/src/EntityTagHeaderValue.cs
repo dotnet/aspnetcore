@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
@@ -98,7 +96,7 @@ public class EntityTagHeaderValue
 
     /// <summary>
     /// Check against another <see cref="EntityTagHeaderValue"/> for equality.
-    /// This equality check should not be used to determine if two values match under the RFC specifications (https://tools.ietf.org/html/rfc7232#section-2.3.2).
+    /// This equality check should not be used to determine if two values match under the RFC specifications (<see href="https://tools.ietf.org/html/rfc7232#section-2.3.2"/>).
     /// </summary>
     /// <param name="obj">The other value to check against for equality.</param>
     /// <returns>
@@ -119,7 +117,7 @@ public class EntityTagHeaderValue
     }
 
     /// <summary>
-    /// Compares against another <see cref="EntityTagHeaderValue"/> to see if they match under the RFC specifications (https://tools.ietf.org/html/rfc7232#section-2.3.2).
+    /// Compares against another <see cref="EntityTagHeaderValue"/> to see if they match under the RFC specifications (<see href="https://tools.ietf.org/html/rfc7232#section-2.3.2"/>).
     /// </summary>
     /// <param name="other">The other <see cref="EntityTagHeaderValue"/> to compare against.</param>
     /// <param name="useStrongComparison"><c>true</c> to use a strong comparison, <c>false</c> to use a weak comparison</param>
@@ -248,8 +246,7 @@ public class EntityTagHeaderValue
             }
 
             var tagStartIndex = current;
-            var tagLength = 0;
-            if (HttpRuleParser.GetQuotedStringLength(input, current, out tagLength) != HttpParseResult.Parsed)
+            if (HttpRuleParser.GetQuotedStringLength(input, current, out var tagLength) != HttpParseResult.Parsed)
             {
                 return 0;
             }

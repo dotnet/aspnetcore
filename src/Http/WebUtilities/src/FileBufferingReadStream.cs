@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -190,13 +186,13 @@ public class FileBufferingReadStream : Stream
     /// <inheritdoc/>
     public override bool CanRead
     {
-        get { return true; }
+        get { return !_disposed; }
     }
 
     /// <inheritdoc/>
     public override bool CanSeek
     {
-        get { return true; }
+        get { return !_disposed; }
     }
 
     /// <inheritdoc/>
@@ -317,7 +313,8 @@ public class FileBufferingReadStream : Stream
         {
             _buffer.Write(buffer.Slice(0, read));
         }
-        else
+        // Allow zero-byte reads
+        else if (buffer.Length > 0)
         {
             _completelyBuffered = true;
         }
@@ -392,7 +389,8 @@ public class FileBufferingReadStream : Stream
         {
             await _buffer.WriteAsync(buffer.Slice(0, read), cancellationToken);
         }
-        else
+        // Allow zero-byte reads
+        else if (buffer.Length > 0)
         {
             _completelyBuffered = true;
         }
@@ -402,6 +400,12 @@ public class FileBufferingReadStream : Stream
 
     /// <inheritdoc/>
     public override void Write(byte[] buffer, int offset, int count)
+    {
+        throw new NotSupportedException();
+    }
+
+    /// <inheritdoc/>
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
         throw new NotSupportedException();
     }
@@ -498,9 +502,6 @@ public class FileBufferingReadStream : Stream
 
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(FileBufferingReadStream));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(FileBufferingReadStream));
     }
 }

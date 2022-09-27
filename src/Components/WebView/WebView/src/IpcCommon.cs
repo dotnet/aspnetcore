@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
-internal class IpcCommon
+internal sealed class IpcCommon
 {
     private const string _ipcMessagePrefix = "__bwv:";
 
@@ -63,6 +62,7 @@ internal class IpcCommon
         OnRenderCompleted,
         OnLocationChanged,
         ReceiveByteArrayFromJS,
+        OnLocationChanging,
     }
 
     public enum OutgoingMessageType
@@ -74,5 +74,7 @@ internal class IpcCommon
         NotifyUnhandledException,
         BeginInvokeJS,
         SendByteArrayToJS,
+        SetHasLocationChangingListeners,
+        EndLocationChanging,
     }
 }

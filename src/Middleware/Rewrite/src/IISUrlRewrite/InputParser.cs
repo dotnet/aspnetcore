@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class InputParser
+internal sealed class InputParser
 {
     private const char Colon = ':';
     private const char OpenBrace = '{';
@@ -126,7 +124,14 @@ internal class InputParser
                         }
                     case "UrlDecode":
                         {
-                            throw new NotImplementedException("UrlDecode is not implemented because of no great library available");
+                            var pattern = ParseString(context, uriMatchPart);
+                            results.Add(new UrlDecodeSegment(pattern));
+
+                            if (context.Current != CloseBrace)
+                            {
+                                throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
+                            }
+                            return;
                         }
                     case "UrlEncode":
                         {

@@ -39,8 +39,8 @@ public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFacto
         {
             throw new ArgumentNullException(nameof(manager));
         }
-        var token = await manager.CreateSecurityTokenAsync(user);
-        var modifier = await GetUserModifierAsync(purpose, manager, user);
+        var token = await manager.CreateSecurityTokenAsync(user).ConfigureAwait(false);
+        var modifier = await GetUserModifierAsync(purpose, manager, user).ConfigureAwait(false);
 
         return Rfc6238AuthenticationService.GenerateCode(token, modifier).ToString("D6", CultureInfo.InvariantCulture);
     }
@@ -69,8 +69,8 @@ public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFacto
         {
             return false;
         }
-        var securityToken = await manager.CreateSecurityTokenAsync(user);
-        var modifier = await GetUserModifierAsync(purpose, manager, user);
+        var securityToken = await manager.CreateSecurityTokenAsync(user).ConfigureAwait(false);
+        var modifier = await GetUserModifierAsync(purpose, manager, user).ConfigureAwait(false);
 
         return securityToken != null && Rfc6238AuthenticationService.ValidateCode(securityToken, code, modifier);
     }
@@ -91,7 +91,7 @@ public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFacto
         {
             throw new ArgumentNullException(nameof(manager));
         }
-        var userId = await manager.GetUserIdAsync(user);
+        var userId = await manager.GetUserIdAsync(user).ConfigureAwait(false);
 
         return $"Totp:{purpose}:{userId}";
     }

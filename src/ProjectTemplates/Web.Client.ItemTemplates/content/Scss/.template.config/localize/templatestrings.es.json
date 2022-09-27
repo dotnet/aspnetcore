@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Hoja de estilos SCSS (SASS)",
+  "description": "SCSS es un lenguaje que se compila en CSS",
+  "postActions/openInEditor/description": "Abre styleSheet1.scss en el editor"
+}

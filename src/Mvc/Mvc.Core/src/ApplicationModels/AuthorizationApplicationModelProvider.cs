@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -10,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class AuthorizationApplicationModelProvider : IApplicationModelProvider
+internal sealed class AuthorizationApplicationModelProvider : IApplicationModelProvider
 {
     private readonly MvcOptions _mvcOptions;
     private readonly IAuthorizationPolicyProvider _policyProvider;

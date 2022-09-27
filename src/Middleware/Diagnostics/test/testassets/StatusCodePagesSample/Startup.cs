@@ -2,22 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Hosting;
 
 namespace StatusCodePagesSample;
 
 public class Startup
 {
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddProblemDetails();
+    }
+
     public void Configure(IApplicationBuilder app)
     {
         app.UseDeveloperExceptionPage();
@@ -33,15 +31,15 @@ public class Startup
         // "/[?statuscode=400]"
         app.Use(async (context, next) =>
         {
-                // Check for ?statuscode=400
-                var requestedStatusCode = context.Request.Query["statuscode"];
+            // Check for ?statuscode=400
+            var requestedStatusCode = context.Request.Query["statuscode"];
             if (!string.IsNullOrEmpty(requestedStatusCode))
             {
                 context.Response.StatusCode = int.Parse(requestedStatusCode, CultureInfo.InvariantCulture);
 
-                    // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware
-                    // if the query contains a disableStatusCodePages=true parameter.
-                    var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
+                // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware
+                // if the query contains a disableStatusCodePages=true parameter.
+                var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
                 if (disableStatusCodePages == "true")
                 {
                     var statusCodePagesFeature = context.Features.Get<IStatusCodePagesFeature>();
@@ -80,8 +78,8 @@ public class Startup
 
         app.Run(async context =>
         {
-                // Generates the HTML with all status codes.
-                var builder = new StringBuilder();
+            // Generates the HTML with all status codes.
+            var builder = new StringBuilder();
             builder.AppendLine("<html><body>");
             builder.AppendLine("<a href=\"" +
                 HtmlEncoder.Default.Encode(context.Request.PathBase.ToString()) + "/missingpage/\">" +

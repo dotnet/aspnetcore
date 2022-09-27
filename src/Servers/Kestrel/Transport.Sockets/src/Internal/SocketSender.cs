@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
@@ -20,7 +17,7 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
     {
     }
 
-    public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
+    public ValueTask<SocketOperationResult> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
     {
         if (buffers.IsSingleSegment)
         {
@@ -31,15 +28,15 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
 
         if (socket.SendAsync(this))
         {
-            return new ValueTask<int>(this, 0);
+            return new ValueTask<SocketOperationResult>(this, 0);
         }
 
         var bytesTransferred = BytesTransferred;
         var error = SocketError;
 
-        return error == SocketError.Success ?
-            new ValueTask<int>(bytesTransferred) :
-           ValueTask.FromException<int>(CreateException(error));
+        return error == SocketError.Success
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)));
     }
 
     public void Reset()
@@ -59,21 +56,21 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
         }
     }
 
-    private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+    private ValueTask<SocketOperationResult> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
     {
         SetBuffer(MemoryMarshal.AsMemory(memory));
 
         if (socket.SendAsync(this))
         {
-            return new ValueTask<int>(this, 0);
+            return new ValueTask<SocketOperationResult>(this, 0);
         }
 
         var bytesTransferred = BytesTransferred;
         var error = SocketError;
 
-        return error == SocketError.Success ?
-            new ValueTask<int>(bytesTransferred) :
-           ValueTask.FromException<int>(CreateException(error));
+        return error == SocketError.Success
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)));
     }
 
     private void SetBufferList(in ReadOnlySequence<byte> buffer)

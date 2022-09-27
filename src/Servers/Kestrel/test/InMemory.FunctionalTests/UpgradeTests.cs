@@ -22,13 +22,16 @@ public class UpgradeTests : LoggedTest
     [Fact]
     public async Task ResponseThrowsAfterUpgrade()
     {
-        var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var upgrade = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using (var server = new TestServer(async context =>
         {
             var feature = context.Features.Get<IHttpUpgradeFeature>();
             var stream = await feature.UpgradeAsync();
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.Body.WriteAsync(new byte[1], 0, 1));
+            Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.BodyWriter.WriteAsync(new byte[1]).AsTask());
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
 
             using (var writer = new StreamWriter(stream))
@@ -38,7 +41,7 @@ public class UpgradeTests : LoggedTest
                 await writer.DisposeAsync();
             }
 
-            upgrade.TrySetResult(true);
+            upgrade.TrySetResult();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -62,7 +65,7 @@ public class UpgradeTests : LoggedTest
         const string send = "Custom protocol send";
         const string recv = "Custom protocol recv";
 
-        var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var upgrade = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using (var server = new TestServer(async context =>
         {
             try
@@ -84,7 +87,7 @@ public class UpgradeTests : LoggedTest
                     await writer.DisposeAsync();
                 }
 
-                upgrade.TrySetResult(true);
+                upgrade.TrySetResult();
             }
             catch (Exception ex)
             {
@@ -264,7 +267,7 @@ public class UpgradeTests : LoggedTest
     [Fact]
     public async Task ThrowsWhenUpgradingNonUpgradableRequest()
     {
-        var upgradeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var upgradeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using (var server = new TestServer(async context =>
         {
             var feature = context.Features.Get<IHttpUpgradeFeature>();
@@ -279,7 +282,7 @@ public class UpgradeTests : LoggedTest
             }
             finally
             {
-                upgradeTcs.TrySetResult(false);
+                upgradeTcs.TrySetResult();
             }
         }, new TestServiceContext(LoggerFactory)))
         {
@@ -385,7 +388,7 @@ public class UpgradeTests : LoggedTest
     [Fact]
     public async Task DoesNotThrowGivenCanceledReadResult()
     {
-        var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using var server = new TestServer(async context =>
         {
@@ -394,17 +397,17 @@ public class UpgradeTests : LoggedTest
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
                 var duplexStream = await upgradeFeature.UpgradeAsync();
 
-                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
-                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
-                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
-                    // https://github.com/dotnet/aspnetcore/issues/26482
-                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
+                // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
+                // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
+                // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
+                // https://github.com/dotnet/aspnetcore/issues/26482
+                var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
                 connectionTransportFeature.Transport.Input.CancelPendingRead();
 
-                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
-                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync()
-                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
-                appCompletedTcs.SetResult(null);
+                // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
+                // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync()
+                Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
+                appCompletedTcs.SetResult();
             }
             catch (Exception ex)
             {

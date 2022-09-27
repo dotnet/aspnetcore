@@ -7,7 +7,7 @@
   "description": "A blank TypeScript source file",
   "groupIdentity": "Microsoft.DotNet.Web.ClientItems.TypeScript",
   "precedence": "100",
-  "identity": "Microsoft.DotNet.Web.ClientItems.TypeScript",
+  "identity": "Microsoft.DotNet.Web.ClientItems.TypeScript.7.0",
   "shortName": "tsfile",
   "sourceName": "file1",
   "tags": {
@@ -27,6 +27,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens file1.ts in the editor",
       "manualInstructions": [ ],

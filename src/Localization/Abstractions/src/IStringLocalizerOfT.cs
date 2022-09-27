@@ -9,5 +9,4 @@ namespace Microsoft.Extensions.Localization;
 /// <typeparam name="T">The <see cref="System.Type"/> to provide strings for.</typeparam>
 public interface IStringLocalizer<out T> : IStringLocalizer
 {
-
 }

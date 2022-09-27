@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Runtime.CompilerServices;
-
 namespace Microsoft.AspNetCore.Routing.Matching;
 
 // Optimized implementation for cases where we know that we're
 // comparing to ASCII.
-internal class SingleEntryAsciiJumpTable : JumpTable
+internal sealed class SingleEntryAsciiJumpTable : JumpTable
 {
     private readonly int _defaultDestination;
     private readonly int _exitDestination;

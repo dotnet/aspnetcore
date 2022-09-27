@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Microsoft.AspNetCore.Razor.Language;
 
 internal class VirtualRazorProjectFileSystem : RazorProjectFileSystem
@@ -17,7 +13,6 @@ internal class VirtualRazorProjectFileSystem : RazorProjectFileSystem
         var directory = _root.GetDirectory(basePath);
         return directory?.EnumerateItems() ?? Enumerable.Empty<RazorProjectItem>();
     }
-
 
     public override RazorProjectItem GetItem(string path)
     {

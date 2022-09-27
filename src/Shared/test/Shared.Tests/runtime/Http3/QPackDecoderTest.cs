@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using System.Text;
 using Xunit;
-using System.Net.Http.QPack;
-using System.Net.Http.HPack;
 using HeaderField = System.Net.Http.QPack.HeaderField;
 #if KESTREL
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -236,7 +236,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             else
             {
                 int chunkSize = bytesAtATime.Value;
-                
+
                 // Parse data in chunks, separated by empty chunks
                 for (int i = 0; i < encoded.Length; i += chunkSize)
                 {

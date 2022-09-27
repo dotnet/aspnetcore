@@ -1,19 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.SpaProxy.SpaHostingStartup))]
 
 namespace Microsoft.AspNetCore.SpaProxy;
 
-internal class SpaHostingStartup : IHostingStartup
+internal sealed class SpaHostingStartup : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder)
     {
@@ -27,9 +25,16 @@ internal class SpaHostingStartup : IHostingStartup
                     .Build();
 
                 services.AddSingleton<SpaProxyLaunchManager>();
-                services.Configure<SpaDevelopmentServerOptions>(configuration.GetSection("SpaProxyServer"));
+                ConfigureOptions<SpaDevelopmentServerOptions>(services, configuration.GetSection("SpaProxyServer"));
                 services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, SpaProxyStartupFilter>());
             }
         });
+
+        [UnconditionalSuppressMessageAttribute("Trimming", "IL2026", Justification = "Configuration object's public properties are preserved.")]
+        static void ConfigureOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(IServiceCollection services, IConfigurationSection section)
+            where T : class
+        {
+            services.Configure<T>(section);
+        }
     }
 }

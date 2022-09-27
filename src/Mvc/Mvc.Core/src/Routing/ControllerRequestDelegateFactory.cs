@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -16,11 +14,13 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
+internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
 {
     private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
     private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
     private readonly int _maxModelValidationErrors;
+    private readonly int? _maxValidationDepth;
+    private readonly int _maxModelBindingRecursionDepth;
     private readonly ILogger _logger;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly IActionResultTypeMapper _mapper;
@@ -48,6 +48,8 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
         _controllerActionInvokerCache = controllerActionInvokerCache;
         _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
         _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
+        _maxValidationDepth = optionsAccessor.Value.MaxValidationDepth;
+        _maxModelBindingRecursionDepth = optionsAccessor.Value.MaxModelBindingRecursionDepth;
         _enableActionInvokers = optionsAccessor.Value.EnableActionInvokers;
         _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
         _diagnosticListener = diagnosticListener;
@@ -58,7 +60,7 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
     public RequestDelegate? CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary? dataTokens)
     {
         // Fallback to action invoker extensibility so that invokers can override any default behaviors
-        if (_enableActionInvokers || actionDescriptor is not ControllerActionDescriptor)
+        if (_enableActionInvokers || actionDescriptor is not ControllerActionDescriptor controller)
         {
             return null;
         }
@@ -77,15 +79,15 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
                 routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
             }
 
-            var actionContext = new ActionContext(context, routeData, actionDescriptor);
-
-            var controllerContext = new ControllerContext(actionContext)
+            var controllerContext = new ControllerContext(context, routeData, controller)
             {
-                    // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                    ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
             };
 
             controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+            controllerContext.ModelState.MaxValidationDepth = _maxValidationDepth;
+            controllerContext.ModelState.MaxStateDepth = _maxModelBindingRecursionDepth;
 
             var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
 

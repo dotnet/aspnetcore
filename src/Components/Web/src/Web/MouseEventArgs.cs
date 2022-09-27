@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.Web;
 
 /// <summary>
@@ -54,6 +52,16 @@ public class MouseEventArgs : EventArgs
     /// The Y coordinate of the mouse pointer relative to the whole document.
     /// </summary>
     public double PageY { get; set; }
+
+    /// <summary>
+    /// The X coordinate of the mouse pointer relative to the position of the last mousemove event.
+    /// </summary>
+    public double MovementX { get; set; }
+
+    /// <summary>
+    /// The Y coordinate of the mouse pointer relative to the position of the last mousemove event.
+    /// </summary>
+    public double MovementY { get; set; }
 
     /// <summary>
     /// The button number that was pressed when the mouse event was fired:

@@ -476,6 +476,79 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         }
     }
 
+    [Fact]
+    public async Task WriteResponseBodyAsync_AsyncEnumerableThrowsCustomOCE()
+    {
+        // Arrange
+        var formatter = GetOutputFormatter();
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+        var cts = new CancellationTokenSource();
+        actionContext.HttpContext.RequestAborted = cts.Token;
+        actionContext.HttpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        var asyncEnumerable = AsyncEnumerableThrows();
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            asyncEnumerable.GetType(),
+            asyncEnumerable)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await Assert.ThrowsAsync<OperationCanceledException>(() => formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8")));
+
+        async IAsyncEnumerable<int> AsyncEnumerableThrows([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            yield return 1;
+            throw new OperationCanceledException();
+        }
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_AsyncEnumerableThrowsConnectionAbortedOCE()
+    {
+        // Arrange
+        var formatter = GetOutputFormatter();
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+        var cts = new CancellationTokenSource();
+        actionContext.HttpContext.RequestAborted = cts.Token;
+        actionContext.HttpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        var asyncEnumerable = AsyncEnumerableThrows();
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            asyncEnumerable.GetType(),
+            asyncEnumerable)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        Assert.Empty(body.ToArray());
+
+        async IAsyncEnumerable<int> AsyncEnumerableThrows([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            cts.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return 1;
+        }
+    }
+
     private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
     {
         public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)

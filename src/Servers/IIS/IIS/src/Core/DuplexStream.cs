@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 // See https://github.com/aspnet/IISIntegration/issues/426
-internal class DuplexStream : Stream
+internal sealed class DuplexStream : Stream
 {
     private readonly Stream _requestBody;
     private readonly Stream _responseBody;

@@ -1,17 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-#if !IGNITOR
 using Microsoft.AspNetCore.Components.RenderTree;
-#endif
 
-#if IGNITOR
-namespace Ignitor;
-#elif BLAZOR_WEBVIEW
+#if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
 #else
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
@@ -38,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 ///
 /// We don't have or need a .NET reader for this format. We only read it from JS code.
 /// </summary>
-internal class RenderBatchWriter : IDisposable
+internal sealed class RenderBatchWriter : IDisposable
 {
     private readonly ArrayBuilder<string> _strings;
     private readonly Dictionary<string, int> _deduplicatedStringIndices;

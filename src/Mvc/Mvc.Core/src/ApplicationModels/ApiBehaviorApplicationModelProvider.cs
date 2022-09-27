@@ -1,32 +1,29 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
+internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
 {
     public ApiBehaviorApplicationModelProvider(
         IOptions<ApiBehaviorOptions> apiBehaviorOptions,
         IModelMetadataProvider modelMetadataProvider,
-        IClientErrorFactory clientErrorFactory,
-        ILoggerFactory loggerFactory)
+        IServiceProvider serviceProvider)
     {
         var options = apiBehaviorOptions.Value;
 
         ActionModelConventions = new List<IActionModelConvention>()
-            {
-                new ApiVisibilityConvention(),
-            };
+        {
+            new ApiVisibilityConvention(),
+        };
 
         if (!options.SuppressMapClientErrors)
         {
@@ -49,7 +46,11 @@ internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
 
         if (!options.SuppressInferBindingSourcesForParameters)
         {
-            ActionModelConventions.Add(new InferParameterBindingInfoConvention(modelMetadataProvider));
+            var serviceProviderIsService = serviceProvider.GetService<IServiceProviderIsService>();
+            var convention = options.DisableImplicitFromServicesParameters || serviceProviderIsService is null ?
+                new InferParameterBindingInfoConvention(modelMetadataProvider) :
+                new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProviderIsService);
+            ActionModelConventions.Add(convention);
         }
     }
 
@@ -99,7 +100,7 @@ internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
             throw new InvalidOperationException(message);
         }
 
-        bool IsAttributeRouted(IList<SelectorModel> selectorModel)
+        static bool IsAttributeRouted(IList<SelectorModel> selectorModel)
         {
             for (var i = 0; i < selectorModel.Count; i++)
             {

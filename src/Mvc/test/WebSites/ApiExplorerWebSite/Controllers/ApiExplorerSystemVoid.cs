@@ -15,5 +15,4 @@ public class ApiExplorerVoidController : Controller
 
     [ProducesResponseType(401)]
     public IActionResult ActionWithNoExplicitType() => Ok();
-
 }

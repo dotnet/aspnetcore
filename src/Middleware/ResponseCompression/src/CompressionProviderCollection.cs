@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.ResponseCompression;
 
@@ -17,7 +17,8 @@ public class CompressionProviderCollection : Collection<ICompressionProvider>
     /// <remarks>
     /// Provider instances will be created using an <see cref="IServiceProvider" />.
     /// </remarks>
-    public void Add<TCompressionProvider>() where TCompressionProvider : ICompressionProvider
+    public void Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCompressionProvider>()
+        where TCompressionProvider : ICompressionProvider
     {
         Add(typeof(TCompressionProvider));
     }
@@ -29,7 +30,7 @@ public class CompressionProviderCollection : Collection<ICompressionProvider>
     /// <remarks>
     /// Provider instances will be created using an <see cref="IServiceProvider" />.
     /// </remarks>
-    public void Add(Type providerType)
+    public void Add([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type providerType)
     {
         if (providerType == null)
         {

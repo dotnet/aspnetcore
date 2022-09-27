@@ -119,7 +119,7 @@ public class XunitLogger : ILogger
     public IDisposable BeginScope<TState>(TState state)
         => new NullScope();
 
-    private class NullScope : IDisposable
+    private sealed class NullScope : IDisposable
     {
         public void Dispose()
         {

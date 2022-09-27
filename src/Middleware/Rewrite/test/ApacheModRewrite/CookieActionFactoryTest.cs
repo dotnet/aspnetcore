@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Test;
 
@@ -12,7 +10,7 @@ public class CookieActionFactoryTest
     [Fact]
     public void Creates_OneCookie()
     {
-        var cookie = new CookieActionFactory().Create("NAME:VALUE:DOMAIN:1440:path:secure:httponly");
+        var cookie = CookieActionFactory.Create("NAME:VALUE:DOMAIN:1440:path:secure:httponly");
 
         Assert.Equal("NAME", cookie.Name);
         Assert.Equal("VALUE", cookie.Value);
@@ -26,7 +24,7 @@ public class CookieActionFactoryTest
     [Fact]
     public void Creates_OneCookie_AltSeparator()
     {
-        var action = new CookieActionFactory().Create(";NAME;VALUE:WithColon;DOMAIN;1440;path;secure;httponly");
+        var action = CookieActionFactory.Create(";NAME;VALUE:WithColon;DOMAIN;1440;path;secure;httponly");
 
         Assert.Equal("NAME", action.Name);
         Assert.Equal("VALUE:WithColon", action.Value);
@@ -40,7 +38,7 @@ public class CookieActionFactoryTest
     [Fact]
     public void Creates_HttpOnly()
     {
-        var action = new CookieActionFactory().Create(";NAME;VALUE;DOMAIN;;;;httponly");
+        var action = CookieActionFactory.Create(";NAME;VALUE;DOMAIN;;;;httponly");
 
         Assert.Equal("NAME", action.Name);
         Assert.Equal("VALUE", action.Value);
@@ -60,7 +58,7 @@ public class CookieActionFactoryTest
     public void TrimsValues(string flagValue, string value, string domain)
     {
         var factory = new CookieActionFactory();
-        var action = factory.Create(flagValue);
+        var action = CookieActionFactory.Create(flagValue);
         Assert.Equal("NAME", action.Name);
         Assert.NotNull(action.Value);
         Assert.Equal(value, action.Value);
@@ -75,7 +73,7 @@ public class CookieActionFactoryTest
     public void ThrowsForInvalidFormat(string flagValue)
     {
         var factory = new CookieActionFactory();
-        var ex = Assert.Throws<FormatException>(() => factory.Create(flagValue));
+        var ex = Assert.Throws<FormatException>(() => CookieActionFactory.Create(flagValue));
         Assert.Equal(Resources.FormatError_InvalidChangeCookieFlag(flagValue), ex.Message);
     }
 
@@ -86,7 +84,7 @@ public class CookieActionFactoryTest
     public void ThrowsForInvalidIntFormat(string badInt)
     {
         var factory = new CookieActionFactory();
-        var ex = Assert.Throws<FormatException>(() => factory.Create("NAME:VALUE:DOMAIN:" + badInt));
+        var ex = Assert.Throws<FormatException>(() => CookieActionFactory.Create("NAME:VALUE:DOMAIN:" + badInt));
         Assert.Equal(Resources.FormatError_CouldNotParseInteger(badInt), ex.Message);
     }
 }

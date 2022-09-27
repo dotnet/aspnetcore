@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
@@ -31,13 +28,10 @@ public class BsonTempDataSerializerTest : TempDataSerializerTestBase
     [MemberData(nameof(InvalidTypes))]
     public void EnsureObjectCanBeSerialized_ThrowsException_OnInvalidType(object value, Type type)
     {
-        // Arrange
-        var testProvider = new BsonTempDataSerializer();
-
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
         {
-            testProvider.EnsureObjectCanBeSerialized(value);
+            BsonTempDataSerializer.EnsureObjectCanBeSerialized(value);
         });
         Assert.Equal($"The '{typeof(BsonTempDataSerializer).FullName}' cannot serialize " +
             $"an object of type '{type}'.",
@@ -62,13 +56,10 @@ public class BsonTempDataSerializerTest : TempDataSerializerTestBase
     [MemberData(nameof(InvalidDictionaryTypes))]
     public void EnsureObjectCanBeSerialized_ThrowsException_OnInvalidDictionaryType(object value, Type type)
     {
-        // Arrange
-        var testProvider = new BsonTempDataSerializer();
-
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
         {
-            testProvider.EnsureObjectCanBeSerialized(value);
+            BsonTempDataSerializer.EnsureObjectCanBeSerialized(value);
         });
         Assert.Equal($"The '{typeof(BsonTempDataSerializer).FullName}' cannot serialize a dictionary " +
             $"with a key of type '{type}'. The key must be of type 'System.String'.",
@@ -206,11 +197,8 @@ public class BsonTempDataSerializerTest : TempDataSerializerTestBase
     [MemberData(nameof(ValidTypes))]
     public void EnsureObjectCanBeSerialized_DoesNotThrow_OnValidType(object value)
     {
-        // Arrange
-        var testProvider = new BsonTempDataSerializer();
-
         // Act & Assert (Does not throw)
-        testProvider.EnsureObjectCanBeSerialized(value);
+        BsonTempDataSerializer.EnsureObjectCanBeSerialized(value);
     }
 
     [Fact]

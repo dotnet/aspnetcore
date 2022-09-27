@@ -1,20 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate;
 
-internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
+internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
 {
     private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
     private ICertificateValidationCache? _cache;
@@ -31,7 +28,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
     /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
     /// If it is not provided a default instance is supplied which does nothing when the methods are called.
     /// </summary>
-    protected new CertificateAuthenticationEvents Events
+    private new CertificateAuthenticationEvents Events
     {
         get { return (CertificateAuthenticationEvents)base.Events!; }
         set { base.Events = value; }
@@ -121,25 +118,27 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
 
     private async Task<AuthenticateResult> ValidateCertificateAsync(X509Certificate2 clientCertificate)
     {
+        var isCertificateSelfSigned = clientCertificate.IsSelfSigned();
+
         // If we have a self signed cert, and they're not allowed, exit early and not bother with
         // any other validations.
-        if (clientCertificate.IsSelfSigned() &&
+        if (isCertificateSelfSigned &&
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
         {
             Logger.CertificateRejected("Self signed", clientCertificate.Subject);
-            return AuthenticateResult.Fail("Options do not allow self signed certificates.");
+            return AuthenticateResults.NoSelfSigned;
         }
 
         // If we have a chained cert, and they're not allowed, exit early and not bother with
         // any other validations.
-        if (!clientCertificate.IsSelfSigned() &&
+        if (!isCertificateSelfSigned &&
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
         {
             Logger.CertificateRejected("Chained", clientCertificate.Subject);
-            return AuthenticateResult.Fail("Options do not allow chained certificates.");
+            return AuthenticateResults.NoChainedCertificates;
         }
 
-        var chainPolicy = BuildChainPolicy(clientCertificate);
+        var chainPolicy = BuildChainPolicy(clientCertificate, isCertificateSelfSigned);
         using var chain = new X509Chain
         {
             ChainPolicy = chainPolicy
@@ -154,7 +153,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
                 chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
             }
             Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
-            return AuthenticateResult.Fail("Client certificate failed validation.");
+            return AuthenticateResults.InvalidClientCertificate;
         }
 
         var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)
@@ -189,13 +188,13 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
         await HandleForbiddenAsync(properties);
     }
 
-    private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
+    private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate, bool isCertificateSelfSigned)
     {
         // Now build the chain validation options.
         X509RevocationFlag revocationFlag = Options.RevocationFlag;
         X509RevocationMode revocationMode = Options.RevocationMode;
 
-        if (certificate.IsSelfSigned())
+        if (isCertificateSelfSigned)
         {
             // Turn off chain validation, because we have a self signed certificate.
             revocationFlag = X509RevocationFlag.EntireChain;
@@ -213,7 +212,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
             chainPolicy.ApplicationPolicy.Add(ClientCertificateOid);
         }
 
-        if (certificate.IsSelfSigned())
+        if (isCertificateSelfSigned)
         {
             chainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
             chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreEndRevocationUnknown;

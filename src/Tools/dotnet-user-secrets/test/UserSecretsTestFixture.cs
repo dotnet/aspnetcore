@@ -68,8 +68,8 @@ public class UserSecretsTestFixture : IDisposable
         {
             try
             {
-                    // may throw if id is bad
-                    var secretsDir = Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(id));
+                // may throw if id is bad
+                var secretsDir = Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(id));
                 TryDelete(secretsDir);
             }
             catch { }

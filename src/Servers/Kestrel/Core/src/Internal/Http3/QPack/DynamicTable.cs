@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Http.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
@@ -10,9 +9,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 //   The size of an entry is the sum of its name's length in bytes (as
 //   defined in Section 4.1.2), its value's length in bytes, and 32.
 
-internal class DynamicTable
+internal sealed class DynamicTable
 {
-
     // The encoder sends a Set Dynamic Table Capacity
     // instruction(Section 4.3.1) with a non-zero capacity to begin using
     // the dynamic table.
@@ -29,12 +27,12 @@ internal class DynamicTable
     }
 
     // TODO
-    public void Insert(Span<byte> name, Span<byte> value)
+    public static void Insert(Span<byte> name, Span<byte> value)
     {
     }
 
     // TODO
-    public void Resize(int maxSize)
+    public static void Resize(int maxSize)
     {
     }
 

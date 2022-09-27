@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.Web;
 
 /// <summary>
 /// Holds <see cref="EventHandler"/> attributes to configure the mappings between event names and
 /// event argument types.
 /// </summary>
-
 // Focus events
 [EventHandler("onfocus", typeof(FocusEventArgs), true, true)]
 [EventHandler("onblur", typeof(FocusEventArgs), true, true)]
@@ -19,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Web;
 // Mouse events
 [EventHandler("onmouseover", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseout", typeof(MouseEventArgs), true, true)]
+[EventHandler("onmouseleave", typeof(MouseEventArgs), true, true)]
+[EventHandler("onmouseenter", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmousemove", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmousedown", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseup", typeof(MouseEventArgs), true, true)]

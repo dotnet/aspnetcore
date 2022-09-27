@@ -1,19 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging;
@@ -44,6 +35,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     internal ISystemDateTime SystemDateTime { get; set; } = new SystemDateTime();
 
     private readonly object _pathLock = new object();
+    private ISet<string> _additionalHeaders;
 
     public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
     {
@@ -70,15 +62,17 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
         _flushInterval = loggerOptions.FlushInterval;
         _fields = loggerOptions.LoggingFields;
+        _additionalHeaders = W3CLoggerOptions.FilterRequestHeaders(loggerOptions);
+
         _options.OnChange(options =>
         {
             lock (_pathLock)
             {
-                    // Clear the cached settings.
-                    loggerOptions = options;
+                // Clear the cached settings.
+                loggerOptions = options;
 
-                    // Move to a new file if the fields have changed
-                    if (_fields != loggerOptions.LoggingFields)
+                // Move to a new file if the fields have changed
+                if (_fields != loggerOptions.LoggingFields || !_additionalHeaders.SetEquals(loggerOptions.AdditionalRequestHeaders))
                 {
                     _fileNumber++;
                     if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
@@ -87,6 +81,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                         Log.MaxFilesReached(_logger);
                     }
                     _fields = loggerOptions.LoggingFields;
+                    _additionalHeaders = W3CLoggerOptions.FilterRequestHeaders(loggerOptions);
                 }
 
                 if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
@@ -161,23 +156,28 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     {
         // Files are written up to _maxFileSize before rolling to a new file
         DateTime today = SystemDateTime.Now;
+
+        if (!TryCreateDirectory())
+        {
+            // return early if we fail to create the directory
+            return;
+        }
+
         var fullName = GetFullName(today);
         // Don't write to an incomplete file left around by a previous FileLoggerProcessor
         if (_firstFile)
         {
-            while (File.Exists(fullName))
+            _fileNumber = GetFirstFileCount(today);
+            fullName = GetFullName(today);
+            if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
             {
-                _fileNumber++;
-                if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
-                {
-                    _maxFilesReached = true;
-                    // Return early if log directory is already full
-                    Log.MaxFilesReached(_logger);
-                    return;
-                }
-                fullName = GetFullName(today);
+                _maxFilesReached = true;
+                // Return early if log directory is already full
+                Log.MaxFilesReached(_logger);
+                return;
             }
         }
+
         _firstFile = false;
         if (_maxFilesReached)
         {
@@ -187,12 +187,6 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
             return;
         }
         var fileInfo = new FileInfo(fullName);
-
-        if (!TryCreateDirectory())
-        {
-            // return early if we fail to create the directory
-            return;
-        }
         var streamWriter = GetStreamWriter(fullName);
 
         try
@@ -303,6 +297,23 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _cancellationTokenSource.Cancel();
         _messageQueue.CompleteAdding();
         await _outputTask;
+    }
+
+    private int GetFirstFileCount(DateTime date)
+    {
+        lock (_pathLock)
+        {
+            var searchString = FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.*.txt");
+            var files = new DirectoryInfo(_path)
+                .GetFiles(searchString);
+
+            return files.Length == 0
+                ? 0
+                : files
+                    .Max(x => int.TryParse(x.Name.Split('.').ElementAtOrDefault(Index.FromEnd(2)), out var parsed)
+                        ? parsed + 1
+                        : 0);
+        }
     }
 
     private string GetFullName(DateTime date)

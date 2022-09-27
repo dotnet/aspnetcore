@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -18,6 +15,7 @@ internal readonly struct ConventionalRouteEntry
     public readonly RouteValueDictionary? DataTokens;
     public readonly int Order;
     public readonly IReadOnlyList<Action<EndpointBuilder>> Conventions;
+    public readonly IReadOnlyList<Action<EndpointBuilder>> FinallyConventions;
 
     public ConventionalRouteEntry(
         string routeName,
@@ -26,12 +24,14 @@ internal readonly struct ConventionalRouteEntry
         IDictionary<string, object?>? constraints,
         RouteValueDictionary? dataTokens,
         int order,
-        List<Action<EndpointBuilder>> conventions)
+        List<Action<EndpointBuilder>> conventions,
+        List<Action<EndpointBuilder>> finallyConventions)
     {
         RouteName = routeName;
         DataTokens = dataTokens;
         Order = order;
         Conventions = conventions;
+        FinallyConventions = finallyConventions;
 
         try
         {

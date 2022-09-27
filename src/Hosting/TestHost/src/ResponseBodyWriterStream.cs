@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class ResponseBodyWriterStream : Stream
+internal sealed class ResponseBodyWriterStream : Stream
 {
     private readonly ResponseBodyPipeWriter _responseWriter;
     private readonly Func<bool> _allowSynchronousIO;
@@ -73,5 +68,10 @@ internal class ResponseBodyWriterStream : Stream
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         await _responseWriter.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
+    }
+
+    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        await _responseWriter.WriteAsync(buffer, cancellationToken);
     }
 }

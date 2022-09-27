@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -37,7 +39,7 @@ internal static class Rfc6238AuthenticationService
         HashAlgorithm hashAlgorithm,
 #endif
         ulong timestepNumber,
-        string modifier)
+        string? modifier)
     {
         // # of 0's = length of pin
         const int Mod = 1000000;
@@ -63,7 +65,7 @@ internal static class Rfc6238AuthenticationService
         return binaryCode % Mod;
     }
 
-    private static byte[] ApplyModifier(byte[] input, string modifier)
+    private static byte[] ApplyModifier(byte[] input, string? modifier)
     {
         if (string.IsNullOrEmpty(modifier))
         {
@@ -88,7 +90,7 @@ internal static class Rfc6238AuthenticationService
         return (ulong)(delta.Ticks / _timestep.Ticks);
     }
 
-    public static int GenerateCode(byte[] securityToken, string modifier = null)
+    public static int GenerateCode(byte[] securityToken, string? modifier = null)
     {
         if (securityToken == null)
         {
@@ -108,7 +110,7 @@ internal static class Rfc6238AuthenticationService
 #endif
     }
 
-    public static bool ValidateCode(byte[] securityToken, int code, string modifier = null)
+    public static bool ValidateCode(byte[] securityToken, int code, string? modifier = null)
     {
         if (securityToken == null)
         {

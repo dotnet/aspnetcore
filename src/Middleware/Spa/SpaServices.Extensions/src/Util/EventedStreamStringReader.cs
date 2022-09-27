@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
 
 namespace Microsoft.AspNetCore.NodeServices.Util;
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.NodeServices.Util;
 /// Captures the completed-line notifications from a <see cref="EventedStreamReader"/>,
 /// combining the data into a single <see cref="string"/>.
 /// </summary>
-internal class EventedStreamStringReader : IDisposable
+internal sealed class EventedStreamStringReader : IDisposable
 {
     private readonly EventedStreamReader _eventedStreamReader;
     private bool _isDisposed;

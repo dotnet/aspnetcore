@@ -1,19 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class LoggingMultiplexedConnectionMiddleware
+internal sealed class LoggingMultiplexedConnectionMiddleware
 {
     private readonly MultiplexedConnectionDelegate _multiplexedNext;
     private readonly ILogger _logger;
@@ -33,7 +29,7 @@ internal class LoggingMultiplexedConnectionMiddleware
     /// Wrap the initial <see cref="MultiplexedConnectionContext"/>.
     /// ConnectionContext's returned from ConnectAsync and AcceptAsync will then be wrapped.
     /// </summary>
-    private class LoggingMultiplexedConnectionContext : MultiplexedConnectionContext
+    private sealed class LoggingMultiplexedConnectionContext : MultiplexedConnectionContext
     {
         private readonly MultiplexedConnectionContext _inner;
         private readonly ILogger _logger;
@@ -87,7 +83,7 @@ internal class LoggingMultiplexedConnectionMiddleware
     /// <summary>
     /// Wraps transport with <see cref="LoggingDuplexPipe"/>.
     /// </summary>
-    private class LoggingConnectionContext : ConnectionContext
+    private sealed class LoggingConnectionContext : ConnectionContext
     {
         private readonly ConnectionContext _inner;
         private readonly ILogger _logger;

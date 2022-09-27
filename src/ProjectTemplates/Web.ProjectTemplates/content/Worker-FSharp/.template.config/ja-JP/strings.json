@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ワーカー サービス",
-    "description": "Worker Service を作成するための空のプロジェクト テンプレート。"
-  }
-}

@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -14,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DefaultPageLoader : PageLoader
+internal sealed class DefaultPageLoader : PageLoader
 {
     private readonly IViewCompilerProvider _viewCompilerProvider;
     private readonly CompiledPageActionDescriptorFactory _compiledPageActionDescriptorFactory;
@@ -90,6 +87,9 @@ internal class DefaultPageLoader : PageLoader
                         }
                     },
             },
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
 
         // In some test scenarios there's no route so the endpoint isn't created. This is fine because

@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.Web;
@@ -69,6 +68,3 @@ internal static class ChangeEventArgsReader
         return result;
     }
 }
-
-
-

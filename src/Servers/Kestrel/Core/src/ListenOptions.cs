@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -113,6 +109,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 
     internal bool IsTls { get; set; }
     internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
+    internal TlsHandshakeCallbackOptions? HttpsCallbackOptions { get; set; }
 
     /// <summary>
     /// Gets the name of this endpoint to display on command-line when the web server starts.
@@ -121,14 +118,12 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
         switch (EndPoint)
         {
-            case IPEndPoint _:
-                return $"{Scheme}://{IPEndPoint}";
             case UnixDomainSocketEndPoint _:
                 return $"{Scheme}://unix:{EndPoint}";
             case FileHandleEndPoint _:
                 return $"{Scheme}://<file handle>";
             default:
-                throw new InvalidOperationException();
+                return $"{Scheme}://{EndPoint}";
         }
     }
 

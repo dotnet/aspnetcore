@@ -13,7 +13,9 @@ namespace Microsoft.Extensions.Localization;
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class ResourceManagerStringProvider : IResourceStringProvider
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly IResourceNamesCache _resourceNamesCache;
     private readonly ResourceManager _resourceManager;
@@ -57,8 +59,8 @@ internal class ResourceManagerStringProvider : IResourceStringProvider
 
         return _resourceNamesCache.GetOrAdd(cacheKey, _ =>
         {
-                // We purposly don't dispose the ResourceSet because it causes an ObjectDisposedException when you try to read the values later.
-                var resourceSet = _resourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
+            // We purposly don't dispose the ResourceSet because it causes an ObjectDisposedException when you try to read the values later.
+            var resourceSet = _resourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
             if (resourceSet == null)
             {
                 if (throwOnMissing)

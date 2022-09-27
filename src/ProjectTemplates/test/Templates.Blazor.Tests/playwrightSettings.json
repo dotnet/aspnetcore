@@ -1,0 +1,29 @@
+{
+  "TimeoutInMilliseconds": 30000,
+  "TimeoutAfterFirstFailureInMilliseconds": 10000,
+  "BaseArtifactsFolder": ".",
+  "GlobalBrowserOptions": {
+    "ChromiumSandbox": true,
+    "Headless": true,
+    "Timeout": 30000
+  },
+  "GlobalContextOptions": {
+    "RecordVideoDir": "videos",
+    "RecordHarPath": "har",
+    "IgnoreHTTPSErrors": true
+  },
+  "BrowserOptions": {
+    "Chromium": {
+      "BrowserKind": "Chromium",
+      "IsEnabled": true
+    },
+    "Firefox": {
+      "BrowserKind": "Firefox",
+      "IsEnabled": false
+    },
+    "Webkit": {
+      "BrowserKind": "Webkit",
+      "IsEnabled": true
+    }
+  }
+}

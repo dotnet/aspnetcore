@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionEndpointDataSourceFactory
+internal sealed class ControllerActionEndpointDataSourceFactory
 {
     private readonly ControllerActionEndpointDataSourceIdProvider _dataSourceIdProvider;
     private readonly IActionDescriptorCollectionProvider _actions;

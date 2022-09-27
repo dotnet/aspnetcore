@@ -36,8 +36,10 @@ public class ServerTests
         }
     }
 
-    [ConditionalFact]
-    public async Task Server_ConnectExistingQueueName_Success()
+    [ConditionalTheory]
+    [InlineData(RequestQueueMode.Attach)]
+    [InlineData(RequestQueueMode.CreateOrAttach)]
+    public async Task Server_ConnectExistingQueueName_Success(RequestQueueMode queueMode)
     {
         string address;
         var queueName = Guid.NewGuid().ToString();
@@ -47,7 +49,7 @@ public class ServerTests
         var statusCode = HttpApi.HttpCreateRequestQueue(
                 HttpApi.Version,
                 queueName,
-                null,
+                IntPtr.Zero,
                 0,
                 out requestQueueHandle);
 
@@ -60,7 +62,7 @@ public class ServerTests
         }, options =>
         {
             options.RequestQueueName = queueName;
-            options.RequestQueueMode = RequestQueueMode.Attach;
+            options.RequestQueueMode = queueMode;
         }))
         {
             var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
@@ -71,6 +73,20 @@ public class ServerTests
             process.Start();
             var netshOutput = await process.StandardOutput.ReadToEndAsync();
             Assert.Contains(queueName, netshOutput);
+
+            var prefix = UrlPrefix.Create(address);
+            switch (queueMode)
+            {
+                case RequestQueueMode.Attach:
+                    Assert.Equal("0", prefix.Port);
+
+                    break;
+                case RequestQueueMode.CreateOrAttach:
+                    Assert.NotEqual("0", prefix.Port);
+                    Assert.Contains(address, netshOutput, StringComparison.OrdinalIgnoreCase);
+
+                    break;
+            }
         }
     }
 
@@ -134,10 +150,10 @@ public class ServerTests
     public async Task Server_ShutdownDuringRequest_Success()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, httpContext =>
             {
-                received.SetResult(0);
+                received.SetResult();
                 httpContext.Response.ContentLength = 11;
                 return httpContext.Response.WriteAsync("Hello World");
             }))
@@ -154,11 +170,11 @@ public class ServerTests
     public async Task Server_DisposeWithoutStopDuringRequest_Aborts()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var stopped = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            received.SetResult(0);
+            received.SetResult();
             await stopped.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             httpContext.Response.ContentLength = 11;
             await httpContext.Response.WriteAsync("Hello World");
@@ -167,7 +183,7 @@ public class ServerTests
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
         }
-        stopped.SetResult(0);
+        stopped.SetResult();
         await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
     }
 
@@ -175,11 +191,11 @@ public class ServerTests
     public async Task Server_ShutdownDuringLongRunningRequest_TimesOut()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var shutdown = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var shutdown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            received.SetResult(0);
+            received.SetResult();
             await shutdown.Task.TimeoutAfter(TimeSpan.FromSeconds(15));
             httpContext.Response.ContentLength = 11;
             await httpContext.Response.WriteAsync("Hello World");
@@ -189,7 +205,7 @@ public class ServerTests
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             await server.StopAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
         }
-        shutdown.SetResult(0);
+        shutdown.SetResult();
         await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
     }
 
@@ -238,14 +254,14 @@ public class ServerTests
     {
         int requestLimit = 10;
         int requestCount = 0;
-        TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        TaskCompletionSource tcs = new TaskCompletionSource();
 
         string address;
         using (Utilities.CreateHttpServer(out address, async httpContext =>
         {
             if (Interlocked.Increment(ref requestCount) == requestLimit)
             {
-                tcs.TrySetResult(null);
+                tcs.TrySetResult();
             }
             else
             {
@@ -267,17 +283,17 @@ public class ServerTests
     public async Task Server_ClientDisconnects_CallCanceled()
     {
         var interval = TimeSpan.FromSeconds(10);
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var aborted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var aborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var canceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             var ct = httpContext.RequestAborted;
             Assert.True(ct.CanBeCanceled, "CanBeCanceled");
             Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-            ct.Register(() => canceled.SetResult(0));
-            received.SetResult(0);
+            ct.Register(() => canceled.SetResult());
+            received.SetResult();
             await aborted.Task.TimeoutAfter(interval);
             await canceled.Task.TimeoutAfter(interval);
             Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -292,7 +308,7 @@ public class ServerTests
                 // Force a RST
                 client.LingerState = new LingerOption(true, 0);
             }
-            aborted.SetResult(0);
+            aborted.SetResult();
             await canceled.Task.TimeoutAfter(interval);
         }
     }
@@ -301,16 +317,16 @@ public class ServerTests
     public async Task Server_Abort_CallCanceled()
     {
         var interval = TimeSpan.FromSeconds(10);
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var canceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             CancellationToken ct = httpContext.RequestAborted;
             Assert.True(ct.CanBeCanceled, "CanBeCanceled");
             Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-            ct.Register(() => canceled.SetResult(0));
-            received.SetResult(0);
+            ct.Register(() => canceled.SetResult());
+            received.SetResult();
             httpContext.Abort();
             await canceled.Task.TimeoutAfter(interval);
             Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -390,7 +406,7 @@ public class ServerTests
         {
             Assert.Null(options.MaxConnections);
             options.MaxConnections = -1; // infinite
-            }, httpContext => Task.FromResult(0)))
+        }, httpContext => Task.FromResult(0)))
         {
             using (var client1 = await SendHungRequestAsync("GET", address))
             using (var client2 = await SendHungRequestAsync("GET", address))
@@ -407,11 +423,11 @@ public class ServerTests
     public async Task Server_MultipleStopAsyncCallsWaitForRequestsToDrain_Success()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var run = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
             {
-                received.SetResult(0);
+                received.SetResult();
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
@@ -429,7 +445,7 @@ public class ServerTests
             Assert.False(stopTask2.IsCompleted);
             Assert.False(stopTask3.IsCompleted);
 
-            run.SetResult(0);
+            run.SetResult();
 
             await Task.WhenAll(stopTask1, stopTask2, stopTask3).TimeoutAfter(TimeSpan.FromSeconds(10));
         }
@@ -441,11 +457,11 @@ public class ServerTests
     public async Task Server_MultipleStopAsyncCallsCompleteOnCancellation_SameToken_Success()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var run = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
             {
-                received.SetResult(0);
+                received.SetResult();
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
@@ -467,7 +483,7 @@ public class ServerTests
 
             await Task.WhenAll(stopTask1, stopTask2, stopTask3).TimeoutAfter(TimeSpan.FromSeconds(10));
 
-            run.SetResult(0);
+            run.SetResult();
 
             string response = await responseTask;
             Assert.Equal("Hello World", response);
@@ -478,11 +494,11 @@ public class ServerTests
     public async Task Server_MultipleStopAsyncCallsCompleteOnSingleCancellation_FirstToken_Success()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var run = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
             {
-                received.SetResult(0);
+                received.SetResult();
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
@@ -504,7 +520,7 @@ public class ServerTests
 
             await Task.WhenAll(stopTask1, stopTask2, stopTask3).TimeoutAfter(TimeSpan.FromSeconds(10));
 
-            run.SetResult(0);
+            run.SetResult();
 
             string response = await responseTask;
             Assert.Equal("Hello World", response);
@@ -515,11 +531,11 @@ public class ServerTests
     public async Task Server_MultipleStopAsyncCallsCompleteOnSingleCancellation_SubsequentToken_Success()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var run = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
             {
-                received.SetResult(0);
+                received.SetResult();
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
@@ -541,7 +557,7 @@ public class ServerTests
 
             await Task.WhenAll(stopTask1, stopTask2, stopTask3).TimeoutAfter(TimeSpan.FromSeconds(10));
 
-            run.SetResult(0);
+            run.SetResult();
 
             string response = await responseTask;
             Assert.Equal("Hello World", response);
@@ -552,13 +568,13 @@ public class ServerTests
     public async Task Server_DisposeContinuesPendingStopAsyncCalls()
     {
         Task<string> responseTask;
-        var received = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var run = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Task stopTask1;
         Task stopTask2;
         using (var server = Utilities.CreateHttpServer(out var address, async httpContext =>
             {
-                received.SetResult(0);
+                received.SetResult();
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(15));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
@@ -575,7 +591,7 @@ public class ServerTests
         }
 
         await Task.WhenAll(stopTask1, stopTask2).TimeoutAfter(TimeSpan.FromSeconds(10));
-        run.SetResult(0);
+        run.SetResult();
     }
 
     [ConditionalFact]
@@ -587,8 +603,10 @@ public class ServerTests
         }
     }
 
-    [ConditionalFact]
-    public async Task Server_AttachToExistingQueue_NoIServerAddresses_NoDefaultAdded()
+    [ConditionalTheory]
+    [InlineData(RequestQueueMode.Attach)]
+    [InlineData(RequestQueueMode.CreateOrAttach)]
+    public async Task Server_AttachToExistingQueue_NoIServerAddresses_NoDefaultAdded(RequestQueueMode queueMode)
     {
         var queueName = Guid.NewGuid().ToString();
         using var server = Utilities.CreateHttpServer(out var address, httpContext => Task.CompletedTask, options =>
@@ -598,7 +616,7 @@ public class ServerTests
         using var attachedServer = Utilities.CreatePump(options =>
         {
             options.RequestQueueName = queueName;
-            options.RequestQueueMode = RequestQueueMode.Attach;
+            options.RequestQueueMode = queueMode;
         });
         await attachedServer.StartAsync(new DummyApplication(context => Task.CompletedTask), default);
         var addressesFeature = attachedServer.Features.Get<IServerAddressesFeature>();

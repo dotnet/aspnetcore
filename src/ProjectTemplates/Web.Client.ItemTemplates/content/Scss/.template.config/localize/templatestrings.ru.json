@@ -1,0 +1,6 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Таблица стилей SCSS (Sass)",
+  "description": "SCSS – это язык, компилируемый в CSS",
+  "postActions/openInEditor/description": "Открывает styleSheet1.scss в редакторе"
+}

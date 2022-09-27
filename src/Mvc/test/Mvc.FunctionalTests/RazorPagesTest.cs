@@ -1,20 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -406,7 +401,6 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         var getResponseBody = await getResponse.Content.ReadAsStringAsync();
         var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/HelloWorlWithPageModelHandler");
         var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
-
 
         var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/HelloWorldWithPageModelHandler");
         postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);

@@ -103,6 +103,7 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39986")]
     public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
     {
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

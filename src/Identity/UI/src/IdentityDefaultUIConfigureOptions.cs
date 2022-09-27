@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Areas.Identity.Filters;
@@ -11,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.UI;
 
-internal class IdentityDefaultUIConfigureOptions<TUser> :
+internal sealed class IdentityDefaultUIConfigureOptions<TUser> :
     IPostConfigureOptions<RazorPagesOptions>,
     IConfigureNamedOptions<CookieAuthenticationOptions> where TUser : class
 {
@@ -25,9 +24,8 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
 
     public IWebHostEnvironment Environment { get; }
 
-    public void PostConfigure(string name, RazorPagesOptions options)
+    public void PostConfigure(string? name, RazorPagesOptions options)
     {
-        name = name ?? throw new ArgumentNullException(nameof(name));
         options = options ?? throw new ArgumentNullException(nameof(options));
 
         options.Conventions.AuthorizeAreaFolder(IdentityUIDefaultAreaName, "/Account/Manage");
@@ -48,9 +46,8 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
         // Nothing to do here as Configure(string name, CookieAuthenticationOptions options) is hte one setting things up.
     }
 
-    public void Configure(string name, CookieAuthenticationOptions options)
+    public void Configure(string? name, CookieAuthenticationOptions options)
     {
-        name = name ?? throw new ArgumentNullException(nameof(name));
         options = options ?? throw new ArgumentNullException(nameof(options));
 
         if (string.Equals(IdentityConstants.ApplicationScheme, name, StringComparison.Ordinal))

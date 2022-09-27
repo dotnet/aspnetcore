@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -167,11 +166,11 @@ internal sealed class AddResponseTypeAttributeCodeFixAction : CodeAction
         return statusCodeConstants;
     }
 
-    private ICollection<(int statusCode, ITypeSymbol? typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
+    private static ICollection<(int statusCode, ITypeSymbol? typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
     {
         var operation = (IMethodBodyBaseOperation)context.SemanticModel.GetOperation(context.MethodSyntax, context.CancellationToken);
 
-        if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, operation, context.CancellationToken, out var actualResponseMetadata))
+        if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, operation, out var actualResponseMetadata))
         {
             // If we cannot parse metadata correctly, don't offer fixes.
             return Array.Empty<(int, ITypeSymbol?)>();

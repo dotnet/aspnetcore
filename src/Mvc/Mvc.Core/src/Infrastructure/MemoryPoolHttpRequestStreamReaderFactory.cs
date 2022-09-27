@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Buffers;
-using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -14,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// An <see cref="IHttpRequestStreamReaderFactory"/> that uses pooled buffers.
 /// </summary>
-internal class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStreamReaderFactory
+internal sealed class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStreamReaderFactory
 {
     /// <summary>
     /// The default size of created char buffers.

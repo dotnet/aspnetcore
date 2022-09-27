@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class OptionsItem
+internal sealed class OptionsItem
 {
     public OptionsItem(IPropertySymbol property, object constantValue)
     {

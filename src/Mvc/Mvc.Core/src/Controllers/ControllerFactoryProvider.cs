@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers;
 
-internal class ControllerFactoryProvider : IControllerFactoryProvider
+internal sealed class ControllerFactoryProvider : IControllerFactoryProvider
 {
     private readonly IControllerActivatorProvider _activatorProvider;
     private readonly Func<ControllerContext, object>? _factoryCreateController;

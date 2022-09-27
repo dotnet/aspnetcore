@@ -6,9 +6,10 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
+#pragma warning restore CA1852 // Seal internal types
 {
-
     public PrerenderComponentApplicationStore()
     {
         ExistingState = new();

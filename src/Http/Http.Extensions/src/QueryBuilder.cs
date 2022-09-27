@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -42,7 +41,6 @@ public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>
     public QueryBuilder(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v ?? string.Empty)))
     {
-
     }
 
     /// <summary>
@@ -71,7 +69,7 @@ public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>
     /// <inheritdoc/>
     public override string ToString()
     {
-        var builder = new StringBuilder();
+        var builder = new ValueStringBuilder();
         bool first = true;
         for (var i = 0; i < _params.Count; i++)
         {

@@ -50,7 +50,6 @@ internal static class HeaderParser
                 if (!string.IsNullOrWhiteSpace(subValue))
                 {
                     yield return subValue.Trim();
-                    start = current + 1;
                 }
             }
         }

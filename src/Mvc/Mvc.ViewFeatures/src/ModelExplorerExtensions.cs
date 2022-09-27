@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -18,6 +17,15 @@ public static class ModelExplorerExtensions
     /// </summary>
     /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
     /// <returns>A simple display string for the model.</returns>
+    /// <remarks>
+    /// The result is obtained from the following sources (the first success wins):
+    /// <see cref="P:Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.SimpleDisplayProperty" />,
+    /// <see cref="ModelExplorer.Model" /> converted to string (if the result is interesting),
+    /// the first internal property converted to string,
+    /// <see cref="P:Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.NullDisplayText"  />
+    /// (when the value is <see langword="null" />).
+    /// This method is not recursive in order to prevent an infinite loop.
+    /// </remarks>
     public static string GetSimpleDisplayText(this ModelExplorer modelExplorer)
     {
         if (modelExplorer == null)

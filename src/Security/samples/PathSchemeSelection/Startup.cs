@@ -37,8 +37,8 @@ public class Startup
             .AddScheme<AuthenticationSchemeOptions, ApiAuthHandler>("Api", o => { })
             .AddCookie(options =>
             {
-                    // Foward any requests that start with /api to that scheme
-                    options.ForwardDefaultSelector = ctx =>
+                // Foward any requests that start with /api to that scheme
+                options.ForwardDefaultSelector = ctx =>
                 {
                     return ctx.Request.Path.StartsWithSegments("/api") ? "Api" : null;
                 };
@@ -61,7 +61,6 @@ public class Startup
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             => Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(_id, "Api")));
     }
-
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

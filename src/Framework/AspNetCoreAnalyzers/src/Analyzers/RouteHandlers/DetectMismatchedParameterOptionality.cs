@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -23,7 +22,16 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var value = invocation.Arguments[1].Value;
+        IOperation? value = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter.Ordinal == 1)
+            {
+                value = argument.Value;
+            }
+        }
+
+        Debug.Assert(value is not null);
         if (value.ConstantValue is not { HasValue: true } constant ||
             constant.Value is not string routeTemplate)
         {
@@ -84,7 +92,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 return false;
             }
 
-            findStartBrace:
+        findStartBrace:
             var startIndex = _routeTemplate.IndexOf('{');
             if (startIndex == -1)
             {
@@ -100,7 +108,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             var tokenStart = startIndex + 1;
 
-            findEndBrace:
+        findEndBrace:
             var endIndex = IndexOf(_routeTemplate, tokenStart, '}');
             if (endIndex == -1)
             {

@@ -1,18 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -376,6 +370,7 @@ public class BodyValidationIntegrationTests
           {
               request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
               request.ContentType = "application/json";
+              request.ContentLength = 0;
           });
         testContext.MvcOptions.AllowEmptyInputInBodyModelBinding = true;
 
@@ -417,6 +412,7 @@ public class BodyValidationIntegrationTests
             {
                 request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                 request.ContentType = "application/json";
+                request.ContentLength = 0;
             });
         testContext.MvcOptions.AllowEmptyInputInBodyModelBinding = true;
 
@@ -441,8 +437,8 @@ public class BodyValidationIntegrationTests
         public int Address { get; set; }
     }
 
-    [Fact] // This tests the 2.0 behavior. Error messages from JSON.NET are not preserved.
-    public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_JsonFormatterAddsModelStateError()
+    [Fact]
+    public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_AddsModelStateError()
     {
         // Arrange
         var testContext = ModelBindingTestHelper.GetTestContext(
@@ -450,6 +446,7 @@ public class BodyValidationIntegrationTests
             {
                 request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                 request.ContentType = "application/json";
+                request.ContentLength = 0;
             });
 
         // Override the AllowInputFormatterExceptionMessages setting ModelBindingTestHelper chooses.
@@ -479,13 +476,11 @@ public class BodyValidationIntegrationTests
         Assert.False(modelState.IsValid);
         var entry = Assert.Single(modelState);
         Assert.Equal("CustomParameter.Address", entry.Key);
-        Assert.Null(entry.Value.AttemptedValue);
+        Assert.Null(entry.Value!.AttemptedValue);
         Assert.Null(entry.Value.RawValue);
-        var error = Assert.Single(entry.Value.Errors);
 
-        // Update me in 3.0 when MvcJsonOptions.AllowInputFormatterExceptionMessages is removed
-        Assert.IsType<JsonSerializationException>(error.Exception);
-        Assert.Empty(error.ErrorMessage);
+        var error = Assert.Single(entry.Value.Errors);
+        Assert.Equal("A non-empty request body is required.", error.ErrorMessage);
     }
 
     private class Person5
@@ -493,6 +488,14 @@ public class BodyValidationIntegrationTests
         [FromBody]
         public Address5 Address { get; set; }
     }
+
+#nullable enable
+    private class Person5WithNullableContext
+    {
+        [FromBody]
+        public Address5 Address { get; set; } = default!;
+    }
+#nullable restore
 
     private class Address5
     {
@@ -593,11 +596,57 @@ public class BodyValidationIntegrationTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, true)]
-    public async Task FromBodyWithEmptyBody_JsonFormatterAddsModelErrorWhenExpected(
-        bool allowEmptyInputInBodyModelBindingSetting,
-        bool expectedModelStateIsValid)
+    [InlineData(typeof(Person5), false)]
+    [InlineData(typeof(Person5WithNullableContext), true)]
+    [InlineData(typeof(Person5WithNullableContext), false)]
+    public async Task FromBodyWithEmptyBody_ModelStateIsInvalid_HasModelErrors(
+        Type modelType,
+        bool allowEmptyInputInBodyModelBindingSetting)
+    {
+        // Arrange
+        var parameter = new ParameterDescriptor
+        {
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo
+            {
+                BinderModelName = "CustomParameter",
+            },
+            ParameterType = modelType
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(
+            request =>
+            {
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
+                request.ContentType = "application/json";
+                request.ContentLength = 0;
+            },
+            options => options.AllowEmptyInputInBodyModelBinding = allowEmptyInputInBodyModelBindingSetting);
+
+        var modelState = testContext.ModelState;
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.True(modelBindingResult.IsModelSet);
+        Assert.IsType(modelType, modelBindingResult.Model);
+
+        Assert.False(modelState.IsValid);
+        var entry = Assert.Single(modelState);
+        Assert.Equal("CustomParameter.Address", entry.Key);
+        var street = entry.Value;
+        Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
+        var error = Assert.Single(street.Errors);
+
+        // Since the message doesn't come from DataAnnotations, we don't have a way to get the
+        // exact string, so just check it's nonempty.
+        Assert.NotEmpty(error.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task FromBodyWithEmptyBody_ModelStateIsValid_WhenAllowEmptyInput()
     {
         // Arrange
         var parameter = new ParameterDescriptor
@@ -615,8 +664,9 @@ public class BodyValidationIntegrationTests
             {
                 request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                 request.ContentType = "application/json";
+                request.ContentLength = 0;
             },
-            options => options.AllowEmptyInputInBodyModelBinding = allowEmptyInputInBodyModelBindingSetting);
+            options => options.AllowEmptyInputInBodyModelBinding = true);
 
         var modelState = testContext.ModelState;
         var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
@@ -626,26 +676,8 @@ public class BodyValidationIntegrationTests
 
         // Assert
         Assert.True(modelBindingResult.IsModelSet);
-        var boundPerson = Assert.IsType<Person5>(modelBindingResult.Model);
-        Assert.NotNull(boundPerson);
-
-        if (expectedModelStateIsValid)
-        {
-            Assert.True(modelState.IsValid);
-        }
-        else
-        {
-            Assert.False(modelState.IsValid);
-            var entry = Assert.Single(modelState);
-            Assert.Equal("CustomParameter.Address", entry.Key);
-            var street = entry.Value;
-            Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
-            var error = Assert.Single(street.Errors);
-
-            // Since the message doesn't come from DataAnnotations, we don't have a way to get the
-            // exact string, so just check it's nonempty.
-            Assert.NotEmpty(error.ErrorMessage);
-        }
+        Assert.IsType<Person5>(modelBindingResult.Model);
+        Assert.True(modelState.IsValid);
     }
 
     private class Person2

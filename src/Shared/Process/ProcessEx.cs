@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Internal;
 
-internal class ProcessEx : IDisposable
+internal sealed class ProcessEx : IDisposable
 {
     private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(15);
     private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
@@ -47,7 +47,6 @@ internal class ProcessEx : IDisposable
         proc.Exited += OnProcessExited;
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
-
 
         // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
         // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."

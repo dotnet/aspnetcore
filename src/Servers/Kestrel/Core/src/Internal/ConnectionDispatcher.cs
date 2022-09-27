@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class ConnectionDispatcher<T> where T : BaseConnectionContext
+internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 {
     private readonly ServiceContext _serviceContext;
     private readonly Func<T, Task> _connectionDelegate;

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Identity;
 
 /// <summary>
@@ -22,5 +19,5 @@ public class SecurityStampValidatorOptions
     /// <summary>
     /// Invoked when the default security stamp validator replaces the user's ClaimsPrincipal in the cookie.
     /// </summary>
-    public Func<SecurityStampRefreshingPrincipalContext, Task> OnRefreshingPrincipal { get; set; }
+    public Func<SecurityStampRefreshingPrincipalContext, Task>? OnRefreshingPrincipal { get; set; }
 }

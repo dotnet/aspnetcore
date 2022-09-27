@@ -1,16 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
@@ -43,7 +37,6 @@ public class IdentityBuilderTest
         Assert.Null(sp.GetService<IRoleStore<PocoRole>>());
         Assert.Throws<InvalidOperationException>(() => sp.GetService<RoleManager<PocoRole>>());
     }
-
 
     [Fact]
     public void CanOverrideUserStore()

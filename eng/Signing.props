@@ -79,6 +79,7 @@
     <FileSignInfo Include="dotnet-user-secrets.exe" CertificateName="MicrosoftDotNet500" />
     <FileSignInfo Include="dotnet-watch.exe" CertificateName="MicrosoftDotNet500" />
     <FileSignInfo Include="dotnet-openapi.exe" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Include="dotnet-user-jwts.exe" CertificateName="MicrosoftDotNet500" />
     <FileSignInfo Include="Microsoft.AspNetCore.Blazor.Build.exe" CertificateName="MicrosoftDotNet500" />
     <FileSignInfo Include="sni.dll" CertificateName="MicrosoftDotNet500" />
 

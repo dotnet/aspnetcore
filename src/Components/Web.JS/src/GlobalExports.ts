@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { navigateTo, internalFunctions as navigationManagerInternalFunctions, NavigationOptions } from './Services/NavigationManager';
 import { domFunctions } from './DomWrapper';
 import { Virtualize } from './Virtualize';
@@ -5,6 +8,7 @@ import { PageTitle } from './PageTitle';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
 import { HubConnection } from '@microsoft/signalr';
 import { InputFile } from './InputFile';
+import { NavigationLock } from './NavigationLock';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
@@ -31,6 +35,7 @@ interface IBlazor {
     PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
+    NavigationLock: typeof NavigationLock,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
     endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
@@ -60,7 +65,7 @@ interface IBlazor {
     attachWebRendererInterop?: typeof attachWebRendererInterop,
 
     // APIs invoked by hot reload
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void,
     getApplyUpdateCapabilities?: () => string,
   }
 }
@@ -76,6 +81,7 @@ export const Blazor: IBlazor = {
     Virtualize,
     PageTitle,
     InputFile,
+    NavigationLock,
     getJSDataStreamChunk: getNextChunk,
     receiveDotNetDataStream: receiveDotNetDataStream,
     attachWebRendererInterop,

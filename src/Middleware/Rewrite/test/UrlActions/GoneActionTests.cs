@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions;
 

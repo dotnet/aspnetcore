@@ -1,15 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace RewriteSample;
 
@@ -55,8 +48,8 @@ public class Startup
                     options.Listen(IPAddress.Loopback, 5000);
                     options.Listen(IPAddress.Loopback, 5001, listenOptions =>
                     {
-                            // Configure SSL
-                            listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        // Configure SSL
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
                     });
                 })
                 .UseStartup<Startup>()

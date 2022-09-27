@@ -92,7 +92,6 @@ namespace AspNetCore
 }
 #pragma warning restore 1591";
 
-
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 

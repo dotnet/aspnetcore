@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core Web 應用程式 (Model-View-Controller)",
-    "description": "用於建立 ASP.NET Core 應用程式的專案範本，附有 ASP.NET Core MVC 的檢視及控制器範例。此範本也可用於 RESTful HTTP 服務。"
-  }
-}

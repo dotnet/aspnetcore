@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.NodeServices.Npm;
 using Microsoft.AspNetCore.NodeServices.Util;
@@ -50,9 +46,9 @@ internal static class AngularCliMiddleware
 
         SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
         {
-                // On each request, we create a separate startup task with its own timeout. That way, even if
-                // the first request times out, subsequent requests could still work.
-                var timeout = spaBuilder.Options.StartupTimeout;
+            // On each request, we create a separate startup task with its own timeout. That way, even if
+            // the first request times out, subsequent requests could still work.
+            var timeout = spaBuilder.Options.StartupTimeout;
             return angularCliServerInfoTask.WithTimeout(timeout,
                 $"The Angular CLI process did not start listening for requests " +
                 $"within the timeout period of {timeout.TotalSeconds} seconds. " +

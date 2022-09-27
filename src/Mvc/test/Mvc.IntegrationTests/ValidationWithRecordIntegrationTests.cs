@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -20,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -234,7 +227,6 @@ public class ValidationWithRecordIntegrationTests
 
     private record Order2([Required] Person2 Customer);
 
-
     private record Person2(string Name);
 
     [Fact]
@@ -370,8 +362,8 @@ public class ValidationWithRecordIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?parameter.Customer.Age=17");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?parameter.Customer.Age=17");
         });
 
         var modelState = testContext.ModelState;
@@ -455,8 +447,8 @@ public class ValidationWithRecordIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?");
         });
 
         var modelState = testContext.ModelState;
@@ -535,8 +527,8 @@ public class ValidationWithRecordIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?parameter[0].Name=bill");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?parameter[0].Name=bill");
         });
 
         var modelState = testContext.ModelState;
@@ -1735,8 +1727,8 @@ public class ValidationWithRecordIntegrationTests
         var testContext = ModelBindingTestHelper.GetTestContext(
             request =>
             {
-                    // This string is too long and will have a validation error.
-                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
+                // This string is too long and will have a validation error.
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
                 request.ContentType = "application/json";
             });
 

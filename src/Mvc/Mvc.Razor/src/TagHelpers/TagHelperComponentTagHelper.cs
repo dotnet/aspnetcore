@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -17,10 +14,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 /// Initializes and processes the <see cref="ITagHelperComponent"/>s added to the
 /// <see cref="ITagHelperComponentManager.Components"/> in the specified order.
 /// </summary>
-public abstract class TagHelperComponentTagHelper : TagHelper
+public abstract partial class TagHelperComponentTagHelper : TagHelper
 {
     private readonly ILogger _logger;
-    private readonly IEnumerable<ITagHelperComponent> _components;
+    private readonly ITagHelperComponent[] _components;
 
     /// <summary>
     /// Creates a new <see cref="TagHelperComponentTagHelper"/> and orders the
@@ -36,15 +33,8 @@ public abstract class TagHelperComponentTagHelper : TagHelper
         ITagHelperComponentManager manager,
         ILoggerFactory loggerFactory)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _components = manager.Components.OrderBy(p => p.Order).ToArray();
         _logger = loggerFactory.CreateLogger(GetType());
@@ -72,13 +62,14 @@ public abstract class TagHelperComponentTagHelper : TagHelper
             PropertyActivator = serviceProvider.GetRequiredService<ITagHelperComponentPropertyActivator>();
         }
 
-        foreach (var component in _components)
+        for (var i = 0; i < _components.Length; i++)
         {
+            var component = _components[i];
             PropertyActivator.Activate(ViewContext, component);
             component.Init(context);
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.TagHelperComponentInitialized(component.GetType().FullName!);
+                Log.TagHelperComponentInitialized(_logger, component.GetType().FullName!);
             }
         }
     }
@@ -86,13 +77,23 @@ public abstract class TagHelperComponentTagHelper : TagHelper
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        foreach (var component in _components)
+        for (var i = 0; i < _components.Length; i++)
         {
+            var component = _components[i];
             await component.ProcessAsync(context, output);
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.TagHelperComponentProcessed(component.GetType().FullName!);
+                Log.TagHelperComponentProcessed(_logger, component.GetType().FullName!);
             }
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(2, LogLevel.Debug, "Tag helper component '{ComponentName}' initialized.", EventName = "TagHelperComponentInitialized", SkipEnabledCheck = true)]
+        public static partial void TagHelperComponentInitialized(ILogger logger, string componentName);
+
+        [LoggerMessage(3, LogLevel.Debug, "Tag helper component '{ComponentName}' processed.", EventName = "TagHelperComponentProcessed", SkipEnabledCheck = true)]
+        public static partial void TagHelperComponentProcessed(ILogger logger, string componentName);
     }
 }

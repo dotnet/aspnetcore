@@ -37,8 +37,8 @@ public class KestrelServerOptionsTests
 
         options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), opt =>
         {
-                // ConfigureEndpointDefaults runs before this callback
-                Assert.Equal(HttpProtocols.Http1, opt.Protocols);
+            // ConfigureEndpointDefaults runs before this callback
+            Assert.Equal(HttpProtocols.Http1, opt.Protocols);
         });
         Assert.Equal(HttpProtocols.Http1, options.CodeBackedListenOptions[1].Protocols);
 
@@ -46,7 +46,7 @@ public class KestrelServerOptionsTests
         {
             Assert.Equal(HttpProtocols.Http1, opt.Protocols);
             opt.Protocols = HttpProtocols.Http2; // Can be overriden
-            });
+        });
         Assert.Equal(HttpProtocols.Http2, options.CodeBackedListenOptions[2].Protocols);
 
         options.ListenAnyIP(5000, opt =>

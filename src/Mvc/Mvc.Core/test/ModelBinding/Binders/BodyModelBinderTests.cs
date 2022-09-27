@@ -1,16 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -18,7 +12,6 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -212,7 +205,7 @@ public class BodyModelBinderTests
             metadataProvider: provider);
         bindingContext.BinderModelName = "custom";
 
-        var binder = CreateBinder(new[] { inputFormatter }, treatEmptyInputAsDefaultValueOption : true);
+        var binder = CreateBinder(new[] { inputFormatter }, treatEmptyInputAsDefaultValueOption: true);
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -778,8 +771,8 @@ public class BodyModelBinderTests
         public TestableJsonInputFormatter(bool throwNonInputFormatterException)
             : base(GetLogger(), new JsonSerializerSettings(), ArrayPool<char>.Shared, new DefaultObjectPoolProvider(), new MvcOptions(), new MvcNewtonsoftJsonOptions()
             {
-                    // The tests that use this class rely on the 2.1 behavior of this formatter.
-                    AllowInputFormatterExceptionMessages = true,
+                // The tests that use this class rely on the 2.1 behavior of this formatter.
+                AllowInputFormatterExceptionMessages = true,
             })
         {
             _throwNonInputFormatterException = throwNonInputFormatterException;
@@ -848,8 +841,8 @@ public class BodyModelBinderTests
         public DerivedJsonInputFormatter(bool throwNonInputFormatterException)
             : base(GetLogger(), new JsonSerializerSettings(), ArrayPool<char>.Shared, new DefaultObjectPoolProvider(), new MvcOptions(), new MvcNewtonsoftJsonOptions()
             {
-                    // The tests that use this class rely on the 2.1 behavior of this formatter.
-                    AllowInputFormatterExceptionMessages = true,
+                // The tests that use this class rely on the 2.1 behavior of this formatter.
+                AllowInputFormatterExceptionMessages = true,
             })
         {
             _throwNonInputFormatterException = throwNonInputFormatterException;

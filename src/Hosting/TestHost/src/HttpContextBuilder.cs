@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
+internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
 {
     private readonly ApplicationWrapper _application;
     private readonly bool _preserveExecutionContext;
@@ -29,7 +25,7 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
     private readonly Pipe _requestPipe;
 
     private Action<HttpContext>? _responseReadCompleteCallback;
-    private Task? _sendRequestStreamTask;
+    private Func<PipeWriter, Task>? _sendRequestStream;
 
     internal HttpContextBuilder(ApplicationWrapper application, bool allowSynchronousIO, bool preserveExecutionContext)
     {
@@ -79,7 +75,7 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
             throw new ArgumentNullException(nameof(sendRequestStream));
         }
 
-        _sendRequestStreamTask = sendRequestStream(_requestPipe.Writer);
+        _sendRequestStream = sendRequestStream;
     }
 
     internal void RegisterResponseReadCompleteCallback(Action<HttpContext> responseReadCompleteCallback)
@@ -111,6 +107,18 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
             _testContext = _application.CreateContext(_httpContext.Features);
             try
             {
+                if (_sendRequestStream != null)
+                {
+                    // Read content into a pipe in a background task.
+                    // A background task allows duplex streaming scenarios.
+                    var requestTask = _sendRequestStream(_requestPipe.Writer);
+                    // Observe synchronous exceptions immediately.
+                    if (requestTask.IsCompleted)
+                    {
+                        await requestTask;
+                    }
+                }
+
                 await _application.ProcessRequestAsync(_testContext);
 
                 // Determine whether request body was complete when the delegate exited.
@@ -232,7 +240,7 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
             {
                 newFeatures[pair.Key] = pair.Value;
             }
-            var serverResponseFeature = _httpContext.Features.Get<IHttpResponseFeature>()!;
+            var serverResponseFeature = _httpContext.Features.GetRequiredFeature<IHttpResponseFeature>();
             // The client gets a deep copy of this so they can interact with the body stream independently of the server.
             var clientResponseFeature = new HttpResponseFeature()
             {

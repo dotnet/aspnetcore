@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,7 +11,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Web.Rendering;
 
@@ -97,7 +91,6 @@ public class RemoteRendererTest
         Assert.Equal(9, renderer._unacknowledgedRenderBatches.Count);
     }
 
-
     [Fact]
     public async Task ProducesNewBatch_WhenABatchGetsAcknowledged()
     {
@@ -131,9 +124,9 @@ public class RemoteRendererTest
         var serviceProvider = CreateServiceProvider();
         var renderIds = new List<long>();
 
-        var firstBatchTCS = new TaskCompletionSource<object>();
-        var secondBatchTCS = new TaskCompletionSource<object>();
-        var thirdBatchTCS = new TaskCompletionSource<object>();
+        var firstBatchTCS = new TaskCompletionSource();
+        var secondBatchTCS = new TaskCompletionSource();
+        var thirdBatchTCS = new TaskCompletionSource();
 
         var initialClient = new Mock<IClientProxy>();
         initialClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -158,7 +151,7 @@ public class RemoteRendererTest
         _ = renderer.OnRenderCompletedAsync(2, null);
 
         @event.Reset();
-        firstBatchTCS.SetResult(null);
+        firstBatchTCS.SetResult();
 
         // Waiting is required here because the continuations of SetResult will not execute synchronously.
         @event.Wait(Timeout);
@@ -176,8 +169,8 @@ public class RemoteRendererTest
             _ = renderer.OnRenderCompletedAsync(id, null);
         }
 
-        secondBatchTCS.SetResult(null);
-        thirdBatchTCS.SetResult(null);
+        secondBatchTCS.SetResult();
+        thirdBatchTCS.SetResult();
 
         // Assert
         Assert.Equal(new long[] { 2, 3, 4 }, renderIds);
@@ -191,8 +184,8 @@ public class RemoteRendererTest
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var firstBatchTCS = new TaskCompletionSource<object>();
-        var secondBatchTCS = new TaskCompletionSource<object>();
+        var firstBatchTCS = new TaskCompletionSource();
+        var secondBatchTCS = new TaskCompletionSource();
         var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
         offlineClient.SetDisconnected();
         var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
@@ -240,8 +233,8 @@ public class RemoteRendererTest
         // Receive the ack for the second batch
         _ = renderer.OnRenderCompletedAsync(3, null);
 
-        firstBatchTCS.SetResult(null);
-        secondBatchTCS.SetResult(null);
+        firstBatchTCS.SetResult();
+        secondBatchTCS.SetResult();
         // Repeat the ack for the third batch
         _ = renderer.OnRenderCompletedAsync(3, null);
 
@@ -254,8 +247,8 @@ public class RemoteRendererTest
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var firstBatchTCS = new TaskCompletionSource<object>();
-        var secondBatchTCS = new TaskCompletionSource<object>();
+        var firstBatchTCS = new TaskCompletionSource();
+        var secondBatchTCS = new TaskCompletionSource();
         var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
         offlineClient.SetDisconnected();
         var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
@@ -303,8 +296,8 @@ public class RemoteRendererTest
         // Receive the ack for the second batch
         _ = renderer.OnRenderCompletedAsync(2, null);
 
-        firstBatchTCS.SetResult(null);
-        secondBatchTCS.SetResult(null);
+        firstBatchTCS.SetResult();
+        secondBatchTCS.SetResult();
         // Repeat the ack for the third batch
         _ = renderer.OnRenderCompletedAsync(3, null);
 
@@ -317,8 +310,8 @@ public class RemoteRendererTest
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var firstBatchTCS = new TaskCompletionSource<object>();
-        var secondBatchTCS = new TaskCompletionSource<object>();
+        var firstBatchTCS = new TaskCompletionSource();
+        var secondBatchTCS = new TaskCompletionSource();
         var renderIds = new List<long>();
 
         var onlineClient = new Mock<IClientProxy>();
@@ -361,8 +354,8 @@ public class RemoteRendererTest
 
         // Pretend that we missed the ack for the initial batch
         _ = renderer.OnRenderCompletedAsync(3, null);
-        firstBatchTCS.SetResult(null);
-        secondBatchTCS.SetResult(null);
+        firstBatchTCS.SetResult();
+        secondBatchTCS.SetResult();
 
         // Assert
         Assert.Empty(exceptions);
@@ -374,8 +367,8 @@ public class RemoteRendererTest
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var firstBatchTCS = new TaskCompletionSource<object>();
-        var secondBatchTCS = new TaskCompletionSource<object>();
+        var firstBatchTCS = new TaskCompletionSource();
+        var secondBatchTCS = new TaskCompletionSource();
         var renderIds = new List<long>();
 
         var onlineClient = new Mock<IClientProxy>();
@@ -417,8 +410,8 @@ public class RemoteRendererTest
         };
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.OnRenderCompletedAsync(4, null));
-        firstBatchTCS.SetResult(null);
-        secondBatchTCS.SetResult(null);
+        firstBatchTCS.SetResult();
+        secondBatchTCS.SetResult();
 
         // Assert
         Assert.Equal(
@@ -458,7 +451,7 @@ public class RemoteRendererTest
         }
 
         private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
-            => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions()), null);
+            => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), null);
     }
 
     private class TestComponent : IComponent, IHandleAfterRender

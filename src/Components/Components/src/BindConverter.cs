@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -40,7 +39,7 @@ public static class BindConverter
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string? FormatValue(string? value, CultureInfo? culture = null) => FormatStringValueCore(value, culture);
 
-    private static string? FormatStringValueCore(string? value, CultureInfo? culture)
+    private static string? FormatStringValueCore(string? value, CultureInfo? _)
     {
         return value;
     }
@@ -62,7 +61,7 @@ public static class BindConverter
     }
 
     // Used with generics
-    private static object FormatBoolValueCore(bool value, CultureInfo? culture)
+    private static object FormatBoolValueCore(bool value, CultureInfo? _)
     {
         // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
         // to work.
@@ -86,7 +85,7 @@ public static class BindConverter
     }
 
     // Used with generics
-    private static object? FormatNullableBoolValueCore(bool? value, CultureInfo? culture)
+    private static object? FormatNullableBoolValueCore(bool? value, CultureInfo? _)
     {
         // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
         // to work.
@@ -412,7 +411,6 @@ public static class BindConverter
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string FormatValue(DateTimeOffset value, CultureInfo? culture = null) => FormatDateTimeOffsetValueCore(value, format: null, culture);
 
-
     /// <summary>
     /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
     /// </summary>
@@ -664,7 +662,7 @@ public static class BindConverter
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
     }
 
-    private static string? FormatEnumValueCore<T>(T value, CultureInfo? culture)
+    private static string? FormatEnumValueCore<T>(T value, CultureInfo? _)
     {
         if (value == null)
         {
@@ -1573,7 +1571,36 @@ public static class BindConverter
         return false;
     }
 
-    private static bool ConvertToEnum<T>(object? obj, CultureInfo? culture, out T value) where T : struct, Enum
+    internal static readonly BindParser<Guid> ConvertToGuid = ConvertToGuidCore;
+    internal static readonly BindParser<Guid?> ConvertToNullableGuid = ConvertToNullableGuidCore;
+
+    private static bool ConvertToGuidCore(object? obj, CultureInfo? culture, out Guid value)
+    {
+        ConvertToNullableGuidCore(obj, culture, out var converted);
+        value = converted.GetValueOrDefault();
+        return converted.HasValue;
+    }
+
+    private static bool ConvertToNullableGuidCore(object? obj, CultureInfo? culture, out Guid? value)
+    {
+        var text = (string?)obj;
+        if (string.IsNullOrEmpty(text))
+        {
+            value = default;
+            return true;
+        }
+
+        if (!Guid.TryParse(text, out var converted))
+        {
+            value = default;
+            return false;
+        }
+
+        value = converted;
+        return true;
+    }
+
+    private static bool ConvertToEnum<T>(object? obj, CultureInfo? _, out T value) where T : struct, Enum
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1598,7 +1625,7 @@ public static class BindConverter
         return true;
     }
 
-    private static bool ConvertToNullableEnum<T>(object? obj, CultureInfo? culture, out T? value) where T : struct, Enum
+    private static bool ConvertToNullableEnum<T>(object? obj, CultureInfo? _, out T? value) where T : struct, Enum
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1799,6 +1826,7 @@ public static class BindConverter
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindFormatter<T> MakeTypeConverterFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));
@@ -1934,6 +1962,14 @@ public static class BindConverter
                 {
                     parser = ConvertToNullableTimeOnly;
                 }
+                else if (typeof(T) == typeof(Guid))
+                {
+                    parser = ConvertToGuid;
+                }
+                else if (typeof(T) == typeof(Guid?))
+                {
+                    parser = ConvertToNullableGuid;
+                }
                 else if (typeof(T).IsEnum)
                 {
                     // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
@@ -1993,6 +2029,7 @@ public static class BindConverter
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));

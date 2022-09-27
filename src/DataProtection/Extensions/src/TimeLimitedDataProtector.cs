@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNetCore.DataProtection.Extensions;
@@ -142,7 +143,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
             throw new ArgumentNullException(nameof(protectedData));
         }
 
-        DateTimeOffset expiration; // unused
-        return Unprotect(protectedData, out expiration);
+        return Unprotect(protectedData, out _);
     }
 }

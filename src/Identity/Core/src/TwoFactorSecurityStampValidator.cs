@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Logging;
@@ -31,7 +30,7 @@ public class TwoFactorSecurityStampValidator<TUser> : SecurityStampValidator<TUs
     /// </summary>
     /// <param name="principal">The principal to verify.</param>
     /// <returns>The verified user or null if verification fails.</returns>
-    protected override Task<TUser> VerifySecurityStamp(ClaimsPrincipal principal)
+    protected override Task<TUser?> VerifySecurityStamp(ClaimsPrincipal? principal)
         => SignInManager.ValidateTwoFactorSecurityStampAsync(principal);
 
     /// <summary>

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -16,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 
 // This is a bridge that allows us to execute IActionConstraint instance when
 // used with Matcher.
-internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
+internal sealed class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
 {
     // We need to be able to run IActionConstraints on Endpoints that aren't associated
     // with an action. This is a sentinel value we use when the endpoint isn't from MVC.
@@ -57,7 +53,7 @@ internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorP
 
         return false;
 
-        bool HasSignificantActionConstraint(IList<IActionConstraintMetadata> constraints)
+        static bool HasSignificantActionConstraint(IList<IActionConstraintMetadata> constraints)
         {
             for (var i = 0; i < constraints.Count; i++)
             {

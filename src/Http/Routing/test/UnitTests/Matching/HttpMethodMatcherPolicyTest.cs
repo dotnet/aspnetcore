@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Xunit;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
@@ -153,6 +149,28 @@ public class HttpMethodMatcherPolicyTest
 
         // Assert
         Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task IEndpointSelectorPolicy_ApplyAsync_ProcessesInvalidCandidate(int candidateNum)
+    {
+        var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+        var endpoints = new RouteEndpoint[candidateNum];
+        for (int i = 0; i < candidateNum; i++)
+        {
+            endpoints[i] = CreateEndpoint("/", new HttpMethodMetadata(new[] { "DEL" }));
+        }
+
+        var candidates = new CandidateSet(endpoints, new RouteValueDictionary[endpoints.Length], Enumerable.Repeat<int>(-1, candidateNum).ToArray());
+        var httpContext = new DefaultHttpContext();
+
+        await policy.ApplyAsync(httpContext, candidates);
+
+        Assert.Equal(httpContext.GetEndpoint().Metadata, EndpointMetadataCollection.Empty);
+        Assert.True(string.Equals(httpContext.GetEndpoint().DisplayName, Http405EndpointDisplayName, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

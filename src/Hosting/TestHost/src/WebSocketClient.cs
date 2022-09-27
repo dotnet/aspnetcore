@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
@@ -92,8 +87,8 @@ public class WebSocketClient
 
             request.Body = Stream.Null;
 
-                // WebSocket
-                webSocketFeature = new WebSocketFeature(context);
+            // WebSocket
+            webSocketFeature = new WebSocketFeature(context);
             context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
 
             ConfigureRequest?.Invoke(context.Request);
@@ -115,14 +110,14 @@ public class WebSocketClient
         return webSocketFeature.ClientWebSocket;
     }
 
-    private string CreateRequestKey()
+    private static string CreateRequestKey()
     {
         byte[] data = new byte[16];
         RandomNumberGenerator.Fill(data);
         return Convert.ToBase64String(data);
     }
 
-    private class WebSocketFeature : IHttpWebSocketFeature
+    private sealed class WebSocketFeature : IHttpWebSocketFeature
     {
         private readonly HttpContext _httpContext;
 

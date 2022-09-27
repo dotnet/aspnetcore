@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +14,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// Provides access to the antiforgery system, which provides protection against
 /// Cross-site Request Forgery (XSRF, also called CSRF) attacks.
 /// </summary>
-internal class DefaultAntiforgery : IAntiforgery
+internal sealed class DefaultAntiforgery : IAntiforgery
 {
     private readonly AntiforgeryOptions _options;
     private readonly IAntiforgeryTokenGenerator _tokenGenerator;
@@ -375,7 +373,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// Sets the 'Cache-Control' header to 'no-cache, no-store' and 'Pragma' header to 'no-cache' overriding any user set value.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
+    private void SetDoNotCacheHeaders(HttpContext httpContext)
     {
         var logWarning = false;
         var responseHeaders = httpContext.Response.Headers;

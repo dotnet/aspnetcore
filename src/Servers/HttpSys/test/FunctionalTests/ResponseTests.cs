@@ -44,8 +44,8 @@ public class ResponseTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
             httpContext.Response.StatusCode = 201;
-                // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
-                return Task.FromResult(0);
+            // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
+            return Task.FromResult(0);
         }))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
@@ -65,7 +65,7 @@ public class ResponseTests
             httpContext.Response.StatusCode = 201;
             httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
                                                                                                   // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
-                return Task.FromResult(0);
+            return Task.FromResult(0);
         }))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
@@ -126,24 +126,24 @@ public class ResponseTests
     [ConditionalFact]
     public async Task Response_Empty_CallsOnStartingAndOnCompleted()
     {
-        var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onStartingCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             httpContext.Response.OnStarting(state =>
             {
                 Assert.Same(state, httpContext);
-                onStartingCalled.SetResult(0);
-                return Task.FromResult(0);
+                onStartingCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
             httpContext.Response.OnCompleted(state =>
             {
                 Assert.Same(state, httpContext);
-                onCompletedCalled.SetResult(0);
-                return Task.FromResult(0);
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }))
         {
             var response = await SendRequestAsync(address);
@@ -157,22 +157,22 @@ public class ResponseTests
     [ConditionalFact]
     public async Task Response_OnStartingThrows_StillCallsOnCompleted()
     {
-        var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onStartingCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             httpContext.Response.OnStarting(state =>
             {
-                onStartingCalled.SetResult(0);
+                onStartingCalled.SetResult();
                 throw new Exception("Failed OnStarting");
             }, httpContext);
             httpContext.Response.OnCompleted(state =>
             {
                 Assert.Same(state, httpContext);
-                onCompletedCalled.SetResult(0);
-                return Task.FromResult(0);
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }))
         {
             var response = await SendRequestAsync(address);
@@ -186,23 +186,23 @@ public class ResponseTests
     [ConditionalFact]
     public async Task Response_OnStartingThrowsAfterWrite_WriteThrowsAndStillCallsOnCompleted()
     {
-        var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onStartingCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             httpContext.Response.OnStarting(state =>
             {
-                onStartingCalled.SetResult(0);
+                onStartingCalled.SetResult();
                 throw new InvalidTimeZoneException("Failed OnStarting");
             }, httpContext);
             httpContext.Response.OnCompleted(state =>
             {
                 Assert.Same(state, httpContext);
-                onCompletedCalled.SetResult(0);
-                return Task.FromResult(0);
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
             Assert.Throws<InvalidTimeZoneException>(() => httpContext.Response.Body.Write(new byte[10], 0, 10));
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }))
         {
             var response = await SendRequestAsync(address);
@@ -234,9 +234,9 @@ public class ResponseTests
 
             try
             {
-                    // https://github.com/dotnet/aspnetcore/issues/12194
-                    // Modifying the response after the client has disconnected must be allowed.
-                    Assert.False(httpContext.Response.HasStarted);
+                // https://github.com/dotnet/aspnetcore/issues/12194
+                // Modifying the response after the client has disconnected must be allowed.
+                Assert.False(httpContext.Response.HasStarted);
                 httpContext.Response.StatusCode = 400;
                 httpContext.Response.ContentType = "text/plain";
                 await httpContext.Response.WriteAsync("Body");

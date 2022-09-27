@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
-internal class SystemDateTime : ISystemDateTime
+internal sealed class SystemDateTime : ISystemDateTime
 {
     public DateTime Now => DateTime.Now;
 }

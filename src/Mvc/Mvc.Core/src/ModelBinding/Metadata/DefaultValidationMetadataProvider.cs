@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// <summary>
 /// A default implementation of <see cref="IValidationMetadataProvider"/>.
 /// </summary>
-internal class DefaultValidationMetadataProvider : IValidationMetadataProvider
+internal sealed class DefaultValidationMetadataProvider : IValidationMetadataProvider
 {
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)

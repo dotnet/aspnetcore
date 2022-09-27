@@ -48,7 +48,6 @@ public class ChunkingCookieManagerBenchmark
         _stringToAdd = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
 
-
     [Benchmark]
     public void AppendCookies()
     {

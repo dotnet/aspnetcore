@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 
-internal class ActionConstraintCache
+internal sealed class ActionConstraintCache
 {
     private readonly IActionDescriptorCollectionProvider _collectionProvider;
     private readonly IActionConstraintProvider[] _actionConstraintProviders;
@@ -134,7 +133,7 @@ internal class ActionConstraintCache
         }
     }
 
-    private IReadOnlyList<IActionConstraint>? ExtractActionConstraints(List<ActionConstraintItem> items)
+    private static IReadOnlyList<IActionConstraint>? ExtractActionConstraints(List<ActionConstraintItem> items)
     {
         var count = 0;
         for (var i = 0; i < items.Count; i++)
@@ -164,7 +163,7 @@ internal class ActionConstraintCache
         return actionConstraints;
     }
 
-    internal class InnerCache
+    internal sealed class InnerCache
     {
         private readonly ActionDescriptorCollection _actions;
 

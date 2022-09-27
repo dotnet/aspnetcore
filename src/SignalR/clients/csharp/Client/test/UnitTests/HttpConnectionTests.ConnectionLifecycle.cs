@@ -159,8 +159,8 @@ public partial class HttpConnectionTests
                             "(WebSockets failed: Transport failed to start) (ServerSentEvents failed: Transport failed to start) (LongPolling failed: Transport failed to start)",
                             ex.Message);
 
-                            // If websockets aren't supported then we expect one less attmept to start.
-                            if (!TestHelpers.IsWebSocketsSupported())
+                        // If websockets aren't supported then we expect one less attmept to start.
+                        if (!TestHelpers.IsWebSocketsSupported())
                         {
                             availableTransports -= 1;
                         }
@@ -197,23 +197,23 @@ public partial class HttpConnectionTests
                             onTransportStop: SyncPoint.Create(out var transportStop))),
                     async (connection) =>
                     {
-                            // Start the connection and wait for the transport to start up.
-                            var startTask = connection.StartAsync();
+                        // Start the connection and wait for the transport to start up.
+                        var startTask = connection.StartAsync();
                         await transportStart.WaitForSyncPoint().DefaultTimeout();
 
-                            // While the transport is starting, dispose the connection
-                            var disposeTask = connection.DisposeAsync();
+                        // While the transport is starting, dispose the connection
+                        var disposeTask = connection.DisposeAsync();
                         transportStart.Continue(); // We need to release StartAsync, because Dispose waits for it.
 
-                            // Wait for start to finish, as that has to finish before the transport will be stopped.
-                            await startTask.DefaultTimeout();
+                        // Wait for start to finish, as that has to finish before the transport will be stopped.
+                        await startTask.DefaultTimeout();
 
-                            // Then release DisposeAsync (via the transport StopAsync call)
-                            await transportStop.WaitForSyncPoint().DefaultTimeout();
+                        // Then release DisposeAsync (via the transport StopAsync call)
+                        await transportStop.WaitForSyncPoint().DefaultTimeout();
                         transportStop.Continue();
 
-                            // Dispose should finish
-                            await disposeTask.DefaultTimeout();
+                        // Dispose should finish
+                        await disposeTask.DefaultTimeout();
                     });
             }
         }
@@ -229,26 +229,26 @@ public partial class HttpConnectionTests
                         transport: new TestTransport(onTransportStop: SyncPoint.Create(out var transportStop))),
                     async (connection) =>
                 {
-                        // Start the connection
-                        await connection.StartAsync().DefaultTimeout();
+                    // Start the connection
+                    await connection.StartAsync().DefaultTimeout();
 
-                        // Dispose the connection
-                        var stopTask = connection.DisposeAsync();
+                    // Dispose the connection
+                    var stopTask = connection.DisposeAsync();
 
-                        // Once the transport starts shutting down
-                        await transportStop.WaitForSyncPoint().DefaultTimeout();
+                    // Once the transport starts shutting down
+                    await transportStop.WaitForSyncPoint().DefaultTimeout();
                     Assert.False(stopTask.IsCompleted);
 
-                        // Start disposing again, and then let the first dispose continue
-                        var disposeTask = connection.DisposeAsync();
+                    // Start disposing again, and then let the first dispose continue
+                    var disposeTask = connection.DisposeAsync();
                     transportStop.Continue();
 
-                        // Wait for the tasks to complete
-                        await stopTask.DefaultTimeout();
+                    // Wait for the tasks to complete
+                    await stopTask.DefaultTimeout();
                     await disposeTask.DefaultTimeout();
 
-                        // We should be disposed and thus unable to restart.
-                        await AssertDisposedAsync(connection).DefaultTimeout();
+                    // We should be disposed and thus unable to restart.
+                    await AssertDisposedAsync(connection).DefaultTimeout();
                 });
             }
         }
@@ -265,13 +265,13 @@ public partial class HttpConnectionTests
                     CreateConnection(transport: testTransport),
                     async (connection) =>
                     {
-                            // Start the transport
-                            await connection.StartAsync().DefaultTimeout();
+                        // Start the transport
+                        await connection.StartAsync().DefaultTimeout();
                         Assert.NotNull(testTransport.Receiving);
                         Assert.False(testTransport.Receiving.IsCompleted);
 
-                            // Stop the connection, and we should stop the transport
-                            await connection.DisposeAsync().DefaultTimeout();
+                        // Stop the connection, and we should stop the transport
+                        await connection.DisposeAsync().DefaultTimeout();
                         await testTransport.Receiving.DefaultTimeout();
                     });
             }
@@ -389,11 +389,11 @@ public partial class HttpConnectionTests
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
                 testHttpHandler.OnNegotiate(async (request, cancellationToken) =>
                 {
-                        // Wait here for the test code to cancel the "outer" token
-                        await negotiateSyncPoint.WaitToContinue().DefaultTimeout();
+                    // Wait here for the test code to cancel the "outer" token
+                    await negotiateSyncPoint.WaitToContinue().DefaultTimeout();
 
-                        // Cancel
-                        cancellationToken.ThrowIfCancellationRequested();
+                    // Cancel
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
@@ -402,24 +402,24 @@ public partial class HttpConnectionTests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                            // Kick off StartAsync, but don't wait for it
-                            var cts = new CancellationTokenSource();
+                        // Kick off StartAsync, but don't wait for it
+                        var cts = new CancellationTokenSource();
                         var startTask = connection.StartAsync(cts.Token);
 
-                            // Wait for the connection to get to the "WaitToContinue" call above,
-                            // which means it has gotten to Negotiate
-                            await negotiateSyncPoint.WaitForSyncPoint().DefaultTimeout();
+                        // Wait for the connection to get to the "WaitToContinue" call above,
+                        // which means it has gotten to Negotiate
+                        await negotiateSyncPoint.WaitForSyncPoint().DefaultTimeout();
 
-                            // Assert that StartAsync has not yet been canceled
-                            Assert.False(startTask.IsCanceled);
+                        // Assert that StartAsync has not yet been canceled
+                        Assert.False(startTask.IsCanceled);
 
-                            // Cancel StartAsync, then "release" the SyncPoint
-                            // so the negotiate handler can keep going
-                            cts.Cancel();
+                        // Cancel StartAsync, then "release" the SyncPoint
+                        // so the negotiate handler can keep going
+                        cts.Cancel();
                         negotiateSyncPoint.Continue();
 
-                            // Assert that StartAsync was canceled
-                            await Assert.ThrowsAsync<TaskCanceledException>(() => startTask).DefaultTimeout();
+                        // Assert that StartAsync was canceled
+                        await Assert.ThrowsAsync<TaskCanceledException>(() => startTask).DefaultTimeout();
                     });
             }
         }
@@ -436,15 +436,15 @@ public partial class HttpConnectionTests
                     CreateConnection(httpHandler,
                     transport: new TestTransport(onTransportStart: () =>
                     {
-                            // Cancel the token when the transport is starting  which will fail the startTask.
-                            cts.Cancel();
+                        // Cancel the token when the transport is starting  which will fail the startTask.
+                        cts.Cancel();
                         return Task.CompletedTask;
                     })),
                     async (connection) =>
                     {
-                            // We aggregate failures that happen when we start the transport. The operation canceled exception will
-                            // be an inner exception.
-                            var ex = await Assert.ThrowsAsync<AggregateException>(async () => await connection.StartAsync(cts.Token)).DefaultTimeout();
+                        // We aggregate failures that happen when we start the transport. The operation canceled exception will
+                        // be an inner exception.
+                        var ex = await Assert.ThrowsAsync<AggregateException>(async () => await connection.StartAsync(cts.Token)).DefaultTimeout();
                         Assert.Equal(3, ex.InnerExceptions.Count);
                         var innerEx = ex.InnerExceptions[2];
                         var innerInnerEx = innerEx.InnerException;
@@ -491,8 +491,8 @@ public partial class HttpConnectionTests
                 var httpHandler = new TestHttpMessageHandler();
                 httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
                 {
-                        // Simulating a cancellationToken canceling this request.
-                        throw new OperationCanceledException("Cancel SSE Start.");
+                    // Simulating a cancellationToken canceling this request.
+                    throw new OperationCanceledException("Cancel SSE Start.");
                 });
 
                 var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory: LoggerFactory);
@@ -516,8 +516,8 @@ public partial class HttpConnectionTests
                 var httpHandler = new TestHttpMessageHandler(autoNegotiate: false);
                 httpHandler.OnNegotiate((request, cancellationToken) =>
                 {
-                        // Cancel token so that the first request poll will throw
-                        cts.Cancel();
+                    // Cancel token so that the first request poll will throw
+                    cts.Cancel();
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
                 });
 

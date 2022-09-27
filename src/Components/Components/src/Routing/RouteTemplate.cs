@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Components.Routing;
 
 [DebuggerDisplay("{TemplateText}")]
-internal class RouteTemplate
+internal sealed class RouteTemplate
 {
     public RouteTemplate(string templateText, TemplateSegment[] segments)
     {

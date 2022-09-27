@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 
@@ -56,7 +55,7 @@ public class EnumTypeModelBinder : SimpleTypeModelBinder
         }
     }
 
-    private bool IsDefinedInEnum(object model, ModelBindingContext bindingContext)
+    private static bool IsDefinedInEnum(object model, ModelBindingContext bindingContext)
     {
         var modelType = bindingContext.ModelMetadata.UnderlyingOrModelType;
 

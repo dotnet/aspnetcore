@@ -1,25 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -451,19 +450,19 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             {
                 OnTokenValidated = context =>
                 {
-                        // Retrieve the NameIdentifier claim from the identity
-                        // returned by the custom security token validator.
-                        var identity = (ClaimsIdentity)context.Principal.Identity;
+                    // Retrieve the NameIdentifier claim from the identity
+                    // returned by the custom security token validator.
+                    var identity = (ClaimsIdentity)context.Principal.Identity;
                     var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
 
                     Assert.Equal("Bob le Tout Puissant", identifier.Value);
 
-                        // Remove the existing NameIdentifier claim and replace it
-                        // with a new one containing a different value.
-                        identity.RemoveClaim(identifier);
-                        // Make sure to use a different name identifier
-                        // than the one defined by BlobTokenValidator.
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
+                    // Remove the existing NameIdentifier claim and replace it
+                    // with a new one containing a different value.
+                    identity.RemoveClaim(identifier);
+                    // Make sure to use a different name identifier
+                    // than the one defined by BlobTokenValidator.
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
 
                     return Task.FromResult<object>(null);
                 }
@@ -887,6 +886,75 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
     }
 
+    [Fact]
+    public void CanReadJwtBearerOptionsFromConfig()
+    {
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "http://localhost:5000"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:1", "https://localhost:5001"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SaveToken", "True"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication(o =>
+        {
+            o.AddScheme<TestHandler>("Bearer", "Bearer");
+        });
+        builder.AddJwtBearer("Bearer");
+        RegisterAuth(builder, _ => { });
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidIssuers, new[] { "dotnet-user-jwts" });
+        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudiences, new[] { "http://localhost:5000", "https://localhost:5001" });
+        Assert.Equal(jwtBearerOptions.BackchannelTimeout, TimeSpan.FromSeconds(60));
+        Assert.False(jwtBearerOptions.RequireHttpsMetadata);
+        Assert.True(jwtBearerOptions.SaveToken);
+        Assert.True(jwtBearerOptions.MapInboundClaims); // Assert default values are respected
+    }
+
+    [Fact]
+    public void CanReadMultipleIssuersFromConfig()
+    {
+        var services = new ServiceCollection().AddLogging();
+        var firstKey = "qPG6tDtfxFYZifHW3sEueQ==";
+        var secondKey = "6JPzXj6aOPdojlZdeLshaA==";
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:1", "dotnet-user-jwts-2"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Value", firstKey),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Value", secondKey),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Length", "32"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication(o =>
+        {
+            o.AddScheme<TestHandler>("Bearer", "Bearer");
+        });
+        builder.AddJwtBearer("Bearer");
+        RegisterAuth(builder, _ => { });
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal(2, jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.Count());
+        Assert.Equal(firstKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().FirstOrDefault()?.Key));
+        Assert.Equal(secondKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().LastOrDefault()?.Key));
+    }
+
     class InvalidTokenValidator : ISecurityTokenValidator
     {
         public InvalidTokenValidator()
@@ -1051,7 +1119,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                             if (context.Request.Path == new PathString("/checkforerrors"))
                             {
                                 var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme); // this used to be "Automatic"
-                                    if (result.Failure != null)
+                                if (result.Failure != null)
                                 {
                                     throw new Exception("Failed to authenticate", result.Failure);
                                 }
@@ -1064,8 +1132,8 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                                     !context.User.Identity.IsAuthenticated)
                                 {
                                     context.Response.StatusCode = 401;
-                                        // REVIEW: no more automatic challenge
-                                        await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
+                                    // REVIEW: no more automatic challenge
+                                    await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                                     return;
                                 }
 
@@ -1085,14 +1153,14 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                             }
                             else if (context.Request.Path == new PathString("/unauthorized"))
                             {
-                                    // Simulate Authorization failure
-                                    var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                                // Simulate Authorization failure
+                                var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                                 await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                             }
                             else if (context.Request.Path == new PathString("/forbidden"))
                             {
-                                    // Simulate Forbidden
-                                    await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
+                                // Simulate Forbidden
+                                await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
                             }
                             else if (context.Request.Path == new PathString("/signIn"))
                             {

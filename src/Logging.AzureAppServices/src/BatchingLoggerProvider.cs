@@ -103,7 +103,7 @@ public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternal
             {
                 try
                 {
-                    await WriteMessagesAsync(_currentBatch, _cancellationTokenSource.Token);
+                    await WriteMessagesAsync(_currentBatch, _cancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -114,7 +114,7 @@ public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternal
             }
             else
             {
-                await IntervalAsync(_interval, _cancellationTokenSource.Token);
+                await IntervalAsync(_interval, _cancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
     }

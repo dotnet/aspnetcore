@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -289,6 +284,67 @@ public class RenderTreeDiffBuilderTest : IDisposable
     }
 
     [Fact]
+    public void RecognizesKeyedComponentDeletionsBeforeUnchangedNonKeyedComponent()
+    {
+        // Arrange
+        oldTree.OpenComponent<FakeComponent>(0);
+        oldTree.SetKey("will delete");
+        oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Will delete");
+        oldTree.CloseComponent();
+
+        oldTree.OpenComponent<FakeComponent>(2);
+        oldTree.AddAttribute(3, nameof(FakeComponent.StringProperty), "Retained param value");
+        oldTree.CloseComponent();
+
+        // Instantiate initial components
+        using var initial = new RenderTreeBuilder();
+        GetRenderedBatch(initial, oldTree, false);
+        var oldComponents = GetComponents(oldTree);
+
+        newTree.OpenComponent<FakeComponent>(2);
+        newTree.AddAttribute(3, nameof(FakeComponent.StringProperty), "Retained param value");
+        newTree.CloseComponent();
+
+        // Act
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+        var newComponent = GetComponents(newTree).Single();
+
+        // Assert
+        Assert.Same(oldComponents[1], newComponent);
+        Assert.Collection(result.Edits,
+            entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+    }
+
+    [Fact]
+    public void RecognizesKeyedComponentInsertionsBeforeUnchangedNonKeyedComponent()
+    {
+        // Arrange
+        oldTree.OpenComponent<FakeComponent>(1);
+        oldTree.CloseComponent();
+
+        // Instantiate initial components
+        using var initial = new RenderTreeBuilder();
+        GetRenderedBatch(initial, oldTree, false);
+        var oldComponents = GetComponents(oldTree);
+
+        newTree.OpenComponent<FakeComponent>(0);
+        newTree.SetKey("will insert");
+        newTree.CloseComponent();
+
+        newTree.OpenComponent<FakeComponent>(1);
+        newTree.CloseComponent();
+
+        // Act
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+        var newComponents = GetComponents(newTree);
+
+        // Assert
+        Assert.Same(oldComponents[0], newComponents[1]);
+        Assert.Collection(result.Edits,
+            entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
+    }
+
+    [Fact]
     public void RecognizesSimultaneousKeyedComponentInsertionsAndDeletions()
     {
         // Arrange
@@ -490,9 +546,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Assert
         Assert.Collection(result.Edits,
             // Insert new
-            edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0),
+            edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0),
             // Delete old
-            edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
+            edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0));
     }
 
     [Fact]

@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 组件",
+  "description": "使用 Razor 实现的可重用 UI 组件",
+  "postActions/openInEditor/description": "在编辑器中打开 Component1.razor"
+}

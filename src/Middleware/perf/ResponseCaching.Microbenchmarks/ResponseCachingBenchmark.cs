@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -43,7 +39,7 @@ public class ResponseCachingBenchmark
                 Options.Create(new ResponseCachingOptions
                 {
                     SizeLimit = int.MaxValue, // ~2GB
-                        MaximumBodySize = 1 * 1024 * 1024,
+                    MaximumBodySize = 1 * 1024 * 1024,
                 }),
                 NullLoggerFactory.Instance,
                 new DefaultObjectPoolProvider()
@@ -113,7 +109,7 @@ public class ResponseCachingBenchmark
         await reader.CompleteAsync();
     }
 
-    private class PipeResponseBodyFeature : IHttpResponseBodyFeature
+    private sealed class PipeResponseBodyFeature : IHttpResponseBodyFeature
     {
         public PipeResponseBodyFeature(PipeWriter pipeWriter)
         {

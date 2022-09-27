@@ -7,7 +7,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-    <Content Include="Microsoft.AspNetCore.TestHost.StaticWebAssets.xml" CopyToOutputDirectory="Always" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Content Include="Microsoft.AspNetCore.TestHost.StaticWebAssets.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

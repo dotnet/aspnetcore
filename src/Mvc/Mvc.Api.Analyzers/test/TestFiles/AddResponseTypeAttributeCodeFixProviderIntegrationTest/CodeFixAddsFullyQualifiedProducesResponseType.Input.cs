@@ -8,7 +8,6 @@ namespace TestApp._INPUT_
     [Route("[controller]/[action]")]
     public class BaseController : ControllerBase
     {
-
     }
 }
 

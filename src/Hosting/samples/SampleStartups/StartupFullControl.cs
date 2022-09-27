@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +25,7 @@ public class StartupFullControl
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
-                    .UseConfiguration(config) // Default set of configurations to use, may be subsequently overridden 
+                    .UseConfiguration(config) // Default set of configurations to use, may be subsequently overridden
                     .UseKestrel()
                     .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                     .UseUrls("http://*:1000", "https://*:902")
@@ -37,9 +33,9 @@ public class StartupFullControl
                     .UseWebRoot("public")
                     .Configure(app =>
                     {
-                            // Write the application inline, this won't call any startup class in the assembly
+                        // Write the application inline, this won't call any startup class in the assembly
 
-                            app.Use(next => context =>
+                        app.Use(next => context =>
                         {
                             return next(context);
                         });
@@ -47,8 +43,8 @@ public class StartupFullControl
             })
             .ConfigureServices(services =>
             {
-                    // Configure services that the application can see
-                    services.AddSingleton<IMyCustomService, MyCustomService>();
+                // Configure services that the application can see
+                services.AddSingleton<IMyCustomService, MyCustomService>();
             })
             .Build();
 

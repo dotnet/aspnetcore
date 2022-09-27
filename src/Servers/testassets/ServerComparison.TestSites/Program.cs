@@ -37,10 +37,10 @@ public static class Program
                     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
                     "NtlmAuthentication", StringComparison.OrdinalIgnoreCase))
                 {
-                        // Set up NTLM authentication for HttpSys as follows.
-                        // For IIS and IISExpress use inetmgr to setup NTLM authentication on the application or
-                        // modify the applicationHost.config to enable NTLM.
-                        options.Authentication.AllowAnonymous = true;
+                    // Set up NTLM authentication for HttpSys as follows.
+                    // For IIS and IISExpress use inetmgr to setup NTLM authentication on the application or
+                    // modify the applicationHost.config to enable NTLM.
+                    options.Authentication.AllowAnonymous = true;
                     options.Authentication.Schemes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
                 }
             });

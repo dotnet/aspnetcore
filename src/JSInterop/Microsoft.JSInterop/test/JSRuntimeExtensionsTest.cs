@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.JSInterop.Infrastructure;
 using Moq;
-using Xunit;
 
 namespace Microsoft.JSInterop;
 
@@ -100,9 +96,9 @@ public class JSRuntimeExtensionsTest
         jsRuntime.Setup(s => s.InvokeAsync<string>(method, It.IsAny<CancellationToken>(), args))
             .Callback<string, CancellationToken, object[]>((method, cts, args) =>
             {
-                    // There isn't a very good way to test when the cts will cancel. We'll just verify that
-                    // it'll get cancelled eventually.
-                    Assert.True(cts.CanBeCanceled);
+                // There isn't a very good way to test when the cts will cancel. We'll just verify that
+                // it'll get cancelled eventually.
+                Assert.True(cts.CanBeCanceled);
             })
             .Returns(new ValueTask<string>(expected));
 
@@ -146,9 +142,9 @@ public class JSRuntimeExtensionsTest
         jsRuntime.Setup(s => s.InvokeAsync<IJSVoidResult>(method, It.IsAny<CancellationToken>(), args))
             .Callback<string, CancellationToken, object[]>((method, cts, args) =>
             {
-                    // There isn't a very good way to test when the cts will cancel. We'll just verify that
-                    // it'll get cancelled eventually.
-                    Assert.True(cts.CanBeCanceled);
+                // There isn't a very good way to test when the cts will cancel. We'll just verify that
+                // it'll get cancelled eventually.
+                Assert.True(cts.CanBeCanceled);
             })
             .Returns(new ValueTask<IJSVoidResult>(Mock.Of<IJSVoidResult>()));
 

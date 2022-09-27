@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
@@ -31,13 +29,20 @@ public class HttpsConnectionAdapterOptions
 
     /// <summary>
     /// <para>
-    /// Specifies the server certificate used to authenticate HTTPS connections. This is ignored if ServerCertificateSelector is set.
+    /// Specifies the server certificate information presented when an https connection is initiated. This is ignored if ServerCertificateSelector is set.
     /// </para>
     /// <para>
     /// If the server certificate has an Extended Key Usage extension, the usages must include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
     /// </para>
     /// </summary>
     public X509Certificate2? ServerCertificate { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Specifies the full server certificate chain presented when an https connection is initiated
+    /// </para>
+    /// </summary>
+    public X509Certificate2Collection? ServerCertificateChain { get; set; }
 
     /// <summary>
     /// <para>

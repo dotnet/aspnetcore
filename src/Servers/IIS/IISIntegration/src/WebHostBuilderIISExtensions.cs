@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -31,10 +30,7 @@ public static class WebHostBuilderIISExtensions
     /// <returns></returns>
     public static IWebHostBuilder UseIISIntegration(this IWebHostBuilder hostBuilder)
     {
-        if (hostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
 
         // Check if `UseIISIntegration` was called already
         if (hostBuilder.GetSetting(nameof(UseIISIntegration)) != null)
@@ -84,8 +80,8 @@ public static class WebHostBuilderIISExtensions
 
             hostBuilder.ConfigureServices(services =>
             {
-                    // Delay register the url so users don't accidentally overwrite it.
-                    hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
+                // Delay register the url so users don't accidentally overwrite it.
+                hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
                 hostBuilder.PreferHostingUrls(true);
                 services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
                 {

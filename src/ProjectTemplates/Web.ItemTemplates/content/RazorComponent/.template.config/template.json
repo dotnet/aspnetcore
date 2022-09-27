@@ -14,7 +14,7 @@
   },
   "groupIdentity": "Microsoft.AspNetCore.Components.RazorComponent",
   "precedence": "600",
-  "identity": "Microsoft.AspNetCore.Components.RazorComponent.6.0",
+  "identity": "Microsoft.AspNetCore.Components.RazorComponent.7.0",
   "shortname": "razorcomponent",
   "sourceName": "Component1",
   "primaryOutputs": [
@@ -31,6 +31,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Component1.razor in the editor",
       "manualInstructions": [],

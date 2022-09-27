@@ -1,18 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 
-internal partial class WebSocketsServerTransport : IHttpTransport
+internal sealed partial class WebSocketsServerTransport : IHttpTransport
 {
     private readonly WebSocketOptions _options;
     private readonly ILogger _logger;
@@ -282,7 +279,6 @@ internal partial class WebSocketsServerTransport : IHttpTransport
 
             _application.Input.Complete();
         }
-
     }
 
     private static bool WebSocketCanSend(WebSocket ws)

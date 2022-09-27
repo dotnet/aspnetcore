@@ -19,7 +19,7 @@ public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     /// <param name="email">The email to set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    Task SetEmailAsync(TUser user, string email, CancellationToken cancellationToken);
+    Task SetEmailAsync(TUser user, string? email, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the email address for the specified <paramref name="user"/>.
@@ -27,7 +27,7 @@ public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     /// <param name="user">The user whose email should be returned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The task object containing the results of the asynchronous operation, the email address for the specified <paramref name="user"/>.</returns>
-    Task<string> GetEmailAsync(TUser user, CancellationToken cancellationToken);
+    Task<string?> GetEmailAsync(TUser user, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets a flag indicating whether the email address for the specified <paramref name="user"/> has been verified, true if the email address is verified otherwise
@@ -58,7 +58,7 @@ public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     /// <returns>
     /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified normalized email address.
     /// </returns>
-    Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken);
+    Task<TUser?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken);
 
     /// <summary>
     /// Returns the normalized email for the specified <paramref name="user"/>.
@@ -68,7 +68,7 @@ public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     /// <returns>
     /// The task object containing the results of the asynchronous lookup operation, the normalized email address if any associated with the specified user.
     /// </returns>
-    Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken);
+    Task<string?> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the normalized email for the specified <paramref name="user"/>.
@@ -77,5 +77,5 @@ public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     /// <param name="normalizedEmail">The normalized email to set for the specified <paramref name="user"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    Task SetNormalizedEmailAsync(TUser user, string normalizedEmail, CancellationToken cancellationToken);
+    Task SetNormalizedEmailAsync(TUser user, string? normalizedEmail, CancellationToken cancellationToken);
 }

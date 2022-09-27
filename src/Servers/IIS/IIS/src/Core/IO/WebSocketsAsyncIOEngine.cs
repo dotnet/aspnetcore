@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
-internal partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
+internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
 {
     private readonly IISHttpContext _context;
 

@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewStart",
+  "description": "Stránka MVC ViewStart",
+  "postActions/openInEditor/description": "Otevře soubor _ViewStart.cshtml v editoru."
+}

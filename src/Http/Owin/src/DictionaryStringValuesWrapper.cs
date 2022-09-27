@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -10,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Owin;
 
-internal class DictionaryStringValuesWrapper : IHeaderDictionary
+internal sealed class DictionaryStringValuesWrapper : IHeaderDictionary
 {
     public DictionaryStringValuesWrapper(IDictionary<string, string[]> inner)
     {
@@ -19,13 +18,11 @@ internal class DictionaryStringValuesWrapper : IHeaderDictionary
 
     public readonly IDictionary<string, string[]> Inner;
 
-    private KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new KeyValuePair<string, StringValues>(item.Key, item.Value);
+    private static KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new KeyValuePair<string, StringValues>(item.Key, item.Value);
 
-    private KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
+    private static KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
 
     private StringValues Convert(string[] item) => item;
-
-    private string[] Convert(StringValues item) => item;
 
     StringValues IHeaderDictionary.this[string key]
     {

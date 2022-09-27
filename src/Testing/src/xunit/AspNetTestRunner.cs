@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -14,7 +11,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Testing;
 
-internal class AspNetTestRunner : XunitTestRunner
+internal sealed class AspNetTestRunner : XunitTestRunner
 {
     private readonly TestOutputHelper _testOutputHelper;
     private readonly bool _ownsTestOutputHelper;
@@ -62,8 +59,8 @@ internal class AspNetTestRunner : XunitTestRunner
 
         var retryAttribute = GetRetryAttribute(TestMethod);
         var result = retryAttribute is null
-            ? await base.InvokeTestAsync(aggregator)
-            : await RunTestCaseWithRetryAsync(retryAttribute, aggregator);
+            ? await base.InvokeTestAsync(aggregator).ConfigureAwait(false)
+            : await RunTestCaseWithRetryAsync(retryAttribute, aggregator).ConfigureAwait(false);
 
         if (_ownsTestOutputHelper)
         {
@@ -84,7 +81,7 @@ internal class AspNetTestRunner : XunitTestRunner
 
         for (var attempt = 1; attempt <= numAttempts; attempt++)
         {
-            var result = await base.InvokeTestAsync(aggregator);
+            var result = await base.InvokeTestAsync(aggregator).ConfigureAwait(false);
             totalTimeTaken += result.Item1;
             messages.Add(result.Item2);
 
@@ -97,7 +94,7 @@ internal class AspNetTestRunner : XunitTestRunner
                 // We can't use the ITestOutputHelper here because there's no active test
                 messages.Add($"[{TestCase.DisplayName}] Attempt {attempt} of {retryAttribute.MaxRetries} failed due to {aggregator.ToException()}");
 
-                await Task.Delay(5000);
+                await Task.Delay(5000).ConfigureAwait(false);
                 aggregator.Clear();
             }
         }
@@ -110,7 +107,7 @@ internal class AspNetTestRunner : XunitTestRunner
         var repeatAttribute = GetRepeatAttribute(TestMethod);
         if (repeatAttribute == null)
         {
-            return await InvokeTestMethodCoreAsync(aggregator);
+            return await InvokeTestMethodCoreAsync(aggregator).ConfigureAwait(false);
         }
 
         var repeatContext = new RepeatContext(repeatAttribute.RunCount);
@@ -119,7 +116,7 @@ internal class AspNetTestRunner : XunitTestRunner
         var timeTaken = 0.0M;
         for (repeatContext.CurrentIteration = 0; repeatContext.CurrentIteration < repeatContext.Limit; repeatContext.CurrentIteration++)
         {
-            timeTaken = await InvokeTestMethodCoreAsync(aggregator);
+            timeTaken = await InvokeTestMethodCoreAsync(aggregator).ConfigureAwait(false);
             if (aggregator.HasExceptions)
             {
                 return timeTaken;
@@ -135,7 +132,7 @@ internal class AspNetTestRunner : XunitTestRunner
         return invoker.RunAsync();
     }
 
-    private RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
+    private static RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
     {
         var attributeCandidate = methodInfo.GetCustomAttribute<RepeatAttribute>();
         if (attributeCandidate != null)
@@ -152,7 +149,7 @@ internal class AspNetTestRunner : XunitTestRunner
         return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RepeatAttribute>();
     }
 
-    private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
+    private static RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
     {
         var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
         if (attributeCandidate != null)

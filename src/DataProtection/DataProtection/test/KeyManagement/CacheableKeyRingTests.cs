@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -45,7 +42,6 @@ public class CacheableKeyRingTests
         Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now.UtcDateTime));
         Assert.False(CacheableKeyRing.IsValid(cacheableKeyRing, now.AddHours(1).UtcDateTime));
     }
-
 
     [Fact]
     public void KeyRing_Prop()

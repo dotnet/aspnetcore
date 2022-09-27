@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -199,6 +197,61 @@ public readonly struct ParameterView
         }
     }
 
+    internal bool HasRemovedDirectParameters(in ParameterView oldParameters)
+    {
+        var oldDirectParameterFrames = GetDirectParameterFrames(oldParameters);
+        if (oldDirectParameterFrames.Length == 0)
+        {
+            // Parameters could not have been removed if there were no old direct parameters.
+            return false;
+        }
+
+        var newDirectParameterFrames = GetDirectParameterFrames(this);
+        if (newDirectParameterFrames.Length < oldDirectParameterFrames.Length)
+        {
+            // Parameters must have been removed if there are fewer new direct parameters than
+            // old direct parameters.
+            return true;
+        }
+
+        // Fall back to comparing each set of direct parameters.
+        foreach (var oldFrame in oldDirectParameterFrames)
+        {
+            var found = false;
+            foreach (var newFrame in newDirectParameterFrames)
+            {
+                if (string.Equals(oldFrame.AttributeNameField, newFrame.AttributeNameField, StringComparison.Ordinal))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        static Span<RenderTreeFrame> GetDirectParameterFrames(in ParameterView parameterView)
+        {
+            var frames = parameterView._frames;
+            var ownerIndex = parameterView._ownerIndex;
+            var ownerDescendantsEndIndexExcl = ownerIndex + frames[ownerIndex].ElementSubtreeLength;
+            var attributeFramesStartIndex = ownerIndex + 1;
+            var attributeFramesEndIndexExcl = attributeFramesStartIndex;
+
+            while (attributeFramesEndIndexExcl < ownerDescendantsEndIndexExcl && frames[attributeFramesEndIndexExcl].FrameType == RenderTreeFrameType.Attribute)
+            {
+                attributeFramesEndIndexExcl++;
+            }
+
+            return frames.AsSpan(attributeFramesStartIndex..attributeFramesEndIndexExcl);
+        }
+    }
+
     internal void CaptureSnapshot(ArrayBuilder<RenderTreeFrame> builder)
     {
         builder.Clear();
@@ -262,7 +315,6 @@ public readonly struct ParameterView
     /// <summary>
     /// An enumerator that iterates through a <see cref="ParameterView"/>.
     /// </summary>
-
     // Note that this intentionally does not implement IEnumerator<>. This is the same pattern as Span<>.Enumerator
     // it's valid to foreach over a type that doesn't implement IEnumerator<>.
     public struct Enumerator

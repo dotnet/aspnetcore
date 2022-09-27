@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -55,31 +52,31 @@ public class UrlResolutionTagHelper : TagHelper
     private static readonly char[] ValidAttributeWhitespaceChars =
         new[] { '\t', '\n', '\u000C', '\r', ' ' };
     private static readonly Dictionary<string, string[]> ElementAttributeLookups =
-        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        new(StringComparer.OrdinalIgnoreCase)
         {
-                { "a", new[] { "href" } },
-                { "applet", new[] { "archive" } },
-                { "area", new[] { "href" } },
-                { "audio", new[] { "src" } },
-                { "base", new[] { "href" } },
-                { "blockquote", new[] { "cite" } },
-                { "button", new[] { "formaction" } },
-                { "del", new[] { "cite" } },
-                { "embed", new[] { "src" } },
-                { "form", new[] { "action" } },
-                { "html", new[] { "manifest" } },
-                { "iframe", new[] { "src" } },
-                { "img", new[] { "src", "srcset" } },
-                { "input", new[] { "src", "formaction" } },
-                { "ins", new[] { "cite" } },
-                { "link", new[] { "href" } },
-                { "menuitem", new[] { "icon" } },
-                { "object", new[] { "archive", "data" } },
-                { "q", new[] { "cite" } },
-                { "script", new[] { "src" } },
-                { "source", new[] { "src", "srcset" } },
-                { "track", new[] { "src" } },
-                { "video", new[] { "poster", "src" } },
+            { "a", new[] { "href" } },
+            { "applet", new[] { "archive" } },
+            { "area", new[] { "href" } },
+            { "audio", new[] { "src" } },
+            { "base", new[] { "href" } },
+            { "blockquote", new[] { "cite" } },
+            { "button", new[] { "formaction" } },
+            { "del", new[] { "cite" } },
+            { "embed", new[] { "src" } },
+            { "form", new[] { "action" } },
+            { "html", new[] { "manifest" } },
+            { "iframe", new[] { "src" } },
+            { "img", new[] { "src", "srcset" } },
+            { "input", new[] { "src", "formaction" } },
+            { "ins", new[] { "cite" } },
+            { "link", new[] { "href" } },
+            { "menuitem", new[] { "icon" } },
+            { "object", new[] { "archive", "data" } },
+            { "q", new[] { "cite" } },
+            { "script", new[] { "src" } },
+            { "source", new[] { "src", "srcset" } },
+            { "track", new[] { "src" } },
+            { "video", new[] { "poster", "src" } },
         };
 
     /// <summary>
@@ -116,15 +113,8 @@ public class UrlResolutionTagHelper : TagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         if (output.TagName == null)
         {
@@ -152,15 +142,8 @@ public class UrlResolutionTagHelper : TagHelper
     /// <param name="output">The <see cref="TagHelperOutput"/>.</param>
     protected void ProcessUrlAttribute(string attributeName, TagHelperOutput output)
     {
-        if (attributeName == null)
-        {
-            throw new ArgumentNullException(nameof(attributeName));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(attributeName);
+        ArgumentNullException.ThrowIfNull(output);
 
         var attributes = output.Attributes;
         // Read interface .Count once rather than per iteration
@@ -173,8 +156,7 @@ public class UrlResolutionTagHelper : TagHelper
                 continue;
             }
 
-            var stringValue = attribute.Value as string;
-            if (stringValue != null)
+            if (attribute.Value is string stringValue)
             {
                 if (TryResolveUrl(stringValue, resolvedUrl: out string? resolvedUrl))
                 {
@@ -186,8 +168,7 @@ public class UrlResolutionTagHelper : TagHelper
             }
             else
             {
-                var htmlContent = attribute.Value as IHtmlContent;
-                if (htmlContent != null)
+                if (attribute.Value is IHtmlContent htmlContent)
                 {
                     var htmlString = htmlContent as HtmlString;
                     if (htmlString != null)
@@ -346,7 +327,7 @@ public class UrlResolutionTagHelper : TagHelper
         return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
     }
 
-    private class EncodeFirstSegmentContent : IHtmlContent
+    private sealed class EncodeFirstSegmentContent : IHtmlContent
     {
         private readonly string _firstSegment;
         private readonly int _firstSegmentLength;

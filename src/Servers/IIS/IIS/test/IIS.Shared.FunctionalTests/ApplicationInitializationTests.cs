@@ -70,7 +70,8 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             EnablePreload(baseDeploymentParameters);
 
             baseDeploymentParameters.ServerConfigActionList.Add(
-                (config, _) => {
+                (config, _) =>
+                {
                     config
                         .RequiredElement("system.webServer")
                         .GetOrAdd("applicationInitialization")
@@ -89,7 +90,8 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
     {
         baseDeploymentParameters.EnsureSection("applicationInitialization", "system.webServer");
         baseDeploymentParameters.ServerConfigActionList.Add(
-            (config, _) => {
+            (config, _) =>
+            {
 
                 config
                     .RequiredElement("system.applicationHost")

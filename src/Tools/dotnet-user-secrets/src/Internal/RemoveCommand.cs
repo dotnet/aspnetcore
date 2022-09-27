@@ -5,7 +5,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
-internal class RemoveCommand : ICommand
+internal sealed class RemoveCommand : ICommand
 {
     private readonly string _keyName;
 
@@ -25,7 +25,6 @@ internal class RemoveCommand : ICommand
             options.Command = new RemoveCommand(keyArg.Value);
         });
     }
-
 
     public RemoveCommand(string keyName)
     {

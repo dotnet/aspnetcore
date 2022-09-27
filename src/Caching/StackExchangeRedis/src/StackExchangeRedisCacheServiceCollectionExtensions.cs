@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -33,8 +32,9 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
         }
 
         services.AddOptions();
+
         services.Configure(setupAction);
-        services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCache>());
+        services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCacheImpl>());
 
         return services;
     }

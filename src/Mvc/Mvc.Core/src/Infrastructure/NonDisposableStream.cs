@@ -3,11 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 /// <summary>
@@ -15,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// This Stream is present so that the inner stream is not closed
 /// even when Close() or Dispose() is called.
 /// </summary>
-internal class NonDisposableStream : Stream
+internal sealed class NonDisposableStream : Stream
 {
     private readonly Stream _innerStream;
 
@@ -84,6 +79,12 @@ internal class NonDisposableStream : Stream
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _innerStream.ReadAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -165,6 +166,12 @@ internal class NonDisposableStream : Stream
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _innerStream.WriteAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc />

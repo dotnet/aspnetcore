@@ -40,7 +40,6 @@ public class IISExpressShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
     }
 
-
     [ConditionalFact]
     public async Task ServerShutsDownWhenMainExitsStress()
     {

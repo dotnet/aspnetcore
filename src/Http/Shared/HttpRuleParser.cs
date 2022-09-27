@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -13,27 +12,28 @@ internal static class HttpRuleParser
 {
     private static readonly bool[] TokenChars = CreateTokenChars();
     private const int MaxNestedCount = 5;
-    private static readonly string[] DateFormats = new string[] {
-            // "r", // RFC 1123, required output format but too strict for input
-            "ddd, d MMM yyyy H:m:s 'GMT'", // RFC 1123 (r, except it allows both 1 and 01 for date and time)
-            "ddd, d MMM yyyy H:m:s", // RFC 1123, no zone - assume GMT
-            "d MMM yyyy H:m:s 'GMT'", // RFC 1123, no day-of-week
-            "d MMM yyyy H:m:s", // RFC 1123, no day-of-week, no zone
-            "ddd, d MMM yy H:m:s 'GMT'", // RFC 1123, short year
-            "ddd, d MMM yy H:m:s", // RFC 1123, short year, no zone
-            "d MMM yy H:m:s 'GMT'", // RFC 1123, no day-of-week, short year
-            "d MMM yy H:m:s", // RFC 1123, no day-of-week, short year, no zone
+    private static readonly string[] DateFormats = new string[]
+    {
+        // "r", // RFC 1123, required output format but too strict for input
+        "ddd, d MMM yyyy H:m:s 'GMT'", // RFC 1123 (r, except it allows both 1 and 01 for date and time)
+        "ddd, d MMM yyyy H:m:s", // RFC 1123, no zone - assume GMT
+        "d MMM yyyy H:m:s 'GMT'", // RFC 1123, no day-of-week
+        "d MMM yyyy H:m:s", // RFC 1123, no day-of-week, no zone
+        "ddd, d MMM yy H:m:s 'GMT'", // RFC 1123, short year
+        "ddd, d MMM yy H:m:s", // RFC 1123, short year, no zone
+        "d MMM yy H:m:s 'GMT'", // RFC 1123, no day-of-week, short year
+        "d MMM yy H:m:s", // RFC 1123, no day-of-week, short year, no zone
 
-            "dddd, d'-'MMM'-'yy H:m:s 'GMT'", // RFC 850, short year
-            "dddd, d'-'MMM'-'yy H:m:s", // RFC 850 no zone
-            "ddd, d'-'MMM'-'yyyy H:m:s 'GMT'", // RFC 850, long year
-            "ddd MMM d H:m:s yyyy", // ANSI C's asctime() format
+        "dddd, d'-'MMM'-'yy H:m:s 'GMT'", // RFC 850, short year
+        "dddd, d'-'MMM'-'yy H:m:s", // RFC 850 no zone
+        "ddd, d'-'MMM'-'yyyy H:m:s 'GMT'", // RFC 850, long year
+        "ddd MMM d H:m:s yyyy", // ANSI C's asctime() format
 
-            "ddd, d MMM yyyy H:m:s zzz", // RFC 5322
-            "ddd, d MMM yyyy H:m:s", // RFC 5322 no zone
-            "d MMM yyyy H:m:s zzz", // RFC 5322 no day-of-week
-            "d MMM yyyy H:m:s", // RFC 5322 no day-of-week, no zone
-        };
+        "ddd, d MMM yyyy H:m:s zzz", // RFC 5322
+        "ddd, d MMM yyyy H:m:s", // RFC 5322 no zone
+        "d MMM yyyy H:m:s zzz", // RFC 5322 no day-of-week
+        "d MMM yyyy H:m:s", // RFC 5322 no day-of-week, no zone
+    };
 
     internal const char CR = '\r';
     internal const char LF = '\n';
@@ -211,9 +211,6 @@ internal static class HttpRuleParser
     internal static HttpParseResult GetQuotedPairLength(StringSegment input, int startIndex, out int length)
     {
         Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
-        Contract.Ensures((Contract.ValueAtReturn(out length) >= 0) &&
-            (Contract.ValueAtReturn(out length) <= (input.Length - startIndex)));
-
         length = 0;
 
         if (input[startIndex] != '\\')
@@ -261,8 +258,6 @@ internal static class HttpRuleParser
     {
         Contract.Requires(input != null);
         Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
-        Contract.Ensures((Contract.Result<HttpParseResult>() != HttpParseResult.Parsed) ||
-            (Contract.ValueAtReturn<int>(out length) > 0));
 
         length = 0;
 
@@ -276,9 +271,8 @@ internal static class HttpRuleParser
         {
             // Only check whether we have a quoted char, if we have at least 3 characters left to read (i.e.
             // quoted char + closing char). Otherwise the closing char may be considered part of the quoted char.
-            var quotedPairLength = 0;
             if ((current + 2 < input.Length) &&
-                (GetQuotedPairLength(input, current, out quotedPairLength) == HttpParseResult.Parsed))
+                (GetQuotedPairLength(input, current, out var quotedPairLength) == HttpParseResult.Parsed))
             {
                 // We ignore invalid quoted-pairs. Invalid quoted-pairs may mean that it looked like a quoted pair,
                 // but we actually have a quoted-string: e.g. "\ü" ('\' followed by a char >127 - quoted-pair only

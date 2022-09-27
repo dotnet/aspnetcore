@@ -3,15 +3,12 @@
 
 #nullable disable warnings
 
-using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
 [DebuggerDisplay("{_state,nq}")]
-internal class RendererSynchronizationContext : SynchronizationContext
+internal sealed class RendererSynchronizationContext : SynchronizationContext
 {
     private static readonly ContextCallback ExecutionContextThunk = (object state) =>
     {
@@ -150,7 +147,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
     public override void Send(SendOrPostCallback d, object state)
     {
         Task antecedent;
-        var completion = new TaskCompletionSource<object>();
+        var completion = new TaskCompletionSource();
 
         lock (_state.Lock)
         {
@@ -179,7 +176,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
     // if necessary.
     private void ExecuteSynchronouslyIfPossible(SendOrPostCallback d, object state)
     {
-        TaskCompletionSource<object> completion;
+        TaskCompletionSource completion;
         lock (_state.Lock)
         {
             if (!_state.Task.IsCompleted)
@@ -190,7 +187,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
 
             // We can execute this synchronously because nothing is currently running
             // or queued.
-            completion = new TaskCompletionSource<object>();
+            completion = new TaskCompletionSource();
             _state.Task = completion.Task;
         }
 
@@ -224,7 +221,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
     }
 
     private void ExecuteSynchronously(
-        TaskCompletionSource<object> completion,
+        TaskCompletionSource completion,
         SendOrPostCallback d,
         object state)
     {
@@ -241,7 +238,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
             _state.IsBusy = false;
             SetSynchronizationContext(original);
 
-            completion?.SetResult(null);
+            completion?.SetResult();
         }
     }
 
@@ -281,7 +278,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
         }
     }
 
-    private class State
+    private sealed class State
     {
         public bool IsBusy; // Just for debugging
         public object Lock = new object();
@@ -293,7 +290,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
         }
     }
 
-    private class WorkItem
+    private sealed class WorkItem
     {
         public RendererSynchronizationContext SynchronizationContext;
         public ExecutionContext ExecutionContext;
@@ -301,7 +298,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
         public object State;
     }
 
-    private class RendererSynchronizationTaskCompletionSource<TCallback, TResult> : TaskCompletionSource<TResult>
+    private sealed class RendererSynchronizationTaskCompletionSource<TCallback, TResult> : TaskCompletionSource<TResult>
     {
         public RendererSynchronizationTaskCompletionSource(TCallback callback)
         {

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// A wrapper for the response Set-Cookie header.
 /// </summary>
-internal partial class ResponseCookies : IResponseCookies
+internal sealed partial class ResponseCookies : IResponseCookies
 {
     internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
     internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
@@ -28,7 +26,7 @@ internal partial class ResponseCookies : IResponseCookies
     internal ResponseCookies(IFeatureCollection features)
     {
         _features = features;
-        Headers = _features.Get<IHttpResponseFeature>()!.Headers;
+        Headers = _features.GetRequiredFeature<IHttpResponseFeature>().Headers;
     }
 
     private IHeaderDictionary Headers { get; set; }
@@ -60,7 +58,7 @@ internal partial class ResponseCookies : IResponseCookies
         {
             if (_logger == null)
             {
-                var services = _features.Get<Features.IServiceProvidersFeature>()?.RequestServices;
+                var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
                 _logger = services?.GetService<ILogger<ResponseCookies>>();
             }
 
@@ -70,22 +68,11 @@ internal partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var setCookieHeaderValue = new SetCookieHeaderValue(
+        var cookie = options.CreateCookieHeader(
             _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value))
-        {
-            Domain = options.Domain,
-            Path = options.Path,
-            Expires = options.Expires,
-            MaxAge = options.MaxAge,
-            Secure = options.Secure,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly
-        };
+            Uri.EscapeDataString(value)).ToString();
 
-        var cookieValue = setCookieHeaderValue.ToString();
-
-        Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
+        Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookie);
     }
 
     /// <inheritdoc />
@@ -114,25 +101,14 @@ internal partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var setCookieHeaderValue = new SetCookieHeaderValue(string.Empty)
-        {
-            Domain = options.Domain,
-            Path = options.Path,
-            Expires = options.Expires,
-            MaxAge = options.MaxAge,
-            Secure = options.Secure,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly
-        };
-
-        var cookierHeaderValue = setCookieHeaderValue.ToString()[1..];
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString()[1..];
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
         foreach (var keyValuePair in keyValuePairs)
         {
             var key = _enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key;
-            cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
+            cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
             position++;
         }
 
@@ -202,14 +178,9 @@ internal partial class ResponseCookies : IResponseCookies
             Headers.SetCookie = new StringValues(newValues.ToArray());
         }
 
-        Append(key, string.Empty, new CookieOptions
+        Append(key, string.Empty, new CookieOptions(options)
         {
-            Path = options.Path,
-            Domain = options.Domain,
             Expires = DateTimeOffset.UnixEpoch,
-            Secure = options.Secure,
-            HttpOnly = options.HttpOnly,
-            SameSite = options.SameSite
         });
     }
 

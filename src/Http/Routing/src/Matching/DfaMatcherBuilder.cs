@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
-internal class DfaMatcherBuilder : MatcherBuilder
+internal sealed class DfaMatcherBuilder : MatcherBuilder
 {
     private readonly List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
 
@@ -113,7 +111,7 @@ internal class DfaMatcherBuilder : MatcherBuilder
         return root;
     }
 
-    private class DfaBuilderWorker
+    private sealed class DfaBuilderWorker
     {
         private List<DfaBuilderWorkerWorkItem> _previousWork;
         private List<DfaBuilderWorkerWorkItem> _work;
@@ -449,9 +447,8 @@ internal class DfaMatcherBuilder : MatcherBuilder
 
     private static void AddLiteralNode(bool includeLabel, List<DfaNode> nextParents, DfaNode parent, string literal)
     {
-        DfaNode next = null;
         if (parent.Literals == null ||
-            !parent.Literals.TryGetValue(literal, out next))
+            !parent.Literals.TryGetValue(literal, out var next))
         {
             next = new DfaNode()
             {
@@ -502,7 +499,7 @@ internal class DfaMatcherBuilder : MatcherBuilder
 #if DEBUG
         var includeLabel = true;
 #else
-            var includeLabel = false;
+        var includeLabel = false;
 #endif
 
         var root = BuildDfaTree(includeLabel);
@@ -943,5 +940,5 @@ internal class DfaMatcherBuilder : MatcherBuilder
         return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
     }
 
-    private record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
+    private readonly record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
 }

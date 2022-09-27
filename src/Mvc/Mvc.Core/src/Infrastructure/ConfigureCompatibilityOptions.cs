@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -52,7 +50,7 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
     protected CompatibilityVersion Version { get; }
 
     /// <inheritdoc />
-    public virtual void PostConfigure(string name, TOptions options)
+    public virtual void PostConfigure(string? name, TOptions options)
     {
         if (name == null)
         {

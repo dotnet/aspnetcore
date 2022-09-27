@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 #nullable enable
+#pragma warning disable IDE0060 // Unused members are required by codegen.
 
 namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views;
 
@@ -160,7 +161,6 @@ internal abstract class BaseView
             throw new ArgumentNullException(nameof(trailer));
         }
 
-
         WriteLiteralTo(writer, leader);
         foreach (var value in values)
         {
@@ -279,7 +279,7 @@ internal abstract class BaseView
     /// </summary>
     /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
     /// <param name="value">The <see cref="object"/> to write.</param>
-    protected void WriteLiteralTo(TextWriter writer, object value)
+    protected static void WriteLiteralTo(TextWriter writer, object value)
     {
         WriteLiteralTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture)!);
     }
@@ -289,7 +289,7 @@ internal abstract class BaseView
     /// </summary>
     /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
     /// <param name="value">The <see cref="string"/> to write.</param>
-    protected void WriteLiteralTo(TextWriter writer, string value)
+    protected static void WriteLiteralTo(TextWriter writer, string value)
     {
         if (!string.IsNullOrEmpty(value))
         {

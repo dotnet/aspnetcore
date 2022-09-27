@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "LESS スタイル シート",
+  "description": "LESS は CSS にコンパイルされる言語です",
+  "postActions/openInEditor/description": "エディターで styleSheet1.less を開きます"
+}

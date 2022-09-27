@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -35,6 +31,7 @@ public abstract class RequestServicesTestBase<TStartup> : IClassFixture<MvcTestF
     [InlineData("http://localhost/RequestScopedService/FromView")]
     [InlineData("http://localhost/RequestScopedService/FromViewComponent")]
     [InlineData("http://localhost/RequestScopedService/FromActionArgument")]
+    [InlineData("http://localhost/RequestScopedService/FromProperty")]
     public async Task RequestServices(string url)
     {
         for (var i = 0; i < 2; i++)

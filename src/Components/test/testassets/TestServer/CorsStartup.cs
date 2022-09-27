@@ -1,13 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace TestServer;
 
@@ -27,16 +21,16 @@ public class CorsStartup
         services.AddMvc();
         services.AddCors(options =>
         {
-                // It's not enough just to return "Access-Control-Allow-Origin: *", because
-                // browsers don't allow wildcards in conjunction with credentials. So we must
-                // specify explicitly which origin we want to allow.
+            // It's not enough just to return "Access-Control-Allow-Origin: *", because
+            // browsers don't allow wildcards in conjunction with credentials. So we must
+            // specify explicitly which origin we want to allow.
 
-                options.AddPolicy("AllowAll", policy => policy
-                .SetIsOriginAllowed(host => host.StartsWith("http://localhost:", StringComparison.Ordinal) || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal))
-                .AllowAnyHeader()
-                .WithExposedHeaders("MyCustomHeader")
-                .AllowAnyMethod()
-                .AllowCredentials());
+            options.AddPolicy("AllowAll", policy => policy
+            .SetIsOriginAllowed(host => host.StartsWith("http://localhost:", StringComparison.Ordinal) || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal))
+            .AllowAnyHeader()
+            .WithExposedHeaders("MyCustomHeader")
+            .AllowAnyMethod()
+            .AllowCredentials());
         });
     }
 

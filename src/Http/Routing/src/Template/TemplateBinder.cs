@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -349,7 +347,6 @@ public class TemplateBinder
             }
             else if (_defaults != null && _defaults.TryGetValue(parameter.Name, out var defaultValue))
             {
-
                 // Add the default value only if there isn't already a new value for it and
                 // only if it actually has a default value.
                 slots[i] = new KeyValuePair<string, object?>(key, defaultValue);
@@ -585,11 +582,9 @@ public class TemplateBinder
                         // for format, so we remove '.' and generate 5.
                         if (!context.Accept(converted, parameterPart.EncodeSlashes))
                         {
-                            RoutePatternSeparatorPart? nullablePart;
-                            if (j != 0 && parameterPart.IsOptional && (nullablePart = parts[j - 1] as RoutePatternSeparatorPart) != null)
+                            if (j != 0 && parameterPart.IsOptional && parts[j - 1] is RoutePatternSeparatorPart)
                             {
-                                separatorPart = nullablePart;
-                                context.Remove(separatorPart.Content);
+                                context.Remove();
                             }
                             else
                             {
@@ -750,7 +745,7 @@ public class TemplateBinder
 
     // This represents an 'explicit null' in the slots array.
     [DebuggerDisplay("explicit null")]
-    private class SentinullValue
+    private sealed class SentinullValue
     {
         public static object Instance = new SentinullValue();
 

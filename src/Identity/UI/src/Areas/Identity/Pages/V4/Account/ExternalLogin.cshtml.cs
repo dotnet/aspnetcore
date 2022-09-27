@@ -1,20 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 
@@ -31,26 +27,26 @@ public class ExternalLoginModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public string ProviderDisplayName { get; set; }
+    public string? ProviderDisplayName { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public string ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -64,7 +60,7 @@ public class ExternalLoginModel : PageModel
         /// </summary>
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = default!;
     }
 
     /// <summary>
@@ -77,22 +73,22 @@ public class ExternalLoginModel : PageModel
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual IActionResult OnPost(string provider, string returnUrl = null) => throw new NotImplementedException();
+    public virtual IActionResult OnPost(string provider, string? returnUrl = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
+internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;
@@ -118,7 +114,7 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
 
     public override IActionResult OnGet() => RedirectToPage("./Login");
 
-    public override IActionResult OnPost(string provider, string returnUrl = null)
+    public override IActionResult OnPost(string provider, string? returnUrl = null)
     {
         // Request a redirect to the external login provider.
         var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
@@ -126,7 +122,7 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
         return new ChallengeResult(provider, properties);
     }
 
-    public override async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
+    public override async Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null)
     {
         returnUrl = returnUrl ?? Url.Content("~/");
         if (remoteError != null)
@@ -157,18 +153,18 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
             // If the user does not have an account, then ask the user to create an account.
             ReturnUrl = returnUrl;
             ProviderDisplayName = info.ProviderDisplayName;
-            if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+            if (info.Principal!.HasClaim(c => c.Type == ClaimTypes.Email))
             {
                 Input = new InputModel
                 {
-                    Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email)!
                 };
             }
             return Page();
         }
     }
 
-    public override async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
+    public override async Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null)
     {
         returnUrl = returnUrl ?? Url.Content("~/");
         // Get the information about the user from the external login provider
@@ -201,7 +197,7 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
                         "/Account/ConfirmEmail",
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code },
-                        protocol: Request.Scheme);
+                        protocol: Request.Scheme)!;
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");

@@ -277,13 +277,13 @@ public class Http2KeepAliveTests : Http2TestBase
         // Reduce connection window size so that one stream can fill it
         _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = 65535;
 
-        var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await InitializeConnectionAsync(async c =>
         {
-                // Don't consume any request data
-                await tcs.Task;
-                // Send headers
-                await c.Request.Body.FlushAsync();
+            // Don't consume any request data
+            await tcs.Task;
+            // Send headers
+            await c.Request.Body.FlushAsync();
         }, expectedWindowUpdate: false).DefaultTimeout();
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
@@ -313,7 +313,7 @@ public class Http2KeepAliveTests : Http2TestBase
         TriggerTick(now + TimeSpan.FromSeconds(1.1 * 2));
 
         // Continue request delegate on server
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 36,
@@ -332,13 +332,13 @@ public class Http2KeepAliveTests : Http2TestBase
         // Reduce connection window size so that one stream can fill it
         _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = 65535;
 
-        var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await InitializeConnectionAsync(async c =>
         {
-                // Don't consume any request data
-                await tcs.Task;
-                // Send headers
-                await c.Request.Body.FlushAsync();
+            // Don't consume any request data
+            await tcs.Task;
+            // Send headers
+            await c.Request.Body.FlushAsync();
         }, expectedWindowUpdate: false).DefaultTimeout();
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
@@ -372,7 +372,7 @@ public class Http2KeepAliveTests : Http2TestBase
         TriggerTick(now + TimeSpan.FromSeconds(1.1 * 3));
 
         // Continue request delegate on server
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 36,

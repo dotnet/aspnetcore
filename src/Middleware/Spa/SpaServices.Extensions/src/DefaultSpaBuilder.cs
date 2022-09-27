@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.SpaServices;
 
-internal class DefaultSpaBuilder : ISpaBuilder
+internal sealed class DefaultSpaBuilder : ISpaBuilder
 {
     public IApplicationBuilder ApplicationBuilder { get; }
 

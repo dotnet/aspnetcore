@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication;
 
@@ -138,33 +135,33 @@ public class DynamicSchemeTests
                    {
                        app.UseAuthentication();
                        app.Use(async (context, next) =>
+                       {
+                           var req = context.Request;
+                           var res = context.Response;
+                           if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
                            {
-                            var req = context.Request;
-                            var res = context.Response;
-                            if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
-                            {
-                                var name = remainder.Value.Substring(1);
-                                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                                var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
-                                auth.AddScheme(scheme);
-                            }
-                            else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
-                            {
-                                var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
-                                var result = await context.AuthenticateAsync(name);
-                                await res.DescribeAsync(result?.Ticket?.Principal);
-                            }
-                            else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
-                            {
-                                var name = remainder.Value.Substring(1);
-                                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                                auth.RemoveScheme(name);
-                            }
-                            else
-                            {
-                                await next(context);
-                            }
-                        });
+                               var name = remainder.Value.Substring(1);
+                               var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                               var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
+                               auth.AddScheme(scheme);
+                           }
+                           else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
+                           {
+                               var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
+                               var result = await context.AuthenticateAsync(name);
+                               await res.DescribeAsync(result?.Ticket?.Principal);
+                           }
+                           else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
+                           {
+                               var name = remainder.Value.Substring(1);
+                               var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                               auth.RemoveScheme(name);
+                           }
+                           else
+                           {
+                               await next(context);
+                           }
+                       });
                    })
                     .ConfigureServices(services =>
                     {

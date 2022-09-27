@@ -49,7 +49,9 @@ internal ref partial struct ValueStringBuilder
 
         // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
         if ((uint)capacity > (uint)_chars.Length)
+        {
             Grow(capacity - _pos);
+        }
     }
 
     /// <summary>

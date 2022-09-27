@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
 
@@ -24,7 +22,7 @@ public class WebHostConfigurationTests
                 { WebHostDefaults.SuppressStatusMessagesKey, "true" }
             };
 
-        var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
+        var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
         Assert.Equal("wwwroot", config.WebRoot);
         Assert.Equal("MyProjectReference", config.ApplicationName);
@@ -39,7 +37,7 @@ public class WebHostConfigurationTests
     public void ReadsOldEnvKey()
     {
         var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", Environments.Development } };
-        var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
+        var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
         Assert.Equal(Environments.Development, config.Environment);
     }
@@ -50,7 +48,7 @@ public class WebHostConfigurationTests
     public void AllowsNumberForDetailedErrors(string value, bool expected)
     {
         var parameters = new Dictionary<string, string>() { { "detailedErrors", value } };
-        var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build(), applicationNameFallback: null);
+        var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
         Assert.Equal(expected, config.DetailedErrors);
     }

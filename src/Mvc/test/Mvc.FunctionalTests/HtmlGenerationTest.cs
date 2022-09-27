@@ -111,7 +111,7 @@ public class HtmlGenerationTest :
         responseContent = responseContent.Trim();
         if (antiforgeryPath == null)
         {
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
         else
         {
@@ -275,7 +275,6 @@ public class HtmlGenerationTest :
             ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath));
         }
     }
-
 
     [ConditionalTheory]
     [InlineData("Link", null)]

@@ -1,0 +1,24 @@
+#nullable enable
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.GrpcJsonSettings() -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.IgnoreDefaultValues.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.IgnoreDefaultValues.set -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteEnumsAsIntegers.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteEnumsAsIntegers.set -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteIndented.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteIndented.set -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteInt64sAsStrings.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteInt64sAsStrings.set -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.GrpcJsonTranscodingMetadata(Google.Protobuf.Reflection.MethodDescriptor! methodDescriptor, Google.Api.HttpRule! httpRule) -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.HttpRule.get -> Google.Api.HttpRule!
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.MethodDescriptor.get -> Google.Protobuf.Reflection.MethodDescriptor!
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.GrpcJsonTranscodingOptions() -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.JsonSettings.get -> Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings!
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.JsonSettings.set -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.TypeRegistry.get -> Google.Protobuf.Reflection.TypeRegistry!
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.TypeRegistry.set -> void
+Microsoft.Extensions.DependencyInjection.GrpcJsonTranscodingServiceExtensions
+static Microsoft.Extensions.DependencyInjection.GrpcJsonTranscodingServiceExtensions.AddJsonTranscoding(this Grpc.AspNetCore.Server.IGrpcServerBuilder! builder) -> Grpc.AspNetCore.Server.IGrpcServerBuilder!
+static Microsoft.Extensions.DependencyInjection.GrpcJsonTranscodingServiceExtensions.AddJsonTranscoding(this Grpc.AspNetCore.Server.IGrpcServerBuilder! builder, System.Action<Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions!>! configureOptions) -> Grpc.AspNetCore.Server.IGrpcServerBuilder!

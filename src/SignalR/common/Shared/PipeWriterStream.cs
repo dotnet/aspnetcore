@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace System.IO.Pipelines;
 
 // Write only stream implementation for efficiently writing bytes from the request body
-internal class PipeWriterStream : Stream
+internal sealed class PipeWriterStream : Stream
 {
     private long _length;
     private readonly PipeWriter _pipeWriter;
@@ -58,7 +58,7 @@ internal class PipeWriterStream : Stream
         return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
-#if NETCOREAPP
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
     {
         return WriteCoreAsync(source, cancellationToken);
@@ -89,9 +89,9 @@ internal class PipeWriterStream : Stream
 
         return default;
 
-        async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
+        static async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
         {
-            var flushResult = await flushTask;
+            var flushResult = await flushTask.ConfigureAwait(false);
 
             // Cancellation can be triggered by PipeWriter.CancelPendingFlush
             if (flushResult.IsCanceled)

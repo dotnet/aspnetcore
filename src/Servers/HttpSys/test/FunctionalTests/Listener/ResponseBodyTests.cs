@@ -240,8 +240,8 @@ public class ResponseBodyTests
 
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-            var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+            var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
             // Make sure the client is aborted
             cts.Cancel();
@@ -250,8 +250,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -276,8 +276,8 @@ public class ResponseBodyTests
 
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-            var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+            var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
             // First write sends headers
             cts.Cancel();
@@ -286,8 +286,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -312,8 +312,8 @@ public class ResponseBodyTests
             server.Options.AllowSynchronousIO = true;
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-            var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+            var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
             cts.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -339,8 +339,8 @@ public class ResponseBodyTests
 
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-            var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+            var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
             cts.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -369,8 +369,8 @@ public class ResponseBodyTests
 
                 context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+                var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
                 // First write sends headers
                 context.AllowSynchronousIO = true;
@@ -384,8 +384,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -409,8 +409,8 @@ public class ResponseBodyTests
 
                 context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+                var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -423,8 +423,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -448,8 +448,8 @@ public class ResponseBodyTests
 
                 context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+                var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
                 // First write sends headers
                 context.Response.Body.Write(new byte[10], 0, 10);
@@ -482,8 +482,8 @@ public class ResponseBodyTests
 
                 context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+                var disconnectCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult());
 
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);

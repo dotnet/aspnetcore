@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.Model.get -> TModel?
+Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.Model.get -> TModel

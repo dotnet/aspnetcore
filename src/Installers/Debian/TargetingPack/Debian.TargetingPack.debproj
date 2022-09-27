@@ -37,16 +37,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 
   <PropertyGroup>
-    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).deb</TargetFileName>
+    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-$(TargetArchitecture).deb</TargetFileName>
     <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
 
     <DebPackageVersion>$(TargetingPackVersionPrefix)</DebPackageVersion>
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->
     <DebPackageVersion Condition="'$(VersionSuffix)' != ''">$(DebPackageVersion)~$(VersionSuffix)</DebPackageVersion>
     <PackageRevision>1</PackageRevision>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <DebBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 
 </Project>

@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Strona Razor",
+  "description": "Strona Razor z modelem strony lub bez",
+  "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu.",
+  "symbols/no-pagemodel/description": "tworzenie strony bez modelu PageModel",
+  "symbols/no-pagemodel/displayName": "Wyklucz moduł PageModel",
+  "postActions/openInEditor/description": "Otwiera plik Index.cshtml w edytorze"
+}

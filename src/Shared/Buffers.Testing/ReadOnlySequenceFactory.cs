@@ -24,7 +24,7 @@ internal abstract class ReadOnlySequenceFactory
         return CreateWithContent(Encoding.ASCII.GetBytes(data));
     }
 
-    internal class ArrayTestSequenceFactory : ReadOnlySequenceFactory
+    internal sealed class ArrayTestSequenceFactory : ReadOnlySequenceFactory
     {
         public override ReadOnlySequence<byte> CreateOfSize(int size)
         {
@@ -39,7 +39,7 @@ internal abstract class ReadOnlySequenceFactory
         }
     }
 
-    internal class MemoryTestSequenceFactory : ReadOnlySequenceFactory
+    internal sealed class MemoryTestSequenceFactory : ReadOnlySequenceFactory
     {
         public override ReadOnlySequence<byte> CreateOfSize(int size)
         {
@@ -54,7 +54,7 @@ internal abstract class ReadOnlySequenceFactory
         }
     }
 
-    internal class OwnedMemoryTestSequenceFactory : ReadOnlySequenceFactory
+    internal sealed class OwnedMemoryTestSequenceFactory : ReadOnlySequenceFactory
     {
         public override ReadOnlySequence<byte> CreateOfSize(int size)
         {
@@ -69,7 +69,7 @@ internal abstract class ReadOnlySequenceFactory
         }
     }
 
-    internal class SingleSegmentTestSequenceFactory : ReadOnlySequenceFactory
+    internal sealed class SingleSegmentTestSequenceFactory : ReadOnlySequenceFactory
     {
         public override ReadOnlySequence<byte> CreateOfSize(int size)
         {
@@ -82,7 +82,7 @@ internal abstract class ReadOnlySequenceFactory
         }
     }
 
-    internal class BytePerSegmentTestSequenceFactory : ReadOnlySequenceFactory
+    internal sealed class BytePerSegmentTestSequenceFactory : ReadOnlySequenceFactory
     {
         public override ReadOnlySequence<byte> CreateOfSize(int size)
         {

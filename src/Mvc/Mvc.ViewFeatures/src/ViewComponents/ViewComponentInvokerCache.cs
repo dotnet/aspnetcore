@@ -1,7 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -9,7 +8,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 
-internal class ViewComponentInvokerCache
+internal sealed class ViewComponentInvokerCache
 {
     private readonly IViewComponentDescriptorCollectionProvider _collectionProvider;
 
@@ -67,7 +66,7 @@ internal class ViewComponentInvokerCache
         return executor;
     }
 
-    private class InnerCache
+    private sealed class InnerCache
     {
         public InnerCache(int version)
         {

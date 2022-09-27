@@ -1,19 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect;
 
@@ -30,8 +28,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task CanForwardDefault()
     {
-        var services = new ServiceCollection().AddLogging();
-
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -74,8 +71,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task ForwardSignInThrows()
     {
-        var services = new ServiceCollection().AddLogging();
-
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -104,8 +100,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task ForwardSignOutWinsOverDefault()
     {
-        var services = new ServiceCollection().AddLogging();
-
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -145,8 +140,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task ForwardForbidWinsOverDefault()
     {
-        var services = new ServiceCollection().AddLogging();
-
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -186,8 +180,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task ForwardAuthenticateWinsOverDefault()
     {
-        var services = new ServiceCollection().AddLogging();
-
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -227,7 +220,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task ForwardChallengeWinsOverDefault()
     {
-        var services = new ServiceCollection().AddLogging();
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -267,7 +260,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task ForwardSelectorWinsOverDefault()
     {
-        var services = new ServiceCollection().AddLogging();
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -322,7 +315,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task NullForwardSelectorUsesDefault()
     {
-        var services = new ServiceCollection().AddLogging();
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -377,7 +370,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public async Task SpecificForwardWinsOverSelectorAndDefault()
     {
-        var services = new ServiceCollection().AddLogging();
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.DefaultScheme = OpenIdConnectDefaults.AuthenticationScheme;

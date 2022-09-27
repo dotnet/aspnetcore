@@ -1,18 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Testing;
 using NuGet.Versioning;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore;
@@ -23,36 +19,26 @@ public class TargetingPackTests
     private readonly string _targetingPackTfm;
     private readonly string _targetingPackRoot;
     private readonly ITestOutputHelper _output;
-    private readonly bool _isTargetingPackBuilding;
 
     public TargetingPackTests(ITestOutputHelper output)
     {
         _output = output;
         _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
         _targetingPackTfm = TestData.GetDefaultNetCoreTargetFramework();
-        var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ?
-            TestData.GetTestDataValue("TargetingPackLayoutRoot") :
-            Environment.GetEnvironmentVariable("DOTNET_ROOT");
         _targetingPackRoot = Path.Combine(
-            root,
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
             "packs",
             "Microsoft.AspNetCore.App.Ref",
-            TestData.GetTestDataValue("TargetingPackVersion"));
-        _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
+            TestData.GetSharedFxVersion());
     }
 
     [Fact]
     public void TargetingPackContainsListedAssemblies()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
-
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
             .Select(Path.GetFileNameWithoutExtension)
             .ToHashSet();
-        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.Keys.ToHashSet();
+        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.ToHashSet();
 
         _output.WriteLine("==== actual assemblies ====");
         _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
@@ -74,16 +60,25 @@ public class TargetingPackTests
     [Fact]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
+        // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
+        var repoAssemblies = TestData.GetAspNetCoreTargetingPackDependencies()
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet();
+
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+        var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
+        var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
 
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
+            var expectedVersion = repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)) ?
+                aspnetcoreVersion :
+                version;
+
             var fileName = Path.GetFileNameWithoutExtension(path);
             var assemblyName = AssemblyName.GetAssemblyName(path);
             using var fileStream = File.OpenRead(path);
@@ -91,51 +86,52 @@ public class TargetingPackTests
             var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
-            TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
-            Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
+            // Assembly versions should all match Major.Minor.0.0
+            if (repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
+            Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
+            Assert.Equal(0, assemblyDefinition.Version.Build);
+            Assert.Equal(0, assemblyDefinition.Version.Revision);
         });
     }
 
     [Fact]
     public void RefAssemblyReferencesHaveExpectedAssemblyVersions()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
-
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
-                // Skip netstandard2.0 System.IO.Pipelines assembly. References have old versions.
-                var filename = Path.GetFileName(path);
-            if (!string.Equals("System.IO.Pipelines.dll", filename, StringComparison.OrdinalIgnoreCase))
+            using var fileStream = File.OpenRead(path);
+            using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+            var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+
+            Assert.All(reader.AssemblyReferences, handle =>
             {
-                using var fileStream = File.OpenRead(path);
-                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
-                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var reference = reader.GetAssemblyReference(handle);
+                var result = (0 == reference.Version.Revision && 0 == reference.Version.Build);
 
-                Assert.All(reader.AssemblyReferences, handle =>
-                {
-                    var reference = reader.GetAssemblyReference(handle);
-                    var result = 0 == reference.Version.Revision;
-
-                    Assert.True(result, $"In {filename}, {reference.GetAssemblyName()} has unexpected version {reference.Version}.");
-                });
-            }
+                Assert.True(result, $"In {Path.GetFileName(path)}, {reference.GetAssemblyName()} has unexpected version {reference.Version}.");
+            });
         });
     }
 
     [Fact]
     public void PackageOverridesContainsCorrectEntries()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
-
         var packageOverridePath = Path.Combine(_targetingPackRoot, "data", "PackageOverrides.txt");
 
         AssertEx.FileExists(packageOverridePath);
@@ -195,11 +191,6 @@ public class TargetingPackTests
     [Fact]
     public void AssembliesAreReferenceAssemblies()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
-
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref"), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
@@ -229,11 +220,6 @@ public class TargetingPackTests
     [Fact]
     public void PlatformManifestListsAllFiles()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
-
         var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
         var expectedAssemblies = TestData.GetSharedFxDependencies()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -297,13 +283,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsCorrectEntries()
+    public void FrameworkListContainsCorrectEntries()
     {
-        if (!_isTargetingPackBuilding)
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
         var expectedAssemblies = TestData.GetTargetingPackDependencies()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -369,13 +350,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsCorrectPaths()
+    public void FrameworkListContainsCorrectPaths()
     {
-        if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
 
         AssertEx.FileExists(frameworkListPath);
@@ -383,7 +359,12 @@ public class TargetingPackTests
         var frameworkListDoc = XDocument.Load(frameworkListPath);
         var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
-        var targetingPackPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg"));
+        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
+        var targetingPackPath = Path.Combine(
+            packageFolder, "Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg");
+        AssertEx.FileExists(targetingPackPath);
 
         ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
 
@@ -411,13 +392,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsAnalyzerLanguage()
+    public void FrameworkListContainsAnalyzerLanguage()
     {
-        if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
 
         AssertEx.FileExists(frameworkListPath);

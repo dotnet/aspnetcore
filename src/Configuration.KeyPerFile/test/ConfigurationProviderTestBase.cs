@@ -517,7 +517,6 @@ Section3:
                 }
             };
 
-
         public static TestSection MissingSection4Config { get; }
             = new TestSection
             {

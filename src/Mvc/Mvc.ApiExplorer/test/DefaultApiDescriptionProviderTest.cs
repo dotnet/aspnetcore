@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -26,7 +22,6 @@ using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Description;
 
@@ -132,7 +127,6 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         Assert.Null(description.HttpMethod);
     }
-
 
     [Fact]
     public void GetApiDescription_CreatesMultipleDescriptionsForMultipleHttpMethods()
@@ -246,6 +240,57 @@ public class DefaultApiDescriptionProviderTest
         {
             Assert.Null(parameter.RouteInfo.DefaultValue);
         }
+    }
+
+    [Fact]
+    public void GetApiDescription_WithInferredBindingSource_ExcludesPathParametersWhenNotPresentInRoute()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = "api/products" };
+
+        action.Parameters[0].BindingInfo = new BindingInfo()
+        {
+            BindingSource = BindingSource.Path
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
+
+    [Theory]
+    [InlineData("api/products/{id}")]
+    [InlineData("api/products/{id?}")]
+    [InlineData("api/products/{id=5}")]
+    [InlineData("api/products/{id:int}")]
+    [InlineData("api/products/{id:int?}")]
+    [InlineData("api/products/{id:int=5}")]
+    [InlineData("api/products/{*id}")]
+    [InlineData("api/products/{*id:int}")]
+    [InlineData("api/products/{*id:int=5}")]
+    public void GetApiDescription_WithInferredBindingSource_IncludesPathParametersWhenPresentInRoute(string template)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+        action.Parameters[0].BindingInfo = new BindingInfo()
+        {
+            BindingSource = BindingSource.Path
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var parameter = Assert.Single(description.ParameterDescriptions);
+        Assert.Equal(BindingSource.Path, parameter.Source);
+        Assert.Equal("id", parameter.Name);
     }
 
     [Fact]
@@ -466,6 +511,47 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         var responseType = Assert.Single(description.SupportedResponseTypes);
         Assert.Equal(typeof(Product), responseType.Type);
+        Assert.NotNull(responseType.ModelMetadata);
+    }
+
+    [Theory]
+    [InlineData(nameof(ReturnsResultOfProductWithEndpointMetadata))]
+    [InlineData(nameof(ReturnsTaskOfResultOfProductWithEndpointMetadata))]
+    public void GetApiDescription_PopulatesResponseType_ForResultOfT_WithEndpointMetadata(string methodName)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(methodName);
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var responseType = Assert.Single(description.SupportedResponseTypes);
+        Assert.Equal(typeof(Product), responseType.Type);
+        Assert.NotNull(responseType.ModelMetadata);
+    }
+
+    [Theory]
+    [InlineData(nameof(ReturnsResultOfProductWithEndpointMetadata))]
+    [InlineData(nameof(ReturnsTaskOfResultOfProductWithEndpointMetadata))]
+    public void GetApiDescription_PopulatesResponseType_ForResultOfT_WithEndpointMetadata_PreferProducesAttribute(string methodName)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(methodName);
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+        action.FilterDescriptors = new List<FilterDescriptor>{
+            new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(Customer), 200), FilterScope.Action)
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var responseType = Assert.Single(description.SupportedResponseTypes);
+        Assert.Equal(typeof(Customer), responseType.Type);
         Assert.NotNull(responseType.ModelMetadata);
     }
 
@@ -1168,6 +1254,24 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_IncludesRequestFormats_FilteredByAcceptsMetadata()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsProduct_Body));
+        action.EndpointMetadata = new List<object>() { new XmlOnlyMetadata() };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Collection(
+            description.SupportedRequestFormats.OrderBy(f => f.MediaType.ToString()),
+            f => Assert.Equal("application/xml", f.MediaType.ToString()),
+            f => Assert.Equal("text/xml", f.MediaType.ToString()));
+    }
+
+    [Fact]
     public void GetApiDescription_IncludesRequestFormats_FilteredByType()
     {
         // Arrange
@@ -1330,8 +1434,8 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(nameof(AcceptsFormFile));
         action.FilterDescriptors = new[]
         {
-                new FilterDescriptor(new ConsumesAttribute("multipart/form-data"), FilterScope.Action),
-            };
+            new FilterDescriptor(new ConsumesAttribute("multipart/form-data"), FilterScope.Action),
+        };
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -2131,7 +2235,6 @@ public class DefaultApiDescriptionProviderTest
 
     private void ReturnsVoid()
     {
-
     }
 
     private IActionResult ReturnsActionResult()
@@ -2200,10 +2303,12 @@ public class DefaultApiDescriptionProviderTest
     }
 
     private ActionResult<Product> ReturnsActionResultOfProduct() => null;
+    private Http.HttpResults.Ok<Product> ReturnsResultOfProductWithEndpointMetadata() => null;
 
     private ActionResult<IEnumerable<Product>> ReturnsActionResultOfSequenceOfProducts() => null;
 
     private Task<ActionResult<Product>> ReturnsTaskOfActionResultOfProduct() => null;
+    private Task<Http.HttpResults.Ok<Product>> ReturnsTaskOfResultOfProductWithEndpointMetadata() => null;
 
     private Task<ActionResult<IEnumerable<Product>>> ReturnsTaskOfActionResultOfSequenceOfProducts() => null;
 
@@ -2338,6 +2443,9 @@ public class DefaultApiDescriptionProviderTest
         [FromHeader]
         public string UserId { get; set; }
 
+        [FromServices]
+        public ITestService TestService { get; set; }
+
         [ModelBinder]
         public string Comments { get; set; }
 
@@ -2430,6 +2538,9 @@ public class DefaultApiDescriptionProviderTest
 
         [FromHeader]
         public string UserId { get; set; }
+
+        [FromServices]
+        public ITestService TestService { get; set; }
 
         public string Comments { get; set; }
     }
@@ -2601,11 +2712,19 @@ public class DefaultApiDescriptionProviderTest
 
     private interface ITestService
     {
-
     }
 
     private class FromFormFileAttribute : Attribute, IBindingSourceMetadata
     {
         public BindingSource BindingSource => BindingSource.FormFile;
+    }
+
+    private class XmlOnlyMetadata : Http.Metadata.IAcceptsMetadata
+    {
+        public IReadOnlyList<string> ContentTypes => new[] { "text/xml", "application/xml" };
+
+        public Type RequestType => null;
+
+        public bool IsOptional => false;
     }
 }

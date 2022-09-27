@@ -3,10 +3,7 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
@@ -21,11 +18,11 @@ internal static class RoutePatternParser
 
     internal static readonly char[] InvalidParameterNameChars = new char[]
     {
-            Separator,
-            OpenBrace,
-            CloseBrace,
-            QuestionMark,
-            Asterisk
+        Separator,
+        OpenBrace,
+        CloseBrace,
+        QuestionMark,
+        Asterisk
     };
 
     public static RoutePattern Parse(string pattern)
@@ -481,7 +478,7 @@ internal static class RoutePatternParser
     }
 
     [DebuggerDisplay("{DebuggerToString()}")]
-    private class Context
+    private sealed class Context
     {
         private readonly string _template;
         private int _index;

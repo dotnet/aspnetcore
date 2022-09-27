@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc;
 
 /// <summary>
-/// Specifies that an action parameter should be bound using the request services.
+/// Specifies that a parameter or property should be bound using the request services.
 /// </summary>
 /// <example>
 /// In this example an implementation of IProductModelRequestService is registered as a service.
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// }
 /// </code>
 /// </example>
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class FromServicesAttribute : Attribute, IBindingSourceMetadata, IFromServiceMetadata
 {
     /// <inheritdoc />

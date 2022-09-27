@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -25,7 +24,7 @@ public class ActionContextAccessor : IActionContextAccessor
         set { _storage.Value = value; }
     }
 
-    private class NullActionContextAccessor : IActionContextAccessor
+    private sealed class NullActionContextAccessor : IActionContextAccessor
     {
         public ActionContext? ActionContext
         {

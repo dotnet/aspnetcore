@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Tests.Internal;
@@ -10,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
 
@@ -203,8 +200,8 @@ public class StartupManagerTests
 
                 next(services);
 
-                    // Ensures we can always override.
-                    if (OverrideAfterService)
+                // Ensures we can always override.
+                if (OverrideAfterService)
                 {
                     services.Services.AddSingleton(new ServiceAfter { Message = $"ConfigureContainerFilter After {AdditionalData}" });
                 }
@@ -252,8 +249,8 @@ public class StartupManagerTests
 
                 next(services);
 
-                    // Ensures we can always override.
-                    if (OverrideAfterService)
+                // Ensures we can always override.
+                if (OverrideAfterService)
                 {
                     services.AddSingleton(new ServiceAfter { Message = $"StartupServicesFilter After {AdditionalData}" });
                 }
@@ -277,7 +274,6 @@ public class StartupManagerTests
         {
         }
     }
-
 
     public class ServiceBefore
     {

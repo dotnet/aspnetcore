@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 // A duplex wrapper around RequestStream and ResponseStream.
 // TODO: Consider merging RequestStream and ResponseStream instead.
-internal class OpaqueStream : Stream
+internal sealed class OpaqueStream : Stream
 {
     private readonly Stream _requestStream;
     private readonly Stream _responseStream;
@@ -105,6 +100,11 @@ internal class OpaqueStream : Stream
         return _requestStream.ReadAsync(buffer, offset, count, cancellationToken);
     }
 
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        return _requestStream.ReadAsync(buffer, cancellationToken);
+    }
+
     public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
     {
         return _requestStream.CopyToAsync(destination, bufferSize, cancellationToken);
@@ -137,6 +137,11 @@ internal class OpaqueStream : Stream
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return _responseStream.WriteAsync(buffer, offset, count, cancellationToken);
+    }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        return _responseStream.WriteAsync(buffer, cancellationToken);
     }
 
     public override void Flush()

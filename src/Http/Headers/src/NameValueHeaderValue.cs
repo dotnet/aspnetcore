@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -487,10 +485,5 @@ public class NameValueHeaderValue
         {
             throw new FormatException(string.Format(CultureInfo.InvariantCulture, "The header value is invalid: '{0}'", value));
         }
-    }
-
-    private static NameValueHeaderValue CreateNameValue()
-    {
-        return new NameValueHeaderValue();
     }
 }

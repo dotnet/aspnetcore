@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -12,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 /// <summary>
 /// A filter that saves temp data.
 /// </summary>
-internal class SaveTempDataFilter : IResourceFilter, IResultFilter
+internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
 {
     private static readonly Func<object, Task> OnStartingCallback = (state) => OnStarting((HttpContext)state);
     // Internal for unit testing
@@ -53,7 +50,7 @@ internal class SaveTempDataFilter : IResourceFilter, IResultFilter
     private static Task OnStarting(HttpContext httpContext)
     {
         var saveTempDataContext = GetTempDataContext(httpContext);
-        if (saveTempDataContext.RequestHasUnhandledException)
+        if (saveTempDataContext is null || saveTempDataContext.RequestHasUnhandledException)
         {
             return Task.CompletedTask;
         }
@@ -151,7 +148,7 @@ internal class SaveTempDataFilter : IResourceFilter, IResultFilter
         tempData.Save();
     }
 
-    internal class SaveTempDataContext
+    internal sealed class SaveTempDataContext
     {
         public bool RequestHasUnhandledException { get; set; }
         public bool TempDataSaved { get; set; }

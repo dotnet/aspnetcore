@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class HostingApplication : IHttpApplication<HostingApplication.Context>
+internal sealed class HostingApplication : IHttpApplication<HostingApplication.Context>
 {
     private readonly RequestDelegate _application;
     private readonly IHttpContextFactory? _httpContextFactory;
@@ -118,8 +116,7 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
         context.Reset();
     }
 
-
-    internal class Context
+    internal sealed class Context
     {
         public HttpContext? HttpContext { get; set; }
         public IDisposable? Scope { get; set; }

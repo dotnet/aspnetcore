@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -184,8 +181,158 @@ public class ServicesModelBinderIntegrationTest
         Assert.Contains(typeof(IActionResult).FullName, exception.Message);
     }
 
+    private class TestController
+    {
+#nullable enable
+        public void Action(IActionResult? service, ITypeActivatorCache? service2)
+        { }
+#nullable restore
+
+        public void ActionWithDefaultValue(IActionResult service = default, ITypeActivatorCache service2 = default)
+        { }
+    }
+
+    [Fact]
+    public async Task BindNullableParameterFromService_WithData_GetBounds()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameters = typeof(TestController).GetMethod(nameof(TestController.Action)).GetParameters();
+        var parameter = new ControllerParameterDescriptor
+        {
+            Name = "ControllerProperty",
+            BindingInfo = new BindingInfo
+            {
+                BindingSource = BindingSource.Services,
+            },
+            ParameterInfo = parameters[1],
+            // Use a service type already in defaults.
+            ParameterType = typeof(ITypeActivatorCache),
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Model
+        var provider = Assert.IsAssignableFrom<ITypeActivatorCache>(modelBindingResult.Model);
+        Assert.NotNull(provider);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+        Assert.Empty(modelState.Keys);
+    }
+
+    [Fact]
+    public async Task BindNullableParameterFromService_NoService_BindsToNull()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameters = typeof(TestController).GetMethod(nameof(TestController.Action)).GetParameters();
+        var parameter = new ControllerParameterDescriptor
+        {
+            Name = "ControllerProperty",
+            BindingInfo = new BindingInfo
+            {
+                BindingSource = BindingSource.Services,
+            },
+            ParameterInfo = parameters[0],
+            // Use a service type not available in DI.
+            ParameterType = typeof(IActionResult),
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
+
+        // Model
+        Assert.Null(modelBindingResult.Model);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+        Assert.Empty(modelState);
+    }
+
+    [Fact]
+    public async Task BindParameterWithDefaultValueFromService_WithData_GetBounds()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameters = typeof(TestController).GetMethod(nameof(TestController.ActionWithDefaultValue)).GetParameters();
+        var parameter = new ControllerParameterDescriptor
+        {
+            Name = "ControllerProperty",
+            BindingInfo = new BindingInfo
+            {
+                BindingSource = BindingSource.Services,
+            },
+            ParameterInfo = parameters[1],
+            // Use a service type already in defaults.
+            ParameterType = typeof(ITypeActivatorCache),
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Model
+        var provider = Assert.IsAssignableFrom<ITypeActivatorCache>(modelBindingResult.Model);
+        Assert.NotNull(provider);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+        Assert.Empty(modelState.Keys);
+    }
+
+    [Fact]
+    public async Task BindParameterWithDefaultValueFromService_NoService_BindsToDefaultValue()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameters = typeof(TestController).GetMethod(nameof(TestController.ActionWithDefaultValue)).GetParameters();
+        var parameter = new ControllerParameterDescriptor
+        {
+            Name = "ControllerProperty",
+            BindingInfo = new BindingInfo
+            {
+                BindingSource = BindingSource.Services,
+            },
+            ParameterInfo = parameters[0],
+            // Use a service type not available in DI.
+            ParameterType = typeof(IActionResult),
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
+
+        // Model
+        Assert.Null(modelBindingResult.Model);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+        Assert.Empty(modelState);
+    }
+
     private class Person
     {
+        [FromServices]
         public ITypeActivatorCache Service { get; set; }
     }
 
@@ -202,8 +349,7 @@ public class ServicesModelBinderIntegrationTest
         // Similar to a custom IBindingSourceMetadata implementation or [ModelBinder] subclass on a custom service.
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider
-            .ForProperty<Person>(nameof(Person.Service))
-            .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
+            .ForProperty<Person>(nameof(Person.Service));
 
         var testContext = ModelBindingTestHelper.GetTestContext(metadataProvider: metadataProvider);
         var modelState = testContext.ModelState;

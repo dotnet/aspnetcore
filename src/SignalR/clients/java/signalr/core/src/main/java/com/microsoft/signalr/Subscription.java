@@ -23,9 +23,6 @@ public class Subscription {
      * Removes the client method handler represented by this subscription.
      */
     public void unsubscribe() {
-        List<InvocationHandler> handler = this.handlers.get(target);
-        if (handler != null) {
-            handler.remove(this.handler);
-        }
+        this.handlers.remove(this.target, this.handler);
     }
 }

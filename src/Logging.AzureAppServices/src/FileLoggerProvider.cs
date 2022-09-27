@@ -53,7 +53,7 @@ public class FileLoggerProvider : BatchingLoggerProvider
             {
                 foreach (var item in group)
                 {
-                    await streamWriter.WriteAsync(item.Message);
+                    await streamWriter.WriteAsync(item.Message).ConfigureAwait(false);
                 }
             }
         }

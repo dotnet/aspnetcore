@@ -79,7 +79,7 @@ internal static unsafe class DpapiSecretSerializerHelper
         var dataOut = default(DATA_BLOB);
 
 #if NETSTANDARD2_0
-            RuntimeHelpers.PrepareConstrainedRegions();
+        RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
         try
@@ -91,7 +91,7 @@ internal static unsafe class DpapiSecretSerializerHelper
                 pvReserved: IntPtr.Zero,
                 pPromptStruct: IntPtr.Zero,
                 dwFlags: CRYPTPROTECT_UI_FORBIDDEN | ((fLocalMachine) ? CRYPTPROTECT_LOCAL_MACHINE : 0),
-                pDataOut: out dataOut);
+                pDataOut: &dataOut);
             if (!success)
             {
                 var errorCode = Marshal.GetLastWin32Error();
@@ -171,7 +171,7 @@ internal static unsafe class DpapiSecretSerializerHelper
                     var handleAcquired = false;
 
 #if NETSTANDARD2_0
-                        RuntimeHelpers.PrepareConstrainedRegions();
+                    RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
                     try
@@ -222,7 +222,7 @@ internal static unsafe class DpapiSecretSerializerHelper
         var dataOut = default(DATA_BLOB);
 
 #if NETSTANDARD2_0
-            RuntimeHelpers.PrepareConstrainedRegions();
+        RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
         try
@@ -234,7 +234,7 @@ internal static unsafe class DpapiSecretSerializerHelper
                 pvReserved: IntPtr.Zero,
                 pPromptStruct: IntPtr.Zero,
                 dwFlags: CRYPTPROTECT_UI_FORBIDDEN,
-                pDataOut: out dataOut);
+                pDataOut: &dataOut);
             if (!success)
             {
                 var errorCode = Marshal.GetLastWin32Error();
@@ -297,7 +297,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             var handleAcquired = false;
 
 #if NETSTANDARD2_0
-                RuntimeHelpers.PrepareConstrainedRegions();
+            RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
             try
@@ -336,7 +336,6 @@ internal static unsafe class DpapiSecretSerializerHelper
 
         NCryptDescriptorHandle descriptorHandle;
         LocalAllocHandle unprotectedDataHandle;
-        uint cbUnprotectedData;
         var ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
             phDescriptor: out descriptorHandle,
             dwFlags: NCRYPT_UNPROTECT_NO_DECRYPT,
@@ -345,7 +344,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             pMemPara: IntPtr.Zero,
             hWnd: IntPtr.Zero,
             ppbData: out unprotectedDataHandle,
-            pcbData: out cbUnprotectedData);
+            pcbData: out _);
         UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
         CryptoUtil.AssertSafeHandleIsValid(descriptorHandle);
 

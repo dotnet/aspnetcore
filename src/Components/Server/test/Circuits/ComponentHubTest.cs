@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
@@ -16,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
@@ -85,13 +79,24 @@ public class ComponentHubTest
     {
         var (mockClientProxy, hub) = InitializeComponentHub();
 
-        await hub.OnLocationChanged("https://localhost:5000/subdir/page", false);
+        await hub.OnLocationChanged("https://localhost:5000/subdir/page", null, false);
 
         var errorMessage = "Circuit not initialized.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
     }
 
-    private static (Mock<IClientProxy>, ComponentHub) InitializeComponentHub()
+    [Fact]
+    public async Task CannotInvokeOnLocationChangingBeforeInitialization()
+    {
+        var (mockClientProxy, hub) = InitializeComponentHub();
+
+        await hub.OnLocationChanging(0, "https://localhost:5000/subdir/page", null, false);
+
+        var errorMessage = "Circuit not initialized.";
+        mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub()
     {
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
         var circuitIdFactory = new CircuitIdFactory(ephemeralDataProtectionProvider);
@@ -118,7 +123,7 @@ public class ComponentHubTest
         // Here we mock out elements of the Hub that are typically configured
         // by SignalR as clients connect to the hub.
         var mockCaller = new Mock<IHubCallerClients>();
-        var mockClientProxy = new Mock<IClientProxy>();
+        var mockClientProxy = new Mock<ISingleClientProxy>();
         mockCaller.Setup(x => x.Caller).Returns(mockClientProxy.Object);
         hub.Clients = mockCaller.Object;
         var mockContext = new Mock<HubCallerContext>();

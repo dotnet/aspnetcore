@@ -27,8 +27,8 @@ public abstract class ViewFeatureAnalyzerBase : DiagnosticAnalyzer
         {
             var analyzerContext = new ViewFeaturesAnalyzerContext(compilationContext);
 
-                // Only do work if we can locate IHtmlHelper.
-                if (analyzerContext.HtmlHelperType == null)
+            // Only do work if we can locate IHtmlHelper.
+            if (analyzerContext.HtmlHelperType == null)
             {
                 return;
             }

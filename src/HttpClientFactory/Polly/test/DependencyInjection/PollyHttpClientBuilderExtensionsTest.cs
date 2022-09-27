@@ -510,8 +510,8 @@ public class PollyHttpClientBuilderExtensionsTest
         // Act
         serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
         {
-                // No-op
-            });
+            // No-op
+        });
 
         var services = serviceCollection.BuildServiceProvider();
         var registry = services.GetService<IPolicyRegistry<string>>();

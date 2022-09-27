@@ -35,7 +35,7 @@ public static class ModelNames
     }
 
     /// <summary>
-    /// Create an property model name with a prefix.
+    /// Create a property model name with a prefix.
     /// </summary>
     /// <param name="prefix">The prefix to use.</param>
     /// <param name="propertyName">The property name.</param>

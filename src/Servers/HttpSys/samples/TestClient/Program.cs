@@ -13,9 +13,9 @@ namespace TestClient
 {
     public class Program
     {
-        private const string Address = 
+        private const string Address =
             "http://localhost:5000/public/1kb.txt";
-            // "https://localhost:9090/public/1kb.txt";
+        // "https://localhost:9090/public/1kb.txt";
 
         public static void Main(string[] args)
         {

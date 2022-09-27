@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -20,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 /// the writer and switches to writing to the unbuffered writer for all further write operations.
 /// </para>
 /// </summary>
-internal class ViewBufferTextWriter : TextWriter
+internal sealed class ViewBufferTextWriter : TextWriter
 {
     private readonly TextWriter _inner;
     private readonly HtmlEncoder _htmlEncoder;
@@ -92,7 +89,7 @@ internal class ViewBufferTextWriter : TextWriter
     public ViewBuffer Buffer { get; }
 
     /// <summary>
-    /// Gets a value that indiciates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
+    /// Gets a value that indicates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
     /// </summary>
     public bool Flushed { get; private set; }
 
@@ -276,7 +273,6 @@ internal class ViewBufferTextWriter : TextWriter
         Buffer.AppendHtml(new string(value, start, offset));
         Buffer.AppendHtml(NewLine);
         return Task.CompletedTask;
-
     }
 
     /// <inheritdoc />

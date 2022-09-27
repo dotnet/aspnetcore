@@ -1,14 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class TempDataFilterPageApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class TempDataFilterPageApplicationModelProvider : IPageApplicationModelProvider
 {
     private readonly TempDataSerializer _tempDataSerializer;
 

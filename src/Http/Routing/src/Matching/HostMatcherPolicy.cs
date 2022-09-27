@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
@@ -61,8 +58,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
             foreach (var host in hosts)
             {
-                    // Don't run policy on endpoints that match everything
-                    var key = CreateEdgeKey(host);
+                // Don't run policy on endpoints that match everything
+                var key = CreateEdgeKey(host);
                 if (!key.MatchesAll)
                 {
                     return true;
@@ -346,7 +343,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         }
     }
 
-    private class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
+    private sealed class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
     {
         protected override int CompareMetadata(IHostMetadata? x, IHostMetadata? y)
         {
@@ -357,7 +354,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         }
     }
 
-    private class HostPolicyJumpTable : PolicyJumpTable
+    private sealed class HostPolicyJumpTable : PolicyJumpTable
     {
         private readonly (EdgeKey host, int destination)[] _destinations;
         private readonly int _exitDestination;
@@ -453,7 +450,6 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
             return true;
         }
-
 
         public override int GetHashCode()
         {

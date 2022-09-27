@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -92,17 +91,13 @@ internal sealed class PageRequestDelegateFactory : IRequestDelegateFactory
                 routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
             }
 
-            var actionContext = new ActionContext(context, routeData, page);
+            var pageContext = new PageContext(context, routeData, page);
 
-            var (cacheEntry, filters) = _cache.GetCachedResult(actionContext);
+            var (cacheEntry, filters) = _cache.GetCachedResult(pageContext);
 
-            var pageContext = new PageContext(actionContext)
-            {
-                ActionDescriptor = cacheEntry.ActionDescriptor,
-                ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories),
-                ViewData = cacheEntry.ViewDataFactory(_modelMetadataProvider, actionContext.ModelState),
-                ViewStartFactories = cacheEntry.ViewStartFactories.ToList(),
-            };
+            pageContext.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
+            pageContext.ViewData = cacheEntry.ViewDataFactory(_modelMetadataProvider, pageContext.ModelState);
+            pageContext.ViewStartFactories = cacheEntry.ViewStartFactories.ToList();
 
             var pageInvoker = new PageActionInvoker(
                 _selector,

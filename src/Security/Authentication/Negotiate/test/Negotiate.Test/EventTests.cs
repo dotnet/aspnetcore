@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -15,7 +12,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
@@ -31,8 +27,8 @@ public class EventTests
             {
                 OnChallenge = context =>
                 {
-                        // Not changed yet
-                        eventInvoked = true;
+                    // Not changed yet
+                    eventInvoked = true;
                     Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                     Assert.False(context.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
                     return Task.CompletedTask;
@@ -415,7 +411,7 @@ public class EventTests
         var builder = new HostBuilder()
             .ConfigureServices(services => services
                 .AddRouting()
-                .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddAuthentication()
                 .AddNegotiate(options =>
                 {
                     options.StateFactory = new TestNegotiateStateFactory();
@@ -446,7 +442,7 @@ public class EventTests
             }
 
             Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
-                var name = context.User.Identity.Name;
+            var name = context.User.Identity.Name;
             Assert.False(string.IsNullOrEmpty(name), "name");
             await context.Response.WriteAsync(name);
         });

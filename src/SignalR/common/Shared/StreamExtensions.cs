@@ -18,10 +18,10 @@ internal static class StreamExtensions
 #if NETCOREAPP || NETSTANDARD2_1
             return stream.WriteAsync(buffer.First, cancellationToken);
 #else
-                var isArray = MemoryMarshal.TryGetArray(buffer.First, out var arraySegment);
-                // We're using the managed memory pool which is backed by managed buffers
-                Debug.Assert(isArray);
-                return new ValueTask(stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, cancellationToken));
+            var isArray = MemoryMarshal.TryGetArray(buffer.First, out var arraySegment);
+            // We're using the managed memory pool which is backed by managed buffers
+            Debug.Assert(isArray);
+            return new ValueTask(stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, cancellationToken));
 #endif
         }
 
@@ -34,12 +34,12 @@ internal static class StreamExtensions
         while (buffer.TryGet(ref position, out var segment))
         {
 #if NETCOREAPP || NETSTANDARD2_1
-            await stream.WriteAsync(segment, cancellationToken);
+            await stream.WriteAsync(segment, cancellationToken).ConfigureAwait(false);
 #else
-                var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
-                // We're using the managed memory pool which is backed by managed buffers
-                Debug.Assert(isArray);
-                await stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, cancellationToken);
+            var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
+            // We're using the managed memory pool which is backed by managed buffers
+            Debug.Assert(isArray);
+            await stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, cancellationToken).ConfigureAwait(false);
 #endif
         }
     }

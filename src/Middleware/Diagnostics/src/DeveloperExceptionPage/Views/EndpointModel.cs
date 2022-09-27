@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Diagnostics.RazorViews;
 
-internal class EndpointModel
+internal sealed class EndpointModel
 {
     public string? DisplayName { get; set; }
     public string? RoutePattern { get; set; }

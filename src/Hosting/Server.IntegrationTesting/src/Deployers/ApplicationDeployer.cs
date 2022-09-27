@@ -1,13 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -64,7 +58,7 @@ public abstract class ApplicationDeployer : IDisposable
         }
     }
 
-    private RuntimeFlavor GetRuntimeFlavor(string tfm)
+    private static RuntimeFlavor GetRuntimeFlavor(string tfm)
     {
         if (Tfm.Matches(Tfm.Net462, tfm))
         {
@@ -185,7 +179,7 @@ public abstract class ApplicationDeployer : IDisposable
 
     protected void StartTimer()
     {
-        Logger.LogInformation($"Deploying {DeploymentParameters.ToString()}");
+        Logger.LogInformation($"Deploying {DeploymentParameters}");
         _stopwatch.Start();
     }
 

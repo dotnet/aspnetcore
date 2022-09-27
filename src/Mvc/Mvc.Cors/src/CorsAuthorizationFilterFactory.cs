@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors;
 /// <summary>
 /// A filter factory which creates a new instance of <see cref="CorsAuthorizationFilter"/>.
 /// </summary>
-internal class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
+internal sealed class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
 {
     private readonly string? _policyName;
 

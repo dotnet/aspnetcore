@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
@@ -24,7 +19,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -2319,7 +2313,7 @@ public class ControllerBaseTest
         Assert.Equal(400, badRequestResult.StatusCode);
         Assert.Equal(400, problemDetails.Status);
         Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
         Assert.Equal(new[] { "error1" }, problemDetails.Errors["key1"]);
     }
@@ -2417,7 +2411,7 @@ public class ControllerBaseTest
         Assert.Equal(500, actionResult.StatusCode);
         Assert.Equal(500, problemDetails.Status);
         Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
     }
 
@@ -2443,7 +2437,7 @@ public class ControllerBaseTest
         Assert.Equal(500, actionResult.StatusCode);
         Assert.Equal(500, problemDetails.Status);
         Assert.Equal(title, problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal(detail, problemDetails.Detail);
     }
 
@@ -2479,7 +2473,7 @@ public class ControllerBaseTest
                     [400] = new ClientErrorData
                     {
                         Title = "One or more validation errors occurred.",
-                        Link = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+                        Link = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
                     },
                     [422] = new ClientErrorData
                     {
@@ -2489,7 +2483,7 @@ public class ControllerBaseTest
                     [500] = new ClientErrorData
                     {
                         Title = "An error occurred while processing your request.",
-                        Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                        Link = "https://tools.ietf.org/html/rfc9110#section-15.6.1"
                     }
                 }
         };
@@ -2536,9 +2530,9 @@ public class ControllerBaseTest
             Assert.Empty(context.ModelName);
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -2564,9 +2558,9 @@ public class ControllerBaseTest
         {
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -2591,9 +2585,9 @@ public class ControllerBaseTest
               {
                   Assert.Same(valueProvider, context.ValueProvider);
 
-                      // Include and exclude should be null, resulting in property
-                      // being included.
-                      Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                  // Include and exclude should be null, resulting in property
+                  // being included.
+                  Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
                   Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
               });
 
@@ -2721,7 +2715,6 @@ public class ControllerBaseTest
             Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
         });
 
-
         var controller = GetController(binder, valueProvider.Object);
         var model = new MyModel();
 
@@ -2735,8 +2728,7 @@ public class ControllerBaseTest
     [Theory]
     [InlineData("")]
     [InlineData("prefix")]
-    public async Task
-        TryUpdateModel_IncludeExpressionWithValueProviderOverload_UsesPassedArguments(string prefix)
+    public async Task TryUpdateModel_IncludeExpressionWithValueProviderOverload_UsesPassedArguments(string prefix)
     {
         // Arrange
         var valueProvider = new Mock<IValueProvider>();
@@ -2764,6 +2756,57 @@ public class ControllerBaseTest
         // Assert
         Assert.NotEqual(0, binder.BindModelCount);
     }
+
+#nullable enable
+    [Fact]
+    public async Task TryUpdateModel_SupportsNullableExpressions()
+    {
+        // Arrange
+        var valueProvider = new Mock<IValueProvider>();
+        valueProvider.Setup(v => v.ContainsPrefix(""))
+            .Returns(true);
+
+        StubModelBinder CreateBinder() => new StubModelBinder(context =>
+        {
+            Assert.Same(
+                valueProvider.Object,
+                Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+
+            Assert.NotNull(context.PropertyFilter);
+
+            bool InvokePropertyFilter(string propertyName)
+            {
+                var modelMetadata = context.ModelMetadata.Properties[propertyName];
+                Assert.NotNull(modelMetadata);
+                return context.PropertyFilter!(modelMetadata!);
+            }
+
+            Assert.True(InvokePropertyFilter("Include"));
+            Assert.False(InvokePropertyFilter("Exclude"));
+        });
+
+        var binder1 = CreateBinder();
+        var controller1 = GetController(binder1, valueProvider.Object);
+        var model1 = new MyNullableModel();
+
+        // Act
+        await controller1.TryUpdateModelAsync(model1, prefix: "", m => m.Include);
+
+        // Assert
+        Assert.NotEqual(0, binder1.BindModelCount);
+
+        // Arrange (IModelBinder overload)
+        var binder2 = CreateBinder();
+        var controller2 = GetController(binder2, valueProvider.Object);
+        var model2 = new MyNullableModel();
+
+        // Act (IModelBinder overload)
+        await controller2.TryUpdateModelAsync(model2, prefix: "", m => m.Include);
+
+        // Assert (IModelBinder overload)
+        Assert.NotEqual(0, binder2.BindModelCount);
+    }
+#nullable restore
 
     [Fact]
     public async Task TryUpdateModelNonGeneric_PropertyFilterWithValueProviderOverload_UsesPassedArguments()
@@ -2811,9 +2854,9 @@ public class ControllerBaseTest
         {
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -2839,9 +2882,9 @@ public class ControllerBaseTest
         {
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -3121,11 +3164,19 @@ public class ControllerBaseTest
         public string Property3 { get; set; }
     }
 
+#nullable enable
+    private class MyNullableModel
+    {
+        public string? Include { get; set; }
+
+        public string? Exclude { get; set; }
+    }
+#nullable restore
+
     private class TryValidateModelModel
     {
         public int IntegerProperty { get; set; }
     }
-
 
     private class TestableController : ControllerBase
     {

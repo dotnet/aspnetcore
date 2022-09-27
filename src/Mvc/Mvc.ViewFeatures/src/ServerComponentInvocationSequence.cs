@@ -1,13 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 // Used to produce a monotonically increasing sequence starting at 0 that is unique for the scope of the top-level page/view/component being rendered.
-internal class ServerComponentInvocationSequence
+internal sealed class ServerComponentInvocationSequence
 {
     private int _sequence;
 

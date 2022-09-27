@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
@@ -18,7 +15,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Facebook;
 
@@ -122,7 +118,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication().AddFacebook(o =>
+                services.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddFacebook(o =>
                 {
                     o.AppId = "Test App Id";
                     o.AppSecret = "Test App Secret";
@@ -152,7 +148,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication().AddFacebook(o =>
+                services.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddFacebook(o =>
                 {
                     o.AppId = "Test App Id";
                     o.AppSecret = "Test App Secret";
@@ -184,7 +180,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication().AddFacebook(o =>
+                services.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddFacebook(o =>
                 {
                     o.AppId = "Test App Id";
                     o.AppSecret = "Test App Secret";
@@ -233,7 +229,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("http://example.com/base/login");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location.AbsoluteUri;
-        Assert.Contains("https://www.facebook.com/v11.0/dialog/oauth", location);
+        Assert.Contains("https://www.facebook.com/v14.0/dialog/oauth", location);
         Assert.Contains("response_type=code", location);
         Assert.Contains("client_id=", location);
         Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
@@ -266,7 +262,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("http://example.com/login");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location.AbsoluteUri;
-        Assert.Contains("https://www.facebook.com/v11.0/dialog/oauth", location);
+        Assert.Contains("https://www.facebook.com/v14.0/dialog/oauth", location);
         Assert.Contains("response_type=code", location);
         Assert.Contains("client_id=", location);
         Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
@@ -301,7 +297,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         var transaction = await server.SendAsync("http://example.com/challenge");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location.AbsoluteUri;
-        Assert.Contains("https://www.facebook.com/v11.0/dialog/oauth", location);
+        Assert.Contains("https://www.facebook.com/v14.0/dialog/oauth", location);
         Assert.Contains("response_type=code", location);
         Assert.Contains("client_id=", location);
         Assert.Contains("redirect_uri=", location);

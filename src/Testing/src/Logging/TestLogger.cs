@@ -63,7 +63,7 @@ public class TestLogger : ILogger
         return logLevel != LogLevel.None && _filter(logLevel);
     }
 
-    private class TestDisposable : IDisposable
+    private sealed class TestDisposable : IDisposable
     {
         public static readonly TestDisposable Instance = new TestDisposable();
 

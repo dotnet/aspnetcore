@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +16,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -330,6 +325,89 @@ public class DefaultHtmlGeneratorTest
         // Assert
         var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
         Assert.Equal(expectedValue, int.Parse(attribute.Value, CultureInfo.InvariantCulture));
+    }
+
+    // type, shouldUseInvariantFormatting, dateRenderingMode
+    public static TheoryData<string, Html5DateRenderingMode, bool> GenerateTextBox_InvariantFormattingData
+    {
+        get
+        {
+            return new TheoryData<string, Html5DateRenderingMode, bool>
+                {
+                    {"text", Html5DateRenderingMode.Rfc3339, false },
+                    {"number", Html5DateRenderingMode.Rfc3339, true },
+                    {"range", Html5DateRenderingMode.Rfc3339, true },
+                    {"date", Html5DateRenderingMode.Rfc3339, true },
+                    {"datetime-local", Html5DateRenderingMode.Rfc3339, true },
+                    {"month", Html5DateRenderingMode.Rfc3339, true },
+                    {"time", Html5DateRenderingMode.Rfc3339, true },
+                    {"week", Html5DateRenderingMode.Rfc3339 , true },
+                    {"date", Html5DateRenderingMode.CurrentCulture, false },
+                    {"datetime-local", Html5DateRenderingMode.CurrentCulture, false },
+                    {"month", Html5DateRenderingMode.CurrentCulture, false },
+                    {"time", Html5DateRenderingMode.CurrentCulture, false },
+                    {"week", Html5DateRenderingMode.CurrentCulture, false },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(GenerateTextBox_InvariantFormattingData))]
+    public void GenerateTextBox_UsesCultureInvariantFormatting_ForAppropriateTypes(string type, Html5DateRenderingMode dateRenderingMode, bool shouldUseInvariantFormatting)
+    {
+        // Arrange
+        var metadataProvider = new TestModelMetadataProvider();
+        var htmlHelperOptions = new HtmlHelperOptions()
+        {
+            Html5DateRenderingMode = dateRenderingMode,
+        };
+        var htmlGenerator = GetGenerator(metadataProvider, new() { HtmlHelperOptions = htmlHelperOptions });
+        var viewContext = GetViewContext<Model>(model: null, metadataProvider, htmlHelperOptions);
+        var expression = nameof(Model.Name);
+        var modelMetadata = metadataProvider.GetMetadataForProperty(typeof(Model), expression);
+        var modelExplorer = new ModelExplorer(metadataProvider, modelMetadata, null);
+        var htmlAttributes = new Dictionary<string, object>
+            {
+                { "name", "testElement" },
+                { "type", type },
+            };
+
+        // Act
+        _ = htmlGenerator.GenerateTextBox(viewContext, modelExplorer, expression, null, null, htmlAttributes);
+
+        // Assert
+        var didForceInvariantFormatting = viewContext.FormContext.InvariantField(expression);
+        Assert.Equal(shouldUseInvariantFormatting, didForceInvariantFormatting);
+    }
+
+    [Theory]
+    [MemberData(nameof(GenerateTextBox_InvariantFormattingData))]
+    public void GenerateTextBox_AlwaysUsesCultureSpecificFormatting_WhenOptionIsSet(string type, Html5DateRenderingMode dateRenderingMode, bool shouldUseInvariantFormatting)
+    {
+        // Arrange
+        var metadataProvider = new TestModelMetadataProvider();
+        var htmlHelperOptions = new HtmlHelperOptions()
+        {
+            Html5DateRenderingMode = dateRenderingMode,
+            FormInputRenderMode = FormInputRenderMode.AlwaysUseCurrentCulture,
+        };
+        var htmlGenerator = GetGenerator(metadataProvider, new() { HtmlHelperOptions = htmlHelperOptions });
+        var viewContext = GetViewContext<Model>(model: null, metadataProvider, htmlHelperOptions);
+        var expression = nameof(Model.Name);
+        var modelMetadata = metadataProvider.GetMetadataForProperty(typeof(Model), expression);
+        var modelExplorer = new ModelExplorer(metadataProvider, modelMetadata, null);
+        var htmlAttributes = new Dictionary<string, object>
+            {
+                { "name", "testElement" },
+                { "type", type },
+            };
+
+        // Act
+        _ = htmlGenerator.GenerateTextBox(viewContext, modelExplorer, expression, null, null, htmlAttributes);
+
+        // Assert
+        var didForceInvariantFormatting = viewContext.FormContext.InvariantField(expression);
+        Assert.False(didForceInvariantFormatting);
     }
 
     [Theory]
@@ -921,10 +999,10 @@ public class DefaultHtmlGeneratorTest
     }
 
     // GetCurrentValues uses only the IModelMetadataProvider passed to the DefaultHtmlGenerator constructor.
-    private static IHtmlGenerator GetGenerator(IModelMetadataProvider metadataProvider)
+    private static IHtmlGenerator GetGenerator(IModelMetadataProvider metadataProvider, MvcViewOptions options = default)
     {
         var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-        mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions());
+        mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(options ?? new MvcViewOptions());
 
         var htmlEncoder = Mock.Of<HtmlEncoder>();
         var antiforgery = new Mock<IAntiforgery>();
@@ -950,7 +1028,7 @@ public class DefaultHtmlGeneratorTest
     }
 
     // GetCurrentValues uses only the ModelStateDictionary and ViewDataDictionary from the passed ViewContext.
-    private static ViewContext GetViewContext<TModel>(TModel model, IModelMetadataProvider metadataProvider)
+    private static ViewContext GetViewContext<TModel>(TModel model, IModelMetadataProvider metadataProvider, HtmlHelperOptions options = default)
     {
         var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         var viewData = new ViewDataDictionary<TModel>(metadataProvider, actionContext.ModelState)
@@ -964,7 +1042,7 @@ public class DefaultHtmlGeneratorTest
             viewData,
             Mock.Of<ITempDataDictionary>(),
             TextWriter.Null,
-            new HtmlHelperOptions());
+            options ?? new HtmlHelperOptions());
     }
 
     public enum RegularEnum

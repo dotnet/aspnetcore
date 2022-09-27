@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -25,7 +23,8 @@ public sealed class RequestDelegateResult
     public RequestDelegate RequestDelegate { get; }
 
     /// <summary>
-    /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />
+    /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />. If a non-null
+    /// RequestDelegateFactoryOptions.EndpointMetadata list was passed in, this will be the same instance.
     /// </summary>
     public IReadOnlyList<object> EndpointMetadata { get; }
 }

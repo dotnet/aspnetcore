@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy;
@@ -73,9 +68,10 @@ internal static class SpaProxy
         // when proxying to Angular CLI middleware: we won't know what port it's listening
         // on until it finishes starting up.
         var baseUri = await baseUriTask;
-        var targetUri = new Uri(
-            baseUri,
-            context.Request.Path + context.Request.QueryString);
+        var baseUriAsString = baseUri.ToString();
+        var targetUri = new Uri((baseUriAsString.EndsWith("/", StringComparison.OrdinalIgnoreCase) ? baseUriAsString[..^1] : baseUriAsString)
+            + context.Request.Path
+            + context.Request.QueryString);
 
         try
         {

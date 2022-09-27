@@ -43,13 +43,13 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
             var type = (INamedTypeSymbol)context.Symbol;
             if (!StartupFacts.IsStartupClass(symbols, type) && !SymbolEqualityComparer.Default.Equals(entryPoint?.ContainingType, type))
             {
-                    // Not a startup class, nothing to do.
-                    return;
+                // Not a startup class, nothing to do.
+                return;
             }
 
-                // This analyzer fans out a bunch of jobs. The context will capture the results of doing analysis
-                // on the startup code, so that other analyzers that run later can examine them.
-                var builder = new StartupAnalysisBuilder(this, symbols);
+            // This analyzer fans out a bunch of jobs. The context will capture the results of doing analysis
+            // on the startup code, so that other analyzers that run later can examine them.
+            var builder = new StartupAnalysisBuilder(this, symbols);
 
             var services = new ServicesAnalyzer(builder);
             var options = new OptionsAnalyzer(builder);
@@ -69,8 +69,8 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
                     OnConfigureServicesMethodFound(method);
                 }
 
-                    // In the future we can consider looking at more methods, but for now limit to Main, implicit Main, and Configure* methods
-                    var isMain = SymbolEqualityComparer.Default.Equals(entryPoint, context.OwningSymbol);
+                // In the future we can consider looking at more methods, but for now limit to Main, implicit Main, and Configure* methods
+                var isMain = SymbolEqualityComparer.Default.Equals(entryPoint, context.OwningSymbol);
 
                 if (isConfigureServices || isMain)
                 {
@@ -89,14 +89,14 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
                 }
             });
 
-                // Run after analyses have had a chance to finish to add diagnostics.
-                context.RegisterSymbolEndAction(context =>
-            {
-                var analysis = builder.Build();
-                new UseMvcAnalyzer(analysis).AnalyzeSymbol(context);
-                new BuildServiceProviderAnalyzer(analysis).AnalyzeSymbol(context);
-                new UseAuthorizationAnalyzer(analysis).AnalyzeSymbol(context);
-            });
+            // Run after analyses have had a chance to finish to add diagnostics.
+            context.RegisterSymbolEndAction(context =>
+        {
+            var analysis = builder.Build();
+            new UseMvcAnalyzer(analysis).AnalyzeSymbol(context);
+            new BuildServiceProviderAnalyzer(analysis).AnalyzeSymbol(context);
+            new UseAuthorizationAnalyzer(analysis).AnalyzeSymbol(context);
+        });
 
         }, SymbolKind.NamedType);
     }

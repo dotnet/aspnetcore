@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -16,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 /// <summary>
 /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
 /// </summary>
-internal partial class HttpSysListener : IDisposable
+internal sealed partial class HttpSysListener : IDisposable
 {
     // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
     // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
@@ -46,14 +43,8 @@ internal partial class HttpSysListener : IDisposable
 
     public HttpSysListener(HttpSysOptions options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         if (!HttpApi.Supported)
         {
@@ -80,9 +71,9 @@ internal partial class HttpSysListener : IDisposable
         {
             _serverSession = new ServerSession();
 
-            _urlGroup = new UrlGroup(_serverSession, Logger);
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
 
-            _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.RequestQueueMode, Logger);
+            _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
         }
@@ -150,12 +141,12 @@ internal partial class HttpSysListener : IDisposable
                     return;
                 }
 
-                // If this instance created the queue then configure it.
-                if (_requestQueue.Created)
+                // Always configure the UrlGroup if the intent was to create, only configure the queue if we actually created it
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
-                    Options.Apply(UrlGroup, RequestQueue);
+                    Options.Apply(UrlGroup, _requestQueue.Created ? RequestQueue : null);
 
-                    _requestQueue.AttachToUrlGroup();
+                    UrlGroup.AttachToQueue();
 
                     // All resources are set up correctly. Now add all prefixes.
                     try
@@ -165,7 +156,7 @@ internal partial class HttpSysListener : IDisposable
                     catch (HttpSysException)
                     {
                         // If an error occurred while adding prefixes, free all resources allocated by previous steps.
-                        _requestQueue.DetachFromUrlGroup();
+                        UrlGroup.DetachFromQueue();
                         throw;
                     }
                 }
@@ -197,11 +188,11 @@ internal partial class HttpSysListener : IDisposable
 
                 Log.ListenerStopping(Logger);
 
-                // If this instance created the queue then remove the URL prefixes before shutting down.
-                if (_requestQueue.Created)
+                // If this instance registered URL prefixes then remove them before shutting down.
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
                     Options.UrlPrefixes.UnregisterAllPrefixes();
-                    _requestQueue.DetachFromUrlGroup();
+                    UrlGroup.DetachFromQueue();
                 }
 
                 _state = State.Stopped;
@@ -421,9 +412,6 @@ internal partial class HttpSysListener : IDisposable
 
     private void CheckDisposed()
     {
-        if (_state == State.Disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
     }
 }

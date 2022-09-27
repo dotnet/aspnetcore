@@ -45,7 +45,7 @@ internal static class RangeHelper
         }
 
         // Perf: Check for a single entry before parsing it
-        if (rawRangeHeader.Count > 1 || (rawRangeHeader[0] ?? string.Empty).IndexOf(',') >= 0)
+        if (rawRangeHeader.Count > 1 || (rawRangeHeader[0] ?? string.Empty).Contains(','))
         {
             logger.LogDebug("Multiple ranges are not supported.");
 

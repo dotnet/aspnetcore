@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND @(ILLinkSuppressionFile->Count()) != 0">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
+      <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND '@(ILLinkSuppressionFile->Count())' != '0'">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
     </PropertyGroup>
 
     <!--
@@ -52,6 +52,7 @@
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
         ExtraArgs="$(ILLinkArgs)"
+        NoWarn="$(NoWarn)"
         TrimMode="link"
         ToolExe="$(_DotNetHostFileName)"
         ToolPath="$(_DotNetHostDirectory)" />

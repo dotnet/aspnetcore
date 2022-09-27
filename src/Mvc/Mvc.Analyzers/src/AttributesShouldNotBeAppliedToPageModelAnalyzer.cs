@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -25,15 +25,15 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
             var typeCache = new TypeCache(compilationStartAnalysisContext.Compilation);
             if (typeCache.PageModelAttribute == null || typeCache.PageModelAttribute.TypeKind == TypeKind.Error)
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(compilationStartAnalysisContext, typeCache);
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, TypeCache typeCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, TypeCache typeCache)
     {
         compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
         {
@@ -64,7 +64,7 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
         }, SymbolKind.NamedType);
     }
 
-    private bool IsPageHandlerMethod(IMethodSymbol method)
+    private static bool IsPageHandlerMethod(IMethodSymbol method)
     {
         return method.MethodKind == MethodKind.Ordinary &&
             !method.IsStatic &&
@@ -140,7 +140,7 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
         return syntax?.GetLocation() ?? Location.None;
     }
 
-    private class TypeCache
+    private sealed class TypeCache
     {
         public TypeCache(Compilation compilation)
         {

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -171,7 +169,7 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
         _cache.Dispose();
     }
 
-    internal class StateEntry
+    internal sealed class StateEntry
     {
         // For testing
         public readonly List<OutboundMatch> MatchesWithRequiredValues;

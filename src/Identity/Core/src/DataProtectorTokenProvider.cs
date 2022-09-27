@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
@@ -92,7 +89,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
             writer.Write(DateTimeOffset.UtcNow);
             writer.Write(userId);
             writer.Write(purpose ?? "");
-            string stamp = null;
+            string? stamp = null;
             if (manager.SupportsUserSecurityStamp)
             {
                 stamp = await manager.GetSecurityStampAsync(user);
@@ -162,7 +159,6 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
 
                     return isEqualsSecurityStamp;
                 }
-
 
                 var stampIsEmpty = stamp == "";
                 if (!stampIsEmpty)

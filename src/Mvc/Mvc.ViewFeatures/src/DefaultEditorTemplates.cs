@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -463,7 +460,7 @@ internal static class DefaultEditorTemplates
             htmlAttributes: htmlAttributes);
     }
 
-    private class HasContentTextWriter : TextWriter
+    private sealed class HasContentTextWriter : TextWriter
     {
         public bool HasContent { get; private set; }
 
@@ -492,7 +489,7 @@ internal static class DefaultEditorTemplates
 
     // An HTML encoder which passes through all input data. Does no encoding.
     // Copied from Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.
-    private class PassThroughHtmlEncoder : HtmlEncoder
+    private sealed class PassThroughHtmlEncoder : HtmlEncoder
     {
         private PassThroughHtmlEncoder()
         {

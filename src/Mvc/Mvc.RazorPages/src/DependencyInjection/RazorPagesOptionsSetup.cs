@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptions>
+internal sealed class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptions>
 {
     private readonly IServiceProvider _serviceProvider;
 

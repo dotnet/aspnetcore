@@ -3,7 +3,6 @@
 
 using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Identity;
-using Xunit;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 

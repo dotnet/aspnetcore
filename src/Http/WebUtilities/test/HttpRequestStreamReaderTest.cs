@@ -1,16 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Moq;
-using Xunit;
-
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -18,31 +11,31 @@ public class HttpRequestStreamReaderTest
 {
     private static readonly char[] CharData = new char[]
     {
-            char.MinValue,
-            char.MaxValue,
-            '\t',
-            ' ',
-            '$',
-            '@',
-            '#',
-            '\0',
-            '\v',
-            '\'',
-            '\u3190',
-            '\uC3A0',
-            'A',
-            '5',
-            '\r',
-            '\uFE70',
-            '-',
-            ';',
-            '\r',
-            '\n',
-            'T',
-            '3',
-            '\n',
-            'K',
-            '\u00E6',
+        char.MinValue,
+        char.MaxValue,
+        '\t',
+        ' ',
+        '$',
+        '@',
+        '#',
+        '\0',
+        '\v',
+        '\'',
+        '\u3190',
+        '\uC3A0',
+        'A',
+        '5',
+        '\r',
+        '\uFE70',
+        '-',
+        ';',
+        '\r',
+        '\n',
+        'T',
+        '3',
+        '\n',
+        'K',
+        '\u00E6',
     };
 
     [Fact]

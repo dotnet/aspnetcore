@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http;
@@ -64,7 +63,7 @@ public interface IRequestCookieCollection : IEnumerable<KeyValuePair<string, str
     /// <exception cref="System.ArgumentNullException">
     ///     key is null.
     /// </exception>
-    bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value);
+    bool TryGetValue(string key, [NotNullWhen(true)] out string? value);
 
     /// <summary>
     ///     Gets the value with the specified key.

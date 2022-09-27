@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -18,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a
 /// web browser, dispatching events to them, and refreshing the UI as required.
 /// </summary>
-internal class WebAssemblyRenderer : WebRenderer
+internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
 
@@ -85,10 +83,12 @@ internal class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override Task UpdateDisplayAsync(in RenderBatch batch)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
             "Blazor._internal.renderBatch",
             RendererId,
             batch);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (WebAssemblyCallQueue.HasUnstartedWork)
         {
@@ -115,33 +115,18 @@ internal class WebAssemblyRenderer : WebRenderer
         {
             foreach (var innerException in aggregateException.Flatten().InnerExceptions)
             {
-                Log.UnhandledExceptionRenderingComponent(_logger, innerException);
+                Log.UnhandledExceptionRenderingComponent(_logger, innerException.Message, innerException);
             }
         }
         else
         {
-            Log.UnhandledExceptionRenderingComponent(_logger, exception);
+            Log.UnhandledExceptionRenderingComponent(_logger, exception.Message, exception);
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
-            LogLevel.Critical,
-            EventIds.UnhandledExceptionRenderingComponent,
-            "Unhandled exception rendering component: {Message}");
-
-        private static class EventIds
-        {
-            public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
-        }
-
-        public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
-        {
-            _unhandledExceptionRenderingComponent(
-                logger,
-                exception.Message,
-                exception);
-        }
+        [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
+        public static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
     }
 }

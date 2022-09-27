@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost;
 

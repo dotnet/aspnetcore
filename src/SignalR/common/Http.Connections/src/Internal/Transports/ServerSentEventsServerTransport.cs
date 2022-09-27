@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 
-internal class ServerSentEventsServerTransport : IHttpTransport
+internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
 {
     private readonly PipeReader _application;
     private readonly string _connectionId;
@@ -38,7 +35,7 @@ internal class ServerSentEventsServerTransport : IHttpTransport
         context.Response.Headers.Pragma = "no-cache";
 
         // Make sure we disable all response buffering for SSE
-        var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+        var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
         bufferingFeature.DisableBuffering();
 
         context.Response.Headers.ContentEncoding = "identity";
@@ -86,14 +83,9 @@ internal class ServerSentEventsServerTransport : IHttpTransport
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, long, Exception?> _sseWritingMessage =
-            LoggerMessage.Define<long>(LogLevel.Trace, new EventId(1, "SSEWritingMessage"), "Writing a {Count} byte message.");
-
-        public static void SSEWritingMessage(ILogger logger, long count)
-        {
-            _sseWritingMessage(logger, count, null);
-        }
+        [LoggerMessage(1, LogLevel.Trace, "Writing a {Count} byte message.", EventName = "SSEWritingMessage")]
+        public static partial void SSEWritingMessage(ILogger logger, long count);
     }
 }

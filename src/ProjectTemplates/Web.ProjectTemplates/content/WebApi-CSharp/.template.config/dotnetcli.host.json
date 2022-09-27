@@ -85,6 +85,10 @@
     "DisableOpenAPI": {
       "longName": "no-openapi",
       "shortName": ""
+    },
+    "UseProgramMain": {
+      "longName": "use-program-main",
+      "shortName": ""
     }
   },
   "usageExamples": [

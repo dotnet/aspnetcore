@@ -17,7 +17,7 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     /// Creates a new instance of <see cref="RoleValidator{TRole}"/>.
     /// </summary>
     /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
-    public RoleValidator(IdentityErrorDescriber errors = null)
+    public RoleValidator(IdentityErrorDescriber? errors = null)
     {
         Describer = errors ?? new IdentityErrorDescriber();
     }
@@ -41,7 +41,7 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
             throw new ArgumentNullException(nameof(role));
         }
         var errors = new List<IdentityError>();
-        await ValidateRoleName(manager, role, errors);
+        await ValidateRoleName(manager, role, errors).ConfigureAwait(false);
         if (errors.Count > 0)
         {
             return IdentityResult.Failed(errors.ToArray());
@@ -52,16 +52,16 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     private async Task ValidateRoleName(RoleManager<TRole> manager, TRole role,
         ICollection<IdentityError> errors)
     {
-        var roleName = await manager.GetRoleNameAsync(role);
+        var roleName = await manager.GetRoleNameAsync(role).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(roleName))
         {
             errors.Add(Describer.InvalidRoleName(roleName));
         }
         else
         {
-            var owner = await manager.FindByNameAsync(roleName);
+            var owner = await manager.FindByNameAsync(roleName).ConfigureAwait(false);
             if (owner != null &&
-                !string.Equals(await manager.GetRoleIdAsync(owner), await manager.GetRoleIdAsync(role)))
+                !string.Equals(await manager.GetRoleIdAsync(owner).ConfigureAwait(false), await manager.GetRoleIdAsync(role).ConfigureAwait(false)))
             {
                 errors.Add(Describer.DuplicateRoleName(roleName));
             }

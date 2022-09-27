@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -130,7 +127,7 @@ public class KnownRouteValueConstraint : IRouteConstraint
         return valuesCollection.Items;
     }
 
-    private class RouteValuesCollection
+    private sealed class RouteValuesCollection
     {
         public RouteValuesCollection(int version, string[] items)
         {

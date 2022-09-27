@@ -1,17 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
@@ -754,6 +750,20 @@ public class ApiResponseTypeProviderTest
             });
     }
 
+    [Fact]
+    public void GetApiResponseTypes_ReturnNoResponseTypes_IfActionWithIResultReturnType()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetIResult));
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.False(result.Any());
+    }
+
     private static ApiResponseTypeProvider GetProvider()
     {
         var mvcOptions = new MvcOptions
@@ -799,6 +809,8 @@ public class ApiResponseTypeProviderTest
         public ActionResult<DerivedModel> GetUserLocation(int a, int b) => null;
 
         public ActionResult<DerivedModel> PutModel(string userId, DerivedModel model) => null;
+
+        public IResult GetIResult(int id) => null;
     }
 
     private class TestOutputFormatter : OutputFormatter

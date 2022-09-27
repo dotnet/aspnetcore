@@ -36,12 +36,12 @@ public class Program
         cmd.AddOption(new Option("-n", "Max number of requests to make concurrently.") { Argument = new Argument<int>("numWorkers", 1) });
         cmd.AddOption(new Option("-maxContentLength", "Max content length for request and response bodies.") { Argument = new Argument<int>("numBytes", 1000) });
         cmd.AddOption(new Option("-http", "HTTP version (1.1 or 2.0)") { Argument = new Argument<Version[]>("version", new[] { HttpVersion.Version20 }) });
-        cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null)});
+        cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null) });
         cmd.AddOption(new Option("-ops", "Indices of the operations to use") { Argument = new Argument<int[]>("space-delimited indices", null) });
         cmd.AddOption(new Option("-trace", "Enable Microsoft-System-Net-Http tracing.") { Argument = new Argument<string>("\"console\" or path") });
         cmd.AddOption(new Option("-aspnetlog", "Enable ASP.NET warning and error logging.") { Argument = new Argument<bool>("enable", false) });
         cmd.AddOption(new Option("-listOps", "List available options.") { Argument = new Argument<bool>("enable", false) });
-        cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null)});
+        cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null) });
 
         ParseResult cmdline = cmd.Parse(args);
         if (cmdline.Errors.Count > 0)
@@ -55,15 +55,15 @@ public class Program
             return;
         }
 
-        Run(concurrentRequests  : cmdline.ValueForOption<int>("-n"),
-            maxContentLength    : cmdline.ValueForOption<int>("-maxContentLength"),
-            httpVersions        : cmdline.ValueForOption<Version[]>("-http"),
-            connectionLifetime  : cmdline.ValueForOption<int?>("-connectionLifetime"),
-            opIndices           : cmdline.ValueForOption<int[]>("-ops"),
-            logPath             : cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
-            aspnetLog           : cmdline.ValueForOption<bool>("-aspnetlog"),
-            listOps             : cmdline.ValueForOption<bool>("-listOps"),
-            seed                : cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
+        Run(concurrentRequests: cmdline.ValueForOption<int>("-n"),
+            maxContentLength: cmdline.ValueForOption<int>("-maxContentLength"),
+            httpVersions: cmdline.ValueForOption<Version[]>("-http"),
+            connectionLifetime: cmdline.ValueForOption<int?>("-connectionLifetime"),
+            opIndices: cmdline.ValueForOption<int[]>("-ops"),
+            logPath: cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
+            aspnetLog: cmdline.ValueForOption<bool>("-aspnetlog"),
+            listOps: cmdline.ValueForOption<bool>("-listOps"),
+            seed: cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
     }
 
     private static void Run(int concurrentRequests, int maxContentLength, Version[] httpVersions, int? connectionLifetime, int[] opIndices, string logPath, bool aspnetLog, bool listOps, int seed)
@@ -110,6 +110,55 @@ public class Program
             {
                 throw new Exception($"Expected response content \"{expectedContent}\", got \"{actualContent}\"");
             }
+        }
+
+        Func<ClientContext, Task> TestAbort(string path)
+        {
+            return async ctx =>
+            {
+                var httpVersion = ctx.GetRandomVersion(httpVersions);
+                try
+                {
+                    using (var req = new HttpRequestMessage(HttpMethod.Get, serverUri + path) { Version = httpVersion })
+                    {
+                        await ctx.HttpClient.SendAsync(req);
+                    }
+                    throw new Exception("Completed unexpectedly");
+                }
+                catch (Exception e)
+                {
+                    if (e is HttpRequestException hre && hre.InnerException is IOException)
+                    {
+                        e = hre.InnerException;
+                    }
+
+                    if (e is IOException ioe)
+                    {
+                        if (httpVersion < HttpVersion.Version20)
+                        {
+                            return;
+                        }
+
+                        var name = e.InnerException?.GetType().Name;
+                        switch (name)
+                        {
+                            case "Http2ProtocolException":
+                            case "Http2ConnectionException":
+                            case "Http2StreamException":
+                                // This can be improved when https://github.com/dotnet/runtime/issues/43239 is available.
+                                if (e.InnerException.Message.Contains("INTERNAL_ERROR") || e.InnerException.Message.Contains("CANCEL"))
+                                {
+                                    return;
+                                }
+                                break;
+                            case "WinHttpException":
+                                return;
+                        }
+                    }
+
+                    throw;
+                }
+            };
         }
 
         // Set of operations that the client can select from to run.  Each item is a tuple of the operation's name
@@ -181,51 +230,9 @@ public class Program
                 }
             }),
 
-            ("GET Aborted",
-            async ctx =>
-            {
-                Version httpVersion = ctx.GetRandomVersion(httpVersions);
-                try
-                {
-                    using (var req = new HttpRequestMessage(HttpMethod.Get, serverUri + "/abort") { Version = httpVersion })
-                    {
-                        await ctx.HttpClient.SendAsync(req);
-                    }
-                    throw new Exception("Completed unexpectedly");
-                }
-                catch (Exception e)
-                {
-                    if (e is HttpRequestException hre && hre.InnerException is IOException)
-                    {
-                        e = hre.InnerException;
-                    }
+            ("GET Abort", TestAbort("/abort")),
 
-                    if (e is IOException ioe)
-                    {
-                        if (httpVersion < HttpVersion.Version20)
-                        {
-                            return;
-                        }
-
-                        string name = e.InnerException?.GetType().Name;
-                        switch (name)
-                        {
-                            case "Http2ProtocolException":
-                            case "Http2ConnectionException":
-                            case "Http2StreamException":
-                                if (e.InnerException.Message.Contains("INTERNAL_ERROR") || e.InnerException.Message.Contains("CANCEL"))
-                                {
-                                    return;
-                                }
-                                break;
-                            case "WinHttpException":
-                                return;
-                        }
-                    }
-
-                    throw;
-                }
-            }),
+            ("GET Parallel Abort", TestAbort("/parallel-abort")),
 
             ("POST",
             async ctx =>
@@ -324,7 +331,10 @@ public class Program
                         throw new Exception($"Expected {maxContentLength}, got {m.Content.Headers.ContentLength}");
                     }
                     string r = await m.Content.ReadAsStringAsync();
-                    if (r.Length > 0) throw new Exception($"Got unexpected response: {r}");
+                    if (r.Length > 0)
+                    {
+                        throw new Exception($"Got unexpected response: {r}");
+                    }
                 }
             }),
 
@@ -339,7 +349,10 @@ public class Program
                 {
                     ValidateResponse(m, httpVersion);
                     string r = await m.Content.ReadAsStringAsync();
-                    if (r != "") throw new Exception($"Got unexpected response: {r}");
+                    if (r != "")
+                    {
+                        throw new Exception($"Got unexpected response: {r}");
+                    }
                 }
             }),
         };
@@ -359,7 +372,7 @@ public class Program
         }
 
         Console.WriteLine("     .NET Core: " + Path.GetFileName(Path.GetDirectoryName(typeof(object).Assembly.Location)));
-        Console.WriteLine("  ASP.NET Core: " + Path.GetFileName(Path.GetDirectoryName(typeof(WebHost).Assembly.Location)));
+        Console.WriteLine("  ASP.NET Core: " + Path.GetFileName(Path.GetDirectoryName(typeof(IWebHostBuilder).Assembly.Location)));
         Console.WriteLine("       Tracing: " + (logPath == null ? (object)false : logPath.Length == 0 ? (object)true : logPath));
         Console.WriteLine("   ASP.NET Log: " + aspnetLog);
         Console.WriteLine("   Concurrency: " + concurrentRequests);
@@ -372,10 +385,11 @@ public class Program
 
         // Start the Kestrel web server in-proc.
         Console.WriteLine("Starting server.");
-        WebHost.CreateDefaultBuilder()
-
+        var host = Host.CreateDefaultBuilder();
+        host.ConfigureWebHost(webHost =>
+        {
             //Use Kestrel, and configure it for HTTPS with a self - signed test certificate.
-            .UseKestrel(ko =>
+            webHost.UseKestrel(ko =>
             {
                 ko.ListenLocalhost(HttpsPort, listenOptions =>
                 {
@@ -445,6 +459,14 @@ public class Program
                         await context.Response.WriteAsync(contentSource.Substring(0, contentSource.Length / 2));
                         context.Abort();
                     });
+                    endpoints.MapGet("/parallel-abort", async context =>
+                    {
+                        // Server writes some content and aborts the connection in the background.
+                        var writeTask = context.Response.WriteAsync(contentSource.Substring(0, contentSource.Length));
+                        await Task.Yield();
+                        context.Abort();
+                        await writeTask;
+                    });
                     endpoints.MapPost("/", async context =>
                     {
                         // Post echos back the requested content, first buffering it all server-side, then sending it all back.
@@ -479,9 +501,11 @@ public class Program
                         await context.Request.Body.CopyToAsync(Stream.Null);
                     });
                 });
-            })
-            .Build()
-            .Start();
+            });
+
+        })
+        .Build()
+        .Start();
 
         // Start the client.
         Console.WriteLine($"Starting {concurrentRequests} client workers.");
@@ -614,7 +638,7 @@ public class Program
             HttpClient = httpClient;
 
             // deterministic hashing copied from System.Runtime.Hashing
-            int Combine(int h1, int h2)
+            static int Combine(int h1, int h2)
             {
                 uint rol5 = ((uint)h1 << 5) | ((uint)h1 >> 27);
                 return ((int)rol5 + h1) ^ h2;
@@ -646,8 +670,8 @@ public class Program
         {
             await stream.WriteAsync(new byte[] { 1, 2, 3 });
 
-            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (_cancellationToken.Register(() => tcs.SetResult(true)))
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (_cancellationToken.Register(() => tcs.SetResult()))
             {
                 await tcs.Task.ConfigureAwait(false);
             }
@@ -712,7 +736,9 @@ public class Program
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             if (eventSource.Name == "Microsoft-System-Net-Http")
+            {
                 EnableEvents(eventSource, EventLevel.LogAlways);
+            }
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
@@ -724,7 +750,10 @@ public class Program
                     var sb = new StringBuilder().Append(FormattableString.Invariant($"[{eventData.EventName}] "));
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
-                        if (i > 0) sb.Append(", ");
+                        if (i > 0)
+                        {
+                            sb.Append(", ");
+                        }
                         sb.Append(eventData.PayloadNames[i]).Append(": ").Append(eventData.Payload[i]);
                     }
                     _writer.WriteLine(sb);
@@ -736,7 +765,10 @@ public class Program
                     Console.ResetColor();
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
-                        if (i > 0) Console.Write(", ");
+                        if (i > 0)
+                        {
+                            Console.Write(", ");
+                        }
                         Console.ForegroundColor = ConsoleColor.DarkGray;
                         Console.Write(eventData.PayloadNames[i] + ": ");
                         Console.ResetColor();

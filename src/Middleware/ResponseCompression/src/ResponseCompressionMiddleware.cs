@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -15,9 +13,7 @@ namespace Microsoft.AspNetCore.ResponseCompression;
 public class ResponseCompressionMiddleware
 {
     private readonly RequestDelegate _next;
-
     private readonly IResponseCompressionProvider _provider;
-
 
     /// <summary>
     /// Initialize the Response Compression middleware.

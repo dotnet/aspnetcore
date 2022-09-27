@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -88,6 +86,7 @@ internal static class ParameterPolicyActivator
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "This type comes from the ConstraintMap.")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070", Justification = "We ensure the constructor is preserved when the constraint map is added.")]
     private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type parameterPolicyType, string argumentString)
     {
         ConstructorInfo activationConstructor = null;

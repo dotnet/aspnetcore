@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Protokol Arabelleği Dosyası",
+  "description": "gRPC için iletileri ve hizmetleri açıklamak için bir protokol arabelleği dosyası.",
+  "symbols/namespace/description": "oluşturulan kod için ad alanı",
+  "postActions/openInEditor/description": "Düzenleyicide protobuf.proto dosyasını açar"
+}

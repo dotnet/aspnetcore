@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
@@ -16,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
-internal class BsonTempDataSerializer : TempDataSerializer
+internal sealed class BsonTempDataSerializer : TempDataSerializer
 {
     private readonly JsonSerializer _jsonSerializer =
         JsonSerializer.Create(JsonSerializerSettingsProvider.CreateSerializerSettings());
@@ -152,7 +149,7 @@ internal class BsonTempDataSerializer : TempDataSerializer
         }
     }
 
-    public void EnsureObjectCanBeSerialized(object item)
+    public static void EnsureObjectCanBeSerialized(object item)
     {
         item = item ?? throw new ArgumentNullException(nameof(item));
 

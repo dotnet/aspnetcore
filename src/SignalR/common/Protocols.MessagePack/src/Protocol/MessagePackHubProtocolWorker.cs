@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable IDE0005 // This file is shared across multiple projects making it ugly to ignore unused usings
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
 
@@ -75,7 +78,7 @@ internal abstract class MessagePackHubProtocolWorker
             invocationId = null;
         }
 
-        var target = ReadString(ref reader, "target");
+        var target = ReadString(ref reader, binder, "target");
 
         object[]? arguments;
         try
@@ -159,9 +162,31 @@ internal abstract class MessagePackHubProtocolWorker
                 error = ReadString(ref reader, "error");
                 break;
             case NonVoidResult:
-                var itemType = binder.GetReturnType(invocationId);
-                result = DeserializeObject(ref reader, itemType, "argument");
                 hasResult = true;
+                var itemType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                if (itemType is null)
+                {
+                    reader.Skip();
+                }
+                else
+                {
+                    if (itemType == typeof(RawResult))
+                    {
+                        result = new RawResult(reader.ReadRaw());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            result = DeserializeObject(ref reader, itemType, "argument");
+                        }
+                        catch (Exception ex)
+                        {
+                            error = $"Error trying to deserialize result to {itemType.Name}. {ex.Message}";
+                            hasResult = false;
+                        }
+                    }
+                }
                 break;
             case VoidResult:
                 hasResult = false;
@@ -173,14 +198,14 @@ internal abstract class MessagePackHubProtocolWorker
         return ApplyHeaders(headers, new CompletionMessage(invocationId, error, result, hasResult));
     }
 
-    private CancelInvocationMessage CreateCancelInvocationMessage(ref MessagePackReader reader)
+    private static CancelInvocationMessage CreateCancelInvocationMessage(ref MessagePackReader reader)
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
         return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
     }
 
-    private CloseMessage CreateCloseMessage(ref MessagePackReader reader, int itemCount)
+    private static CloseMessage CreateCloseMessage(ref MessagePackReader reader, int itemCount)
     {
         var error = ReadString(ref reader, "error");
         var allowReconnect = false;
@@ -199,7 +224,7 @@ internal abstract class MessagePackHubProtocolWorker
         return new CloseMessage(error, allowReconnect);
     }
 
-    private Dictionary<string, string>? ReadHeaders(ref MessagePackReader reader)
+    private static Dictionary<string, string>? ReadHeaders(ref MessagePackReader reader)
     {
         var headerCount = ReadMapLength(ref reader, "headers");
         if (headerCount > 0)
@@ -220,7 +245,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private string[]? ReadStreamIds(ref MessagePackReader reader)
+    private static string[]? ReadStreamIds(ref MessagePackReader reader)
     {
         var streamIdCount = ReadArrayLength(ref reader, "streamIds");
         List<string>? streams = null;
@@ -347,8 +372,8 @@ internal abstract class MessagePackHubProtocolWorker
             case CancelInvocationMessage cancelInvocationMessage:
                 WriteCancelInvocationMessage(cancelInvocationMessage, ref writer);
                 break;
-            case PingMessage pingMessage:
-                WritePingMessage(pingMessage, ref writer);
+            case PingMessage:
+                WritePingMessage(ref writer);
                 break;
             case CloseMessage closeMessage:
                 WriteCloseMessage(closeMessage, ref writer);
@@ -432,6 +457,10 @@ internal abstract class MessagePackHubProtocolWorker
         {
             writer.WriteNil();
         }
+        else if (argument is RawResult result)
+        {
+            writer.WriteRaw(result.RawSerializedData);
+        }
         else
         {
             Serialize(ref writer, argument.GetType(), argument);
@@ -479,7 +508,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private void WriteCancelInvocationMessage(CancelInvocationMessage message, ref MessagePackWriter writer)
+    private static void WriteCancelInvocationMessage(CancelInvocationMessage message, ref MessagePackWriter writer)
     {
         writer.WriteArrayHeader(3);
         writer.Write(HubProtocolConstants.CancelInvocationMessageType);
@@ -503,7 +532,7 @@ internal abstract class MessagePackHubProtocolWorker
         writer.Write(message.AllowReconnect);
     }
 
-    private static void WritePingMessage(PingMessage pingMessage, ref MessagePackWriter writer)
+    private static void WritePingMessage(ref MessagePackWriter writer)
     {
         writer.WriteArrayHeader(1);
         writer.Write(HubProtocolConstants.PingMessageType);
@@ -529,7 +558,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private string ReadInvocationId(ref MessagePackReader reader) =>
+    private static string ReadInvocationId(ref MessagePackReader reader) =>
         ReadString(ref reader, "invocationId");
 
     private static bool ReadBoolean(ref MessagePackReader reader, string field)
@@ -556,6 +585,26 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
+    protected static string ReadString(ref MessagePackReader reader, IInvocationBinder binder, string field)
+    {
+        try
+        {
+#if NETCOREAPP
+            if (reader.TryReadStringSpan(out var span))
+            {
+                return binder.GetTarget(span) ?? Encoding.UTF8.GetString(span);
+            }
+            return reader.ReadString();
+#else
+            return reader.ReadString();
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
+        }
+    }
+
     protected static string ReadString(ref MessagePackReader reader, string field)
     {
         try
@@ -578,7 +627,6 @@ internal abstract class MessagePackHubProtocolWorker
         {
             throw new InvalidDataException($"Reading map length for '{field}' failed.", ex);
         }
-
     }
 
     private static long ReadArrayLength(ref MessagePackReader reader, string field)

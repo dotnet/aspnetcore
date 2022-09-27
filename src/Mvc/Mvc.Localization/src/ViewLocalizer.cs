@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -38,6 +35,11 @@ public class ViewLocalizer : IViewLocalizer, IViewContextAware
         if (hostingEnvironment == null)
         {
             throw new ArgumentNullException(nameof(hostingEnvironment));
+        }
+
+        if (string.IsNullOrEmpty(hostingEnvironment.ApplicationName))
+        {
+            throw new InvalidOperationException($"{nameof(hostingEnvironment)}.ApplicationName must have a value.");
         }
 
         _applicationName = hostingEnvironment.ApplicationName;

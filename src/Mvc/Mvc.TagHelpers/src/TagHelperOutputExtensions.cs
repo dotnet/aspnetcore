@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -44,20 +41,9 @@ public static class TagHelperOutputExtensions
         string attributeName,
         TagHelperContext context)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
-
-        if (attributeName == null)
-        {
-            throw new ArgumentNullException(nameof(attributeName));
-        }
-
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
+        ArgumentNullException.ThrowIfNull(attributeName);
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!tagHelperOutput.Attributes.ContainsName(attributeName))
         {
@@ -98,15 +84,8 @@ public static class TagHelperOutputExtensions
     /// are not overridden; "class" attributes are merged with spaces.</remarks>
     public static void MergeAttributes(this TagHelperOutput tagHelperOutput, TagBuilder tagBuilder)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
-
-        if (tagBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(tagBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
+        ArgumentNullException.ThrowIfNull(tagBuilder);
 
         foreach (var attribute in tagBuilder.Attributes)
         {
@@ -139,15 +118,8 @@ public static class TagHelperOutputExtensions
         this TagHelperOutput tagHelperOutput,
         IEnumerable<TagHelperAttribute> attributes)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
-
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
+        ArgumentNullException.ThrowIfNull(attributes);
 
         foreach (var attribute in attributes.ToArray())
         {
@@ -167,10 +139,7 @@ public static class TagHelperOutputExtensions
         string classValue,
         HtmlEncoder htmlEncoder)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
 
         if (string.IsNullOrEmpty(classValue))
         {
@@ -179,7 +148,7 @@ public static class TagHelperOutputExtensions
 
         var encodedSpaceChars = SpaceChars.Where(x => !x.Equals('\u0020')).Select(x => htmlEncoder.Encode(x.ToString())).ToArray();
 
-        if (SpaceChars.Any(classValue.Contains) || encodedSpaceChars.Any(value => classValue.IndexOf(value, StringComparison.Ordinal) >= 0))
+        if (SpaceChars.Any(classValue.Contains) || encodedSpaceChars.Any(value => classValue.Contains(value, StringComparison.Ordinal)))
         {
             throw new ArgumentException(Resources.ArgumentCannotContainHtmlSpace, nameof(classValue));
         }
@@ -229,14 +198,11 @@ public static class TagHelperOutputExtensions
         string classValue,
         HtmlEncoder htmlEncoder)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
 
         var encodedSpaceChars = SpaceChars.Where(x => !x.Equals('\u0020')).Select(x => htmlEncoder.Encode(x.ToString())).ToArray();
 
-        if (SpaceChars.Any(classValue.Contains) || encodedSpaceChars.Any(value => classValue.IndexOf(value, StringComparison.Ordinal) >= 0))
+        if (SpaceChars.Any(classValue.Contains) || encodedSpaceChars.Any(value => classValue.Contains(value, StringComparison.Ordinal)))
         {
             throw new ArgumentException(Resources.ArgumentCannotContainHtmlSpace, nameof(classValue));
         }
@@ -257,7 +223,7 @@ public static class TagHelperOutputExtensions
 
         if (string.Equals(currentClassValue, encodedClassValue, StringComparison.Ordinal))
         {
-            tagHelperOutput.Attributes.Remove(tagHelperOutput.Attributes["class"]);
+            tagHelperOutput.Attributes.Remove(classAttribute);
             return;
         }
 
@@ -279,12 +245,12 @@ public static class TagHelperOutputExtensions
 
         if (listOfClasses.Count > 0)
         {
-            var joinedClasses = new HtmlString(string.Join(" ", listOfClasses));
+            var joinedClasses = new HtmlString(string.Join(' ', listOfClasses));
             tagHelperOutput.Attributes.SetAttribute(classAttribute.Name, joinedClasses);
         }
         else
         {
-            tagHelperOutput.Attributes.Remove(tagHelperOutput.Attributes["class"]);
+            tagHelperOutput.Attributes.Remove(classAttribute);
         }
     }
 
@@ -371,7 +337,7 @@ public static class TagHelperOutputExtensions
         return -1;
     }
 
-    private class ClassAttributeHtmlContent : IHtmlContent
+    private sealed class ClassAttributeHtmlContent : IHtmlContent
     {
         private readonly object _left;
         private readonly string _right;
@@ -384,15 +350,8 @@ public static class TagHelperOutputExtensions
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
+            ArgumentNullException.ThrowIfNull(writer);
+            ArgumentNullException.ThrowIfNull(encoder);
 
             // Write out "{left} {right}" in the common nothing-empty case.
             var wroteLeft = false;

@@ -11,7 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
 [SupportedOSPlatform("windows")]
-internal class WindowsCertificateManager : CertificateManager
+internal sealed class WindowsCertificateManager : CertificateManager
 {
     private const int UserCancelledErrorCode = 1223;
 
@@ -28,8 +28,8 @@ internal class WindowsCertificateManager : CertificateManager
     protected override bool IsExportable(X509Certificate2 c)
     {
 #if XPLAT
-            // For the first run experience we don't need to know if the certificate can be exported.
-            return true;
+        // For the first run experience we don't need to know if the certificate can be exported.
+        return true;
 #else
         using var key = c.GetRSAPrivateKey();
         return (key is RSACryptoServiceProvider rsaPrivateKey &&
@@ -41,7 +41,6 @@ internal class WindowsCertificateManager : CertificateManager
 
     internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
-        // Return true as we don't perform any check.
         return new CheckCertificateStateResult(true, null);
     }
 

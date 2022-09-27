@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Threading;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class DisconnectListener
+internal sealed partial class DisconnectListener
 {
     private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens = new();
 
@@ -68,11 +66,11 @@ internal partial class DisconnectListener
         {
             Log.DisconnectTriggered(_logger, connectionId);
 
-                // Free the overlapped
-                boundHandle.FreeNativeOverlapped(pOverlapped);
+            // Free the overlapped
+            boundHandle.FreeNativeOverlapped(pOverlapped);
 
-                // Pull the token out of the list and Cancel it.
-                _connectionCancellationTokens.TryRemove(connectionId, out _);
+            // Pull the token out of the list and Cancel it.
+            _connectionCancellationTokens.TryRemove(connectionId, out _);
             try
             {
                 cts.Cancel();
@@ -118,7 +116,7 @@ internal partial class DisconnectListener
         return returnToken;
     }
 
-    private class ConnectionCancellation
+    private sealed class ConnectionCancellation
     {
         private readonly DisconnectListener _parent;
         private volatile bool _initialized; // Must be volatile because initialization is synchronized

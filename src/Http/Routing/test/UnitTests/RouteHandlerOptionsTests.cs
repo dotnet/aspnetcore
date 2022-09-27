@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -60,14 +55,15 @@ public class RouteHandlerOptionsTests
     }
 
     [Fact]
-    public void RouteHandlerOptionsFailsToResolveWithoutHostEnvironment()
+    public void RouteHandlerOptionsCanResolveWithoutHostEnvironment()
     {
         var services = new ServiceCollection();
         services.AddOptions();
         services.AddRouting();
         var serviceProvider = services.BuildServiceProvider();
 
-        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>());
+        var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>();
+        Assert.False(options.Value.ThrowOnBadRequest);
     }
 
     private class HostEnvironment : IHostEnvironment

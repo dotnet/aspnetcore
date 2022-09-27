@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
@@ -9,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 // For more information of flags, and what flags we currently support:
 // https://github.com/aspnet/BasicMiddleware/issues/66
 // http://httpd.apache.org/docs/current/expr.html#vars
-internal class Flags
+internal sealed class Flags
 {
     public IDictionary<FlagType, string> FlagDictionary { get; }
 

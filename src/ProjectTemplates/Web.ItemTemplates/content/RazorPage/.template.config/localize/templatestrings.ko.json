@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 페이지",
+  "description": "페이지 모델이 있거나 없는 Razor 페이지",
+  "symbols/namespace/description": "생성된 코드의 네임스페이스",
+  "symbols/no-pagemodel/description": "PageModel 없이 페이지 만들기",
+  "symbols/no-pagemodel/displayName": "PageModel 제외",
+  "postActions/openInEditor/description": "편집기에서 Index.cshtml을 엽니다."
+}

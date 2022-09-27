@@ -420,7 +420,6 @@ public class InputBaseTest
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
         await renderer.RenderRootComponentAsync(rootComponentId);
 
-
         // Initally, it rendered one batch and is valid
         var batch1 = renderer.Batches.Single();
         var componentFrame1 = batch1.GetComponentFrames<TestInputComponent<string>>().Single();

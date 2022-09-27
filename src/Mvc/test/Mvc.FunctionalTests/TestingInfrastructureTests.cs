@@ -1,13 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Threading;
-using System.Threading.Tasks;
 using BasicWebSite;
 using BasicWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +13,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RazorPagesClassLibrary;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -112,6 +107,19 @@ public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<Ba
         var modifiedHeaderWasSent = await response.Content.ReadAsStringAsync();
 
         Assert.Equal("false", modifiedHeaderWasSent);
+    }
+
+    [Fact]
+    public async Task TestingInfrastructure_RedirectHandlerHandlesRelativeLocation()
+    {
+        // Act
+        var request = new HttpRequestMessage(HttpMethod.Get, "Testing/RedirectHandler/Relative/");
+        var client = Factory.CreateDefaultClient(
+            new RedirectHandler());
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]

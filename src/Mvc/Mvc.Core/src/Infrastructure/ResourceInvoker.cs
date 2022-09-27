@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -14,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal abstract class ResourceInvoker
+internal abstract partial class ResourceInvoker
 {
     protected readonly DiagnosticListener _diagnosticListener;
     protected readonly ILogger _logger;
@@ -111,7 +108,7 @@ internal abstract class ResourceInvoker
 
                 var actionScope = logger.ActionScope(actionContext.ActionDescriptor);
 
-                logger.ExecutingAction(actionContext.ActionDescriptor);
+                Log.ExecutingAction(logger, actionContext.ActionDescriptor);
 
                 var filters = invoker._filters;
                 logger.AuthorizationFiltersExecutionPlan(filters);
@@ -129,7 +126,7 @@ internal abstract class ResourceInvoker
                 finally
                 {
                     await invoker.ReleaseResourcesCore(actionScope);
-                    logger.ExecutedAction(actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
+                    Log.ExecutedAction(logger, actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
                 }
             }
             finally
@@ -145,7 +142,7 @@ internal abstract class ResourceInvoker
     internal ValueTask ReleaseResourcesCore(IDisposable? scope)
     {
         Exception? releaseException = null;
-        ValueTask releaseResult = default;
+        ValueTask releaseResult;
         try
         {
             releaseResult = ReleaseResources();
@@ -275,7 +272,7 @@ internal abstract class ResourceInvoker
             var actionContext = invoker._actionContext;
 
             invoker._diagnosticListener.BeforeActionResult(actionContext, result);
-            invoker._logger.BeforeExecutingActionResult(result);
+            Log.BeforeExecutingActionResult(invoker._logger, result);
 
             try
             {
@@ -284,7 +281,7 @@ internal abstract class ResourceInvoker
             finally
             {
                 invoker._diagnosticListener.AfterActionResult(actionContext, result);
-                invoker._logger.AfterExecutingActionResult(result);
+                Log.AfterExecutingActionResult(invoker._logger, result);
             }
         }
     }
@@ -414,8 +411,7 @@ internal abstract class ResourceInvoker
                     Debug.Assert(state != null);
                     Debug.Assert(_authorizationContext != null);
                     Debug.Assert(_authorizationContext.Result != null);
-
-                    _logger.AuthorizationFailure((IFilterMetadata)state);
+                    Log.AuthorizationFailure(_logger, (IFilterMetadata)state);
 
                     // This is a short-circuit - execute relevant result filters + result and complete this invocation.
                     isCompleted = true;
@@ -599,8 +595,7 @@ internal abstract class ResourceInvoker
                     Debug.Assert(state != null);
                     Debug.Assert(_resourceExecutingContext != null);
                     Debug.Assert(_resourceExecutedContext != null);
-
-                    _logger.ResourceFilterShortCircuited((IFilterMetadata)state);
+                    Log.ResourceFilterShortCircuited(_logger, (IFilterMetadata)state);
 
                     _result = _resourceExecutingContext.Result;
                     var task = InvokeAlwaysRunResultFilters();
@@ -1439,7 +1434,6 @@ internal abstract class ResourceInvoker
         }
 #pragma warning restore CS1998
     }
-
 
     private static void Rethrow(ResourceExecutedContextSealed context)
     {

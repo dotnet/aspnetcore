@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -67,6 +62,7 @@ public class MultipartReader
             throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Insufficient buffer space, the buffer must be larger than the boundary: " + boundary);
         }
         _stream = new BufferedReadStream(stream, bufferSize);
+        boundary = HeaderUtilities.RemoveQuotes(new StringSegment(boundary)).ToString();
         _boundary = new MultipartBoundary(boundary, false);
         // This stream will drain any preamble data and remove the first boundary marker.
         // TODO: HeadersLengthLimit can't be modified until after the constructor.
@@ -84,7 +80,8 @@ public class MultipartReader
     public int HeadersLengthLimit { get; set; } = DefaultHeadersLengthLimit;
 
     /// <summary>
-    /// The optional limit for the total response body length.
+    /// The optional limit for the body length of each multipart section.
+    /// The hosting server is responsible for limiting the overall body length.
     /// </summary>
     public long? BodyLengthLimit { get; set; }
 

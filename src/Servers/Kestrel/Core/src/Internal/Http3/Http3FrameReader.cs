@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Net.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3FrameReader
+internal sealed class Http3FrameReader
 {
     /* https://quicwg.org/base-drafts/draft-ietf-quic-http.html#frame-layout
          0                   1                   2                   3
@@ -24,9 +23,8 @@ internal class Http3FrameReader
     {
         framePayload = ReadOnlySequence<byte>.Empty;
         SequencePosition consumed;
-        SequencePosition examined;
 
-        var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+        var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out _);
         if (type == -1)
         {
             return false;
@@ -34,7 +32,7 @@ internal class Http3FrameReader
 
         var firstLengthBuffer = readableBuffer.Slice(consumed);
 
-        var length = VariableLengthIntegerHelper.GetInteger(firstLengthBuffer, out consumed, out examined);
+        var length = VariableLengthIntegerHelper.GetInteger(firstLengthBuffer, out consumed, out _);
 
         // Make sure the whole frame is buffered
         if (length == -1)

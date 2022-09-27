@@ -88,7 +88,7 @@ internal sealed class SectionRegistry
         }
     }
 
-    private RenderFragment? GetCurrentProviderContentOrDefault(List<ISectionContentProvider> providers)
+    private static RenderFragment? GetCurrentProviderContentOrDefault(List<ISectionContentProvider> providers)
         => providers.Count != 0
             ? providers[^1].Content
             : null;

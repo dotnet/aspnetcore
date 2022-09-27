@@ -3,12 +3,9 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
@@ -412,7 +409,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return (attemptedBinding, bindingSucceeded);
     }
 
-    internal bool CanBindItem(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
+    internal static bool CanBindItem(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
     {
         var metadataProviderFilter = bindingContext.ModelMetadata.PropertyFilterProvider?.PropertyFilter;
         if (metadataProviderFilter?.Invoke(propertyMetadata) == false)
@@ -439,7 +436,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return true;
     }
 
-    private async ValueTask<ModelBindingResult> BindPropertyAsync(
+    private static async ValueTask<ModelBindingResult> BindPropertyAsync(
         ModelBindingContext bindingContext,
         ModelMetadata property,
         IModelBinder propertyBinder,
@@ -484,7 +481,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return result;
     }
 
-    private async ValueTask<ModelBindingResult> BindParameterAsync(
+    private static async ValueTask<ModelBindingResult> BindParameterAsync(
         ModelBindingContext bindingContext,
         ModelMetadata parameter,
         IModelBinder parameterBinder,
@@ -659,7 +656,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
             return GreedyPropertiesMayHaveData;
         }
 
-        _logger.CannotBindToComplexType(bindingContext);
+        Log.CannotBindToComplexType(_logger, bindingContext);
 
         return NoDataAvailable;
     }
@@ -690,7 +687,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return true;
     }
 
-    internal void SetProperty(
+    internal static void SetProperty(
         ModelBindingContext bindingContext,
         string modelName,
         ModelMetadata propertyMetadata,
@@ -750,5 +747,11 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         {
             NoPublicSettableItems(logger, bindingContext.ModelName, bindingContext.ModelType);
         }
+
+        public static void CannotBindToComplexType(ILogger logger, ModelBindingContext bindingContext)
+            => CannotBindToComplexType(logger, bindingContext.ModelType);
+
+        [LoggerMessage(18, LogLevel.Debug, "Could not bind to model of type '{ModelType}' as there were no values in the request for any of the properties.", EventName = "CannotBindToComplexType")]
+        private static partial void CannotBindToComplexType(ILogger logger, Type modelType);
     }
 }

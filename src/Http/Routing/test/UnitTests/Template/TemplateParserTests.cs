@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests;
 
@@ -312,7 +308,6 @@ public class TemplateRouteParserTests
                                                                     defaultValue: null,
                                                                     inlineConstraints: null));
 
-
         expected.Parameters.Add(expected.Segments[0].Parts[0]);
         expected.Parameters.Add(expected.Segments[0].Parts[2]);
         expected.Parameters.Add(expected.Segments[0].Parts[4]);
@@ -350,7 +345,6 @@ public class TemplateRouteParserTests
                                                                     false,
                                                                     defaultValue: null,
                                                                     inlineConstraints: null));
-
 
         expected.Parameters.Add(expected.Segments[0].Parts[0]);
         expected.Parameters.Add(expected.Segments[0].Parts[2]);

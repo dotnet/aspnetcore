@@ -32,7 +32,7 @@ public class UnsupportedContentTypeFilter : IActionFilter, IOrderedFilter
         }
     }
 
-    private bool HasUnsupportedContentTypeError(ActionExecutingContext context)
+    private static bool HasUnsupportedContentTypeError(ActionExecutingContext context)
     {
         var modelState = context.ModelState;
         if (modelState.IsValid)

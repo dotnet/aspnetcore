@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal static class Constants
@@ -13,11 +11,6 @@ internal static class Constants
     /// The endpoint Kestrel will bind to if nothing else is specified.
     /// </summary>
     public const string DefaultServerAddress = "http://localhost:5000";
-
-    /// <summary>
-    /// The endpoint Kestrel will bind to if nothing else is specified and a default certificate is available.
-    /// </summary>
-    public const string DefaultServerHttpsAddress = "https://localhost:5001";
 
     /// <summary>
     /// Prefix of host name used to specify Unix sockets in the configuration.

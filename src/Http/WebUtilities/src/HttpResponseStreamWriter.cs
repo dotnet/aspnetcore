@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -112,10 +108,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(char value)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
 
         if (_charBufferCount == _charBufferSize)
         {
@@ -129,10 +122,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(char[] values, int index, int count)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
 
         if (values == null)
         {
@@ -153,10 +143,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(ReadOnlySpan<char> value)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
 
         var remaining = value.Length;
         while (remaining > 0)
@@ -176,10 +163,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(string? value)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
 
         if (value == null)
         {
@@ -202,10 +186,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void WriteLine(ReadOnlySpan<char> value)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
 
         Write(value);
         Write(NewLine);
@@ -382,7 +363,7 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     /// <inheritdoc/>
-    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")] 
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
     public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
     {
         if (_disposed)
@@ -527,10 +508,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Flush()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
 
         FlushInternal(flushEncoder: true);
     }

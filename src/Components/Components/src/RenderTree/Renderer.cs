@@ -99,7 +99,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
 
-
     private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
     {
         return serviceProvider.GetService<IComponentActivator>()
@@ -130,7 +129,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
-        _componentFactory.ClearCache();
+        ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
         Routing.QueryParameterValueSupplier.ClearCache();
 
@@ -711,7 +710,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         return batch != null ?
             Task.WhenAll(batch) :
             Task.CompletedTask;
-
     }
 
     private async Task InvokeRenderCompletedCallsAfterUpdateDisplayTask(

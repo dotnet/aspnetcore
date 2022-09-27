@@ -16,20 +16,6 @@
       }
     },
     {
-      "label": "IgnitorSample-build",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/Samples/IgnitorSample/IgnitorSample.csproj"
-      ],
-      "problemMatcher": "$msCompile",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
       "label": "BasicTestApp-build",
       "command": "dotnet",
       "type": "process",

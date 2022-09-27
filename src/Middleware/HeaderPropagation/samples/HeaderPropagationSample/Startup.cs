@@ -1,15 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 
 namespace HeaderPropagationSample;
@@ -35,11 +28,11 @@ public class Startup
         // It's also easy to forward a header with a different name, using Add(string, string)
         services.AddHeaderPropagation(options =>
         {
-                // Propagate the X-BetaFeatures if present.
-                options.Headers.Add("X-BetaFeatures");
+            // Propagate the X-BetaFeatures if present.
+            options.Headers.Add("X-BetaFeatures");
 
-                // Generate a new X-BetaFeatures if not present.
-                options.Headers.Add("X-BetaFeatures", context =>
+            // Generate a new X-BetaFeatures if not present.
+            options.Headers.Add("X-BetaFeatures", context =>
             {
                 return GenerateBetaFeatureOptions();
             });

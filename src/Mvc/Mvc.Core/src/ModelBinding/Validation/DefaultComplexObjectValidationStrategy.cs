@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 /// <summary>
 /// The default implementation of <see cref="IValidationStrategy"/> for a complex object.
 /// </summary>
-internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
+internal sealed class DefaultComplexObjectValidationStrategy : IValidationStrategy
 {
     /// <summary>
     /// Gets an instance of <see cref="DefaultComplexObjectValidationStrategy"/>.
@@ -33,7 +31,7 @@ internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
         return new Enumerator(metadata, key, model);
     }
 
-    private class Enumerator : IEnumerator<ValidationEntry>
+    private sealed class Enumerator : IEnumerator<ValidationEntry>
     {
         private readonly string _key;
         private readonly object _model;
@@ -107,7 +105,7 @@ internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
             else
             {
                 var property = _properties[_index - _parameters.Count];
-                var propertyName = property.BinderModelName ?? property.PropertyName;
+                var propertyName = property.ValidationModelName ?? property.BinderModelName ?? property.PropertyName;
                 var key = ModelNames.CreatePropertyModelName(_key, propertyName);
 
                 if (_model == null)

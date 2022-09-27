@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor コンポーネント",
+  "description": "Razor で実装された再利用可能な UI コンポーネント",
+  "postActions/openInEditor/description": "エディターで Component1.razor を開きます"
+}

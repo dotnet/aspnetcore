@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core Web アプリ",
-    "description": "サンプルの ASP.NET Razor Pages コンテンツで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。"
-  }
-}

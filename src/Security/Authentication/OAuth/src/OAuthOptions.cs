@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth;
 
@@ -107,7 +104,7 @@ public class OAuthOptions : RemoteAuthenticationOptions
     public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
 
     /// <summary>
-    /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See https://tools.ietf.org/html/rfc7636.
+    /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See <see href="https://tools.ietf.org/html/rfc7636"/>.
     /// The default value is `false` but derived handlers should enable this if their provider supports it.
     /// </summary>
     public bool UsePkce { get; set; }

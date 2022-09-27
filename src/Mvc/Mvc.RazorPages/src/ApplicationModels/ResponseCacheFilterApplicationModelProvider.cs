@@ -1,7 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class ResponseCacheFilterApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class ResponseCacheFilterApplicationModelProvider : IPageApplicationModelProvider
 {
     private readonly MvcOptions _mvcOptions;
     private readonly ILoggerFactory _loggerFactory;

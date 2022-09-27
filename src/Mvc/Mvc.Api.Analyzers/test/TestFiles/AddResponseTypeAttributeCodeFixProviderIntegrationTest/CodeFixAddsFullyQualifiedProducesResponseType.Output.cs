@@ -10,7 +10,6 @@ namespace TestApp._OUTPUT_
     [Route("[controller]/[action]")]
     public class BaseController : ControllerBase
     {
-
     }
 }
 

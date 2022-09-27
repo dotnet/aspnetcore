@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -64,15 +60,8 @@ public class CacheTagHelper : CacheTagHelperBase
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         IHtmlContent content;
         if (Enabled)
@@ -223,7 +212,7 @@ public class CacheTagHelper : CacheTagHelperBase
         }
     }
 
-    private class CharBufferTextWriter : TextWriter
+    private sealed class CharBufferTextWriter : TextWriter
     {
         public CharBufferTextWriter()
         {
@@ -250,7 +239,7 @@ public class CacheTagHelper : CacheTagHelperBase
         }
     }
 
-    private class CharBufferHtmlContent : IHtmlContent
+    private sealed class CharBufferHtmlContent : IHtmlContent
     {
         private readonly PagedCharBuffer _buffer;
 

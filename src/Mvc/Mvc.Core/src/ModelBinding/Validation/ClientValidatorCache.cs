@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
@@ -75,7 +73,7 @@ public class ClientValidatorCache
         return validators;
     }
 
-    private IReadOnlyList<IClientModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IClientModelValidatorProvider validationProvider)
+    private static IReadOnlyList<IClientModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IClientModelValidatorProvider validationProvider)
     {
         if (entry.Validators != null)
         {
@@ -103,14 +101,14 @@ public class ClientValidatorCache
         return ExtractValidators(items);
     }
 
-    private void ExecuteProvider(IClientModelValidatorProvider validatorProvider, ModelMetadata metadata, List<ClientValidatorItem> items)
+    private static void ExecuteProvider(IClientModelValidatorProvider validatorProvider, ModelMetadata metadata, List<ClientValidatorItem> items)
     {
         var context = new ClientValidatorProviderContext(metadata, items);
 
         validatorProvider.CreateValidators(context);
     }
 
-    private IReadOnlyList<IClientModelValidator> ExtractValidators(List<ClientValidatorItem> items)
+    private static IReadOnlyList<IClientModelValidator> ExtractValidators(List<ClientValidatorItem> items)
     {
         var count = 0;
         for (var i = 0; i < items.Count; i++)

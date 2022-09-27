@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 using System;
 using System.Collections.Immutable;
@@ -25,15 +24,15 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
         {
             if (!SymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var typeCache))
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(compilationStartAnalysisContext, typeCache);
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, SymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, SymbolCache symbolCache)
     {
         compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
         {
@@ -56,9 +55,9 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
 
             if (method.ContainingType.HasAttribute(symbolCache.IApiBehaviorMetadata, inherit: true))
             {
-                    // The issue of parameter name collision with properties affects complex model-bound types
-                    // and not input formatting. Ignore ApiController instances since they default to formatting.
-                    return;
+                // The issue of parameter name collision with properties affects complex model-bound types
+                // and not input formatting. Ignore ApiController instances since they default to formatting.
+                return;
             }
 
             for (var i = 0; i < method.Parameters.Length; i++)
@@ -239,12 +238,10 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
                 return false;
             }
 
-
             if (!TryGetType(SymbolNames.ControllerAttribute, out var controllerAttribute))
             {
                 return false;
             }
-
 
             if (!TryGetType(SymbolNames.FromBodyAttribute, out var fromBodyAttribute))
             {

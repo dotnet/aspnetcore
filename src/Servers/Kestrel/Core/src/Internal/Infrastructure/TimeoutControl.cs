@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeature
+internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeature
 {
     private readonly ITimeoutHandler _timeoutHandler;
 

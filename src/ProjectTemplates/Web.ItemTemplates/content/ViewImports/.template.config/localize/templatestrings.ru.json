@@ -1,0 +1,7 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "MVC ViewImports",
+  "description": "Страница импорта представления MVC",
+  "symbols/namespace/description": "пространство имен для созданного кода",
+  "postActions/openInEditor/description": "Открывает _ViewImports.cshtml в редакторе"
+}

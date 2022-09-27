@@ -25,15 +25,15 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         {
             if (!ApiControllerSymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var symbolCache))
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(compilationStartAnalysisContext, symbolCache);
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext context, ApiControllerSymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext context, ApiControllerSymbolCache symbolCache)
     {
         context.RegisterOperationAction(operationAnalysisContext =>
         {
@@ -45,19 +45,19 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
 
             if (ifOperation.WhenTrue == null || ifOperation.WhenFalse != null)
             {
-                    // We only support expressions of the format
-                    // if (!ModelState.IsValid)
-                    // or
-                    // if (ModelState.IsValid == false)
-                    // If the conditional is missing a true condition or has an else expression, skip this operation.
-                    return;
+                // We only support expressions of the format
+                // if (!ModelState.IsValid)
+                // or
+                // if (ModelState.IsValid == false)
+                // If the conditional is missing a true condition or has an else expression, skip this operation.
+                return;
             }
 
             var parent = ifOperation.Parent;
             if (parent == null)
             {
-                    // No parent, nothing to do
-                    return;
+                // No parent, nothing to do
+                return;
             }
 
             if (parent.Kind == OperationKind.Block && parent.Parent != null)
@@ -67,16 +67,16 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
 
             if (parent.Kind != OperationKind.MethodBodyOperation)
             {
-                    // Only support top-level ModelState IsValid checks.
-                    return;
+                // Only support top-level ModelState IsValid checks.
+                return;
             }
 
             var trueStatement = UnwrapSingleStatementBlock(ifOperation.WhenTrue);
             if (trueStatement.Kind != OperationKind.Return)
             {
-                    // We need to verify that the if statement does a ModelState.IsValid check and that the block inside contains
-                    // a single return statement returning a 400. We'l get to it in just a bit
-                    return;
+                // We need to verify that the if statement does a ModelState.IsValid check and that the block inside contains
+                // a single return statement returning a 400. We'l get to it in just a bit
+                return;
             }
 
             if (!(parent.Syntax is MethodDeclarationSyntax methodSyntax))
@@ -85,14 +85,14 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
             }
 
 #pragma warning disable RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-                var semanticModel = operationAnalysisContext.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            var semanticModel = operationAnalysisContext.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
 #pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-                var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, operationAnalysisContext.CancellationToken);
+            var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, operationAnalysisContext.CancellationToken);
 
             if (!ApiControllerFacts.IsApiControllerAction(symbolCache, methodSymbol))
             {
-                    // Not a ApiController. Nothing to do here.
-                    return;
+                // Not a ApiController. Nothing to do here.
+                return;
             }
 
             if (!IsModelStateIsValidCheck(symbolCache, ifOperation.Condition))
@@ -133,7 +133,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         }, OperationKind.Conditional);
     }
 
-    private bool IsModelStateIsValidCheck(in ApiControllerSymbolCache symbolCache, IOperation condition)
+    private static bool IsModelStateIsValidCheck(in ApiControllerSymbolCache symbolCache, IOperation condition)
     {
         switch (condition.Kind)
         {
@@ -162,7 +162,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         }
     }
 
-    private bool EvaluateBinaryOperator(
+    private static bool EvaluateBinaryOperator(
         in ApiControllerSymbolCache symbolCache,
         IOperation operation,
         IOperation otherOperation,

@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +25,7 @@ public class ResendEmailConfirmationModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -41,7 +39,7 @@ public class ResendEmailConfirmationModel : PageModel
         /// </summary>
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = default!;
     }
 
     /// <summary>
@@ -57,7 +55,7 @@ public class ResendEmailConfirmationModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class ResendEmailConfirmationModel<TUser> : ResendEmailConfirmationModel where TUser : class
+internal sealed class ResendEmailConfirmationModel<TUser> : ResendEmailConfirmationModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly IEmailSender _emailSender;
@@ -93,7 +91,7 @@ internal class ResendEmailConfirmationModel<TUser> : ResendEmailConfirmationMode
             "/Account/ConfirmEmail",
             pageHandler: null,
             values: new { userId = userId, code = code },
-            protocol: Request.Scheme);
+            protocol: Request.Scheme)!;
         await _emailSender.SendEmailAsync(
             Input.Email,
             "Confirm your email",

@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -57,7 +54,6 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         // We internally track an int for that.
         while (true)
         {
-
             try
             {
                 var readAwaitable = _context.Input.ReadAsync(cancellationToken);
@@ -217,9 +213,11 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         // The current body is read, though there might be more bytes to read on the stream with pipelining
         if (_readCompleted)
         {
-            if (!_finalAdvanceCalled && consumed.Equals(_readResult.Buffer.End))
+            var buffer = _readResult.Buffer.Slice(consumed, _readResult.Buffer.End);
+
+            if (!_finalAdvanceCalled && buffer.IsEmpty)
             {
-                // Don't reference the old buffer as it will be released by the pipe afer calling AdvancedTo
+                // Don't reference the old buffer as it will be released by the pipe after calling AdvanceTo
                 _readResult = new ReadResult(new ReadOnlySequence<byte>(), isCanceled: false, isCompleted: true);
 
                 _context.Input.AdvanceTo(consumed);
@@ -229,7 +227,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
             else
             {
                 // If the old stored _readResult was canceled, it's already been observed. Do not store a canceled read result permanently.
-                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), isCanceled: false, isCompleted: true);
+                _readResult = new ReadResult(buffer, isCanceled: false, isCompleted: true);
             }
 
             return;

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,7 +55,7 @@ public class SingleRouteRouteValuesAddressSchemeBenchmark : EndpointRoutingBench
         });
     }
 
-    private class TestAddressScheme : IEndpointAddressScheme<int>
+    private sealed class TestAddressScheme : IEndpointAddressScheme<int>
     {
         private readonly Endpoint _endpoint;
 

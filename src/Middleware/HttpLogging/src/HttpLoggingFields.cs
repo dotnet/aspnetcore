@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -139,12 +138,20 @@ public enum HttpLoggingFields : long
     /// including <see cref="RequestPath"/>, <see cref="RequestProtocol"/>,
     /// <see cref="RequestMethod"/>, and <see cref="RequestScheme"/>.
     /// </summary>
+    /// <remarks>
+    /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
+    /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
+    /// </remarks>
     RequestProperties = RequestPath | RequestProtocol | RequestMethod | RequestScheme,
 
     /// <summary>
     /// Flag for logging HTTP Request properties and headers.
     /// Includes <see cref="RequestProperties"/> and <see cref="RequestHeaders"/>
     /// </summary>
+    /// <remarks>
+    /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
+    /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
+    /// </remarks>
     RequestPropertiesAndHeaders = RequestProperties | RequestHeaders,
 
     /// <summary>
@@ -159,6 +166,10 @@ public enum HttpLoggingFields : long
     /// Logging the request body has performance implications, as it requires buffering
     /// the entire request body up to <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>.
     /// </summary>
+    /// <remarks>
+    /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
+    /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
+    /// </remarks>
     Request = RequestPropertiesAndHeaders | RequestBody,
 
     /// <summary>
@@ -176,5 +187,9 @@ public enum HttpLoggingFields : long
     /// the entire request and response body up to the <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>
     /// and <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
+    /// <remarks>
+    /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
+    /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
+    /// </remarks>
     All = Request | Response
 }

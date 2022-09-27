@@ -22,13 +22,11 @@ public class RemoteAttribute_VerifyController : Controller
         }
         else if (userId2 != null)
         {
-
             name = nameof(RemoteAttributeUser.UserId2);
             value = userId2;
         }
         else if (userId5 != null)
         {
-
             name = nameof(RemoteAttributeUser.UserId5);
             value = userId5;
         }

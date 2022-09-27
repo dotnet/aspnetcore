@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
-public class TestServer : IDisposable
+public partial class TestServer : IDisposable
 {
     private const string InProcessHandlerDll = "aspnetcorev2_inprocess.dll";
     private const string AspNetCoreModuleDll = "aspnetcorev2.dll";
@@ -40,7 +40,7 @@ public class TestServer : IDisposable
 
     private static readonly int PortRetryCount = 10;
 
-    private readonly TaskCompletionSource<object> _startedTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _startedTaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private readonly Action<IApplicationBuilder> _appBuilder;
     private readonly ILoggerFactory _loggerFactory;
@@ -106,7 +106,8 @@ public class TestServer : IDisposable
 
         HttpClient = new HttpClient(new LoggingHandler(new SocketsHttpHandler(), _loggerFactory.CreateLogger<TestServer>()))
         {
-            BaseAddress = BaseUri
+            BaseAddress = BaseUri,
+            Timeout = TimeSpan.FromSeconds(200),
         };
     }
 
@@ -155,7 +156,7 @@ public class TestServer : IDisposable
 
         lifetime.ApplicationStopping.Register(() => doneEvent.Set());
         _host.Start();
-        _startedTaskCompletionSource.SetResult(null);
+        _startedTaskCompletionSource.SetResult();
         doneEvent.Wait();
         _host.Dispose();
         return 0;
@@ -177,23 +178,23 @@ public class TestServer : IDisposable
 
     private delegate int hostfxr_main_fn(IntPtr argc, IntPtr argv);
 
-    [DllImport(HWebCoreDll)]
-    private static extern int WebCoreActivate(
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+    [LibraryImport(HWebCoreDll)]
+    private static partial int WebCoreActivate(
+        [MarshalAs(UnmanagedType.LPWStr)]
             string appHostConfigPath,
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+        [MarshalAs(UnmanagedType.LPWStr)]
             string rootWebConfigPath,
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+        [MarshalAs(UnmanagedType.LPWStr)]
             string instanceName);
 
-    [DllImport(HWebCoreDll)]
-    private static extern int WebCoreShutdown(bool immediate);
+    [LibraryImport(HWebCoreDll)]
+    private static partial int WebCoreShutdown([MarshalAs(UnmanagedType.Bool)] bool immediate);
 
-    [DllImport(InProcessHandlerDll)]
-    private static extern int set_main_handler(hostfxr_main_fn main);
+    [LibraryImport(InProcessHandlerDll)]
+    private static partial int set_main_handler(hostfxr_main_fn main);
 
-    [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-    private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+    [LibraryImport("kernel32", EntryPoint = "LoadLibraryW", SetLastError = true)]
+    private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
 
     private void Retry(Action func, int attempts)
     {

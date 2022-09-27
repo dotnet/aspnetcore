@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Logging.W3C.Sample;
 
@@ -17,8 +13,11 @@ public class Startup
     {
         services.AddW3CLogging(logging =>
         {
-                // Log all W3C fields
-                logging.LoggingFields = W3CLoggingFields.All;
+            // Log all W3C fields
+            logging.LoggingFields = W3CLoggingFields.All;
+            logging.AdditionalRequestHeaders.Clear();
+            logging.AdditionalRequestHeaders.Add("x-forwarded-for");
+            logging.AdditionalRequestHeaders.Add("x-client-ssl-protocol");
         });
     }
 

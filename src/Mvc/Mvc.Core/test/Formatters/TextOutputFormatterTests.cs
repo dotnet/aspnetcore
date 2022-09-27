@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -219,7 +216,7 @@ public class TextOutputFormatterTests
         formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/json"));
 
         var context = new OutputFormatterWriteContext(
-            new DefaultHttpContext(),
+            new DefaultHttpContext() { RequestServices = new ServiceCollection().BuildServiceProvider() },
             new TestHttpResponseStreamWriterFactory().CreateWriter,
             objectType: null,
             @object: null)

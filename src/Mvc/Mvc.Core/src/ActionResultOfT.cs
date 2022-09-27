@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -22,7 +21,8 @@ public sealed class ActionResult<TValue> : IConvertToActionResult
     /// <param name="value">The value.</param>
     public ActionResult(TValue value)
     {
-        if (typeof(IActionResult).IsAssignableFrom(typeof(TValue)))
+        if (typeof(IActionResult).IsAssignableFrom(typeof(TValue)) ||
+            typeof(IResult).IsAssignableFrom(typeof(TValue)))
         {
             var error = Resources.FormatInvalidTypeTForActionResultOfT(typeof(TValue), "ActionResult<T>");
             throw new ArgumentException(error);
@@ -37,7 +37,8 @@ public sealed class ActionResult<TValue> : IConvertToActionResult
     /// <param name="result">The <see cref="ActionResult"/>.</param>
     public ActionResult(ActionResult result)
     {
-        if (typeof(IActionResult).IsAssignableFrom(typeof(TValue)))
+        if (typeof(IActionResult).IsAssignableFrom(typeof(TValue)) ||
+            typeof(IResult).IsAssignableFrom(typeof(TValue)))
         {
             var error = Resources.FormatInvalidTypeTForActionResultOfT(typeof(TValue), "ActionResult<T>");
             throw new ArgumentException(error);

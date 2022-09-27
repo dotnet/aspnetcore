@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -94,6 +88,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["requestDotNetStreamWrapperReferenceAsync"] = @"""Success""",
             ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
             ["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success",
+            ["invokeAsyncThrowsSerializingCircularStructure"] = "Success",
+            ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
+            ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -132,6 +129,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["jsInProcessObjectReference.identity"] = "Invoked from JSInProcessObjectReference",
             ["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success",
             ["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = "Success",
+            ["invokeThrowsSerializingCircularStructure"] = "Success",
+            ["invokeThrowsUndefinedJSObjectReference"] = "Success",
+            ["invokeThrowsNullJSObjectReference"] = "Success",
             ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
             ["jsToDotNetStreamReturnValueUnmarshalled"] = "Success",
             ["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = "False",

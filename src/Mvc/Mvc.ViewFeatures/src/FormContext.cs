@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Html;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -17,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 public class FormContext
 {
     private Dictionary<string, bool> _renderedFields;
+    private Dictionary<string, bool> _invariantFields;
     private Dictionary<string, object> _formData;
     private IList<IHtmlContent> _endOfFormContent;
 
@@ -110,6 +110,19 @@ public class FormContext
     }
 
     /// <summary>
+    /// Gets a dictionary mapping full HTML field names to indications that corresponding value was formatted
+    /// using <see cref="CultureInfo.InvariantCulture"/>.
+    /// </summary>
+    private Dictionary<string, bool> InvariantFields
+    {
+        get
+        {
+            _invariantFields ??= new(StringComparer.Ordinal);
+            return _invariantFields;
+        }
+    }
+
+    /// <summary>
     /// Returns an indication based on <see cref="RenderedFields"/> that the given <paramref name="fieldName"/> has
     /// been rendered in this &lt;form&gt;.
     /// </summary>
@@ -144,5 +157,21 @@ public class FormContext
         }
 
         RenderedFields[fieldName] = value;
+    }
+
+    internal bool InvariantField(string fieldName)
+    {
+        ArgumentNullException.ThrowIfNull(fieldName);
+
+        InvariantFields.TryGetValue(fieldName, out var result);
+
+        return result;
+    }
+
+    internal void InvariantField(string fieldName, bool value)
+    {
+        ArgumentNullException.ThrowIfNull(fieldName);
+
+        InvariantFields[fieldName] = value;
     }
 }

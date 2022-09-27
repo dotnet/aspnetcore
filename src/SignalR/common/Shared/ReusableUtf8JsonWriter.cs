@@ -24,7 +24,7 @@ internal sealed class ReusableUtf8JsonWriter
         _writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
         {
 #if !DEBUG
-                SkipValidation = true,
+            SkipValidation = true,
 #endif
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         });

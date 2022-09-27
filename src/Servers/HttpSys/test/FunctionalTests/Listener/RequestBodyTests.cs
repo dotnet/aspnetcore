@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
 public class RequestBodyTests
 {
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27399")]
     public async Task RequestBody_SyncReadDisabledByDefault_WorksWhenEnabled()
     {
         string address;

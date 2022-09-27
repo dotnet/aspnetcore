@@ -1,24 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
-using Castle.Core.Logging;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -483,7 +476,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        var result = binder.CanBindItem(bindingContext, metadata);
+        var result = ComplexObjectModelBinder.CanBindItem(bindingContext, metadata);
 
         // Assert
         Assert.True(result);
@@ -510,7 +503,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        var result = binder.CanBindItem(bindingContext, metadata);
+        var result = ComplexObjectModelBinder.CanBindItem(bindingContext, metadata);
 
         // Assert
         Assert.False(result);
@@ -535,7 +528,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        var result = binder.CanBindItem(bindingContext, metadata);
+        var result = ComplexObjectModelBinder.CanBindItem(bindingContext, metadata);
 
         // Assert
         Assert.False(result);
@@ -562,7 +555,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        var result = binder.CanBindItem(bindingContext, metadata);
+        var result = ComplexObjectModelBinder.CanBindItem(bindingContext, metadata);
 
         // Assert
         Assert.Equal(expected, result);
@@ -588,7 +581,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        var result = binder.CanBindItem(bindingContext, metadata);
+        var result = ComplexObjectModelBinder.CanBindItem(bindingContext, metadata);
 
         // Assert
         Assert.Equal(expected, result);
@@ -879,7 +872,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo", propertyMetadata, result);
 
         // Assert
         var person = Assert.IsType<Person>(bindingContext.Model);
@@ -903,7 +896,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo", propertyMetadata, result);
 
         // Assert
         var person = Assert.IsType<Person>(bindingContext.Model);
@@ -927,7 +920,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo", propertyMetadata, result);
 
         // Assert
         var person = Assert.IsType<Person>(bindingContext.Model);
@@ -949,7 +942,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo", propertyMetadata, result);
 
         // Assert
         // If didn't throw, success!
@@ -991,7 +984,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, propertyName, propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, propertyName, propertyMetadata, result);
 
         // Assert
         Assert.Equal("Joe", propertyAccessor(model));
@@ -1015,7 +1008,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, propertyMetadata.PropertyName, propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, propertyMetadata.PropertyName, propertyMetadata, result);
 
         // Assert
         Assert.Same(originalCollection, model.ReadOnlyList);
@@ -1034,7 +1027,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo", propertyMetadata, result);
 
         // Assert
         Assert.True(bindingContext.ModelState.IsValid);
@@ -1058,7 +1051,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo", propertyMetadata, result);
 
         // Assert
         Assert.Equal("Date of death can't be before date of birth. (Parameter 'value')",
@@ -1079,7 +1072,7 @@ public class ComplexObjectModelBinderTest
         var binder = CreateBinder(bindingContext.ModelMetadata);
 
         // Act
-        binder.SetProperty(bindingContext, "foo.NameNoAttribute", propertyMetadata, result);
+        ComplexObjectModelBinder.SetProperty(bindingContext, "foo.NameNoAttribute", propertyMetadata, result);
 
         // Assert
         Assert.False(bindingContext.ModelState.IsValid);

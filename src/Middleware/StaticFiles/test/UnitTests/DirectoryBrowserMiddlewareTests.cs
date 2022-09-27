@@ -1,20 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles;
 
@@ -102,7 +95,7 @@ public class DirectoryBrowserMiddlewareTests
     }
 
     [Fact]
-    public async Task Endpoint_PassesThrough()
+    public async Task Endpoint_With_RequestDelegate_PassesThrough()
     {
         using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
         {
@@ -113,8 +106,8 @@ public class DirectoryBrowserMiddlewareTests
 
                     app.Use(next => context =>
                     {
-                            // Assign an endpoint, this will make the directory browser noop
-                            context.SetEndpoint(new Endpoint((c) =>
+                        // Assign an endpoint, this will make the directory browser noop
+                        context.SetEndpoint(new Endpoint((c) =>
                         {
                             c.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
                             return c.Response.WriteAsync("Hi from endpoint.");
@@ -139,6 +132,45 @@ public class DirectoryBrowserMiddlewareTests
             var response = await server.CreateRequest("/").GetAsync();
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
             Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_With_Null_RequestDelegate_Does_Not_PassThrough()
+    {
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+        {
+            using var host = await StaticFilesTestServer.Create(
+                app =>
+                {
+                    app.UseRouting();
+
+                    app.Use(next => context =>
+                    {
+                        // Assign an endpoint with a null RequestDelegate, the directory browser should still run
+                        context.SetEndpoint(new Endpoint(requestDelegate: null,
+                        new EndpointMetadataCollection(),
+                        "test"));
+
+                        return next(context);
+                    });
+
+                    app.UseDirectoryBrowser(new DirectoryBrowserOptions
+                    {
+                        RequestPath = new PathString(""),
+                        FileProvider = fileProvider
+                    });
+
+                    app.UseEndpoints(endpoints => { });
+                },
+                services => { services.AddDirectoryBrowser(); services.AddRouting(); });
+            using var server = host.GetTestServer();
+
+            var response = await server.CreateRequest("/").GetAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.True(response.Content.Headers.ContentLength > 0);
+            Assert.Equal(response.Content.Headers.ContentLength, (await response.Content.ReadAsByteArrayAsync()).Length);
         }
     }
 

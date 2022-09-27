@@ -340,8 +340,8 @@ public partial class HttpConnectionTests
                 {
                     firstNegotiate = false;
 
-                        // The first negotiate requires an access token
-                        if (request.Headers.Authorization?.Parameter != "firstSecret")
+                    // The first negotiate requires an access token
+                    if (request.Headers.Authorization?.Parameter != "firstSecret")
                     {
                         return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
                     }
@@ -354,8 +354,8 @@ public partial class HttpConnectionTests
                         }));
                 }
 
-                    // All other requests require an access token
-                    if (request.Headers.Authorization?.Parameter != "secondSecret")
+                // All other requests require an access token
+                if (request.Headers.Authorization?.Parameter != "secondSecret")
                 {
                     return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
                 }
@@ -377,8 +377,8 @@ public partial class HttpConnectionTests
 
             testHttpHandler.OnLongPoll((request, token) =>
             {
-                    // All other requests require an access token
-                    if (request.Headers.Authorization?.Parameter != "secondSecret")
+                // All other requests require an access token
+                if (request.Headers.Authorization?.Parameter != "secondSecret")
                 {
                     return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized));
                 }

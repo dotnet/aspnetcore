@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Html;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -100,7 +99,6 @@ public abstract class JsonHelperTestBase
         var htmlString = Assert.IsType<HtmlString>(result);
         Assert.Equal(expectedOutput, htmlString.ToString());
     }
-
 
     [Fact]
     public virtual void Serialize_WithHTMLNonAsciiAndControlChars()

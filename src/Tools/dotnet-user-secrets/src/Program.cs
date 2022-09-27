@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
 using Microsoft.Extensions.Tools.Internal;
@@ -77,14 +75,10 @@ public class Program
             return 0;
         }
 
-        string userSecretsId;
-        try
+        var userSecretsId = ResolveId(options, reporter);
+
+        if (string.IsNullOrEmpty(userSecretsId))
         {
-            userSecretsId = ResolveId(options, reporter);
-        }
-        catch (Exception ex) when (ex is InvalidOperationException || ex is FileNotFoundException)
-        {
-            reporter.Error(ex.Message);
             return 1;
         }
 

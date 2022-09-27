@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GenericHostWebSite.Controllers;
@@ -67,10 +63,19 @@ public class TestingController : Controller
         }
     }
 
+    [HttpGet("Testing/RedirectHandler/Relative/")]
+    public IActionResult RedirectHandlerRelative()
+    {
+        return Redirect("Ok");
+    }
+
+    [HttpGet("Testing/RedirectHandler/Relative/Ok")]
+    public IActionResult RedirectHandlerRelativeOk() => Ok();
+
     [HttpGet("Testing/RedirectHandler/Redirect303")]
     public IActionResult RedirectHandlerStatusCode303()
     {
-        return new RedirectUsingStatusCode("Testing/Builder", HttpStatusCode.SeeOther);
+        return new RedirectUsingStatusCode("/Testing/Builder", HttpStatusCode.SeeOther);
     }
 
     public class RedirectUsingStatusCode : ActionResult
@@ -100,7 +105,6 @@ public class TestingController : Controller
 
         return Ok();
     }
-
 
     [HttpPost("Testing/PostRedirectGet/Post/{value}")]
     public IActionResult PostRedirectGetPost([FromRoute] int value)

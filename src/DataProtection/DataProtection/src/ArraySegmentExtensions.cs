@@ -24,6 +24,6 @@ internal static class ArraySegmentExtensions
     {
         // Since ArraySegment<T> is a struct, it can be improperly initialized or torn.
         // We call the ctor again to make sure the instance data is valid.
-        var unused = new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset, arraySegment.Count);
+        _ = new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset, arraySegment.Count);
     }
 }

@@ -117,8 +117,8 @@ public class LongPollingTransportTests : VerifiableLoggedTest
                 else if (requests == 2)
                 {
                     requests++;
-                        // Time out
-                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    // Time out
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 }
                 else if (requests == 3)
                 {
@@ -126,8 +126,8 @@ public class LongPollingTransportTests : VerifiableLoggedTest
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK, "World");
                 }
 
-                    // Done
-                    return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
+                // Done
+                return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
             });
 
         using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -234,8 +234,8 @@ public class LongPollingTransportTests : VerifiableLoggedTest
                 await Task.Yield();
                 if (request.Method == HttpMethod.Delete)
                 {
-                        // Simulate the server having already cleaned up the connection on the server
-                        return ResponseUtils.CreateResponse(HttpStatusCode.NotFound);
+                    // Simulate the server having already cleaned up the connection on the server
+                    return ResponseUtils.CreateResponse(HttpStatusCode.NotFound);
                 }
                 else
                 {
@@ -464,21 +464,21 @@ public class LongPollingTransportTests : VerifiableLoggedTest
                 await Task.Yield();
                 if (request.Method == HttpMethod.Post)
                 {
-                        // Build a new request object, but convert the entire payload to string
-                        sentRequests.Add(await request.Content.ReadAsByteArrayAsync());
+                    // Build a new request object, but convert the entire payload to string
+                    sentRequests.Add(await request.Content.ReadAsByteArrayAsync());
                 }
                 else if (request.Method == HttpMethod.Get)
                 {
-                        // First poll completes immediately
-                        if (firstPoll)
+                    // First poll completes immediately
+                    if (firstPoll)
                     {
                         firstPoll = false;
                         return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                     }
 
                     cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
-                        // This is the poll task
-                        return await tcs.Task;
+                    // This is the poll task
+                    return await tcs.Task;
                 }
                 else if (request.Method == HttpMethod.Delete)
                 {
@@ -532,26 +532,26 @@ public class LongPollingTransportTests : VerifiableLoggedTest
                 await Task.Yield();
                 if (request.Method == HttpMethod.Post)
                 {
-                        // Build a new request object, but convert the entire payload to string
-                        sentRequests.Add(await request.Content.ReadAsByteArrayAsync());
+                    // Build a new request object, but convert the entire payload to string
+                    sentRequests.Add(await request.Content.ReadAsByteArrayAsync());
                 }
                 else if (request.Method == HttpMethod.Get)
                 {
-                        // First poll completes immediately
-                        if (firstPoll)
+                    // First poll completes immediately
+                    if (firstPoll)
                     {
                         firstPoll = false;
                         return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                     }
 
                     cancellationToken.Register(() => pollTcs.TrySetCanceled(cancellationToken));
-                        // This is the poll task
-                        return await pollTcs.Task;
+                    // This is the poll task
+                    return await pollTcs.Task;
                 }
                 else if (request.Method == HttpMethod.Delete)
                 {
-                        // The poll task should have been completed
-                        Assert.True(pollTcs.Task.IsCompleted);
+                    // The poll task should have been completed
+                    Assert.True(pollTcs.Task.IsCompleted);
 
                     deleteTcs.TrySetResult();
 

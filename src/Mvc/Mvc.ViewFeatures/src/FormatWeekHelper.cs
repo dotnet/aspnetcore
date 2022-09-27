@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -12,7 +10,6 @@ internal static class FormatWeekHelper
     public static string GetFormattedWeek(ModelExplorer modelExplorer)
     {
         var value = modelExplorer.Model;
-        var metadata = modelExplorer.Metadata;
 
         if (value is DateTimeOffset dateTimeOffset)
         {

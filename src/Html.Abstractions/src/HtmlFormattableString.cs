@@ -1,17 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.Html;
 
 /// <summary>
 /// An <see cref="IHtmlContent"/> implementation of composite string formatting
-/// (see https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx) which HTML encodes
+/// (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx"/>) which HTML encodes
 /// formatted arguments.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]

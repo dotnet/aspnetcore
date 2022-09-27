@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -36,7 +34,7 @@ public class DefaultInlineConstraintResolver : IInlineConstraintResolver
             throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        _inlineConstraintMap = routeOptions.Value.ConstraintMap;
+        _inlineConstraintMap = routeOptions.Value.TrimmerSafeConstraintMap;
         _serviceProvider = serviceProvider;
     }
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -9,180 +10,103 @@ namespace Microsoft.AspNetCore.Http.Connections.Client;
 
 public partial class HttpConnection
 {
-    private static class Log
+    internal static partial class Log
     {
-        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+        [LoggerMessage(1, LogLevel.Debug, "Starting HttpConnection.", EventName = "Starting")]
+        public static partial void Starting(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _starting =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(1, "Starting"), "Starting HttpConnection.");
+        [LoggerMessage(2, LogLevel.Debug, "Skipping start, connection is already started.", EventName = "SkippingStart")]
+        public static partial void SkippingStart(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _skippingStart =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(2, "SkippingStart"), "Skipping start, connection is already started.");
+        [LoggerMessage(3, LogLevel.Information, "HttpConnection Started.", EventName = "Started")]
+        public static partial void Started(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _started =
-            LoggerMessage.Define(LogLevel.Information, new EventId(3, "Started"), "HttpConnection Started.");
+        [LoggerMessage(4, LogLevel.Debug, "Disposing HttpConnection.", EventName = "DisposingHttpConnection")]
+        public static partial void DisposingHttpConnection(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _disposingHttpConnection =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(4, "DisposingHttpConnection"), "Disposing HttpConnection.");
+        [LoggerMessage(5, LogLevel.Debug, "Skipping dispose, connection is already disposed.", EventName = "SkippingDispose")]
+        public static partial void SkippingDispose(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _skippingDispose =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(5, "SkippingDispose"), "Skipping dispose, connection is already disposed.");
-
-        private static readonly Action<ILogger, Exception?> _disposed =
-            LoggerMessage.Define(LogLevel.Information, new EventId(6, "Disposed"), "HttpConnection Disposed.");
-
-        private static readonly Action<ILogger, string, Uri, Exception?> _startingTransport =
-            LoggerMessage.Define<string, Uri>(LogLevel.Debug, new EventId(7, "StartingTransport"), "Starting transport '{Transport}' with Url: {Url}.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, Uri, Exception?> _establishingConnection =
-            LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(8, "EstablishingConnection"), "Establishing connection with server at '{Url}'.");
-
-        private static readonly Action<ILogger, string, Exception?> _connectionEstablished =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "Established"), "Established connection '{ConnectionId}' with the server.");
-
-        private static readonly Action<ILogger, Uri, Exception> _errorWithNegotiation =
-            LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(10, "ErrorWithNegotiation"), "Failed to start connection. Error getting negotiation response from '{Url}'.");
-
-        private static readonly Action<ILogger, HttpTransportType, Exception> _errorStartingTransport =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Error, new EventId(11, "ErrorStartingTransport"), "Failed to start connection. Error starting transport '{Transport}'.");
-
-        private static readonly Action<ILogger, string, Exception?> _transportNotSupported =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(12, "TransportNotSupported"), "Skipping transport {TransportName} because it is not supported by this client.");
-
-        private static readonly Action<ILogger, string, string, Exception?> _transportDoesNotSupportTransferFormat =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(13, "TransportDoesNotSupportTransferFormat"), "Skipping transport {TransportName} because it does not support the requested transfer format '{TransferFormat}'.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, string, Exception?> _transportDisabledByClient =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "TransportDisabledByClient"), "Skipping transport {TransportName} because it was disabled by the client.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, string, Exception> _transportFailed =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(15, "TransportFailed"), "Skipping transport {TransportName} because it failed to initialize.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, Exception?> _webSocketsNotSupportedByOperatingSystem =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(16, "WebSocketsNotSupportedByOperatingSystem"), "Skipping WebSockets because they are not supported by the operating system.");
-
-        private static readonly Action<ILogger, Exception> _transportThrewExceptionOnStop =
-            LoggerMessage.Define(LogLevel.Error, new EventId(17, "TransportThrewExceptionOnStop"), "The transport threw an exception while stopping.");
-
-        private static readonly Action<ILogger, HttpTransportType, Exception?> _transportStarted =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(18, "TransportStarted"), "Transport '{Transport}' started.");
-
-        private static readonly Action<ILogger, Exception?> _serverSentEventsNotSupportedByBrowser =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(19, "ServerSentEventsNotSupportedByBrowser"), "Skipping ServerSentEvents because they are not supported by the browser.");
-
-        private static readonly Action<ILogger, Exception?> _cookiesNotSupported =
-            LoggerMessage.Define(LogLevel.Trace, new EventId(20, "CookiesNotSupported"), "Cookies are not supported on this platform.");
-
-        public static void Starting(ILogger logger)
-        {
-            _starting(logger, null);
-        }
-
-        public static void SkippingStart(ILogger logger)
-        {
-            _skippingStart(logger, null);
-        }
-
-        public static void Started(ILogger logger)
-        {
-            _started(logger, null);
-        }
-
-        public static void DisposingHttpConnection(ILogger logger)
-        {
-            _disposingHttpConnection(logger, null);
-        }
-
-        public static void SkippingDispose(ILogger logger)
-        {
-            _skippingDispose(logger, null);
-        }
-
-        public static void Disposed(ILogger logger)
-        {
-            _disposed(logger, null);
-        }
+        [LoggerMessage(6, LogLevel.Information, "HttpConnection Disposed.", EventName = "Disposed")]
+        public static partial void Disposed(ILogger logger);
 
         public static void StartingTransport(ILogger logger, HttpTransportType transportType, Uri url)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _startingTransport(logger, transportType.ToString(), url, null);
+                StartingTransport(logger, transportType.ToString(), url);
             }
         }
 
-        public static void EstablishingConnection(ILogger logger, Uri url)
-        {
-            _establishingConnection(logger, url, null);
-        }
+        [LoggerMessage(7, LogLevel.Debug, "Starting transport '{Transport}' with Url: {Url}.", EventName = "StartingTransport", SkipEnabledCheck = true)]
+        private static partial void StartingTransport(ILogger logger, string transport, Uri url);
 
-        public static void ConnectionEstablished(ILogger logger, string connectionId)
-        {
-            _connectionEstablished(logger, connectionId, null);
-        }
+        [LoggerMessage(8, LogLevel.Debug, "Establishing connection with server at '{Url}'.", EventName = "EstablishingConnection")]
+        public static partial void EstablishingConnection(ILogger logger, Uri url);
 
-        public static void ErrorWithNegotiation(ILogger logger, Uri url, Exception exception)
-        {
-            _errorWithNegotiation(logger, url, exception);
-        }
+        [LoggerMessage(9, LogLevel.Debug, "Established connection '{ConnectionId}' with the server.", EventName = "Established")]
+        public static partial void ConnectionEstablished(ILogger logger, string connectionId);
 
-        public static void ErrorStartingTransport(ILogger logger, HttpTransportType transportType, Exception exception)
-        {
-            _errorStartingTransport(logger, transportType, exception);
-        }
+        [LoggerMessage(10, LogLevel.Error, "Failed to start connection. Error getting negotiation response from '{Url}'.", EventName = "ErrorWithNegotiation")]
+        public static partial void ErrorWithNegotiation(ILogger logger, Uri url, Exception exception);
 
-        public static void TransportNotSupported(ILogger logger, string transport)
-        {
-            _transportNotSupported(logger, transport, null);
-        }
+        [LoggerMessage(11, LogLevel.Error, "Failed to start connection. Error starting transport '{Transport}'.", EventName = "ErrorStartingTransport")]
+        public static partial void ErrorStartingTransport(ILogger logger, HttpTransportType transport, Exception exception);
+
+        [LoggerMessage(12, LogLevel.Debug, "Skipping transport {TransportName} because it is not supported by this client.", EventName = "TransportNotSupported")]
+        public static partial void TransportNotSupported(ILogger logger, string transportName);
 
         public static void TransportDoesNotSupportTransferFormat(ILogger logger, HttpTransportType transport, TransferFormat transferFormat)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _transportDoesNotSupportTransferFormat(logger, transport.ToString(), transferFormat.ToString(), null);
+                TransportDoesNotSupportTransferFormat(logger, transport.ToString(), transferFormat.ToString());
             }
         }
+
+        [LoggerMessage(13, LogLevel.Debug, "Skipping transport {TransportName} because it does not support the requested transfer format '{TransferFormat}'.",
+            EventName = "TransportDoesNotSupportTransferFormat",
+            SkipEnabledCheck = true)]
+        private static partial void TransportDoesNotSupportTransferFormat(ILogger logger, string transportName, string transferFormat);
 
         public static void TransportDisabledByClient(ILogger logger, HttpTransportType transport)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _transportDisabledByClient(logger, transport.ToString(), null);
+                TransportDisabledByClient(logger, transport.ToString());
             }
         }
+
+        [LoggerMessage(14, LogLevel.Debug, "Skipping transport {TransportName} because it was disabled by the client.", EventName = "TransportDisabledByClient", SkipEnabledCheck = true)]
+        public static partial void TransportDisabledByClient(ILogger logger, string transportName);
 
         public static void TransportFailed(ILogger logger, HttpTransportType transport, Exception ex)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _transportFailed(logger, transport.ToString(), ex);
+                TransportFailed(logger, transport.ToString(), ex);
             }
         }
 
-        public static void WebSocketsNotSupportedByOperatingSystem(ILogger logger)
-        {
-            _webSocketsNotSupportedByOperatingSystem(logger, null);
-        }
+        [LoggerMessage(15, LogLevel.Debug, "Skipping transport {TransportName} because it failed to initialize.", EventName = "TransportFailed", SkipEnabledCheck = true)]
+        public static partial void TransportFailed(ILogger logger, string transportName, Exception ex);
 
-        public static void TransportThrewExceptionOnStop(ILogger logger, Exception ex)
-        {
-            _transportThrewExceptionOnStop(logger, ex);
-        }
+        [LoggerMessage(16, LogLevel.Debug, "Skipping WebSockets because they are not supported by the operating system.", EventName = "WebSocketsNotSupportedByOperatingSystem")]
+        public static partial void WebSocketsNotSupportedByOperatingSystem(ILogger logger);
 
-        public static void TransportStarted(ILogger logger, HttpTransportType transportType)
-        {
-            _transportStarted(logger, transportType, null);
-        }
+        [LoggerMessage(17, LogLevel.Error, "The transport threw an exception while stopping.", EventName = "TransportThrewExceptionOnStop")]
+        public static partial void TransportThrewExceptionOnStop(ILogger logger, Exception ex);
 
-        public static void ServerSentEventsNotSupportedByBrowser(ILogger logger)
-        {
-            _serverSentEventsNotSupportedByBrowser(logger, null);
-        }
+        [LoggerMessage(18, LogLevel.Debug, "Transport '{Transport}' started.", EventName = "TransportStarted")]
+        public static partial void TransportStarted(ILogger logger, HttpTransportType transport);
 
-        public static void CookiesNotSupported(ILogger logger)
-        {
-            _cookiesNotSupported(logger, null);
-        }
+        [LoggerMessage(19, LogLevel.Debug, "Skipping ServerSentEvents because they are not supported by the browser.", EventName = "ServerSentEventsNotSupportedByBrowser")]
+        public static partial void ServerSentEventsNotSupportedByBrowser(ILogger logger);
+
+        [LoggerMessage(20, LogLevel.Trace, "Cookies are not supported on this platform.", EventName = "CookiesNotSupported")]
+        public static partial void CookiesNotSupported(ILogger logger);
+
+        [LoggerMessage(21, LogLevel.Debug, "{StatusCode} received, getting a new access token and retrying request.", EventName = "RetryAccessToken")]
+        public static partial void RetryAccessToken(ILogger logger, HttpStatusCode statusCode);
     }
 }

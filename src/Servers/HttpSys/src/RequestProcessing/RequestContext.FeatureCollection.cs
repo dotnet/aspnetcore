@@ -1,19 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -130,7 +124,6 @@ internal partial class RequestContext :
         _responseStream = new ResponseStream(Response.Body, OnResponseStart);
         _responseHeaders = Response.Headers;
     }
-
 
     private bool IsNotInitialized(Fields field)
     {
@@ -441,10 +434,7 @@ internal partial class RequestContext :
 
     void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
         if (_onStartingActions == null)
         {
             throw new InvalidOperationException("Cannot register new callbacks, the response has already started.");
@@ -455,10 +445,7 @@ internal partial class RequestContext :
 
     void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
         if (_onCompletedActions == null)
         {
             throw new InvalidOperationException("Cannot register new callbacks, the response has already completed.");

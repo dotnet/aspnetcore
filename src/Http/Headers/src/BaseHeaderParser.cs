@@ -28,9 +28,8 @@ internal abstract class BaseHeaderParser<T> : HttpHeaderParser<T>
             return SupportsMultipleValues;
         }
 
-        var separatorFound = false;
         var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(value, index, SupportsMultipleValues,
-            out separatorFound);
+            out var separatorFound);
 
         if (separatorFound && !SupportsMultipleValues)
         {

@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -54,7 +50,7 @@ public sealed class LazyAssemblyLoader
         return LoadAssembliesInServerAsync(assembliesToLoad);
     }
 
-    private Task<IEnumerable<Assembly>> LoadAssembliesInServerAsync(IEnumerable<string> assembliesToLoad)
+    private static Task<IEnumerable<Assembly>> LoadAssembliesInServerAsync(IEnumerable<string> assembliesToLoad)
     {
         var loadedAssemblies = new List<Assembly>();
 
@@ -109,9 +105,11 @@ public sealed class LazyAssemblyLoader
         }
 
         var jsRuntime = (IJSUnmarshalledRuntime)_jsRuntime;
+#pragma warning disable CS0618 // Type or member is obsolete
         var count = (int)await jsRuntime.InvokeUnmarshalled<string[], Task<object>>(
            GetLazyAssemblies,
            newAssembliesToLoad.ToArray());
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (count == 0)
         {
@@ -119,8 +117,10 @@ public sealed class LazyAssemblyLoader
         }
 
         var loadedAssemblies = new List<Assembly>();
+#pragma warning disable CS0618 // Type or member is obsolete
         var assemblies = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyAssemblies);
         var pdbs = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyPDBs);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         for (int i = 0; i < assemblies.Length; i++)
         {

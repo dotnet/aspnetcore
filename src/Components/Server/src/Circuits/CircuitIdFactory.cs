@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Data;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 // This is a singleton instance
 // Generates strong cryptographic ids for circuits that are protected with authenticated encryption.
-internal class CircuitIdFactory
+internal sealed class CircuitIdFactory
 {
     private const string CircuitIdProtectorPurpose = "Microsoft.AspNetCore.Components.Server.CircuitIdFactory,V1";
 

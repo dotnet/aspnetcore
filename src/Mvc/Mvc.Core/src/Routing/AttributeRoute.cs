@@ -1,23 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class AttributeRoute : IRouter
+internal sealed class AttributeRoute : IRouter
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly IServiceProvider _services;
@@ -242,7 +237,7 @@ internal class AttributeRoute : IRouter
         return routeInfo;
     }
 
-    private class RouteInfo
+    private sealed class RouteInfo
     {
         public ActionDescriptor ActionDescriptor { get; init; } = default!;
 
@@ -259,7 +254,7 @@ internal class AttributeRoute : IRouter
         public bool SuppressLinkGeneration { get; set; }
     }
 
-    private class RouteInfoEqualityComparer : IEqualityComparer<RouteInfo>
+    private sealed class RouteInfoEqualityComparer : IEqualityComparer<RouteInfo>
     {
         public static readonly RouteInfoEqualityComparer Instance = new();
 
@@ -301,7 +296,7 @@ internal class AttributeRoute : IRouter
     }
 
     // Used only to hook up link generation, and it doesn't need to do anything.
-    private class NullRouter : IRouter
+    private sealed class NullRouter : IRouter
     {
         public static readonly NullRouter Instance = new NullRouter();
 

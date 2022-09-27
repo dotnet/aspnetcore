@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -418,7 +416,7 @@ public class ValidationVisitor
     /// <summary>
     /// Validate a simple type.
     /// </summary>
-    /// <returns>True if valie.</returns>
+    /// <returns>True if valid.</returns>
     protected virtual bool VisitSimpleType()
     {
         if (ModelState.HasReachedMaxErrors)

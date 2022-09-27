@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors;
 /// <summary>
 /// An <see cref="ICorsAuthorizationFilter"/> which ensures that an action does not run for a pre-flight request.
 /// </summary>
-internal class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
+internal sealed class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
 {
     /// <inheritdoc />
     // Since clients' preflight requests would not have data to authenticate requests, this

@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
-using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite;
 
@@ -132,7 +128,7 @@ public class ServerVariableTests
         Assert.Equal(expected, lookup);
     }
 
-    private HttpContext CreateTestHttpContext()
+    private static HttpContext CreateTestHttpContext()
     {
         var context = new DefaultHttpContext();
         context.Request.Method = HttpMethods.Get;
@@ -156,13 +152,13 @@ public class ServerVariableTests
         return new RewriteContext { HttpContext = context ?? CreateTestHttpContext() };
     }
 
-    private MatchResults CreateTestRuleMatch()
+    private static MatchResults CreateTestRuleMatch()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
     }
 
-    private MatchResults CreateTestCondMatch()
+    private static MatchResults CreateTestCondMatch()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));

@@ -3,7 +3,7 @@
 
 namespace System.Buffers;
 
-internal class CustomMemoryForTest<T> : IMemoryOwner<T>
+internal sealed class CustomMemoryForTest<T> : IMemoryOwner<T>
 {
     private bool _disposed;
     private T[] _array;
@@ -26,7 +26,9 @@ internal class CustomMemoryForTest<T> : IMemoryOwner<T>
         get
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException(nameof(CustomMemoryForTest<T>));
+            }
             return new Memory<T>(_array, _offset, _length);
         }
     }
@@ -34,7 +36,9 @@ internal class CustomMemoryForTest<T> : IMemoryOwner<T>
     public void Dispose()
     {
         if (_disposed)
+        {
             return;
+        }
 
         _array = null!;
         _disposed = true;

@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -164,7 +161,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
                 return HandleRequestResult.SkipHandler();
             }
 
-            return HandleRequestResult.Fail("No message.");
+            return HandleRequestResults.NoMessage;
         }
 
         try
@@ -178,7 +175,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             {
                 if (!Options.AllowUnsolicitedLogins)
                 {
-                    return HandleRequestResult.Fail("Unsolicited logins are not allowed.");
+                    return HandleRequestResults.UnsolicitedLoginsNotAllowed;
                 }
             }
             else

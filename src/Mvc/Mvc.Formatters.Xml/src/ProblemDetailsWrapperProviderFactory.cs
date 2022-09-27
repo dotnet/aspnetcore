@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
 
-internal class ProblemDetailsWrapperProviderFactory : IWrapperProviderFactory
+internal sealed class ProblemDetailsWrapperProviderFactory : IWrapperProviderFactory
 {
     public IWrapperProvider? GetProvider(WrapperProviderContext context)
     {
@@ -22,7 +20,7 @@ internal class ProblemDetailsWrapperProviderFactory : IWrapperProviderFactory
         return null;
     }
 
-    private class WrapperProvider : IWrapperProvider
+    private sealed class WrapperProvider : IWrapperProvider
     {
         public WrapperProvider(Type wrappingType, Func<object?, object?> wrapDelegate)
         {

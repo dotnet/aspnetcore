@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR.Internal;
 
@@ -36,7 +34,7 @@ public static class HubOptionsExtensions
     /// </summary>
     /// <typeparam name="TFilter">The <see cref="IHubFilter"/> type that will be added to the options.</typeparam>
     /// <param name="options">The options to add a filter to.</param>
-    public static void AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]TFilter>(this HubOptions options) where TFilter : IHubFilter
+    public static void AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilter>(this HubOptions options) where TFilter : IHubFilter
     {
         _ = options ?? throw new ArgumentNullException(nameof(options));
 

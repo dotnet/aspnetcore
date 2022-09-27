@@ -84,6 +84,7 @@
 
   <Target Name="_InnerGenerateOpenApiCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
 
+  <!-- Note target will **always** execute when generator uses the OutputPath as a directory. -->
   <Target Name="_GenerateOpenApiCode"
       Condition="$(OpenApiGenerateCodeAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
       Inputs="@(OpenApiReference)"
@@ -100,44 +101,57 @@
     <ItemGroup>
       <_Files Remove="@(_Files)" />
       <_Files Include="@(OpenApiReference -> '%(OutputPath)')"
-          Condition="$([System.IO.File]::Exists('%(OpenApiReference.OutputPath)'))">
-        <OutputPathExtension>$([System.IO.Path]::GetExtension('%(OpenApiReference.OutputPath)'))</OutputPathExtension>
-      </_Files>
+          Condition="$([System.IO.File]::Exists('%(OpenApiReference.OutputPath)'))" />
       <_Directories Remove="@(_Directories)" />
       <_Directories Include="@(OpenApiReference -> '%(OutputPath)')"
           Condition="Exists('%(OpenApiReference.OutputPath)') AND ! $([System.IO.File]::Exists('%(OpenApiReference.OutputPath)'))" />
+    </ItemGroup>
 
+    <ItemGroup>
+      <_Files SourceDocument="%(OriginalItemSpec)" RemoveMetadata="OriginalItemSpec" />
+      <_Directories SourceDocument="%(OriginalItemSpec)" RemoveMetadata="OriginalItemSpec" />
+    </ItemGroup>
+
+    <ItemGroup>
       <!-- If OutputPath is a file, add it directly to relevant items. -->
       <TypeScriptCompile Include="@(_Files)"
           Exclude="@(TypeScriptCompile)"
-          Condition="'%(_Files.OutputPathExtension)' == '.ts' OR '%(_Files.OutputPathExtension)' == '.tsx'">
-        <SourceDocument>%(_Files.FullPath)</SourceDocument>
-      </TypeScriptCompile>
+          Condition="'%(_Files.Extension)' == '.ts' OR '%(_Files.Extension)' == '.tsx'" />
 
       <Compile Include="@(_Files)"
           Exclude="@(Compile)"
-          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'">
-        <SourceDocument>%(OpenApiReference.FullPath)</SourceDocument>
-      </Compile>
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.Extension)' == '$(DefaultLanguageSourceExtension)'" />
+    </ItemGroup>
 
-      <!-- Otherwise, add all descendant files with the expected extension. -->
-      <TypeScriptCompile Include="@(_Directories -> '%(Identity)/**/*.ts;%(Identity)/**/*.tsx')"
-          Exclude="@(TypeScriptCompile)">
-        <SourceDocument>%(_Directories.FullPath)</SourceDocument>
-      </TypeScriptCompile>
+    <!--
+      Otherwise, add all descendant files with the expected extension. Glob into _Directories before updating
+      TypeScriptCompile or Compile items. See <https://github.com/dotnet/msbuild/issues/3274> and workaround in
+      <https://stackoverflow.com/questions/48868060/can-a-task-itemgroup-glob-files>. Unfortunately, this workaround
+      loses SourceDocument and other metadata.
+    -->
+    <PropertyGroup>
+      <_TypeScriptCompileItemsFromDirectories>@(_Directories -> '%(Identity)/**/*.ts;%(Identity)/**/*.tsx')</_TypeScriptCompileItemsFromDirectories>
+      <_CompileItemsFromDirectories>@(_Directories -> '%(Identity)/**/*$(DefaultLanguageSourceExtension)')</_CompileItemsFromDirectories>
+    </PropertyGroup>
 
-      <Compile Include="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
+    <ItemGroup>
+      <TypeScriptCompile Include="$(_TypeScriptCompileItemsFromDirectories)" Exclude="@(TypeScriptCompile)" />
+
+      <Compile Include="$(_CompileItemsFromDirectories)"
           Exclude="@(Compile)"
-          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'">
-        <SourceDocument>%(_Directories.FullPath)</SourceDocument>
-      </Compile>
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'" />
 
-      <FileWrites Exclude="@(FileWrites)"
-          Include="@(_Files);@(_Directories -> '%(Identity)/**/*.ts;%(Identity)/**/*.tsx;%(Identity)/**/*.$(DefaultLanguageSourceExtension)')" />
+      <FileWrites Include="@(_Files);$(_TypeScriptCompileItemsFromDirectories);$(_CompileItemsFromDirectories)"
+          Exclude="@(FileWrites)" />
 
       <_Files Remove="@(_Files)" />
       <_Directories Remove="@(_Directories)" />
     </ItemGroup>
+
+    <PropertyGroup>
+      <_TypeScriptCompileItemsFromDirectories />
+      <_CompileItemsFromDirectories />
+    </PropertyGroup>
   </Target>
 
   <!-- Inform users of breaking changes in this file and Microsoft.Extensions.ApiDescription.Client.props. -->

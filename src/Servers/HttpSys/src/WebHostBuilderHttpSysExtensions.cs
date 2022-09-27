@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -29,7 +28,12 @@ public static class WebHostBuilderHttpSysExtensions
     {
         return hostBuilder.ConfigureServices(services =>
         {
-            services.AddSingleton<IServer, MessagePump>();
+            services.AddSingleton<MessagePump>();
+            services.AddSingleton<IServer>(services => services.GetRequiredService<MessagePump>());
+            if (HttpApi.SupportsDelegation)
+            {
+                services.AddSingleton<IServerDelegationFeature>(services => services.GetRequiredService<MessagePump>());
+            }
             services.AddTransient<AuthenticationHandler>();
             services.AddSingleton<IServerIntegratedAuth>(services =>
             {

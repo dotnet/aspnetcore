@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.JsonPatch;
@@ -15,7 +12,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -264,10 +260,12 @@ public class NewtonsoftJsonPatchInputFormatterTest
         request.SetupGet(r => r.Headers).Returns(headers.Object);
         request.SetupGet(f => f.Body).Returns(new MemoryStream(contentBytes));
         request.SetupGet(f => f.ContentType).Returns(contentType);
+        request.SetupGet(f => f.ContentLength).Returns(contentBytes.Length);
 
         var httpContext = new Mock<HttpContext>();
+        var features = new Mock<IFeatureCollection>();
         httpContext.SetupGet(c => c.Request).Returns(request.Object);
-        httpContext.SetupGet(c => c.Request).Returns(request.Object);
+        httpContext.SetupGet(c => c.Features).Returns(features.Object);
         return httpContext.Object;
     }
 

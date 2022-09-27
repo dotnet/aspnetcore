@@ -2,11 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
-using System;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -613,6 +609,60 @@ public class DotNetDispatcherTest
         Assert.Equal(2468, resultDto2.IntVal);
     }
 
+        [Fact]
+        public async Task CanInvokeAsyncMethodReturningValueTask()
+        {
+            // Arrange: Track some instance plus another object we'll pass as a param
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new SomePublicType();
+            var arg2 = new TestDTO { IntVal = 1234, StringVal = "My string" };
+            var arg1Ref = DotNetObjectReference.Create(targetInstance);
+            var arg2Ref = DotNetObjectReference.Create(arg2);
+            jsRuntime.Invoke<object>("unimportant", arg1Ref, arg2Ref);
+
+            // Arrange: all args
+            var argsJson = JsonSerializer.Serialize(new object[]
+            {
+                new TestDTO { IntVal = 1000, StringVal = "String via JSON" },
+                arg2Ref,
+            }, jsRuntime.JsonSerializerOptions);
+
+            // Act
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null,
+                nameof(SomePublicType.InvokableAsyncMethodReturningValueTask), 1, callId), argsJson);
+            await resultTask;
+
+            // Assert: Correct completion information
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.True(jsRuntime.LastCompletionResult.Success);
+        }
+
+        [Fact]
+        public async Task CanInvokeAsyncMethodReturningNonGenericValueTask()
+        {
+            // Arrange: Track some instance plus another object we'll pass as a param
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new SomePublicType();
+            var arg1Ref = DotNetObjectReference.Create(targetInstance);
+            jsRuntime.Invoke<object>("unimportant", arg1Ref);
+
+            // Arrange: all args
+            var argsJson = JsonSerializer.Serialize(new object[] { }, jsRuntime.JsonSerializerOptions);
+
+            // Act
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null,
+                nameof(SomePublicType.InvokableAsyncMethodReturningValueTaskNonGeneric), 1, callId), argsJson);
+            await resultTask;
+
+            // Assert: Correct completion information
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.True(jsRuntime.LastCompletionResult.Success);
+        }
+
     [Fact]
     public async Task CanInvokeSyncThrowingMethod()
     {
@@ -882,6 +932,32 @@ public class DotNetDispatcherTest
             };
         }
 
+        [JSInvokable]
+        public async ValueTask<InvokableAsyncMethodResult> InvokableAsyncMethodReturningValueTask(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
+        {
+            var dtoByRef = dtoByRefWrapper.Value;
+            return await new ValueTask<InvokableAsyncMethodResult>( new InvokableAsyncMethodResult()
+            {
+                SomeDTO = new TestDTO // Return via JSON
+                {
+                    StringVal = dtoViaJson.StringVal.ToUpperInvariant(),
+                    IntVal = dtoViaJson.IntVal * 2,
+                },
+                SomeDTORef = DotNetObjectReference.Create(new TestDTO // Return by ref
+                {
+                    StringVal = dtoByRef.StringVal.ToUpperInvariant(),
+                    IntVal = dtoByRef.IntVal * 2,
+                })
+            });
+        }
+
+        [JSInvokable]
+        public async ValueTask InvokableAsyncMethodReturningValueTaskNonGeneric()
+        {
+            await Task.CompletedTask;
+            return;
+        }
+
         public class InvokableAsyncMethodResult
         {
             public TestDTO SomeDTO { get; set; }
@@ -940,7 +1016,7 @@ public class DotNetDispatcherTest
 
     public class TestJSRuntime : JSInProcessRuntime
     {
-        private TaskCompletionSource<object> _nextInvocationTcs = new TaskCompletionSource<object>();
+        private TaskCompletionSource _nextInvocationTcs = new TaskCompletionSource();
         public Task NextInvocationTask => _nextInvocationTcs.Task;
         public long LastInvocationAsyncHandle { get; private set; }
         public string LastInvocationIdentifier { get; private set; }
@@ -954,8 +1030,8 @@ public class DotNetDispatcherTest
             LastInvocationAsyncHandle = asyncHandle;
             LastInvocationIdentifier = identifier;
             LastInvocationArgsJson = argsJson;
-            _nextInvocationTcs.SetResult(null);
-            _nextInvocationTcs = new TaskCompletionSource<object>();
+            _nextInvocationTcs.SetResult();
+            _nextInvocationTcs = new TaskCompletionSource();
         }
 
         protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
@@ -963,8 +1039,8 @@ public class DotNetDispatcherTest
             LastInvocationAsyncHandle = default;
             LastInvocationIdentifier = identifier;
             LastInvocationArgsJson = argsJson;
-            _nextInvocationTcs.SetResult(null);
-            _nextInvocationTcs = new TaskCompletionSource<object>();
+            _nextInvocationTcs.SetResult();
+            _nextInvocationTcs = new TaskCompletionSource();
             return null;
         }
 
@@ -972,8 +1048,8 @@ public class DotNetDispatcherTest
         {
             LastCompletionCallId = invocationInfo.CallId;
             LastCompletionResult = invocationResult;
-            _nextInvocationTcs.SetResult(null);
-            _nextInvocationTcs = new TaskCompletionSource<object>();
+            _nextInvocationTcs.SetResult();
+            _nextInvocationTcs = new TaskCompletionSource();
         }
     }
 }

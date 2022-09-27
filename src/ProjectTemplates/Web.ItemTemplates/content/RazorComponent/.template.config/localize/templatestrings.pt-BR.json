@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Componente Razor",
+  "description": "Um componente de interface do usuário reutilizável implementado com o Razor",
+  "postActions/openInEditor/description": "Abre Component1.razor no editor"
+}

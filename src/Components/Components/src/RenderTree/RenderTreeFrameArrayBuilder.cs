@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// <summary>
 /// A special subclass of <see cref="ArrayBuilder{T}"/> that contains methods optimized for appending <see cref="RenderTreeFrame"/> entries.
 /// </summary>
-internal class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
+internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
 {
     // You may notice a repeated block at the top of each of these methods. This is intentionally inlined into each
     // method because doing so improves intensive rendering scenarios by around 1% (based on the FastGrid benchmark).

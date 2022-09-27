@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -85,7 +83,7 @@ public class RenderTreeDiffBuilderBenchmark
         GC.KeepAlive(diff);
     }
 
-    private class FakeRenderer : Renderer
+    private sealed class FakeRenderer : Renderer
     {
         public FakeRenderer()
             : base(new TestServiceProvider(), NullLoggerFactory.Instance)
@@ -103,7 +101,7 @@ public class RenderTreeDiffBuilderBenchmark
             => Task.CompletedTask;
     }
 
-    private class TestServiceProvider : IServiceProvider
+    private sealed class TestServiceProvider : IServiceProvider
     {
         public object GetService(Type serviceType)
         {

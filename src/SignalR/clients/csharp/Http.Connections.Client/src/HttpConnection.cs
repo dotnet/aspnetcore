@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
@@ -32,7 +33,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 
-    private readonly ILogger _logger;
+    internal readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
     private bool _started;
@@ -204,7 +205,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     {
         using (_logger.BeginScope(_logScope))
         {
-            await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
+            await StartAsyncCore(transferFormat, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -218,7 +219,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             return;
         }
 
-        await _connectionLock.WaitAsync(cancellationToken);
+        await _connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             CheckDisposed();
@@ -231,7 +232,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             Log.Starting(_logger);
 
-            await SelectAndStartTransport(transferFormat, cancellationToken);
+            await SelectAndStartTransport(transferFormat, cancellationToken).ConfigureAwait(false);
 
             _started = true;
             Log.Started(_logger);
@@ -254,7 +255,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     {
         using (_logger.BeginScope(_logScope))
         {
-            await DisposeAsyncCore().ForceAsync();
+            await DisposeAsyncCore().ConfigureAwait(false);
         }
     }
 
@@ -265,7 +266,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             return;
         }
 
-        await _connectionLock.WaitAsync();
+        await _connectionLock.WaitAsync().ConfigureAwait(false);
         try
         {
             if (!_disposed && _started)
@@ -276,7 +277,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 // The transport should also have completed the pipe with this exception.
                 try
                 {
-                    await _transport!.StopAsync();
+                    await _transport!.StopAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -317,7 +318,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
             {
                 Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken);
+                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -331,7 +332,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             do
             {
-                negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
+                negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
 
                 if (negotiationResponse.Url != null)
                 {
@@ -402,12 +403,12 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         // The negotiation response gets cleared in the fallback scenario.
                         if (negotiationResponse == null)
                         {
-                            negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
+                            negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);
-                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken);
+                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken).ConfigureAwait(false);
                         break;
                     }
                 }
@@ -461,18 +462,25 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
-                // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
-                request.Version = new Version(1, 1);
+#if NETSTANDARD2_1_OR_GREATER || NET7_0_OR_GREATER
+                // HttpClient gracefully falls back to HTTP/1.1, so it's fine to set the preferred version to a higher version
+                request.Version = HttpVersion.Version20;
+#endif
+#if NET5_0_OR_GREATER
+                request.Options.Set(new HttpRequestOptionsKey<bool>("IsNegotiate"), true);
+#else
+                request.Properties.Add("IsNegotiate", true);
+#endif
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.
                 // Note that it is important to dispose of the response when doing this to
                 // avoid leaving the connection open.
-                using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
                 {
                     response.EnsureSuccessStatusCode();
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
-                    var responseBuffer = await response.Content.ReadAsByteArrayAsync();
+                    var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 #pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
                     var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                     if (!string.IsNullOrEmpty(negotiateResponse.Error))
@@ -509,7 +517,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         // Start the transport, giving it one end of the pipe
         try
         {
-            await transport.StartAsync(connectUrl, transferFormat, cancellationToken);
+            await transport.StartAsync(connectUrl, transferFormat, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -669,21 +677,21 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         // .NET Core 2.1 and above has a managed implementation
         return true;
 #else
-            try
-            {
-                new ClientWebSocket().Dispose();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+        try
+        {
+            new ClientWebSocket().Dispose();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
 #endif
     }
 
     private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
     {
-        var negotiationResponse = await NegotiateAsync(uri, _httpClient!, _logger, cancellationToken);
+        var negotiationResponse = await NegotiateAsync(uri, _httpClient!, _logger, cancellationToken).ConfigureAwait(false);
         // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
         // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
         // connectionToken on the client to the same value.

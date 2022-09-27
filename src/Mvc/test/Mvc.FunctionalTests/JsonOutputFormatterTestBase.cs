@@ -1,19 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -181,7 +177,7 @@ public abstract class JsonOutputFormatterTestBase<TStartup> : IClassFixture<MvcT
         await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
 
         var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", obj.Value<string>("type"));
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", obj.Value<string>("type"));
         Assert.Equal("Not Found", obj.Value<string>("title"));
         Assert.Equal("404", obj.Value<string>("status"));
         Assert.NotNull(obj.Value<string>("traceId"));

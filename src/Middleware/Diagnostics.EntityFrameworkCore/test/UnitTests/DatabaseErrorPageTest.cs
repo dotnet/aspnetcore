@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Xunit;
 
 #nullable enable
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests;
@@ -211,6 +207,7 @@ public class DatabaseErrorPageTest
 
         var content = await ExecutePage(options, model);
 
+        Assert.NotNull(options.MigrationsEndPointPath.Value); // guard
         Assert.Contains(options.MigrationsEndPointPath.Value, content);
     }
 

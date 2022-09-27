@@ -1,22 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -182,7 +177,7 @@ public class RendererTest
     {
         // Arrange
         var renderer = new TestRenderer();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
         var component = new AsyncComponent(tcs.Task, 5); // Triggers n renders, the first one creating <p>n</p> and the n-1 renders asynchronously update the value.
 
         // Act
@@ -191,7 +186,7 @@ public class RendererTest
 
         // Assert
         Assert.False(renderTask.IsCompleted);
-        tcs.SetResult(0);
+        tcs.SetResult();
         await renderTask;
         Assert.Equal(5, renderer.Batches.Count);
 
@@ -370,11 +365,11 @@ public class RendererTest
                 {
                     hasRendered = true;
 
-                        // If we were to await here, then it would deadlock, because the component would be saying it's not
-                        // finished rendering until the rendering system has already finished. The point of this test is to
-                        // show that, as long as we don't await quiescence here, nothing within the system will be doing so
-                        // and hence the whole process can complete.
-                        _ = renderer.RenderRootComponentAsync(componentId.Value, ParameterView.Empty);
+                    // If we were to await here, then it would deadlock, because the component would be saying it's not
+                    // finished rendering until the rendering system has already finished. The point of this test is to
+                    // show that, as long as we don't await quiescence here, nothing within the system will be doing so
+                    // and hence the whole process can complete.
+                    _ = renderer.RenderRootComponentAsync(componentId.Value, ParameterView.Empty);
                 }
             }
         };
@@ -831,7 +826,7 @@ public class RendererTest
         EventArgs receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var component = new EventComponent
         {
@@ -860,7 +855,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.Same(eventArgs, receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -874,7 +869,7 @@ public class RendererTest
         DerivedEventArgs receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var component = new EventComponent
         {
@@ -903,7 +898,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.Same(eventArgs, receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -917,7 +912,7 @@ public class RendererTest
         object receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var component = new EventComponent
         {
@@ -946,7 +941,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.NotNull(receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -958,7 +953,7 @@ public class RendererTest
         EventArgs receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         // Arrange: Render parent component
         var renderer = new TestRenderer();
@@ -1000,7 +995,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.Same(eventArgs, receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -1344,8 +1339,8 @@ public class RendererTest
             builder.OpenComponent<EventComponent>(0);
             builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)(() =>
             {
-                    // Do nothing.
-                }));
+                // Do nothing.
+            }));
             builder.CloseComponent();
         };
 
@@ -1376,8 +1371,8 @@ public class RendererTest
             builder.OpenComponent<EventComponent>(0);
             builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)(() =>
             {
-                    // Do nothing.
-                })));
+                // Do nothing.
+            })));
             builder.CloseComponent();
         };
 
@@ -1636,7 +1631,7 @@ public class RendererTest
     public async Task DispatchEventAsync_Delegate_AsynchronousCompletion()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1663,7 +1658,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task; // Does not throw
     }
 
@@ -1671,7 +1666,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallback_AsynchronousCompletion()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1698,7 +1693,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task; // Does not throw
     }
 
@@ -1706,7 +1701,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCompletion()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         DerivedEventArgs arg = null;
 
@@ -1737,7 +1732,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task; // Does not throw
     }
 
@@ -1745,7 +1740,7 @@ public class RendererTest
     public async Task DispatchEventAsync_Delegate_AsynchronousCancellation()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1773,7 +1768,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await task; // Does not throw
         Assert.Empty(renderer.HandledExceptions);
@@ -1783,7 +1778,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallback_AsynchronousCancellation()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1811,7 +1806,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await task; // Does not throw
         Assert.Empty(renderer.HandledExceptions);
@@ -1821,7 +1816,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCancellation()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         DerivedEventArgs arg = null;
 
@@ -1853,7 +1848,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await task; // Does not throw
         Assert.Empty(renderer.HandledExceptions);
@@ -1863,7 +1858,7 @@ public class RendererTest
     public async Task DispatchEventAsync_Delegate_AsynchronousException()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1891,7 +1886,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
@@ -1900,7 +1895,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallback_AsynchronousException()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1928,7 +1923,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
@@ -1937,7 +1932,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousException()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         DerivedEventArgs arg = null;
 
@@ -1969,7 +1964,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
@@ -2214,8 +2209,8 @@ public class RendererTest
         {
             if (firstRender)
             {
-                    // Nested descendants
-                    builder.OpenComponent<ConditionalParentComponent<FakeComponent>>(100);
+                // Nested descendants
+                builder.OpenComponent<ConditionalParentComponent<FakeComponent>>(100);
                 builder.AddAttribute(101, nameof(ConditionalParentComponent<FakeComponent>.IncludeChild), true);
                 builder.CloseComponent();
             }
@@ -2817,8 +2812,8 @@ public class RendererTest
         Assert.Collection(batch.DiffsInOrder,
             diff =>
             {
-                    // First we triggered the root component to re-render
-                    Assert.Equal(rootComponentId, diff.ComponentId);
+                // First we triggered the root component to re-render
+                Assert.Equal(rootComponentId, diff.ComponentId);
                 Assert.Collection(diff.Edits, edit =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2829,8 +2824,8 @@ public class RendererTest
             },
             diff =>
             {
-                    // Then the root re-render will have triggered an update to the child
-                    Assert.Equal(childComponentId, diff.ComponentId);
+                // Then the root re-render will have triggered an update to the child
+                Assert.Equal(childComponentId, diff.ComponentId);
                 Assert.Collection(diff.Edits, edit =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2841,8 +2836,8 @@ public class RendererTest
             },
             diff =>
             {
-                    // Finally we explicitly requested a re-render of the child
-                    Assert.Equal(childComponentId, diff.ComponentId);
+                // Finally we explicitly requested a re-render of the child
+                Assert.Equal(childComponentId, diff.ComponentId);
                 Assert.Collection(diff.Edits, edit =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2974,10 +2969,10 @@ public class RendererTest
                 builder.OpenComponent<RendersSelfAfterEventComponent>(1);
                 builder.AddAttribute(2, "onclick", (Action<object>)((object obj) =>
                 {
-                        // First we queue (1) a re-render of the root component, then the child component
-                        // will queue (2) its own re-render. But by the time (1) completes, the child will
-                        // have been disposed, even though (2) is still in the queue
-                        shouldRenderChild = false;
+                    // First we queue (1) a re-render of the root component, then the child component
+                    // will queue (2) its own re-render. But by the time (1) completes, the child will
+                    // have been disposed, even though (2) is still in the queue
+                    shouldRenderChild = false;
                     component.TriggerRender();
                 }));
                 builder.CloseComponent();
@@ -3046,6 +3041,199 @@ public class RendererTest
             && edit.RemovedAttributeName == "disabled");
 
         await renderTask;
+    }
+
+    [Fact]
+    public async Task BindWithSynchronousSetter_Lambda()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        var value = "value";
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+                component,
+                RuntimeHelpers.CreateInferredEventCallback(component, __value => value = __value, value),
+                value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAsynchronousSetter_MethodGroupToDelegate()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        var value = "value";
+        async Task SetValue(string __value)
+        {
+            value = __value;
+            await Task.CompletedTask;
+        }
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(component, SetValue, value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAsynchronousSetter_ExistingEventCallback()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+#nullable enable
+        var value = "value";
+        var eventCallback = new EventCallback<string?>(component, (string? __value) =>
+        {
+            value = __value;
+        });
+#nullable disable
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(component, eventCallback, value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAfter()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        string value = "value";
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(
+                component,
+                async __value =>
+                {
+                    value = __value;
+                    await EventCallback.Factory.Create(component, () => Task.CompletedTask).InvokeAsync();
+                },
+                value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAfter_Action()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        string value = "value";
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(
+                component,
+                async __value =>
+                {
+                    value = __value;
+                    await EventCallback.Factory.Create(component, () => { }).InvokeAsync();
+                },
+                value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
     }
 
     [Fact]
@@ -3121,8 +3309,8 @@ public class RendererTest
     {
         // Arrange
         var @event = new ManualResetEventSlim();
-        var tcs = new TaskCompletionSource<object>();
-        var afterRenderTcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
+        var afterRenderTcs = new TaskCompletionSource();
         var onAfterRenderCallCountLog = new List<int>();
         var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
         {
@@ -3136,8 +3324,8 @@ public class RendererTest
 
         // Act
         component.TriggerRender();
-        tcs.SetResult(null);
-        afterRenderTcs.SetResult(null);
+        tcs.SetResult();
+        afterRenderTcs.SetResult();
 
         // We need to wait here because the completions from SetResult will be scheduled.
         @event.Wait(Timeout);
@@ -3151,7 +3339,7 @@ public class RendererTest
     {
         // Arrange
         var @event = new ManualResetEventSlim();
-        var afterRenderTcs = new TaskCompletionSource<object>();
+        var afterRenderTcs = new TaskCompletionSource();
         var onAfterRenderCallCountLog = new List<int>();
         var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
         {
@@ -3165,7 +3353,7 @@ public class RendererTest
 
         // Act
         component.TriggerRender();
-        afterRenderTcs.SetResult(null);
+        afterRenderTcs.SetResult();
 
         // We need to wait here because the completions from SetResult will be scheduled.
         @event.Wait(Timeout);
@@ -3181,17 +3369,17 @@ public class RendererTest
         var showComponent3 = true;
         var parentComponent = new TestComponent(builder =>
         {
-                // First child will be re-rendered because we'll change its param
-                builder.OpenComponent<AfterRenderCaptureComponent>(0);
+            // First child will be re-rendered because we'll change its param
+            builder.OpenComponent<AfterRenderCaptureComponent>(0);
             builder.AddAttribute(1, "some param", showComponent3);
             builder.CloseComponent();
 
-                // Second child will not be re-rendered because nothing changes
-                builder.OpenComponent<AfterRenderCaptureComponent>(2);
+            // Second child will not be re-rendered because nothing changes
+            builder.OpenComponent<AfterRenderCaptureComponent>(2);
             builder.CloseComponent();
 
-                // Third component will be disposed
-                if (showComponent3)
+            // Third component will be disposed
+            if (showComponent3)
             {
                 builder.OpenComponent<AfterRenderCaptureComponent>(3);
                 builder.CloseComponent();
@@ -3280,9 +3468,9 @@ public class RendererTest
         {
             numEventsFired++;
 
-                // Replace the old event handler with a different one,
-                // (old the old handler ID will be disposed) then re-render.
-                component.OnTest = args => eventHandler(args);
+            // Replace the old event handler with a different one,
+            // (old the old handler ID will be disposed) then re-render.
+            component.OnTest = args => eventHandler(args);
             component.TriggerRender();
         };
 
@@ -3296,14 +3484,14 @@ public class RendererTest
             .AttributeEventHandlerId;
 
         // Act/Assert 1: Event can be fired for the first time
-        var render1TCS = new TaskCompletionSource<object>();
+        var render1TCS = new TaskCompletionSource();
         renderer.NextUpdateDisplayReturnTask = render1TCS.Task;
         await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
         Assert.Equal(1, numEventsFired);
 
         // Act/Assert 2: *Same* event handler ID can be reused prior to completion of
         // preceding UI update
-        var render2TCS = new TaskCompletionSource<object>();
+        var render2TCS = new TaskCompletionSource();
         renderer.NextUpdateDisplayReturnTask = render2TCS.Task;
         await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
         Assert.Equal(2, numEventsFired);
@@ -3317,7 +3505,7 @@ public class RendererTest
         // For that case, we are going to queue a continuation on render1TCS.Task, include a 1s delay and await the resulting
         // task to offer the best chance that we get to see the error in all cases.
         var awaitableTask = render1TCS.Task.ContinueWith(_ => Task.Delay(1000)).Unwrap();
-        render1TCS.SetResult(null);
+        render1TCS.SetResult();
         await awaitableTask;
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
         {
@@ -3432,7 +3620,7 @@ public class RendererTest
         // Arrange
         var renderer = new TestRenderer { ShouldHandleExceptions = true };
         var component = new NestedAsyncComponent();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
         var exception = new InvalidTimeZoneException();
 
         // Act/Assert
@@ -3461,7 +3649,7 @@ public class RendererTest
         }));
 
         Assert.False(renderTask.IsCompleted);
-        tcs.SetResult(0);
+        tcs.SetResult();
         await renderTask;
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
@@ -3489,7 +3677,7 @@ public class RendererTest
         var componentId = renderer.AssignRootComponentId(component);
         await renderer.RenderRootComponentAsync(componentId); // Not throwing on first render
 
-        var asyncExceptionTcs = new TaskCompletionSource<object>();
+        var asyncExceptionTcs = new TaskCompletionSource();
         taskToAwait = asyncExceptionTcs.Task;
         await renderer.Dispatcher.InvokeAsync(component.TriggerRender);
 
@@ -3514,7 +3702,7 @@ public class RendererTest
         var component = new NestedAsyncComponent();
         var exception1 = new InvalidTimeZoneException();
         var exception2 = new UriFormatException();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
 
         // Act/Assert
         var componentId = renderer.AssignRootComponentId(component);
@@ -3557,7 +3745,7 @@ public class RendererTest
         }));
 
         Assert.False(renderTask.IsCompleted);
-        tcs.SetResult(0);
+        tcs.SetResult();
 
         await renderTask;
         Assert.Equal(2, renderer.HandledExceptions.Count);
@@ -3627,7 +3815,7 @@ public class RendererTest
         var component = new NestedAsyncComponent();
         var exception = new InvalidTimeZoneException();
 
-        var taskCompletionSource = new TaskCompletionSource<int>();
+        var taskCompletionSource = new TaskCompletionSource();
 
         // Act/Assert
         var componentId = renderer.AssignRootComponentId(component);
@@ -3653,7 +3841,7 @@ public class RendererTest
                             Event = NestedAsyncComponent.EventType.OnAfterRenderAsyncSync,
                             EventAction = () =>
                             {
-                                taskCompletionSource.TrySetResult(0);
+                                taskCompletionSource.TrySetResult();
                                 return Task.FromResult((1, NestedAsyncComponent.EventType.OnAfterRenderAsyncSync));
                             },
                         }
@@ -3681,7 +3869,7 @@ public class RendererTest
         var component = new NestedAsyncComponent();
         var exception = new InvalidTimeZoneException();
 
-        var taskCompletionSource = new TaskCompletionSource<int>();
+        var taskCompletionSource = new TaskCompletionSource();
 
         // Act/Assert
         var componentId = renderer.AssignRootComponentId(component);
@@ -3709,7 +3897,7 @@ public class RendererTest
                             EventAction = async () =>
                             {
                                 await Task.Yield();
-                                taskCompletionSource.TrySetResult(0);
+                                taskCompletionSource.TrySetResult();
                                 return (1, NestedAsyncComponent.EventType.OnAfterRenderAsyncAsync);
                             },
                         }
@@ -3880,7 +4068,7 @@ public class RendererTest
         // Arrange
         var renderer = new TestRenderer { ShouldHandleExceptions = true };
         var component = new NestedAsyncComponent();
-        var taskCompletionSource = new TaskCompletionSource<int>();
+        var taskCompletionSource = new TaskCompletionSource();
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Cancel();
 
@@ -3897,7 +4085,7 @@ public class RendererTest
                             Event = NestedAsyncComponent.EventType.OnAfterRenderAsyncSync,
                             EventAction = () =>
                             {
-                                taskCompletionSource.TrySetResult(0);
+                                taskCompletionSource.TrySetResult();
                                 cancellationTokenSource.Token.ThrowIfCancellationRequested();
                                 return default;
                             },
@@ -4126,10 +4314,10 @@ public class RendererTest
         var batch2 = renderer.Batches[1];
         Assert.Collection(batch2.DiffsInOrder.Single().Edits.ToArray(), edit =>
         {
-                // The only edit is updating the event handler ID, since the test component
-                // deliberately uses a capturing lambda. The whole point of this test is to
-                // show that the diff does *not* update the BoundString value attribute.
-                Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+            // The only edit is updating the event handler ID, since the test component
+            // deliberately uses a capturing lambda. The whole point of this test is to
+            // show that the diff does *not* update the BoundString value attribute.
+            Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
             var attributeFrame = batch2.ReferenceFrames[edit.ReferenceFrameIndex];
             AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<ChangeEventArgs>));
             Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
@@ -4143,7 +4331,7 @@ public class RendererTest
         // Arrange: Render a component with an event handler
         // We want the renderer to think none of the "UpdateDisplay" calls ever complete, because we
         // want to keep reusing the same eventHandlerId and not let it get disposed
-        var renderCompletedTcs = new TaskCompletionSource<object>();
+        var renderCompletedTcs = new TaskCompletionSource();
         var renderer = new TestRenderer { NextRenderResultTask = renderCompletedTcs.Task };
         var component = new BoundPropertyComponent { BoundString = "old property value" };
         var componentId = renderer.AssignRootComponentId(component);
@@ -4178,10 +4366,10 @@ public class RendererTest
             var latestBatch = renderer.Batches.Last();
             Assert.Collection(latestBatch.DiffsInOrder.Single().Edits.ToArray(), edit =>
             {
-                    // The only edit is updating the event handler ID, since the test component
-                    // deliberately uses a capturing lambda. The whole point of this test is to
-                    // show that the diff does *not* update the BoundString value attribute.
-                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                // The only edit is updating the event handler ID, since the test component
+                // deliberately uses a capturing lambda. The whole point of this test is to
+                // show that the diff does *not* update the BoundString value attribute.
+                Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
                 var attributeFrame = latestBatch.ReferenceFrames[edit.ReferenceFrameIndex];
                 AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<ChangeEventArgs>));
                 Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
@@ -4197,11 +4385,11 @@ public class RendererTest
         var renderer = new InvalidRecursiveRenderer();
         var component = new CallbackOnRenderComponent(() =>
         {
-                // The renderer disallows one batch to be started inside another, because that
-                // would violate all kinds of state tracking invariants. It's not something that
-                // would ever happen except if you subclass the renderer and do something unsupported
-                // that commences batches from inside each other.
-                renderer.ProcessPendingRender();
+            // The renderer disallows one batch to be started inside another, because that
+            // would violate all kinds of state tracking invariants. It's not something that
+            // would ever happen except if you subclass the renderer and do something unsupported
+            // that commences batches from inside each other.
+            renderer.ProcessPendingRender();
         });
         var componentId = renderer.AssignRootComponentId(component);
 
@@ -4607,9 +4795,9 @@ public class RendererTest
         {
             renderer.RemoveRootComponent(rootComponentId);
 
-                // Even though we didn't await anything, it's synchronously unavailable for re-removal
-                var ex = Assert.Throws<ArgumentException>(() =>
-                renderer.RemoveRootComponent(rootComponentId));
+            // Even though we didn't await anything, it's synchronously unavailable for re-removal
+            var ex = Assert.Throws<ArgumentException>(() =>
+            renderer.RemoveRootComponent(rootComponentId));
             Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
             didRunTestLogic = true;
         });
@@ -5575,7 +5763,7 @@ public class RendererTest
 
             // Return a task that never completes to show that access is forbidden
             // after the synchronous return, not just after the returned task completes
-            return new TaskCompletionSource<object>().Task;
+            return new TaskCompletionSource().Task;
         }
     }
 
@@ -5603,8 +5791,8 @@ public class RendererTest
             builder.OpenComponent<TestErrorBoundary>(0);
             builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder =>
             {
-                    // ... containing another error boundary, containing the content
-                    builder.OpenComponent<TestErrorBoundary>(0);
+                // ... containing another error boundary, containing the content
+                builder.OpenComponent<TestErrorBoundary>(0);
                 builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), innerContent);
                 builder.CloseComponent();
             }));

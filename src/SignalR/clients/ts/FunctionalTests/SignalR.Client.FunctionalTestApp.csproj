@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,8 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="selenium\run-ci-tests.ts" />
-    <None Remove="selenium\run-tests.ts" />
     <None Remove="ts\Common.ts" />
     <None Remove="ts\ConnectionTests.ts" />
     <None Remove="ts\HubConnectionTests.ts" />
@@ -39,12 +37,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)TestCertificates.cs" Link="TestCertificates.cs" />
+    <Content Include="$(SignalRSharedSourceRoot)*.pfx" LinkBase="TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\js\" />
   </ItemGroup>
 
   <ItemGroup>
-    <TypeScriptCompile Include="selenium\run-ci-tests.ts" />
-    <TypeScriptCompile Include="selenium\run-tests.ts" />
     <TypeScriptCompile Include="ts\Common.ts" />
     <TypeScriptCompile Include="ts\ConnectionTests.ts" />
     <TypeScriptCompile Include="ts\HubConnectionTests.ts" />

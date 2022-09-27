@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,7 +71,6 @@ public abstract class LinkGeneratorTestBase
         var routeOptions = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
 
         return new DefaultLinkGenerator(
-            new DefaultParameterPolicyFactory(routeOptions, serviceProvider),
             serviceProvider.GetRequiredService<TemplateBinderFactory>(),
             new CompositeEndpointDataSource(routeOptions.Value.EndpointDataSources),
             routeOptions,

@@ -1,17 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
@@ -42,7 +37,7 @@ public class FormActionTagHelperTest
             {
                 var tagHelperContent = new DefaultTagHelperContent();
                 tagHelperContent.SetContent("Something Else");  // ignored
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
             });
 
         var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
@@ -117,7 +112,7 @@ public class FormActionTagHelperTest
             {
                 var tagHelperContent = new DefaultTagHelperContent();
                 tagHelperContent.SetContent("Something Else");  // ignored
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
             });
 
         var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);

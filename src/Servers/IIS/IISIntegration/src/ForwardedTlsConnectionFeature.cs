@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
-internal class ForwardedTlsConnectionFeature : ITlsConnectionFeature
+internal sealed class ForwardedTlsConnectionFeature : ITlsConnectionFeature
 {
     private StringValues _header;
     private X509Certificate2? _certificate;

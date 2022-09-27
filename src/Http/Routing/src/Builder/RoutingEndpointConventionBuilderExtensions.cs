@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -23,15 +22,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (hosts == null)
-        {
-            throw new ArgumentNullException(nameof(hosts));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(hosts);
 
         builder.Add(endpointBuilder =>
         {
@@ -49,10 +41,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
     public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, string displayName) where TBuilder : IEndpointConventionBuilder
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Add(b =>
         {
@@ -71,15 +60,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
     public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, Func<EndpointBuilder, string> func) where TBuilder : IEndpointConventionBuilder
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (func == null)
-        {
-            throw new ArgumentNullException(nameof(func));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(func);
 
         builder.Add(b =>
         {
@@ -98,15 +80,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
     public static TBuilder WithMetadata<TBuilder>(this TBuilder builder, params object[] items) where TBuilder : IEndpointConventionBuilder
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(items);
 
         builder.Add(b =>
         {
@@ -120,7 +95,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    /// Sets the <see cref="EndpointNameAttribute"/> for all endpoints produced
+    /// Adds the <see cref="IEndpointNameMetadata"/> to the Metadata collection for all endpoints produced
     /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointName" />.
     /// The <see cref="IEndpointNameMetadata" /> on the endpoint is used for link generation and
     /// is treated as the operation ID in the given endpoint's OpenAPI specification.

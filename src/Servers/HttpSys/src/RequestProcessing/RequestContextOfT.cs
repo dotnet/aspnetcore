@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Log = Microsoft.AspNetCore.Server.HttpSys.RequestContextLog;
@@ -34,10 +32,12 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             if (messagePump.Stopping)
             {
                 SetFatalResponse(503);
+                Dispose();
                 return;
             }
 
             TContext? context = default;
+            Exception? applicationException = null;
             messagePump.IncrementOutstandingRequest();
             try
             {
@@ -51,16 +51,12 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                 {
                     await OnCompleted();
                 }
-                application.DisposeContext(context, null);
-                Dispose();
             }
             catch (Exception ex)
             {
+                applicationException = ex;
+
                 Log.RequestProcessError(Logger, ex);
-                if (context != null)
-                {
-                    application.DisposeContext(context, ex);
-                }
                 if (Response.HasStarted)
                 {
                     // Otherwise the default is Cancel = 0x8 (h2) or 0x010c (h3).
@@ -96,11 +92,18 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             }
             finally
             {
+                if (context != null)
+                {
+                    application.DisposeContext(context, applicationException);
+                }
+
                 if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
                 {
                     Log.RequestsDrained(Logger);
                     messagePump.SetShutdownSignal();
                 }
+
+                Dispose();
             }
         }
         catch (Exception ex)

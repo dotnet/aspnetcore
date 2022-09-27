@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Collections;
+using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -52,6 +54,17 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
         var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+    }
+
+    [Fact]
+    public async Task MaxRequestHeadersTotalSizeDoesNotThrowForMaxValue()
+    {
+        const string headerLine = "Header: value\r\n";
+        _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize = int.MaxValue;
+        _http1Connection.Reset();
+
+        await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
+        var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
     }
 
     [Fact]
@@ -147,21 +160,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public void ResetResetsTraceIdentifier()
-    {
-        _http1Connection.TraceIdentifier = "xyz";
-
-        _http1Connection.Reset();
-
-        var nextId = ((IFeatureCollection)_http1Connection).Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
-        Assert.NotEqual("xyz", nextId);
-
-        _http1Connection.Reset();
-        var secondId = ((IFeatureCollection)_http1Connection).Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
-        Assert.NotEqual(nextId, secondId);
-    }
-
-    [Fact]
     public void ResetResetsMinRequestBodyDataRate()
     {
         _http1Connection.MinRequestBodyDataRate = new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.MaxValue);
@@ -182,28 +180,73 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public void TraceIdentifierCountsRequestsPerHttp1Connection()
+    public async Task TraceIdentifierCountsRequestsPerHttp1Connection()
     {
         var connectionId = _http1ConnectionContext.ConnectionId;
         var feature = ((IFeatureCollection)_http1Connection).Get<IHttpRequestIdentifierFeature>();
-        // Reset() is called once in the test ctor
+
+        var requestProcessingTask = _http1Connection.ProcessRequestsAsync(new DummyApplication());
+
         var count = 1;
-        void Reset()
+        async Task SendRequestAsync()
         {
-            _http1Connection.Reset();
+            var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
+            await _application.Output.WriteAsync(data);
+
+            while (true)
+            {
+                var read = await _application.Input.ReadAsync();
+                SequencePosition consumed = read.Buffer.Start;
+                SequencePosition examined = read.Buffer.End;
+                try
+                {
+                    if (TryReadResponse(read, out consumed, out examined))
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    _application.Input.AdvanceTo(consumed, examined);
+                }
+            }
+
             count++;
+        }
+
+        static bool TryReadResponse(ReadResult read, out SequencePosition consumed, out SequencePosition examined)
+        {
+            consumed = read.Buffer.Start;
+            examined = read.Buffer.End;
+
+            SequenceReader<byte> reader = new SequenceReader<byte>(read.Buffer);
+            if (reader.TryReadTo(out ReadOnlySequence<byte> _, new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' }, advancePastDelimiter: true))
+            {
+                consumed = reader.Position;
+                examined = reader.Position;
+                return true;
+            }
+
+            return false;
         }
 
         var nextId = feature.TraceIdentifier;
         Assert.Equal($"{connectionId}:00000001", nextId);
 
-        Reset();
+        await SendRequestAsync();
+
         var secondId = feature.TraceIdentifier;
         Assert.Equal($"{connectionId}:00000002", secondId);
 
-        var big = 1_000_000;
-        while (big-- > 0) Reset();
+        var big = 10_000;
+        while (big-- > 0)
+        {
+            await SendRequestAsync();
+        }
         Assert.Equal($"{connectionId}:{count:X8}", feature.TraceIdentifier);
+
+        _http1Connection.StopProcessingNextRequest();
+        await requestProcessingTask.DefaultTimeout();
     }
 
     [Fact]
@@ -213,9 +256,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var id = _http1Connection.TraceIdentifier;
         Assert.NotNull(id);
         Assert.Equal(id, _http1Connection.TraceIdentifier);
-
-        _http1Connection.Reset();
-        Assert.NotEqual(id, _http1Connection.TraceIdentifier);
     }
 
     [Fact]
@@ -669,6 +709,39 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult = await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCompleted);
+
+        _http1Connection.Abort(new ConnectionAbortedException());
+        var failResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(failResult.IsCompleted);
+    }
+
+    [Fact]
+    public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult = await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCanceled);
+
+        _http1Connection.CancelPendingFlush();
+
+        var canceledResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(canceledResult.IsCanceled);
+
+        //Cancel pending should cancel only next flush
+        var goodResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.False(goodResult.IsCanceled);
+    }
+
+    [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteAsyncAwaitedWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";
@@ -942,6 +1015,24 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
     }
 
+    [Fact]
+    public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthRequestHeadersExist()
+    {
+        // Arrange
+        string contentLength = "1024";
+        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
+        _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
+
+        // Act
+        Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
+
+        // Assert
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+        Assert.Equal(contentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+        Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
+        Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
+    }
 
     private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
     {

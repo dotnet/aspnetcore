@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 

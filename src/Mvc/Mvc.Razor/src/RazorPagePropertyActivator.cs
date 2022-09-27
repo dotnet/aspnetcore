@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -14,7 +13,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
-internal class RazorPagePropertyActivator
+internal sealed class RazorPagePropertyActivator
 {
     private readonly IModelMetadataProvider _metadataProvider;
     private readonly Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> _rootFactory;
@@ -128,7 +127,7 @@ internal class RazorPagePropertyActivator
         return new PropertyActivator<ViewContext>(property, valueAccessor);
     }
 
-    public class PropertyValueAccessors
+    public sealed class PropertyValueAccessors
     {
         public Func<ViewContext, object> UrlHelperAccessor { get; init; } = default!;
 

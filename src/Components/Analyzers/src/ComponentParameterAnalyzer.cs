@@ -5,24 +5,30 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ComponentParameterAnalyzer : DiagnosticAnalyzer
+public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
 {
     public ComponentParameterAnalyzer()
     {
         SupportedDiagnostics = ImmutableArray.Create(new[]
         {
-                DiagnosticDescriptors.ComponentParametersShouldBePublic,
-                DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
-                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
-                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
-            });
+            DiagnosticDescriptors.ComponentParametersShouldBePublic,
+            DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
+            DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
+            DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
+            DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties,
+        });
     }
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
@@ -35,13 +41,13 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
         {
             if (!ComponentSymbols.TryCreate(context.Compilation, out var symbols))
             {
-                    // Types we need are not defined.
-                    return;
+                // Types we need are not defined.
+                return;
             }
 
-                // This operates per-type because one of the validations we need has to look for duplicates
-                // defined on the same type.
-                context.RegisterSymbolStartAction(context =>
+            // This operates per-type because one of the validations we need has to look for duplicates
+            // defined on the same type.
+            context.RegisterSymbolStartAction(context =>
             {
                 var properties = new List<IPropertySymbol>();
 
@@ -50,8 +56,8 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                 {
                     if (member is IPropertySymbol property && ComponentFacts.IsParameter(symbols, property))
                     {
-                            // Annotated with [Parameter]. We ignore [CascadingParameter]'s because they don't interact with tooling and don't currently have any analyzer restrictions.
-                            properties.Add(property);
+                        // Annotated with [Parameter]. We ignore [CascadingParameter]'s because they don't interact with tooling and don't currently have any analyzer restrictions.
+                        properties.Add(property);
                     }
                 }
 
@@ -64,8 +70,8 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                 {
                     var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
 
-                        // Per-property validations
-                        foreach (var property in properties)
+                    // Per-property validations
+                    foreach (var property in properties)
                     {
                         var propertyLocation = property.Locations.FirstOrDefault();
                         if (propertyLocation == null)
@@ -92,8 +98,8 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                         {
                             captureUnmatchedValuesParameters.Add(property);
 
-                                // Check the type, we need to be able to assign a Dictionary<string, object>
-                                var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
+                            // Check the type, we need to be able to assign a Dictionary<string, object>
+                            var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
                             if (!conversion.Exists || conversion.IsExplicit)
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(
@@ -104,11 +110,18 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                                     symbols.ParameterCaptureUnmatchedValuesRuntimeType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                             }
                         }
+                        if (!IsAutoProperty(property) && !IsSameSemanticAsAutoProperty(property, context.CancellationToken))
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties,
+                                propertyLocation,
+                                property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                        }
                     }
 
-                        // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
-                        // errors on the type.
-                        if (captureUnmatchedValuesParameters.Count > 1)
+                    // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
+                    // errors on the type.
+                    if (captureUnmatchedValuesParameters.Count > 1)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
@@ -122,5 +135,80 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                 });
             }, SymbolKind.NamedType);
         });
+    }
+
+    /// <summary>
+    /// Check if a property is an auto-property.
+    /// TODO: Remove this helper when https://github.com/dotnet/roslyn/issues/46682 is handled.
+    /// </summary>
+    private static bool IsAutoProperty(IPropertySymbol propertySymbol)
+       => propertySymbol.ContainingType.GetMembers()
+              .OfType<IFieldSymbol>()
+              .Any(f => f.IsImplicitlyDeclared && SymbolEqualityComparer.Default.Equals(propertySymbol, f.AssociatedSymbol));
+
+    private static bool IsSameSemanticAsAutoProperty(IPropertySymbol symbol, CancellationToken cancellationToken)
+    {
+        if (symbol.DeclaringSyntaxReferences.Length == 1 &&
+            symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) is PropertyDeclarationSyntax syntax &&
+            syntax.AccessorList?.Accessors.Count == 2)
+        {
+            var getterAccessor = syntax.AccessorList.Accessors[0];
+            var setterAccessor = syntax.AccessorList.Accessors[1];
+            if (getterAccessor.IsKind(SyntaxKind.SetAccessorDeclaration))
+            {
+                // Swap if necessary.
+                (getterAccessor, setterAccessor) = (setterAccessor, getterAccessor);
+            }
+
+            if (!getterAccessor.IsKind(SyntaxKind.GetAccessorDeclaration) || !setterAccessor.IsKind(SyntaxKind.SetAccessorDeclaration))
+            {
+                return false;
+            }
+
+            IdentifierNameSyntax? identifierUsedInGetter = GetIdentifierUsedInGetter(getterAccessor);
+            if (identifierUsedInGetter is null)
+            {
+                return false;
+            }
+
+            IdentifierNameSyntax? identifierUsedInSetter = GetIdentifierUsedInSetter(setterAccessor);
+            return identifierUsedInGetter.Identifier.ValueText == identifierUsedInSetter?.Identifier.ValueText;
+        }
+
+        return false;
+    }
+
+    private static IdentifierNameSyntax? GetIdentifierUsedInGetter(AccessorDeclarationSyntax getter)
+    {
+        if (getter.Body is { Statements: { Count: 1 } } && getter.Body.Statements[0] is ReturnStatementSyntax returnStatement)
+        {
+            return returnStatement.Expression as IdentifierNameSyntax;
+        }
+
+        return getter.ExpressionBody?.Expression as IdentifierNameSyntax;
+    }
+
+    private static IdentifierNameSyntax? GetIdentifierUsedInSetter(AccessorDeclarationSyntax setter)
+    {
+        AssignmentExpressionSyntax? assignmentExpression = null;
+        if (setter.Body is not null)
+        {
+            if (setter.Body.Statements.Count == 1)
+            {
+                assignmentExpression = (setter.Body.Statements[0] as ExpressionStatementSyntax)?.Expression as AssignmentExpressionSyntax;
+            }
+        }
+        else
+        {
+            assignmentExpression = setter.ExpressionBody?.Expression as AssignmentExpressionSyntax;
+        }
+
+        if (assignmentExpression is not null && assignmentExpression.Right is IdentifierNameSyntax right &&
+            right.Identifier.ValueText == "value")
+        {
+            return assignmentExpression.Left as IdentifierNameSyntax;
+        }
+
+        return null;
     }
 }

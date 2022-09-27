@@ -3,13 +3,12 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ActionInvokerFactory : IActionInvokerFactory
+internal sealed class ActionInvokerFactory : IActionInvokerFactory
 {
     private readonly IActionInvokerProvider[] _actionInvokerProviders;
 

@@ -1,17 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -266,9 +261,9 @@ internal partial class IISHttpContext : IFeatureCollection,
     }
 
     // Http/2 does not support the upgrade mechanic.
-    // Http/1.x upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
+    // Http/1.1 upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
     // more complicated to support. See https://tools.ietf.org/html/rfc7230#section-6.7, https://tools.ietf.org/html/rfc7540#section-3.2
-    bool IHttpUpgradeFeature.IsUpgradableRequest => !RequestCanHaveBody && HttpVersion < System.Net.HttpVersion.Version20;
+    bool IHttpUpgradeFeature.IsUpgradableRequest => !RequestCanHaveBody && HttpVersion == System.Net.HttpVersion.Version11;
 
     bool IFeatureCollection.IsReadOnly => false;
 
@@ -302,10 +297,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                 throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             // Synchronize access to native methods that might run in parallel with IO loops
             lock (_contextLock)
@@ -345,6 +337,10 @@ internal partial class IISHttpContext : IFeatureCollection,
     {
         if (!((IHttpUpgradeFeature)this).IsUpgradableRequest)
         {
+            if (HttpVersion != System.Net.HttpVersion.Version11)
+            {
+                throw new InvalidOperationException(CoreStrings.UpgradeWithWrongProtocolVersion);
+            }
             throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
         }
 
@@ -444,13 +440,7 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {
-        // Check version is above 2.
-        if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
-        {
-            return this;
-        }
-
-        return null;
+        return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
@@ -463,13 +453,7 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal IHttpResetFeature? GetResetFeature()
     {
-        // Check version is above 2.
-        if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
-        {
-            return this;
-        }
-
-        return null;
+        return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
     void IHttpResetFeature.Reset(int errorCode)
@@ -507,6 +491,5 @@ internal partial class IISHttpContext : IFeatureCollection,
         {
             ResponseHeaders.Connection = ConnectionClose;
         }
-
     }
 }

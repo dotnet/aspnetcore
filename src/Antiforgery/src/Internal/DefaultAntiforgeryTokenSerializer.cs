@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
+internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
 {
     private const string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
     private const byte TokenVersion = 0x01;

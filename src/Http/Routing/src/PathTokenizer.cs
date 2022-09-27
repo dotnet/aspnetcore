@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -74,7 +72,6 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
             {
                 throw new IndexOutOfRangeException();
             }
-
 
             var currentSegmentIndex = 0;
             var currentSegmentStart = 1;

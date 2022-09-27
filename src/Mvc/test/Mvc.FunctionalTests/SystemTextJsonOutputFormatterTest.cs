@@ -3,10 +3,8 @@
 
 using System.Net;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 

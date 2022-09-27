@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
 
 namespace Microsoft.AspNetCore.Identity.InMemory;
@@ -97,7 +92,6 @@ public class InMemoryUserStore<TUser> :
         user.NormalizedEmail = normalizedEmail;
         return Task.FromResult(0);
     }
-
 
     public Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
     {

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SpaServices.StaticFiles;
 using Microsoft.Extensions.FileProviders;
@@ -28,12 +26,12 @@ public static class SpaStaticFilesExtensions
     {
         services.AddSingleton<ISpaStaticFileProvider>(serviceProvider =>
         {
-                // Use the options configured in DI (or blank if none was configured)
-                var optionsProvider = serviceProvider.GetService<IOptions<SpaStaticFilesOptions>>()!;
+            // Use the options configured in DI (or blank if none was configured)
+            var optionsProvider = serviceProvider.GetService<IOptions<SpaStaticFilesOptions>>()!;
             var options = optionsProvider.Value;
 
-                // Allow the developer to perform further configuration
-                configuration?.Invoke(options);
+            // Allow the developer to perform further configuration
+            configuration?.Invoke(options);
 
             if (string.IsNullOrEmpty(options.RootPath))
             {

@@ -49,7 +49,8 @@
   </Target>
 
   <!-- Work around https://github.com/dotnet/aspnetcore/issues/34048 -->
-  <Target Name="_RemoveDuplicateLoggingSourceGenerator" AfterTargets="ResolvePackageAssets" Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+  <Target Name="_RemoveDuplicateLoggingSourceGenerator" AfterTargets="ResolvePackageAssets" Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+      ('$(IsAspNetCoreApp)' == 'true' OR '$(UseAspNetCoreSharedRuntime)' == 'true')">
     <ItemGroup>
       <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(ResolvedAnalyzers.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
       <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(ResolvedAnalyzers.NuGetPackageId)' == 'System.Text.Json'" />

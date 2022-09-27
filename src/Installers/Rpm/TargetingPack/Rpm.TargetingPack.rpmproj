@@ -29,18 +29,15 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 
   <PropertyGroup>
-    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
-    <CblMarinerTargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-cm.1.rpm</CblMarinerTargetFileName>
+    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-$(RpmArch).rpm</TargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
-    <CblMarinerTargetPath>$(InstallersOutputPath)$(CblMarinerTargetFileName)</CblMarinerTargetPath>
+    <CblMarinerBaseName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)</CblMarinerBaseName>
+    <CblMarinerExtension>-$(RpmArch).rpm</CblMarinerExtension>
 
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 
     <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->
     <PackageRevision Condition=" '$(VersionSuffix)' == '' ">1</PackageRevision>
     <PackageRevision Condition=" '$(VersionSuffix)' != '' ">0.1.$(VersionSuffix.Replace('-', '_'))</PackageRevision>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <RpmBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 </Project>

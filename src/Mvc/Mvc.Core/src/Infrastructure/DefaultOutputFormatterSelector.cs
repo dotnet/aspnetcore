@@ -3,23 +3,21 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 /// <summary>
 /// The default implementation of <see cref="OutputFormatterSelector"/>.
 /// </summary>
-public class DefaultOutputFormatterSelector : OutputFormatterSelector
+public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
 {
     private static readonly Comparison<MediaTypeSegmentWithQuality> _sortFunction = (left, right) =>
     {
@@ -87,7 +85,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
             }
         }
 
-        _logger.RegisteredOutputFormatters(formatters);
+        Log.RegisteredOutputFormatters(_logger, formatters);
 
         var request = context.HttpContext.Request;
         var acceptableMediaTypes = GetAcceptableMediaTypes(request);
@@ -98,7 +96,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         {
             // There is either no Accept header value, or it contained */* and we
             // are not currently respecting the 'browser accept header'.
-            _logger.NoAcceptForNegotiation();
+            Log.NoAcceptForNegotiation(_logger);
 
             selectFormatterWithoutRegardingAcceptHeader = true;
         }
@@ -106,7 +104,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         {
             if (contentTypes.Count == 0)
             {
-                _logger.SelectingOutputFormatterUsingAcceptHeader(acceptableMediaTypes);
+                Log.SelectingOutputFormatterUsingAcceptHeader(_logger, acceptableMediaTypes);
 
                 // Use whatever formatter can meet the client's request
                 selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
@@ -116,7 +114,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
             }
             else
             {
-                _logger.SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(acceptableMediaTypes, contentTypes);
+                Log.SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(_logger, acceptableMediaTypes, contentTypes);
 
                 // Verify that a content type from the context is compatible with the client's request
                 selectedFormatter = SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
@@ -128,7 +126,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
 
             if (selectedFormatter == null)
             {
-                _logger.NoFormatterFromNegotiation(acceptableMediaTypes);
+                Log.NoFormatterFromNegotiation(_logger, acceptableMediaTypes);
 
                 if (!_returnHttpNotAcceptable)
                 {
@@ -141,7 +139,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         {
             if (contentTypes.Count == 0)
             {
-                _logger.SelectingOutputFormatterWithoutUsingContentTypes();
+                Log.SelectingOutputFormatterWithoutUsingContentTypes(_logger);
 
                 selectedFormatter = SelectFormatterNotUsingContentType(
                     context,
@@ -149,7 +147,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
             }
             else
             {
-                _logger.SelectingOutputFormatterUsingContentTypes(contentTypes);
+                Log.SelectingOutputFormatterUsingContentTypes(_logger, contentTypes);
 
                 selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
                     context,
@@ -160,7 +158,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
 
         if (selectedFormatter != null)
         {
-            _logger.FormatterSelected(selectedFormatter, context);
+            Log.FormatterSelected(_logger, selectedFormatter, context);
         }
 
         return selectedFormatter;
@@ -189,7 +187,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters)
     {
-        _logger.SelectFirstCanWriteFormatter();
+        Log.SelectFirstCanWriteFormatter(_logger);
 
         foreach (var formatter in formatters)
         {
@@ -205,7 +203,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
+    private static IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
@@ -230,7 +228,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
+    private static IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         MediaTypeCollection acceptableContentTypes)
@@ -252,7 +250,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+    private static IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,
@@ -283,7 +281,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private void ValidateContentTypes(MediaTypeCollection contentTypes)
+    private static void ValidateContentTypes(MediaTypeCollection contentTypes)
     {
         for (var i = 0; i < contentTypes.Count; i++)
         {
@@ -298,5 +296,47 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
                 throw new InvalidOperationException(message);
             }
         }
+    }
+
+    private static partial class Log
+    {
+        public static void FormatterSelected(
+            ILogger logger,
+            IOutputFormatter outputFormatter,
+            OutputFormatterCanWriteContext context)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = Convert.ToString(context.ContentType, CultureInfo.InvariantCulture);
+                FormatterSelected(logger, outputFormatter, contentType);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Debug, "Selected output formatter '{OutputFormatter}' and content type '{ContentType}' to write the response.", EventName = "FormatterSelected", SkipEnabledCheck = true)]
+        public static partial void FormatterSelected(ILogger logger, IOutputFormatter outputFormatter, string? contentType);
+
+        [LoggerMessage(4, LogLevel.Debug, "No information found on request to perform content negotiation.", EventName = "NoAcceptForNegotiation")]
+        public static partial void NoAcceptForNegotiation(ILogger logger);
+
+        [LoggerMessage(5, LogLevel.Debug, "Could not find an output formatter based on content negotiation. Accepted types were ({AcceptTypes})", EventName = "NoFormatterFromNegotiation")]
+        public static partial void NoFormatterFromNegotiation(ILogger logger, IList<MediaTypeSegmentWithQuality> acceptTypes);
+
+        [LoggerMessage(6, LogLevel.Debug, "Attempting to select an output formatter based on Accept header '{AcceptHeader}'.", EventName = "SelectingOutputFormatterUsingAcceptHeader")]
+        public static partial void SelectingOutputFormatterUsingAcceptHeader(ILogger logger, IEnumerable<MediaTypeSegmentWithQuality> acceptHeader);
+
+        [LoggerMessage(7, LogLevel.Debug, "Attempting to select an output formatter based on Accept header '{AcceptHeader}' and explicitly specified content types '{ExplicitContentTypes}'. The content types in the accept header must be a subset of the explicitly set content types.", EventName = "SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes")]
+        public static partial void SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(ILogger logger, IEnumerable<MediaTypeSegmentWithQuality> acceptHeader, MediaTypeCollection explicitContentTypes);
+
+        [LoggerMessage(8, LogLevel.Debug, "Attempting to select an output formatter without using a content type as no explicit content types were specified for the response.", EventName = "SelectingOutputFormatterWithoutUsingContentTypes")]
+        public static partial void SelectingOutputFormatterWithoutUsingContentTypes(ILogger logger);
+
+        [LoggerMessage(9, LogLevel.Debug, "Attempting to select the first output formatter in the output formatters list which supports a content type from the explicitly specified content types '{ExplicitContentTypes}'.", EventName = "SelectingOutputFormatterUsingContentTypes")]
+        public static partial void SelectingOutputFormatterUsingContentTypes(ILogger logger, MediaTypeCollection explicitContentTypes);
+
+        [LoggerMessage(10, LogLevel.Debug, "Attempting to select the first formatter in the output formatters list which can write the result.", EventName = "SelectingFirstCanWriteFormatter")]
+        public static partial void SelectFirstCanWriteFormatter(ILogger logger);
+
+        [LoggerMessage(11, LogLevel.Debug, "List of registered output formatters, in the following order: {OutputFormatters}", EventName = "RegisteredOutputFormatters")]
+        public static partial void RegisteredOutputFormatters(ILogger logger, IEnumerable<IOutputFormatter> outputFormatters);
     }
 }

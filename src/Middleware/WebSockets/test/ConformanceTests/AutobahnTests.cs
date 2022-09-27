@@ -1,18 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest;
@@ -86,7 +79,6 @@ public class AutobahnTests : LoggedTest
     }
 
     private bool IsWindows8OrHigher() => OperatingSystem.IsWindowsVersionAtLeast(6, 2);
-
 
     private bool IsIISExpress10Installed()
     {

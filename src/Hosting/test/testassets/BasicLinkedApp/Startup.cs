@@ -22,10 +22,9 @@ public class HelloWorldMiddleware
     {
 
     }
-        
+
     public Task InvokeAsync(HttpContext context)
     {
         return context.Response.WriteAsync("Hello World");
     }
 }
-

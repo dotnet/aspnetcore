@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -75,22 +73,10 @@ public class IISMiddleware
         IAuthenticationSchemeProvider authentication,
         IHostApplicationLifetime applicationLifetime)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (applicationLifetime == null)
-        {
-            throw new ArgumentNullException(nameof(applicationLifetime));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(applicationLifetime);
         if (string.IsNullOrEmpty(pairingToken))
         {
             throw new ArgumentException("Missing or empty pairing token.");

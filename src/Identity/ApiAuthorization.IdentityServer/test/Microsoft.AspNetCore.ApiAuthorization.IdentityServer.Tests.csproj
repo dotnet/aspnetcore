@@ -6,7 +6,7 @@
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <!-- IdentityServer packages are not strong named -->
-    <NoWarn>CS8002</NoWarn>
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,18 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="current.pfx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="expired.pfx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="future.pfx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="test.pfx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Update="current.pfx" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="expired.pfx" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="future.pfx" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="test.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

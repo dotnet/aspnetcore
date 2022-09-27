@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs
 /// for ASP.NET MVC within an application.
 /// </summary>
-internal class EndpointRoutingUrlHelper : UrlHelperBase
+internal sealed class EndpointRoutingUrlHelper : UrlHelperBase
 {
     private readonly ILogger<EndpointRoutingUrlHelper> _logger;
     private readonly LinkGenerator _linkGenerator;
@@ -80,7 +78,6 @@ internal class EndpointRoutingUrlHelper : UrlHelperBase
         {
             values["controller"] = urlActionContext.Controller;
         }
-
 
         var path = _linkGenerator.GetPathByRouteValues(
             ActionContext.HttpContext,

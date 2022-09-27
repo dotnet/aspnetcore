@@ -22,17 +22,17 @@ public static class FacebookDefaults
     /// The default endpoint used to perform Facebook authentication.
     /// </summary>
     /// <remarks>
-    /// For more details about this endpoint, see https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login.
+    /// For more details about this endpoint, see <see href="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login"/>.
     /// </remarks>
-    public static readonly string AuthorizationEndpoint = "https://www.facebook.com/v11.0/dialog/oauth";
+    public static readonly string AuthorizationEndpoint = "https://www.facebook.com/v14.0/dialog/oauth";
 
     /// <summary>
     /// The OAuth endpoint used to retrieve access tokens.
     /// </summary>
-    public static readonly string TokenEndpoint = "https://graph.facebook.com/v11.0/oauth/access_token";
+    public static readonly string TokenEndpoint = "https://graph.facebook.com/v14.0/oauth/access_token";
 
     /// <summary>
     /// The Facebook Graph API endpoint that is used to gather additional user information.
     /// </summary>
-    public static readonly string UserInformationEndpoint = "https://graph.facebook.com/v11.0/me";
+    public static readonly string UserInformationEndpoint = "https://graph.facebook.com/v14.0/me";
 }

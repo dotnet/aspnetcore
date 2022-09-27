@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class ServerSentEventsTransport : ITransport
+internal sealed partial class ServerSentEventsTransport : ITransport
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
@@ -54,14 +55,19 @@ internal partial class ServerSentEventsTransport : ITransport
 
         Log.StartTransport(_logger, transferFormat);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+            Version = HttpVersion.Version20,
+#endif
+        };
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
         HttpResponseMessage? response = null;
 
         try
         {
-            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
         catch
@@ -96,7 +102,7 @@ internal partial class ServerSentEventsTransport : ITransport
         var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, _inputCts.Token);
 
         // Wait for send or receive to complete
-        var trigger = await Task.WhenAny(receiving, sending);
+        var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
 
         if (trigger == receiving)
         {
@@ -109,7 +115,7 @@ internal partial class ServerSentEventsTransport : ITransport
             // Cancel the application so that ReadAsync yields
             _application.Input.CancelPendingRead();
 
-            await sending;
+            await sending.ConfigureAwait(false);
         }
         else
         {
@@ -121,7 +127,7 @@ internal partial class ServerSentEventsTransport : ITransport
             // Cancel any pending flush so that we can quit
             _application.Output.CancelPendingFlush();
 
-            await receiving;
+            await receiving.ConfigureAwait(false);
         }
     }
 
@@ -135,7 +141,7 @@ internal partial class ServerSentEventsTransport : ITransport
 
         using (response)
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
-        using (var stream = await response.Content.ReadAsStreamAsync())
+        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
         {
             var reader = PipeReader.Create(stream);
@@ -147,7 +153,7 @@ internal partial class ServerSentEventsTransport : ITransport
                 while (true)
                 {
                     // We rely on the CancelReader callback to cancel pending reads. Do not pass the token to ReadAsync since that would result in an exception on cancelation.
-                    var result = await reader.ReadAsync(default);
+                    var result = await reader.ReadAsync(default).ConfigureAwait(false);
                     var buffer = result.Buffer;
                     var consumed = buffer.Start;
                     var examined = buffer.End;
@@ -174,7 +180,7 @@ internal partial class ServerSentEventsTransport : ITransport
 
                                     // When cancellationToken is canceled the next line will cancel pending flushes on the pipe unblocking the await.
                                     // Avoid passing the passed in context.
-                                    flushResult = await _application.Output.WriteAsync(message, default);
+                                    flushResult = await _application.Output.WriteAsync(message, default).ConfigureAwait(false);
 
                                     _parser.Reset();
                                     break;
@@ -237,7 +243,7 @@ internal partial class ServerSentEventsTransport : ITransport
 
         try
         {
-            await Running;
+            await Running.ConfigureAwait(false);
         }
         catch (Exception ex)
         {

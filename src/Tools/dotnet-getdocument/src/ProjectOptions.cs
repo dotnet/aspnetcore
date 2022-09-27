@@ -5,7 +5,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Extensions.ApiDescription.Tool;
 
-internal class ProjectOptions
+internal sealed class ProjectOptions
 {
     public CommandOption AssemblyPath { get; private set; }
 

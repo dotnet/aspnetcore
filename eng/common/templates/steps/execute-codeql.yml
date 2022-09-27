@@ -1,0 +1,32 @@
+parameters:
+  # Language that should be analyzed. Defaults to csharp
+  language: csharp
+  # Build Commands
+  buildCommands: ''
+  overrideParameters: ''                                       # Optional: to override values for parameters.
+  additionalParameters: ''                                     # Optional: parameters that need user specific values eg: '-SourceToolsList @("abc","def") -ArtifactToolsList @("ghi","jkl")'
+  # Optional: if specified, restore and use this version of Guardian instead of the default.
+  overrideGuardianVersion: ''
+  # Optional: if true, publish the '.gdn' folder as a pipeline artifact. This can help with in-depth
+  # diagnosis of problems with specific tool configurations.
+  publishGuardianDirectoryToPipeline: false
+  # The script to run to execute all SDL tools. Use this if you want to use a script to define SDL
+  # parameters rather than relying on YAML. It may be better to use a local script, because you can
+  # reproduce results locally without piecing together a command based on the YAML.
+  executeAllSdlToolsScript: 'eng/common/sdl/execute-all-sdl-tools.ps1'
+  # There is some sort of bug (has been reported) in Azure DevOps where if this parameter is named
+  # 'continueOnError', the parameter value is not correctly picked up.
+  # This can also be remedied by the caller (post-build.yml) if it does not use a nested parameter
+  # optional: determines whether to continue the build if the step errors;
+  sdlContinueOnError: false
+
+steps:
+- template: /eng/common/templates/steps/execute-sdl.yml
+  parameters:
+    overrideGuardianVersion: ${{ parameters.overrideGuardianVersion }}
+    executeAllSdlToolsScript: ${{ parameters.executeAllSdlToolsScript }}
+    overrideParameters: ${{ parameters.overrideParameters }}
+    additionalParameters: '${{ parameters.additionalParameters }}
+      -CodeQLAdditionalRunConfigParams @("BuildCommands < ${{ parameters.buildCommands }}", "Language < ${{ parameters.language }}")'
+    publishGuardianDirectoryToPipeline: ${{ parameters.publishGuardianDirectoryToPipeline }}
+    sdlContinueOnError: ${{ parameters.sdlContinueOnError }}

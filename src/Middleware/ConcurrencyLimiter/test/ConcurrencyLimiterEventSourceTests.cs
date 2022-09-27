@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Diagnostics.Tracing;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
-using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
@@ -19,7 +15,7 @@ public class ConcurrencyLimiterEventSourceTests
         var eventSource = new ConcurrencyLimiterEventSource();
 
         Assert.Equal("Microsoft.AspNetCore.ConcurrencyLimiter", eventSource.Name);
-        Assert.Equal(Guid.Parse("a605548a-6963-55cf-f000-99a6013deb01"), eventSource.Guid);
+        Assert.Equal(Guid.Parse("a605548a-6963-55cf-f000-99a6013deb01", CultureInfo.InvariantCulture), eventSource.Guid);
     }
 
     [Fact]

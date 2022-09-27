@@ -1,20 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 /// <summary>
 /// A <see cref="IActionResultExecutor{VirtualFileResult}"/> for <see cref="RedirectResult"/>.
 /// </summary>
-public class RedirectResultExecutor : IActionResultExecutor<RedirectResult>
+public partial class RedirectResultExecutor : IActionResultExecutor<RedirectResult>
 {
     private readonly ILogger _logger;
     private readonly IUrlHelperFactory _urlHelperFactory;
@@ -62,7 +58,7 @@ public class RedirectResultExecutor : IActionResultExecutor<RedirectResult>
             destinationUrl = urlHelper.Content(result.Url);
         }
 
-        _logger.RedirectResultExecuting(destinationUrl);
+        Log.RedirectResultExecuting(_logger, destinationUrl);
 
         if (result.PreserveMethod)
         {
@@ -76,5 +72,11 @@ public class RedirectResultExecutor : IActionResultExecutor<RedirectResult>
         }
 
         return Task.CompletedTask;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing RedirectResult, redirecting to {Destination}.", EventName = "RedirectResultExecuting")]
+        public static partial void RedirectResultExecuting(ILogger logger, string destination);
     }
 }

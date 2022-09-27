@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.ResponseCaching;
@@ -9,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class ResponseCacheFilterExecutor
+internal sealed class ResponseCacheFilterExecutor
 {
     private readonly CacheProfile _cacheProfile;
     private int? _cacheDuration;

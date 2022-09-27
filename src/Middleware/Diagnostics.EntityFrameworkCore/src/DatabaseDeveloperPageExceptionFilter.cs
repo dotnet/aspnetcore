@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
@@ -45,7 +42,10 @@ public sealed class DatabaseDeveloperPageExceptionFilter : IDeveloperPageExcepti
     /// <inheritdoc />
     public async Task HandleExceptionAsync(ErrorContext errorContext, Func<ErrorContext, Task> next)
     {
-        if (!(errorContext.Exception is DbException))
+        var dbException = errorContext.Exception as DbException
+              ?? errorContext.Exception?.InnerException as DbException;
+
+        if (dbException == null)
         {
             await next(errorContext);
             return;
@@ -76,7 +76,7 @@ public sealed class DatabaseDeveloperPageExceptionFilter : IDeveloperPageExcepti
                 {
                     var page = new DatabaseErrorPage
                     {
-                        Model = new DatabaseErrorPageModel(errorContext.Exception, contextDetails, _options, errorContext.HttpContext.Request.PathBase)
+                        Model = new DatabaseErrorPageModel(dbException, contextDetails, _options, errorContext.HttpContext.Request.PathBase)
                     };
 
                     await page.ExecuteAsync(errorContext.HttpContext);

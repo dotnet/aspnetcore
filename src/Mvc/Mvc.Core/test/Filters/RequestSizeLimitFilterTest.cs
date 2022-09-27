@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 

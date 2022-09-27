@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -21,7 +19,7 @@ public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
     /// Gets a collection of <see cref="IPageConvention"/> instances that are applied during
     /// route and page model construction.
     /// </summary>
-    public PageConventionCollection Conventions { get; internal set; } = default!;
+    public PageConventionCollection Conventions { get; internal set; } = new();
 
     /// <summary>
     /// Application relative path used as the root of discovery for Razor Page files.

@@ -1,9 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "App WebAssembly Blazor",
-    "description": "Modello di progetto per la creazione di un'app Blazor eseguita in WebAssembly e ospitata facoltativamente da un'app ASP.NET Core. Questo modello può essere usato per app Web con interfacce utente dinamiche.",
-    "parameter.Hosted.name": "ASP.NET Core _ospitato",
-    "parameter.PWA.name": "Applicazione Web _progressiva"
-  }
-}

@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 
 /// <summary>
 /// <see cref="AuthenticationProperties"/> for Microsoft OAuth challenge request.
-/// See https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code for reference
+/// See <see href="https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code"/> for reference.
 /// </summary>
 public class MicrosoftChallengeProperties : OAuthChallengeProperties
 {

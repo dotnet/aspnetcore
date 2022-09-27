@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
-using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -85,6 +83,10 @@ public class ContactApiController : Controller
         return foo;
     }
 
+    [HttpGet("[action]/{id}")]
+    public ActionResult<Contact> ActionWithInferredFromServicesParameter(int id, ContactsRepository repository)
+        => repository.GetContact(id) ?? new Contact() { ContactId = id };
+
     [HttpGet("[action]")]
     public ActionResult<int> ActionReturningStatusCodeResult()
     {
@@ -125,6 +127,14 @@ public class ContactApiController : Controller
                 },
         });
     }
+
+    [HttpGet("[action]/{id}")]
+    public IResult ActionReturningObjectIResult(int id)
+        => Results.Ok(new Contact() { ContactId = id });
+
+    [HttpGet("[action]")]
+    public IResult ActionReturningStatusCodeIResult()
+        => Results.NoContent();
 
     private class TestModelBinder : IModelBinder
     {

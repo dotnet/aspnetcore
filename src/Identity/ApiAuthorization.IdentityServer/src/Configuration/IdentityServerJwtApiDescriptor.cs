@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 
-internal class IdentityServerJwtDescriptor : IIdentityServerJwtDescriptor
+internal sealed class IdentityServerJwtDescriptor : IIdentityServerJwtDescriptor
 {
     public IdentityServerJwtDescriptor(IWebHostEnvironment environment)
     {

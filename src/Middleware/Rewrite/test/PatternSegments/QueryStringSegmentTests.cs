@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
 

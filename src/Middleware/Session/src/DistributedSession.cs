@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -267,12 +262,6 @@ public class DistributedSession : ISession
     /// <inheritdoc />
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsAvailable)
-        {
-            _logger.SessionNotAvailable();
-            return;
-        }
-
         using (var timeout = new CancellationTokenSource(_ioTimeout))
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);

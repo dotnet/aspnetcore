@@ -1,0 +1,26 @@
+{
+    "channelUri": "https://aka.ms/vs/17/intpreview/channel",
+    "channelId": "VisualStudio.17.IntPreview",
+    "includeRecommended": false,
+    "addProductLang": [
+        "en-US"
+    ],
+    "add": [
+        "Microsoft.Net.Component.4.6.2.TargetingPack",
+        "Microsoft.Net.Component.4.7.2.SDK",
+        "Microsoft.Net.Component.4.7.2.TargetingPack",
+        "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
+        "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
+        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.VC.14.29.16.11.ARM64",
+        "Microsoft.VisualStudio.Component.VC.14.29.16.11.x86.x64",
+        "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.ARM64",
+        "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL",
+        "Microsoft.VisualStudio.Component.Windows10SDK.19041",
+        "Microsoft.VisualStudio.Workload.ManagedDesktop",
+        "Microsoft.VisualStudio.Workload.NativeDesktop",
+        "Microsoft.VisualStudio.Workload.NetWeb",
+        "Microsoft.VisualStudio.Workload.VisualStudioExtension"
+    ]
+}

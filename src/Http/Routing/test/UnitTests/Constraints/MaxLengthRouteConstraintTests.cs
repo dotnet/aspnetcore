@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Tests;
 

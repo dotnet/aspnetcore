@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Http;
 
@@ -12,6 +11,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public class CookiePolicyOptions
 {
+    private string _consentCookieValue = "yes";
+
     /// <summary>
     /// Affects the cookie's same site attribute.
     /// </summary>
@@ -37,6 +38,24 @@ public class CookiePolicyOptions
         Expiration = TimeSpan.FromDays(365),
         IsEssential = true,
     };
+
+    /// <summary>
+    /// Gets or sets the value for the cookie used to track if the user consented to the
+    /// cookie use policy.
+    /// </summary>
+    /// <value>Defaults to <c>yes</c>.</value>
+    public string ConsentCookieValue
+    {
+        get => _consentCookieValue;
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException("Value cannot be null or empty string.", nameof(value));
+            }
+            _consentCookieValue = value;
+        }
+    }
 
     /// <summary>
     /// Checks if consent policies should be evaluated on this request. The default is false.

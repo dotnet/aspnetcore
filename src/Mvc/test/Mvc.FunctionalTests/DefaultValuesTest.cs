@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -95,6 +92,20 @@ public class DefaultValuesTest : IClassFixture<MvcTestFixture<BasicWebSite.Start
         TimeSpan timeSpan = new TimeSpan(10, 10, 10);
         var expected = $"{guid}, {timeSpan}";
         var url = $"http://localhost/DefaultValues/EchoValue_DefaultParameterValue_ForStructs?guid={guid}&timespan={timeSpan}";
+
+        // Act
+        var response = await Client.GetStringAsync(url);
+
+        // Assert
+        Assert.Equal(expected, response);
+    }
+
+    [Fact]
+    public async Task EchoValue_DefaultParameterValue_ForGlobbedPath()
+    {
+        // Arrange
+        var expected = $"index.html";
+        var url = "http://localhost/DefaultValues/EchoValue_DefaultParameterValue_ForGlobbedPath";
 
         // Act
         var response = await Client.GetStringAsync(url);

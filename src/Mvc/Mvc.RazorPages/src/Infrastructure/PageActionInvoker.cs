@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -17,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionInvoker : ResourceInvoker, IActionInvoker
+internal sealed class PageActionInvoker : ResourceInvoker, IActionInvoker
 {
     private readonly IPageHandlerMethodSelector _selector;
     private readonly PageContext _pageContext;
@@ -276,7 +272,7 @@ internal class PageActionInvoker : ResourceInvoker, IActionInvoker
             try
             {
                 _result = await executor(_instance, arguments);
-                _logger.ExecutedHandlerMethod(_pageContext, handler, _result);
+                _logger.ExecutedHandlerMethod(handler, _result);
             }
             finally
             {

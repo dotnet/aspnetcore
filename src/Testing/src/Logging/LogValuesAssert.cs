@@ -62,7 +62,7 @@ public static class LogValuesAssert
         return string.Join(",", logValues.Select(kvp => $"[{kvp.Key} {kvp.Value}]"));
     }
 
-    private class LogValueComparer : IEqualityComparer<KeyValuePair<string, object>>
+    private sealed class LogValueComparer : IEqualityComparer<KeyValuePair<string, object>>
     {
         public bool Equals(KeyValuePair<string, object> x, KeyValuePair<string, object> y)
         {

@@ -1,11 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite;
 
@@ -16,7 +13,7 @@ public class TestStringParserTests
     {
         var serverVar = "%{HTTPS}";
 
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new IsHttpsModSegment());
@@ -28,7 +25,7 @@ public class TestStringParserTests
     public void ConditionParser_MultipleServerVariables()
     {
         var serverVar = "%{HTTPS}%{REQUEST_URI}";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new IsHttpsModSegment());
@@ -41,7 +38,7 @@ public class TestStringParserTests
     public void ConditionParser_ParseLiteral()
     {
         var serverVar = "Hello!";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new LiteralSegment(serverVar));
@@ -53,7 +50,7 @@ public class TestStringParserTests
     public void ConditionParser_ParseConditionParameters()
     {
         var serverVar = "%1";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new ConditionMatchSegment(1));
@@ -65,7 +62,7 @@ public class TestStringParserTests
     public void ConditionParser_ParseMultipleConditionParameters()
     {
         var serverVar = "%1%2";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new ConditionMatchSegment(1));
@@ -78,7 +75,7 @@ public class TestStringParserTests
     public void ConditionParser_ParseRuleVariable()
     {
         var serverVar = "$1";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new RuleMatchSegment(1));
@@ -89,7 +86,7 @@ public class TestStringParserTests
     public void ConditionParser_ParseMultipleRuleVariables()
     {
         var serverVar = "$1$2";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new RuleMatchSegment(1));
@@ -102,7 +99,7 @@ public class TestStringParserTests
     public void ConditionParser_ParserComplexRequest()
     {
         var serverVar = "%{HTTPS}/$1";
-        var result = new TestStringParser().Parse(serverVar);
+        var result = TestStringParser.Parse(serverVar);
 
         var list = new List<PatternSegment>();
         list.Add(new IsHttpsModSegment());
@@ -120,11 +117,11 @@ public class TestStringParserTests
     [InlineData(@"%{asdf", "Missing close brace for parameter at string index: '6'")] // no closing } with characters
     public void ConditionParser_InvalidInput(string testString, string expected)
     {
-        var ex = Assert.Throws<FormatException>(() => new TestStringParser().Parse(testString));
+        var ex = Assert.Throws<FormatException>(() => TestStringParser.Parse(testString));
         Assert.Equal(expected, ex.Message);
     }
 
-    private void AssertPatternsEqual(Pattern p1, Pattern p2)
+    private static void AssertPatternsEqual(Pattern p1, Pattern p2)
     {
         Assert.Equal(p1.PatternSegments.Count, p2.PatternSegments.Count);
 

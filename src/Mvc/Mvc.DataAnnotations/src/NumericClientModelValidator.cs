@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
@@ -12,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// An implementation of <see cref="IClientModelValidator"/> that provides the rule for validating
 /// numeric types.
 /// </summary>
-internal class NumericClientModelValidator : IClientModelValidator
+internal sealed class NumericClientModelValidator : IClientModelValidator
 {
     /// <inheritdoc />
     public void AddValidation(ClientModelValidationContext context)
@@ -34,7 +32,7 @@ internal class NumericClientModelValidator : IClientModelValidator
         }
     }
 
-    private string GetErrorMessage(ModelMetadata modelMetadata)
+    private static string GetErrorMessage(ModelMetadata modelMetadata)
     {
         if (modelMetadata == null)
         {

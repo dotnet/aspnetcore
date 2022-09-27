@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "TypeScript dosyası",
+  "description": "Boş bir TypeScript kaynak dosyası",
+  "postActions/openInEditor/description": "File1.ts dosyasını düzenleyicide açar"
+}

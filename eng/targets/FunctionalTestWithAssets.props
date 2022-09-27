@@ -1,0 +1,19 @@
+<Project>
+  <!-- Defaults used in FunctionalTestWithAssets.targets. -->
+
+  <PropertyGroup>
+    <!-- Whether FunctionalTestWithAssets.targets should be loaded. -->
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <TestAssetProjectReference>
+      <!-- Optional properties to add when restoring, building, and publishing the test asset project. -->
+      <AdditionalProperties/>
+      <!-- Placement of test asset output within the consuming test project's bin/ or publish/ folder. -->
+      <RelativeFolder>%(Filename)</RelativeFolder>
+      <!-- Whether to _only_ publish the test asset into the test project's folders. -->
+      <SkipBuild>false</SkipBuild>
+    </TestAssetProjectReference>
+  </ItemDefinitionGroup>
+</Project>

@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
-internal class JsonArrayPool<T> : IArrayPool<T>
+internal sealed class JsonArrayPool<T> : IArrayPool<T>
 {
     private readonly ArrayPool<T> _inner;
 

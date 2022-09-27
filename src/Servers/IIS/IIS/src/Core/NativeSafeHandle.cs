@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class NativeSafeHandle : SafeHandle, IValueTaskSource<object?>
+internal sealed class NativeSafeHandle : SafeHandle, IValueTaskSource<object?>
 {
     private ManualResetValueTaskSourceCore<object?> _core; // mutable struct; do not make this readonly
 

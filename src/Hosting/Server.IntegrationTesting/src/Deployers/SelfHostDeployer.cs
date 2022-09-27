@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -170,8 +166,8 @@ public class SelfHostDeployer : ApplicationDeployer
             {
                 Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
-                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+                // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
 
                 TriggerHostShutdown(hostExitTokenSource);
             };
@@ -196,10 +192,10 @@ public class SelfHostDeployer : ApplicationDeployer
             // Host may not write startup messages, in which case assume it started
             if (DeploymentParameters.StatusMessagesEnabled)
             {
-                // The timeout here is large, because we don't know how long the test could need
-                // We cover a lot of error cases above, but I want to make sure we eventually give up and don't hang the build
-                // just in case we missed one -anurse
-                await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10));
+                // The timeout here is large, because we don't know how long the test could need. We cover a lot
+                // of error cases above, but I want to make sure we eventually give up and don't hang the build
+                // just in case we missed one.
+                await started.Task.TimeoutAfter(TimeSpan.FromMinutes(15));
             }
 
             return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token);

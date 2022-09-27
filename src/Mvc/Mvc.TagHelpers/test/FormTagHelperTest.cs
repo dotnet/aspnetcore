@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -18,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
@@ -470,8 +464,8 @@ public class FormTagHelperTest
             .Callback<ViewContext, string, string, object, string, object>(
                 (viewContext, actionName, controllerName, routeValues, method, htmlAttributes) =>
                 {
-                        // Fixes Roslyn bug with lambdas
-                        generator.ToString();
+                    // Fixes Roslyn bug with lambdas
+                    generator.ToString();
 
                     var routeValueDictionary = Assert.IsType<RouteValueDictionary>(routeValues);
                     Assert.Equal(2, routeValueDictionary.Count);
@@ -995,7 +989,6 @@ public class FormTagHelperTest
                 Enumerable.Empty<TagHelperAttribute>()),
             items: new Dictionary<object, object>(),
             uniqueId: "test");
-
 
         // Act
         await formTagHelper.ProcessAsync(context, output);

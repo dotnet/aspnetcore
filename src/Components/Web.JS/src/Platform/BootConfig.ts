@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 
 type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined;
@@ -11,9 +14,15 @@ export class BootConfigResult {
       loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
       defaultLoadBlazorBootJson('_framework/blazor.boot.json');
 
-    const bootConfigResponse = loaderResponse instanceof Promise ?
-      await loaderResponse :
-      await defaultLoadBlazorBootJson(loaderResponse ?? '_framework/blazor.boot.json');
+    let bootConfigResponse: Response;
+
+    if (!loaderResponse) {
+      bootConfigResponse = await defaultLoadBlazorBootJson('_framework/blazor.boot.json');
+    } else if (typeof loaderResponse === 'string') {
+      bootConfigResponse = await defaultLoadBlazorBootJson(loaderResponse);
+    } else {
+      bootConfigResponse = await loaderResponse;
+    }
 
     // While we can expect an ASP.NET Core hosted application to include the environment, other
     // hosts may not. Assume 'Production' in the absence of any specified value.

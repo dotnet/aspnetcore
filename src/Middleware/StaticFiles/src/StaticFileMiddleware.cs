@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -69,7 +66,7 @@ public class StaticFileMiddleware
     /// <returns></returns>
     public Task Invoke(HttpContext context)
     {
-        if (!ValidateNoEndpoint(context))
+        if (!ValidateNoEndpointDelegate(context))
         {
             _logger.EndpointMatched();
         }
@@ -94,8 +91,8 @@ public class StaticFileMiddleware
         return _next(context);
     }
 
-    // Return true because we only want to run if there is no endpoint.
-    private static bool ValidateNoEndpoint(HttpContext context) => context.GetEndpoint() == null;
+    // Return true because we only want to run if there is no endpoint delegate.
+    private static bool ValidateNoEndpointDelegate(HttpContext context) => context.GetEndpoint()?.RequestDelegate is null;
 
     private static bool ValidateMethod(HttpContext context)
     {

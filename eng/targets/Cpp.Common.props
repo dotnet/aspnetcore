@@ -9,6 +9,23 @@
     <IntDir>$(IntermediateOutputPath)</IntDir>
   </PropertyGroup>
 
+  <!-- These test projects are skipped because you cannot test native ARM64 projects on a x86/x64 machine. -->
+  <PropertyGroup Condition=" '$(Platform)' == 'ARM64' AND '$(TargetArchitecture)' == 'x64' ">
+    <SkipNativeTest>true</SkipNativeTest>
+    <TestProjectSkipReason>You cannot test native ARM64 projects on a x86/x64 machine</TestProjectSkipReason>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration">
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <PlatformToolsetVersion>v143</PlatformToolsetVersion>
+    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
+    <!-- If the following line is updated ensure that the /eng/scripts/vs.17.*.json files are updated to include the same version component too. -->
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
   <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
 

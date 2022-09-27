@@ -2,16 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Wasm.Authentication.Server.Data;
 using Wasm.Authentication.Server.Models;
 
@@ -42,6 +35,13 @@ public class Startup
             {
                 options.IdentityResources["openid"].UserClaims.Add("role");
                 options.ApiResources.Single().UserClaims.Add("role");
+                options.ApiResources.Add(new Duende.IdentityServer.Models.ApiResource
+                {
+                    Name = "SecondAPI",
+                    Scopes = new string[] { "SecondAPI" }
+                });
+                var client = options.Clients.Single();
+                client.AllowedScopes.Add("SecondAPI");
             });
 
         // Need to do this as it maps "role" to ClaimTypes.Role and causes issues

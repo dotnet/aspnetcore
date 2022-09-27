@@ -72,7 +72,7 @@ public class ClientDisconnectTests : StrictTestServerTests
                 {
                     await ctx.Response.Body.WriteAsync(data, ctx.RequestAborted);
                     await Task.Delay(10); // Small delay to not constantly call WriteAsync.
-                    }
+                }
             }
             catch (Exception e)
             {
@@ -225,7 +225,6 @@ public class ClientDisconnectTests : StrictTestServerTests
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27400")]
     public async Task ReaderThrowsResetExceptionOnInvalidBody()
     {
         var requestStartedCompletionSource = CreateTaskCompletionSource();

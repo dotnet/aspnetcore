@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -139,6 +135,12 @@ internal partial class IISHttpContext
             AbortIO(clientDisconnect: true);
             error = ex;
         }
+        catch (Http.BadHttpRequestException ex)
+        {
+            // Similar to a ConnectionResetException, this shouldn't be logged as an "Unexpected exception."
+            // This should be logged by whatever catches it. Likely IISHttpContextOfT.ProcessRequestsAsync().
+            error = ex;
+        }
         catch (Exception ex)
         {
             error = ex;
@@ -153,6 +155,7 @@ internal partial class IISHttpContext
     private async Task WriteBody(bool flush = false)
     {
         Exception? error = null;
+
         try
         {
             while (true)
@@ -160,10 +163,18 @@ internal partial class IISHttpContext
                 var result = await _bodyOutput.Reader.ReadAsync();
 
                 var buffer = result.Buffer;
+
                 try
                 {
+                    if (_bodyOutput.Aborted)
+                    {
+                        break;
+                    }
+
                     if (!buffer.IsEmpty)
                     {
+                        // We are ignoring the result of the write operation here. If we fix this behavior,
+                        // we should also fix AsyncIOEngine.WriteDataOverChunksLimit.
                         await AsyncIO!.WriteAsync(buffer);
                     }
 
@@ -263,20 +274,20 @@ internal partial class IISHttpContext
                         }
                     }
 
-                        // If we cancel the cts, we don't dispose as people may still be using
-                        // the cts. It also isn't necessary to dispose a canceled cts.
-                        localAbortCts?.Cancel();
+                    // If we cancel the cts, we don't dispose as people may still be using
+                    // the cts. It also isn't necessary to dispose a canceled cts.
+                    localAbortCts?.Cancel();
                 }
                 catch (Exception ex)
                 {
                     Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier!, ex); // TODO: Can TraceIdentifier be null?
-                    }
+                }
             }, this, preferLocal: false);
     }
 
     public void Abort(Exception reason)
     {
-        _bodyOutput.Abort(reason);
+        _bodyOutput.Abort();
         _streams.Abort(reason);
         NativeMethods.HttpCloseConnection(_requestNativeHandle);
 

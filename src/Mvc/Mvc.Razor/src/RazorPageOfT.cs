@@ -15,12 +15,11 @@ public abstract class RazorPage<TModel> : RazorPage
     /// <summary>
     /// Gets the Model property of the <see cref="ViewData"/> property.
     /// </summary>
-    public TModel? Model => ViewData == null ? default(TModel) : ViewData.Model;
+    public TModel Model => ViewData.Model;
 
     /// <summary>
     /// Gets or sets the dictionary for view data.
     /// </summary>
     [RazorInject]
     public ViewDataDictionary<TModel> ViewData { get; set; } = default!;
-
 }

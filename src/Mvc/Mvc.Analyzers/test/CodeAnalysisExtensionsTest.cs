@@ -165,7 +165,6 @@ namespace TestApp
         var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("Method").First();
 
-
         // Act
         var attributes = CodeAnalysisExtensions.GetAttributes(method, attribute, inherit: true);
 

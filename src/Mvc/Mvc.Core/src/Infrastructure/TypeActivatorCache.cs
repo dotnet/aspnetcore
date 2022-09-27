@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// Caches <see cref="ObjectFactory"/> instances produced by
 /// <see cref="ActivatorUtilities.CreateFactory(Type, Type[])"/>.
 /// </summary>
-internal class TypeActivatorCache : ITypeActivatorCache
+internal sealed class TypeActivatorCache : ITypeActivatorCache
 {
     private readonly Func<Type, ObjectFactory> _createFactory =
         (type) => ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);

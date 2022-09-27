@@ -3,7 +3,7 @@
 
 #nullable enable
 
-using System;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -12,9 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 public class ServicesModelBinderProvider : IModelBinderProvider
 {
-    // ServicesModelBinder does not have any state. Re-use the same instance for binding.
-
-    private readonly ServicesModelBinder _modelBinder = new ServicesModelBinder();
+    private readonly ServicesModelBinder _optionalServicesBinder = new() { IsOptional = true };
+    private readonly ServicesModelBinder _servicesBinder = new();
 
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
@@ -27,7 +26,15 @@ public class ServicesModelBinderProvider : IModelBinderProvider
         if (context.BindingInfo.BindingSource != null &&
             context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Services))
         {
-            return _modelBinder;
+            // IsRequired will be false for a Reference Type
+            // without a default value in a oblivious nullability context
+            // however, for services we shoud treat them as required
+            var isRequired = context.Metadata.IsRequired ||
+                    (context.Metadata.Identity.ParameterInfo?.HasDefaultValue != true &&
+                        !context.Metadata.ModelType.IsValueType &&
+                        context.Metadata.NullabilityState == NullabilityState.Unknown);
+
+            return isRequired ? _servicesBinder : _optionalServicesBinder;
         }
 
         return null;

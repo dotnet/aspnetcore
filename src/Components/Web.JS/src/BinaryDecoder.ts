@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 const uint64HighPartShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
@@ -26,7 +29,7 @@ export function readUint64LE(buffer: Uint8Array, position: number): any {
   return (highPart * uint64HighPartShift) + readUint32LE(buffer, position);
 }
 
-export function readLEB128(buffer: Uint8Array, position: number) {
+export function readLEB128(buffer: Uint8Array, position: number): number {
   let result = 0;
   let shift = 0;
   for (let index = 0; index < 4; index++) {
@@ -40,7 +43,7 @@ export function readLEB128(buffer: Uint8Array, position: number) {
   return result;
 }
 
-export function numLEB128Bytes(value: number) {
+export function numLEB128Bytes(value: number): 1 | 2 | 3 | 4 {
   return value < 128 ? 1
     : value < 16384 ? 2
       : value < 2097152 ? 3 : 4;

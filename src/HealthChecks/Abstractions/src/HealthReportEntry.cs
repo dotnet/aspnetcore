@@ -48,7 +48,6 @@ public struct HealthReportEntry
         Tags = tags ?? Enumerable.Empty<string>();
     }
 
-
     /// <summary>
     /// Gets additional key-value pairs describing the health of the component.
     /// </summary>

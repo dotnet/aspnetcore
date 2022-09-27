@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 /// A filter that will use the format value in the route data or query string to set the content type on an
 /// <see cref="ObjectResult"/> returned from an action.
 /// </summary>
-public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
+public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
 {
     private readonly MvcOptions _options;
     private readonly ILogger _logger;
@@ -83,7 +82,7 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
         var contentType = _options.FormatterMappings.GetMediaTypeMappingForFormat(format);
         if (contentType == null)
         {
-            _logger.UnsupportedFormatFilterContentType(format);
+            Log.UnsupportedFormatFilterContentType(_logger, format);
 
             // no contentType exists for the format, return 404
             context.Result = new NotFoundResult();
@@ -101,7 +100,7 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
         // Check if support is adequate for requested media type.
         if (supportedMediaTypes.Count == 0)
         {
-            _logger.ActionDoesNotExplicitlySpecifyContentTypes();
+            Log.ActionDoesNotExplicitlySpecifyContentTypes(_logger);
             return;
         }
 
@@ -111,12 +110,12 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
         // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
         if (!IsSuperSetOfAnySupportedMediaType(contentType, supportedMediaTypes))
         {
-            _logger.ActionDoesNotSupportFormatFilterContentType(contentType, supportedMediaTypes);
+            Log.ActionDoesNotSupportFormatFilterContentType(_logger, contentType, supportedMediaTypes);
             context.Result = new NotFoundResult();
         }
     }
 
-    private bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
+    private static bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
     {
         var parsedContentType = new MediaType(contentType);
         for (var i = 0; i < supportedMediaTypes.Count; i++)
@@ -164,7 +163,7 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
         if (objectResult.ContentTypes.Count == 1 ||
             !string.IsNullOrEmpty(context.HttpContext.Response.ContentType))
         {
-            _logger.CannotApplyFormatFilterContentType(format);
+            Log.CannotApplyFormatFilterContentType(_logger, format);
             return;
         }
 
@@ -179,5 +178,20 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
     /// <inheritdoc />
     public void OnResultExecuted(ResultExecutedContext context)
     {
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Could not find a media type for the format '{FormatFilterContentType}'.", EventName = "UnsupportedFormatFilterContentType")]
+        public static partial void UnsupportedFormatFilterContentType(ILogger logger, string formatFilterContentType);
+
+        [LoggerMessage(2, LogLevel.Debug, "Current action does not support the content type '{FormatFilterContentType}'. The supported content types are '{SupportedMediaTypes}'.", EventName = "ActionDoesNotSupportFormatFilterContentType")]
+        public static partial void ActionDoesNotSupportFormatFilterContentType(ILogger logger, string formatFilterContentType, MediaTypeCollection supportedMediaTypes);
+
+        [LoggerMessage(3, LogLevel.Debug, "Cannot apply content type '{FormatFilterContentType}' to the response as current action had explicitly set a preferred content type.", EventName = "CannotApplyFormatFilterContentType")]
+        public static partial void CannotApplyFormatFilterContentType(ILogger logger, string formatFilterContentType);
+
+        [LoggerMessage(5, LogLevel.Debug, "Current action does not explicitly specify any content types for the response.", EventName = "ActionDoesNotExplicitlySpecifyContentTypes")]
+        public static partial void ActionDoesNotExplicitlySpecifyContentTypes(ILogger logger);
     }
 }

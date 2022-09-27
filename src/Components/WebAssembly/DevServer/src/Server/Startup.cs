@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server;
 
-internal class Startup
+internal sealed class Startup
 {
     public Startup(IConfiguration configuration)
     {
@@ -17,12 +17,12 @@ internal class Startup
 
     public IConfiguration Configuration { get; }
 
-    public void ConfigureServices(IServiceCollection services)
+    public static void ConfigureServices(IServiceCollection services)
     {
         services.AddRouting();
     }
 
-    public void Configure(IApplicationBuilder app, IConfiguration configuration)
+    public static void Configure(IApplicationBuilder app, IConfiguration configuration)
     {
         app.UseDeveloperExceptionPage();
         EnableConfiguredPathbase(app, configuration);

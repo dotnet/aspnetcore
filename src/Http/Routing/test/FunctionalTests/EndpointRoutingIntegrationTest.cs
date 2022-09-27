@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
@@ -275,6 +273,42 @@ public class EndpointRoutingIntegrationTest
         await host.StartAsync();
 
         var response = await server.CreateRequest("/").SendAsync("PUT");
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task CorsMiddleware_WithCorsEndpoint_PreflightRequest()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseCors();
+                        app.UseEndpoints(b => b.MapPut("/", TestDelegate).RequireCors(policy => policy.AllowAnyOrigin().AllowAnyMethod()));
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddCors();
+                services.AddRouting();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+
+        await host.StartAsync();
+
+        var request = server.CreateRequest("/");
+        request.AddHeader(HeaderNames.Origin, "http://testlocation.com");
+        request.AddHeader(HeaderNames.AccessControlRequestMethod, HttpMethods.Put);
+
+        var response = await request.SendAsync(HttpMethods.Options);
 
         response.EnsureSuccessStatusCode();
     }

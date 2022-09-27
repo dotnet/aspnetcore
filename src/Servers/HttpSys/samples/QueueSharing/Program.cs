@@ -43,30 +43,30 @@ public static class Program
             {
                 webHost.UseHttpSys(options =>
                 {
-                        // Skipping this to ensure the server works without any prefixes in attach mode.
-                        if (mode != RequestQueueMode.Attach)
+                    // Skipping this to ensure the server works without any prefixes in attach mode.
+                    if (mode != RequestQueueMode.Attach)
                     {
                         options.UrlPrefixes.Add("http://localhost:5002");
                     }
                     options.RequestQueueName = "QueueName";
                     options.RequestQueueMode = mode;
                     options.MaxAccepts = 1; // Better load rotation between instances.
-                    }).ConfigureServices(services =>
-                {
+                }).ConfigureServices(services =>
+            {
 
-                }).Configure(app =>
+            }).Configure(app =>
+            {
+                app.Run(async context =>
                 {
-                    app.Run(async context =>
-                    {
-                        context.Response.ContentType = "text/plain";
-                            // There's a strong connection affinity between processes. Close the connection so the next request can be dispatched to a random instance.
-                            // It appears to be round robin based and switch instances roughly every 30 requests when using new connections.
-                            // This seems related to the default MaxAccepts (5 * processor count).
-                            // I'm told this connection affinity does not apply to HTTP/2.
-                            context.Response.Headers["Connection"] = "close";
-                        await context.Response.WriteAsync("Hello world from " + context.Request.Host + " at " + DateTime.Now);
-                    });
+                    context.Response.ContentType = "text/plain";
+                    // There's a strong connection affinity between processes. Close the connection so the next request can be dispatched to a random instance.
+                    // It appears to be round robin based and switch instances roughly every 30 requests when using new connections.
+                    // This seems related to the default MaxAccepts (5 * processor count).
+                    // I'm told this connection affinity does not apply to HTTP/2.
+                    context.Response.Headers["Connection"] = "close";
+                    await context.Response.WriteAsync("Hello world from " + context.Request.Host + " at " + DateTime.Now);
                 });
+            });
 
             })
             .Build();

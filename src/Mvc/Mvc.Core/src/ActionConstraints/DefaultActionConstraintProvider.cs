@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 
 /// <summary>
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 /// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or
 /// <see cref="IActionConstraintFactory"/>/
 /// </remarks>
-internal class DefaultActionConstraintProvider : IActionConstraintProvider
+internal sealed class DefaultActionConstraintProvider : IActionConstraintProvider
 {
     /// <inheritdoc />
     public int Order => -1000;
@@ -37,7 +35,7 @@ internal class DefaultActionConstraintProvider : IActionConstraintProvider
     {
     }
 
-    private void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
+    private static void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
     {
         // Don't overwrite anything that was done by a previous provider.
         if (item.Constraint != null)

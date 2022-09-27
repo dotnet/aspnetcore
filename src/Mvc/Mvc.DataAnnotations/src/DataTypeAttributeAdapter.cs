@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// A validation adapter that is used to map <see cref="DataTypeAttribute"/>'s to a single client side validation
 /// rule.
 /// </summary>
-internal class DataTypeAttributeAdapter : AttributeAdapterBase<DataTypeAttribute>
+internal sealed class DataTypeAttributeAdapter : AttributeAdapterBase<DataTypeAttribute>
 {
     public DataTypeAttributeAdapter(DataTypeAttribute attribute, string ruleName, IStringLocalizer? stringLocalizer)
         : base(attribute, stringLocalizer)

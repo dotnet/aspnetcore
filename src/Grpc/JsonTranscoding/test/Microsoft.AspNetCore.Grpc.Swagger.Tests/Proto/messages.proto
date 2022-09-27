@@ -1,0 +1,104 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package messages;
+
+message HelloRequest {
+  message SubMessage {
+    string subfield = 1;
+    repeated string subfields = 2;
+  }
+  message DataTypes {
+    enum NestedEnum {
+      NESTED_ENUM_UNSPECIFIED = 0;
+      FOO = 1;
+      BAR = 2;
+      BAZ = 3;
+      NEG = -1;  // Intentionally negative.
+    }
+    message NestedMessage {
+      string subfield = 1;
+    }
+    int32 single_int32 = 1;
+    int64 single_int64 = 2;
+    uint32 single_uint32 = 3;
+    uint64 single_uint64 = 4;
+    sint32 single_sint32 = 5;
+    sint64 single_sint64 = 6;
+    fixed32 single_fixed32 = 7;
+    fixed64 single_fixed64 = 8;
+    sfixed32 single_sfixed32 = 9;
+    sfixed64 single_sfixed64 = 10;
+    float single_float = 11;
+    double single_double = 12;
+    bool single_bool = 13;
+    string single_string = 14;
+    bytes single_bytes = 15;
+    NestedEnum single_enum = 16;
+    NestedMessage single_message = 17;
+  }
+  message Wrappers {
+    google.protobuf.StringValue string_value = 1;
+    google.protobuf.Int32Value int32_value = 2;
+    google.protobuf.Int64Value int64_value = 3;
+    google.protobuf.FloatValue float_value = 4;
+    google.protobuf.DoubleValue double_value = 5;
+    google.protobuf.BoolValue bool_value = 6;
+    google.protobuf.UInt32Value uint32_value = 7;
+    google.protobuf.UInt64Value uint64_value = 8;
+    google.protobuf.BytesValue bytes_value = 9;
+  }
+  string name = 1;
+  SubMessage sub = 2;
+  DataTypes data = 3;
+  Wrappers wrappers = 4;
+  repeated string repeated_strings = 5;
+}
+
+message HelloReply {
+  string message = 1;
+  repeated string values = 2;
+}
+
+message StringWrapper {
+  google.protobuf.StringValue string_value = 1;
+}
+
+message RecursiveMessage {
+  RecursiveMessage child = 1;
+}
+
+message BytesMessage {
+  bytes bytes_value = 1;
+  google.protobuf.BytesValue bytes_nullable_value = 2;
+}
+
+message EnumMessage {
+  enum NestedEnum {
+    NESTED_ENUM_UNSPECIFIED = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    NEG = -1;  // Intentionally negative.
+  }
+  NestedEnum enum_value = 1;
+}
+
+message OneOfMessage {
+  oneof First {
+    string first_one = 1;
+    string first_two = 2;
+  }
+  oneof Second {
+    string second_one = 3;
+    string second_two = 4;
+  }
+}
+
+message MapMessage {
+  map<string, double> map_value = 1;
+}

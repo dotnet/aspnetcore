@@ -3,11 +3,9 @@
 
 #nullable enable
 
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-internal class NoOpBinder : IModelBinder
+internal sealed class NoOpBinder : IModelBinder
 {
     public static readonly IModelBinder Instance = new NoOpBinder();
 

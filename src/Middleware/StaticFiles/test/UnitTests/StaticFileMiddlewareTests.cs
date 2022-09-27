@@ -1,24 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using System.Globalization;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles;
 
@@ -197,6 +192,86 @@ public class StaticFileMiddlewareTests
                 stream.Read(fileContents, 0, (int)stream.Length);
                 Assert.True(responseContent.SequenceEqual(fileContents));
             }
+        }
+    }
+
+    [Fact]
+    public async Task File_Served_If_Endpoint_With_Null_RequestDelegate_Is_Active()
+    {
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+        {
+            using var host = await StaticFilesTestServer.Create(app =>
+            {
+                app.UseRouting();
+                app.Use((ctx, next) =>
+                {
+                    ctx.SetEndpoint(new Endpoint(requestDelegate: null, new EndpointMetadataCollection(), "NullRequestDelegateEndpoint"));
+                    return next();
+                });
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    RequestPath = new PathString(),
+                    FileProvider = fileProvider
+                });
+                app.UseEndpoints(endpoints => { });
+            }, services => services.AddRouting());
+            using var server = host.GetTestServer();
+            var requestUrl = "/TestDocument.txt";
+            var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+            var response = await server.CreateRequest(requestUrl).GetAsync();
+            var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+            Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+            Assert.NotNull(response.Headers.ETag);
+
+            using (var stream = fileInfo.CreateReadStream())
+            {
+                var fileContents = new byte[stream.Length];
+                stream.Read(fileContents, 0, (int)stream.Length);
+                Assert.True(responseContent.SequenceEqual(fileContents));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task File_NotServed_If_Endpoint_With_RequestDelegate_Is_Active()
+    {
+        var responseText = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+        RequestDelegate handler = async (ctx) =>
+        {
+            ctx.Response.ContentType = "text/customfortest+plain";
+            await ctx.Response.WriteAsync(responseText);
+        };
+
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+        {
+            using var host = await StaticFilesTestServer.Create(app =>
+            {
+                app.UseRouting();
+                app.Use((ctx, next) =>
+                {
+                    ctx.SetEndpoint(new Endpoint(handler, new EndpointMetadataCollection(), "RequestDelegateEndpoint"));
+                    return next();
+                });
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    RequestPath = new PathString(),
+                    FileProvider = fileProvider
+                });
+                app.UseEndpoints(endpoints => { });
+            }, services => services.AddRouting());
+            using var server = host.GetTestServer();
+            var requestUrl = "/TestDocument.txt";
+
+            var response = await server.CreateRequest(requestUrl).GetAsync();
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/customfortest+plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(responseText, responseContent);
         }
     }
 

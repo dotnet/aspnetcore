@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +36,10 @@ internal abstract class MessageBody
     public bool RequestKeepAlive { get; protected set; }
 
     public bool RequestUpgrade { get; protected set; }
+
+    public bool ExtendedConnect { get; protected set; }
+
+    public HttpProtocol Context => _context;
 
     public virtual bool IsEmpty => false;
 
@@ -125,7 +126,7 @@ internal abstract class MessageBody
         OnReadStarting();
         _context.HasStartedConsumingRequestBody = true;
 
-        if (!RequestUpgrade)
+        if (!RequestUpgrade && !ExtendedConnect)
         {
             // Accessing TraceIdentifier will lazy-allocate a string ID.
             // Don't access TraceIdentifer unless logging is enabled.
@@ -153,7 +154,7 @@ internal abstract class MessageBody
 
         _stopped = true;
 
-        if (!RequestUpgrade)
+        if (!RequestUpgrade && !ExtendedConnect)
         {
             // Accessing TraceIdentifier will lazy-allocate a string ID
             // Don't access TraceIdentifer unless logging is enabled.

@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Certificate;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Certificate.Optional.Sample;
 
@@ -22,8 +17,8 @@ public class Startup
             {
                 options.Events = new CertificateAuthenticationEvents()
                 {
-                        // If there is no certificate we must be on HostWithoutCert that does not require one. Redirect to HostWithCert to prompt for a certificate.
-                        OnChallenge = context =>
+                    // If there is no certificate we must be on HostWithoutCert that does not require one. Redirect to HostWithCert to prompt for a certificate.
+                    OnChallenge = context =>
                     {
                         var request = context.Request;
                         var redirect = UriHelper.BuildAbsolute("https",
@@ -31,7 +26,7 @@ public class Startup
                             request.PathBase, request.Path, request.QueryString);
                         context.Response.Redirect(redirect, permanent: false, preserveMethod: true);
                         context.HandleResponse(); // Don't do the default behavior that would send a 403 response.
-                            return Task.CompletedTask;
+                        return Task.CompletedTask;
                     }
                 };
             });

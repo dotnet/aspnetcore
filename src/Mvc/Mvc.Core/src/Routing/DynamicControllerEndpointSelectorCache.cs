@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class DynamicControllerEndpointSelectorCache
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
     private readonly ConcurrentDictionary<int, DynamicControllerEndpointSelector> _endpointSelectorCache = new();

@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -18,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class IISHttpServer : IServer
+internal sealed class IISHttpServer : IServer
 {
     private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
@@ -262,7 +259,7 @@ internal class IISHttpServer : IServer
         }
     }
 
-    private class IISContextFactory<T> : IISContextFactory where T : notnull
+    private sealed class IISContextFactory<T> : IISContextFactory where T : notnull
     {
         private const string Latin1Suppport = "Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders";
 

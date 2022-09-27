@@ -16,7 +16,6 @@ public class ConnectionAbortedException : OperationCanceledException
     public ConnectionAbortedException() :
         this("The connection was aborted")
     {
-
     }
 
     /// <summary>

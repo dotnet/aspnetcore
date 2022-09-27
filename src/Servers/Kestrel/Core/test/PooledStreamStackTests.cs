@@ -110,8 +110,7 @@ public class PooledStreamStackTests
             clientPeerSettings: new Http2PeerSettings(),
             serverPeerSettings: new Http2PeerSettings(),
             frameWriter: null!,
-            connectionInputFlowControl: null!,
-            connectionOutputFlowControl: null!
+            connectionInputFlowControl: null!
         );
 
         return new Http2Stream<HttpContext>(new DummyApplication(), context)

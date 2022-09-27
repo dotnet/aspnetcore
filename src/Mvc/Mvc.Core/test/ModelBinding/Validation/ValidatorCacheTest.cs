@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 

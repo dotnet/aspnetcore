@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -189,7 +183,7 @@ public class RevalidatingServerAuthenticationStateProviderTest
     {
         // Arrange
         var validationTcs = new TaskCompletionSource<bool>();
-        var incrementExecuted = new TaskCompletionSource<bool>();
+        var incrementExecuted = new TaskCompletionSource();
         var authenticationStateChangedCount = 0;
         using var provider = new TestRevalidatingServerAuthenticationStateProvider(
             TimeSpan.FromMilliseconds(50));
@@ -198,7 +192,7 @@ public class RevalidatingServerAuthenticationStateProviderTest
         provider.AuthenticationStateChanged += _ =>
         {
             authenticationStateChangedCount++;
-            incrementExecuted.TrySetResult(true);
+            incrementExecuted.TrySetResult();
         };
 
         // Be waiting for the first ValidateAuthenticationStateAsync to complete
@@ -231,8 +225,8 @@ public class RevalidatingServerAuthenticationStateProviderTest
     class TestRevalidatingServerAuthenticationStateProvider : RevalidatingServerAuthenticationStateProvider
     {
         private readonly TimeSpan _revalidationInterval;
-        private TaskCompletionSource<object> _nextValidateAuthenticationStateAsyncCallSource
-            = new TaskCompletionSource<object>();
+        private TaskCompletionSource _nextValidateAuthenticationStateAsyncCallSource
+            = new TaskCompletionSource();
 
         public TestRevalidatingServerAuthenticationStateProvider(TimeSpan revalidationInterval)
             : base(NullLoggerFactory.Instance)
@@ -255,8 +249,8 @@ public class RevalidatingServerAuthenticationStateProviderTest
             RevalidationCallLog.Add((authenticationState, cancellationToken));
             var result = NextValidationResult;
             var prevCts = _nextValidateAuthenticationStateAsyncCallSource;
-            _nextValidateAuthenticationStateAsyncCallSource = new TaskCompletionSource<object>();
-            prevCts.SetResult(true);
+            _nextValidateAuthenticationStateAsyncCallSource = new TaskCompletionSource();
+            prevCts.SetResult();
             return result;
         }
     }

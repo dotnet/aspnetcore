@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebView.Services;
@@ -20,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 /// for web views, the IPC channel is outside the page context, whereas in Blazor Server,
 /// the IPC channel is within the circuit.
 /// </summary>
-internal class PageContext : IAsyncDisposable
+internal sealed class PageContext : IAsyncDisposable
 {
     private readonly AsyncServiceScope _serviceScope;
 

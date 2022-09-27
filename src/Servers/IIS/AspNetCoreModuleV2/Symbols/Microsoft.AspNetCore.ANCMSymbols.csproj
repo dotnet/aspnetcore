@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="..\..\build\assets.props" />
 
@@ -27,12 +27,15 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(BuildIisNativeProjects)' == 'true' ">
+  <ItemGroup Condition=" '$(UseIisNativeAssets)' == 'true' ">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="$(NativeVCPlatform)" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(NativeVCPlatform)" />
+
+    <UpToDateCheckInput Include="$(AspNetCoreModuleV2OutOfProcessHandlerDll)" />
+    <UpToDateCheckInput Include="$(AspNetCoreModuleV2ShimDll)" />
   </ItemGroup>
 
-  <Target Name="AddPackNativeComponents" AfterTargets="_CalculateInputsOutputsForPack" Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(PackNativeAssets)' == 'true'">
+  <Target Name="AddPackNativeComponents" AfterTargets="_CalculateInputsOutputsForPack" Condition="'$(UseIisNativeAssets)' == 'true' AND '$(PackNativeAssets)' == 'true'">
     <ItemGroup>
       <!-- RunShimComponents is based on the current runtime (NativePlatform) which should be the same as TargetRuntimeIdentifier -->
       <BuiltProjectOutputGroupOutput Include="%(RunShimComponents.DllLocation)" />

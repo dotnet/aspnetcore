@@ -1,20 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -71,7 +65,6 @@ public class ProtectedBrowserStorageTest
                 "{\"stringProperty\":\"Hello\",\"intProperty\":123}",
                 TestDataProtectionProvider.Unprotect(customPurpose, (string)arg)));
     }
-
 
     [Fact]
     public void SetAsync_ProtectsAndInvokesJS_NullValue()
@@ -151,7 +144,6 @@ public class ProtectedBrowserStorageTest
         Assert.Collection(invocation.Args, arg => Assert.Equal(keyName, arg));
     }
 
-
     [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_NoValue()
     {
@@ -221,7 +213,6 @@ public class ProtectedBrowserStorageTest
         var ex = await Assert.ThrowsAsync<CryptographicException>(
             async () => await protectedBrowserStorage.GetAsync<TestModel>("testKey"));
     }
-
 
     [Fact]
     public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_WrongPurpose()
@@ -304,7 +295,6 @@ public class ProtectedBrowserStorageTest
     class TestDataProtectionProvider : IDataProtectionProvider
     {
         public List<string> ProtectorsCreated { get; } = new List<string>();
-
 
         public static string Protect(string purpose, string plaintext)
             => new TestDataProtector(purpose).Protect(plaintext);

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -55,8 +53,13 @@ public class FormMultipartSection
     /// Gets the form value
     /// </summary>
     /// <returns>The form value</returns>
-    public Task<string> GetValueAsync()
-    {
-        return Section.ReadAsStringAsync();
-    }
+    public Task<string> GetValueAsync() => Section.ReadAsStringAsync();
+
+    /// <summary>
+    /// Gets the form value
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The form value</returns>
+    public ValueTask<string> GetValueAsync(CancellationToken cancellationToken)
+        => Section.ReadAsStringAsync(cancellationToken);
 }

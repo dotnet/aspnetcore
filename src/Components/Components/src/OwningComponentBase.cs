@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
@@ -38,10 +37,7 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable
                 throw new InvalidOperationException("Services cannot be accessed before the component is initialized.");
             }
 
-            if (IsDisposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             _scope ??= ScopeFactory.CreateAsyncScope();
             return _scope.Value.ServiceProvider;
@@ -86,10 +82,7 @@ public abstract class OwningComponentBase<TService> : OwningComponentBase, IDisp
     {
         get
         {
-            if (IsDisposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             // We cache this because we don't know the lifetime. We have to assume that it could be transient.
             _item ??= ScopedServices.GetRequiredService<TService>();

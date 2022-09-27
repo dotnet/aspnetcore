@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -242,8 +239,7 @@ public class DefaultKeyResolverTests
 
     private static IDefaultKeyResolver CreateDefaultKeyResolver()
     {
-        var options = Options.Create(new KeyManagementOptions());
-        return new DefaultKeyResolver(options, NullLoggerFactory.Instance);
+        return new DefaultKeyResolver(NullLoggerFactory.Instance);
     }
 
     private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)

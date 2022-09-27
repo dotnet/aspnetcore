@@ -1,60 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR;
 
-internal static class HubConnectionHandlerLog
+internal static partial class HubConnectionHandlerLog
 {
-    private static readonly Action<ILogger, string, Exception?> _errorDispatchingHubEvent =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "ErrorDispatchingHubEvent"), "Error when dispatching '{HubMethod}' on hub.");
+    [LoggerMessage(1, LogLevel.Error, "Error when dispatching '{HubMethod}' on hub.", EventName = "ErrorDispatchingHubEvent")]
+    public static partial void ErrorDispatchingHubEvent(ILogger logger, string hubMethod, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> _errorProcessingRequest =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(2, "ErrorProcessingRequest"), "Error when processing requests.");
+    [LoggerMessage(2, LogLevel.Debug, "Error when processing requests.", EventName = "ErrorProcessingRequest")]
+    public static partial void ErrorProcessingRequest(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> _abortFailed =
-        LoggerMessage.Define(LogLevel.Trace, new EventId(3, "AbortFailed"), "Abort callback failed.");
+    [LoggerMessage(3, LogLevel.Trace, "Abort callback failed.", EventName = "AbortFailed")]
+    public static partial void AbortFailed(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> _errorSendingClose =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ErrorSendingClose"), "Error when sending Close message.");
+    [LoggerMessage(4, LogLevel.Debug, "Error when sending Close message.", EventName = "ErrorSendingClose")]
+    public static partial void ErrorSendingClose(ILogger logger, Exception exception);
 
-    private static readonly Action<ILogger, Exception?> _connectedStarting =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ConnectedStarting"), "OnConnectedAsync started.");
+    [LoggerMessage(5, LogLevel.Debug, "OnConnectedAsync started.", EventName = "ConnectedStarting")]
+    public static partial void ConnectedStarting(ILogger logger);
 
-    private static readonly Action<ILogger, Exception?> _connectedEnding =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(6, "ConnectedEnding"), "OnConnectedAsync ending.");
-
-    public static void ErrorDispatchingHubEvent(ILogger logger, string hubMethod, Exception exception)
-    {
-        _errorDispatchingHubEvent(logger, hubMethod, exception);
-    }
-
-    public static void ErrorProcessingRequest(ILogger logger, Exception exception)
-    {
-        _errorProcessingRequest(logger, exception);
-    }
-
-    public static void AbortFailed(ILogger logger, Exception exception)
-    {
-        _abortFailed(logger, exception);
-    }
-
-    public static void ErrorSendingClose(ILogger logger, Exception exception)
-    {
-        _errorSendingClose(logger, exception);
-    }
-
-    public static void ConnectedStarting(ILogger logger)
-    {
-        _connectedStarting(logger, null);
-    }
-
-    public static void ConnectedEnding(ILogger logger)
-    {
-        _connectedEnding(logger, null);
-    }
+    [LoggerMessage(6, LogLevel.Debug, "OnConnectedAsync ending.", EventName = "ConnectedEnding")]
+    public static partial void ConnectedEnding(ILogger logger);
 }

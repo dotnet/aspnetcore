@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
+internal sealed class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
 {
-    public virtual bool AttemptResponseCaching(ResponseCachingContext context)
+    public bool AttemptResponseCaching(ResponseCachingContext context)
     {
         var request = context.HttpContext.Request;
 
@@ -31,7 +30,7 @@ internal class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
         return true;
     }
 
-    public virtual bool AllowCacheLookup(ResponseCachingContext context)
+    public bool AllowCacheLookup(ResponseCachingContext context)
     {
         var requestHeaders = context.HttpContext.Request.Headers;
         var cacheControl = requestHeaders.CacheControl;
@@ -58,13 +57,13 @@ internal class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
         return true;
     }
 
-    public virtual bool AllowCacheStorage(ResponseCachingContext context)
+    public bool AllowCacheStorage(ResponseCachingContext context)
     {
         // Check request no-store
         return !HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.NoStoreString);
     }
 
-    public virtual bool IsResponseCacheable(ResponseCachingContext context)
+    public bool IsResponseCacheable(ResponseCachingContext context)
     {
         var responseCacheControlHeader = context.HttpContext.Response.Headers.CacheControl;
 
@@ -164,7 +163,7 @@ internal class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
         return true;
     }
 
-    public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
+    public bool IsCachedEntryFresh(ResponseCachingContext context)
     {
         var age = context.CachedEntryAge!.Value;
         var cachedCacheControlHeaders = context.CachedResponseHeaders.CacheControl;

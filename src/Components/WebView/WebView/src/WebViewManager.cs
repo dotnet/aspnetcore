@@ -1,22 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
 /// <summary>
-/// Manages activities within a web view that hosts Blazor components. Platform authors
+/// Manages activities within a web view that hosts Razor components. Platform authors
 /// should subclass this to wire up the abstract and protected methods to the APIs of
 /// the platform's web view.
 /// </summary>
@@ -156,10 +150,10 @@ public abstract class WebViewManager : IAsyncDisposable
 
         _ = _dispatcher.InvokeAsync(async () =>
         {
-                // TODO: Verify this produces the correct exception-surfacing behaviors.
-                // For example, JS interop exceptions should flow back into JS, whereas
-                // renderer exceptions should be fatal.
-                try
+            // TODO: Verify this produces the correct exception-surfacing behaviors.
+            // For example, JS interop exceptions should flow back into JS, whereas
+            // renderer exceptions should be fatal.
+            try
             {
                 await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
             }
@@ -216,7 +210,7 @@ public abstract class WebViewManager : IAsyncDisposable
     private static Uri EnsureTrailingSlash(Uri uri)
         => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
 
-    private class RootComponent
+    private sealed class RootComponent
     {
         public Type ComponentType { get; init; }
         public ParameterView Parameters { get; init; }
@@ -247,7 +241,7 @@ public abstract class WebViewManager : IAsyncDisposable
         await DisposeAsyncCore();
     }
 
-    private class StaticWebAssetsLoader
+    private sealed class StaticWebAssetsLoader
     {
         internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider)
         {

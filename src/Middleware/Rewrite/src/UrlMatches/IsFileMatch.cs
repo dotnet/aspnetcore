@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class IsFileMatch : UrlMatch
+internal sealed class IsFileMatch : UrlMatch
 {
     public IsFileMatch(bool negate)
     {

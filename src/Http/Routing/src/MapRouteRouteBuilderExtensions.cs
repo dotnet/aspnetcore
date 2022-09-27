@@ -3,7 +3,7 @@
 
 #nullable enable
 
-using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,10 +22,11 @@ public static class MapRouteRouteBuilderExtensions
     /// <param name="name">The name of the route.</param>
     /// <param name="template">The URL pattern of the route.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly.")]
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template)
+        [StringSyntax("Route")] string? template)
     {
         MapRoute(routeBuilder, name, template, defaults: null);
         return routeBuilder;
@@ -42,10 +43,11 @@ public static class MapRouteRouteBuilderExtensions
     /// and values of the default values.
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly.")]
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults)
     {
         return MapRoute(routeBuilder, name, template, defaults, constraints: null);
@@ -67,10 +69,11 @@ public static class MapRouteRouteBuilderExtensions
     /// of the constraints.
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly.")]
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults,
         object? constraints)
     {
@@ -97,10 +100,11 @@ public static class MapRouteRouteBuilderExtensions
     /// of the data tokens.
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly.")]
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults,
         object? constraints,
         object? dataTokens)
@@ -135,7 +139,7 @@ public static class MapRouteRouteBuilderExtensions
         return new BackCompatInlineConstraintResolver(inlineConstraintResolver, parameterPolicyFactory);
     }
 
-    private class BackCompatInlineConstraintResolver : IInlineConstraintResolver
+    private sealed class BackCompatInlineConstraintResolver : IInlineConstraintResolver
     {
         private readonly IInlineConstraintResolver _inner;
         private readonly ParameterPolicyFactory _parameterPolicyFactory;

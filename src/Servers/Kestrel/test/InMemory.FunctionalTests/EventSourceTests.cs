@@ -174,8 +174,8 @@ public class EventSourceTests : LoggedTest
             {
                 ConnectCallback = (_, _) =>
                 {
-                        // This test should only require a single connection.
-                        if (connectionId != null)
+                    // This test should only require a single connection.
+                    if (connectionId != null)
                     {
                         throw new InvalidOperationException();
                     }

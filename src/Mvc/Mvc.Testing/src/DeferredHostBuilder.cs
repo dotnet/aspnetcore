@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.AspNetCore.Mvc.Testing;
 
 // This host builder captures calls to the IHostBuilder then replays them in the call to ConfigureHostBuilder
-internal class DeferredHostBuilder : IHostBuilder
+internal sealed class DeferredHostBuilder : IHostBuilder
 {
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
@@ -29,9 +25,9 @@ internal class DeferredHostBuilder : IHostBuilder
     {
         _configure = b =>
         {
-                // Copy the properties from this builder into the builder
-                // that we're going to receive
-                foreach (var pair in Properties)
+            // Copy the properties from this builder into the builder
+            // that we're going to receive
+            foreach (var pair in Properties)
             {
                 b.Properties[pair.Key] = pair.Value;
             }
@@ -119,7 +115,7 @@ internal class DeferredHostBuilder : IHostBuilder
         _hostFactory = hostFactory;
     }
 
-    private class DeferredHost : IHost, IAsyncDisposable
+    private sealed class DeferredHost : IHost, IAsyncDisposable
     {
         private readonly IHost _host;
         private readonly TaskCompletionSource _hostStartedTcs;

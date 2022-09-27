@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;

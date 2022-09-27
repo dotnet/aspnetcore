@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +14,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost;
 
@@ -178,16 +172,16 @@ public class TestClientTests
 
         RequestDelegate appDelegate = async ctx =>
         {
-                // Send headers
-                await ctx.Response.BodyWriter.FlushAsync();
+            // Send headers
+            await ctx.Response.BodyWriter.FlushAsync();
 
-                // Ensure headers received by client
-                await responseStartedSyncPoint.WaitToContinue();
+            // Ensure headers received by client
+            await responseStartedSyncPoint.WaitToContinue();
 
             await ctx.Response.WriteAsync("STARTED");
 
-                // ReadToEndAsync will wait until request body is complete
-                var requestString = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
+            // ReadToEndAsync will wait until request body is complete
+            var requestString = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
             await ctx.Response.WriteAsync(requestString + " POST Response");
 
             await requestEndingSyncPoint.WaitToContinue();
@@ -243,6 +237,28 @@ public class TestClientTests
     }
 
     [Fact]
+    public async Task ClientStreaming_HttpContentException()
+    {
+        var requestCount = 0;
+        RequestDelegate appDelegate = ctx =>
+        {
+            requestCount++;
+            return Task.CompletedTask;
+        };
+
+        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+        var server = new TestServer(builder);
+        var client = server.CreateClient();
+
+        var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+        message.Content = new PushContent(stream => throw new InvalidOperationException("HttpContent exception"));
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(message, CancellationToken.None));
+        Assert.Equal("HttpContent exception", ex.Message);
+        Assert.Equal(0, requestCount);
+    }
+
+    [Fact]
     public async Task ClientStreaming_Cancellation()
     {
         // Arrange
@@ -254,11 +270,11 @@ public class TestClientTests
 
         RequestDelegate appDelegate = async ctx =>
         {
-                // Send headers
-                await ctx.Response.BodyWriter.FlushAsync();
+            // Send headers
+            await ctx.Response.BodyWriter.FlushAsync();
 
-                // Ensure headers received by client
-                await responseStartedSyncPoint.WaitToContinue();
+            // Ensure headers received by client
+            await responseStartedSyncPoint.WaitToContinue();
 
             var serverBuffer = new byte[1024];
             var serverLength = await ctx.Request.Body.ReadAsync(serverBuffer);
@@ -327,7 +343,7 @@ public class TestClientTests
     public async Task ClientStreaming_ResponseCompletesWithoutReadingRequest()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var responseEndingSyncPoint = new SyncPoint();
 
         RequestDelegate appDelegate = async ctx =>
@@ -368,7 +384,7 @@ public class TestClientTests
             try
             {
                 await requestStream.WriteAsync(Encoding.UTF8.GetBytes(new string('!', 1024 * 1024 * 50))).AsTask().DefaultTimeout();
-                requestStreamTcs.SetResult(null);
+                requestStreamTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -389,7 +405,7 @@ public class TestClientTests
     public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         RequestDelegate appDelegate = async ctx =>
         {
@@ -430,14 +446,14 @@ public class TestClientTests
         Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
 
         // Unblock request
-        requestStreamTcs.TrySetResult(null);
+        requestStreamTcs.TrySetResult();
     }
 
     [Fact]
     public async Task ClientStreaming_ResponseCompletesWithoutResponseBodyWrite()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         RequestDelegate appDelegate = ctx =>
         {
@@ -477,7 +493,7 @@ public class TestClientTests
         await Assert.ThrowsAnyAsync<Exception>(() => requestStream.WriteAsync(buffer).AsTask());
 
         // Unblock request
-        requestStreamTcs.TrySetResult(null);
+        requestStreamTcs.TrySetResult();
     }
 
     [Fact]
@@ -489,8 +505,8 @@ public class TestClientTests
 
         RequestDelegate appDelegate = async ctx =>
         {
-                // Send headers
-                await ctx.Response.BodyWriter.FlushAsync();
+            // Send headers
+            await ctx.Response.BodyWriter.FlushAsync();
 
             ctx.Abort();
             await responseEndingSyncPoint.WaitToContinue();
@@ -635,10 +651,10 @@ public class TestClientTests
                 if (ctx.WebSockets.WebSocketRequestedProtocols.Contains("alpha") &&
                     ctx.WebSockets.WebSocketRequestedProtocols.Contains("bravo"))
                 {
-                        // according to rfc6455, the "server needs to include the same field and one of the selected subprotocol values"
-                        // however, this isn't enforced by either our server or client so it's possible to accept an arbitrary protocol.
-                        // Done here to demonstrate not "correct" behaviour, simply to show it's possible. Other clients may not allow this.
-                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync("charlie");
+                    // according to rfc6455, the "server needs to include the same field and one of the selected subprotocol values"
+                    // however, this isn't enforced by either our server or client so it's possible to accept an arbitrary protocol.
+                    // Done here to demonstrate not "correct" behaviour, simply to show it's possible. Other clients may not allow this.
+                    var websocket = await ctx.WebSockets.AcceptWebSocketAsync("charlie");
                     await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
                 }
                 else
@@ -810,11 +826,11 @@ public class TestClientTests
     public async Task ClientDisposalAbortsRequest()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         RequestDelegate appDelegate = async ctx =>
         {
-                // Write Headers
-                await ctx.Response.Body.FlushAsync();
+            // Write Headers
+            await ctx.Response.Body.FlushAsync();
 
             var sem = new SemaphoreSlim(0);
             try
@@ -843,13 +859,13 @@ public class TestClientTests
     [Fact]
     public async Task ClientCancellationAbortsRequest()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
         {
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
-                tcs.SetResult(0);
+                tcs.SetResult();
             }
             catch (Exception e)
             {
@@ -1009,8 +1025,8 @@ public class TestClientTests
                 app.Run(async c =>
                 {
                     var upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
-                        // Feature needs to exist for SignalR to verify that the server supports WebSockets
-                        Assert.NotNull(upgradeFeature);
+                    // Feature needs to exist for SignalR to verify that the server supports WebSockets
+                    Assert.NotNull(upgradeFeature);
                     Assert.False(upgradeFeature.IsUpgradableRequest);
                     await Assert.ThrowsAsync<NotSupportedException>(() => upgradeFeature.UpgradeAsync());
 

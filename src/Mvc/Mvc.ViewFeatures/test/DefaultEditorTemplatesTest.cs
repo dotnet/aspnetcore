@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -17,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -926,7 +920,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -997,7 +991,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1067,7 +1061,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1136,7 +1130,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1202,7 +1196,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = "Formatted as {0:O}"; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(

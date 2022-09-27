@@ -1,7 +1,10 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 const path = require('path');
 const webpack = require('webpack');
-const TerserJsPlugin = require("terser-webpack-plugin");
-const { DuplicatesPlugin } = require("inspectpack/plugin");
+const TerserJsPlugin = require('terser-webpack-plugin');
+const { DuplicatesPlugin } = require('inspectpack/plugin');
 
 module.exports = (env, args) => ({
     resolve: {
@@ -42,7 +45,7 @@ module.exports = (env, args) => ({
                 keep_classnames: false,
                 keep_fnames: false,
                 toplevel: true
-          }
+            }
         })]
     },
     plugins: Array.prototype.concat.apply([

@@ -1,19 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using BasicTestApp;
-using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -50,6 +43,22 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     }
 
     [Fact]
+    public void CanRenderSvgWithAttributeRemoval()
+    {
+        var appElement = Browser.MountTestComponent<SvgComponent>();
+
+        var svgElement = appElement.FindElement(By.Id("svg-with-callback"));
+        Assert.NotNull(svgElement);
+
+        var svgCircleElement = svgElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
+        Assert.NotNull(svgCircleElement);
+        Assert.Equal("stroke: red;", svgCircleElement.GetAttribute("style"));
+
+        appElement.FindElement(By.TagName("button")).Click();
+        Browser.Equal("", () => svgCircleElement.GetAttribute("style"));
+    }
+
+    [Fact]
     public void CanRenderSvgChildComponentWithCorrectNamespace()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -78,7 +87,6 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
     public void CanRenderSvgWithLink()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();

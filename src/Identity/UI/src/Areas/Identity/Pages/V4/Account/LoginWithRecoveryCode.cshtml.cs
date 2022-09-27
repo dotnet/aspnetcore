@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -24,13 +22,13 @@ public abstract class LoginWithRecoveryCodeModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public string ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -46,23 +44,23 @@ public abstract class LoginWithRecoveryCodeModel : PageModel
         [Required]
         [DataType(DataType.Text)]
         [Display(Name = "Recovery Code")]
-        public string RecoveryCode { get; set; }
+        public string RecoveryCode { get; set; } = default!;
     }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnGetAsync(string returnUrl = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnGetAsync(string? returnUrl = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnPostAsync(string returnUrl = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnPostAsync(string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel where TUser : class
+internal sealed class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;
@@ -78,7 +76,7 @@ internal class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel wh
         _logger = logger;
     }
 
-    public override async Task<IActionResult> OnGetAsync(string returnUrl = null)
+    public override async Task<IActionResult> OnGetAsync(string? returnUrl = null)
     {
         // Ensure the user has gone through the username & password screen first
         var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -92,7 +90,7 @@ internal class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel wh
         return Page();
     }
 
-    public override async Task<IActionResult> OnPostAsync(string returnUrl = null)
+    public override async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         if (!ModelState.IsValid)
         {
@@ -109,7 +107,7 @@ internal class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel wh
 
         var result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
-        var userId = await _userManager.GetUserIdAsync(user);
+        await _userManager.GetUserIdAsync(user);
 
         if (result.Succeeded)
         {

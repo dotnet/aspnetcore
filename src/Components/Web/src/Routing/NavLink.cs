@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -170,7 +168,7 @@ public class NavLink : ComponentBase, IDisposable
         builder.CloseElement();
     }
 
-    private string? CombineWithSpace(string? str1, string str2)
+    private static string? CombineWithSpace(string? str1, string str2)
         => str1 == null ? str2 : $"{str1} {str2}";
 
     private static bool IsStrictlyPrefixWithSeparator(string value, string prefix)

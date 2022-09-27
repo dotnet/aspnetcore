@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.SpaServices.StaticFiles;
 /// Provides an implementation of <see cref="ISpaStaticFileProvider"/> that supplies
 /// physical files at a location configured using <see cref="SpaStaticFilesOptions"/>.
 /// </summary>
-internal class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
+internal sealed class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
 {
     private readonly IFileProvider? _fileProvider;
 

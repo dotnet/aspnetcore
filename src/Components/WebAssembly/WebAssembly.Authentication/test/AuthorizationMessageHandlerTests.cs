@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -63,7 +59,8 @@ public class AuthorizationMessageHandlerTests
                     GrantedScopes = new string[] { "All" },
                     Value = "asdf"
                 },
-                "https://www.example.com")));
+                null,
+                null)));
 
         var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
         handler.ConfigureHandler(new[] { "https://localhost:5001" });
@@ -91,7 +88,8 @@ public class AuthorizationMessageHandlerTests
                     GrantedScopes = new string[] { "All" },
                     Value = "asdf"
                 },
-                "https://www.example.com")));
+                null,
+                null)));
 
         var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
         handler.ConfigureHandler(new[] { "https://localhost:5001" });
@@ -123,7 +121,8 @@ public class AuthorizationMessageHandlerTests
                     GrantedScopes = new string[] { "All" },
                     Value = "asdf"
                 },
-                "https://www.example.com")));
+                null,
+                null)));
 
         var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
         handler.ConfigureHandler(new[] { "https://localhost:5001" });
@@ -149,7 +148,8 @@ public class AuthorizationMessageHandlerTests
         tokenProvider.Setup(tp => tp.RequestAccessToken())
                 .Returns(new ValueTask<AccessTokenResult>(new AccessTokenResult(AccessTokenResultStatus.RequiresRedirect,
                 null,
-                "https://www.example.com")));
+                "authentication/login",
+                new InteractiveRequestOptions { Interaction = InteractionType.GetToken, ReturnUrl = "https://www.example.com" })));
 
         var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
         handler.ConfigureHandler(new[] { "https://localhost:5001" });
@@ -174,7 +174,8 @@ public class AuthorizationMessageHandlerTests
                 GrantedScopes = new string[] { "All" },
                 Value = "asdf"
             },
-            "https://www.example.com/return")));
+            null,
+            null)));
 
         var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
         handler.ConfigureHandler(

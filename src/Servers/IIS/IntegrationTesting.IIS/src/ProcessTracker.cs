@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -9,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
 // Uses Windows Job Objects to ensure external processes are killed if the current process is terminated non-gracefully.
-internal static class ProcessTracker
+internal static partial class ProcessTracker
 {
     private static readonly IntPtr _jobHandle = IntiailizeProcessTracker();
 
@@ -64,15 +63,17 @@ internal static class ProcessTracker
         }
     }
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string name);
+    [LibraryImport("kernel32.dll", EntryPoint = "CreateJobObjectW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial IntPtr CreateJobObject(IntPtr lpJobAttributes, string name);
 
-    [DllImport("kernel32.dll")]
-    static extern bool SetInformationJobObject(IntPtr job, JobObjectInfoType infoType,
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetInformationJobObject(IntPtr job, JobObjectInfoType infoType,
         IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
     private enum JobObjectInfoType
     {

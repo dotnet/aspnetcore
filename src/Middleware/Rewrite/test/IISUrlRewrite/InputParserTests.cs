@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite;
 
@@ -66,10 +65,39 @@ public class InputParserTests
 
     [Theory]
     [InlineData("hey/{UrlEncode:<hey>}", "hey/%3Chey%3E")]
+    [InlineData("hey/?returnUrl={UrlEncode:http://domain.com?query=résumé}", "hey/?returnUrl=http%3A%2F%2Fdomain.com%3Fquery%3Dr%C3%A9sum%C3%A9")]
     public void EvaluatUriEncodeRule(string testString, string expected)
     {
         var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
         var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+        Assert.Equal(expected, result);
+    }
+    [Theory]
+    [InlineData("hey/{UrlDecode:%3Chey%3E}","hey/<hey>")]
+    [InlineData("{UrlDecode:http%3A%2F%2Fdomain.com%3Fquery%3Dr%C3%A9sum%C3%A9}", "http://domain.com?query=résumé")]
+    public void EvaluateUriDecodeRule(string testString, string expected)
+    {
+        var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
+        var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("hey/{HTTP_URL}","hey/TEST_VARIABLE")]
+    public void ParseString_WithContextContainingServerVariableString_ShouldReturnResultContainingValueOfVariable(string testString, string expected)
+    {
+        var variablesDict = new Dictionary<string, string>()
+        {
+            { "HTTP_URL", "TEST_VARIABLE"}
+        };
+        var features = new FeatureCollection(1);
+        features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(variablesDict));
+
+        var rewriteContext= new RewriteContext { HttpContext = new DefaultHttpContext(features), StaticFileProvider = null, Logger = NullLogger.Instance };
+
+        var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
+        var result = middle.Evaluate(rewriteContext, CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+
         Assert.Equal(expected, result);
     }
 
@@ -128,31 +156,31 @@ public class InputParserTests
         Assert.Equal(expectedValue, result);
     }
 
-    private RewriteContext CreateTestRewriteContext()
+    private static RewriteContext CreateTestRewriteContext()
     {
         var context = new DefaultHttpContext();
         return new RewriteContext { HttpContext = context, StaticFileProvider = null, Logger = NullLogger.Instance };
     }
 
-    private BackReferenceCollection CreateTestRuleBackReferences()
+    private static BackReferenceCollection CreateTestRuleBackReferences()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new BackReferenceCollection(match.Groups);
     }
 
-    private BackReferenceCollection CreateTestCondBackReferences()
+    private static BackReferenceCollection CreateTestCondBackReferences()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new BackReferenceCollection(match.Groups);
     }
 
-    private MatchResults CreateRewriteMapRuleMatch(string input)
+    private static MatchResults CreateRewriteMapRuleMatch(string input)
     {
         var match = Regex.Match(input, "([^/]*)/?(.*)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
     }
 
-    private MatchResults CreateRewriteMapConditionMatch(string input)
+    private static MatchResults CreateRewriteMapConditionMatch(string input)
     {
         var match = Regex.Match(input, "(.+)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));

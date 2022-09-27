@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Metadata;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -331,10 +327,46 @@ public class MethodHub : TestHub
 
     public async Task BlockingMethod()
     {
-        var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        Context.ConnectionAborted.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Context.ConnectionAborted.Register(state => ((TaskCompletionSource)state).SetResult(), tcs);
 
         await tcs.Task;
+    }
+
+    public async Task<int> GetClientResult(int num)
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num, cancellationToken: default);
+        return sum;
+    }
+
+    public void BackgroundClientResult(TcsService tcsService)
+    {
+        var caller = Clients.Caller;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await tcsService.StartedMethod.Task;
+                var result = await caller.InvokeAsync<int>("GetResult", 1, CancellationToken.None);
+                tcsService.EndMethod.SetResult(result);
+            }
+            catch (Exception ex)
+            {
+                tcsService.EndMethod.SetException(ex);
+            }
+        });
+    }
+
+    public async Task<int> GetClientResultWithStream(ChannelReader<int> channelReader)
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        return sum;
+    }
+
+    public async IAsyncEnumerable<int> StreamWithClientResult()
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        yield return sum;
     }
 }
 
@@ -352,8 +384,8 @@ public abstract class TestHub : Hub
 {
     public override Task OnConnectedAsync()
     {
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 }
@@ -362,8 +394,8 @@ public class DynamicTestHub : DynamicHub
 {
     public override Task OnConnectedAsync()
     {
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 
@@ -438,12 +470,12 @@ public class DynamicTestHub : DynamicHub
     }
 }
 
-public class HubT : Hub<Test>
+public class HubT : Hub<ITest>
 {
     public override Task OnConnectedAsync()
     {
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 
@@ -522,13 +554,24 @@ public class HubT : Hub<Test>
     {
         return Clients.Caller.Send(message);
     }
+
+    public async Task<ClientResults> GetClientResultTwoWays(int clientValue, int callerValue) =>
+        new ClientResults(
+            await Clients.Client(Context.ConnectionId).GetClientResult(clientValue),
+            await Clients.Caller.GetClientResult(callerValue));
 }
 
-public interface Test
+public interface ITest
 {
     Task Send(string message);
     Task Broadcast(string message);
+
+    Task<int> GetClientResult(int value);
+
+    Task<int> GetClientResultWithCancellation(int value, CancellationToken cancellationToken);
 }
+
+public record ClientResults(int ClientResult, int CallerResult);
 
 public class OnConnectedThrowsHub : Hub
 {
@@ -680,6 +723,15 @@ public class StreamingHub : TestHub
         }
     }
 
+    public async IAsyncEnumerable<string> ExceptionAsyncEnumerable()
+    {
+        await Task.Yield();
+        throw new Exception("Exception from async enumerable");
+#pragma warning disable CS0162 // Unreachable code detected
+        yield break;
+#pragma warning restore CS0162 // Unreachable code detected
+    }
+
     public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
     {
         await Task.Yield();
@@ -705,6 +757,20 @@ public class StreamingHub : TestHub
     {
         var channel = Channel.CreateUnbounded<int>();
         channel.Writer.TryComplete(new Exception("Exception from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException("ChannelClosedException from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionInnerExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException(new Exception("ChannelClosedException from channel")));
         return channel.Reader;
     }
 
@@ -1220,6 +1286,22 @@ public class ConnectionLifetimeState
     public Exception DisconnectedException { get; set; }
 }
 
+public class OnConnectedClientResultHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
+    }
+}
+
+public class OnDisconnectedClientResultHub : Hub
+{
+    public override async Task OnDisconnectedAsync(Exception ex)
+    {
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
+    }
+}
+
 public class CallerServiceHub : Hub
 {
     private readonly CallerService _service;
@@ -1232,8 +1314,8 @@ public class CallerServiceHub : Hub
     public override Task OnConnectedAsync()
     {
         _service.SetCaller(Clients.Caller);
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 }
@@ -1246,4 +1328,66 @@ public class CallerService
     {
         Caller = caller;
     }
+}
+
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+public class FromService : Attribute, IFromServiceMetadata
+{ }
+public class Service1
+{ }
+public class Service2
+{ }
+public class Service3
+{ }
+
+public class ServicesHub : TestHub
+{
+    public bool SingleService([FromService] Service1 service)
+    {
+        return true;
+    }
+
+    public bool MultipleServices([FromService] Service1 service, [FromService] Service2 service2, [FromService] Service3 service3)
+    {
+        return true;
+    }
+
+    public async Task<int> ServicesAndParams(int value, [FromService] Service1 service, ChannelReader<int> channelReader, [FromService] Service2 service2, bool value2)
+    {
+        int total = 0;
+        while (await channelReader.WaitToReadAsync())
+        {
+            total += await channelReader.ReadAsync();
+        }
+        return total + value;
+    }
+
+    public int ServiceWithoutAttribute(Service1 service)
+    {
+        return 1;
+    }
+
+    public int ServiceWithAndWithoutAttribute(Service1 service, [FromService] Service2 service2)
+    {
+        return 1;
+    }
+
+    public async Task Stream(ChannelReader<int> channelReader)
+    {
+        while (await channelReader.WaitToReadAsync())
+        {
+            await channelReader.ReadAsync();
+        }
+    }
+}
+
+public class TooManyParamsHub : Hub
+{
+    public void ManyParams(int a1, string a2, bool a3, float a4, string a5, int a6, int a7, int a8, int a9, int a10, int a11,
+        int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22, int a23, int a24,
+        int a25, int a26, int a27, int a28, int a29, int a30, int a31, int a32, int a33, int a34, int a35, int a36, int a37,
+        int a38, int a39, int a40, int a41, int a42, int a43, int a44, int a45, int a46, int a47, int a48, int a49, int a50,
+        int a51, int a52, int a53, int a54, int a55, int a56, int a57, int a58, int a59, int a60, int a61, int a62, int a63,
+        int a64, [FromService] Service1 service)
+    { }
 }

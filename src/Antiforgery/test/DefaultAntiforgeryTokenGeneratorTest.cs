@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
-using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
@@ -263,7 +261,6 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.True(isValid);
     }
 
-
     [Fact]
     public void TryValidateTokenSet_CookieTokenMissing()
     {
@@ -297,7 +294,6 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
             claimUidExtractor: null,
             additionalDataProvider: null);
-
 
         // Act & Assert
         string message;

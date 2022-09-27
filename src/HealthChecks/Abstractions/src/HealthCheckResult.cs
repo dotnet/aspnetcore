@@ -60,7 +60,6 @@ public struct HealthCheckResult
         return new HealthCheckResult(status: HealthStatus.Healthy, description, exception: null, data);
     }
 
-
     /// <summary>
     /// Creates a <see cref="HealthCheckResult"/> representing a degraded component.
     /// </summary>

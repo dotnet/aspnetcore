@@ -56,7 +56,7 @@ public sealed class AuthenticatedEncryptorFactory : IAuthenticatedEncryptorFacto
         if (IsGcmAlgorithm(authenticatedConfiguration.EncryptionAlgorithm))
         {
 #if NETCOREAPP
-                return new AesGcmAuthenticatedEncryptor(secret, GetAlgorithmKeySizeInBits(authenticatedConfiguration.EncryptionAlgorithm) / 8);
+            return new AesGcmAuthenticatedEncryptor(secret, GetAlgorithmKeySizeInBits(authenticatedConfiguration.EncryptionAlgorithm) / 8);
 #else
             // GCM requires CNG, and CNG is only supported on Windows.
             if (!OSVersionUtil.IsWindows())
@@ -163,6 +163,7 @@ public sealed class AuthenticatedEncryptorFactory : IAuthenticatedEncryptorFacto
         }
     }
 
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     private static Type GetManagedTypeFromEncryptionAlgorithm(EncryptionAlgorithm algorithm)
     {
         switch (algorithm)
@@ -180,6 +181,7 @@ public sealed class AuthenticatedEncryptorFactory : IAuthenticatedEncryptorFacto
         }
     }
 
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     private static Type GetManagedTypeFromValidationAlgorithm(ValidationAlgorithm algorithm)
     {
         switch (algorithm)

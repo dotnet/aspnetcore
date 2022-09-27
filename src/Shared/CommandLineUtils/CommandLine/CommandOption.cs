@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
-internal class CommandOption
+internal sealed class CommandOption
 {
     public CommandOption(string template, CommandOptionType optionType)
     {

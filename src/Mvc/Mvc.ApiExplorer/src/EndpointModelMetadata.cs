@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -10,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-internal class EndpointModelMetadata : ModelMetadata
+internal sealed class EndpointModelMetadata : ModelMetadata
 {
     public EndpointModelMetadata(ModelMetadataIdentity identity) : base(identity)
     {

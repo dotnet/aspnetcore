@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -135,8 +133,18 @@ public abstract class TextOutputFormatter : OutputFormatter
         }
         else
         {
-            var response = context.HttpContext.Response;
-            response.StatusCode = StatusCodes.Status406NotAcceptable;
+            const int statusCode = StatusCodes.Status406NotAcceptable;
+            context.HttpContext.Response.StatusCode = statusCode;
+
+            if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+            {
+                return problemDetailsService.WriteAsync(new ()
+                {
+                    HttpContext = context.HttpContext,
+                    ProblemDetails = { Status = statusCode }
+                }).AsTask();
+            }
+
             return Task.CompletedTask;
         }
 
@@ -215,7 +223,7 @@ public abstract class TextOutputFormatter : OutputFormatter
 
     // There's no allocation-free way to sort an IList and we may have to filter anyway,
     // so we're going to have to live with the copy + insertion sort.
-    private IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
+    private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
     {
         var sortNeeded = false;
 

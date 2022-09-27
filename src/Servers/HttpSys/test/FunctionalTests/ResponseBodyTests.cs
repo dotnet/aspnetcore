@@ -23,10 +23,10 @@ public class ResponseBodyTests
     {
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             httpContext.Response.OnStarting(() =>
             {
-                startingTcs.SetResult(0);
+                startingTcs.SetResult();
                 return Task.CompletedTask;
             });
             await httpContext.Response.StartAsync();
@@ -49,13 +49,13 @@ public class ResponseBodyTests
     [ConditionalFact]
     public async Task ResponseBody_CompleteAsync_TriggersOnStartingAndLocksHeaders()
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             httpContext.Response.OnStarting(() =>
             {
-                startingTcs.SetResult(0);
+                startingTcs.SetResult();
                 return Task.CompletedTask;
             });
             await httpContext.Response.CompleteAsync();
@@ -69,14 +69,14 @@ public class ResponseBodyTests
             Assert.Equal(200, (int)response.StatusCode);
             Assert.Equal(new Version(1, 1), response.Version);
             Assert.Equal(0, response.Content.Headers.ContentLength);
-            responseReceived.SetResult(0);
+            responseReceived.SetResult();
         }
     }
 
     [ConditionalFact]
     public async Task ResponseBody_CompleteAsync_FlushesThePipe()
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             var writer = httpContext.Response.BodyWriter;
@@ -90,7 +90,7 @@ public class ResponseBodyTests
             Assert.Equal(200, (int)response.StatusCode);
             Assert.Equal(new Version(1, 1), response.Version);
             Assert.True(0 < (await response.Content.ReadAsByteArrayAsync()).Length);
-            responseReceived.SetResult(0);
+            responseReceived.SetResult();
         }
     }
 

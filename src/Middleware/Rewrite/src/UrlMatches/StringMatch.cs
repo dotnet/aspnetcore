@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class StringMatch : UrlMatch
+internal sealed class StringMatch : UrlMatch
 {
     private readonly string _value;
     private readonly StringOperationType _operation;

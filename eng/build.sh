@@ -236,6 +236,7 @@ if [ "$build_all" = true ]; then
 fi
 
 if [ ! -z "$build_projects" ]; then
+    [[ "$build_projects" == /* ]] || build_projects="$DIR/$build_projects"
     msbuild_args[${#msbuild_args[*]}]="-p:ProjectToBuild=$build_projects"
 elif [ "$build_all" != true ] && [ -z "$build_managed$build_nodejs$build_java$build_native$build_installers" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
@@ -255,6 +256,7 @@ if [ "$build_managed" = true ] || ([ "$build_all" = true ] && [ "$build_managed"
     if [ -z "$build_nodejs" ]; then
         if [ -x "$(command -v node)" ]; then
             __warn "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected on PATH."
+            build_nodejs=true
         else
             __warn "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
             build_nodejs=false

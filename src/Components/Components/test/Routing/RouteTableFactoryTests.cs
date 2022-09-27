@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -49,6 +44,16 @@ public class RouteTableFactoryTests
 
         // Assert
         Assert.NotSame(routes1, routes2);
+    }
+
+    [Fact]
+    public void IgnoresIdenticalTypes()
+    {
+        // Arrange & Act
+        var routes = RouteTableFactory.Create(new RouteKey(GetType().Assembly, new[] { GetType().Assembly }));
+
+        // Assert
+        Assert.Equal(routes.Routes.GroupBy(x => x.Handler).Count(), routes.Routes.Length);
     }
 
     [Fact]
@@ -264,7 +269,6 @@ public class RouteTableFactoryTests
         Assert.Equal(expectedParameters, context.Parameters);
     }
 
-
     [Fact]
     public void CanMatchTemplateWithMultipleParametersAndCatchAllParameter()
     {
@@ -295,7 +299,7 @@ public class RouteTableFactoryTests
             new object[] { "/{value:decimal}", "/5.3", 5.3m },
             new object[] { "/{value:double}", "/0.1", 0.1d },
             new object[] { "/{value:float}", "/0.1", 0.1f },
-            new object[] { "/{value:guid}", "/1FCEF085-884F-416E-B0A1-71B15F3E206B", Guid.Parse("1FCEF085-884F-416E-B0A1-71B15F3E206B") },
+            new object[] { "/{value:guid}", "/1FCEF085-884F-416E-B0A1-71B15F3E206B", Guid.Parse("1FCEF085-884F-416E-B0A1-71B15F3E206B", CultureInfo.InvariantCulture) },
             new object[] { "/{value:int}", "/123", 123 },
             new object[] { "/{value:int}", "/-123", -123},
             new object[] { "/{value:long}", "/9223372036854775807", long.MaxValue },
@@ -413,7 +417,6 @@ public class RouteTableFactoryTests
         Assert.True(context.Parameters.TryGetValue("values", out var values));
         Assert.Equal("1/2/3/4/5", values);
     }
-
 
     [Fact]
     public void CatchAllEmpty()

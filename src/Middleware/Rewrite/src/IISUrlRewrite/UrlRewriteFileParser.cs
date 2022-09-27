@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
@@ -12,7 +9,7 @@ using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class UrlRewriteFileParser
+internal sealed class UrlRewriteFileParser
 {
     private InputParser _inputParser = default!;
 
@@ -91,7 +88,7 @@ internal class UrlRewriteFileParser
         ParseUrlAction(action, builder, stopProcessing);
     }
 
-    private void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+    private static void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
     {
         var parsedInputString = match.Attribute(RewriteTags.Url)?.Value;
         if (parsedInputString == null)
@@ -253,7 +250,7 @@ internal class UrlRewriteFileParser
         builder.AddUrlAction(action);
     }
 
-    private bool ParseBool(XElement element, string rewriteTag, bool defaultValue)
+    private static bool ParseBool(XElement element, string rewriteTag, bool defaultValue)
     {
         bool result;
         var attribute = element.Attribute(rewriteTag);
@@ -268,10 +265,10 @@ internal class UrlRewriteFileParser
         return result;
     }
 
-    private TEnum ParseEnum<TEnum>(XElement element, string rewriteTag, TEnum defaultValue)
+    private static TEnum ParseEnum<TEnum>(XElement element, string rewriteTag, TEnum defaultValue)
         where TEnum : struct
     {
-        TEnum enumResult = default(TEnum);
+        TEnum enumResult;
         var attribute = element.Attribute(rewriteTag);
         if (attribute == null)
         {

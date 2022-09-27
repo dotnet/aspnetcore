@@ -143,7 +143,6 @@ internal static partial class StatusCodes
 
             default:
                 return statusCode.ToString(CultureInfo.InvariantCulture);
-
         }
     }
 }

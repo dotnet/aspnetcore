@@ -125,9 +125,9 @@ public class ResponseCompressionTests : LoggedTest
                             .Elements()
                             .SkipLast(1)
                             .Remove();
-                            // last element in both dynamicTypes and staticTypes disables compression
-                            // <add mimeType="*/*" enabled="false" />
-                        });
+                        // last element in both dynamicTypes and staticTypes disables compression
+                        // <add mimeType="*/*" enabled="false" />
+                    });
                 deploymentParameters = iisDeploymentParameters;
             }
 

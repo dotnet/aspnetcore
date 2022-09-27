@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -29,6 +27,8 @@ public static class AuthenticationServiceCollectionExtensions
         services.AddDataProtection();
         services.AddWebEncoders();
         services.TryAddSingleton<ISystemClock, SystemClock>();
+        services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
+
         return new AuthenticationBuilder(services);
     }
 
@@ -64,5 +64,4 @@ public static class AuthenticationServiceCollectionExtensions
         services.Configure(configureOptions);
         return builder;
     }
-
 }

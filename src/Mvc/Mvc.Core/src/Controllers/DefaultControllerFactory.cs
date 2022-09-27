@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers;
@@ -12,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers;
 /// <summary>
 /// Default implementation for <see cref="IControllerFactory"/>.
 /// </summary>
-internal class DefaultControllerFactory : IControllerFactory
+internal sealed class DefaultControllerFactory : IControllerFactory
 {
     private readonly IControllerActivator _controllerActivator;
     private readonly IControllerPropertyActivator[] _propertyActivators;

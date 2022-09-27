@@ -3,16 +3,13 @@
 
 #nullable disable
 
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class ResponseCachingContext
+internal sealed class ResponseCachingContext
 {
     private DateTimeOffset? _responseDate;
     private bool _parsedResponseDate;

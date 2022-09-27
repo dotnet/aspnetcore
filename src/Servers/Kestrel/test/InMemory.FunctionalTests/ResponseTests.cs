@@ -45,8 +45,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 onCompletedTcs.SetResult();
             }));
 
-                // Prevent OnStarting call (see HttpProtocol.ProcessRequestsAsync()).
-                throw new Exception();
+            // Prevent OnStarting call (see HttpProtocol.ProcessRequestsAsync()).
+            throw new Exception();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -202,6 +202,70 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await Assert.ThrowsAsync<OperationCanceledException>(() => appTcs.Task).DefaultTimeout();
             }
         }
+    }
+
+    [Fact]
+    public async Task BodyWriterWriteAsync_OnAbortedRequest_ReturnsResultWithIsCompletedTrue()
+    {
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var server = new TestServer(async context =>
+        {
+            try
+            {
+                context.Abort();
+                var payload = Encoding.ASCII.GetBytes("hello world");
+                var result = await context.Response.BodyWriter.WriteAsync(payload);
+                Assert.True(result.IsCompleted);
+
+                appTcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                appTcs.SetException(ex);
+            }
+        });
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+
+        await appTcs.Task;
+    }
+
+    [Fact]
+    public async Task BodyWriterWriteAsync_OnCanceledPendingFlush_ReturnsResultWithIsCanceled()
+    {
+        await using var server = new TestServer(async context =>
+        {
+            context.Response.BodyWriter.CancelPendingFlush();
+            var payload = Encoding.ASCII.GetBytes("hello,");
+            var cancelledResult = await context.Response.BodyWriter.WriteAsync(payload);
+            Assert.True(cancelledResult.IsCanceled);
+
+            var secondPayload = Encoding.ASCII.GetBytes(" world");
+            var goodResult = await context.Response.BodyWriter.WriteAsync(secondPayload);
+            Assert.False(goodResult.IsCanceled);
+        });
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+
+        await connection.Receive($"HTTP/1.1 200 OK",
+            $"Date: {server.Context.DateHeaderValue}",
+            "Transfer-Encoding: chunked",
+            "",
+            "6",
+            "hello,"
+            );
+        await connection.Receive("",
+            "6",
+            " world"
+            );
     }
 
     [Fact]
@@ -412,7 +476,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-                readException = await Assert.ThrowsAsync<BadHttpRequestException>(
+            readException = await Assert.ThrowsAsync<BadHttpRequestException>(
 #pragma warning restore CS0618 // Type or member is obsolete
                     async () => await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1));
         }, new TestServiceContext(LoggerFactory)))
@@ -527,12 +591,194 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    public static IEnumerable<object[]> Get1xxAnd204MethodCombinations()
+    {
+        // Status codes to test
+        var statusCodes = new int[] {
+                StatusCodes.Status100Continue,
+                StatusCodes.Status101SwitchingProtocols,
+                StatusCodes.Status102Processing,
+                StatusCodes.Status204NoContent,
+            };
+
+        // HTTP methods to test
+        var methods = new HttpMethod[] {
+                HttpMethod.Connect,
+                HttpMethod.Delete,
+                HttpMethod.Get,
+                HttpMethod.Head,
+                HttpMethod.Options,
+                HttpMethod.Patch,
+                HttpMethod.Post,
+                HttpMethod.Put,
+                HttpMethod.Trace
+            };
+
+        foreach (var statusCode in statusCodes)
+        {
+            foreach (var method in methods)
+            {
+                yield return new object[] { statusCode, method };
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Get1xxAnd204MethodCombinations))]
+    public async Task AttemptingToWriteNonzeroContentLengthFailsFor1xxAnd204Responses(int statusCode, HttpMethod method)
+        => await AttemptingToWriteNonzeroContentLengthFails(statusCode, method).ConfigureAwait(true);
+
+    [Theory]
+    [MemberData(nameof(Get1xxAnd204MethodCombinations))]
+    public async Task AttemptingToWriteZeroContentLengthFor1xxAnd204Responses_ContentLengthRemoved(int statusCode, HttpMethod method)
+        => await AttemptingToWriteZeroContentLength_ContentLengthRemoved(statusCode, method).ConfigureAwait(true);
+
+    [Theory]
+    [InlineData(StatusCodes.Status200OK)]
+    [InlineData(StatusCodes.Status201Created)]
+    [InlineData(StatusCodes.Status202Accepted)]
+    [InlineData(StatusCodes.Status203NonAuthoritative)]
+    [InlineData(StatusCodes.Status204NoContent)]
+    [InlineData(StatusCodes.Status205ResetContent)]
+    [InlineData(StatusCodes.Status206PartialContent)]
+    [InlineData(StatusCodes.Status207MultiStatus)]
+    [InlineData(StatusCodes.Status208AlreadyReported)]
+    [InlineData(StatusCodes.Status226IMUsed)]
+    public async Task AttemptingToWriteNonzeroContentLengthFailsFor2xxResponsesOnConnect(int statusCode)
+        => await AttemptingToWriteNonzeroContentLengthFails(statusCode, HttpMethod.Connect).ConfigureAwait(true);
+
+    [Theory]
+    [InlineData(StatusCodes.Status200OK)]
+    [InlineData(StatusCodes.Status201Created)]
+    [InlineData(StatusCodes.Status202Accepted)]
+    [InlineData(StatusCodes.Status203NonAuthoritative)]
+    [InlineData(StatusCodes.Status204NoContent)]
+    [InlineData(StatusCodes.Status205ResetContent)]
+    [InlineData(StatusCodes.Status206PartialContent)]
+    [InlineData(StatusCodes.Status207MultiStatus)]
+    [InlineData(StatusCodes.Status208AlreadyReported)]
+    [InlineData(StatusCodes.Status226IMUsed)]
+    public async Task AttemptingToWriteZeroContentLengthFor2xxResponsesOnConnect_ContentLengthRemoved(int statusCode)
+        => await AttemptingToWriteZeroContentLength_ContentLengthRemoved(statusCode, HttpMethod.Connect).ConfigureAwait(true);
+
+    private async Task AttemptingToWriteNonzeroContentLengthFails(int statusCode, HttpMethod method)
+    {
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.Headers.ContentLength = 1;
+
+            try
+            {
+                await httpContext.Response.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                responseWriteTcs.TrySetException(ex);
+                throw;
+            }
+
+            responseWriteTcs.TrySetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    $"{HttpUtilities.MethodToString(method)} / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                Assert.Equal(CoreStrings.FormatHeaderNotAllowedOnResponse("Content-Length", statusCode), ex.Message);
+            }
+        }
+    }
+
+    private async Task AttemptingToWriteZeroContentLength_ContentLengthRemoved(int statusCode, HttpMethod method)
+    {
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.Headers.ContentLength = 0;
+
+            try
+            {
+                await httpContext.Response.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                responseWriteTcs.TrySetException(ex);
+                throw;
+            }
+
+            responseWriteTcs.TrySetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    $"{HttpUtilities.MethodToString(method)} / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                await connection.Receive(
+                    $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AttemptingToWriteNonzeroContentLengthFailsFor205Response()
+    {
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            httpContext.Response.StatusCode = 205;
+            httpContext.Response.Headers.ContentLength = 1;
+
+            try
+            {
+                await httpContext.Response.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                responseWriteTcs.TrySetException(ex);
+                throw;
+            }
+
+            responseWriteTcs.TrySetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                Assert.Equal(CoreStrings.NonzeroContentLengthNotAllowedOn205, ex.Message);
+            }
+        }
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status204NoContent)]
     [InlineData(StatusCodes.Status304NotModified)]
     public async Task AttemptingToWriteFailsForNonBodyResponse(int statusCode)
     {
-        var responseWriteTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
         {
@@ -548,7 +794,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 throw;
             }
 
-            responseWriteTcs.TrySetResult("This should not be reached.");
+            responseWriteTcs.TrySetResult();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -558,7 +804,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "Host:",
                     "",
                     "");
-
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                 Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(statusCode), ex.Message);
@@ -575,7 +820,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task AttemptingToWriteFailsFor205Response()
     {
-        var responseWriteTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
         {
@@ -591,7 +836,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 throw;
             }
 
-            responseWriteTcs.TrySetResult("This should not be reached.");
+            responseWriteTcs.TrySetResult();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -601,7 +846,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "Host:",
                     "",
                     "");
-
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                 Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(205), ex.Message);
@@ -961,8 +1205,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             httpContext.Response.ContentLength = 12;
             await httpContext.Response.WriteAsync("hello,");
 
-                // Wait until the request is aborted so we know HttpProtocol will skip the response content length check.
-                await requestAborted.Task.DefaultTimeout();
+            // Wait until the request is aborted so we know HttpProtocol will skip the response content length check.
+            await requestAborted.Task.DefaultTimeout();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -1405,8 +1649,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
 
-                // App would have to chunk manually, but here we don't care
-                await httpContext.Response.WriteAsync("hello, world");
+            // App would have to chunk manually, but here we don't care
+            await httpContext.Response.WriteAsync("hello, world");
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -1448,16 +1692,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.OnStarting(() =>
             {
-                    // Change response to chunked
-                    httpContext.Response.ContentLength = null;
+                // Change response to chunked
+                httpContext.Response.ContentLength = null;
                 return Task.CompletedTask;
             });
 
             var response = Encoding.ASCII.GetBytes("hello, world");
             httpContext.Response.ContentLength = response.Length - 1;
 
-                // If OnStarting is not run before verifying writes, an error response will be sent.
-                await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length));
+            // If OnStarting is not run before verifying writes, an error response will be sent.
+            await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length));
         }, serviceContext))
         {
             using (var connection = server.CreateConnection())
@@ -1490,16 +1734,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.OnStarting(() =>
             {
-                    // Change response to chunked
-                    httpContext.Response.ContentLength = null;
+                // Change response to chunked
+                httpContext.Response.ContentLength = null;
                 return Task.CompletedTask;
             });
 
             var response = Encoding.ASCII.GetBytes("hello, world");
             httpContext.Response.ContentLength = response.Length - 1;
 
-                // If OnStarting is not run before verifying writes, an error response will be sent.
-                await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length));
+            // If OnStarting is not run before verifying writes, an error response will be sent.
+            await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length));
         }, serviceContext))
         {
             using (var connection = server.CreateConnection())
@@ -1532,16 +1776,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.OnStarting(() =>
             {
-                    // Change response to chunked
-                    httpContext.Response.ContentLength = null;
+                // Change response to chunked
+                httpContext.Response.ContentLength = null;
                 return Task.CompletedTask;
             });
 
             var response = Encoding.ASCII.GetBytes("hello, world");
             httpContext.Response.ContentLength = response.Length - 1;
 
-                // If OnStarting is not run before verifying writes, an error response will be sent.
-                await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
+            // If OnStarting is not run before verifying writes, an error response will be sent.
+            await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
             await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
         }, serviceContext))
         {
@@ -1577,16 +1821,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.OnStarting(() =>
             {
-                    // Change response to chunked
-                    httpContext.Response.ContentLength = null;
+                // Change response to chunked
+                httpContext.Response.ContentLength = null;
                 return Task.CompletedTask;
             });
 
             var response = Encoding.ASCII.GetBytes("hello, world");
             httpContext.Response.ContentLength = response.Length - 1;
 
-                // If OnStarting is not run before verifying writes, an error response will be sent.
-                await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
+            // If OnStarting is not run before verifying writes, an error response will be sent.
+            await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
             await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
         }, serviceContext))
         {
@@ -1620,16 +1864,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.OnStarting(() =>
             {
-                    // Change response to chunked
-                    httpContext.Response.ContentLength = null;
+                // Change response to chunked
+                httpContext.Response.ContentLength = null;
                 return Task.CompletedTask;
             });
 
             var response = Encoding.ASCII.GetBytes("hello, world");
             httpContext.Response.ContentLength = response.Length - 1;
 
-                // If OnStarting is not run before verifying writes, an error response will be sent.
-                return httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length)).AsTask();
+            // If OnStarting is not run before verifying writes, an error response will be sent.
+            return httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length)).AsTask();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -1660,16 +1904,16 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.OnStarting(() =>
             {
-                    // Change response to chunked
-                    httpContext.Response.ContentLength = null;
+                // Change response to chunked
+                httpContext.Response.ContentLength = null;
                 return Task.CompletedTask;
             });
 
             var response = Encoding.ASCII.GetBytes("hello, world");
             httpContext.Response.ContentLength = response.Length - 1;
 
-                // If OnStarting is not run before verifying writes, an error response will be sent.
-                await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
+            // If OnStarting is not run before verifying writes, an error response will be sent.
+            await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
             await httpContext.Response.BodyWriter.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
         }, new TestServiceContext(LoggerFactory)))
         {
@@ -2164,8 +2408,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 return Task.CompletedTask;
             }, null);
 
-                // Anything added to the ResponseHeaders dictionary is ignored
-                response.Headers["Content-Length"] = "11";
+            // Anything added to the ResponseHeaders dictionary is ignored
+            response.Headers["Content-Length"] = "11";
             throw new Exception();
         }, testContext))
         {
@@ -2197,7 +2441,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.False(onStartingCalled);
         Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
     }
-
 
     [Fact]
     public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response()
@@ -2479,7 +2722,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
 
-
     [Fact]
     public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient()
     {
@@ -2572,8 +2814,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             var feature = httpContext.Features.Get<IConnectionLifetimeFeature>();
             feature.Abort();
 
-                // Ensure the response doesn't get flush before the abort is observed.
-                await closeTask;
+            // Ensure the response doesn't get flush before the abort is observed.
+            await closeTask;
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -2860,8 +3102,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             await httpContext.Response.StartAsync();
             Assert.True(httpContext.Response.HasStarted);
 
-                // Verify that the response isn't flushed by verifying the TCS isn't set
-                var res = await Task.WhenAny(tcs.Task, Task.Delay(1000)) == tcs.Task;
+            // Verify that the response isn't flushed by verifying the TCS isn't set
+            var res = await Task.WhenAny(tcs.Task, Task.Delay(1000)) == tcs.Task;
             Assert.False(res);
         }, testContext))
         {
@@ -3138,8 +3380,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
             context.Response.ContentLength = 6;
 
-                // Synchronous writes now throw.
-                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
+            // Synchronous writes now throw.
+            var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
             Assert.Equal(CoreStrings.SynchronousWritesDisallowed, ioEx.Message);
             await context.Response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
 
@@ -3234,8 +3476,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
             context.Response.ContentLength = 6;
 
-                // Synchronous writes now throw.
-                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
+            // Synchronous writes now throw.
+            var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
             Assert.Equal(CoreStrings.SynchronousWritesDisallowed, ioEx.Message);
 
             return context.Response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello!"), 0, 6)).AsTask();
@@ -3862,7 +4104,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             await httpContext.Response.StartAsync();
             httpContext.Response.BodyWriter.Complete();
             var memory = httpContext.Response.BodyWriter.GetMemory(); // Shouldn't throw
-                Assert.Equal(4096, memory.Length);
+            Assert.Equal(4096, memory.Length);
 
             await Task.CompletedTask;
         }, new TestServiceContext(LoggerFactory)))
@@ -3893,7 +4135,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             httpContext.Response.BodyWriter.Complete();
             var memory = httpContext.Response.BodyWriter.GetMemory(); // Shouldn't throw
-                Assert.Equal(4096, memory.Length);
+            Assert.Equal(4096, memory.Length);
 
             await Task.CompletedTask;
         }, new TestServiceContext(LoggerFactory)))
@@ -3924,9 +4166,9 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             Assert.Equal(4096, memory.Length);
 
             await httpContext.Response.StartAsync();
-                // Original memory is disposed, don't compare against it.
+            // Original memory is disposed, don't compare against it.
 
-                memory = httpContext.Response.BodyWriter.GetMemory();
+            memory = httpContext.Response.BodyWriter.GetMemory();
             Assert.NotEqual(4096, memory.Length);
 
         }, new TestServiceContext(LoggerFactory)))

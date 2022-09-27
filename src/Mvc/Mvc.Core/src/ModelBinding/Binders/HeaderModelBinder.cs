@@ -3,10 +3,8 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -109,7 +107,7 @@ public class HeaderModelBinder : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    private HeaderValueProvider GetHeaderValueProvider(string headerName, ModelBindingContext bindingContext)
+    private static HeaderValueProvider GetHeaderValueProvider(string headerName, ModelBindingContext bindingContext)
     {
         var request = bindingContext.HttpContext.Request;
 
@@ -197,7 +195,7 @@ public class HeaderModelBinder : IModelBinder
         return collection;
     }
 
-    private class HeaderValueProvider : IValueProvider
+    private sealed class HeaderValueProvider : IValueProvider
     {
         private readonly string[] _values;
 

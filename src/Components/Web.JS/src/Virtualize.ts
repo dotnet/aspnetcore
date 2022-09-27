@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 export const Virtualize = {
   init,
   dispose,
@@ -6,7 +9,11 @@ export const Virtualize = {
 const observersByDotNetId = {};
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
-  if (!element) {
+  // If we recurse up as far as body or the document root, return null so that the
+  // IntersectionObserver observes intersection with the top-level scroll viewport
+  // instead of the with body/documentElement which can be arbitrarily tall.
+  // See https://github.com/dotnet/aspnetcore/issues/37659 for more about what this fixes.
+  if (!element || element === document.body || element === document.documentElement) {
     return null;
   }
 

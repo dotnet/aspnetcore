@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -516,7 +512,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
     /// <param name="htmlFieldName">The name of the html field.</param>
     /// <param name="templateName">The name of the template.</param>
-    /// <param name="additionalViewData">The additional view data.</param>
+    /// <param name="additionalViewData">The additional view data, either an <see cref="IDictionary{String, Object}"/> or some other object whose public properties will be merged with the <see cref="T:ViewDataDictionary" />.</param>
     /// <returns><see cref="IHtmlContent"/>.</returns>
     protected virtual IHtmlContent GenerateDisplay(
         ModelExplorer modelExplorer,
@@ -861,7 +857,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
     /// <param name="expression">The expression.</param>
     /// <param name="selectList">The select list.</param>
-    /// <param name="optionLabel">The option lable.</param>
+    /// <param name="optionLabel">The option label.</param>
     /// <param name="htmlAttributes">
     /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
     /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.

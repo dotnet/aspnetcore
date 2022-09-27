@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -16,7 +12,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
@@ -1237,11 +1232,6 @@ public class DataAnnotationsMetadataProviderTest
         var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
         var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
 
-        // This test verifies how MVC reads the NullableContextOptions. We expect the property to not have a Nullable attribute on, and for
-        // the types to have NullableContext. We'll encode our expectations as assertions so that we can catch if or when the compiler changes
-        // this behavior and the test needs to be tweaked.
-        Assert.False(DataAnnotationsMetadataProvider.HasNullableAttribute(context.PropertyAttributes, out _), "We do not expect NullableAttribute to be defined on the property");
-
         // Act
         provider.CreateValidationMetadata(context);
 
@@ -1592,9 +1582,11 @@ public class DataAnnotationsMetadataProviderTest
         // Arrange
         var type = typeof(NullableReferenceTypes);
         var property = type.GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType));
+        var key = ModelMetadataIdentity.ForProperty(property, type, type);
+        var context = new ValidationMetadataProviderContext(key, GetModelAttributes(property.GetCustomAttributes(inherit: true)));
 
         // Act
-        var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+        var result = DataAnnotationsMetadataProvider.IsRequired(context);
 
         // Assert
         Assert.True(result);
@@ -1606,9 +1598,11 @@ public class DataAnnotationsMetadataProviderTest
         // Arrange
         var type = typeof(KeyValuePair<string, object>);
         var property = type.GetProperty(nameof(KeyValuePair<string, object>.Key));
+        var key = ModelMetadataIdentity.ForProperty(property, type, type);
+        var context = new ValidationMetadataProviderContext(key, GetModelAttributes(property.GetCustomAttributes(inherit: true)));
 
         // Act
-        var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+        var result = DataAnnotationsMetadataProvider.IsRequired(context);
 
         // Assert
         Assert.False(result);
@@ -1621,9 +1615,11 @@ public class DataAnnotationsMetadataProviderTest
         // Arrange
         var type = typeof(KeyValuePair<string, object>);
         var property = type.GetProperty(nameof(KeyValuePair<string, object>.Key))!;
+        var key = ModelMetadataIdentity.ForProperty(property, type, type);
+        var context = new ValidationMetadataProviderContext(key, GetModelAttributes(property.GetCustomAttributes(inherit: true)));
 
         // Act
-        var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+        var result = DataAnnotationsMetadataProvider.IsRequired(context);
 
         // Assert
         // While we'd like for result to be 'true', we don't have a very good way of actually calculating it correctly.
@@ -1638,9 +1634,11 @@ public class DataAnnotationsMetadataProviderTest
         // Arrange
         var type = typeof(NullableReferenceTypes);
         var property = type.GetProperty(nameof(NullableReferenceTypes.NullableReferenceType));
+        var key = ModelMetadataIdentity.ForProperty(property, type, type);
+        var context = new ValidationMetadataProviderContext(key, GetModelAttributes(property.GetCustomAttributes(inherit: true)));
 
         // Act
-        var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+        var result = DataAnnotationsMetadataProvider.IsRequired(context);
 
         // Assert
         Assert.False(result);
@@ -1653,9 +1651,11 @@ public class DataAnnotationsMetadataProviderTest
         var type = typeof(NullableReferenceTypes);
         var method = type.GetMethod(nameof(NullableReferenceTypes.Method));
         var parameter = method.GetParameters().Where(p => p.Name == "nonNullableParameter").Single();
+        var key = ModelMetadataIdentity.ForParameter(parameter);
+        var context = new ValidationMetadataProviderContext(key, GetModelAttributes(parameter.GetCustomAttributes(inherit: true)));
 
         // Act
-        var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, method, parameter.GetCustomAttributes(inherit: true));
+        var result = DataAnnotationsMetadataProvider.IsRequired(context);
 
         // Assert
         Assert.True(result);
@@ -1668,9 +1668,11 @@ public class DataAnnotationsMetadataProviderTest
         var type = typeof(NullableReferenceTypes);
         var method = type.GetMethod(nameof(NullableReferenceTypes.Method));
         var parameter = method.GetParameters().Where(p => p.Name == "nullableParameter").Single();
+        var key = ModelMetadataIdentity.ForParameter(parameter);
+        var context = new ValidationMetadataProviderContext(key, GetModelAttributes(parameter.GetCustomAttributes(inherit: true)));
 
         // Act
-        var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, method, parameter.GetCustomAttributes(inherit: true));
+        var result = DataAnnotationsMetadataProvider.IsRequired(context);
 
         // Assert
         Assert.False(result);

@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -17,10 +14,11 @@ internal sealed class Http3MessageBody : MessageBody
     private readonly Http3Stream _context;
     private ReadResult _readResult;
 
-    private Http3MessageBody(Http3Stream context)
+    public Http3MessageBody(Http3Stream context)
         : base(context)
     {
         _context = context;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     protected override void OnReadStarting()
@@ -34,9 +32,11 @@ internal sealed class Http3MessageBody : MessageBody
         }
     }
 
-    public static MessageBody For(Http3Stream context)
+    public override void Reset()
     {
-        return new Http3MessageBody(context);
+        base.Reset();
+        _readResult = default;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)

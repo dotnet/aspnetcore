@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -154,7 +152,7 @@ public readonly struct FragmentString : IEquatable<FragmentString>
     }
 
     /// <summary>
-    /// Evalutes if one framgent is not equal to another.
+    /// Evalutes if one fragment is not equal to another.
     /// </summary>
     /// <param name="left">A <see cref="FragmentString"/> instance.</param>
     /// <param name="right">A <see cref="FragmentString"/> instance.</param>

@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
 
@@ -46,6 +41,29 @@ public class AuthorizationPolicyFacts
         Assert.Contains(combined.Requirements, r => r is DenyAnonymousAuthorizationRequirement);
         Assert.Equal(2, combined.Requirements.OfType<ClaimsAuthorizationRequirement>().Count());
         Assert.Single(combined.Requirements.OfType<RolesAuthorizationRequirement>());
+    }
+
+    [Fact]
+    public async Task CanReplaceDefaultPolicyDirectly()
+    {
+        // Arrange
+        var attributes = new AuthorizeAttribute[] {
+            new AuthorizeAttribute(),
+            new AuthorizeAttribute(),
+        };
+
+        var policies = new[] { new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build() };
+
+        var options = new AuthorizationOptions();
+
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
+        // Act
+        var combined = await AuthorizationPolicy.CombineAsync(provider, attributes, policies);
+
+        // Assert
+        Assert.Equal(1, combined.Requirements.Count);
+        Assert.Empty(combined.Requirements.OfType<DenyAnonymousAuthorizationRequirement>());
     }
 
     [Fact]

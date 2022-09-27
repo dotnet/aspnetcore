@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
-internal class FileProviderGlobbingDirectory : DirectoryInfoBase
+internal sealed class FileProviderGlobbingDirectory : DirectoryInfoBase
 {
     private const char DirectorySeparatorChar = '/';
     private readonly IFileProvider _fileProvider;
@@ -21,10 +19,7 @@ internal class FileProviderGlobbingDirectory : DirectoryInfoBase
         IFileInfo fileInfo,
         FileProviderGlobbingDirectory parent)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
         _fileProvider = fileProvider;
         _fileInfo = fileInfo;

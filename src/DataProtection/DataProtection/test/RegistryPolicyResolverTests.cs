@@ -1,23 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Microsoft.Win32;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -57,6 +47,24 @@ public class RegistryPolicyResolverTests
         Assert.Equal(2, actualKeyEscrowSinks.Length);
         Assert.IsType<MyKeyEscrowSink1>(actualKeyEscrowSinks[0]);
         Assert.IsType<MyKeyEscrowSink2>(actualKeyEscrowSinks[1]);
+    }
+
+    [ConditionalFact]
+    [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
+    public void ResolvePolicy_MissingKeyEscrowSinks()
+    {
+        // Arrange
+        var typeName = typeof(MyKeyEscrowSink1).AssemblyQualifiedName.Replace("MyKeyEscrowSink1", "MyKeyEscrowSinkDontExist");
+        var registryEntries = new Dictionary<string, object>()
+        {
+            ["KeyEscrowSinks"] = typeName
+        };
+
+        // Act
+        var ex = ExceptionAssert.Throws<InvalidOperationException>(() => RunTestWithRegValues(registryEntries));
+
+        // Assert
+        Assert.Equal($"Unable to load type '{typeName}'. If the app is published with trimming then this type may have been trimmed. Ensure the type's assembly is excluded from trimming.", ex.Message);
     }
 
     [ConditionalFact]
@@ -218,13 +226,13 @@ public class RegistryPolicyResolverTests
         var registryEntries = new Dictionary<string, object>()
         {
             ["EncryptionType"] = "managed",
-            ["EncryptionAlgorithmType"] = typeof(TripleDES).AssemblyQualifiedName,
+            ["EncryptionAlgorithmType"] = typeof(Aes).AssemblyQualifiedName,
             ["EncryptionAlgorithmKeySize"] = 2048,
             ["ValidationAlgorithmType"] = typeof(HMACSHA1).AssemblyQualifiedName
         };
         var expectedConfiguration = new ManagedAuthenticatedEncryptorConfiguration()
         {
-            EncryptionAlgorithmType = typeof(TripleDES),
+            EncryptionAlgorithmType = typeof(Aes),
             EncryptionAlgorithmKeySize = 2048,
             ValidationAlgorithmType = typeof(HMACSHA1)
         };
@@ -283,8 +291,8 @@ public class RegistryPolicyResolverTests
         }
         catch
         {
-                // swallow all failures
-                return null;
+            // swallow all failures
+            return null;
         }
     });
 

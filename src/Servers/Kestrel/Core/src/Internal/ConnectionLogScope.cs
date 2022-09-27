@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
+internal sealed class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
 {
     private readonly string _connectionId;
 

@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -166,7 +164,7 @@ public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> 
         return 0;
     }
 
-    private class DefaultComparer<T> : EndpointMetadataComparer<T> where T : class
+    private sealed class DefaultComparer<T> : EndpointMetadataComparer<T> where T : class
     {
     }
 }

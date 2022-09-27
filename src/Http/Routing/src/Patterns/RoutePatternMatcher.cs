@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -11,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class RoutePatternMatcher
+internal sealed class RoutePatternMatcher
 {
     // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
     private readonly bool[] _hasDefaultValue;
@@ -313,9 +312,11 @@ internal class RoutePatternMatcher
             {
                 var separator = (RoutePatternSeparatorPart)routeSegment.Parts[indexOfLastSegment - 1];
                 if (requestSegment.EndsWith(
-                separator.Content,
-                StringComparison.OrdinalIgnoreCase))
+                    separator.Content,
+                    StringComparison.OrdinalIgnoreCase))
+                {
                     return false;
+                }
 
                 return MatchComplexSegmentCore(
                     routeSegment,
@@ -467,7 +468,6 @@ internal class RoutePatternMatcher
                     // For these segments all parameters must have non-empty values. If the parameter
                     // has an empty value it's not a match.
                     return false;
-
                 }
                 else
                 {

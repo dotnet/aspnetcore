@@ -1,20 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
+#pragma warning restore CA1852 // Seal internal types
 {
     private const string RazorPageDocumentKind = "mvc.1.0.razor-page";
     private const string RouteTemplateKey = "RouteTemplate";
@@ -76,7 +75,7 @@ internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
             }
         }
 
-        bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
+        static bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
         {
             if (viewDescriptor.Item != null)
             {

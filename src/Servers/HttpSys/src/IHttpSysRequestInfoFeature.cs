@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-
 // Note: This will also be useful for IIS in-proc.
 // Plan: Have Microsoft.AspNetCore.Server.IIS take a dependency on Microsoft.AspNetCore.Server.HttpSys and implement this interface.
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 /// <summary>
 /// This exposes the Http.Sys HTTP_REQUEST_INFO extensibility point as opaque data for the caller to interperate.
-/// https://docs.microsoft.com/en-us/windows/win32/api/http/ns-http-http_request_v2
-/// https://docs.microsoft.com/en-us/windows/win32/api/http/ns-http-http_request_info
+/// <see href="https://docs.microsoft.com/en-us/windows/win32/api/http/ns-http-http_request_v2"/>,
+/// <see href="https://docs.microsoft.com/en-us/windows/win32/api/http/ns-http-http_request_info"/>
 /// </summary>
 public interface IHttpSysRequestInfoFeature
 {

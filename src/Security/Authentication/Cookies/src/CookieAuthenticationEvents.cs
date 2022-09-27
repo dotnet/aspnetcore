@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
@@ -111,10 +109,16 @@ public class CookieAuthenticationEvents
     }
 
     /// <summary>
-    /// Invoked to validate the prinicipal.
+    /// Invoked to validate the principal.
     /// </summary>
     /// <param name="context">The <see cref="CookieValidatePrincipalContext"/>.</param>
     public virtual Task ValidatePrincipal(CookieValidatePrincipalContext context) => OnValidatePrincipal(context);
+
+    /// <summary>
+    /// Invoked to check if the cookie should be renewed.
+    /// </summary>
+    /// <param name="context">The <see cref="CookieSlidingExpirationContext"/>.</param>
+    public virtual Task CheckSlidingExpiration(CookieSlidingExpirationContext context) => OnCheckSlidingExpiration(context);
 
     /// <summary>
     /// Invoked during sign in.

@@ -3,7 +3,7 @@
     <PrepareResourceNamesDependsOn>_CalculateEmbeddedFilesManifestInputs;$(PrepareResourceNamesDependsOn)</PrepareResourceNamesDependsOn>
   </PropertyGroup>
 
-  <Target 
+  <Target
     Name="_CalculateEmbeddedFilesManifestInputs"
     Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
 
@@ -16,11 +16,11 @@
       <_FilesForManifest Remove="@(EmbeddedResource->WithMetadataValue('ExcludeFromManifest','true'))" />
     </ItemGroup>
 
-    <Warning 
+    <Warning
       Text="GenerateEmbeddedFilesManifest was set, but no EmbeddedResource items were found that could be added to the manifest."
-      Condition="@(_FilesForManifest->Count()) == 0" />
+      Condition="'@(_FilesForManifest->Count())' == '0'" />
 
-    <ItemGroup Condition="@(_FilesForManifest->Count()) != 0">
+    <ItemGroup Condition="'@(_FilesForManifest->Count())' != '0'">
       <EmbeddedResource
         Include="$(_GeneratedManifestFile)"
         LogicalName="$(EmbeddedFilesManifestFileName)" />
@@ -36,10 +36,10 @@
       <Output TaskParameter="HashResult" PropertyName="_EmbeddedGeneratedManifestHash" />
     </Hash>
 
-    <WriteLinesToFile 
-      Lines="$(_EmbeddedGeneratedManifestHash)" 
-      File="$(_GeneratedManifestInfoInputsCacheFile)" 
-      Overwrite="True" 
+    <WriteLinesToFile
+      Lines="$(_EmbeddedGeneratedManifestHash)"
+      File="$(_GeneratedManifestInfoInputsCacheFile)"
+      Overwrite="True"
       WriteOnlyWhenDifferent="True" />
 
     <ItemGroup>
@@ -51,7 +51,7 @@
     Name="_GenerateEmbeddedFilesManifest"
     DependsOnTargets="_CreateGeneratedManifestInfoInputsCacheFile"
     AfterTargets="PrepareResourceNames"
-    Condition="'$(GenerateEmbeddedFilesManifest)' == 'true' AND @(_FilesForManifest->Count()) != 0"
+    Condition="'$(GenerateEmbeddedFilesManifest)' == 'true' AND '@(_FilesForManifest->Count())' != '0'"
     Inputs="$(_GeneratedManifestInfoInputsCacheFile)"
     Outputs="$(_GeneratedManifestFile)">
 

@@ -1,12 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class AbsoluteUrlFactory : IAbsoluteUrlFactory
+internal sealed class AbsoluteUrlFactory : IAbsoluteUrlFactory
 {
     public AbsoluteUrlFactory(IHttpContextAccessor httpContextAccessor)
     {
@@ -45,7 +44,7 @@ internal class AbsoluteUrlFactory : IAbsoluteUrlFactory
         return $"{request.Scheme}://{request.Host.ToUriComponent()}{request.PathBase.ToUriComponent()}{path}";
     }
 
-    private (bool, string) ShouldProcessPath(string path)
+    private static (bool, string) ShouldProcessPath(string path)
     {
         if (path == null || !Uri.IsWellFormedUriString(path, UriKind.RelativeOrAbsolute))
         {

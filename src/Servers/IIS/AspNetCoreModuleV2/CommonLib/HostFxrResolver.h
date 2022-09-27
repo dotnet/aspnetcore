@@ -44,28 +44,23 @@ public:
 private:
 
     static
-    BOOL
+    bool
     IsDotnetExecutable(
         const std::filesystem::path & dotnetPath
     );
 
     static
-    VOID
-    FindDotNetFolders(
-        const std::filesystem::path& path,
-        std::vector<std::wstring> & pvFolders
-    );
-
-    static
-    std::wstring
-    FindHighestDotNetVersion(
-        std::vector<std::wstring> & vFolders
+    bool
+    TryGetHostFxrPath(
+        std::filesystem::path& hostFxrDllPath,
+        const std::filesystem::path& dotnetRoot,
+        const std::filesystem::path& applicationPath
     );
 
     static
     std::filesystem::path
-    GetAbsolutePathToHostFxr(
-        const std::filesystem::path & dotnetPath
+    GetAbsolutePathToDotnetFromHostfxr(
+        const std::filesystem::path& hostfxrPath
     );
 
     static

@@ -13,6 +13,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <TempPlatform Condition="'$(Platform)' == 'x64'">x64</TempPlatform>
     <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
+    <TempPlatform Condition="'$(Platform)' == 'arm64'">ARM64</TempPlatform>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +48,7 @@
     <ProjectReference Include="..\CustomAction\aspnetcoreCA.vcxproj">
       <Name>aspnetcoreCA</Name>
       <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=Win32</SetPlatform>
+      <SetPlatform Condition="'$(Platform)' == 'arm64'">Platform=ARM64</SetPlatform>
       <Project>{7c27e72f-54d0-4820-8cfa-5e4be640974b}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>

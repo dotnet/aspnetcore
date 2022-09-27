@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Test;
 
@@ -23,11 +19,11 @@ public class HostingTests
     [Fact]
     public async Task WebhostLoadsKeyRingBeforeServerStarts()
     {
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         var mockKeyRing = new Mock<IKeyRingProvider>();
         mockKeyRing.Setup(m => m.GetCurrentKeyRing())
             .Returns(Mock.Of<IKeyRing>())
-            .Callback(() => tcs.TrySetResult(null));
+            .Callback(() => tcs.TrySetResult());
 
         var builder = new WebHostBuilder()
             .UseStartup<TestStartup>()
@@ -50,11 +46,11 @@ public class HostingTests
     [Fact]
     public async Task GenericHostLoadsKeyRingBeforeServerStarts()
     {
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         var mockKeyRing = new Mock<IKeyRingProvider>();
         mockKeyRing.Setup(m => m.GetCurrentKeyRing())
             .Returns(Mock.Of<IKeyRing>())
-            .Callback(() => tcs.TrySetResult(null));
+            .Callback(() => tcs.TrySetResult());
 
         var builder = new HostBuilder()
             .ConfigureServices(s =>

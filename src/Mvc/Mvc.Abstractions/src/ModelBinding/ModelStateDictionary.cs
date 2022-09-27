@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -25,6 +23,9 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     /// </summary>
     public static readonly int DefaultMaxAllowedErrors = 200;
 
+    // internal for testing
+    internal const int DefaultMaxRecursionDepth = 32;
+
     private const char DelimiterDot = '.';
     private const char DelimiterOpen = '[';
 
@@ -43,8 +44,18 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
     /// </summary>
     public ModelStateDictionary(int maxAllowedErrors)
+        : this(maxAllowedErrors, maxValidationDepth: DefaultMaxRecursionDepth, maxStateDepth: DefaultMaxRecursionDepth)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ModelStateDictionary"/> class.
+    /// </summary>
+    private ModelStateDictionary(int maxAllowedErrors, int maxValidationDepth, int maxStateDepth)
     {
         MaxAllowedErrors = maxAllowedErrors;
+        MaxValidationDepth = maxValidationDepth;
+        MaxStateDepth = maxStateDepth;
         var emptySegment = new StringSegment(buffer: string.Empty);
         _root = new ModelStateNode(subKey: emptySegment)
         {
@@ -58,7 +69,9 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     /// </summary>
     /// <param name="dictionary">The <see cref="ModelStateDictionary"/> to copy values from.</param>
     public ModelStateDictionary(ModelStateDictionary dictionary)
-        : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors)
+        : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors,
+              dictionary?.MaxValidationDepth ?? DefaultMaxRecursionDepth,
+              dictionary?.MaxStateDepth ?? DefaultMaxRecursionDepth)
     {
         if (dictionary == null)
         {
@@ -154,7 +167,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     }
 
     /// <inheritdoc />
-    public ModelValidationState ValidationState => GetValidity(_root) ?? ModelValidationState.Valid;
+    public ModelValidationState ValidationState => GetValidity(_root, currentDepth: 0) ?? ModelValidationState.Valid;
 
     /// <inheritdoc />
     public ModelStateEntry? this[string key]
@@ -173,6 +186,10 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
 
     // Flag that indicates if TooManyModelErrorException has already been added to this dictionary.
     private bool HasRecordedMaxModelError { get; set; }
+
+    internal int? MaxValidationDepth { get; set; }
+
+    internal int? MaxStateDepth { get; set; }
 
     /// <summary>
     /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
@@ -217,7 +234,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
             return false;
         }
 
-        ErrorCount++;
         AddModelErrorCore(key, exception);
         return true;
     }
@@ -327,7 +343,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
             return TryAddModelError(key, exception.Message);
         }
 
-        ErrorCount++;
         AddModelErrorCore(key, exception);
         return true;
     }
@@ -385,13 +400,13 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
             return false;
         }
 
-        ErrorCount++;
         var modelState = GetOrAddNode(key);
         Count += !modelState.IsContainerNode ? 0 : 1;
         modelState.ValidationState = ModelValidationState.Invalid;
         modelState.MarkNonContainerNode();
         modelState.Errors.Add(errorMessage);
 
+        ErrorCount++;
         return true;
     }
 
@@ -411,7 +426,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         }
 
         var item = GetNode(key);
-        return GetValidity(item) ?? ModelValidationState.Unvalidated;
+        return GetValidity(item, currentDepth: 0) ?? ModelValidationState.Unvalidated;
     }
 
     /// <summary>
@@ -611,11 +626,18 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         var current = _root;
         if (key.Length > 0)
         {
+            var currentDepth = 0;
             var match = default(MatchResult);
             do
             {
+                if (MaxStateDepth != null && currentDepth >= MaxStateDepth)
+                {
+                    throw new InvalidOperationException(Resources.FormatModelStateDictionary_MaxModelStateDepth(MaxStateDepth));
+                }
+
                 var subKey = FindNext(key, ref match);
                 current = current.GetOrAddNode(subKey);
+                currentDepth++;
 
             } while (match.Type != Delimiter.None);
 
@@ -661,9 +683,10 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         return new StringSegment(key, keyStart, index - keyStart);
     }
 
-    private static ModelValidationState? GetValidity(ModelStateNode? node)
+    private ModelValidationState? GetValidity(ModelStateNode? node, int currentDepth)
     {
-        if (node == null)
+        if (node == null ||
+            (MaxValidationDepth != null && currentDepth >= MaxValidationDepth))
         {
             return null;
         }
@@ -686,9 +709,11 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
 
         if (node.ChildNodes != null)
         {
+            currentDepth++;
+
             for (var i = 0; i < node.ChildNodes.Count; i++)
             {
-                var entryState = GetValidity(node.ChildNodes[i]);
+                var entryState = GetValidity(node.ChildNodes[i], currentDepth);
 
                 if (entryState == ModelValidationState.Unvalidated)
                 {
@@ -712,7 +737,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
             var exception = new TooManyModelErrorsException(Resources.ModelStateDictionary_MaxModelStateErrors);
             AddModelErrorCore(string.Empty, exception);
             HasRecordedMaxModelError = true;
-            ErrorCount++;
         }
     }
 
@@ -723,6 +747,8 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         modelState.ValidationState = ModelValidationState.Invalid;
         modelState.MarkNonContainerNode();
         modelState.Errors.Add(exception);
+
+        ErrorCount++;
     }
 
     /// <summary>
@@ -884,7 +910,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     }
 
     [DebuggerDisplay("SubKey={SubKey}, Key={Key}, ValidationState={ValidationState}")]
-    private class ModelStateNode : ModelStateEntry
+    private sealed class ModelStateNode : ModelStateEntry
     {
         private bool _isContainerNode = true;
 

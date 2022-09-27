@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,10 +173,13 @@ public static class WebHost
 
             if (env.IsDevelopment())
             {
-                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
-                if (appAssembly != null)
+                if (!string.IsNullOrEmpty(env.ApplicationName))
                 {
-                    config.AddUserSecrets(appAssembly, optional: true);
+                    var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                    if (appAssembly != null)
+                    {
+                        config.AddUserSecrets(appAssembly, optional: true);
+                    }
                 }
             }
 
@@ -227,20 +228,20 @@ public static class WebHost
         })
         .ConfigureServices((hostingContext, services) =>
         {
-                // Fallback
-                services.PostConfigure<HostFilteringOptions>(options =>
+            // Fallback
+            services.PostConfigure<HostFilteringOptions>(options =>
             {
                 if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
                 {
-                        // "AllowedHosts": "localhost;127.0.0.1;[::1]"
-                        var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                        // Fall back to "*" to disable.
-                        options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
+                    // "AllowedHosts": "localhost;127.0.0.1;[::1]"
+                    var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    // Fall back to "*" to disable.
+                    options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
                 }
             });
-                // Change notification
-                services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(
-                        new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
+            // Change notification
+            services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(
+                    new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
 
             services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
@@ -269,6 +270,6 @@ public static class WebHost
     /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
     /// <param name="args">The command line args.</param>
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHostBuilder CreateDefaultBuilder<TStartup>(string[] args) where TStartup : class =>
+    public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
 }

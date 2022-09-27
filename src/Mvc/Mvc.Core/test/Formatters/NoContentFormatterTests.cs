@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -132,6 +128,26 @@ public class NoContentFormatterTests
 
         // Assert
         Assert.Equal(StatusCodes.Status204NoContent, context.HttpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task WriteAsync_DoesNotHaveContentLengthSet()
+    {
+        // Arrange
+        var context = new OutputFormatterWriteContext(
+            new DefaultHttpContext(),
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(string),
+            @object: null);
+
+        var formatter = new HttpNoContentOutputFormatter();
+
+        // Act
+        await formatter.WriteAsync(context);
+
+        // Assert
+        // No Content responses shouldn't have a Content-Length.
+        Assert.Null(context.HttpContext.Response.ContentLength);
     }
 
     [Fact]

@@ -1,18 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -58,7 +54,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                 });
 
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
 
             Assert.Collection(
                 problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -147,6 +143,21 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
         Assert.Equal(input.ContactId, result.ContactId);
         Assert.Equal(input.Name, result.Name);
+    }
+
+    [Fact]
+    public async Task ActionsWithApiBehavior_InferFromServicesParameters()
+    {
+        // Arrange
+        var id = 1;
+        var url = $"/contact/ActionWithInferredFromServicesParameter/{id}";
+        var response = await Client.GetAsync(url);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
+        Assert.NotNull(result);
+        Assert.Equal(id, result.ContactId);
     }
 
     [Fact]

@@ -41,11 +41,11 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
     /// </remarks>
     private readonly TimeSpan _maxServerToServerClockSkew;
 
-    public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions)
-        : this(keyManagementOptions, NullLoggerFactory.Instance)
+    public DefaultKeyResolver()
+        : this(NullLoggerFactory.Instance)
     { }
 
-    public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions, ILoggerFactory loggerFactory)
+    public DefaultKeyResolver(ILoggerFactory loggerFactory)
     {
         _keyPropagationWindow = KeyManagementOptions.KeyPropagationWindow;
         _maxServerToServerClockSkew = KeyManagementOptions.MaxServerClockSkew;

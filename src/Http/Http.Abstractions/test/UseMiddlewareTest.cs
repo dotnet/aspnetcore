@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -17,8 +12,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_WithNoParameters_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareNoParametersStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareNoParametersStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddlewareNoParameters(
@@ -32,8 +26,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_AsyncWithNoParameters_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareAsyncNoParametersStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareAsyncNoParametersStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddlewareNoParameters(
@@ -47,8 +40,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_NonTaskReturnType_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareNonTaskReturnStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareNonTaskReturnStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddlewareNonTaskReturnType(
@@ -62,8 +54,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_AsyncNonTaskReturnType_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareAsyncNonTaskReturnStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareAsyncNonTaskReturnStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddlewareNonTaskReturnType(
@@ -77,8 +68,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_NoInvokeOrInvokeAsyncMethod_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareNoInvokeStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareNoInvokeStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddlewareNoInvokeMethod(
@@ -91,8 +81,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_MultipleInvokeMethods_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareMultipleInvokesStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareMultipleInvokesStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddleMutlipleInvokes(
@@ -105,8 +94,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_MultipleInvokeAsyncMethods_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAsyncStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAsyncStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddleMutlipleInvokes(
@@ -119,8 +107,7 @@ public class UseMiddlewareTest
     public void UseMiddleware_MultipleInvokeAndInvokeAsyncMethods_ThrowsException()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAndInvokeAsyncStub));
-        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAndInvokeAsyncStub)));
 
         Assert.Equal(
             Resources.FormatException_UseMiddleMutlipleInvokes(

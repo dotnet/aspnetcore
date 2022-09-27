@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class LongPollingTransport : ITransport
+internal sealed partial class LongPollingTransport : ITransport
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
@@ -50,8 +50,13 @@ internal partial class LongPollingTransport : ITransport
 
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        using (var response = await _httpClient.SendAsync(request, cancellationToken))
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+            Version = HttpVersion.Version20,
+#endif
+        };
+        using (var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
         {
             response.EnsureSuccessStatusCode();
         }
@@ -74,7 +79,7 @@ internal partial class LongPollingTransport : ITransport
         var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
 
         // Wait for send or receive to complete
-        var trigger = await Task.WhenAny(receiving, sending);
+        var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
 
         if (trigger == receiving)
         {
@@ -87,7 +92,7 @@ internal partial class LongPollingTransport : ITransport
             // Cancel the application so that ReadAsync yields
             _application.Input.CancelPendingRead();
 
-            await sending;
+            await sending.ConfigureAwait(false);
         }
         else
         {
@@ -100,10 +105,10 @@ internal partial class LongPollingTransport : ITransport
             // Cancel any pending flush so that we can quit
             _application.Output.CancelPendingFlush();
 
-            await receiving;
+            await receiving.ConfigureAwait(false);
 
             // Send the DELETE request to clean-up the connection on the server.
-            await SendDeleteRequest(url);
+            await SendDeleteRequest(url).ConfigureAwait(false);
         }
     }
 
@@ -121,7 +126,7 @@ internal partial class LongPollingTransport : ITransport
 
         try
         {
-            await Running;
+            await Running.ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -148,13 +153,18 @@ internal partial class LongPollingTransport : ITransport
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
+                var request = new HttpRequestMessage(HttpMethod.Get, pollUrl)
+                {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                    Version = HttpVersion.Version20,
+#endif
+                };
 
                 HttpResponseMessage response;
 
                 try
                 {
-                    response = await _httpClient.SendAsync(request, cancellationToken);
+                    response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -186,13 +196,13 @@ internal partial class LongPollingTransport : ITransport
                 {
                     Log.ReceivedMessages(_logger);
 #if NETCOREAPP
-                        await response.Content.CopyToAsync(applicationStream, cancellationToken);
+                    await response.Content.CopyToAsync(applicationStream, cancellationToken).ConfigureAwait(false);
 
 #else
-                    await response.Content.CopyToAsync(applicationStream);
+                    await response.Content.CopyToAsync(applicationStream).ConfigureAwait(false);
 #endif
 
-                    var flushResult = await _application.Output.FlushAsync(cancellationToken);
+                    var flushResult = await _application.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
 
                     // We canceled in the middle of applying back pressure
                     // or if the consumer is done
@@ -227,7 +237,13 @@ internal partial class LongPollingTransport : ITransport
         try
         {
             Log.SendingDeleteRequest(_logger, url);
-            var response = await _httpClient.DeleteAsync(url);
+            var request = new HttpRequestMessage(HttpMethod.Delete, url)
+            {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                Version = HttpVersion.Version20,
+#endif
+            };
+            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {

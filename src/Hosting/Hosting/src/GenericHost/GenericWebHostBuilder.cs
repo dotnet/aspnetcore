@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
@@ -47,9 +44,9 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         {
             config.AddConfiguration(_config);
 
-                // We do this super early but still late enough that we can process the configuration
-                // wired up by calls to UseSetting
-                ExecuteHostingStartups();
+            // We do this super early but still late enough that we can process the configuration
+            // wired up by calls to UseSetting
+            ExecuteHostingStartups();
         });
 
         // IHostingStartup needs to be executed before any direct methods on the builder
@@ -68,24 +65,24 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var webhostContext = GetWebHostBuilderContext(context);
             var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
 
-                // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
-                services.AddSingleton(webhostContext.HostingEnvironment);
+            // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
+            services.AddSingleton(webhostContext.HostingEnvironment);
 #pragma warning disable CS0618 // Type or member is obsolete
-                services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
+            services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
             services.AddSingleton<IApplicationLifetime, GenericWebHostApplicationLifetime>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                services.Configure<GenericWebHostServiceOptions>(options =>
-            {
-                    // Set the options
-                    options.WebHostOptions = webHostOptions;
-                    // Store and forward any startup errors
-                    options.HostingStartupExceptions = _hostingStartupErrors;
-            });
+            services.Configure<GenericWebHostServiceOptions>(options =>
+        {
+            // Set the options
+            options.WebHostOptions = webHostOptions;
+            // Store and forward any startup errors
+            options.HostingStartupExceptions = _hostingStartupErrors;
+        });
 
-                // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
-                // We need to flow this differently
-                services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
+            // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
+            // We need to flow this differently
+            services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
             services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
             services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
             services.TryAddSingleton(DistributedContextPropagator.Current);
@@ -94,37 +91,43 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
 
-                // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
-                _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
+            // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
+            _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
 
-                // Support UseStartup(assemblyName)
-                if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
+            // Support UseStartup(assemblyName)
+            if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
             {
-                try
-                {
-                    var startupType = StartupLoader.FindStartupType(webHostOptions.StartupAssembly, webhostContext.HostingEnvironment.EnvironmentName);
-                    UseStartup(startupType, context, services);
-                }
-                catch (Exception ex) when (webHostOptions.CaptureStartupErrors)
-                {
-                    var capture = ExceptionDispatchInfo.Capture(ex);
-
-                    services.Configure<GenericWebHostServiceOptions>(options =>
-                    {
-                        options.ConfigureApplication = app =>
-                        {
-                                // Throw if there was any errors initializing startup
-                                capture.Throw();
-                        };
-                    });
-                }
+                ScanAssemblyAndRegisterStartup(context, services, webhostContext, webHostOptions);
             }
         });
     }
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Finding startup type in assembly requires unreferenced code. Surfaced to user in UseStartup(assemblyName).")]
+    private void ScanAssemblyAndRegisterStartup(HostBuilderContext context, IServiceCollection services, WebHostBuilderContext webhostContext, WebHostOptions webHostOptions)
+    {
+        try
+        {
+            var startupType = StartupLoader.FindStartupType(webHostOptions.StartupAssembly!, webhostContext.HostingEnvironment.EnvironmentName);
+            UseStartup(startupType, context, services);
+        }
+        catch (Exception ex) when (webHostOptions.CaptureStartupErrors)
+        {
+            var capture = ExceptionDispatchInfo.Capture(ex);
+
+            services.Configure<GenericWebHostServiceOptions>(options =>
+            {
+                options.ConfigureApplication = app =>
+                {
+                    // Throw if there was any errors initializing startup
+                    capture.Throw();
+                };
+            });
+        }
+    }
+
     private void ExecuteHostingStartups()
     {
-        var webHostOptions = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
+        var webHostOptions = new WebHostOptions(_config);
 
         if (webHostOptions.PreventHostingStartup)
         {
@@ -222,18 +225,22 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         // UseStartup can be called multiple times. Only run the last one.
         _startupObject = startupType;
 
+        var state = new UseStartupState(startupType);
+
         _builder.ConfigureServices((context, services) =>
         {
-                // Run this delegate if the startup type matches
-                if (object.ReferenceEquals(_startupObject, startupType))
+            // Run this delegate if the startup type matches
+            if (object.ReferenceEquals(_startupObject, state.StartupType))
             {
-                UseStartup(startupType, context, services);
+                UseStartup(state.StartupType, context, services);
             }
         });
 
         return this;
     }
 
+    // Note: This method isn't 100% compatible with trimming. It is possible for the factory to return a derived type from TStartup.
+    // RequiresUnreferencedCode isn't on this method because the majority of people won't do that.
     public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
     {
         var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
@@ -243,16 +250,19 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         // Clear the startup type
         _startupObject = startupFactory;
 
-        _builder.ConfigureServices((context, services) =>
+        _builder.ConfigureServices(ConfigureStartup);
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Startup type created by factory can't be determined statically.")]
+        void ConfigureStartup(HostBuilderContext context, IServiceCollection services)
         {
-                // UseStartup can be called multiple times. Only run the last one.
-                if (object.ReferenceEquals(_startupObject, startupFactory))
+            // UseStartup can be called multiple times. Only run the last one.
+            if (object.ReferenceEquals(_startupObject, startupFactory))
             {
                 var webHostBuilderContext = GetWebHostBuilderContext(context);
                 var instance = startupFactory(webHostBuilderContext) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
                 UseStartup(instance.GetType(), context, services, instance);
             }
-        });
+        }
 
         return this;
     }
@@ -322,11 +332,11 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         {
             options.ConfigureApplication = app =>
             {
-                    // Throw if there was any errors initializing startup
-                    startupError?.Throw();
+                // Throw if there was any errors initializing startup
+                startupError?.Throw();
 
-                    // Execute Startup.Configure
-                    if (instance != null && configureBuilder != null)
+                // Execute Startup.Configure
+                if (instance != null && configureBuilder != null)
                 {
                     configureBuilder.Build(instance)(app);
                 }
@@ -388,17 +398,18 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         return this;
     }
 
-    private static WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
+    private WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
     {
         if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
         {
-            var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
+            // Use _config as a fallback for WebHostOptions in case the chained source was removed from the hosting IConfigurationBuilder.
+            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config, environment: context.HostingEnvironment);
             var webHostBuilderContext = new WebHostBuilderContext
             {
                 Configuration = context.Configuration,
                 HostingEnvironment = new HostingEnvironment(),
             };
-            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
+            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options, baseEnvironment: context.HostingEnvironment);
             context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
             context.Properties[typeof(WebHostOptions)] = options;
             return webHostBuilderContext;
@@ -422,7 +433,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
     }
 
     // This exists just so that we can use ActivatorUtilities.CreateInstance on the Startup class
-    private class HostServiceProvider : IServiceProvider
+    private sealed class HostServiceProvider : IServiceProvider
     {
         private readonly WebHostBuilderContext _context;
 

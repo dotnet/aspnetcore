@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
@@ -301,12 +299,12 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard.
     /// This only applies when the <see cref="ResponseType"/> is set to <see cref="OpenIdConnectResponseType.Code"/>.
-    /// See https://tools.ietf.org/html/rfc7636.
+    /// See <see href="https://tools.ietf.org/html/rfc7636"/>.
     /// The default value is `true`.
     /// </summary>
     public bool UsePkce { get; set; } = true;
 
-    private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
+    private sealed class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
     {
         private readonly OpenIdConnectOptions _options;
 
@@ -331,13 +329,19 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     }
 
     /// <summary>
-    /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.
+    /// Gets or sets how often an automatic metadata refresh should occur.
     /// </summary>
+    /// <value>
+    /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.DefaultAutomaticRefreshInterval" />.
+    /// </value>
     public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
 
     /// <summary>
-    /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
+    /// Gets or sets the minimum time between retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested.
     /// </summary>
+    /// <value>
+    /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.DefaultRefreshInterval" />.
+    /// </value>
     public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
 
     /// <summary>

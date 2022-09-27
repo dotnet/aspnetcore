@@ -1,21 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net;
-using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -401,6 +395,17 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         await _bodyOutput.FlushAsync(default);
     }
 
+    // Response trailers, reset, and GOAWAY are only on HTTP/2+ and require IIS support
+    // that is only available on Win 11/Server 2022 or later.
+    private static readonly bool OsSupportsAdvancedHttp2 = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 20348, 0);
+
+    protected bool AdvancedHttp2FeaturesSupported()
+    {
+        return OsSupportsAdvancedHttp2 &&
+            HttpVersion >= System.Net.HttpVersion.Version20 &&
+            NativeMethods.HttpHasResponse4(_requestNativeHandle);
+    }
+
     public unsafe void SetResponseHeaders()
     {
         // Verifies we have sent the statuscode before writing a header
@@ -409,7 +414,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         // This copies data into the underlying buffer
         NativeMethods.HttpSetResponseStatusCode(_requestNativeHandle, (ushort)StatusCode, reasonPhrase);
 
-        if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
+        if (AdvancedHttp2FeaturesSupported())
         {
             // Check if connection close is set, if so setting goaway
             if (string.Equals(ConnectionClose, HttpResponseHeaders[HeaderNames.Connection], StringComparison.OrdinalIgnoreCase))
@@ -657,7 +662,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         Dispose(disposing: true);
     }
 
-    private void ThrowResponseAlreadyStartedException(string name)
+    private static void ThrowResponseAlreadyStartedException(string name)
     {
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
     }

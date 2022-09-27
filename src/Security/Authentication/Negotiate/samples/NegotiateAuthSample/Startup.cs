@@ -1,14 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Negotiate;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace NegotiateAuthSample;
 
@@ -25,27 +18,27 @@ public class Startup
             {
                 if (OperatingSystem.IsLinux())
                 {
-                        /*
-                        options.EnableLdap("DOMAIN.net");
+                    /*
+                    options.EnableLdap("DOMAIN.net");
 
-                        options.EnableLdap(settings =>
-                        {
-                            // Mandatory settings
-                            settings.Domain = "DOMAIN.com";
-                            // Optional settings
-                            settings.MachineAccountName = "machineName";
-                            settings.MachineAccountPassword = "PassW0rd";
-                            settings.IgnoreNestedGroups = true;
-                        });
-                        */
+                    options.EnableLdap(settings =>
+                    {
+                        // Mandatory settings
+                        settings.Domain = "DOMAIN.com";
+                        // Optional settings
+                        settings.MachineAccountName = "machineName";
+                        settings.MachineAccountPassword = "PassW0rd";
+                        settings.IgnoreNestedGroups = true;
+                    });
+                    */
                 }
 
                 options.Events = new NegotiateEvents()
                 {
                     OnAuthenticationFailed = context =>
                     {
-                            // context.SkipHandler();
-                            return Task.CompletedTask;
+                        // context.SkipHandler();
+                        return Task.CompletedTask;
                     }
                 };
             });

@@ -51,7 +51,7 @@ public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequire
     /// <param name="context">The authorization information.</param>
     public async Task HandleAsync(AuthorizationHandlerContext context)
     {
-        if (await Handler(context))
+        if (await Handler(context).ConfigureAwait(false))
         {
             context.Succeed(this);
         }
