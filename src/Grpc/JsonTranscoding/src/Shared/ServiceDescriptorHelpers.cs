@@ -172,60 +172,7 @@ internal static class ServiceDescriptorHelpers
 
             if (isLast)
             {
-                if (field.IsRepeated)
-                {
-                    var list = (IList)field.Accessor.GetValue(currentValue);
-                    if (values is StringValues stringValues)
-                    {
-                        foreach (var value in stringValues)
-                        {
-                            list.Add(ConvertValue(value, field));
-                        }
-                    }
-                    else if (values is IList listValues)
-                    {
-                        foreach (var value in listValues)
-                        {
-                            list.Add(ConvertValue(value, field));
-                        }
-                    }
-                    else
-                    {
-                        list.Add(ConvertValue(values, field));
-                    }
-                }
-                else
-                {
-                    if (values is StringValues stringValues)
-                    {
-                        if (stringValues.Count == 1)
-                        {
-                            field.Accessor.SetValue(currentValue, ConvertValue(stringValues[0], field));
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Can't set multiple values onto a non-repeating field.");
-                        }
-                    }
-                    else if (values is IMessage message)
-                    {
-                        if (IsWrapperType(message.Descriptor))
-                        {
-                            const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
-
-                            var wrappedValue = message.Descriptor.Fields[WrapperValueFieldNumber].Accessor.GetValue(message);
-                            field.Accessor.SetValue(currentValue, wrappedValue);
-                        }
-                        else
-                        {
-                            field.Accessor.SetValue(currentValue, message);
-                        }
-                    }
-                    else
-                    {
-                        field.Accessor.SetValue(currentValue, ConvertValue(values, field));
-                    }
-                }
+                SetValue(currentValue, field, values);
             }
             else
             {
@@ -238,6 +185,64 @@ internal static class ServiceDescriptorHelpers
                 }
 
                 currentValue = fieldMessage;
+            }
+        }
+    }
+
+    public static void SetValue(IMessage message, FieldDescriptor field, object? values)
+    {
+        if (field.IsRepeated)
+        {
+            var list = (IList)field.Accessor.GetValue(message);
+            if (values is StringValues stringValues)
+            {
+                foreach (var value in stringValues)
+                {
+                    list.Add(ConvertValue(value, field));
+                }
+            }
+            else if (values is IList listValues)
+            {
+                foreach (var value in listValues)
+                {
+                    list.Add(ConvertValue(value, field));
+                }
+            }
+            else
+            {
+                list.Add(ConvertValue(values, field));
+            }
+        }
+        else
+        {
+            if (values is StringValues stringValues)
+            {
+                if (stringValues.Count == 1)
+                {
+                    field.Accessor.SetValue(message, ConvertValue(stringValues[0], field));
+                }
+                else
+                {
+                    throw new InvalidOperationException("Can't set multiple values onto a non-repeating field.");
+                }
+            }
+            else if (values is IMessage messageValue)
+            {
+                if (IsWrapperType(messageValue.Descriptor))
+                {
+                    const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
+
+                    var wrappedValue = messageValue.Descriptor.Fields[WrapperValueFieldNumber].Accessor.GetValue(messageValue);
+                    field.Accessor.SetValue(message, wrappedValue);
+                }
+                else
+                {
+                    field.Accessor.SetValue(message, messageValue);
+                }
+            }
+            else
+            {
+                field.Accessor.SetValue(message, ConvertValue(values, field));
             }
         }
     }
@@ -312,24 +317,28 @@ internal static class ServiceDescriptorHelpers
         {
             if (!string.Equals(body, "*", StringComparison.Ordinal))
             {
-                var bodyFieldPath = body.Split('.');
-                if (!TryResolveDescriptors(methodDescriptor.InputType, bodyFieldPath, out var bodyFieldDescriptors))
+                if (body.Contains('.', StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"The body field '{body}' references a nested field. The body field name must be on the top-level request message.");
+                }
+                var responseBodyDescriptor = methodDescriptor.InputType.FindFieldByName(body);
+                if (responseBodyDescriptor == null)
                 {
                     throw new InvalidOperationException($"Couldn't find matching field for body '{body}' on {methodDescriptor.InputType.Name}.");
                 }
-                var leafDescriptor = bodyFieldDescriptors.Last();
-                var propertyName = FormatUnderscoreName(leafDescriptor.Name, pascalCase: true, preservePeriod: false);
-                var propertyInfo = leafDescriptor.ContainingType.ClrType.GetProperty(propertyName);
 
-                if (leafDescriptor.IsRepeated)
+                var propertyName = FormatUnderscoreName(responseBodyDescriptor.Name, pascalCase: true, preservePeriod: false);
+                var propertyInfo = responseBodyDescriptor.ContainingType.ClrType.GetProperty(propertyName);
+
+                if (responseBodyDescriptor.IsRepeated)
                 {
                     // A repeating field isn't a message type. The JSON parser will parse using the containing
                     // type to get the repeating collection.
-                    return new BodyDescriptorInfo(leafDescriptor.ContainingType, bodyFieldDescriptors, IsDescriptorRepeated: true, propertyInfo);
+                    return new BodyDescriptorInfo(responseBodyDescriptor.ContainingType, responseBodyDescriptor, IsDescriptorRepeated: true, propertyInfo);
                 }
                 else
                 {
-                    return new BodyDescriptorInfo(leafDescriptor.MessageType, bodyFieldDescriptors, IsDescriptorRepeated: false, propertyInfo);
+                    return new BodyDescriptorInfo(responseBodyDescriptor.MessageType, responseBodyDescriptor, IsDescriptorRepeated: false, propertyInfo);
                 }
             }
             else
@@ -341,7 +350,7 @@ internal static class ServiceDescriptorHelpers
                     requestParameter = methodInfo.GetParameters().SingleOrDefault(p => p.Name == "request");
                 }
 
-                return new BodyDescriptorInfo(methodDescriptor.InputType, FieldDescriptors: null, IsDescriptorRepeated: false, ParameterInfo: requestParameter);
+                return new BodyDescriptorInfo(methodDescriptor.InputType, FieldDescriptor: null, IsDescriptorRepeated: false, ParameterInfo: requestParameter);
             }
         }
 
@@ -352,7 +361,7 @@ internal static class ServiceDescriptorHelpers
         Dictionary<string, RouteParameter> routeParameters,
         MethodDescriptor methodDescriptor,
         MessageDescriptor? bodyDescriptor,
-        List<FieldDescriptor>? bodyFieldDescriptors)
+        FieldDescriptor? bodyFieldDescriptor)
     {
         var existingParameters = new List<FieldDescriptor>();
 
@@ -366,13 +375,10 @@ internal static class ServiceDescriptorHelpers
 
         if (bodyDescriptor != null)
         {
-            if (bodyFieldDescriptors != null)
+            if (bodyFieldDescriptor != null)
             {
                 // Body with field name.
-                // The body field descriptors collection contains all the descriptors in the path.
-                // We only care about the final place the body is set and so add only the last
-                // descriptor to the existing parameters collection.
-                existingParameters.Add(bodyFieldDescriptors.Last());
+                existingParameters.Add(bodyFieldDescriptor);
             }
             else
             {
@@ -440,7 +446,7 @@ internal static class ServiceDescriptorHelpers
 
     public sealed record BodyDescriptorInfo(
         MessageDescriptor Descriptor,
-        List<FieldDescriptor>? FieldDescriptors,
+        FieldDescriptor? FieldDescriptor,
         bool IsDescriptorRepeated,
         PropertyInfo? PropertyInfo = null,
         ParameterInfo? ParameterInfo = null);

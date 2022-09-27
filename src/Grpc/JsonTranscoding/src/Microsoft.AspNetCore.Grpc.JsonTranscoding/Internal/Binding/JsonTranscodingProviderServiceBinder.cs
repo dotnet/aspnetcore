@@ -244,6 +244,10 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         FieldDescriptor? responseBodyDescriptor = null;
         if (!string.IsNullOrEmpty(responseBody))
         {
+            if (responseBody.Contains('.', StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
+            }
             responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
             if (responseBodyDescriptor == null)
             {
@@ -255,7 +259,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             responseBodyDescriptor,
             bodyDescriptor?.Descriptor,
             bodyDescriptor?.IsDescriptorRepeated ?? false,
-            bodyDescriptor?.FieldDescriptors,
+            bodyDescriptor?.FieldDescriptor,
             routeParameterDescriptors,
             routeAdapter);
         return descriptorInfo;

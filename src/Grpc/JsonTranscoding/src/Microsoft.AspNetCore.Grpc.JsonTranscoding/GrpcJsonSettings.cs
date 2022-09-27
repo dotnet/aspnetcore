@@ -9,10 +9,9 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding;
 public sealed class GrpcJsonSettings
 {
     /// <summary>
-    /// Whether fields which would otherwise not be included in the formatted data
-    /// should be formatted even when the value is not present, or has the default value.
-    /// This option only affects fields which don't support "presence" (e.g.
-    /// singular non-optional proto3 primitive fields).
+    /// Gets or sets a value that indicates whether fields with default values are ignored during serialization.
+    /// This setting only affects fields which don't support "presence", such as singular non-optional proto3 primitive fields.
+    /// Default value is false.
     /// </summary>
     public bool IgnoreDefaultValues { get; set; }
 
@@ -23,7 +22,7 @@ public sealed class GrpcJsonSettings
     public bool WriteEnumsAsIntegers { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that indicates whether <see cref="Int64"/> and <see cref="UInt64"/> values are written as strings instead of numbers.
+    /// Gets or sets a value that indicates whether <see cref="long"/> and <see cref="ulong"/> values are written as strings instead of numbers.
     /// Default value is false.
     /// </summary>
     public bool WriteInt64sAsStrings { get; set; }
