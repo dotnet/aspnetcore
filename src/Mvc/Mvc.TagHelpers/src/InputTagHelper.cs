@@ -423,7 +423,7 @@ public class InputTagHelper : TagHelper
     private static void GenerateInvariantCultureMetadata(string propertyName, TagHelperContent builder)
         => builder
             .AppendHtml("<input name=\"")
-            .Append(FormValueProvider.CultureInvariantFieldName)
+            .Append(FormValueHelper.CultureInvariantFieldName)
             .AppendHtml("\" type=\"hidden\" value=\"")
             .Append(propertyName)
             .AppendHtml("\" />");

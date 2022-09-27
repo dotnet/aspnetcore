@@ -95,18 +95,15 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
         var appSettingsPath = Path.Combine(serverProject.TemplateOutputDir, "appsettings.json");
         File.WriteAllText(appSettingsPath, replacedSection);
 
-        var publishResult = await serverProject.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
+        await serverProject.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await serverProject.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
+        await serverProject.RunDotNetBuildAsync();
 
-        var migrationsResult = await serverProject.RunDotNetEfCreateMigrationAsync("blazorwasm");
-        Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", serverProject, migrationsResult));
+        await serverProject.RunDotNetEfCreateMigrationAsync("blazorwasm");
         serverProject.AssertEmptyMigration("blazorwasm");
 
         return project;

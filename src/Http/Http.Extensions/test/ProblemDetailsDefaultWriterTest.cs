@@ -24,7 +24,7 @@ public class DefaultProblemDetailsWriterTest
             Detail = "Custom Bad Request",
             Instance = "Custom Bad Request",
             Status = StatusCodes.Status400BadRequest,
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
             Title = "Custom Bad Request",
         };
         var problemDetailsContext = new ProblemDetailsContext()
@@ -100,7 +100,7 @@ public class DefaultProblemDetailsWriterTest
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status500InternalServerError, problemDetails.Status);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
     }
 
@@ -133,13 +133,19 @@ public class DefaultProblemDetailsWriterTest
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status406NotAcceptable, problemDetails.Status);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal("Custom Title", problemDetails.Title);
         Assert.Contains("new-extension", problemDetails.Extensions);
     }
 
-    [Fact]
-    public async Task WriteAsync_UsesStatusCode_FromProblemDetails_WhenSpecified()
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
+    [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
+    [InlineData(499, null, null)]
+    public async Task WriteAsync_UsesStatusCode_FromProblemDetails_WhenSpecified(
+        int statusCode,
+        string title,
+        string type)
     {
         // Arrange
         var writer = GetWriter();
@@ -150,16 +156,16 @@ public class DefaultProblemDetailsWriterTest
         await writer.WriteAsync(new ProblemDetailsContext()
         {
             HttpContext = context,
-            ProblemDetails = { Status = StatusCodes.Status400BadRequest }
+            ProblemDetails = { Status = statusCode }
         });
 
         //Assert
         stream.Position = 0;
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
         Assert.NotNull(problemDetails);
-        Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
-        Assert.Equal("Bad Request", problemDetails.Title);
+        Assert.Equal(statusCode, problemDetails.Status);
+        Assert.Equal(type, problemDetails.Type);
+        Assert.Equal(title, problemDetails.Title);
     }
 
     [Theory]
