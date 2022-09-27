@@ -61,6 +61,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.IResult).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.IHeaderDictionary).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.HeaderDictionary).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.HttpRequestJsonExtensions).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.Primitives.StringValues).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.Logging.ILoggingBuilder).Assembly.Location),
