@@ -80,7 +80,7 @@ public partial class RoutePatternParserTests
         _outputHelper.WriteLine(actual);
         if (expected != null)
         {
-            Assert.Equal(expected.Replace("\"", DoubleQuoteEscaping), actual);
+            Assert.Equal(expected.Replace("\"", DoubleQuoteEscaping), actual, ignoreLineEndingDifferences: true);
         }
 
         return tree;
