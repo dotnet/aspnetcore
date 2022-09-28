@@ -28,7 +28,7 @@ public class KestrelServerOptionsTests
         var options = new KestrelServerOptions();
         options.ListenLocalhost(5000);
 
-        Assert.Equal(HttpProtocols.Http1AndHttp2AndHttp3, options.CodeBackedListenOptions[0].Protocols);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, options.CodeBackedListenOptions[0].Protocols);
 
         options.ConfigureEndpointDefaults(opt =>
         {
