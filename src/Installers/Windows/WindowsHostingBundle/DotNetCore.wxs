@@ -3,13 +3,13 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Fragment>
         <util:ProductSearch Id="DotNetRedistLtsProductSearch_x86"
-                            Condition="(NativeMachine=&quot;$(var.NativeMachine_x86)&quot;)"
+                            Condition="NOT VersionNT64"
                             ProductCode="$(var.DotNetRedistLtsInstallerProductCodex86)"
                             Result="version"
                             Variable="DotNetRedistLtsProductVersion_x86" />
 
         <util:ProductSearch Id="DotNetRedistLtsProductSearch_x64"
-                            Condition="(NativeMachine=&quot;$(var.NativeMachine_x64)&quot;)"
+                            Condition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;)"
                             ProductCode="$(var.DotNetRedistLtsInstallerProductCodex64)"
                             Result="version"
                             Variable="DotNetRedistLtsProductVersion_x64" />
@@ -40,7 +40,7 @@
                         Name="$(var.DotNetRedistLtsInstallerx64)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_x64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)"
+                        InstallCondition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         UninstallCommand="/quiet /uninstall"
