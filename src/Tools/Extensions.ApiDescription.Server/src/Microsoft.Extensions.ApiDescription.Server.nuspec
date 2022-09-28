@@ -12,5 +12,6 @@
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net461\*.*" target="tools\net461" />
     <file src="$artifactsBinDir$\GetDocument.Insider\x86\$configuration$\net461\*.*" target="tools\net461-x86" />
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\netcoreapp2.1\publish\*.*" target="tools\netcoreapp2.1" />
+    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net6.0\publish\*.*" target="tools\net6.0" />
   </files>
 </package>
