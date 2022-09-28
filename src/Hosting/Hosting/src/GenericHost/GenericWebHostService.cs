@@ -73,6 +73,8 @@ internal sealed partial class GenericWebHostService : IHostedService
                 urls = Options.WebHostOptions.ServerUrls;
             }
 
+            var httpPorts = Configuration[WebHostDefaults.HttpPortsKey] ?? string.Empty;
+            var httpsPorts = Configuration[WebHostDefaults.HttpsPortsKey] ?? string.Empty;
             if (string.IsNullOrEmpty(urls))
             {
                 // HTTP_PORTS and HTTPS_PORTS, these are lower priority than Urls.
@@ -83,9 +85,13 @@ internal sealed partial class GenericWebHostService : IHostedService
                         .Select(port => $"{scheme}://*:{port}"));
                 }
 
-                var httpUrls = ExpandPorts(Configuration[WebHostDefaults.HttpPortsKey] ?? string.Empty, Uri.UriSchemeHttp);
-                var httpsUrls = ExpandPorts(Configuration[WebHostDefaults.HttpsPortsKey] ?? string.Empty, Uri.UriSchemeHttps);
+                var httpUrls = ExpandPorts(httpPorts, Uri.UriSchemeHttp);
+                var httpsUrls = ExpandPorts(httpsPorts, Uri.UriSchemeHttps);
                 urls = $"{httpUrls};{httpsUrls}";
+            }
+            else if (!string.IsNullOrEmpty(httpPorts) || !string.IsNullOrEmpty(httpsPorts))
+            {
+                Logger.PortsOverridenByUrls(httpPorts, httpsPorts, urls);
             }
 
             if (!string.IsNullOrEmpty(urls))
