@@ -9,14 +9,14 @@
   <String Id="ConfirmCancelMessage">Annullare?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versione precedente</String>
   <String Id="HelpHeader">Guida all'installazione</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - installa, ripara, disinstalla o
-   crea una copia locale completa del bundle nella directory. L'opzione predefinita è install.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
+   creates a complete local copy of the bundle in directory. Install is the default.
 
-/passive | /quiet -  visualizza un'interfaccia utente minima senza prompt oppure non visualizza alcuna interfaccia utente
-   né prompt. Per impostazione predefinita, viene visualizzata l'intera interfaccia utente e tutti i prompt.
+/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
+   no prompts. By default UI and all prompts are displayed.
 
-/norestart   - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio.
-/log log.txt - registra il log in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%.</String>
+/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
+/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Chiudi</String>
   <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Condizioni di licenza&lt;/a&gt; di [WixBundleName].</String>
   <String Id="InstallAcceptCheckbox">&amp;Accetto i termini e le condizioni di licenza</String>
@@ -38,8 +38,8 @@
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
   <String Id="SuccessRepairHeader">Riparazione completata correttamente</String>
   <String Id="SuccessUninstallHeader">Disinstallazione completata correttamente</String>
-  <String Id="SuccessInstallHeader">Installazione completata correttamente</String> 
-  <String Id="SuccessHeader">Installazione completata</String>	
+  <String Id="SuccessInstallHeader">Installazione completata correttamente</String>
+  <String Id="SuccessHeader">Installazione completata</String>
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
   <String Id="SuccessRestartText">È necessario riavviare il computer prima di utilizzare il software.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
@@ -47,7 +47,7 @@
   <String Id="FailureHeader">Installazione non riuscita</String>
   <String Id="FailureInstallHeader">Installazione non riuscita</String>
   <String Id="FailureUninstallHeader">Disinstallazione non riuscita</String>
-  <String Id="FailureRepairHeader">Riparazione non riuscita</String> 
+  <String Id="FailureRepairHeader">Riparazione non riuscita</String>
   <String Id="FailureHyperlinkLogText">Installazione non riuscita a causa di uno o più problemi. Risolvere i problemi e ritentare l'installazione. Per ulteriori informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
   <String Id="FailureRestartText">È necessario riavviare il computer per completare il rollback del software.</String>
   <String Id="FailureRestartButton">&amp;Riavvia</String>

@@ -9,14 +9,14 @@
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [dizin] - yükler, onarır, kaldırır ya da
-   dizindeki paketin tam bir yerel kopyasını oluşturur. Varsayılan install değeridir.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
+   creates a complete local copy of the bundle in directory. Install is the default.
 
-/passive | /quiet -  en az düzeyde istemsiz UI gösterir ya da hiç UI göstermez ve
-   istem yoktur. Varsayılan olarak UI ve tüm istemler görüntülenir.
+/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
+   no prompts. By default UI and all prompts are displayed.
 
-/norestart   - yeniden başlama denemelerini engeller. Varsayılan olarak UI yeniden başlatılmadan önce sorar.
-/log log.txt - belirli bir günlük dosyası tutar. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur.</String>
+/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
+/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Kapat</String>
   <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;lisans koşulları&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">Lisans hüküm ve koşullarını &amp;kabul ediyorum</String>
@@ -38,8 +38,8 @@
   <String Id="ModifyCloseButton">&amp;Kapat</String>
   <String Id="SuccessRepairHeader">Onarım Başarıyla Tamamlandı</String>
   <String Id="SuccessUninstallHeader">Kaldırma Başarıyla Tamamlandı</String>
-  <String Id="SuccessInstallHeader">Yükleme Başarıyla Tamamlandı</String> 
-  <String Id="SuccessHeader">Kurulum Başarılı</String>	
+  <String Id="SuccessInstallHeader">Yükleme Başarıyla Tamamlandı</String>
+  <String Id="SuccessHeader">Kurulum Başarılı</String>
   <String Id="SuccessLaunchButton">&amp;Başlat</String>
   <String Id="SuccessRestartText">Yazılımı kullanabilmeniz için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
   <String Id="SuccessRestartButton">&amp;Yeniden Başlat</String>
@@ -47,7 +47,7 @@
   <String Id="FailureHeader">Kurulum Başarısız</String>
   <String Id="FailureInstallHeader">Kurulum Başarısız</String>
   <String Id="FailureUninstallHeader">Kaldırma Başarısız</String>
-  <String Id="FailureRepairHeader">Onarım Başarısız</String> 
+  <String Id="FailureRepairHeader">Onarım Başarısız</String>
   <String Id="FailureHyperlinkLogText">Bir ya da daha fazla sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href="#"&gt;günlük dosyasına&lt;/a&gt; bakın.</String>
   <String Id="FailureRestartText">Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
   <String Id="FailureRestartButton">&amp;Yeniden Başlat</String>
