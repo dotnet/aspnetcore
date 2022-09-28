@@ -215,7 +215,7 @@ describe("connection", () => {
                 const closePromise = new PromiseSource();
                 connection.onclose = (error: any) => {
                     expect(error).toBeUndefined();
-                    // closePromise.resolve();
+                    closePromise.resolve();
                 };
 
                 await connection.start(TransferFormat.Text);
