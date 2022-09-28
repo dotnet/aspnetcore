@@ -1,15 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#region Namespaces
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Experiment;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-#endregion
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
