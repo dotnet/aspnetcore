@@ -45,17 +45,14 @@ public class GrpcTemplateTest : LoggedTest
         var project = await ProjectFactory.CreateProject(Output);
 
         var args = useProgramMain ? new[] { ArgConstants.UseProgramMain } : null;
-        var createResult = await project.RunDotNetNewAsync("grpc", args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("grpc", args: args);
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync();
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
         var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
