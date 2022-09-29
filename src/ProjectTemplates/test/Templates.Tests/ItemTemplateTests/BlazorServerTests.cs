@@ -27,8 +27,7 @@ public class BlazorServerTest
     {
         Project = await ProjectFactory.CreateProject(Output);
 
-        var createResult = await Project.RunDotNetNewAsync("razorcomponent --name Different");
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", Project, createResult));
+        await Project.RunDotNetNewAsync("razorcomponent --name Different");
 
         Project.AssertFileExists("Different.razor", shouldExist: true);
         Assert.Contains("<h3>Different</h3>", Project.ReadFile("Different.razor"));
