@@ -61,7 +61,6 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
     [RequiresNewHandler]
     [InlineData(HostingModel.InProcess)]
     [InlineData(HostingModel.OutOfProcess)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42658")]
     public async Task ApplicationInitializationPageIsRequested(HostingModel hostingModel)
     {
         // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team

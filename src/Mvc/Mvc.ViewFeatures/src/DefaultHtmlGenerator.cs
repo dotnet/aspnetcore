@@ -1351,13 +1351,12 @@ public class DefaultHtmlGenerator : IHtmlGenerator
                     string.Equals(suppliedTypeString, "image", StringComparison.OrdinalIgnoreCase))
                 {
                     // 'value' attribute is not needed for 'file' and 'image' input types.
+                    break;
                 }
-                else
-                {
-                    var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
-                    attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
-                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
-                }
+
+                var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
+                attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
+                tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
 
                 break;
         }

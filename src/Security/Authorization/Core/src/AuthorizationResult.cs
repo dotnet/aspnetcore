@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationResult
 {
+    private static readonly AuthorizationResult _succeededResult = new() { Succeeded = true };
+    private static readonly AuthorizationResult _failedResult = new() { Failure = AuthorizationFailure.ExplicitFail() };
+
     private AuthorizationResult() { }
 
     /// <summary>
@@ -27,7 +30,7 @@ public class AuthorizationResult
     /// Returns a successful result.
     /// </summary>
     /// <returns>A successful result.</returns>
-    public static AuthorizationResult Success() => new AuthorizationResult { Succeeded = true };
+    public static AuthorizationResult Success() => _succeededResult;
 
     /// <summary>
     /// Creates a failed authorization result.
@@ -40,5 +43,5 @@ public class AuthorizationResult
     /// Creates a failed authorization result.
     /// </summary>
     /// <returns>The <see cref="AuthorizationResult"/>.</returns>
-    public static AuthorizationResult Failed() => new AuthorizationResult { Failure = AuthorizationFailure.ExplicitFail() };
+    public static AuthorizationResult Failed() => _failedResult;
 }

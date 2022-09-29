@@ -24,10 +24,7 @@ internal static class HandshakeHelpers
         // this concatenated value to obtain a 20-byte value and base64-encoding"
         // https://tools.ietf.org/html/rfc6455#section-4.2.2
 
-        if (requestKey == null)
-        {
-            throw new ArgumentNullException(nameof(requestKey));
-        }
+        ArgumentNullException.ThrowIfNull(requestKey);
 
         string merged = requestKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
         byte[] mergedBytes = Encoding.UTF8.GetBytes(merged);
