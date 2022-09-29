@@ -386,10 +386,7 @@ internal sealed partial class Request
         }
         catch (Exception)
         {
-            if (certLoader != null)
-            {
-                certLoader.Dispose();
-            }
+            certLoader?.Dispose();
             throw;
         }
         return _clientCert;
