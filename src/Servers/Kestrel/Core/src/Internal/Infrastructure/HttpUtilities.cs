@@ -238,6 +238,9 @@ internal static partial class HttpUtilities
         // or return HttpMethod.Custom if not found.
         // 
         // Further info and how to call gperf see https://github.com/dotnet/aspnetcore/pull/44096
+        //
+        // Code here could be removed if Roslyn improvements from
+        // https://github.com/dotnet/roslyn/issues/56374 are added.
 
         const int MinWordLength = 3;
         const int MaxWordLength = 7;
