@@ -297,7 +297,7 @@ internal sealed class Program
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
+                var trustedCertificates = certificates.Where(certificateManager.IsTrusted).ToList();
                 if (!trustedCertificates.Any())
                 {
                     reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");

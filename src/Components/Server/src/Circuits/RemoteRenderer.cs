@@ -175,7 +175,7 @@ internal partial class RemoteRenderer : WebRenderer
         // All the batches are sent in order based on the fact that SignalR
         // provides ordering for the underlying messages and that the batches
         // are always in order.
-        return Task.WhenAll(_unacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+        return Task.WhenAll(_unacknowledgedRenderBatches.Select(WriteBatchBytesAsync));
     }
 
     private async Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending)

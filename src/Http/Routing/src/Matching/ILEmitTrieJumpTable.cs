@@ -68,10 +68,7 @@ internal sealed class ILEmitTrieJumpTable : JumpTable
     internal async Task InitializeILDelegateAsync()
     {
         // Offload the creation of the IL delegate to the thread pool.
-        await Task.Run(() =>
-        {
-            InitializeILDelegate();
-        });
+        await Task.Run(InitializeILDelegate);
     }
 
     // Internal for testing

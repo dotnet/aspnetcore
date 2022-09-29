@@ -38,7 +38,7 @@ public sealed class AuthorizeRouteView : RouteView
         // Cache the rendering delegates so that we only construct new closure instances
         // when they are actually used (e.g., we never prepare a RenderFragment bound to
         // the NotAuthorized content except when you are displaying that particular state)
-        RenderFragment renderBaseRouteViewDelegate = builder => base.Render(builder);
+        RenderFragment renderBaseRouteViewDelegate = base.Render;
         _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
         _renderNotAuthorizedDelegate = authenticationState => builder => RenderNotAuthorizedInDefaultLayout(builder, authenticationState);
         _renderAuthorizingDelegate = RenderAuthorizingInDefaultLayout;

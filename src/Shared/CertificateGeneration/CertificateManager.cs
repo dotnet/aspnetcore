@@ -95,7 +95,7 @@ internal abstract class CertificateManager
                 var now = DateTimeOffset.Now;
                 var validCertificates = matchingCertificates
                     .Where(c => IsValidCertificate(c, now, requireExportable))
-                    .OrderByDescending(c => GetCertificateVersion(c))
+                    .OrderByDescending(GetCertificateVersion)
                     .ToArray();
 
                 if (Log.IsEnabled())

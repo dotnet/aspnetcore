@@ -94,7 +94,7 @@ internal sealed class TransportConnectionManager
         }
 
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        token.Register(() => tcs.SetResult());
+        token.Register(tcs.SetResult);
         return tcs.Task;
     }
 }

@@ -70,7 +70,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
 
         // OK we need to report some duplicates.
         var duplicates = endpoints
-            .GroupBy(e => GetEndpointName(e))
+            .GroupBy(GetEndpointName)
             .Where(g => g.Key != null && g.Count() > 1);
 
         var builder = new StringBuilder();

@@ -116,7 +116,7 @@ public class IISMiddleware
             string.Equals(ANCMShutdownEventHeaderValue, httpContext.Request.Headers[MSAspNetCoreEvent], StringComparison.OrdinalIgnoreCase))
         {
             // Execute shutdown task on background thread without waiting for completion
-            var shutdownTask = Task.Run(() => _applicationLifetime.StopApplication());
+            var shutdownTask = Task.Run(_applicationLifetime.StopApplication);
             httpContext.Response.StatusCode = StatusCodes.Status202Accepted;
             return Task.CompletedTask;
         }
