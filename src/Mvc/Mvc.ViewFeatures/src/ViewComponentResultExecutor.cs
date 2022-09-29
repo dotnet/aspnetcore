@@ -162,10 +162,7 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
     private static void OnExecuting(ViewContext viewContext)
     {
         var viewDataValuesProvider = viewContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
-        if (viewDataValuesProvider != null)
-        {
-            viewDataValuesProvider.ProvideViewDataValues(viewContext.ViewData);
-        }
+        viewDataValuesProvider?.ProvideViewDataValues(viewContext.ViewData);
     }
 
     private static Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger, ViewComponentResult result)

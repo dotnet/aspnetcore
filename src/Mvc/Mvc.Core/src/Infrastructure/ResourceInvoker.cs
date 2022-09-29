@@ -1447,10 +1447,7 @@ internal abstract partial class ResourceInvoker
             return;
         }
 
-        if (context.ExceptionDispatchInfo != null)
-        {
-            context.ExceptionDispatchInfo.Throw();
-        }
+        context.ExceptionDispatchInfo?.Throw();
 
         if (context.Exception != null)
         {
@@ -1470,10 +1467,7 @@ internal abstract partial class ResourceInvoker
             return;
         }
 
-        if (context.ExceptionDispatchInfo != null)
-        {
-            context.ExceptionDispatchInfo.Throw();
-        }
+        context.ExceptionDispatchInfo?.Throw();
 
         if (context.Exception != null)
         {
@@ -1493,10 +1487,7 @@ internal abstract partial class ResourceInvoker
             return;
         }
 
-        if (context.ExceptionDispatchInfo != null)
-        {
-            context.ExceptionDispatchInfo.Throw();
-        }
+        context.ExceptionDispatchInfo?.Throw();
 
         if (context.Exception != null)
         {

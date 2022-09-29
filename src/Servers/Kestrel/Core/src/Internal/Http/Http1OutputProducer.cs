@@ -787,10 +787,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         public void Return()
         {
-            if (_memoryOwner != null)
-            {
-                _memoryOwner.Dispose();
-            }
+            _memoryOwner?.Dispose();
         }
     }
 }

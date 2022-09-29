@@ -150,10 +150,7 @@ internal sealed unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposabl
     {
         if (disposing)
         {
-            if (_overlapped != null)
-            {
-                _overlapped.Dispose();
-            }
+            _overlapped?.Dispose();
             _cancellationRegistration.Dispose();
         }
     }

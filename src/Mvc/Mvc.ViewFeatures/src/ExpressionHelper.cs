@@ -135,10 +135,7 @@ internal static class ExpressionHelper
         if (segmentCount == 0)
         {
             Debug.Assert(!doNotCache);
-            if (expressionTextCache != null)
-            {
-                expressionTextCache.TryAdd(expression, string.Empty);
-            }
+            expressionTextCache?.TryAdd(expression, string.Empty);
 
             return string.Empty;
         }

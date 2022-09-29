@@ -88,10 +88,7 @@ public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(JSInvokabl
         {
             Disposed = true;
 
-            if (_jsRuntime != null)
-            {
-                _jsRuntime.ReleaseObjectReference(_objectId);
-            }
+            _jsRuntime?.ReleaseObjectReference(_objectId);
         }
     }
 

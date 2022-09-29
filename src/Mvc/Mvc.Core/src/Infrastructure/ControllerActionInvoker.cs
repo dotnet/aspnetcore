@@ -504,10 +504,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
             return;
         }
 
-        if (context.ExceptionDispatchInfo != null)
-        {
-            context.ExceptionDispatchInfo.Throw();
-        }
+        context.ExceptionDispatchInfo?.Throw();
 
         if (context.Exception != null)
         {

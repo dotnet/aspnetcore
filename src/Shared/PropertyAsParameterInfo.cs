@@ -45,10 +45,10 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     public override bool HasDefaultValue
         => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
     public override object? DefaultValue
-        => _constructionParameterInfo is not null ? _constructionParameterInfo.DefaultValue : null;
+        => _constructionParameterInfo?.DefaultValue;
     public override int MetadataToken => _underlyingProperty.MetadataToken;
     public override object? RawDefaultValue
-        => _constructionParameterInfo is not null ? _constructionParameterInfo.RawDefaultValue : null;
+        => _constructionParameterInfo?.RawDefaultValue;
 
     /// <summary>
     /// Unwraps all parameters that contains <see cref="AsParametersAttribute"/> and
@@ -120,9 +120,9 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
                     }
                 }
             }
-            else if (flattenedParameters is not null)
+            else
             {
-                flattenedParameters.Add(parameters[i]);
+                flattenedParameters?.Add(parameters[i]);
             }
         }
 

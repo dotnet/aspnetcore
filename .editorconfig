@@ -232,6 +232,15 @@ dotnet_diagnostic.IDE0011.severity = warning
 # IDE0020: Use pattern matching to avoid is check followed by a cast (with variable)
 dotnet_diagnostic.IDE0020.severity = warning
 
+# IDE0029: Use coalesce expression (non-nullable types)
+dotnet_diagnostic.IDE0029.severity = warning
+
+# IDE0030: Use coalesce expression (nullable types)
+dotnet_diagnostic.IDE0030.severity = warning
+
+# IDE0031: Use null propagation
+dotnet_diagnostic.IDE0031.severity = warning
+
 # IDE0035: Remove unreachable code
 dotnet_diagnostic.IDE0035.severity = warning
 
@@ -331,6 +340,12 @@ dotnet_diagnostic.CA2249.severity = suggestion
 dotnet_diagnostic.IDE0005.severity = suggestion
 # IDE0020: Use pattern matching to avoid is check followed by a cast (with variable)
 dotnet_diagnostic.IDE0020.severity = suggestion
+# IDE0029: Use coalesce expression (non-nullable types)
+dotnet_diagnostic.IDE0029.severity = suggestion
+# IDE0030: Use coalesce expression (nullable types)
+dotnet_diagnostic.IDE0030.severity = suggestion
+# IDE0031: Use null propagation
+dotnet_diagnostic.IDE0031.severity = suggestion
 # IDE0038: Use pattern matching to avoid is check followed by a cast (without variable)
 dotnet_diagnostic.IDE0038.severity = suggestion
 # IDE0044: Make field readonly

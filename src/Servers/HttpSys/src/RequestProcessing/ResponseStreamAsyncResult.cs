@@ -316,14 +316,8 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
     public void Dispose()
     {
-        if (_overlapped != null)
-        {
-            _overlapped.Dispose();
-        }
-        if (_fileStream != null)
-        {
-            _fileStream.Dispose();
-        }
+        _overlapped?.Dispose();
+        _fileStream?.Dispose();
         _cancellationRegistration.Dispose();
     }
 }

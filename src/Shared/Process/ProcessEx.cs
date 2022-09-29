@@ -167,10 +167,7 @@ internal sealed class ProcessEx : IDisposable
             }
         }
 
-        if (_stdoutLines != null)
-        {
-            _stdoutLines.Add(e.Data);
-        }
+        _stdoutLines?.Add(e.Data);
     }
 
     private void OnProcessExited(object sender, EventArgs e)

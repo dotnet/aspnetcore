@@ -265,9 +265,6 @@ public class ViewExecutor
     private static void OnExecuting(ViewContext viewContext)
     {
         var viewDataValuesProvider = viewContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
-        if (viewDataValuesProvider != null)
-        {
-            viewDataValuesProvider.ProvideViewDataValues(viewContext.ViewData);
-        }
+        viewDataValuesProvider?.ProvideViewDataValues(viewContext.ViewData);
     }
 }

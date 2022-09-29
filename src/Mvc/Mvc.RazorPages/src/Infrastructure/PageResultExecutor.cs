@@ -104,9 +104,6 @@ public class PageResultExecutor : ViewExecutor
     private static void OnExecuting(PageContext pageContext)
     {
         var viewDataValuesProvider = pageContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
-        if (viewDataValuesProvider != null)
-        {
-            viewDataValuesProvider.ProvideViewDataValues(pageContext.ViewData);
-        }
+        viewDataValuesProvider?.ProvideViewDataValues(pageContext.ViewData);
     }
 }
