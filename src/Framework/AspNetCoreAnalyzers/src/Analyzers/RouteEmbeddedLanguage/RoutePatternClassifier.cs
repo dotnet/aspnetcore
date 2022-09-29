@@ -47,7 +47,7 @@ internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
         }
     }
 
-    private class Visitor : IRoutePatternNodeVisitor
+    private sealed class Visitor : IRoutePatternNodeVisitor
     {
         public AspNetCoreEmbeddedLanguageClassificationContext _context;
 

@@ -9,16 +9,8 @@
 
     <!-- Makes analyzer, code fixes, and other Roslyn features available in this project. -->
     <!-- Note that VS needs to be reloaded after code changes to get the latest version. -->
-    <ProjectReference
-      Include="..\..\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"
-      SetTargetFramework="TargetFramework=netstandard2.0" />
-    <ProjectReference
-      Include="..\..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"
-      SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />
   </ItemGroup>
 
   <ItemGroup>
