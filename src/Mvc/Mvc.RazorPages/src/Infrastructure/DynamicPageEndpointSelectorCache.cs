@@ -33,7 +33,7 @@ internal class DynamicPageEndpointSelectorCache
 
         var dataSourceId = endpoint.Metadata.GetMetadata<PageEndpointDataSourceIdMetadata>();
         Debug.Assert(dataSourceId is not null);
-        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
+        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, EnsureDataSource);
     }
 
     private DynamicPageEndpointSelector EnsureDataSource(int key)

@@ -482,7 +482,7 @@ public abstract class CommonResourceInvokerTest
         var invoker = CreateInvoker(filter.Object, exception: Exception);
 
         // Act
-        await Assert.ThrowsAsync(Exception.GetType(), async () => await invoker.InvokeAsync());
+        await Assert.ThrowsAsync(Exception.GetType(), invoker.InvokeAsync);
 
         // Assert
         filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
@@ -945,7 +945,7 @@ public abstract class CommonResourceInvokerTest
 
         // Act & Assert
         await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
-            async () => await invoker.InvokeAsync(),
+            invoker.InvokeAsync,
             message);
     }
 
@@ -972,7 +972,7 @@ public abstract class CommonResourceInvokerTest
         var invoker = CreateInvoker(filter.Object);
 
         // Act
-        await Assert.ThrowsAsync(exception.GetType(), async () => await invoker.InvokeAsync());
+        await Assert.ThrowsAsync(exception.GetType(), invoker.InvokeAsync);
 
         // Assert
         result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());

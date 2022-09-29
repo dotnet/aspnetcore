@@ -79,7 +79,7 @@ internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisp
         if (_actions is ActionDescriptorCollectionProvider collectionProviderWithChangeToken)
         {
             _disposable = ChangeToken.OnChange(
-                () => collectionProviderWithChangeToken.GetChangeToken(),
+                collectionProviderWithChangeToken.GetChangeToken,
                 UpdateEndpoints);
         }
     }

@@ -586,7 +586,7 @@ internal partial class CircuitHost : IAsyncDisposable
         // Dispatch any buffered renders we accumulated during a disconnect.
         // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
         // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-        _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+        _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
     }
 
     private void AssertInitialized()
