@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -14,17 +14,8 @@
     <!-- Also bring in Microsoft.AspNetCore.App.Analyzers. -->
     <ProjectReference Include="..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj" />
 
-    <!--
-    Uncomment the ProjectReferences below to test analyzers or fixers in this project:
-    
-    <ProjectReference Include="..\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
-                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />
-
-    <ProjectReference Include="..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
-                     OutputItemType="Analyzer" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=netstandard2.0" />
-    -->
-
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
