@@ -18,9 +18,9 @@ public class RequestLocalizationOptions
 
     /// <summary>
     /// Creates a new <see cref="RequestLocalizationOptions"/> with default values.
-    /// <param name="useUserOverride">Whether to use user-selected culture or default system culture. Defaults to <c>false</c>.</param>
+    /// <param name="useUserOverride">Whether to use user-selected culture or default system culture. Defaults to <c>true</c>.</param>
     /// </summary>
-    public RequestLocalizationOptions(bool useUserOverride = false)
+    public RequestLocalizationOptions(bool useUserOverride = true)
     {
         _useUserOverride = useUserOverride;
         RequestCultureProviders = new List<IRequestCultureProvider>
