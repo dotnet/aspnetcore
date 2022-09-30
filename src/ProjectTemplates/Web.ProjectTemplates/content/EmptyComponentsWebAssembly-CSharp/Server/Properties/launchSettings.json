@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/launchsettings.json",
   "iisExpress": {
       "applicationUrl": "http://localhost:8080",
       //#if (HasHttpsProfile)
