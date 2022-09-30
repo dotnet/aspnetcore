@@ -11,7 +11,7 @@
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_x86)&quot;) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
+                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
                 <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
             </MsiPackage>
 
@@ -21,7 +21,7 @@
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_x64)&quot;) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
+                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
                 <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
             </MsiPackage>
             
