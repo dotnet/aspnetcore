@@ -1,7 +1,9 @@
 <Project>
   <!-- Fake a unit test project unless that would prevent building this project. -->
   <PropertyGroup>
+    <IsUnitTestProject Condition=" '$(SkipTestBuild)' == 'true' ">false</IsUnitTestProject>
     <IsUnitTestProject Condition=" '$(SkipTestBuild)' != 'true' ">true</IsUnitTestProject>
+    <IsTestProject>$(IsUnitTestProject)</IsTestProject>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
