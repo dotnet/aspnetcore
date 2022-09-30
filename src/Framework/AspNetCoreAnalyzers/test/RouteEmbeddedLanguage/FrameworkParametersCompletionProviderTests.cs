@@ -5,6 +5,7 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.Completion;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -32,8 +33,12 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
     [Fact]
@@ -56,8 +61,12 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
     [Fact]
@@ -80,8 +89,12 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
     [Fact]
@@ -104,8 +117,196 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Insertion_Space_OutInt_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (out int $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Insertion_Space_Generic_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (Nullable<int> $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Invoke_Space_Generic_EndpointMapGet_HasDelegate_HasText_ReturnRouteParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (int [|i|]$$
+    }
+}
+", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Invoke_Space_Generic_EndpointMapGet_HasDelegate_InText_ReturnRouteParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (int [|i$$d|]
+    }
+}
+", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Invoke_Space_Generic_EndpointMapGet_HasCompleteDelegate_InText_ReturnRouteParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{ids}"", (int [|i$$d|]) => {});
+    }
+}
+", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("ids", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("ids", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Insertion_FirstArgument_SpaceAfterIdentifer_EndpointMapGet_HasDelegate_NoItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (int i $$
+    }
+}
+");
+
+        // Assert
+        Assert.Empty(result.Completions.ItemsList);
+    }
+
+    [Fact]
+    public async Task Insertion_SecondArgument_SpaceAfterIdentifer_EndpointMapGet_HasDelegate_NoItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (int o, string i $$
+    }
+}
+");
+
+        // Assert
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -133,7 +334,7 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
     }
 
@@ -161,7 +362,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -188,7 +389,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -215,7 +416,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Theory]
@@ -228,7 +429,7 @@ class Program
     [InlineData("IFormFile")]
     [InlineData("Stream")]
     [InlineData("PipeReader")]
-    public async Task Insertion_Space_SpecialType_EndpointMapGet_HasDelegate_ReturnRouteParameterItem(string parameterType)
+    public async Task Insertion_Space_SpecialType_EndpointMapGet_HasDelegate_NoItems(string parameterType)
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -251,7 +452,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -278,7 +479,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -301,7 +502,7 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
     }
 
@@ -310,7 +511,6 @@ class Program
     [InlineData("FromQuery")]
     [InlineData("FromForm")]
     [InlineData("FromHeader")]
-    [InlineData("FromQuery")]
     [InlineData("FromServices")]
     public async Task Insertion_Space_EndpointMapGet_AsParameters_NoItem(string attributeName)
     {
@@ -332,11 +532,11 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
-    public async Task Insertion_Space_EndpointMapGet_UnknownAttribute_NoItem()
+    public async Task Insertion_Space_EndpointMapGet_UnknownAttribute_ReturnItems()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -356,7 +556,7 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
     }
 
@@ -379,7 +579,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -401,7 +601,7 @@ class Program
 ");
 
         // Assert
-        var item = result.Completions.Items.FirstOrDefault(i => i.DisplayText == "id");
+        var item = result.Completions.ItemsList.FirstOrDefault(i => i.DisplayText == "id");
         Assert.Null(item);
     }
 
@@ -430,7 +630,7 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
     }
 
@@ -458,7 +658,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -490,7 +690,7 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
     }
 
@@ -520,8 +720,70 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
+    }
+
+    [Fact]
+    public async Task Invoke_ControllerAction_HasParameter_Incomplete_ReturnActionParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Mvc;
+
+    class Program
+    {
+        static void Main()
+        {
+        }
+    }
+
+    public class TestController
+    {
+        [HttpGet(@""{id}"")]
+        public object TestAction(int [|i|]$$
+    }
+    ", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+
+        var change = await result.Service.GetChangeAsync(result.Document, result.Completions.ItemsList[0]);
+        Assert.Equal("id", change.TextChange.NewText);
+        Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
+    }
+
+    [Fact]
+    public async Task Insertion_ControllerAction_HasParameter_Incomplete_NoItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Mvc;
+
+    class Program
+    {
+        static void Main()
+        {
+        }
+    }
+
+    public class TestController
+    {
+        [HttpGet(@""{id}"")]
+        public object TestAction(int i $$
+    }
+    ");
+
+        // Assert
+        Assert.Empty(result.Completions.ItemsList);
     }
 
     [Fact]
@@ -553,12 +815,12 @@ class Program
 
         // Assert
         Assert.Collection(
-            result.Completions.Items,
+            result.Completions.ItemsList,
             i => Assert.Equal("id", i.DisplayText));
     }
 
     [Fact]
-    public async Task Insertion_Space_NonControllerAction_HasParameter_ReturnActionParameterItem()
+    public async Task Insertion_Space_NonControllerAction_HasParameter_NoItems()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -585,15 +847,11 @@ class Program
     ");
 
         // Assert
-        Assert.Empty(result.Completions.Items);
+        Assert.Empty(result.Completions.ItemsList);
     }
 
-    private async Task<CompletionResult> GetCompletionsAndServiceAsync(string source)
+    private Task<CompletionResult> GetCompletionsAndServiceAsync(string source, CompletionTrigger? completionTrigger = null)
     {
-        MarkupTestFile.GetPosition(source, out var output, out int cursorPosition);
-
-        var completions = await Runner.GetCompletionsAndServiceAsync(cursorPosition, output);
-
-        return completions;
+        return CompletionTestHelpers.GetCompletionsAndServiceAsync(Runner, source, completionTrigger);
     }
 }

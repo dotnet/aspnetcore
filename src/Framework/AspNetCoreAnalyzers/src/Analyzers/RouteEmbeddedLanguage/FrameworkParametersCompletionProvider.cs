@@ -46,6 +46,11 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
 
     public override bool ShouldTriggerCompletion(SourceText text, int caretPosition, CompletionTrigger trigger, OptionSet options)
     {
+        if (trigger.Kind is CompletionTriggerKind.Invoke or CompletionTriggerKind.InvokeAndCommitIfUnique)
+        {
+            return true;
+        }
+
         if (trigger.Kind == CompletionTriggerKind.Insertion)
         {
             return TriggerCharacters.Contains(trigger.Character);
@@ -82,11 +87,6 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
 
     public override async Task ProvideCompletionsAsync(CompletionContext context)
     {
-        if (context.Trigger.Kind is not CompletionTriggerKind.Insertion)
-        {
-            return;
-        }
-
         var position = context.Position;
 
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
@@ -94,23 +94,19 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
         {
             return;
         }
-        var token = root.FindToken(position);
 
-        // If space is before a close paren then change current token to the previous argument.
-        if (token.IsKind(SyntaxKind.CloseParenToken) || token.IsKind(SyntaxKind.CommaToken))
-        {
-            token = token.GetPreviousToken();
-        }
+        SyntaxToken? parentOpt = null;
 
-        // If space is after ? then it's likely a nullable type and move to previous type token.
-        if (token.IsKind(SyntaxKind.QuestionToken))
+        var token = root.FindTokenOnLeftOfPosition(position);
+
+        // If space is after ? or > then it's likely a nullable or generic type. Move to previous type token.
+        if (token.IsKind(SyntaxKind.QuestionToken) || token.IsKind(SyntaxKind.GreaterThanToken))
         {
             token = token.GetPreviousToken();
         }
 
         // Whitespace should follow the identifier token of the parameter.
-        if (!SyntaxFacts.IsPredefinedType(token.Kind()) &&
-            !token.IsKind(SyntaxKind.IdentifierToken))
+        if (!IsArgumentTypeToken(token))
         {
             return;
         }
@@ -162,8 +158,33 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
 
             routeStringToken = routeStringExpression.Token;
             methodNode = delegateExpression;
+
+            // Incomplete inline delegate syntax is very messy and arguments are mixed together.
+            // Examine tokens to figure out wether the current token is the argument name.
+            var previous = token.GetPreviousToken();
+            if (previous.IsKind(SyntaxKind.CommaToken) ||
+                previous.IsKind(SyntaxKind.OpenParenToken) ||
+                previous.IsKind(SyntaxKind.OutKeyword) ||
+                previous.IsKind(SyntaxKind.InKeyword) ||
+                previous.IsKind(SyntaxKind.RefKeyword) ||
+                previous.IsKind(SyntaxKind.ParamsKeyword) ||
+                (previous.IsKind(SyntaxKind.CloseBracketToken) && previous.GetRequiredParent().FirstAncestorOrSelf<AttributeListSyntax>() != null) ||
+                (previous.IsKind(SyntaxKind.LessThanToken) && previous.GetRequiredParent().FirstAncestorOrSelf<GenericNameSyntax>() != null))
+            {
+                // Positioned after type token. Don't replace current.
+            }
+            else
+            {
+                // Space after argument name. Don't show completion options.
+                if (context.Trigger.Kind == CompletionTriggerKind.Insertion)
+                {
+                    return;
+                }
+
+                parentOpt = token;
+            }
         }
-        else if (container.Parent.IsKind(SyntaxKind.Parameter))
+        else if (container.IsKind(SyntaxKind.Parameter))
         {
             // MVC
             var methodSyntax = container.FirstAncestorOrSelf<MethodDeclarationSyntax>();
@@ -185,6 +206,17 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
 
             routeStringToken = routeToken.Value;
             methodNode = methodSyntax;
+
+            if (((ParameterSyntax)container).Identifier == token)
+            {
+                // Space after argument name. Don't show completion options.
+                if (context.Trigger.Kind == CompletionTriggerKind.Insertion)
+                {
+                    return;
+                }
+
+                parentOpt = token;
+            }
         }
         else
         {
@@ -206,7 +238,7 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
             routePatternCompletionContext.AddUsedParameterName(parameterName);
         }
 
-        ProvideCompletions(routePatternCompletionContext);
+        ProvideCompletions(routePatternCompletionContext, parentOpt);
 
         if (routePatternCompletionContext.Items == null || routePatternCompletionContext.Items.Count == 0)
         {
@@ -248,6 +280,11 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
         context.IsExclusive = true;
     }
 
+    private static bool IsArgumentTypeToken(SyntaxToken token)
+    {
+        return SyntaxFacts.IsPredefinedType(token.Kind()) || token.IsKind(SyntaxKind.IdentifierToken);
+    }
+
     private static SyntaxToken? TryGetMvcActionRouteToken(CompletionContext context, SemanticModel? semanticModel, MethodDeclarationSyntax? method)
     {
         foreach (var attributeList in method.AttributeLists)
@@ -278,7 +315,7 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
         var current = node;
         while (current != null)
         {
-            if (current.Parent?.IsKind(SyntaxKind.Parameter) ?? false)
+            if (current.IsKind(SyntaxKind.Parameter))
             {
                 return current;
             }
@@ -410,11 +447,11 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
         return builder.ToImmutable();
     }
 
-    private static void ProvideCompletions(EmbeddedCompletionContext context)
+    private static void ProvideCompletions(EmbeddedCompletionContext context, SyntaxToken? parentOpt)
     {
         foreach (var parameterSymbol in context.Tree.RouteParameters)
         {
-            context.AddIfMissing(parameterSymbol.Key, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: null);
+            context.AddIfMissing(parameterSymbol.Key, suffix: null, description: "(Route parameter)", WellKnownTags.Parameter, parentOpt);
         }
     }
 
@@ -472,6 +509,12 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
         public readonly int Position;
         public readonly CompletionTrigger Trigger;
         public readonly List<RoutePatternItem> Items = new();
+        public readonly CompletionListSpanContainer CompletionListSpan = new();
+
+        internal class CompletionListSpanContainer
+        {
+            public TextSpan? Value { get; set; }
+        }
 
         public EmbeddedCompletionContext(
             CompletionContext context,
@@ -493,13 +536,16 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
 
         public void AddIfMissing(
             string displayText, string suffix, string description, string glyph,
-            RoutePatternNode parentOpt, int? positionOffset = null, string insertionText = null)
+            SyntaxToken? parentOpt, int? positionOffset = null, string insertionText = null)
         {
             var replacementStart = parentOpt != null
-                ? parentOpt.GetSpan().Start
+                ? parentOpt.Value.GetLocation().SourceSpan.Start
+                : Position;
+            var replacementEnd = parentOpt != null
+                ? parentOpt.Value.GetLocation().SourceSpan.End
                 : Position;
 
-            var replacementSpan = TextSpan.FromBounds(replacementStart, Position);
+            var replacementSpan = TextSpan.FromBounds(replacementStart, replacementEnd);
             var newPosition = replacementStart + positionOffset;
 
             insertionText ??= displayText;
