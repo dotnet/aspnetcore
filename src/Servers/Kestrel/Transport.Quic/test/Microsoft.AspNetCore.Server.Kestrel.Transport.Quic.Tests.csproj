@@ -6,6 +6,8 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <!-- Required because 8.0.0 SDK no longer considers net7.0 the current TFM. -->
+    <GenerateRequiresPreviewFeaturesAttribute>true</GenerateRequiresPreviewFeaturesAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,11 +23,6 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" Link="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(KestrelSharedSourceRoot)test\ServerRetryHelper.cs" LinkBase="shared" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Required for QUIC & HTTP/3 in .NET 6 - https://github.com/dotnet/runtime/pull/55332 -->
-    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support" Value="true" />
   </ItemGroup>
 
   <ItemGroup>

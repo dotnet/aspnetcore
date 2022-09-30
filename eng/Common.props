@@ -6,6 +6,8 @@
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('FreeBSD'))">freebsd</TargetOsName>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
+    <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
+    <DefaultAppHostRuntimeIdentifier Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">

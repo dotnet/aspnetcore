@@ -147,7 +147,6 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     [ConditionalFact]
     [MsQuicSupported]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42389")]
     public async Task ClientCertificate_Required_NotSent_AcceptedViaCallback()
     {
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);

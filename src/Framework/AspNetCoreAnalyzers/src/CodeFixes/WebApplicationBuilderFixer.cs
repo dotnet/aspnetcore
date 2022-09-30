@@ -63,7 +63,7 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
             context.RegisterCodeFix(
                         CodeAction.Create(
                             message,
-                            cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, invocation, cancellationToken),
+                            cancellationToken => FixWebApplicationBuilderAsync(diagnostic, context.Document, invocation, cancellationToken),
                             equivalenceKey:
                             id),
                             diagnostic);
@@ -72,7 +72,7 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
+    private static async Task<Document> FixWebApplicationBuilderAsync(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
@@ -91,7 +91,7 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
         }
 
         // builder.Host.ConfigureLogging(builder => builder.AddJsonConsole());
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true); 
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         if (diagnosticTarget is InvocationExpressionSyntax invocation)
         {
@@ -108,7 +108,7 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
             // builder.Host.ConfigureLogging => builder.Logging
             // builder.WebHost.ConfigureServices => builder.Services
             hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(configureMethodOnHostAccessExpr)
-                .NormalizeWhitespace().WithLeadingTrivia(indentation);       
+                .NormalizeWhitespace().WithLeadingTrivia(indentation);
 
             if (invocation.ArgumentList.Arguments.SingleOrDefault() is not { } initArgument
                 || initArgument.Expression is not LambdaExpressionSyntax lambdaExpr)
@@ -130,7 +130,7 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
                     // arguments of builder.{method_name}({arguments})
                     var argument = expr.ArgumentList;
 
-                    if (expr.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.{method_name} 
+                    if (expr.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.{method_name}
                     {
                         return false;
                     }

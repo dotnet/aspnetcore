@@ -1073,7 +1073,7 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
 
     public void RequestClose()
     {
-        throw new NotImplementedException();
+        ConnectionClosingCts.Cancel();
     }
 }
 
