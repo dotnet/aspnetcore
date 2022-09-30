@@ -9,14 +9,14 @@
   <String Id="ConfirmCancelMessage">Отменить?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
   <String Id="HelpHeader">Справка по установке</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\[] - installs, repairs, uninstalls or
-   creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]каталог[\[] — установка, восстановление, удаление или
+ создание полной локальной копии пакета в каталоге. По умолчанию — установка.
 
-/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
-   no prompts. By default UI and all prompts are displayed.
+/passive | /quiet — отображение минимального пользовательского интерфейса без запросов или работа без пользовательского интерфейса и
+ без запросов. По умолчанию отображаются пользовательский интерфейс и все запросы.
 
-/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
-/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
+/norestart — отключение всех попыток перезагрузки. По умолчанию в пользовательском интерфейсе перед перезагрузкой отображается запрос.
+/log log.txt — запись журнала в указанный файл. По умолчанию файл журнала создается в папке %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Закрыть</String>
   <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;условия лицензии&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">Я &amp;принимаю условия лицензии</String>
