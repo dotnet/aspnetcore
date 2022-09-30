@@ -494,6 +494,62 @@ class Program
     }
 
     [Fact]
+    public async Task Insertion_ParameterOpenBrace_ParameterInUse_NoResults()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+class Program
+{
+    static void Main()
+    {
+        MapCustomThing(null, @""{id}/{$$"", (string id) => "");
+    }
+
+    static void MapCustomThing(IEndpointRouteBuilder endpoints, [StringSyntax(""Route"")] string pattern, Delegate delegate)
+    {
+    }
+}
+");
+
+        // Assert
+        Assert.Empty(result.Completions.ItemsList);
+    }
+
+    [Fact]
+    public async Task Insertion_ParameterOpenBrace_OtherParameters_ReturnDelegateParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+class Program
+{
+    static void Main()
+    {
+        MapCustomThing(null, @""{id}/{$$"", (string id, string id2) => "");
+    }
+
+    static void MapCustomThing(IEndpointRouteBuilder endpoints, [StringSyntax(""Route"")] string pattern, Delegate delegate)
+    {
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id2", i.DisplayText));
+    }
+
+    [Fact]
     public async Task Insertion_ParameterOpenBrace_ControllerAction_HasParameter_ReturnActionParameterItem()
     {
         // Arrange & Act
