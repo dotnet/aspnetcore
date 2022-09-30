@@ -10,7 +10,7 @@ There are two main projects in this area:
 
 AzureAppServicesIntegration provides the IWebHostBuilder.UseAzureAppServices() API for manually enabling Microsoft.Extensions.Logging to output to App Service's diagnostics infrastructure.
 
-AzureAppServices.HostingStartup Uses an automatic loading so that the same logging infrastructure can be enabled by only adding this package reference without any code changes.
+AzureAppServices.HostingStartup Uses an automatic loading mechanism so that the same logging infrastructure can be enabled by only adding this package reference and an environment variable, no code changes are required.
 
 ## Development Setup
 
