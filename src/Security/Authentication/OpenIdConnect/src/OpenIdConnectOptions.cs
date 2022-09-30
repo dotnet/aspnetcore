@@ -288,9 +288,9 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// cookie gets added to the response.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
-    /// </remarks>
-    /// <remarks>
+    /// </para>
     /// <para>
     /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.None"/>.
     /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
