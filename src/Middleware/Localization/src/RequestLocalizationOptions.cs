@@ -18,17 +18,25 @@ public class RequestLocalizationOptions
 
     /// <summary>
     /// Creates a new <see cref="RequestLocalizationOptions"/> with default values.
-    /// <param name="useUserOverride">Whether to use user-selected culture or default system culture. Defaults to <c>true</c>.</param>
     /// </summary>
-    public RequestLocalizationOptions(bool useUserOverride = true)
+    public RequestLocalizationOptions() : this(useUserOverride: true)
+    {
+
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="RequestLocalizationOptions"/> with default values and ability to specify the culture settings.
+    /// <param name="useUserOverride">Whether to use user-selected culture or default system culture.</param>
+    /// </summary>
+    public RequestLocalizationOptions(bool useUserOverride)
     {
         _useUserOverride = useUserOverride;
         RequestCultureProviders = new List<IRequestCultureProvider>
-            {
-                new QueryStringRequestCultureProvider { Options = this },
-                new CookieRequestCultureProvider { Options = this },
-                new AcceptLanguageHeaderRequestCultureProvider { Options = this }
-            };
+        {
+            new QueryStringRequestCultureProvider { Options = this },
+            new CookieRequestCultureProvider { Options = this },
+            new AcceptLanguageHeaderRequestCultureProvider { Options = this }
+        };
     }
 
     /// <summary>
