@@ -290,6 +290,14 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <remarks>
     /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
     /// </remarks>
+    /// <remarks>
+    /// <para>
+    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.None"/>.
+    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
+    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.
+    /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
+    /// </para>
+    /// </remarks>
     public CookieBuilder NonceCookie
     {
         get => _nonceCookieBuilder;

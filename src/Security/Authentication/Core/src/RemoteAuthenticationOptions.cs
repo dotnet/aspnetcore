@@ -137,6 +137,18 @@ public class RemoteAuthenticationOptions : AuthenticationSchemeOptions
     /// Determines the settings used to create the correlation cookie before the
     /// cookie gets added to the response.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
+    /// unique name that begins with <c>".AspNetCore.Correlation."</c>.
+    /// </para>
+    /// <para>
+    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.None"/>.
+    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
+    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.
+    /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
+    /// </para>
+    /// </remarks>
     public CookieBuilder CorrelationCookie
     {
         get => _correlationCookieBuilder;
