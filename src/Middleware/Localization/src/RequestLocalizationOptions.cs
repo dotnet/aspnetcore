@@ -11,14 +11,18 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public class RequestLocalizationOptions
 {
+    private readonly bool _useUserOverride;
+
     private RequestCulture _defaultRequestCulture =
         new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
     /// <summary>
     /// Creates a new <see cref="RequestLocalizationOptions"/> with default values.
+    /// <param name="useUserOverride">Whether to use user-selected culture or default system culture. Defaults to <c>false</c>.</param>
     /// </summary>
-    public RequestLocalizationOptions()
+    public RequestLocalizationOptions(bool useUserOverride = false)
     {
+        _useUserOverride = useUserOverride;
         RequestCultureProviders = new List<IRequestCultureProvider>
             {
                 new QueryStringRequestCultureProvider { Options = this },
@@ -124,10 +128,11 @@ public class RequestLocalizationOptions
 
         foreach (var culture in cultures)
         {
-            supportedCultures.Add(new CultureInfo(culture));
+            supportedCultures.Add(new CultureInfo(culture, useUserOverride: _useUserOverride));
         }
 
         SupportedCultures = supportedCultures;
+
         return this;
     }
 
@@ -141,10 +146,11 @@ public class RequestLocalizationOptions
         var supportedUICultures = new List<CultureInfo>(uiCultures.Length);
         foreach (var culture in uiCultures)
         {
-            supportedUICultures.Add(new CultureInfo(culture));
+            supportedUICultures.Add(new CultureInfo(culture, useUserOverride: _useUserOverride));
         }
 
         SupportedUICultures = supportedUICultures;
+
         return this;
     }
 
@@ -156,7 +162,8 @@ public class RequestLocalizationOptions
     /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
     public RequestLocalizationOptions SetDefaultCulture(string defaultCulture)
     {
-        DefaultRequestCulture = new RequestCulture(defaultCulture);
+        DefaultRequestCulture = new RequestCulture(new CultureInfo(defaultCulture, useUserOverride: _useUserOverride));
+
         return this;
     }
 }
