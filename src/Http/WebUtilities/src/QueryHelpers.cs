@@ -113,13 +113,13 @@ public static class QueryHelpers
         }
 
         var anchorIndex = uri.IndexOf('#');
-        var uriToBeAppended = uri;
-        var anchorText = "";
+        ReadOnlySpan<char> uriToBeAppended = uri;
+        ReadOnlySpan<char> anchorText = ReadOnlySpan<char>.Empty;
         // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
         {
-            anchorText = uri.Substring(anchorIndex);
-            uriToBeAppended = uri.Substring(0, anchorIndex);
+            anchorText = uriToBeAppended.Slice(anchorIndex);
+            uriToBeAppended = uriToBeAppended.Slice(0, anchorIndex);
         }
 
         var queryIndex = uriToBeAppended.IndexOf('?');
