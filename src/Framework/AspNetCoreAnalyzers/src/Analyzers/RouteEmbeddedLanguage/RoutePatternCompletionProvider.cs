@@ -233,7 +233,11 @@ public class RoutePatternCompletionProvider : CompletionProvider
             var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(context.MethodSymbol, context.WellKnownTypes);
             foreach (var parameterSymbol in resolvedParameterSymbols)
             {
-                context.AddIfMissing(parameterSymbol.Name, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: parentOpt);
+                // Don't suggest parameter name if it already exists in the route.
+                if (!context.Tree.RouteParameters.ContainsKey(parameterSymbol.Name))
+                {
+                    context.AddIfMissing(parameterSymbol.Name, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: parentOpt);
+                }
             }
         }
     }
