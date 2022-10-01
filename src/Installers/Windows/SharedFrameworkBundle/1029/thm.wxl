@@ -9,14 +9,14 @@
   <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
   <String Id="HelpHeader">Nápověda nastavení</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]adresář[\[] – Nainstaluje, opraví, odinstaluje nebo
-   vytvoří úplnou místní kopii svazku v adresáři. Výchozí možností je instalace.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
+   creates a complete local copy of the bundle in directory. Install is the default.
 
-/passive | /quiet –  Zobrazí minimální uživatelské rozhraní bez výzev nebo nezobrazí žádné uživatelské rozhraní a
-   žádné výzvy. Výchozí možností je zobrazení uživatelského rozhraní a všech výzev.
+/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
+   no prompts. By default UI and all prompts are displayed.
 
-/norestart   – potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní před restartováním zobrazí výzvu.
-/log log.txt – Uloží protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%.</String>
+/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
+/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zavřít</String>
   <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Licenční podmínky&lt;/a&gt; pro [WixBundleName]</String>
   <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami</String>
