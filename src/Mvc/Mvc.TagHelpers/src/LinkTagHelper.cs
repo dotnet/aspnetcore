@@ -147,6 +147,9 @@ public class LinkTagHelper : UrlResolutionTagHelper
 
     /// <summary>
     /// The URL of a CSS stylesheet to fallback to in the case the primary one fails.
+    /// Using this option will inject inline JavaScript into the page to detect if
+    /// the primary failed to load. This option will not work in applications using
+    /// a strict Content-Security-Policy, in line with security best practice.
     /// </summary>
     [HtmlAttributeName(FallbackHrefAttributeName)]
     public string FallbackHref { get; set; }
