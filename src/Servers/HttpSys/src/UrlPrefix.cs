@@ -88,7 +88,7 @@ public class UrlPrefix
         {
             path = "/";
         }
-        else if (!path.EndsWith("/", StringComparison.Ordinal))
+        else if (!path.EndsWith('/'))
         {
             path += "/";
         }

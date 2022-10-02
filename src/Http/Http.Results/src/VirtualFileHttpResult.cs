@@ -152,7 +152,7 @@ public sealed class VirtualFileHttpResult : IResult, IFileHttpResult, IContentTy
     internal IFileInfo GetFileInformation(IFileProvider fileProvider)
     {
         var normalizedPath = FileName;
-        if (normalizedPath.StartsWith("~", StringComparison.Ordinal))
+        if (normalizedPath.StartsWith('~'))
         {
             normalizedPath = normalizedPath.Substring(1);
         }
