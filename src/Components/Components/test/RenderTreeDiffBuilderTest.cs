@@ -1755,8 +1755,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
             tree.AddAttribute(1, "MyUInt", uint.MaxValue);
             tree.AddAttribute(1, "MyULong", ulong.MaxValue);
             tree.AddAttribute(1, "MyChar", 'c');
-            tree.AddAttribute(1, "MyType", typeof(Guid));
             tree.AddAttribute(1, "MyEnum", StringComparison.OrdinalIgnoreCase);
+            tree.AddAttribute(1, "MyEventCallBack", EventCallback.Empty);
+            tree.AddAttribute(1, "MyEventCallBackOfT", EventCallback<int>.Empty);
             tree.CloseComponent();
         }
 

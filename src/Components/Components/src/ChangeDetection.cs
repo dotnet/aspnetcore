@@ -36,8 +36,11 @@ internal sealed class ChangeDetection
     // uncommon types here even if they are known to be immutable.
     // This logic assumes that no new System.TypeCode enum entries have been declared since 7.0, or at least that any new ones
     // represent immutable types. If System.TypeCode changes, review this logic to ensure it is still correct.
+    // Supported immutable types : bool, byte, sbyte, short, ushort, int, uint, long, ulong, char, double,
+    //                             string, DateTime, decimal, Guid, Enum, EventCallBack, EventCallBack<>.
+    // For performance reasons, the following immutable types are not supported: IntPtr, UIntPtr, Type.
     private static bool IsKnownImmutableType(Type type)
         => Type.GetTypeCode(type) != TypeCode.Object
-        || type == typeof(Type)
-        || type == typeof(Guid);
+        || type == typeof(Guid)
+        || typeof(IEventCallback).IsAssignableFrom(type);
 }
