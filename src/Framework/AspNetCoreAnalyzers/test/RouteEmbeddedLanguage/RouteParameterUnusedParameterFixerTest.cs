@@ -123,6 +123,64 @@ public class TestController
     }
 
     [Fact]
+    public async Task Controller_MultipleUnusedParameters_WithConstraints_AddToAction()
+    {
+        // Arrange
+        var source = @"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(""{|#0:{id:int}|}/books/{|#1:{bookId:guid}|}"")]
+    public object TestAction()
+    {
+        return null;
+    }
+}";
+
+        var fixedSource = @"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(""{id:int}/books/{bookId:guid}"")]
+    public object TestAction(int id, System.Guid bookId)
+    {
+        return null;
+    }
+}";
+
+        var expectedDiagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.RoutePatternUnusedParameter).WithArguments("id").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.RoutePatternUnusedParameter).WithArguments("bookId").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 2);
+    }
+
+    [Fact]
     public async Task Controller_DuplicateUnusedParameters_AddToAction()
     {
         // Arrange

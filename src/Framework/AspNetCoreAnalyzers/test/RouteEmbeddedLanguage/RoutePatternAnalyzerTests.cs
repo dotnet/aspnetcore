@@ -301,6 +301,86 @@ public class TestController
     }
 
     [Fact]
+    public async Task MapGet_AsParameter_NoResults()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber}/{PageIndex}"", ([AsParameters] PageData pageData) => """");
+    }
+
+    int OtherMethod(PageData pageData)
+    {
+        return pageData.PageIndex;
+    }
+}
+
+public class PageData
+{
+    public int PageNumber { get; set; }
+    public int PageIndex { get; set; }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task MapGet_AsParameter_Extra_ReportedDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber}/{PageIndex}/{id}"", ([AsParameters] PageData pageData) => """");
+    }
+
+    int OtherMethod(PageData pageData)
+    {
+        return pageData.PageIndex;
+    }
+}
+
+public class PageData
+{
+    public int PageNumber { get; set; }
+    public int PageIndex { get; set; }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Collection(
+            diagnostics,
+            d =>
+            {
+                Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
+                Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+            });
+    }
+
+    [Fact]
     public async Task ControllerAction_MatchedRouteParameter_NoDiagnostics()
     {
         // Arrange

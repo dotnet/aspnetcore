@@ -83,7 +83,10 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                 if (usageContext.MethodSymbol != null)
                 {
                     var routeParameterNames = new HashSet<string>(tree.RouteParameters.Keys, StringComparer.OrdinalIgnoreCase);
-                    foreach (var parameter in usageContext.MethodSymbol.Parameters)
+
+                    // Get method parameters, including properties on AsParameters objects.
+                    var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(usageContext.MethodSymbol, wellKnownTypes);
+                    foreach (var parameter in resolvedParameterSymbols)
                     {
                         routeParameterNames.Remove(parameter.Name);
                     }
