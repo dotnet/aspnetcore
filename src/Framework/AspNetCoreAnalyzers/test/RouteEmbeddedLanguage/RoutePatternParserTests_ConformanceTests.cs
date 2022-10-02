@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System.Reflection.Metadata;
-
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 // These tests are mirrored from routing's RoutePatternParameterParserTest.cs

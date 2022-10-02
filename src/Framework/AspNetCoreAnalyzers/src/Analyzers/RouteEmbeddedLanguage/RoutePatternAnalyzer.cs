@@ -87,7 +87,9 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                     var routeParameterNames = new HashSet<string>(tree.RouteParameters.Select(p => p.Name), StringComparer.OrdinalIgnoreCase);
 
                     // Get method parameters, including properties on AsParameters objects.
+                    var parameterSymbols = RoutePatternParametersDetector.GetParameterSymbols(usageContext.MethodSymbol);
                     var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(usageContext.MethodSymbol, wellKnownTypes);
+                    
                     foreach (var parameter in resolvedParameterSymbols)
                     {
                         routeParameterNames.Remove(parameter.Symbol.Name);
@@ -104,7 +106,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                             resolvedParameterSymbols);
                         if (insertPoint is { } ip)
                         {
-                            parameterInsertIndex = RoutePatternParametersDetector.GetParameterSymbols(usageContext.MethodSymbol).IndexOf(ip.ExistingParameter);
+                            parameterInsertIndex = parameterSymbols.IndexOf(ip.ExistingParameter);
                             if (!ip.Before)
                             {
                                 parameterInsertIndex++;
