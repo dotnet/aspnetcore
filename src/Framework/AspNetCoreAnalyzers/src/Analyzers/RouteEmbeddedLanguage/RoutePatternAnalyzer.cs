@@ -97,7 +97,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
                     foreach (var unusedParameterName in routeParameterNames)
                     {
-                        tree.TryGetRouteParameter(unusedParameterName, out var unusedParameter);
+                        var unusedParameter = tree.GetRouteParameter(unusedParameterName);
 
                         var parameterInsertIndex = -1;
                         var insertPoint = CalculateInsertPoint(
@@ -113,20 +113,19 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                             }
                         }
 
-                        var properties = new Dictionary<string, string>
-                        {
-                            ["RouteParameterName"] = unusedParameter.Name,
-                            ["RouteParameterPolicy"] = string.Join(string.Empty, unusedParameter.Policies),
-                            ["RouteParameterIsOptional"] = unusedParameter.IsOptional.ToString(CultureInfo.InvariantCulture),
-                            ["RouteParameterInsertIndex"] = parameterInsertIndex.ToString(CultureInfo.InvariantCulture)
-                        };
+                        // These properties are used by the fixer.
+                        var propertiesBuilder = ImmutableDictionary.CreateBuilder<string, string>();
+                        propertiesBuilder.Add("RouteParameterName", unusedParameter.Name);
+                        propertiesBuilder.Add("RouteParameterPolicy", string.Join(string.Empty, unusedParameter.Policies));
+                        propertiesBuilder.Add("RouteParameterIsOptional", unusedParameter.IsOptional.ToString(CultureInfo.InvariantCulture));
+                        propertiesBuilder.Add("RouteParameterInsertIndex", parameterInsertIndex.ToString(CultureInfo.InvariantCulture));
 
                         context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.RoutePatternUnusedParameter,
                             Location.Create(context.SemanticModel.SyntaxTree, unusedParameter.Span),
                             DiagnosticDescriptors.RoutePatternUnusedParameter.DefaultSeverity,
                             additionalLocations: null,
-                            properties: properties.ToImmutableDictionary(),
+                            properties: propertiesBuilder.ToImmutableDictionary(),
                             unusedParameterName));
                     }
                 }

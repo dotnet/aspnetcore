@@ -23,6 +23,16 @@ internal sealed class RoutePatternTree : EmbeddedSyntaxTree<RoutePatternKind, Ro
         RouteParameters = routeParameters;
     }
 
+    public RouteParameter GetRouteParameter(string name)
+    {
+        if (TryGetRouteParameter(name, out var routeParameter))
+        {
+            return routeParameter;
+        }
+
+        throw new InvalidOperationException($"Couldn't find route parameter '{name}'.");
+    }
+
     public bool TryGetRouteParameter(string name, out RouteParameter routeParameter)
     {
         foreach (var parameter in RouteParameters)

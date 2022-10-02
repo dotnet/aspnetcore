@@ -573,7 +573,7 @@ public partial class RoutePatternParserTests
     public void Parse_RegularExpressions(string template, string constraint)
     {
         var tree = Test(@"""" + template.Replace(@"\", @"\\") + @"""");
-        tree.TryGetRouteParameter("p1", out var parameter);
+        var parameter = tree.GetRouteParameter("p1");
         Assert.Collection(parameter.Policies, p => Assert.Equal(":" + constraint.Replace("{", "{{").Replace("}", "}}"), p));
     }
 
