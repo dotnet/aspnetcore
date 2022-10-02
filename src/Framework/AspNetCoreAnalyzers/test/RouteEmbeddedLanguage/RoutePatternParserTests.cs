@@ -203,7 +203,7 @@ public partial class RoutePatternParserTests
             {
                 try
                 {
-                    if (tree.RouteParameters.TryGetValue(parsedRoutePattern.Name, out var routeParameter))
+                    if (tree.TryGetRouteParameter(parsedRoutePattern.Name, out var routeParameter))
                     {
                         Assert.True(routeParameter.IsOptional == parsedRoutePattern.IsOptional, "IsOptional");
                         Assert.True(routeParameter.IsCatchAll == parsedRoutePattern.IsCatchAll, "IsCatchAll");
@@ -230,7 +230,7 @@ public partial class RoutePatternParserTests
             }
 
             Assert.True(
-                parsedRoutePatterns.Count == tree.RouteParameters.Count,
+                parsedRoutePatterns.Count == tree.RouteParameters.Length,
                 $"Parsing '{token.ValueText}' has mismatched parameter counts.");
         }
 
@@ -254,7 +254,7 @@ public partial class RoutePatternParserTests
         }
 
         element.Add(new XElement("Parameters",
-            tree.RouteParameters.OrderBy(kvp => kvp.Key).Select(kvp => CreateParameter(kvp.Value))));
+            tree.RouteParameters.OrderBy(p => p.Name).Select(CreateParameter)));
 
         return element.ToString();
     }

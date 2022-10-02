@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
@@ -10,16 +11,31 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 
 internal sealed class RoutePatternTree : EmbeddedSyntaxTree<RoutePatternKind, RoutePatternNode, RoutePatternCompilationUnit>
 {
-    public readonly ImmutableDictionary<string, RouteParameter> RouteParameters;
+    public readonly ImmutableArray<RouteParameter> RouteParameters;
 
     public RoutePatternTree(
         VirtualCharSequence text,
         RoutePatternCompilationUnit root,
         ImmutableArray<EmbeddedDiagnostic> diagnostics,
-        ImmutableDictionary<string, RouteParameter> routeParameters)
+        ImmutableArray<RouteParameter> routeParameters)
         : base(text, root, diagnostics)
     {
         RouteParameters = routeParameters;
+    }
+
+    public bool TryGetRouteParameter(string name, out RouteParameter routeParameter)
+    {
+        foreach (var parameter in RouteParameters)
+        {
+            if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                routeParameter = parameter;
+                return true;
+            }
+        }
+
+        routeParameter = default;
+        return false;
     }
 }
 

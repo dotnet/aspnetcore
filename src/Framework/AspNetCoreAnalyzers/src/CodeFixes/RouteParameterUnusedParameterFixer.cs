@@ -64,17 +64,24 @@ public class RouteParameterUnusedParameterFixer : CodeFixProvider
 
         var param = root.FindNode(diagnostic.Location.SourceSpan);
 
-        var context = RoutePatternUsageDetector.BuildContext(param.GetFirstToken(), semanticModel, wellKnownTypes, cancellationToken);
+        var token = param.GetFirstToken();
+        var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
 
         // Check that the route is used in a context with a method, e.g. attribute on an action or Map method.
-        if (context.MethodSyntax == null)
+        if (usageContext.MethodSyntax == null)
         {
             return document;
         }
 
+        return await UpdateDocument(diagnostic, document, usageContext.MethodSyntax, cancellationToken);
+    }
+
+    private static async Task<Document> UpdateDocument(Diagnostic diagnostic, Document document, SyntaxNode methodSyntax, CancellationToken cancellationToken)
+    {
         var routeParameterName = diagnostic.Properties["RouteParameterName"];
         var routeParameterPolicy = diagnostic.Properties["RouteParameterPolicy"];
         var routeParameterIsOptional = Convert.ToBoolean(diagnostic.Properties["RouteParameterIsOptional"], CultureInfo.InvariantCulture);
+        var routeParameterInsertIndex = Convert.ToInt32(diagnostic.Properties["RouteParameterInsertIndex"], CultureInfo.InvariantCulture);
 
         var resolvedType = CalculateTypeFromPolicy(routeParameterPolicy);
         if (routeParameterIsOptional)
@@ -85,17 +92,39 @@ public class RouteParameterUnusedParameterFixer : CodeFixProvider
         // After fix, navigate to type with CodeAction_Navigation.
         var type = resolvedType.WithAdditionalAnnotations(new SyntaxAnnotation("CodeAction_Navigation"));
         var newParameter = SyntaxFactory.Parameter(SyntaxFactory.Identifier(routeParameterName)).WithType(type);
-        var updatedMethod = context.MethodSyntax switch
+        var updatedMethod = methodSyntax switch
         {
-            BaseMethodDeclarationSyntax methodSyntax => (SyntaxNode)methodSyntax.AddParameterListParameters(newParameter),
-            ParenthesizedLambdaExpressionSyntax lambdaExpressionSyntax => lambdaExpressionSyntax.AddParameterListParameters(newParameter),
-            _ => throw new InvalidOperationException($"Unexpected method syntax: {context.MethodSyntax.GetType().FullName}")
+            BaseMethodDeclarationSyntax declaredMethodSyntax => AddParameter(declaredMethodSyntax, newParameter, routeParameterInsertIndex),
+            ParenthesizedLambdaExpressionSyntax lambdaExpressionSyntax => AddParameter(lambdaExpressionSyntax, newParameter, routeParameterInsertIndex),
+            _ => throw new InvalidOperationException($"Unexpected method syntax: {methodSyntax.GetType().FullName}")
         };
 
         // Update document.
         var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
-        var updatedSyntaxTree = syntaxTree.GetRoot(cancellationToken).ReplaceNode(context.MethodSyntax, updatedMethod);
+        var updatedSyntaxTree = syntaxTree.GetRoot(cancellationToken).ReplaceNode(methodSyntax, updatedMethod);
         return document.WithSyntaxRoot(updatedSyntaxTree);
+    }
+
+    private static SyntaxNode AddParameter(BaseMethodDeclarationSyntax syntax, ParameterSyntax parameterSyntax, int parameterIndex)
+    {
+        if (parameterIndex == -1)
+        {
+            parameterIndex = 0;
+        }
+        
+        var newParameters = syntax.ParameterList.Parameters.Insert(parameterIndex, parameterSyntax);
+        return syntax.WithParameterList(syntax.ParameterList.WithParameters(newParameters));
+    }
+
+    private static SyntaxNode AddParameter(ParenthesizedLambdaExpressionSyntax syntax, ParameterSyntax parameterSyntax, int parameterIndex)
+    {
+        if (parameterIndex == -1)
+        {
+            parameterIndex = 0;
+        }
+
+        var newParameters = syntax.ParameterList.Parameters.Insert(parameterIndex, parameterSyntax);
+        return syntax.WithParameterList(syntax.ParameterList.WithParameters(newParameters));
     }
 
     private static TypeSyntax CalculateTypeFromPolicy(string? routeParameterPolicy)

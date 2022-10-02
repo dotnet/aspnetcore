@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using System.Reflection.Metadata;
+
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 // These tests are mirrored from routing's RoutePatternParameterParserTest.cs
@@ -573,7 +575,7 @@ public partial class RoutePatternParserTests
     public void Parse_RegularExpressions(string template, string constraint)
     {
         var tree = Test(@"""" + template.Replace(@"\", @"\\") + @"""");
-        var parameter = tree.RouteParameters["p1"];
+        tree.TryGetRouteParameter("p1", out var parameter);
         Assert.Collection(parameter.Policies, p => Assert.Equal(":" + constraint.Replace("{", "{{").Replace("}", "}}"), p));
     }
 
