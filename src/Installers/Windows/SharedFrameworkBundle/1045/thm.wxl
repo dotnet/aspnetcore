@@ -9,14 +9,14 @@
   <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
   <String Id="HelpHeader">Instalator — Pomoc</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
-   creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] — instaluje, naprawia, odinstalowuje lub
+    tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna
 
-/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
-   no prompts. By default UI and all prompts are displayed.
+/passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów albo nie wyświetla żadnego interfejsu użytkownika ani monitów
+. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
 
-/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
-/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
+/norestart  — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
+/log log.txt — tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zamknij</String>
   <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Postanowienia licencyjne&lt;/a&gt; dotyczące pakietu [WixBundleName].</String>
   <String Id="InstallAcceptCheckbox">Zg&amp;adzam się na warunki licencji</String>

@@ -9,14 +9,14 @@
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
   <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
-   creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - バンドルの完全なローカル コピーに対するディレクトリへのインストール、修復、ディレクトリからのアンインストール、または 
+ ディレクトリ内への作成を行います。既定の設定はインストールです。
 
-/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
-   no prompts. By default UI and all prompts are displayed.
+/passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI も
+ プロンプトも表示しません。既定では UI とすべてのプロンプトが表示されます。
 
-/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
-/log log.txt - logs to a specific file. By default a log file is created in %TEMP%.</String>
+/norestart   - 再起動の試行を抑制します。既定 UI では再起動前に確認メッセージが表示されます。
+/log log.txt - 特定のファイルに記録します。ログ ファイルは既定では %TEMP% に作成されます。</String>
   <String Id="HelpCloseButton">閉じる(&amp;C)</String>
   <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;ライセンス条項&lt;/a&gt;。</String>
   <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
