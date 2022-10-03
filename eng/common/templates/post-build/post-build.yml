@@ -98,7 +98,7 @@ stages:
     jobs:
     - job:
       displayName: NuGet Validation
-      condition: eq( ${{ parameters.enableNugetValidation }}, 'true')
+      condition: and(succeededOrFailed(), eq( ${{ parameters.enableNugetValidation }}, 'true'))
       pool:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
