@@ -34,7 +34,7 @@ jobs:
 - job: Run_SDL
   dependsOn: ${{ parameters.dependsOn }}
   displayName: Run SDL tool
-  condition: eq( ${{ parameters.enable }}, 'true')
+  condition: and(succeededOrFailed(), eq( ${{ parameters.enable }}, 'true'))
   variables:
     - group: DotNet-VSTS-Bot
     - name: AzDOProjectName
