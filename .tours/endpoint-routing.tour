@@ -4,12 +4,12 @@
   "steps": [
     {
       "file": "src/Http/samples/MinimalSample/Program.cs",
-      "description": "We'll start by looking at WebApplication which is the application host introduced in ASP.NET Core 6.",
+      "description": "We'll start by looking at `WebApplicationBuilder` and `WebApplication` which make up the new host introduced in ASP.NET Core 6.",
       "line": 10
     },
     {
       "file": "src/DefaultBuilder/src/WebApplicationBuilder.cs",
-      "description": "WebApplication adds routing and endpoint [middleware](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#create-a-middleware-pipeline-with-webapplication) automatically on your behalf if you do not call [app.UseRouting()](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.userouting?view=aspnetcore-7.0) and/or [app.UseEndopints()](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.useendpoints?view=aspnetcore-7.0) manually.",
+      "description": "`WebApplication` adds routing and endpoint [middleware](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#create-a-middleware-pipeline-with-webapplication) automatically on your behalf if you do not call [`app.UseRouting()`](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.userouting?view=aspnetcore-7.0) and/or [`app.UseEndopints()`](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.useendpoints?view=aspnetcore-7.0) manually.",
       "line": 165
     },
     {
@@ -21,6 +21,31 @@
       "file": "src/DefaultBuilder/src/WebApplicationBuilder.cs",
       "description": "And this is where custom added middlware gets added to the middle of the middlware pipeline.",
       "line": 203
+    },
+    {
+      "file": "src/DefaultBuilder/src/WebApplication.cs",
+      "description": "`WebApplication` is not availabe as a service. The service provider has alrady been created, but it does make itself available to endpoint routing middleware via `((IApplicationBuilder)app).Properties[\"__GlobalEndpointRouteBuilder\"]`.",
+      "line": 33
+    },
+    {
+      "file": "src/Http/Routing/src/Builder/EndpointRoutingApplicationBuilderExtensions.cs",
+      "description": "We access the `WebApplication` object using the `\"__GlobalEndpointRouteBuilder\"` key in `UseRouting()`. `WebApplication` is passed into the `EndpointRoutingMiddleware` constructor as an `IEndpointRouteBuilder` here in so the middleware can match the routes. `IEndpointRouteBuilder` is the target for \"Map\" methods like `MapGet`, `MapPost` and the new `MapGroup`. ",
+      "line": 48
+    },
+    {
+      "file": "src/Http/Routing/src/Matching/DfaMatcher.cs",
+      "description": "If `EndpointRoutingMiddleware` determines the request matches a defined endpoint, it sets the `Endpoint` on the `HttpContext`.",
+      "line": 78
+    },
+    {
+      "file": "src/Http/Routing/src/EndpointRoutingMiddleware.cs",
+      "description": "Match or no match, `EndpointRoutingMiddleware` continues the middleware pipeline to give other middleware the chance to inspect the `Endpoint` before executing the main app logic associated with it.",
+      "line": 110
+    },
+    {
+      "file": "src/Http/Routing/src/EndpointRoutingMiddleware.cs",
+      "description": "`IEndopintRouteBouilder` is constructor injected into the `EndpointRoutingMiddleware`. This is a public interface that powers much of the magic of endpoint routing and the new [`app.MapGroup(prefix)`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.endpointroutebuilderextensions.mapgroup?view=aspnetcore-7.0) API.",
+      "line": 28
     }
   ],
   "ref": "v7.0.0-rc.1.22427.2"
