@@ -33,6 +33,11 @@
       "line": 48
     },
     {
+      "file": "src/Http/Routing/src/EndpointRoutingMiddleware.cs",
+      "description": "Endpoint initialization is delayed until the first request hits the `EndpointRoutingMiddleware`. This means errors during endpoint generation do not surface until then.",
+      "line": 61
+    },
+    {
       "file": "src/Http/Routing/src/Matching/DfaMatcher.cs",
       "description": "If `EndpointRoutingMiddleware` determines the request matches a defined endpoint, it sets the `Endpoint` on the `HttpContext`.",
       "line": 78
@@ -41,6 +46,51 @@
       "file": "src/Http/Routing/src/EndpointRoutingMiddleware.cs",
       "description": "Match or no match, `EndpointRoutingMiddleware` continues the middleware pipeline to give other middleware the chance to inspect the `Endpoint` before executing the main app logic associated with it.",
       "line": 110
+    },
+    {
+      "file": "src/Http/Http.Abstractions/src/Routing/Endpoint.cs",
+      "description": "This is an `Endpoint` by the way. It really is just these three properties.\r\n\r\n1. The `RequestDelegate` is a `Func<HttpContext, Task>` which basically terminal middleware handling the application logic of the endpoint. This invokes the `MapGet` route handler, MVC controller etc...\r\n2. The `Metadata` is an `IReadOnly<object>` containing metadata about the endpoint like its attributes (e.g. `[Authorize]`) and what HTTP verbs to accept (e.g. GET).\r\n3. The `DisplayName` helpful name for debugging.",
+      "line": 24
+    },
+    {
+      "file": "src/Http/Routing/src/RouteEndpoint.cs",
+      "description": "You might have noticed that `Endpoint` is missing a `RoutePattern` to match against. That's in the derived class, `RouteEndpoint`.\r\n\r\nIt includes an `Order` too, but it's usually left at 0. If a request matches multiple endpoints with the same `Order` value, matching will fail.",
+      "line": 29
+    },
+    {
+      "file": "src/Http/Routing/src/Builder/EndpointRouteBuilderExtensions.cs",
+      "description": "`Endpoint` instances are registered to the `WebApplication` via `IEndpointRouteBuilder.DataSources` which is an `ICollection<EndopintDataSource>`.",
+      "line": 430
+    },
+    {
+      "file": "src/Http/Routing/src/EndpointDataSource.cs",
+      "description": "At its core, `EndpointDataSource` is an `IReadOnlyList<Endpoint>` with a change token. Yes. This does mean that endpoints can change at any time!\r\n\r\nDon't pay too much attention to `GetGroupedEndpoints` yet. That's new in .NET 7, and we'll get to that later.",
+      "line": 26
+    },
+    {
+      "file": "src/Http/Routing/src/RouteEndpointDataSource.cs",
+      "description": "Route handlers are provided via the `RouteEndopintDataSource`. Every time a \"Map\" method is called, it adds an item to a `_routeEntries`.",
+      "line": 72
+    },
+    {
+      "file": "src/Http/Routing/src/RouteEndpointDataSource.cs",
+      "description": "The \"Map\" methods then return a which is an `IEndpointConventionBuilder`. This is the target for extension methods like `RequireAuthorization`, `RequireRateLimiting`, `CacheOutput` and `WithMetadata`.",
+      "line": 74
+    },
+    {
+      "file": "src/Http/Routing/src/RouteEndpointDataSource.cs",
+      "description": "`RouteEndopintBuilder.Endpoints` iterates over each item in `_routeEntries` and builds a `RouteEndpoint` from a `RouteEndpointBuilder` while applying conventions.",
+      "line": 84
+    },
+    {
+      "file": "src/Http/Routing/src/RouteEndpointDataSource.cs",
+      "description": "When creating endpoints, RouteEndpointDataSource add metadata in the following order\r\n\r\n1. `MethodInfo` (for `Delegates` not `RequestDelegate`)\r\n2. `HttpMethodMetadata` (for `MapXXX` not just `Map` which accepts all HTTP verbs)\r\n3. `RequestDelegateFactory.InferMetadata()` potentially adds:\r\n   1. `AcceptsMetadata`\r\n   2. `ProducesMetadata`\r\n   3. Static interface metadata providers\r\n4. Group conventions (outer to inner)\r\n5. Attributes\r\n6. Route-specific conventions\r\n7. Route-specific finally conventions\r\n8. Group finally conventions (inner to outer)\r\n\r\nThat's a lot of metadata! There are so many steps in order to enable the later conventions, \"finally\" and \"group finally\" conventions in particular to observe metadata added to a specific route entry. And we want all conventions to be able to observer inferred metadata.\r\n\r\nHistorically, metadata has mostly been read by middleware during the request. But with the introduction of group conventions and `WithOpenApi` in particular, it has become useful to observe route-specific metadata during endpoint creation.",
+      "line": 248
+    },
+    {
+      "file": "src/Http/Http.Abstractions/src/Extensions/IEndpointConventionBuilder.cs",
+      "description": "This is the `IEndpointConventionBuilder` interface. The interface has been arround since 3.0, but the `Finally` method is new in .NET 7. This was made possible thanks to default interface methods which were introduced in C# 8.\r\n\r\nWe'll get into why the `Finally` method is useful in a little bit, but for now notice that this interface asks for an `Action<EndpointBuilder>` rather than exposing an `EndpointBuilder` directly. This was important for making `IEndpointConventionBuilder` extension methods work with `MapGroup` which allows adding \"conventions\" to multiple endpoints at once.",
+      "line": 25
     },
     {
       "file": "src/Http/Routing/src/EndpointRoutingMiddleware.cs",
