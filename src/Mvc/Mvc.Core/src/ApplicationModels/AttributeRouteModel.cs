@@ -160,7 +160,7 @@ public class AttributeRouteModel
     {
         return template != null &&
             (template.StartsWith("~/", StringComparison.Ordinal) ||
-            template.StartsWith("/", StringComparison.Ordinal));
+            template.StartsWith('/'));
     }
 
     private static string? ChooseName(
@@ -192,7 +192,7 @@ public class AttributeRouteModel
             return right;
         }
 
-        if (left!.EndsWith("/", StringComparison.Ordinal))
+        if (left!.EndsWith('/'))
         {
             return left + right;
         }
@@ -225,7 +225,7 @@ public class AttributeRouteModel
         }
 
         var startIndex = 0;
-        if (result.StartsWith("/", StringComparison.Ordinal))
+        if (result.StartsWith('/'))
         {
             startIndex = 1;
         }
@@ -241,7 +241,7 @@ public class AttributeRouteModel
         }
 
         var subStringLength = result.Length - startIndex;
-        if (result.EndsWith("/", StringComparison.Ordinal))
+        if (result.EndsWith('/'))
         {
             subStringLength--;
         }

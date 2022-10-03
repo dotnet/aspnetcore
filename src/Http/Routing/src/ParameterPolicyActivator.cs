@@ -35,7 +35,7 @@ internal static class ParameterPolicyActivator
 
         string argumentString;
         var indexOfFirstOpenParens = inlineParameterPolicy.IndexOf('(');
-        if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(")", StringComparison.Ordinal))
+        if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(')'))
         {
             parameterPolicyKey = inlineParameterPolicy.Substring(0, indexOfFirstOpenParens);
             argumentString = inlineParameterPolicy.Substring(
