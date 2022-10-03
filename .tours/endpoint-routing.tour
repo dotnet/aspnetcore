@@ -48,6 +48,11 @@
       "line": 110
     },
     {
+      "file": "src/Http/Routing/src/EndpointMiddleware.cs",
+      "description": "If the request makes it all the way to the `EndpointMiddleware` at the end of the pipeline, it executes the `RequestDelegate` defined by `httpContext.GetEndpoint()`.",
+      "line": 57
+    },
+    {
       "file": "src/Http/Http.Abstractions/src/Routing/Endpoint.cs",
       "description": "This is an `Endpoint` by the way. It really is just these three properties.\r\n\r\n1. The `RequestDelegate` is a `Func<HttpContext, Task>` which basically terminal middleware handling the application logic of the endpoint. This invokes the `MapGet` route handler, MVC controller etc...\r\n2. The `Metadata` is an `IReadOnly<object>` containing metadata about the endpoint like its attributes (e.g. `[Authorize]`) and what HTTP verbs to accept (e.g. GET).\r\n3. The `DisplayName` helpful name for debugging.",
       "line": 24
@@ -83,19 +88,34 @@
       "line": 84
     },
     {
-      "file": "src/Http/Routing/src/RouteEndpointDataSource.cs",
-      "description": "When creating endpoints, RouteEndpointDataSource add metadata in the following order\r\n\r\n1. `MethodInfo` (for `Delegates` not `RequestDelegate`)\r\n2. `HttpMethodMetadata` (for `MapXXX` not just `Map` which accepts all HTTP verbs)\r\n3. `RequestDelegateFactory.InferMetadata()` potentially adds:\r\n   1. `AcceptsMetadata`\r\n   2. `ProducesMetadata`\r\n   3. Static interface metadata providers\r\n4. Group conventions (outer to inner)\r\n5. Attributes\r\n6. Route-specific conventions\r\n7. Route-specific finally conventions\r\n8. Group finally conventions (inner to outer)\r\n\r\nThat's a lot of metadata! There are so many steps in order to enable the later conventions, \"finally\" and \"group finally\" conventions in particular to observe metadata added to a specific route entry. And we want all conventions to be able to observer inferred metadata.\r\n\r\nHistorically, metadata has mostly been read by middleware during the request. But with the introduction of group conventions and `WithOpenApi` in particular, it has become useful to observe route-specific metadata during endpoint creation.",
-      "line": 248
-    },
-    {
       "file": "src/Http/Http.Abstractions/src/Extensions/IEndpointConventionBuilder.cs",
       "description": "This is the `IEndpointConventionBuilder` interface. The interface has been arround since 3.0, but the `Finally` method is new in .NET 7. This was made possible thanks to default interface methods which were introduced in C# 8.\r\n\r\nWe'll get into why the `Finally` method is useful in a little bit, but for now notice that this interface asks for an `Action<EndpointBuilder>` rather than exposing an `EndpointBuilder` directly. This was important for making `IEndpointConventionBuilder` extension methods work with `MapGroup` which allows adding \"conventions\" to multiple endpoints at once.",
       "line": 25
     },
     {
-      "file": "src/Http/Routing/src/EndpointRoutingMiddleware.cs",
-      "description": "`IEndopintRouteBouilder` is constructor injected into the `EndpointRoutingMiddleware`. This is a public interface that powers much of the magic of endpoint routing and the new [`app.MapGroup(prefix)`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.endpointroutebuilderextensions.mapgroup?view=aspnetcore-7.0) API.",
-      "line": 28
+      "file": "src/Http/Routing/src/RouteEndpointDataSource.cs",
+      "description": "When creating endpoints, RouteEndpointDataSource add metadata in the following order\r\n\r\n1. `MethodInfo` (for `Delegates` not `RequestDelegate`)\r\n2. `HttpMethodMetadata` (for `MapXXX` not just `Map` which accepts all HTTP verbs)\r\n3. `RequestDelegateFactory.InferMetadata()` potentially adds:\r\n   1. `AcceptsMetadata`\r\n   2. `ProducesMetadata`\r\n   3. Static interface metadata providers\r\n4. Group conventions (outer to inner)\r\n5. Attributes\r\n6. Route-specific conventions\r\n7. Route-specific finally conventions\r\n8. Group finally conventions (inner to outer)\r\n\r\nThat's a lot of metadata! There are so many steps in order to enable the later conventions, \"finally\" and \"group finally\" conventions in particular to observe metadata added to a specific route entry. And we want all conventions to be able to observer inferred metadata.\r\n\r\nHistorically, metadata has mostly been read by middleware during the request. But with the introduction of group conventions and `WithOpenApi` in particular, it has become useful to observe route-specific metadata during endpoint creation.",
+      "line": 248
+    },
+    {
+      "file": "src/Http/Routing/src/RouteGroupBuilder.cs",
+      "description": " [`app.MapGroup(prefix)`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.endpointroutebuilderextensions.mapgroup?view=aspnetcore-7.0) simply passes both of its parameteters to this `RouteGroupBuilder` constructor and returns it. `RouteGroupBuilder` impelements both `IEndpointRouteBuilder` and `IEndpointConventionBuilder` so child routes can be defined without repeating a common prefix or conventions.\r\n\r\n`RouteGroupBuilder` uses the internal `GroupEndpointDataSource` to do it's magic. This wraps inner `EndpointDataSource` instances added by methods such as `MapGet` and `MapControllerRoute` when they're called on group. When ASP.NET Core resolves endpoints from the `GroupEndpointDataSource` in the `EndpointRoutingMiddleware`, it prepends the given prefix to each `RouteEndpoint` and applies all the conventions applied to the `RouteGroupBuilder` to each endpoint in the group.\r\n\r\n**NOTE:** The prefix can be empty and/or shared between multiple groups!",
+      "line": 31
+    },
+    {
+      "file": "src/Http/Routing/src/RouteGroupBuilder.cs",
+      "description": "The outer group's conventions are added before the inner group's conventions, but the outer groups `Finally` convention's run after the inner groups `Finally` conventions.\r\n\r\nThis ensures that normal non-group aware conventions don't accidently clobber endpoint-specific conventions. Finally conventionsa are most uesful when you want group conventions to enhance endpoint-specefic conventions.",
+      "line": 97
+    },
+    {
+      "file": "src/Http/Routing/src/EndpointDataSource.cs",
+      "description": "Since `EndpointDataSource.GetGroupedEndopints` is new, it has a default implementation. It creates a `RouteEndopintBuilder` from `this.Endpoints`, and then runs group conventions. This works fairly well, but it means that `EndpointDataSource` implementations that don't override this method cannot expose inferred metadata to normal group conventions. All metadata is still visible to `Finally` conventions.",
+      "line": 67
+    },
+    {
+      "file": "src/Http/Routing/src/DependencyInjection/RoutingServiceCollectionExtensions.cs",
+      "description": "If you want to access a global list of endpoints, you can resolve the root `CompositeEndpointDataSource` as an `EndpointDataSource` from DI. `CompositeEndopintDataSource` basically does a `SelectMany` on the endpoints of all the child `EndpointDataSources` added to `WebApplication` or the `UseEndpoints` callback.",
+      "line": 64
     }
   ],
   "ref": "v7.0.0-rc.1.22427.2"
