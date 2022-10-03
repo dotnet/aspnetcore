@@ -1,0 +1,27 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Endpoint Routing",
+  "steps": [
+    {
+      "file": "src/Http/samples/MinimalSample/Program.cs",
+      "description": "We'll start by looking at WebApplication which is the application host introduced in ASP.NET Core 6.",
+      "line": 10
+    },
+    {
+      "file": "src/DefaultBuilder/src/WebApplicationBuilder.cs",
+      "description": "WebApplication adds routing and endpoint [middleware](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#create-a-middleware-pipeline-with-webapplication) automatically on your behalf if you do not call [app.UseRouting()](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.userouting?view=aspnetcore-7.0) and/or [app.UseEndopints()](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.endpointroutingapplicationbuilderextensions.useendpoints?view=aspnetcore-7.0) manually.",
+      "line": 165
+    },
+    {
+      "file": "src/DefaultBuilder/src/WebApplicationBuilder.cs",
+      "description": "The endpoint middleware is added to the end of the pipeline to allow other middleware like auth middleware to examine the endpoint matched by routing and take action before running the primary application logic for the endpoint.",
+      "line": 210
+    },
+    {
+      "file": "src/DefaultBuilder/src/WebApplicationBuilder.cs",
+      "description": "And this is where custom added middlware gets added to the middle of the middlware pipeline.",
+      "line": 203
+    }
+  ],
+  "ref": "v7.0.0-rc.1.22427.2"
+}
