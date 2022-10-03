@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization.Test.TestObjects;
 using Microsoft.AspNetCore.Builder;
@@ -244,7 +246,9 @@ public class AuthorizationMiddlewareTests
         var next = new TestRequestDelegate();
         var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
+        var req = new AssertionRequirement(_ => true);
+
+        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"), new ReqAttribute(req));
         var services = new ServiceCollection()
             .AddAuthorization()
             .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
@@ -378,6 +382,35 @@ public class AuthorizationMiddlewareTests
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
         var context = GetHttpContext(anonymous: false, endpoint: CreateEndpoint(new AuthorizeAttribute(), policy));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.True(calledPolicy);
+    }
+
+    public class ReqAttribute : RequirementAttribute
+    {
+        IEnumerable<IAuthorizationRequirement> _reqs;
+        public ReqAttribute(params IAuthorizationRequirement[] req)
+            => _reqs = req;
+
+        public override IEnumerable<IAuthorizationRequirement> GetRequirements()
+            => _reqs;
+    }
+
+    [Fact]
+    public async Task CanApplyRequirementAttributeDirectlyToEndpoint()
+    {
+        // Arrange
+        var calledPolicy = false;
+
+        var req = new AssertionRequirement(_ => { calledPolicy = true; return true; });
+
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: false, endpoint: CreateEndpoint(new AuthorizeAttribute(), new ReqAttribute(req)));
 
         // Act & Assert
         await middleware.Invoke(context);
