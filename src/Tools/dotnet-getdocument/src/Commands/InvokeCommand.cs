@@ -79,9 +79,16 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                                 projectName,
                                 targetFramework.Version));
                         }
+                        else if (targetFramework.Version >= new Version(6, 0))
+                        {
+                            toolsDirectory = Path.Combine(thisPath, $"net{targetFramework.Version}");
+                        }
+                        else
+                        {
+                            toolsDirectory = Path.Combine(thisPath, "netcoreapp2.1");
+                        }
 
                         executable = DotNetMuxer.MuxerPathOrDefault();
-                        toolsDirectory = Path.Combine(thisPath, "netcoreapp2.1");
 
                         args.Add("exec");
                         args.Add("--depsFile");

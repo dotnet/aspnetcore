@@ -5,7 +5,8 @@ export const PageTitle = {
 };
 
 function getAndRemoveExistingTitle(): string | null {
-  const titleElements = document.getElementsByTagName('title');
+  // Other <title> elements may exist outside <head> (e.g., inside <svg> elements) but they aren't page titles
+  const titleElements = document.head ? document.head.getElementsByTagName('title') : [];
 
   if (titleElements.length === 0) {
     return null;

@@ -2,13 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Tools.Internal;
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http.Features;
+#endif
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
@@ -53,6 +60,88 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 return 3;
             }
 
+    #if NET6_0_OR_GREATER
+            // Register no-op implementations of IServer and IHostLifetime
+            // to prevent the application server from actually launching after build.
+            void ConfigureHostBuilder(object hostBuilder)
+            {
+                ((IHostBuilder)hostBuilder).ConfigureServices((context, services) =>
+                {
+                    services.AddSingleton<IServer, NoopServer>();
+                    services.AddSingleton<IHostLifetime, NoopHostLifetime>();
+                });
+            }
+
+            // Register a TCS to be invoked when the entrypoint (aka Program.Main)
+            // has finished running. For minimal APIs, this means that all app.X
+            // calls about the host has been built have been executed.
+            var waitForStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            void OnEntryPointExit(Exception exception)
+            {
+                // If the entry point exited, we'll try to complete the wait
+                if (exception != null)
+                {
+                    waitForStartTcs.TrySetException(exception);
+                }
+                else
+                {
+                    waitForStartTcs.TrySetResult(null);
+                }
+            }
+
+            // Resolve the host factory, ensuring that we don't stop the
+            // application after the host has been built.
+            var factory = HostFactoryResolver.ResolveHostFactory(assembly,
+                stopApplication: false,
+                configureHostBuilder: ConfigureHostBuilder,
+                entrypointCompleted: OnEntryPointExit);
+
+            if (factory == null)
+            {
+                _reporter.WriteError(Resources.FormatMethodsNotFound(
+                    HostFactoryResolver.BuildWebHost,
+                    HostFactoryResolver.CreateHostBuilder,
+                    HostFactoryResolver.CreateWebHostBuilder,
+                    entryPointType));
+
+                return 8;
+            }
+
+            try
+            {
+                // Retrieve the service provider from the target host.
+                var services = ((IHost)factory(new[] { $"--{HostDefaults.ApplicationKey}={assemblyName}" })).Services;
+                if (services == null)
+                {
+                    _reporter.WriteError(Resources.FormatServiceProviderNotFound(
+                        typeof(IServiceProvider),
+                        HostFactoryResolver.BuildWebHost,
+                        HostFactoryResolver.CreateHostBuilder,
+                        HostFactoryResolver.CreateWebHostBuilder,
+                        entryPointType));
+
+                    return 9;
+                }
+
+                // Wait for the application to start to ensure that all configurations
+                // on the WebApplicationBuilder have been processed.
+                var applicationLifetime = services.GetRequiredService<IHostApplicationLifetime>();
+                using (var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(null)))
+                {
+                    waitForStartTcs.Task.Wait();
+                    var success = GetDocuments(services);
+                    if (!success)
+                    {
+                        return 10;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _reporter.WriteError(ex.ToString());
+                return 11;
+            }
+    #else
             try
             {
                 var serviceFactory = HostFactoryResolver.ResolveServiceProviderFactory(assembly);
@@ -91,6 +180,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 _reporter.WriteError(ex.ToString());
                 return 7;
             }
+    #endif
 
             return 0;
         }
@@ -303,5 +393,22 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
             return result;
         }
+
+    #if NET6_0_OR_GREATER
+            private sealed class NoopHostLifetime : IHostLifetime
+            {
+                public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+                public Task WaitForStartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+            }
+
+            private sealed class NoopServer : IServer
+            {
+                public IFeatureCollection Features { get; } = new FeatureCollection();
+                public void Dispose() { }
+                public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) => Task.CompletedTask;
+                public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+            }
+    #endif
     }
 }
