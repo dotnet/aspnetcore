@@ -74,7 +74,7 @@
     <ProductNameShort>ASP.NET Core Module IIS Express V2</ProductNameShort>
   </PropertyGroup>
 
-  <Target Name="CreateANCMIISExpressNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+  <Target Name="CreateANCMIISExpressNugetPackage" DependsOnTargets="CopyToArtifactsDirectory" BeforeTargets="Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
     </PropertyGroup>
