@@ -16,7 +16,7 @@ AzureAppServices.HostingStartup Uses an automatic loading mechanism so that the 
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
+To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md).
 
 If all of the prerequisites have already been set up, run the following command inside this directory.
 ```powershell
