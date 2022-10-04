@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Authorization.Policy;
@@ -388,23 +387,25 @@ public class AuthorizationMiddlewareTests
         Assert.True(calledPolicy);
     }
 
-    public class ReqAttribute : RequirementAttribute
+    public class ReqAttribute : Attribute, IRequirementData
     {
         IEnumerable<IAuthorizationRequirement> _reqs;
         public ReqAttribute(params IAuthorizationRequirement[] req)
             => _reqs = req;
 
-        public override IEnumerable<IAuthorizationRequirement> GetRequirements()
+        public IEnumerable<IAuthorizationRequirement> GetRequirements()
             => _reqs;
     }
 
-    [Fact]
-    public async Task CanApplyRequirementAttributeDirectlyToEndpoint()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanApplyRequirementAttributeDirectlyToEndpoint(bool assertSuccess)
     {
         // Arrange
         var calledPolicy = false;
 
-        var req = new AssertionRequirement(_ => { calledPolicy = true; return true; });
+        var req = new AssertionRequirement(_ => { calledPolicy = true; return assertSuccess; });
 
         var policyProvider = new Mock<IAuthorizationPolicyProvider>();
         policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
@@ -415,6 +416,8 @@ public class AuthorizationMiddlewareTests
         // Act & Assert
         await middleware.Invoke(context);
         Assert.True(calledPolicy);
+
+        Assert.Equal(assertSuccess, next.Called);
     }
 
     [Fact]
