@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 /// For example, consider a multi-segment parameter route:
 /// - Before: /v1/{book.name=shelves/*/books/*}
 /// - After: /v1/shelves/{__Complex_book.name_2}/books/{__Complex_book.name_4}
-/// 
+///
 /// It is rewritten so that any * or ** segments become ASP.NET Core route parameters. These parameter
 /// names are never used by the user, and instead they're reconstructed into the final value by the
 /// adapter and then added to the HttpRequest.RouteValues collection.
@@ -178,7 +178,7 @@ internal sealed class JsonTranscodingRouteAdapter
         {
             return SegmentType.CatchAll;
         }
-        else if (segment.StartsWith("*", StringComparison.Ordinal))
+        else if (segment.StartsWith('*'))
         {
             return SegmentType.Any;
         }

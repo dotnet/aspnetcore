@@ -15,10 +15,12 @@
     <ProjectReference Include="..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj" />
 
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
   </ItemGroup>
 
 </Project>

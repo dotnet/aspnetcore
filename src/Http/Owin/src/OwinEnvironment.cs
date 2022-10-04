@@ -254,7 +254,24 @@ public class OwinEnvironment : IDictionary<string, object>
 
     void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
     {
-        throw new NotImplementedException();
+        if (array is null)
+        {
+            throw new ArgumentNullException(nameof(array));
+        }
+        if (arrayIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+        }
+        if (arrayIndex + _entries.Count + _context.Items.Count > array.Length)
+        {
+            throw new ArgumentException("Not enough available space in array", nameof(array));
+        }
+
+        // Causes an allocation of the enumerator/iterator but is easier to maintain
+        foreach (var entryPair in this)
+        {
+            array[arrayIndex++] = entryPair;
+        }
     }
 
     int ICollection<KeyValuePair<string, object>>.Count

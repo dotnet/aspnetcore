@@ -8,6 +8,15 @@ namespace Microsoft.AspNetCore.Analyzers;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
 internal static class DiagnosticDescriptors
 {
+    internal static readonly DiagnosticDescriptor RoutePatternIssue = new(
+        "RP0001",
+        new LocalizableResourceString(nameof(Resources.Invalid_Route_pattern), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Route_issue_0), Resources.ResourceManager, typeof(Resources)),
+        "Style",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
     internal static readonly DiagnosticDescriptor DoNotUseModelBindingAttributesOnRouteHandlerParameters = new(
         "ASP0003",
         "Do not use model binding attributes with route handlers",
@@ -113,6 +122,33 @@ internal static class DiagnosticDescriptors
         "Suggest using top level route registrations instead of {0}",
         "Usage",
         DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor UseHeaderDictionaryPropertiesInsteadOfIndexer = new(
+        "ASP0015",
+        "Suggest using IHeaderDictionary properties",
+        "The header '{0}' can be accessed using the {1} property",
+        "Usage",
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotReturnValueFromRequestDelegate = new(
+        "ASP0016",
+        "Do not return a value from RequestDelegate",
+        "The method used to create a RequestDelegate returns Task<{0}>. RequestDelegate discards this value. If this isn't intended then don't return a value or change the method signature to not match RequestDelegate.",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor RoutePatternUnusedParameter = new(
+        "RP0002",
+        new LocalizableResourceString(nameof(Resources.Unused_Route_parameter), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Unused_Route_parameter_0), Resources.ResourceManager, typeof(Resources)),
+        "Style",
+        DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

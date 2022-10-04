@@ -1,5 +1,5 @@
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-rpmpkg-20220505130359-d0fa36f
+FROM mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-rpmpkg
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER

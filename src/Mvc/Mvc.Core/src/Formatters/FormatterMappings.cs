@@ -114,7 +114,7 @@ public class FormatterMappings
             throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(format));
         }
 
-        if (format.StartsWith(".", StringComparison.Ordinal))
+        if (format.StartsWith('.'))
         {
             if (format == ".")
             {
