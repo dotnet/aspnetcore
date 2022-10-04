@@ -33,19 +33,6 @@ public class AuthorizationMiddleware
     /// </summary>
     /// <param name="next">The next middleware in the application middleware pipeline.</param>
     /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
-    /// <param name="logger">The <see cref="ILogger"/>.</param>
-    public AuthorizationMiddleware(RequestDelegate next,
-        IAuthorizationPolicyProvider policyProvider,
-        ILogger<AuthorizationMiddleware> logger) : this(next, policyProvider)
-    {
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
-    /// </summary>
-    /// <param name="next">The next middleware in the application middleware pipeline.</param>
-    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
     public AuthorizationMiddleware(RequestDelegate next,
         IAuthorizationPolicyProvider policyProvider)
     {

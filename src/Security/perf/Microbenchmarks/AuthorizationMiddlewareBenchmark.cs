@@ -23,7 +23,7 @@ public class AuthorizationMiddlewareBenchmark
         var logger = LoggerFactory
             .Create(logging => { })
             .CreateLogger<AuthorizationMiddleware>();
-        _authorizationMiddleware = new AuthorizationMiddleware((context) => Task.CompletedTask, policyProvider, logger);
+        _authorizationMiddleware = new AuthorizationMiddleware((context) => Task.CompletedTask, policyProvider);
 
         _httpContextNoEndpoint = new DefaultHttpContext();
 
