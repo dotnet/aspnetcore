@@ -201,7 +201,7 @@ public static class Helpers
             new DiagnosticResult(DiagnosticDescriptors.DetectMismatchedParameterOptionality).WithArguments("title").WithLocation(1)
         };
 
-        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, usageSource);
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, usageSource: usageSource);
     }
 
     [Fact]

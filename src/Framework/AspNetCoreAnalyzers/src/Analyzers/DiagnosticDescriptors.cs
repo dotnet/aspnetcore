@@ -142,4 +142,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor RoutePatternUnusedParameter = new(
+        "RP0002",
+        new LocalizableResourceString(nameof(Resources.Unused_Route_parameter), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Unused_Route_parameter_0), Resources.ResourceManager, typeof(Resources)),
+        "Style",
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

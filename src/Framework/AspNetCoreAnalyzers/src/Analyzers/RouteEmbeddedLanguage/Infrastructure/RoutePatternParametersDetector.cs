@@ -7,34 +7,49 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
+internal record struct ParameterSymbol(ISymbol Symbol, ISymbol? TopLevelSymbol = null)
+{
+    public bool IsNested => TopLevelSymbol != null;
+}
+
 internal static class RoutePatternParametersDetector
 {
-    public static ImmutableArray<ISymbol> ResolvedParameters(ISymbol symbol, WellKnownTypes wellKnownTypes)
+    public static ImmutableArray<ParameterSymbol> ResolvedParameters(ISymbol symbol, WellKnownTypes wellKnownTypes)
     {
-        var resolvedParameterSymbols = ImmutableArray.CreateBuilder<ISymbol>();
-        var childSymbols = symbol switch
+        return ResolvedParametersCore(symbol, topLevelSymbol: null, wellKnownTypes);
+
+        static ImmutableArray<ParameterSymbol> ResolvedParametersCore(ISymbol symbol, ISymbol? topLevelSymbol, WellKnownTypes wellKnownTypes)
+        {
+            var resolvedParameterSymbols = ImmutableArray.CreateBuilder<ParameterSymbol>();
+            var childSymbols = GetParameterSymbols(symbol);
+
+            foreach (var child in childSymbols)
+            {
+                if (HasSpecialType(child, wellKnownTypes.ParameterSpecialTypes) || HasExplicitNonRouteAttribute(child, wellKnownTypes.NonRouteMetadataTypes))
+                {
+                    continue;
+                }
+                else if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
+                {
+                    resolvedParameterSymbols.AddRange(ResolvedParametersCore(child.GetParameterType(), child, wellKnownTypes));
+                }
+                else
+                {
+                    resolvedParameterSymbols.Add(new ParameterSymbol(child, topLevelSymbol));
+                }
+            }
+            return resolvedParameterSymbols.ToImmutable();
+        }
+    }
+
+    public static ImmutableArray<ISymbol> GetParameterSymbols(ISymbol symbol)
+    {
+        return symbol switch
         {
             ITypeSymbol typeSymbol => typeSymbol.GetMembers().OfType<IPropertySymbol>().ToImmutableArray().As<ISymbol>(),
             IMethodSymbol methodSymbol => methodSymbol.Parameters.As<ISymbol>(),
             _ => throw new InvalidOperationException("Unexpected symbol type: " + symbol)
         };
-
-        foreach (var child in childSymbols)
-        {
-            if (HasSpecialType(child, wellKnownTypes.ParameterSpecialTypes) || HasExplicitNonRouteAttribute(child, wellKnownTypes.NonRouteMetadataTypes))
-            {
-                continue;
-            }
-            else if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
-            {
-                resolvedParameterSymbols.AddRange(ResolvedParameters(child.GetParameterType(), wellKnownTypes));
-            }
-            else
-            {
-                resolvedParameterSymbols.Add(child);
-            }
-        }
-        return resolvedParameterSymbols.ToImmutable();
     }
 
     private static bool HasSpecialType(ISymbol child, INamedTypeSymbol[] specialTypes)

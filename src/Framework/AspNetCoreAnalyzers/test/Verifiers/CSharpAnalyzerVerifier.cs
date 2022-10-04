@@ -45,6 +45,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
     internal static ReferenceAssemblies GetReferenceAssemblies()
     {
         return ReferenceAssemblies.Net.Net70.AddAssemblies(ImmutableArray.Create(
+            TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.BindAttribute).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions).Assembly.Location),
@@ -62,8 +63,8 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.IHeaderDictionary).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.HeaderDictionary).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Http.HttpRequestJsonExtensions).Assembly.Location),
-            TrimAssemblyExtension(typeof(Microsoft.Extensions.Primitives.StringValues).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.Extensions.Primitives.StringValues).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.Logging.ILoggingBuilder).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.Logging.ConsoleLoggerExtensions).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.DependencyInjection.IServiceCollection).Assembly.Location),

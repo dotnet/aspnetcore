@@ -3,29 +3,18 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml.Linq;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.EmbeddedLanguages.VirtualChars;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.Common;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.RegularExpressions;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
-using Microsoft.CodeAnalysis.Text;
-using Xunit;
-using System.Reflection;
-using Xunit.Abstractions;
-using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+using Microsoft.CodeAnalysis.Text;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -214,7 +203,7 @@ public partial class RoutePatternParserTests
             {
                 try
                 {
-                    if (tree.RouteParameters.TryGetValue(parsedRoutePattern.Name, out var routeParameter))
+                    if (tree.TryGetRouteParameter(parsedRoutePattern.Name, out var routeParameter))
                     {
                         Assert.True(routeParameter.IsOptional == parsedRoutePattern.IsOptional, "IsOptional");
                         Assert.True(routeParameter.IsCatchAll == parsedRoutePattern.IsCatchAll, "IsCatchAll");
@@ -241,7 +230,7 @@ public partial class RoutePatternParserTests
             }
 
             Assert.True(
-                parsedRoutePatterns.Count == tree.RouteParameters.Count,
+                parsedRoutePatterns.Count == tree.RouteParameters.Length,
                 $"Parsing '{token.ValueText}' has mismatched parameter counts.");
         }
 
@@ -265,7 +254,7 @@ public partial class RoutePatternParserTests
         }
 
         element.Add(new XElement("Parameters",
-            tree.RouteParameters.OrderBy(kvp => kvp.Key).Select(kvp => CreateParameter(kvp.Value))));
+            tree.RouteParameters.OrderBy(p => p.Name).Select(CreateParameter)));
 
         return element.ToString();
     }

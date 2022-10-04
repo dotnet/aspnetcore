@@ -61,17 +61,18 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         if (methodSymbol != null)
         {
             // Resolve possible parameter symbols. Includes properties from AsParametersAttribute.
-            var parameters = RoutePatternParametersDetector.ResolvedParameters(methodSymbol, wellKnownTypes);
+            var routeParameters = RoutePatternParametersDetector.ResolvedParameters(methodSymbol, wellKnownTypes);
+            var parameterSymbols = routeParameters.Select(p => p.Symbol).ToArray();
 
             // Match route parameter to method parameter. Parameters in a route aren't case sensitive.
             // First attempt an exact match, then a case insensitive match.
             var parameterName = node.ParameterNameToken.Value.ToString();
-            var matchingParameter = parameters.FirstOrDefault(s => s.Name == parameterName)
-                ?? parameters.FirstOrDefault(s => string.Equals(s.Name, parameterName, StringComparison.OrdinalIgnoreCase));
+            var matchingParameterSymbol = parameterSymbols.FirstOrDefault(s => s.Name == parameterName)
+                ?? parameterSymbols.FirstOrDefault(s => string.Equals(s.Name, parameterName, StringComparison.OrdinalIgnoreCase));
 
-            if (matchingParameter != null)
+            if (matchingParameterSymbol != null)
             {
-                HighlightSymbol(semanticModel, methodSymbol, highlightSpans, matchingParameter, cancellationToken);
+                HighlightSymbol(semanticModel, methodSymbol, highlightSpans, matchingParameterSymbol, cancellationToken);
             }
         }
 

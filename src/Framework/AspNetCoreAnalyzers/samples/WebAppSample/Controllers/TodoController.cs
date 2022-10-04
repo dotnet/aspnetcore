@@ -22,7 +22,7 @@ public class TodoController
     [HttpPut]
     public void Create([FromBody] Todo todo) => _dbContext.Todos.Add(todo);
 
-    [HttpGet("[action]/{page?}")]
+    [HttpGet("[action]/{page:int?}")]
     public IEnumerable<Todo> Search(int? page, [FromQuery] string text)
     {
         return _dbContext.Todos

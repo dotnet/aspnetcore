@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
@@ -65,7 +66,7 @@ internal partial struct RoutePatternParser
 
         var root = new RoutePatternCompilationUnit(rootParts, _currentToken);
 
-        var routeParameters = ImmutableDictionary.CreateBuilder<string, RouteParameter>(StringComparer.OrdinalIgnoreCase);
+        var routeParameters = ImmutableArray.CreateBuilder<RouteParameter>();
         var seenDiagnostics = new HashSet<EmbeddedDiagnostic>();
         var diagnostics = ImmutableArray.CreateBuilder<EmbeddedDiagnostic>();
 
@@ -209,7 +210,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private static void ValidateParameterParts(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics, IDictionary<string, RouteParameter> routeParameters)
+    private static void ValidateParameterParts(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics, IList<RouteParameter> routeParameters)
     {
         foreach (var part in root)
         {
@@ -258,7 +259,7 @@ internal partial struct RoutePatternParser
                             }
                         }
 
-                        var routeParameter = new RouteParameter(name, encodeSlashes, defaultValue, hasOptional, hasCatchAll, policies.ToImmutable());
+                        var routeParameter = new RouteParameter(name, encodeSlashes, defaultValue, hasOptional, hasCatchAll, policies.ToImmutable(), parameterNode.GetSpan());
                         if (routeParameter.DefaultValue != null && routeParameter.IsOptional)
                         {
                             diagnostics.Add(new EmbeddedDiagnostic(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, parameterNode.GetSpan()));
@@ -270,9 +271,9 @@ internal partial struct RoutePatternParser
 
                         if (routeParameter.Name != null)
                         {
-                            if (!routeParameters.ContainsKey(routeParameter.Name))
+                            if (!routeParameters.Any(p => string.Equals(p.Name, routeParameter.Name, StringComparison.OrdinalIgnoreCase)))
                             {
-                                routeParameters.Add(routeParameter.Name, routeParameter);
+                                routeParameters.Add(routeParameter);
                             }
                             else
                             {
