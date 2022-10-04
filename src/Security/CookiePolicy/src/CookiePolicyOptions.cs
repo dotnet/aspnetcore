@@ -32,6 +32,16 @@ public class CookiePolicyOptions
     /// Gets or sets the <see cref="CookieBuilder"/> that is used to track if the user consented to the
     /// cookie use policy.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
+    /// unique name that begins with <c>".AspNet.Consent"</c>.
+    /// </para>
+    /// <para>
+    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.
+    /// <see cref="CookieBuilder.Expiration"/> defaults to 365 days.
+    /// </para>
+    /// </remarks>
     public CookieBuilder ConsentCookie { get; set; } = new CookieBuilder()
     {
         Name = ".AspNet.Consent",
