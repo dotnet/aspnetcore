@@ -5,12 +5,17 @@
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
-    <TargetFrameworks>netcoreapp2.1;$(DefaultNetFxTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
