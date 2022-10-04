@@ -141,7 +141,6 @@ public class AuthorizationMiddleware
         var policyEvaluator = context.RequestServices.GetRequiredService<IPolicyEvaluator>();
 
         var authenticateResult = await policyEvaluator.AuthenticateAsync(policy, context);
-        
         if (authenticateResult?.Succeeded ?? false)
         {
             if (context.Features.Get<IAuthenticateResultFeature>() is IAuthenticateResultFeature authenticateResultFeature)
