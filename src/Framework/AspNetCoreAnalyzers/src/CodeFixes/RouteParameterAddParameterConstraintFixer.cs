@@ -83,7 +83,7 @@ public class RouteParameterAddParameterConstraintFixer : CodeFixProvider
         diagnostic.Properties.TryGetValue("RouteParameterPolicy", out var routeParameterPolicy);
 
         RoutePatternParameterPartNode? nameNode = null;
-        var routeParameter = tree.RouteParameters[routeParameterName];
+        var routeParameter = tree.GetRouteParameter(routeParameterName);
         foreach (var item in routeParameter.ParameterNode.ParameterParts)
         {
             if (item.Kind == RoutePatternKind.ParameterName)

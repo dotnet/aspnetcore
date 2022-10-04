@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -314,7 +315,7 @@ class Program
 {
     static void Main()
     {
-        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber}/{PageIndex}"", ([AsParameters] PageData pageData) => """");
+        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber:int}/{PageIndex:int}"", ([AsParameters] PageData pageData) => """");
     }
 
     int OtherMethod(PageData pageData)
@@ -351,7 +352,7 @@ class Program
 {
     static void Main()
     {
-        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber}/{PageIndex}/{id}"", ([AsParameters] PageData pageData) => """");
+        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber:int}/{PageIndex:int}/{id}"", ([AsParameters] PageData pageData) => """");
     }
 
     int OtherMethod(PageData pageData)
@@ -377,6 +378,58 @@ public class PageData
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
                 Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+            });
+    }
+
+    [Fact]
+    public async Task MapGet_AsParameter_NoConstraints_ReportedConstraintDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""/*MM1*/{PageNumber}//*MM2*/{PageIndex}"", (/*MM3*/[AsParameters] PageData pageData) => """");
+    }
+
+    int OtherMethod(PageData pageData)
+    {
+        return pageData.PageIndex;
+    }
+}
+
+public class PageData
+{
+    public int PageNumber { get; set; }
+    public int PageIndex { get; set; }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Collection(
+            diagnostics,
+            d =>
+            {
+                Assert.Same(DiagnosticDescriptors.RoutePatternAddParameterConstraint, d.Descriptor);
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM3"], d.Location);
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], d.AdditionalLocations[0]);
+                Assert.Equal("Add route parameter constraint 'PageNumber'", d.GetMessage(CultureInfo.InvariantCulture));
+            },
+            d =>
+            {
+                Assert.Same(DiagnosticDescriptors.RoutePatternAddParameterConstraint, d.Descriptor);
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM3"], d.Location);
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], d.AdditionalLocations[0]);
+                Assert.Equal("Add route parameter constraint 'PageIndex'", d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 

@@ -739,7 +739,7 @@ class Program
 {
     static void Main()
     {
-        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber}/{PageIndex}/{|#0:{id}|}"", ([AsParameters] PageData pageData, CancellationToken cancellationToken) => """");
+        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber:int}/{PageIndex:int}/{|#0:{id}|}"", ([AsParameters] PageData pageData, CancellationToken cancellationToken) => """");
     }
 
     int OtherMethod(PageData pageData)
@@ -766,7 +766,7 @@ class Program
 {
     static void Main()
     {
-        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber}/{PageIndex}/{id}"", ([AsParameters] PageData pageData, string id, CancellationToken cancellationToken) => """");
+        EndpointRouteBuilderExtensions.MapGet(null, @""{PageNumber:int}/{PageIndex:int}/{id}"", ([AsParameters] PageData pageData, string id, CancellationToken cancellationToken) => """");
     }
 
     int OtherMethod(PageData pageData)

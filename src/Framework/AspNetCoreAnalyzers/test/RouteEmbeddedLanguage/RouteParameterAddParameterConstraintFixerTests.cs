@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Testing;
-using VerifyCS = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.CSharpRouteParameterUnusedParameterCodeFixVerifier<
+using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePatternAnalyzer,
     Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Fixers.RouteParameterAddParameterConstraintFixer>;
 
@@ -140,7 +140,7 @@ public class TestController
     }
 
     [Fact]
-    public async Task MapGet_UnusedParameter_IntAndMinPolicy_AddStringToLambda()
+    public async Task MapGet_ParameterWithoutConstraint_AddConstraint()
     {
         // Arrange
         var source = @"
@@ -152,7 +152,7 @@ class Program
 {
     static void Main()
     {
-        EndpointRouteBuilderExtensions.MapGet(null, @""{|#0:{id:int:min(10)}|}"", () => ""test"");
+        EndpointRouteBuilderExtensions.MapGet(null, @""{|#1:{id:min(10)}|}"", ({|#0:int id|}) => ""test"");
     }
 }
 ";
@@ -171,12 +171,12 @@ class Program
 }
 ";
 
-        var expectedDiagnostics = new[]
-        {
-            new DiagnosticResult(DiagnosticDescriptors.RoutePatternUnusedParameter).WithArguments("id").WithLocation(0)
-        };
+        var expectedDiagnostics = new DiagnosticResult(DiagnosticDescriptors.RoutePatternAddParameterConstraint)
+            .WithArguments("id")
+            .WithLocation(0)
+            .WithLocation(1);
 
         // Act & Assert
-        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 }

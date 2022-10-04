@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Elfie.Model.Structures;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -100,17 +99,24 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                     
                     foreach (var parameter in resolvedParameterSymbols)
                     {
-                        var parameterName = parameter.Name;
+                        var parameterName = parameter.Symbol.Name;
 
                         if (routeParameterNames.Remove(parameterName))
                         {
-                            var routeParameter = tree.RouteParameters[parameterName];
+                            var routeParameter = tree.GetRouteParameter(parameterName);
                             if (HasTypePolicy(routeParameter.Policies))
                             {
                                 continue;
                             }
 
-                            var policy = CalculatePolicyFromType(parameter.Type, wellKnownTypes);
+                            var type = parameter.Symbol switch
+                            {
+                                IParameterSymbol parameterSymbol => parameterSymbol.Type,
+                                IPropertySymbol propertySymbol => propertySymbol.Type,
+                                _ => throw new InvalidOperationException($"Unexpected parameter symbol type: {parameter.Symbol.GetType().FullName}")
+                            };
+                            // parameter.Symbol.Type
+                            var policy = CalculatePolicyFromType(type, wellKnownTypes);
                             if (policy == null)
                             {
                                 continue;
@@ -123,10 +129,13 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                                 _ => throw new InvalidOperationException($"Unexpected method syntax: {usageContext.MethodSyntax.GetType().FullName}")
                             };
 
+                            // In the case of properties from [AsParameters] types, we still want to resolve to the top level parameter.
+                            var topLevelParameterName = (parameter.TopLevelSymbol ?? parameter.Symbol).Name;
+                            
                             ParameterSyntax? parameterSyntax = null;
                             foreach (var item in parameterList.Parameters)
                             {
-                                if (string.Equals(item.Identifier.Text, parameterName, StringComparison.OrdinalIgnoreCase))
+                                if (string.Equals(item.Identifier.Text, topLevelParameterName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     parameterSyntax = item;
                                     break;
