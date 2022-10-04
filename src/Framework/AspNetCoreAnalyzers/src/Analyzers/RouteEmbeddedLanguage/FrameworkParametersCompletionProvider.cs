@@ -449,9 +449,9 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
 
     private static void ProvideCompletions(EmbeddedCompletionContext context, SyntaxToken? parentOpt)
     {
-        foreach (var parameterSymbol in context.Tree.RouteParameters)
+        foreach (var routeParameter in context.Tree.RouteParameters)
         {
-            context.AddIfMissing(parameterSymbol.Key, suffix: null, description: "(Route parameter)", WellKnownTags.Parameter, parentOpt);
+            context.AddIfMissing(routeParameter.Name, suffix: null, description: "(Route parameter)", WellKnownTags.Parameter, parentOpt);
         }
     }
 
