@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            VerifyBuffer(buffer, offset, count);
+            ValidateBufferArguments(buffer, offset, count);
             CheckAborted();
 
             if (_readerComplete)
@@ -99,22 +99,6 @@ namespace Microsoft.AspNetCore.TestHost
             readableBuffer.CopyTo(new Span<byte>(buffer, offset, count));
             _pipe.Reader.AdvanceTo(readableBuffer.End);
             return (int)actual;
-        }
-
-        private static void VerifyBuffer(byte[] buffer, int offset, int count)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-            if (offset < 0 || offset > buffer.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-            }
-            if (count <= 0 || count > buffer.Length - offset)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
-            }
         }
 
         internal void Cancel()
