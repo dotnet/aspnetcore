@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var sslStream = new SslStream(stream, true, (sender, certificate, chain, errors) => true))
                 {
                     // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAsync<IOException>(() =>
+                    await Assert.ThrowsAnyAsync<Exception>(() =>
                         sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
                             enabledSslProtocols: SslProtocols.Tls,
                             checkCertificateRevocation: false));
