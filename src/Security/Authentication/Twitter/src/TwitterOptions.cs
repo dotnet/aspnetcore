@@ -84,7 +84,7 @@ public class TwitterOptions : RemoteAuthenticationOptions
     /// <remarks>
     /// <para>
     /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
-    /// unique name that begins with <c>"__TwitterState"</c>.
+    /// unique name that begins with <c>__TwitterState</c>.
     /// </para>
     /// <list type="bullet">
     /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.</description></item>

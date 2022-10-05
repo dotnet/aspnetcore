@@ -35,7 +35,7 @@ public class CookiePolicyOptions
     /// <remarks>
     /// <para>
     /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
-    /// unique name that begins with <c>".AspNet.Consent"</c>.
+    /// unique name that begins with <c>.AspNet.Consent</c>.
     /// </para>
     /// <list type="bullet">
     /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.</description></item>
