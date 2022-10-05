@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var client = new TcpClient())
                 {
                     var stream = await OpenSslStream(client, server);
-                    var ex = await Assert.ThrowsAsync<IOException>(
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(
                         async () => await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
                 }
             }
