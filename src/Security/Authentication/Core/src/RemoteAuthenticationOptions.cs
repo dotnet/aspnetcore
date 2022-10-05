@@ -140,7 +140,7 @@ public class RemoteAuthenticationOptions : AuthenticationSchemeOptions
     /// <remarks>
     /// <para>
     /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
-    /// unique name that begins with <c>".AspNetCore.Correlation."</c>.
+    /// unique name that begins with <c>.AspNetCore.Correlation.</c>.
     /// </para>
     /// <para>
     /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.None"/>.
