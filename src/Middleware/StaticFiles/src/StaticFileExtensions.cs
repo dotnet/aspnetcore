@@ -18,8 +18,10 @@ public static class StaticFileExtensions
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
-    /// <remarks>This defaults to serving files from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
-    /// which defaults to the 'wwwroot' subfolder.</remarks>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app)
     {
         if (app == null)
@@ -36,8 +38,10 @@ public static class StaticFileExtensions
     /// <param name="app"></param>
     /// <param name="requestPath">The relative request path.</param>
     /// <returns></returns>
-    /// <remarks>This defaults to serving files from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
-    /// which defaults to the 'wwwroot' subfolder.</remarks>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app, string requestPath)
     {
         if (app == null)

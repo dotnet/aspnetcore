@@ -17,12 +17,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.StaticFiles;
 
-public class StaticFileMiddlewareTests
+public class StaticFileMiddlewareTests : LoggedTest
 {
     [Fact]
     public async Task ReturnsNotFoundWithoutWwwroot()
     {
         using var host = new HostBuilder()
+            .ConfigureServices(AddTestLogging)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -38,6 +39,9 @@ public class StaticFileMiddlewareTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Null(response.Headers.ETag);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("The WebRootPath was not found")
+            && w.Message.Contains("Static files may be unavailable."));
     }
 
     [ConditionalFact]
@@ -52,6 +56,7 @@ public class StaticFileMiddlewareTests
         try
         {
             using var host = new HostBuilder()
+            .ConfigureServices(AddTestLogging)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -83,6 +88,7 @@ public class StaticFileMiddlewareTests
             .ThrowsAsync(new FileNotFoundException());
         mockSendFile.Setup(m => m.Stream).Returns(Stream.Null);
         using var host = new HostBuilder()
+            .ConfigureServices(AddTestLogging)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder

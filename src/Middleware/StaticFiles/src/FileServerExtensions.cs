@@ -35,8 +35,10 @@ public static class FileServerExtensions
     /// <param name="app"></param>
     /// <param name="enableDirectoryBrowsing">Should directory browsing be enabled?</param>
     /// <returns></returns>
-    /// <remarks>This defaults to serving files from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
-    /// which defaults to the 'wwwroot' subfolder.</remarks>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, bool enableDirectoryBrowsing)
     {
         if (app == null)
@@ -56,8 +58,10 @@ public static class FileServerExtensions
     /// <param name="app"></param>
     /// <param name="requestPath">The relative request path.</param>
     /// <returns></returns>
-    /// <remarks>This defaults to serving files from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
-    /// which defaults to the 'wwwroot' subfolder.</remarks>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, string requestPath)
     {
         if (app == null)

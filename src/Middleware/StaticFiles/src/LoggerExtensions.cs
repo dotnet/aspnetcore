@@ -60,6 +60,6 @@ internal static partial class LoggerExtensions
     public static partial void WriteCancelled(this ILogger logger, Exception ex);
 
     [LoggerMessage(16, LogLevel.Warning,
-        "The WebRootPath was not found: {webRootPath}. Static files may be unavailable.", EventName = "WebRootPathNotFound")]
+        "The WebRootPath was not found: {WebRootPath}. Static files may be unavailable.", EventName = "WebRootPathNotFound")]
     public static partial void WebRootPathNotFound(this ILogger logger, string webRootPath);
 }
