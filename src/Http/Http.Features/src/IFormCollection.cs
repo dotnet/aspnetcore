@@ -77,10 +77,24 @@ public interface IFormCollection : IEnumerable<KeyValuePair<string, StringValues
     /// <exception cref="System.ArgumentNullException">
     ///     key is null.
     /// </exception>
+    /// <exception cref="System.InvalidOperationException">
+    ///     incorrect content-type.
+    /// </exception>
     /// <remarks>
+    ///     <para>
     ///     <see cref="IFormCollection" /> has a different indexer contract than
     ///     <see cref="IDictionary{TKey, TValue}" />, as it will return <c>StringValues.Empty</c> for missing entries
     ///     rather than throwing an Exception.
+    ///     </para>
+    ///     <para>
+    ///     This indexer can only be used on POST requests. Otherwise an exception of type
+    ///     <see cref="System.InvalidOperationException" /> is thrown.
+    ///     </para>
+    ///     <para>
+    ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
+    ///     To prevent this the method <see cref="Microsoft.AspNetCore.Http.Features.FormFeature.ReadFormAsync"> can be used.
+    ///     For more information please read https://devblogs.microsoft.com/pfxteam/should-i-expose-synchronous-wrappers-for-asynchronous-methods/.
+    ///     </para>
     /// </remarks>
     StringValues this[string key] { get; }
 

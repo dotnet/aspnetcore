@@ -101,10 +101,10 @@ public class FormFeature : IFormFeature
 
         if (!HasFormContentType)
         {
-            throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
+            throw new InvalidOperationException("Form Collection properties can only be accessed from a POST request");
         }
 
-        // TODO: Issue #456 Avoid Sync-over-Async http://blogs.msdn.com/b/pfxteam/archive/2012/04/13/10293638.aspx
+        // TODO: Issue #456 Avoid Sync-over-Async https://devblogs.microsoft.com/pfxteam/should-i-expose-synchronous-wrappers-for-asynchronous-methods/
         // TODO: How do we prevent thread exhaustion?
         return ReadFormAsync().GetAwaiter().GetResult();
     }
