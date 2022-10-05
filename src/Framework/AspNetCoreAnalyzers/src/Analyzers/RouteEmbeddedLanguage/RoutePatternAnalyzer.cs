@@ -246,41 +246,46 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
             _ => throw new InvalidOperationException($"Unexpected parameter symbol type: {symbol.GetType().FullName}")
         };
 
-        switch (parameterType.SpecialType)
-        {
-            case SpecialType.System_Boolean:
-                return "bool";
-            case SpecialType.System_Int16:
-            case SpecialType.System_UInt16:
-            case SpecialType.System_Int32:
-            case SpecialType.System_UInt32:
-                return "int";
-            case SpecialType.System_Int64:
-            case SpecialType.System_UInt64:
-                return "long";
-            case SpecialType.System_Decimal:
-                return "decimal";
-            case SpecialType.System_Single:
-                return "float";
-            case SpecialType.System_Double:
-                return "double";
-            case SpecialType.System_Nullable_T:
-                break;
-            case SpecialType.System_DateTime:
-                return "datetime";
-            default:
-                if (IsNullable(parameterType, out var underlyingType))
-                {
-                    return CalculatePolicyFromSymbol(underlyingType, wellKnownTypes);
-                }
-                if (SymbolEqualityComparer.Default.Equals(symbol, wellKnownTypes.Guid))
-                {
-                    return "guid";
-                }
-                break;
-        }
+        return CalculatePolicyFromType(parameterType, wellKnownTypes);
 
-        return null;
+        static string? CalculatePolicyFromType(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+        {
+            switch (type.SpecialType)
+            {
+                case SpecialType.System_Boolean:
+                    return "bool";
+                case SpecialType.System_Int16:
+                case SpecialType.System_UInt16:
+                case SpecialType.System_Int32:
+                case SpecialType.System_UInt32:
+                    return "int";
+                case SpecialType.System_Int64:
+                case SpecialType.System_UInt64:
+                    return "long";
+                case SpecialType.System_Decimal:
+                    return "decimal";
+                case SpecialType.System_Single:
+                    return "float";
+                case SpecialType.System_Double:
+                    return "double";
+                case SpecialType.System_Nullable_T:
+                    break;
+                case SpecialType.System_DateTime:
+                    return "datetime";
+                default:
+                    if (IsNullable(type, out var underlyingType))
+                    {
+                        return CalculatePolicyFromType(underlyingType, wellKnownTypes);
+                    }
+                    if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Guid))
+                    {
+                        return "guid";
+                    }
+                    break;
+            }
+
+            return null;
+        }
     }
 
     public static bool IsNullable(ITypeSymbol symbol, [NotNullWhen(true)] out ITypeSymbol? underlyingType)
