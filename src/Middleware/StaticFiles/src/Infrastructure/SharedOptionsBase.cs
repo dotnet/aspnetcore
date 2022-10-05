@@ -44,8 +44,10 @@ public abstract class SharedOptionsBase
     /// <summary>
     /// The file system used to locate resources
     /// </summary>
-    /// <remarks>This defaults to serving files from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
-    /// which defaults to the 'wwwroot' subfolder.</remarks>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public IFileProvider? FileProvider
     {
         get { return SharedOptions.FileProvider; }

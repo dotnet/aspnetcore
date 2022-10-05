@@ -17,8 +17,10 @@ public static class FileServerExtensions
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
-    /// <remarks>This defaults to serving files from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
-    /// which defaults to the 'wwwroot' subfolder.</remarks>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app)
     {
         if (app == null)
