@@ -41,8 +41,8 @@ public class CookieBuilder
     public virtual string? Domain { get; set; }
 
     /// <summary>
-    /// Indicates whether a cookie is inaccessible by client-side script. The default value is <c>False</c>
-    /// but components utilizing may use a different value.
+    /// Indicates whether a cookie is inaccessible by client-side script. The default value is <c>false</c>
+    /// but specific components may use a different value.
     /// </summary>
     /// <remarks>
     /// Determines the value that will be set on <see cref="CookieOptions.HttpOnly"/>.
@@ -51,7 +51,7 @@ public class CookieBuilder
 
     /// <summary>
     /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
-    /// but components utilizing may use a different value.
+    /// but specific components may use a different value.
     /// </summary>
     /// <remarks>
     /// Determines the value that will be set for <see cref="CookieOptions.SameSite"/>.
@@ -76,8 +76,8 @@ public class CookieBuilder
 
     /// <summary>
     /// Indicates if this cookie is essential for the application to function correctly. If true then
-    /// consent policy checks may be bypassed. The default value is false
-    /// but components utilizing may use a different value.
+    /// consent policy checks may be bypassed. The default value is <c>False</c>
+    /// but specific components may use a different value.
     /// </summary>
     public virtual bool IsEssential { get; set; }
 

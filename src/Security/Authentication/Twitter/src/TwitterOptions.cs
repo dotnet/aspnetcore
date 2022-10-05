@@ -86,12 +86,12 @@ public class TwitterOptions : RemoteAuthenticationOptions
     /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
     /// unique name that begins with <c>"__TwitterState"</c>.
     /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
-    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
-    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.
-    /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
-    /// </para>
+    /// <list type="bullet">
+    /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.</description></item>
+    /// </list>
     /// </remarks>
     public CookieBuilder StateCookie
     {
