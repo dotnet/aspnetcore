@@ -9,11 +9,11 @@
   <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar la operación?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versión anterior</String>
   <String Id="HelpHeader">Ayuda del programa de instalación</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - instala, repara, desinstala o
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directorio[\]] - instala, repara, desinstala o
    crea una copia local completa del paquete en el directorio. Install es la opción predeterminada.
 
-/passive | /quiet -  muestra una IU mínima sin peticiones, o bien no muestra la IU
-   ni las peticiones. De forma predeterminada, se muestran la IU y todas las peticiones.
+/passive | /quiet -  muestra una IU mínima sin peticiones, o bien no muestra la IU 
+  ni las peticiones. De forma predeterminada, se muestran la IU y todas las peticiones.
 
 /norestart   - suprime los intentos de reiniciar. De forma predeterminada, la IU preguntará antes de reiniciar.
 /log log.txt - se registra en un archivo específico. De forma predeterminada, se crea un archivo de registro en %TEMP%.</String>

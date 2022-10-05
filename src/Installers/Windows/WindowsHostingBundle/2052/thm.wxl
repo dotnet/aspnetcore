@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">是否确实要取消?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
   <String Id="HelpHeader">安装程序帮助</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - 安装、修复、卸载
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]目录[\]] - 安装、修复、卸载
    目录中的捆绑包或创建其完整本地副本。Install 为默认选择。
 
 /passive | /quiet -  显示最少的 UI 且无提示，或不显示 UI 且
