@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
@@ -106,56 +105,33 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                             var routeParameter = tree.GetRouteParameter(parameterName);
                             if (HasTypePolicy(routeParameter.Policies))
                             {
+                                // Don't report route parameters that already have a type policy.
                                 continue;
                             }
 
-                            var type = parameter.Symbol switch
-                            {
-                                IParameterSymbol parameterSymbol => parameterSymbol.Type,
-                                IPropertySymbol propertySymbol => propertySymbol.Type,
-                                _ => throw new InvalidOperationException($"Unexpected parameter symbol type: {parameter.Symbol.GetType().FullName}")
-                            };
-                            // parameter.Symbol.Type
-                            var policy = CalculatePolicyFromType(type, wellKnownTypes);
+                            var policy = CalculatePolicyFromSymbol(parameter.Symbol, wellKnownTypes);
                             if (policy == null)
                             {
+                                // Don't report when we can't calculate a policy.
+                                // For example, the parameter has a type that doesn't map to a built-in policy.
                                 continue;
                             }
 
-                            var parameterList = usageContext.MethodSyntax switch
-                            {
-                                BaseMethodDeclarationSyntax methodSyntax => methodSyntax.ParameterList,
-                                ParenthesizedLambdaExpressionSyntax lambdaExpressionSyntax => lambdaExpressionSyntax.ParameterList,
-                                _ => throw new InvalidOperationException($"Unexpected method syntax: {usageContext.MethodSyntax.GetType().FullName}")
-                            };
+                            var parameterSyntax = FindMethodParameter(usageContext, parameter, parameterName);
 
-                            // In the case of properties from [AsParameters] types, we still want to resolve to the top level parameter.
-                            var topLevelParameterName = (parameter.TopLevelSymbol ?? parameter.Symbol).Name;
-                            
-                            ParameterSyntax? parameterSyntax = null;
-                            foreach (var item in parameterList.Parameters)
-                            {
-                                if (string.Equals(item.Identifier.Text, topLevelParameterName, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    parameterSyntax = item;
-                                    break;
-                                }
-                            }
+                            var propertiesBuilder = ImmutableDictionary.CreateBuilder<string, string>();
+                            propertiesBuilder.Add("RouteParameterName", parameterName);
+                            propertiesBuilder.Add("RouteParameterPolicy", policy);
 
-                            Debug.Assert(parameterSyntax != null, $"Couldn't find {parameterName} in method syntax.");
-
-                            var properties = new Dictionary<string, string>
-                            {
-                                ["RouteParameterName"] = parameterName,
-                                ["RouteParameterPolicy"] = policy
-                            };
-
+                            // Add diagnostics with two locations:
+                            // 1. The method parameter.
+                            // 2. The route parameter.
                             context.ReportDiagnostic(Diagnostic.Create(
                                 DiagnosticDescriptors.RoutePatternAddParameterConstraint,
                                 Location.Create(context.SemanticModel.SyntaxTree, parameterSyntax.Span),
                                 DiagnosticDescriptors.RoutePatternAddParameterConstraint.DefaultSeverity,
                                 additionalLocations: new List<Location> { Location.Create(context.SemanticModel.SyntaxTree, routeParameter.ParameterNode.GetSpan()) },
-                                properties: properties.ToImmutableDictionary(),
+                                properties: propertiesBuilder.ToImmutableDictionary(),
                                 parameterName));
                         }
                     }
@@ -198,6 +174,29 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private static ParameterSyntax FindMethodParameter(RoutePatternUsageContext usageContext, ParameterSymbol parameter, string parameterName)
+    {
+        var parameterList = usageContext.MethodSyntax switch
+        {
+            BaseMethodDeclarationSyntax methodSyntax => methodSyntax.ParameterList,
+            ParenthesizedLambdaExpressionSyntax lambdaExpressionSyntax => lambdaExpressionSyntax.ParameterList,
+            _ => throw new InvalidOperationException($"Unexpected method syntax: {usageContext.MethodSyntax.GetType().FullName}")
+        };
+
+        // In the case of properties from [AsParameters] types, we still want to resolve to the top level parameter.
+        var topLevelParameterName = (parameter.TopLevelSymbol ?? parameter.Symbol).Name;
+
+        foreach (var item in parameterList.Parameters)
+        {
+            if (string.Equals(item.Identifier.Text, topLevelParameterName, StringComparison.OrdinalIgnoreCase))
+            {
+                return item;
+            }
+        }
+
+        throw new InvalidOperationException($"Couldn't find {parameterName} in method syntax.");
+    }
+
     private record struct InsertPoint(ISymbol ExistingParameter, bool Before);
 
     private static InsertPoint? CalculateInsertPoint(string routeParameterName, ImmutableArray<RouteParameter> routeParameters, ImmutableArray<ParameterSymbol> resolvedParameterSymbols)
@@ -238,9 +237,16 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         return insertPoint;
     }
 
-    private static string? CalculatePolicyFromType(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    private static string? CalculatePolicyFromSymbol(ISymbol symbol, WellKnownTypes wellKnownTypes)
     {
-        switch (type.SpecialType)
+        var parameterType = symbol switch
+        {
+            IParameterSymbol parameterSymbol => parameterSymbol.Type,
+            IPropertySymbol propertySymbol => propertySymbol.Type,
+            _ => throw new InvalidOperationException($"Unexpected parameter symbol type: {symbol.GetType().FullName}")
+        };
+
+        switch (parameterType.SpecialType)
         {
             case SpecialType.System_Boolean:
                 return "bool";
@@ -263,11 +269,11 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
             case SpecialType.System_DateTime:
                 return "datetime";
             default:
-                if (IsNullable(type, out var underlyingType))
+                if (IsNullable(parameterType, out var underlyingType))
                 {
-                    return CalculatePolicyFromType(underlyingType, wellKnownTypes);
+                    return CalculatePolicyFromSymbol(underlyingType, wellKnownTypes);
                 }
-                if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Guid))
+                if (SymbolEqualityComparer.Default.Equals(symbol, wellKnownTypes.Guid))
                 {
                     return "guid";
                 }
