@@ -259,8 +259,26 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
         // Transfer-Encoding takes priority over Content-Length.
         string transferEncoding = RequestHeaders.TransferEncoding.ToString();
-        if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (transferEncoding != null && string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
         {
+            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // A sender MUST NOT send a Content-Length header field in any message
+            // that contains a Transfer-Encoding header field.
+            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // If a message is received with both a Transfer-Encoding and a
+            // Content-Length header field, the Transfer-Encoding overrides the
+            // Content-Length.  Such a message might indicate an attempt to
+            // perform request smuggling (Section 9.5) or response splitting
+            // (Section 9.4) and ought to be handled as an error.  A sender MUST
+            // remove the received Content-Length field prior to forwarding such
+            // a message downstream.
+            // We should remove the Content-Length request header in this case, for compatibility
+            // reasons, include X-Content-Length so that the original Content-Length is still available.
+            if (RequestHeaders.ContentLength.HasValue)
+            {
+                RequestHeaders.Add("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                RequestHeaders.ContentLength = null;
+            }
             return true;
         }
 

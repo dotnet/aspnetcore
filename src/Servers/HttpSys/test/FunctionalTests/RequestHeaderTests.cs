@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -78,6 +75,84 @@ public class RequestHeaderTests
         }
     }
 
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendTransferEncodingHeaders()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("chunked", requestHeaders.TransferEncoding);
+            Assert.True(request.HasEntityBody);
+            return Task.FromResult(0);
+        }))
+        {
+            var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
+                { "Transfer-Encoding", "chunked" }
+            });
+            var response = await SendRequestAsync(address, headerDictionary);
+            var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+            Assert.Equal("200", responseStatusCode);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendTransferEncodingHeadersWithMultipleValues()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("gzip, chunked", requestHeaders.TransferEncoding);
+            Assert.True(request.HasEntityBody);
+            return Task.FromResult(0);
+        }))
+        {
+            var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
+                { "Transfer-Encoding", new string[] { "gzip", "chunked" } }
+            });
+            var response = await SendRequestAsync(address, headerDictionary);
+            var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+            Assert.Equal("200", responseStatusCode);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendTransferEncodingAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("gzip, chunked", requestHeaders.TransferEncoding);
+
+            Assert.Null(request.ContentLength);
+            Assert.True(request.HasEntityBody);
+
+            Assert.False(requestHeaders.ContainsKey("Content-Length"));
+            Assert.Null(requestHeaders.ContentLength);
+
+            Assert.Single(requestHeaders["X-Content-Length"]);
+            Assert.Equal("1", requestHeaders["X-Content-Length"]);
+            return Task.FromResult(0);
+        }))
+        {
+            var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
+                { "Transfer-Encoding", new string[] { "gzip", "chunked" } },
+                { "Content-Length", "1" },
+            });
+            var response = await SendRequestAsync(address, headerDictionary);
+            var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+            Assert.Equal("200", responseStatusCode);
+        }
+    }
+
     private async Task<string> SendRequestAsync(string uri)
     {
         using (HttpClient client = new HttpClient())
@@ -113,5 +188,36 @@ public class RequestHeaderTests
         byte[] response = new byte[1024 * 5];
         await Task.Run(() => socket.Receive(response));
         socket.Dispose();
+    }
+
+    private async Task<string> SendRequestAsync(string address, IHeaderDictionary headers)
+    {
+        var uri = new Uri(address);
+        StringBuilder builder = new StringBuilder();
+        builder.AppendLine("POST / HTTP/1.1");
+        builder.AppendLine("Connection: close");
+        builder.Append("HOST: ");
+        builder.AppendLine(uri.Authority);
+        foreach (var header in headers)
+        {
+            foreach (var value in header.Value)
+            {
+                builder.Append(header.Key);
+                builder.Append(": ");
+                builder.AppendLine(value);
+            }
+        }
+        builder.AppendLine();
+
+        byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+
+        using (Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+        {
+            socket.Connect(uri.Host, uri.Port);
+            socket.Send(request);
+            byte[] response = new byte[1024 * 5];
+            var read = await Task.Run(() => socket.Receive(response));
+            return Encoding.ASCII.GetString(response, 0, read);
+        }
     }
 }
