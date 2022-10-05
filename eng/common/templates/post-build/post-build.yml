@@ -29,7 +29,7 @@ stages:
       displayName: NuGet Validation
       pool:
         name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - task: DownloadBuildArtifacts@0
           displayName: Download Package Artifacts
@@ -41,15 +41,15 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
-            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
-              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/
+              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/
 
   - ${{ if eq(parameters.enableSigningValidation, 'true') }}:
     - job:
       displayName: Signing Validation
       pool:
         name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -70,7 +70,7 @@ stages:
             arguments: -task SigningValidation -restore -msbuildEngine dotnet
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
               /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
-              /p:Configuration=Release 
+              /p:Configuration=Release
               ${{ parameters.signingValidationAdditionalParameters }}
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
@@ -80,7 +80,7 @@ stages:
         - template: common-variables.yml
       pool:
         name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - task: DownloadBuildArtifacts@0
           displayName: Download Blob Artifacts
@@ -92,9 +92,9 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
-            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
-              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
-              -GHRepoName $(Build.Repository.Name) 
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/
+              -ExtractPath $(Agent.BuildDirectory)/Extract/
+              -GHRepoName $(Build.Repository.Name)
               -GHCommit $(Build.SourceVersion)
               -SourcelinkCliVersion $(SourceLinkCLIVersion)
           continueOnError: true
@@ -309,7 +309,7 @@ stages:
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json'
-    
+
 - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
   parameters:
     artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
