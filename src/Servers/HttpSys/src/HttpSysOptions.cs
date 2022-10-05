@@ -137,7 +137,7 @@ public class HttpSysOptions
     /// <summary>
     /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
     /// This settings does not apply when attaching to an existing queue.
-    /// The deault is 1000.
+    /// The default is 1000.
     /// </summary>
     public long RequestQueueLimit
     {
