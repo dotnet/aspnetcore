@@ -718,6 +718,47 @@ public class RequestResponseTests
         await Task.WhenAll(tasks);
     }
 
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingHeadersWithMultipleValues()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingHeadersWithMultipleValues HTTP/1.1",
+                "Transfer-Encoding: gzip, chunked",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingAndContentLengthShouldBeRemove HTTP/1.1",
+                "Transfer-Encoding: gzip, chunked",
+                "Content-Length: 5",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
+    }
+
     private async Task<(int Status, string Body)> SendSocketRequestAsync(string path)
     {
         using (var connection = _fixture.CreateTestConnection())
