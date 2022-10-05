@@ -216,8 +216,8 @@ public class RequestHeaderTests
             socket.Connect(uri.Host, uri.Port);
             socket.Send(request);
             byte[] response = new byte[1024 * 5];
-            await Task.Run(() => socket.Receive(response));
-            return Encoding.ASCII.GetString(response);
+            var read = await Task.Run(() => socket.Receive(response));
+            return Encoding.ASCII.GetString(response, 0, read);
         }
     }
 }
