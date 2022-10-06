@@ -31,7 +31,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ",
         new DiagnosticResult(DiagnosticDescriptors.UseHeaderDictionaryPropertiesInsteadOfIndexer)
             .WithLocation(0)
-            .WithMessage("The header 'content-type' can be accessed using the ContentType property"));
+            .WithMessage(Resources.FormatAnalyzer_HeaderDictionaryIndexer_Message("content-type", "ContentType")));
     }
 
     [Fact]
@@ -52,7 +52,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ",
         new DiagnosticResult(DiagnosticDescriptors.UseHeaderDictionaryPropertiesInsteadOfIndexer)
             .WithLocation(0)
-            .WithMessage("The header 'content-type' can be accessed using the ContentType property"));
+            .WithMessage(Resources.FormatAnalyzer_HeaderDictionaryIndexer_Message("content-type", "ContentType")));
     }
 
     [Fact]
@@ -150,7 +150,7 @@ IHeaderDictionary headers = new HeaderDictionary();
 ",
         new DiagnosticResult(DiagnosticDescriptors.UseHeaderDictionaryPropertiesInsteadOfIndexer)
             .WithLocation(0)
-            .WithMessage("The header 'Content-Type' can be accessed using the ContentType property"));
+            .WithMessage(Resources.FormatAnalyzer_HeaderDictionaryIndexer_Message("Content-Type", "ContentType")));
     }
 
     [Fact]
