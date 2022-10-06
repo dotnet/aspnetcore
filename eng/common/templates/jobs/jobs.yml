@@ -22,7 +22,7 @@ parameters:
     enabled: false
     # Optional: Include toolset dependencies in the generated graph files
     includeToolset: false
-    
+
   # Optional: Include PublishTestResults task
   enablePublishTestResults: false
 
@@ -49,7 +49,7 @@ parameters:
 jobs:
 - ${{ each job in parameters.jobs }}:
   - template: ../job/job.yml
-    parameters: 
+    parameters:
       # pass along parameters
       ${{ each parameter in parameters }}:
         ${{ if ne(parameter.key, 'jobs') }}:
@@ -79,7 +79,7 @@ jobs:
       runAsPublic: ${{ parameters.runAsPublic }}
       publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
       enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
-      
+
 - ${{ if and(eq(parameters.graphFileGeneration.enabled, true), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: ../job/generate-graph-files.yml
     parameters:

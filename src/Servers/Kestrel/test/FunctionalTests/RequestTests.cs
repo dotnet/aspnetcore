@@ -832,7 +832,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     connection.Reset();
                 }
 
-                await Assert.ThrowsAnyAsync<IOException>(() => readTcs.Task).DefaultTimeout();
+                // Has a tendency to timeout on macOS in CI. Doubling TaskConstants.DefaultTimeout.
+                await Assert.ThrowsAnyAsync<IOException>(() => readTcs.Task).TimeoutAfter(TimeSpan.FromMinutes(1));
                 await server.StopAsync();
             }
 

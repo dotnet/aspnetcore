@@ -17,8 +17,8 @@ jobs:
       displayName: Darc gather-drop
       inputs:
         filePath: $(Build.SourcesDirectory)/eng/common/post-build/darc-gather-drop.ps1
-        arguments: -BarBuildId $(BARBuildId) 
-          -DropLocation $(Agent.BuildDirectory)/Temp/Drop/ 
+        arguments: -BarBuildId $(BARBuildId)
+          -DropLocation $(Agent.BuildDirectory)/Temp/Drop/
           -MaestroApiAccessToken $(MaestroApiAccessToken)
           -MaestroApiEndPoint $(MaestroApiEndPoint)
           -MaestroApiVersion $(MaestroApiVersion)
