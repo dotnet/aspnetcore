@@ -11,7 +11,7 @@ jobs:
       value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals Build.Server.Amd64.VS2019
+    demands: ImageOverride -equals windows.vs2019.amd64
   steps:
     - task: PowerShell@2
       displayName: Darc gather-drop

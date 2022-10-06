@@ -75,7 +75,7 @@ jobs:
           - ${{ job.job }}
       pool:
         name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        demands: ImageOverride -equals windows.vs2019.amd64
       runAsPublic: ${{ parameters.runAsPublic }}
       publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
       enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
@@ -89,4 +89,4 @@ jobs:
         - Asset_Registry_Publish
       pool:
         name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        demands: ImageOverride -equals windows.vs2019.amd64
