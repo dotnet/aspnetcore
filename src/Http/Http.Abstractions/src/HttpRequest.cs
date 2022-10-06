@@ -47,9 +47,14 @@ public abstract class HttpRequest
     public abstract PathString PathBase { get; set; }
 
     /// <summary>
-    /// Gets or sets the request path from RequestPath.
+    /// Gets or sets the portion of the request path that identifies the requested resource.
+    /// <para>
+    /// The value may be <see cref="PathString.Empty"/> if <see cref="PathBase"/> contains the full path,
+    /// or for 'OPTIONS *' requests.
+    /// The path is fully decoded by the server except for '%2F', which would decode to '/' and
+    /// change the meaning of the path segments. '%2F' can only be replaced after splitting the path into segments.
+    /// </para>
     /// </summary>
-    /// <returns>The request path from RequestPath.</returns>
     public abstract PathString Path { get; set; }
 
     /// <summary>
