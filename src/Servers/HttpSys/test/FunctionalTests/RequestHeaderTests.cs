@@ -35,25 +35,46 @@ public class RequestHeaderTests
     [ConditionalFact]
     public async Task RequestHeaders_ClientSendsCustomHeaders_Success()
     {
-        string address;
-        using (Utilities.CreateHttpServer(out address, httpContext =>
-            {
-                var requestHeaders = httpContext.Request.Headers;
-                Assert.Equal(4, requestHeaders.Count);
-                Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
-                Assert.Equal("close", requestHeaders["Connection"]);
-                // Apparently Http.Sys squashes request headers together.
-                Assert.Single(requestHeaders["Custom-Header"]);
-                Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"]);
-                Assert.Single(requestHeaders["Spacer-Header"]);
-                Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
-                return Task.FromResult(0);
-            }))
+        using var server = Utilities.CreateHttpServer(out var address, httpContext =>
         {
-            string[] customValues = new string[] { "custom1, and custom2", "custom3" };
+            var requestHeaders = httpContext.Request.Headers;
+            Assert.Equal(4, requestHeaders.Count);
+            Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
+            Assert.Equal("close", requestHeaders["Connection"]);
+            // Apparently Http.Sys squashes request headers together.
+            Assert.Single(requestHeaders["Custom-Header"]);
+            Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"]);
+            Assert.Single(requestHeaders["Spacer-Header"]);
+            Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
+            return Task.FromResult(0);
+        });
 
-            await SendRequestAsync(address, "Custom-Header", customValues);
+        var customValues = new string[] { "custom1, and custom2", "custom3" };
+
+        var uri = new Uri(address);
+        var builder = new StringBuilder();
+        builder.AppendLine("GET / HTTP/1.1");
+        builder.AppendLine("Connection: close");
+        builder.Append("HOST: ");
+        builder.AppendLine(uri.Authority);
+        foreach (string value in customValues)
+        {
+            builder.Append("Custom-Header: ");
+            builder.AppendLine(value);
+            builder.AppendLine("Spacer-Header: spacervalue");
         }
+        builder.AppendLine();
+
+        var request = Encoding.ASCII.GetBytes(builder.ToString());
+
+        using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        socket.Connect(uri.Host, uri.Port);
+        socket.Send(request);
+        var response = new byte[1024 * 5];
+        var read = await Task.Run(() => socket.Receive(response));
+        var result = Encoding.ASCII.GetString(response, 0, read);
+        var responseStatusCode = result.Substring(9, 3); // Skip "HTTP/1.1 "
+        Assert.Equal("200", responseStatusCode);
     }
 
     [ConditionalFact]
@@ -159,35 +180,6 @@ public class RequestHeaderTests
         {
             return await client.GetStringAsync(uri);
         }
-    }
-
-    private async Task SendRequestAsync(string address, string customHeader, string[] customValues)
-    {
-        var uri = new Uri(address);
-        StringBuilder builder = new StringBuilder();
-        builder.AppendLine("GET / HTTP/1.1");
-        builder.AppendLine("Connection: close");
-        builder.Append("HOST: ");
-        builder.AppendLine(uri.Authority);
-        foreach (string value in customValues)
-        {
-            builder.Append(customHeader);
-            builder.Append(": ");
-            builder.AppendLine(value);
-            builder.AppendLine("Spacer-Header: spacervalue");
-        }
-        builder.AppendLine();
-
-        byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
-
-        Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-        socket.Connect(uri.Host, uri.Port);
-
-        socket.Send(request);
-
-        byte[] response = new byte[1024 * 5];
-        await Task.Run(() => socket.Receive(response));
-        socket.Dispose();
     }
 
     private async Task<string> SendRequestAsync(string address, IHeaderDictionary headers)
