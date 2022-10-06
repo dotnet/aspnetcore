@@ -22,13 +22,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest
             {
                 // Some tests need to change the authentication state without discarding the
                 // original page, but this adds several seconds of delay
-                var javascript = (IJavaScriptExecutor)browser;
                 var originalWindow = browser.CurrentWindowHandle;
-                javascript.ExecuteScript("window.open()");
-                browser.SwitchTo().Window(browser.WindowHandles.Last());
+                browser.SwitchTo().NewWindow(WindowType.Tab);
                 browser.Navigate(baseUri, baseRelativeUri, noReload: false);
                 browser.Exists(By.CssSelector("h1#authentication"));
-                javascript.ExecuteScript("window.close()");
+                browser.Close();
                 browser.SwitchTo().Window(originalWindow);
             }
             else
