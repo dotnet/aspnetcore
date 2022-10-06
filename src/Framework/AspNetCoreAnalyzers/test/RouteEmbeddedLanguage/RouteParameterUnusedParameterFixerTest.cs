@@ -390,6 +390,51 @@ class Program
     }
 
     [Fact]
+    public async Task MapGet_UnusedParameter_AddToRequestDelegateLambda()
+    {
+        // Arrange
+        var source = @"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{|#0:{id}|}"", (HttpContext context) => Task.CompletedTask);
+    }
+}
+";
+
+        var fixedSource = @"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (string id, HttpContext context) => Task.CompletedTask);
+    }
+}
+";
+
+        var expectedDiagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.RoutePatternUnusedParameter).WithArguments("id").WithLocation(0)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
+    }
+
+    [Fact]
     public async Task MapGet_UnusedParameter_IntPolicy_AddIntToLambda()
     {
         // Arrange

@@ -40,7 +40,7 @@ class HttpGet : Attribute
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.RoutePatternIssue, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal($"Route issue: {Resources.TemplateRoute_InvalidRouteTemplate}", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -73,7 +73,7 @@ class HttpGet : Attribute
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.RoutePatternIssue, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal($"Route issue: {Resources.TemplateRoute_InvalidRouteTemplate}", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -101,7 +101,7 @@ class Program
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.RoutePatternIssue, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal($"Route issue: {Resources.TemplateRoute_InvalidRouteTemplate}", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -129,7 +129,7 @@ class Program
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.RoutePatternIssue, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal($"Route issue: {Resources.TemplateRoute_InvalidRouteTemplate}", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -158,7 +158,7 @@ class Program
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.RoutePatternIssue, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal($"Route issue: {Resources.TemplateRoute_InvalidRouteTemplate}", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -189,12 +189,12 @@ class Program
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
-                Assert.Equal($"Route issue: {Resources.FormatTemplateRoute_InvalidLiteral("~hi?")}", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.FormatTemplateRoute_InvalidLiteral("~hi?")), d.GetMessage(CultureInfo.InvariantCulture));
             },
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
-                Assert.Equal($"Route issue: {Resources.TemplateRoute_InvalidRouteTemplate}", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 
@@ -256,7 +256,7 @@ public class TestController
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
-                Assert.Equal($"Route issue: {Resources.AttributeRoute_TokenReplacement_UnclosedToken}", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.AttributeRoute_TokenReplacement_UnclosedToken), d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 
@@ -296,7 +296,7 @@ public class TestController
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
-                Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_UnusedParameter_Message("id"), d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 
@@ -376,7 +376,7 @@ public class PageData
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
-                Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_UnusedParameter_Message("id"), d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 
