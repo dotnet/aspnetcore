@@ -93,7 +93,7 @@ public interface IFormCollection : IEnumerable<KeyValuePair<string, StringValues
     ///     <para>
     ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
     ///     To prevent this the method <see cref="Microsoft.AspNetCore.Http.Features.FormFeature.ReadFormAsync"> can be used.
-    ///     For more information please read https://aka.ms/aspnet/forms-async
+    ///     For more information, see <see href="https://aka.ms/aspnet/forms-async"/>.
     ///     </para>
     /// </remarks>
     StringValues this[string key] { get; }
