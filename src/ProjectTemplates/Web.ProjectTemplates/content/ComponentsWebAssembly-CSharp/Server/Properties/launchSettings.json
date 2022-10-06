@@ -1,5 +1,4 @@
 {
-    "$schema": "",
     "iisSettings": {
       "windowsAuthentication": false,
       "anonymousAuthentication": true,
