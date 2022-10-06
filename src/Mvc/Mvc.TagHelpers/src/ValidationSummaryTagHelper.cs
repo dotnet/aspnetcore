@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 /// <summary>
-/// <see cref="ITagHelper"/> implementation targeting any HTML element with an <c>asp-validation-summary</c>
+/// <see cref="ITagHelper"/> implementation targeting &lt;div&gt; elements with an <c>asp-validation-summary</c>
 /// attribute.
 /// </summary>
 [HtmlTargetElement("div", Attributes = ValidationSummaryAttributeName)]
