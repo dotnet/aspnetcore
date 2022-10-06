@@ -162,8 +162,9 @@ internal static class RoutePatternUsageDetector
             return null;
         }
 
+        // Method has a delegate parameter. Could be Delegate or something that inherits from it, e.g. RequestDelegate.
         var delegateSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_Delegate);
-        var delegateParameter = method.Parameters.FirstOrDefault(p => SymbolEqualityComparer.Default.Equals(delegateSymbol, p.Type));
+        var delegateParameter = method.Parameters.FirstOrDefault(p => delegateSymbol.IsAssignableFrom(p.Type));
         if (delegateParameter == null)
         {
             return null;

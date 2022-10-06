@@ -296,7 +296,7 @@ public class TestController
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
-                Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_UnusedParameter_Message("id"), d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 
@@ -376,7 +376,7 @@ public class PageData
             d =>
             {
                 Assert.Same(DiagnosticDescriptors.RoutePatternUnusedParameter, d.Descriptor);
-                Assert.Equal("Unused route parameter 'id'", d.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal(Resources.FormatAnalyzer_UnusedParameter_Message("id"), d.GetMessage(CultureInfo.InvariantCulture));
             });
     }
 
