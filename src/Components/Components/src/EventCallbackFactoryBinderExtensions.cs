@@ -95,7 +95,7 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
     this EventCallbackFactory factory,
     object receiver,
-    EventCallback<bool> setter,
+    Func<bool, Task> setter,
     bool existingValue,
     CultureInfo? culture = null)
     {
