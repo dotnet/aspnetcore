@@ -108,7 +108,7 @@ public sealed class FileBufferingWriteStream : Stream
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
-        ThrowArgumentException(buffer, offset, count);
+        ValidateBufferArguments(buffer, offset, count);
         ThrowIfDisposed();
 
         if (_bufferLimit.HasValue && _bufferLimit - Length < count)
@@ -141,7 +141,6 @@ public sealed class FileBufferingWriteStream : Stream
     /// <inheritdoc />
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        ThrowArgumentException(buffer, offset, count);
         await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
     }
 
@@ -284,25 +283,5 @@ public sealed class FileBufferingWriteStream : Stream
     private void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(Disposed, nameof(FileBufferingWriteStream));
-    }
-
-    private static void ThrowArgumentException(byte[] buffer, int offset, int count)
-    {
-        ArgumentNullException.ThrowIfNull(buffer);
-
-        if (offset < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset));
-        }
-
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count));
-        }
-
-        if (buffer.Length - offset < count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset));
-        }
     }
 }

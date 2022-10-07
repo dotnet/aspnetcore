@@ -1,1 +1,3 @@
 #nullable enable
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HttpPortsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HttpsPortsKey -> string!

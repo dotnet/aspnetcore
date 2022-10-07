@@ -59,9 +59,6 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
     }
 
     public static RequestCookieCollection Parse(StringValues values)
-       => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
-
-    internal static RequestCookieCollection ParseInternal(StringValues values, bool enableCookieNameEncoding)
     {
         if (values.Count == 0)
         {
@@ -72,7 +69,7 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
         var collection = new RequestCookieCollection();
         var store = collection.Store!;
 
-        if (CookieHeaderParserShared.TryParseValues(values, store, enableCookieNameEncoding, supportsMultipleValues: true))
+        if (CookieHeaderParserShared.TryParseValues(values, store, supportsMultipleValues: true))
         {
             if (store.Count == 0)
             {

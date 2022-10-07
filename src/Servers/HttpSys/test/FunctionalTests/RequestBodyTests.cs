@@ -127,10 +127,10 @@ public class RequestBodyTests
             byte[] input = new byte[100];
             Assert.Throws<ArgumentNullException>("buffer", () => httpContext.Request.Body.Read(null, 0, 1));
             Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, -1, 1));
-            Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, input.Length + 1, 1));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 10, -1));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 1, input.Length));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, input.Length + 1));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, input.Length + 1, 1));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, 10, -1));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, 1, input.Length));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, 0, input.Length + 1));
             return Task.FromResult(0);
         }))
         {

@@ -57,7 +57,7 @@ internal sealed class ArrayBuilderMemoryStream : Stream
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
-        ValidateArguments(buffer, offset, count);
+        ValidateBufferArguments(buffer, offset, count);
 
         ArrayBuilder.Append(buffer, offset, count);
     }
@@ -76,7 +76,7 @@ internal sealed class ArrayBuilderMemoryStream : Stream
     /// <inheritdoc />
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        ValidateArguments(buffer, offset, count);
+        ValidateBufferArguments(buffer, offset, count);
 
         ArrayBuilder.Append(buffer, offset, count);
         return Task.CompletedTask;
@@ -102,30 +102,6 @@ internal sealed class ArrayBuilderMemoryStream : Stream
 
     /// <inheritdoc />
     public override ValueTask DisposeAsync() => default;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void ValidateArguments(byte[] buffer, int offset, int count)
-    {
-        if (buffer == null)
-        {
-            ThrowHelper.ThrowArgumentNullException(nameof(buffer));
-        }
-
-        if (offset < 0)
-        {
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(offset));
-        }
-
-        if (count < 0)
-        {
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count));
-        }
-
-        if (buffer.Length - offset < count)
-        {
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(offset));
-        }
-    }
 
     private static class ThrowHelper
     {

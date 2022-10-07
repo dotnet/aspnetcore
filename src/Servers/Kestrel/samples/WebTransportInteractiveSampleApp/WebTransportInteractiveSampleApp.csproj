@@ -5,6 +5,8 @@
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <!-- Turn on preview features so we can use Http3 -->
     <EnablePreviewFeatures>True</EnablePreviewFeatures>
+    <!-- Required because 8.0.0 SDK no longer considers net7.0 the current TFM. -->
+    <GenerateRequiresPreviewFeaturesAttribute>true</GenerateRequiresPreviewFeaturesAttribute>
   </PropertyGroup>
 
   <ItemGroup>

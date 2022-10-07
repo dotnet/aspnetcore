@@ -19,6 +19,9 @@ public abstract class ConnectionInfo
     /// <summary>
     /// Gets or sets the IP address of the remote target. Can be null.
     /// </summary>
+    /// <remarks>
+    /// The result is <c>null</c> if the connection isn't a TCP connection, e.g., a Unix Domain Socket or a transport that isn't TCP based.
+    /// </remarks>
     public abstract IPAddress? RemoteIpAddress { get; set; }
 
     /// <summary>

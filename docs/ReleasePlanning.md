@@ -1,4 +1,4 @@
-Throughout the year we add issues to the `Backlog` milestone as is pointed out in our [Triage Process](./docs/TriageProcess.md).
+Throughout the year we add issues to the `Backlog` milestone as is pointed out in our [Triage Process](./TriageProcess.md).
 We review all the issues in that milestone once a year, after the work on an upcoming major release is complete.
 Given the large number of issues, it takes multiple sessions for teams to review and identify candidates for consideration for the next major release.
 This document details the process we use for identifying candidate issues for the next release.

@@ -46,15 +46,17 @@ public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthoriza
     {
         if (context.User != null)
         {
-            bool found = false;
-            if (requirement.AllowedRoles == null || !requirement.AllowedRoles.Any())
+            var found = false;
+
+            foreach (var role in requirement.AllowedRoles)
             {
-                // Review: What do we want to do here?  No roles requested is auto success?
+                if (context.User.IsInRole(role))
+                {
+                    found = true;
+                    break;
+                }
             }
-            else
-            {
-                found = requirement.AllowedRoles.Any(r => context.User.IsInRole(r));
-            }
+
             if (found)
             {
                 context.Succeed(requirement);

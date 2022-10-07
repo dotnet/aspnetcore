@@ -116,17 +116,13 @@ public class SocketTransportOptions
         switch (endpoint)
         {
             case FileHandleEndPoint fileHandle:
-                // We're passing "ownsHandle: true" here even though we don't necessarily
-                // own the handle because Socket.Dispose will clean-up everything safely.
-                // If the handle was already closed or disposed then the socket will
-                // be torn down gracefully, and if the caller never cleans up their handle
-                // then we'll do it for them.
+                // We're passing "ownsHandle: false" to avoid side-effects on the
+                // handle when disposing the socket.
                 //
-                // If we don't do this then we run the risk of Kestrel hanging because the
-                // the underlying socket is never closed and the transport manager can hang
-                // when it attempts to stop.
+                // When the non-owning SafeSocketHandle gets disposed (on .NET 7+),
+                // on-going async operations are aborted.
                 listenSocket = new Socket(
-                    new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
+                    new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: false)
                 );
                 break;
             case UnixDomainSocketEndPoint unix:

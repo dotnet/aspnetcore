@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 /// <summary>
-/// <see cref="ITagHelper"/> implementation targeting any HTML element with an <c>asp-validation-for</c>
+/// <see cref="ITagHelper"/> implementation targeting &lt;span&gt; elements with an <c>asp-validation-for</c>
 /// attribute.
 /// </summary>
 [HtmlTargetElement("span", Attributes = ValidationForAttributeName)]

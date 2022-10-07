@@ -220,7 +220,7 @@ internal static class RoutePatternParser
         var templatePart = RouteParameterParser.ParseRouteParameter(decoded);
 
         // See #475 - this is here because InlineRouteParameterParser can't return errors
-        if (decoded.StartsWith("*", StringComparison.Ordinal) && decoded.EndsWith("?", StringComparison.Ordinal))
+        if (decoded.StartsWith('*') && decoded.EndsWith('?'))
         {
             context.Error = Resources.TemplateRoute_CatchAllCannotBeOptional;
             return false;
@@ -466,11 +466,11 @@ internal static class RoutePatternParser
         {
             return routePattern.Substring(2);
         }
-        else if (routePattern.StartsWith("/", StringComparison.Ordinal))
+        else if (routePattern.StartsWith('/'))
         {
             return routePattern.Substring(1);
         }
-        else if (routePattern.StartsWith("~", StringComparison.Ordinal))
+        else if (routePattern.StartsWith('~'))
         {
             throw new RoutePatternException(routePattern, Resources.TemplateRoute_InvalidRouteTemplate);
         }

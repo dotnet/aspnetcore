@@ -54,6 +54,16 @@ public static class WebHostDefaults
     public static readonly string ServerUrlsKey = "urls";
 
     /// <summary>
+    /// The configuration key associated with the "http_ports" configuration.
+    /// </summary>
+    public static readonly string HttpPortsKey = "http_ports";
+
+    /// <summary>
+    /// The configuration key associated with the "https_ports" configuration.
+    /// </summary>
+    public static readonly string HttpsPortsKey = "https_ports";
+
+    /// <summary>
     /// The configuration key associated with the "ContentRoot" configuration.
     /// </summary>
     public static readonly string ContentRootKey = "contentRoot";
