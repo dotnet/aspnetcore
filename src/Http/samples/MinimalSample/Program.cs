@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -92,9 +93,101 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
 
 app.MapPost("/todos", (TodoBindable todo) => todo);
 
+app.MapGet("/list", (HttpResponse response, EndpointDataSource endpointSource) =>
+{
+    response.Headers["Refresh"] = "1";
+    return GetDebuggerDisplayStringForEndpoints(endpointSource.Endpoints);
+});
+
 ((IEndpointRouteBuilder)app).DataSources.Add(new DynamicEndpointDataSource());
 
 app.Run();
+
+static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint> endpoints)
+{
+    if (endpoints is null)
+    {
+        return "No endpoints";
+    }
+
+    var sb = new StringBuilder();
+
+    foreach (var endpoint in endpoints)
+    {
+        if (endpoint is RouteEndpoint routeEndpoint)
+        {
+            var template = routeEndpoint.RoutePattern.RawText;
+            template = string.IsNullOrEmpty(template) ? "\"\"" : template;
+            sb.Append(template);
+            sb.Append(", Defaults: new { ");
+            FormatValues(sb, routeEndpoint.RoutePattern.Defaults);
+            sb.Append(" }");
+            var routeNameMetadata = routeEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            sb.Append(", Route Name: ");
+            sb.Append(routeNameMetadata?.RouteName);
+            var routeValues = routeEndpoint.RoutePattern.RequiredValues;
+
+            if (routeValues.Count > 0)
+            {
+                sb.Append(", Required Values: new { ");
+                FormatValues(sb, routeValues);
+                sb.Append(" }");
+            }
+
+            sb.Append(", Order: ");
+            sb.Append(routeEndpoint.Order);
+
+            var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+
+            if (httpMethodMetadata is not null)
+            {
+                sb.Append(", Http Methods: ");
+                sb.AppendJoin(", ", httpMethodMetadata.HttpMethods);
+            }
+
+            sb.Append(", Display Name: ");
+        }
+        else
+        {
+            sb.Append("Non-RouteEndpoint. DisplayName: ");
+        }
+
+        sb.AppendLine(endpoint.DisplayName);
+    }
+
+    return sb.ToString();
+
+    static void FormatValues(StringBuilder sb, IEnumerable<KeyValuePair<string, object>> values)
+    {
+        var isFirst = true;
+
+        foreach (var (key, value) in values)
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+            }
+            else
+            {
+                sb.Append(", ");
+            }
+
+            sb.Append(key);
+            sb.Append(" = ");
+
+            if (value is null)
+            {
+                sb.Append("null");
+            }
+            else
+            {
+                sb.Append('\"');
+                sb.Append(value);
+                sb.Append('\"');
+            }
+        }
+    }
+}
 
 internal record Todo(int Id, string Title);
 public class TodoBindable : IBindableFromHttpContext<TodoBindable>
@@ -111,17 +204,15 @@ public class TodoBindable : IBindableFromHttpContext<TodoBindable>
 
 public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
 {
-    private CancellationTokenSource _cts = new();
-    private Endpoint[] _endpoints = new[]
-    {
-        new RouteEndpoint(ListEndpoints, RoutePatternFactory.Parse("/dynamic"), 0, null, "Endpoint list."),
-    };
     private readonly PeriodicTimer _timer;
     private readonly Task _timerTask;
 
+    private Endpoint[] _endpoints = Array.Empty<Endpoint>();
+    private CancellationTokenSource _cts = new();
+
     public DynamicEndpointDataSource()
     {
-        _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
         _timerTask = TimerLoop();
     }
 
@@ -131,8 +222,6 @@ public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
     {
         while (await _timer.WaitForNextTickAsync())
         {
-            Console.WriteLine("Ticking");
-
             var newEndpoints = new Endpoint[_endpoints.Length + 1];
             Array.Copy(_endpoints, 0, newEndpoints, 0, _endpoints.Length);
 
@@ -154,12 +243,6 @@ public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
     public override IChangeToken GetChangeToken()
     {
         return new CancellationChangeToken(_cts.Token);
-    }
-
-    private static Task ListEndpoints(HttpContext context)
-    {
-        context.Response.Headers["Refresh"] = "1";
-        return context.Response.WriteAsync(GetDebuggerDisplayStringForEndpoints(context.RequestServices.GetRequiredService<EndpointDataSource>().Endpoints));
     }
 
     private static RouteEndpoint CreateDynamicRouteEndpoint(int id)
