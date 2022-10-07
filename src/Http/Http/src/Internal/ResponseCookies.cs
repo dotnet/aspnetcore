@@ -14,9 +14,6 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 internal sealed partial class ResponseCookies : IResponseCookies
 {
-    internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
-    internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
-
     private readonly IFeatureCollection _features;
     private ILogger? _logger;
 
@@ -34,9 +31,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(string key, string value)
     {
-        var setCookieHeaderValue = new SetCookieHeaderValue(
-            _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value))
+        var setCookieHeaderValue = new SetCookieHeaderValue(key, Uri.EscapeDataString(value))
         {
             Path = "/"
         };
@@ -68,10 +63,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookie = options.CreateCookieHeader(
-            _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value)).ToString();
-
+        var cookie = options.CreateCookieHeader(key, Uri.EscapeDataString(value)).ToString();
         Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookie);
     }
 
@@ -107,8 +99,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
 
         foreach (var keyValuePair in keyValuePairs)
         {
-            var key = _enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key;
-            cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
+            cookies[position] = string.Concat(keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
             position++;
         }
 
@@ -131,7 +122,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             throw new ArgumentNullException(nameof(options));
         }
 
-        var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
+        var encodedKeyPlusEquals = key + "=";
         var domainHasValue = !string.IsNullOrEmpty(options.Domain);
         var pathHasValue = !string.IsNullOrEmpty(options.Path);
 
