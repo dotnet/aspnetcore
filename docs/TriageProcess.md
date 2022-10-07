@@ -50,7 +50,7 @@ If not, we will move the investigation to the `.NET 8 Planning` to review during
 ### Documentation requests
 
 Some issues turn out to indicate user confusion around how to configure different aspects of the framework.
-When we determine such issues, we will mark these with the `Docs` label and move them into the `.NET 8Planning` milestone to handle at a later time. The goal here will be to fill in the gaps or clarify our documentation, so that customers can be successful by using the guidance provided in the documentation.
+When we determine such issues, we will mark these with the `Docs` label and move them into the `.NET 8 Planning` milestone to handle at a later time. The goal here will be to fill in the gaps or clarify our documentation, so that customers can be successful by using the guidance provided in the documentation.
 If we identify a documentation issue which too many customers are having trouble with, we may choose to address that in current milestone.
 
 ## Milestone Planning
