@@ -16,6 +16,10 @@
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="MinimalSample"/>
+  </ItemGroup>
+
   <PropertyGroup>
     <!--
       The ability to save compiled assemblies is for testing and debugging, not shipped in the product.

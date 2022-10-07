@@ -5,6 +5,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Primitives;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -90,6 +92,8 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
 
 app.MapPost("/todos", (TodoBindable todo) => todo);
 
+((IEndpointRouteBuilder)app).DataSources.Add(new DynamicEndpointDataSource());
+
 app.Run();
 
 internal record Todo(int Id, string Title);
@@ -102,5 +106,70 @@ public class TodoBindable : IBindableFromHttpContext<TodoBindable>
     public static ValueTask<TodoBindable?> BindAsync(HttpContext context, ParameterInfo parameter)
     {
         return ValueTask.FromResult<TodoBindable?>(new TodoBindable { Id = 1, Title = "I was bound from IBindableFromHttpContext<TodoBindable>.BindAsync!" });
+    }
+}
+
+public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
+{
+    private CancellationTokenSource _cts = new();
+    private Endpoint[] _endpoints = new[]
+    {
+        new RouteEndpoint(ListEndpoints, RoutePatternFactory.Parse("/dynamic"), 0, null, "Endpoint list."),
+    };
+    private readonly PeriodicTimer _timer;
+    private readonly Task _timerTask;
+
+    public DynamicEndpointDataSource()
+    {
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        _timerTask = TimerLoop();
+    }
+
+    public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
+
+    public async Task TimerLoop()
+    {
+        while (await _timer.WaitForNextTickAsync())
+        {
+            Console.WriteLine("Ticking");
+
+            var newEndpoints = new Endpoint[_endpoints.Length + 1];
+            Array.Copy(_endpoints, 0, newEndpoints, 0, _endpoints.Length);
+
+            newEndpoints[_endpoints.Length] = CreateDynamicRouteEndpoint(_endpoints.Length);
+
+            _endpoints = newEndpoints;
+            var oldCts = _cts;
+            _cts = new CancellationTokenSource();
+            oldCts.Cancel();
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
+        _timerTask.GetAwaiter().GetResult();
+    }
+
+    public override IChangeToken GetChangeToken()
+    {
+        return new CancellationChangeToken(_cts.Token);
+    }
+
+    private static Task ListEndpoints(HttpContext context)
+    {
+        context.Response.Headers["Refresh"] = "1";
+        return context.Response.WriteAsync(GetDebuggerDisplayStringForEndpoints(context.RequestServices.GetRequiredService<EndpointDataSource>().Endpoints));
+    }
+
+    private static RouteEndpoint CreateDynamicRouteEndpoint(int id)
+    {
+        var displayName = $"Dynamic endpoint #{id}";
+        var metadata = new EndpointMetadataCollection(new[] { new RouteNameMetadata(displayName) });
+
+        return new RouteEndpoint(
+            context => context.Response.WriteAsync(displayName),
+            RoutePatternFactory.Parse($"/dynamic/{id}"),
+            order: 0, metadata, displayName);
     }
 }
