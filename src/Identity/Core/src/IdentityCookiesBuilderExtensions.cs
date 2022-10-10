@@ -100,6 +100,10 @@ public static class IdentityCookieAuthenticationBuilderExtensions
         builder.AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
         {
             o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+            o.Events = new CookieAuthenticationEvents
+            {
+                OnRedirectToReturnUrl = _ => Task.CompletedTask
+            };
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
         });
         return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.TwoFactorUserIdScheme);

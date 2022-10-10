@@ -72,6 +72,10 @@ public static class IdentityServiceCollectionExtensions
         .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
         {
             o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+            o.Events = new CookieAuthenticationEvents
+            {
+                OnRedirectToReturnUrl = _ => Task.CompletedTask
+            };
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
         });
 
