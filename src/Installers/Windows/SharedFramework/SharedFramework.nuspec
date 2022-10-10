@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>VS.Redist.Common.AspNetCore.SharedFramework.$ARCH$.$MAJOR$.$MINOR$</id>
+        <version>1.0.0</version>
+        <title>VS.Redist.Common.AspNetCore.SharedFramework.$ARCH$.$MAJOR$.$MINOR$</title>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <license type="expression">$PackageLicenseExpression$</license>
+        <projectUrl>https://github.com/dotnet/aspnetcore</projectUrl>
+        <icon>$PackageIcon$</icon>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>$MAJOR$.$MINOR$ ASP.NET Core Shared Framework ($ARCH$) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
+        <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+        <serviceable>true</serviceable>
+    </metadata>
+    <files>
+        <file src="$ASPNETCORE_RUNTIME_MSI$" />
+        <file src="$ASPNETCORE_CAB_FILE$" />
+        <file src="$PackageIconFullPath$" target="$PackageIcon$" />
+    </files>
+</package>
