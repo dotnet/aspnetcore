@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Testing;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-public abstract class StartupAnalyzerTest
+public class StartupAnalyzerTest
 {
     public StartupAnalyzerTest()
     {
@@ -658,6 +658,8 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
             TestCode = source,
             ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies,
         };
+        // Tests are just the Configure/ConfigureServices methods, no Main, so we need to mark the output as not console
+        test.TestState.OutputKind = OutputKind.DynamicallyLinkedLibrary;
 
         test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
