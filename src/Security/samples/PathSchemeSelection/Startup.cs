@@ -9,6 +9,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -35,12 +36,21 @@ public class Startup
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddScheme<AuthenticationSchemeOptions, ApiAuthHandler>("Api", o => { })
+            .AddNegotiate()
             .AddCookie(options =>
             {
-                // Foward any requests that start with /api to that scheme
+                // Foward any requests that start with /api or /windows to that scheme
                 options.ForwardDefaultSelector = ctx =>
                 {
-                    return ctx.Request.Path.StartsWithSegments("/api") ? "Api" : null;
+                    if (ctx.Request.Path.StartsWithSegments("/api"))
+                    {
+                        return "Api";
+                    }
+                    if (ctx.Request.Path.StartsWithSegments("/windows"))
+                    {
+                        return NegotiateDefaults.AuthenticationScheme;
+                    }
+                    return null;
                 };
                 options.AccessDeniedPath = "/account/denied";
                 options.LoginPath = "/account/login";
@@ -89,6 +99,9 @@ public class Startup
             endpoints.MapControllerRoute(
                 name: "api",
                 pattern: "api/{controller=Home}/{action=Index}/{id?}");
+            endpoints.MapControllerRoute(
+                name: "windows",
+                pattern: "windows/{controller=Home}/{action=Index}/{id?}");
         });
     }
 }

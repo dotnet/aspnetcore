@@ -42,6 +42,17 @@ public class PathSchemeSelectionTests : IClassFixture<WebApplicationFactory<Path
     }
 
     [Fact]
+    public async Task WindowsDefaultReturns200()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("/windows");
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
     {
         // Arrange & Act
@@ -64,6 +75,19 @@ public class PathSchemeSelectionTests : IClassFixture<WebApplicationFactory<Path
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Scheme: Api", content); // expected scheme
         Assert.Contains("Hao", content); // expected name claim
+    }
+
+    [Fact]
+    public async Task WindowsMyClaimsReturnsClaim()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("/windows/Home/MyClaims");
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Scheme: NTLM", content); // expected scheme
+        Assert.Contains("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", content); // expected name claim
     }
 
     [Fact]

@@ -18,6 +18,7 @@
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\Security\\Authentication\\Google\\src\\Microsoft.AspNetCore.Authentication.Google.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
+      "src\\Security\\Authentication\\Negotiate\\src\\Microsoft.AspNetCore.Authentication.Negotiate.csproj",
       "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",
       "src\\Middleware\\Diagnostics\\src\\Microsoft.AspNetCore.Diagnostics.csproj",
       "src\\Middleware\\Diagnostics.EntityFrameworkCore\\src\\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj",
