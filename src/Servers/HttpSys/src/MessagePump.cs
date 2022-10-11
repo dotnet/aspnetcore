@@ -265,16 +265,16 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
                         continue;
                     }
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
                     Debug.Assert(_messagePump.Stopping);
                     if (_messagePump.Stopping)
                     {
-                        Log.AcceptErrorStopping(_messagePump._logger, exception);
+                        Log.AcceptErrorStopping(_messagePump._logger, ex);
                     }
                     else
                     {
-                        Log.AcceptError(_messagePump._logger, exception);
+                        Log.AcceptError(_messagePump._logger, ex);
                     }
                     continue;
                 }
