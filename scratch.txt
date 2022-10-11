@@ -1,0 +1,148 @@
+app.MapGet("/list", (HttpResponse response, EndpointDataSource endpointSource) =>
+{
+    response.Headers["Refresh"] = "1";
+    return EndpointDataSource.GetDebuggerDisplayStringForEndpoints(endpointSource.Endpoints);
+});
+
+((IEndpointRouteBuilder)app).DataSources.Add(new DynamicEndpointDataSource());
+
+public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
+{
+    private readonly PeriodicTimer _timer;
+    private readonly Task _timerTask;
+
+    private Endpoint[] _endpoints = Array.Empty<Endpoint>();
+    private CancellationTokenSource _cts = new();
+
+    public DynamicEndpointDataSource()
+    {
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        _timerTask = TimerLoop();
+    }
+
+    public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
+
+    public async Task TimerLoop()
+    {
+        while (await _timer.WaitForNextTickAsync())
+        {
+            var newEndpoints = new Endpoint[_endpoints.Length + 1];
+            Array.Copy(_endpoints, 0, newEndpoints, 0, _endpoints.Length);
+
+            newEndpoints[_endpoints.Length] = CreateDynamicRouteEndpoint(_endpoints.Length);
+
+            _endpoints = newEndpoints;
+            var oldCts = _cts;
+            _cts = new CancellationTokenSource();
+            oldCts.Cancel();
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
+        _timerTask.GetAwaiter().GetResult();
+    }
+
+    public override IChangeToken GetChangeToken()
+    {
+        return new CancellationChangeToken(_cts.Token);
+    }
+
+    private static RouteEndpoint CreateDynamicRouteEndpoint(int id)
+    {
+        var displayName = $"Dynamic endpoint #{id}";
+        var metadata = new EndpointMetadataCollection(new[] { new RouteNameMetadata(displayName) });
+
+        return new RouteEndpoint(
+            context => context.Response.WriteAsync(displayName),
+            RoutePatternFactory.Parse($"/dynamic/{id}"),
+            order: 0, metadata, displayName);
+    }
+}
+
+static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint> endpoints)
+{
+    if (endpoints is null)
+    {
+        return "No endpoints";
+    }
+
+    var sb = new StringBuilder();
+
+    foreach (var endpoint in endpoints)
+    {
+        if (endpoint is RouteEndpoint routeEndpoint)
+        {
+            var template = routeEndpoint.RoutePattern.RawText;
+            template = string.IsNullOrEmpty(template) ? "\"\"" : template;
+            sb.Append(template);
+            sb.Append(", Defaults: new { ");
+            FormatValues(sb, routeEndpoint.RoutePattern.Defaults);
+            sb.Append(" }");
+            var routeNameMetadata = routeEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            sb.Append(", Route Name: ");
+            sb.Append(routeNameMetadata?.RouteName);
+            var routeValues = routeEndpoint.RoutePattern.RequiredValues;
+
+            if (routeValues.Count > 0)
+            {
+                sb.Append(", Required Values: new { ");
+                FormatValues(sb, routeValues);
+                sb.Append(" }");
+            }
+
+            sb.Append(", Order: ");
+            sb.Append(routeEndpoint.Order);
+
+            var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+
+            if (httpMethodMetadata is not null)
+            {
+                sb.Append(", Http Methods: ");
+                sb.AppendJoin(", ", httpMethodMetadata.HttpMethods);
+            }
+
+            sb.Append(", Display Name: ");
+        }
+        else
+        {
+            sb.Append("Non-RouteEndpoint. DisplayName: ");
+        }
+
+        sb.AppendLine(endpoint.DisplayName);
+    }
+
+    return sb.ToString();
+
+    static void FormatValues(StringBuilder sb, IEnumerable<KeyValuePair<string, object>> values)
+    {
+        var isFirst = true;
+
+        foreach (var (key, value) in values)
+        {
+            if (isFirst)
+            {
+                isFirst = false;
+            }
+            else
+            {
+                sb.Append(", ");
+            }
+
+            sb.Append(key);
+            sb.Append(" = ");
+
+            if (value is null)
+            {
+                sb.Append("null");
+            }
+            else
+            {
+                sb.Append('\"');
+                sb.Append(value);
+                sb.Append('\"');
+            }
+        }
+    }
+}
