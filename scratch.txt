@@ -1,10 +1,28 @@
-app.MapGet("/list", (HttpResponse response, EndpointDataSource endpointSource) =>
+app.MapGet("/list", (EndpointDataSource endpointSource) =>
 {
     response.Headers["Refresh"] = "1";
-    return EndpointDataSource.GetDebuggerDisplayStringForEndpoints(endpointSource.Endpoints);
+    return ListEndpoints(endpointSource.Endpoints);
 });
 
 ((IEndpointRouteBuilder)app).DataSources.Add(new DynamicEndpointDataSource());
+
+public sealed class DynamicEndpointDataSource : EndpointDataSource
+{
+    public override IReadOnlyList<Endpoint> Endpoints => Enumerable.Range(0, 10).Select(CreateDynamicRouteEndpoint);
+
+    private static RouteEndpoint CreateDynamicRouteEndpoint(int id)
+    {
+        var displayName = $"Dynamic endpoint #{id}";
+        var metadata = new EndpointMetadataCollection(new[] { new RouteNameMetadata(displayName) });
+
+        return new RouteEndpoint(
+            context => context.Response.WriteAsync(displayName),
+            RoutePatternFactory.Parse($"/dynamic/{id}"),
+            order: 0,
+            metadata,
+            displayName);
+    }
+}
 
 public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
 {
@@ -61,7 +79,7 @@ public sealed class DynamicEndpointDataSource : EndpointDataSource, IDisposable
     }
 }
 
-static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint> endpoints)
+static string ListEndpoints(IReadOnlyList<Endpoint> endpoints)
 {
     if (endpoints is null)
     {
@@ -75,34 +93,7 @@ static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint> endpo
         if (endpoint is RouteEndpoint routeEndpoint)
         {
             var template = routeEndpoint.RoutePattern.RawText;
-            template = string.IsNullOrEmpty(template) ? "\"\"" : template;
-            sb.Append(template);
-            sb.Append(", Defaults: new { ");
-            FormatValues(sb, routeEndpoint.RoutePattern.Defaults);
-            sb.Append(" }");
-            var routeNameMetadata = routeEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-            sb.Append(", Route Name: ");
-            sb.Append(routeNameMetadata?.RouteName);
-            var routeValues = routeEndpoint.RoutePattern.RequiredValues;
-
-            if (routeValues.Count > 0)
-            {
-                sb.Append(", Required Values: new { ");
-                FormatValues(sb, routeValues);
-                sb.Append(" }");
-            }
-
-            sb.Append(", Order: ");
-            sb.Append(routeEndpoint.Order);
-
-            var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
-
-            if (httpMethodMetadata is not null)
-            {
-                sb.Append(", Http Methods: ");
-                sb.AppendJoin(", ", httpMethodMetadata.HttpMethods);
-            }
-
+            sb.Append(routeEndpoint.RoutePattern.RawText);
             sb.Append(", Display Name: ");
         }
         else
@@ -114,35 +105,18 @@ static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint> endpo
     }
 
     return sb.ToString();
-
-    static void FormatValues(StringBuilder sb, IEnumerable<KeyValuePair<string, object>> values)
-    {
-        var isFirst = true;
-
-        foreach (var (key, value) in values)
-        {
-            if (isFirst)
-            {
-                isFirst = false;
-            }
-            else
-            {
-                sb.Append(", ");
-            }
-
-            sb.Append(key);
-            sb.Append(" = ");
-
-            if (value is null)
-            {
-                sb.Append("null");
-            }
-            else
-            {
-                sb.Append('\"');
-                sb.Append(value);
-                sb.Append('\"');
-            }
-        }
-    }
 }
+
+// Types to know:
+//
+// - IApplicationBuilder (middleware)
+// - IEndpointRouteBuilder (routing)
+//    - EndpointDataSource (Low level API for defining HTTP endpoints)
+//    - RouteGroupBuilder (groups)
+// - IEndpointConvetionBuilder (metadata)
+// 4. Endpoint
+//
+//
+// 1. Not having the right TryParse/BindAsync would fail endpoint construction
+// 2. Invocation filters don't run in reverse order really
+// 3. Context isn't allocation free
