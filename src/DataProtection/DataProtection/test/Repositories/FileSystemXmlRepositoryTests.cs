@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -155,6 +156,39 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
                 // Assert
                 Assert.Contains(Resources.FormatFileSystem_EphemeralKeysLocationInContainer(dirInfo.FullName), loggerFactory.ToString());
+            });
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+        public void StoreElement_CreatesFileWithUserOnlyUnixFileMode()
+        {
+            WithUniqueTempDirectory(dirInfo =>
+            {
+                // Arrange
+                var element = XElement.Parse("<element1 />");
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+
+                // Act
+                repository.StoreElement(element, "friendly-name");
+
+                // Assert
+                var fileInfo = Assert.Single(dirInfo.GetFiles());
+
+                //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, fileInfo.UnixFileMode);
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "ls",
+                    Arguments = $"-l {fileInfo.FullName}",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                };
+                var process = Process.Start(processStartInfo);
+
+                Assert.NotNull(process);
+                var output = process!.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                Assert.StartsWith("-rw-------", output);
             });
         }
 
