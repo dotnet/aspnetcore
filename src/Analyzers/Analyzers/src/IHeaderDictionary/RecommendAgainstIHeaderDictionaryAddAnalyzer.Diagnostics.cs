@@ -12,7 +12,7 @@ public partial class RecommendAgainstIHeaderDictionaryAddAnalyzer : DiagnosticAn
     internal static class Diagnostics
     {
         internal static readonly DiagnosticDescriptor RecommendAgainstIHeaderDictionaryAdd = new(
-            "ASP0008",
+            "ASP0015",
             "Recommend using IHeaderDictionary.Append or the indexer over IHeaderDictionary.Add",
             "Recommend using IHeaderDictionary.Append or the indexer over IHeaderDictionary.Add",
             "Usage",
