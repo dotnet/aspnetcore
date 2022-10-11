@@ -11,6 +11,7 @@
     <GenerateRandomNamespaceGuid>true</GenerateRandomNamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <DisableGuidGeneration>true</DisableGuidGeneration>
+    <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,5 +57,27 @@
 
   <PropertyGroup>
     <PackageFileName>aspnetcoremodule_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <ProductNameShort>ASP.NET Core Module V2</ProductNameShort>
   </PropertyGroup>
+
+  <Target Name="CreateANCMNugetPackage" DependsOnTargets="CopyToArtifactsDirectory" BeforeTargets="Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+    </PropertyGroup>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
+                      '$(MsiFullPath)' ^
+                      '$(CabFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(_GeneratedPackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(PackageIcon)' ^
+                      '$(PackageIconFullPath)' ^
+                      '$(PackageLicenseExpression)' " />
+  </Target>
 </Project>
