@@ -115,6 +115,13 @@ public abstract class HttpRequest
     /// <summary>
     /// Gets or sets the request body as a form.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
+    ///     To prevent this the method <see cref="ReadFormAsync" /> can be used.
+    ///     For more information, see <see href="https://aka.ms/aspnet/forms-async" />.
+    ///     </para>
+    /// </remarks>
     public abstract IFormCollection Form { get; set; }
 
     /// <summary>
