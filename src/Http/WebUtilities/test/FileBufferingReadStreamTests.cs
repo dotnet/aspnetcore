@@ -3,9 +3,11 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -346,6 +348,47 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Once());
                 arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), It.IsAny<bool>()), Times.Once());
+            }
+
+            Assert.False(File.Exists(tempFileName));
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+        public void Read_BufferingContentToDisk_CreatesFileWithUserOnlyUnixFileMode()
+        {
+            var inner = MakeStream(1024 * 2);
+            string tempFileName;
+            using (var stream = new FileBufferingReadStream(inner, 1024, null, GetCurrentDirectory()))
+            {
+                var bytes = new byte[1024 * 2];
+                var read0 = stream.Read(bytes, 0, bytes.Length);
+                Assert.Equal(bytes.Length, read0);
+                Assert.Equal(read0, stream.Length);
+                Assert.Equal(read0, stream.Position);
+                Assert.False(stream.InMemory);
+                Assert.NotNull(stream.TempFileName);
+
+                var read1 = stream.Read(bytes, 0, bytes.Length);
+                Assert.Equal(0, read1);
+
+                tempFileName = stream.TempFileName!;
+                Assert.True(File.Exists(tempFileName));
+
+                //Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(tempFileName));
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "ls",
+                    Arguments = $"-l {tempFileName}",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                };
+                var process = Process.Start(processStartInfo);
+
+                Assert.NotNull(process);
+                var output = process!.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                Assert.StartsWith("-rw-------", output);
             }
 
             Assert.False(File.Exists(tempFileName));
