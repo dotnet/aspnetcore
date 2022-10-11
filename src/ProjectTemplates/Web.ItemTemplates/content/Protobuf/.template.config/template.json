@@ -13,7 +13,7 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.Web.Grpc.Protobuf",
-  "precedence": "600",
+  "precedence": "700",
   "identity": "Microsoft.Web.Grpc.Protobuf.7.0",
   "shortname": "proto",
   "sourceName": "protobuf",

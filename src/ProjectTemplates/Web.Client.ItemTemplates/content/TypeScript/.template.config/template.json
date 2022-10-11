@@ -6,7 +6,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A blank TypeScript source file",
   "groupIdentity": "Microsoft.DotNet.Web.ClientItems.TypeScript",
-  "precedence": "100",
+  "precedence": "700",
   "identity": "Microsoft.DotNet.Web.ClientItems.TypeScript.7.0",
   "shortName": "tsfile",
   "sourceName": "file1",

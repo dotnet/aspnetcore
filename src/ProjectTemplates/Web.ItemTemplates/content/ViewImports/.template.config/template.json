@@ -10,7 +10,7 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewImports",
-  "precedence": "600",
+  "precedence": "700",
   "identity": "Microsoft.AspNetCore.Mvc.ViewImports.7.0",
   "shortName": "viewimports",
   "sourceName": "ignoreme",
