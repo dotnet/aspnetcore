@@ -443,12 +443,12 @@ public abstract class UrlHelperBase : IUrlHelper
             {
                 builder.Append(pathBase.Value);
 
-                if (pathBase.Value.EndsWith("/", StringComparison.Ordinal))
+                if (pathBase.Value.EndsWith('/'))
                 {
                     builder.Length--;
                 }
 
-                if (!virtualPath.StartsWith("/", StringComparison.Ordinal))
+                if (!virtualPath.StartsWith('/'))
                 {
                     builder.Append('/');
                 }
@@ -483,7 +483,7 @@ public abstract class UrlHelperBase : IUrlHelper
                 url = "/";
                 return true;
             }
-            else if (virtualPath.StartsWith("/", StringComparison.Ordinal))
+            else if (virtualPath.StartsWith('/'))
             {
                 url = virtualPath;
                 return true;

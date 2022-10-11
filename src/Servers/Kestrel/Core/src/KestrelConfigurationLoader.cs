@@ -102,10 +102,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader Endpoint(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         return Endpoint(new IPEndPoint(address, port), configure);
     }
@@ -120,14 +117,8 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader Endpoint(IPEndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -149,10 +140,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader LocalhostEndpoint(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -172,10 +160,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader AnyIPEndpoint(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -195,18 +180,12 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader UnixSocketEndpoint(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
         if (socketPath.Length == 0 || socketPath[0] != '/')
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {
@@ -226,10 +205,7 @@ public class KestrelConfigurationLoader
     /// </summary>
     public KestrelConfigurationLoader HandleEndpoint(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         EndpointsToAdd.Add(() =>
         {

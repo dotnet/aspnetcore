@@ -297,10 +297,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                 throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             // Synchronize access to native methods that might run in parallel with IO loops
             lock (_contextLock)

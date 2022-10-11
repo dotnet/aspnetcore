@@ -10,7 +10,6 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 
@@ -27,7 +26,7 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         {
             context.RegisterCodeFix(
                 CodeAction.Create("Fix mismatched route parameter and argument optionality",
-                    cancellationToken => FixMismatchedParameterOptionality(diagnostic, context.Document, cancellationToken),
+                    cancellationToken => FixMismatchedParameterOptionalityAsync(diagnostic, context.Document, cancellationToken),
                     equivalenceKey: DiagnosticDescriptors.DetectMismatchedParameterOptionality.Id),
                 diagnostic);
         }
@@ -35,7 +34,7 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixMismatchedParameterOptionality(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
+    private static async Task<Document> FixMismatchedParameterOptionalityAsync(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 

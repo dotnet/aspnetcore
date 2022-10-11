@@ -1,20 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 
 namespace StaticFilesAuth;
 
@@ -53,7 +42,7 @@ public class Startup
                     {
                         return false;
                     }
-                    if (context.Resource is Endpoint endpoint)
+                    if (context.Resource is HttpContext httpContext && httpContext.GetEndpoint() is Endpoint endpoint)
                     {
                         var userPath = Path.Combine(usersPath, userName);
 
@@ -134,12 +123,14 @@ public class Startup
         var fileSystemPath = GetFileSystemPath(files, context.Request.Path);
         if (fileSystemPath != null)
         {
-            var metadata = new List<object>();
-            metadata.Add(new DirectoryInfo(Path.GetDirectoryName(fileSystemPath)));
-            metadata.Add(new AuthorizeAttribute(policy));
+            var metadata = new List<object>
+            {
+                new DirectoryInfo(Path.GetDirectoryName(fileSystemPath)),
+                new AuthorizeAttribute(policy)
+            };
 
             var endpoint = new Endpoint(
-                c => throw new InvalidOperationException("Static file middleware should return file request."),
+                requestDelegate: null,
                 new EndpointMetadataCollection(metadata),
                 context.Request.Path);
 

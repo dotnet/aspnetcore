@@ -28,7 +28,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private volatile int _isClosed;
     private long _headerType;
-    private int _gracefulCloseInitiator;
     private readonly object _completionLock = new();
 
     private bool _haveReceivedSettingsFrame;
@@ -387,6 +386,10 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     {
         EnsureSettingsFrame(Http3FrameType.GoAway);
 
+        // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
+        _context.Connection.StopProcessingNextRequest(serverInitiated: false);
+        _context.ConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
+
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-goaway
         // PUSH is not implemented so nothing to do.
 
@@ -429,19 +432,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         {
             var message = CoreStrings.FormatHttp3ErrorControlStreamFrameReceivedBeforeSettings(Http3Formatting.ToFormattedType(frameType));
             throw new Http3ConnectionErrorException(message, Http3ErrorCode.MissingSettings);
-        }
-    }
-
-    public void StopProcessingNextRequest()
-        => StopProcessingNextRequest(serverInitiated: true);
-
-    public void StopProcessingNextRequest(bool serverInitiated)
-    {
-        var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
-
-        if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
-        {
-            Input.CancelPendingRead();
         }
     }
 

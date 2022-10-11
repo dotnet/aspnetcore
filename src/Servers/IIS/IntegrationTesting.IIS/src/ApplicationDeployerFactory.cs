@@ -19,15 +19,9 @@ public class IISApplicationDeployerFactory
     /// <returns></returns>
     public static ApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
     {
-        if (deploymentParameters == null)
-        {
-            throw new ArgumentNullException(nameof(deploymentParameters));
-        }
+        ArgumentNullException.ThrowIfNull(deploymentParameters);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         switch (deploymentParameters.ServerType)
         {

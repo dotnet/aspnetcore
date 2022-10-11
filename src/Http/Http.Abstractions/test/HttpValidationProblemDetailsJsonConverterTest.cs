@@ -15,7 +15,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
     public void Read_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var detail = "Product not found";
@@ -60,7 +60,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
     public void Read_WithSomeMissingValues_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
@@ -101,7 +101,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
     public void ReadUsingJsonSerializerWorks()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";

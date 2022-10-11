@@ -6,7 +6,6 @@ using System.Collections;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.HPack;
-using System.Net.Security;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Text;
@@ -1859,6 +1858,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44415")]
     public async Task OutputFlowControl_ConnectionAndRequestAborted_NoException()
     {
         // Ensure the stream window size is bigger than the connection window size
@@ -3852,6 +3852,19 @@ public class Http2ConnectionTests : Http2TestBase
 
         await SendGoAwayAsync();
 
+        await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task GOAWAY_Received_ConnectionLifetimeNotification_Cancelled()
+    {
+        await InitializeConnectionAsync(_noopApplication, addKestrelFeatures: true);
+        var lifetime = _connection.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>();
+        Assert.False(lifetime.ConnectionClosedRequested.IsCancellationRequested);
+
+        await SendGoAwayAsync();
+
+        Assert.True(lifetime.ConnectionClosedRequested.IsCancellationRequested);
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 

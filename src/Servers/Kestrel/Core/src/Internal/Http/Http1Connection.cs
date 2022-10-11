@@ -442,7 +442,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
 
         // The authority-form of request-target is only used for CONNECT
-        // requests (https://tools.ietf.org/html/rfc7231#section-4.3.6).
+        // requests (https://tools.ietf.org/html/rfc9110#section-9.3.6).
         if (method != HttpMethod.Connect)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.ConnectMethodRequired);
@@ -486,7 +486,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.AsteriskForm;
 
         // The asterisk-form of request-target is only used for a server-wide
-        // OPTIONS request (https://tools.ietf.org/html/rfc7231#section-4.3.7).
+        // OPTIONS request (https://tools.ietf.org/html/rfc9110#section-9.3.7).
         if (method != HttpMethod.Options)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.OptionsMethodRequired);

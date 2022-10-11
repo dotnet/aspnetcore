@@ -28,7 +28,7 @@ public class DefaultApiProblemDetailsWriterTest
             Detail = "Custom Bad Request",
             Instance = "Custom Bad Request",
             Status = StatusCodes.Status400BadRequest,
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
             Title = "Custom Bad Request",
         };
         var problemDetailsContext = new ProblemDetailsContext()

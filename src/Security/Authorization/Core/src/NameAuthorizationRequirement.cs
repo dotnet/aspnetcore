@@ -41,7 +41,18 @@ public class NameAuthorizationRequirement : AuthorizationHandler<NameAuthorizati
     {
         if (context.User != null)
         {
-            if (context.User.Identities.Any(i => string.Equals(i.Name, requirement.RequiredName, StringComparison.Ordinal)))
+            var succeed = false;
+
+            foreach (var identity in context.User.Identities)
+            {
+                if (string.Equals(identity.Name, requirement.RequiredName, StringComparison.Ordinal))
+                {
+                    succeed = true;
+                    break;
+                }
+            }
+
+            if (succeed)
             {
                 context.Succeed(requirement);
             }

@@ -16,7 +16,7 @@ public class ListenOptionsTests
     public void ProtocolsDefault()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-        Assert.Equal(HttpProtocols.Http1AndHttp2, listenOptions.Protocols);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, listenOptions.Protocols);
     }
 
     [Fact]
