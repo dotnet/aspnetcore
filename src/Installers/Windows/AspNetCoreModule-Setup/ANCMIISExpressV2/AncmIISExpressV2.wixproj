@@ -13,6 +13,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <TempPlatform Condition="'$(Platform)' == 'x64'">x64</TempPlatform>
     <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
+    <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,5 +69,27 @@
 
   <PropertyGroup>
     <PackageFileName>ancm_iis_express_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <ProductNameShort>ASP.NET Core Module IIS Express V2</ProductNameShort>
   </PropertyGroup>
+
+  <Target Name="CreateANCMIISExpressNugetPackage" DependsOnTargets="CopyToArtifactsDirectory" BeforeTargets="Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+    </PropertyGroup>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
+                      '$(MsiFullPath)' ^
+                      '$(CabFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(_GeneratedPackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(PackageIcon)' ^
+                      '$(PackageIconFullPath)' ^
+                      '$(PackageLicenseExpression)' " />
+  </Target>
 </Project>
