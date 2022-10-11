@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -539,6 +540,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             try
             {
                 Log.WriteCertificateToDisk(path);
+
+                // Create a temp file with the correct Unix file mode before moving it to the expected path.
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var tempFilename = Path.GetTempFileName();
+                    File.Move(tempFilename, path, overwrite: true);
+                }
+
                 File.WriteAllBytes(path, bytes);
             }
             catch (Exception ex) when (Log.IsEnabled())
@@ -559,6 +568,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     var keyPath = Path.ChangeExtension(path, ".key");
                     Log.WritePemKeyToDisk(keyPath);
+
+                    // Create a temp file with the correct Unix file mode before moving it to the expected path.
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        var tempFilename = Path.GetTempFileName();
+                        File.Move(tempFilename, keyPath, overwrite: true);
+                    }
+
                     File.WriteAllBytes(keyPath, pemEnvelope);
                 }
                 catch (Exception ex) when (Log.IsEnabled())
