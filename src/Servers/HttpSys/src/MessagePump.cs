@@ -19,7 +19,6 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
     private readonly HttpSysOptions _options;
 
     private readonly int _maxAccepts;
-    private int _acceptorCounts;
 
     private volatile int _stopping;
     private int _outstandingRequests;
@@ -125,7 +124,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     private void ActivateRequestProcessingLimits()
     {
-        for (int i = _acceptorCounts; i < _maxAccepts; i++)
+        for (var i = 0; i < _maxAccepts; i++)
         {
             ProcessRequestsWorker();
         }
@@ -165,9 +164,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         // Allocate and accept context per loop and reuse it for all accepts
         var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
 
-        var workerIndex = Interlocked.Increment(ref _acceptorCounts);
-
-        var loop = new AcceptLoop(acceptContext, this, workerIndex);
+        var loop = new AcceptLoop(acceptContext, this);
 
         ThreadPool.UnsafeQueueUserWorkItem(loop, preferLocal: false);
     }
@@ -229,20 +226,17 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         Listener.Dispose();
     }
 
-    private class AcceptLoop : IThreadPoolWorkItem
+    private sealed class AcceptLoop : IThreadPoolWorkItem
     {
         private readonly AsyncAcceptContext _asyncAcceptContext;
         private readonly MessagePump _messagePump;
-        private readonly int _workerIndex;
         private readonly bool _preferInlineScheduling;
 
         public AcceptLoop(AsyncAcceptContext asyncAcceptContext,
-                          MessagePump messagePump,
-                          int workerIndex)
+                          MessagePump messagePump)
         {
             _asyncAcceptContext = asyncAcceptContext;
             _messagePump = messagePump;
-            _workerIndex = workerIndex;
             _preferInlineScheduling = _messagePump._options.UnsafePreferInlineScheduling;
         }
 
@@ -253,7 +247,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
         private async Task ExecuteAsync()
         {
-            while (!_messagePump.Stopping && _workerIndex <= _messagePump._maxAccepts)
+            while (!_messagePump.Stopping)
             {
                 // Receive a request
                 RequestContext requestContext;
@@ -310,7 +304,6 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
                     Log.RequestListenerProcessError(_messagePump._logger, ex);
                 }
             }
-            Interlocked.Decrement(ref _messagePump._acceptorCounts);
 
             _asyncAcceptContext.Dispose();
         }
