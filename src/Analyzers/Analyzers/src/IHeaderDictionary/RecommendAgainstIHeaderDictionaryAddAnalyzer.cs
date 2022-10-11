@@ -11,7 +11,7 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Analyzers.IHeaderDictionary;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public partial class DisallowIHeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
+public partial class RecommendAgainstIHeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => Diagnostics.SupportedDiagnostics;
 
@@ -48,7 +48,7 @@ public partial class DisallowIHeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
-                        Diagnostics.DisallowIHeaderDictionaryAdd,
+                        Diagnostics.RecommendAgainstIHeaderDictionaryAdd,
                         invocation.Syntax.GetLocation(),
                         invocation.Syntax.ToString()));
             }

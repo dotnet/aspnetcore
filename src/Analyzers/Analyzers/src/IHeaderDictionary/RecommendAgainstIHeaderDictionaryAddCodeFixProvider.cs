@@ -18,10 +18,10 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.AspNetCore.Analyzers.IHeaderDictionary;
 
 [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-public sealed class DisallowIHeaderDictionaryAddCodeFixProvider : CodeFixProvider
+public sealed class RecommendAgainstIHeaderDictionaryAddCodeFixProvider : CodeFixProvider
 {
     public sealed override ImmutableArray<string> FixableDiagnosticIds
-        => ImmutableArray.Create(DisallowIHeaderDictionaryAddAnalyzer.Diagnostics.DisallowIHeaderDictionaryAdd.Id);
+        => ImmutableArray.Create(RecommendAgainstIHeaderDictionaryAddAnalyzer.Diagnostics.RecommendAgainstIHeaderDictionaryAdd.Id);
 
     public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -33,7 +33,7 @@ public sealed class DisallowIHeaderDictionaryAddCodeFixProvider : CodeFixProvide
         }
 
         var diagnostic = context.Diagnostics[0];
-        if (diagnostic.Id != DisallowIHeaderDictionaryAddAnalyzer.Diagnostics.DisallowIHeaderDictionaryAdd.Id)
+        if (diagnostic.Id != RecommendAgainstIHeaderDictionaryAddAnalyzer.Diagnostics.RecommendAgainstIHeaderDictionaryAdd.Id)
         {
             return Task.CompletedTask;
         }
@@ -55,7 +55,7 @@ public sealed class DisallowIHeaderDictionaryAddCodeFixProvider : CodeFixProvide
             _invocationSpan = invocationSpan;
         }
 
-        public override string EquivalenceKey => $"{DisallowIHeaderDictionaryAddAnalyzer.Diagnostics.DisallowIHeaderDictionaryAdd.Id}.Append";
+        public override string EquivalenceKey => $"{RecommendAgainstIHeaderDictionaryAddAnalyzer.Diagnostics.RecommendAgainstIHeaderDictionaryAdd.Id}.Append";
 
         public override string Title => "Use Append";
 
@@ -117,7 +117,7 @@ public sealed class DisallowIHeaderDictionaryAddCodeFixProvider : CodeFixProvide
             _invocationSpan = invocationSpan;
         }
 
-        public override string EquivalenceKey => $"{DisallowIHeaderDictionaryAddAnalyzer.Diagnostics.DisallowIHeaderDictionaryAdd.Id}.Indexer";
+        public override string EquivalenceKey => $"{RecommendAgainstIHeaderDictionaryAddAnalyzer.Diagnostics.RecommendAgainstIHeaderDictionaryAdd.Id}.Indexer";
 
         public override string Title => "Use Indexer";
 

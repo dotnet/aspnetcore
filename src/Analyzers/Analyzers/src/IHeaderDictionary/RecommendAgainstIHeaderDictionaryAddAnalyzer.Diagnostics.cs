@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.IHeaderDictionary;
 
-public partial class DisallowIHeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
+public partial class RecommendAgainstIHeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
 {
     internal static class Diagnostics
     {
-        internal static readonly DiagnosticDescriptor DisallowIHeaderDictionaryAdd = new(
+        internal static readonly DiagnosticDescriptor RecommendAgainstIHeaderDictionaryAdd = new(
             "ASP0008",
-            "Suggest using IHeaderDictionary.Append or the indexer over IHeaderDictionary.Add",
-            "Suggest using IHeaderDictionary.Append or the indexer over IHeaderDictionary.Add",
+            "Recommend using IHeaderDictionary.Append or the indexer over IHeaderDictionary.Add",
+            "Recommend using IHeaderDictionary.Append or the indexer over IHeaderDictionary.Add",
             "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
@@ -22,7 +22,7 @@ public partial class DisallowIHeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
 
         public static readonly ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics = ImmutableArray.Create(new[]
         {
-            DisallowIHeaderDictionaryAdd
+            RecommendAgainstIHeaderDictionaryAdd
         });
     }
 }

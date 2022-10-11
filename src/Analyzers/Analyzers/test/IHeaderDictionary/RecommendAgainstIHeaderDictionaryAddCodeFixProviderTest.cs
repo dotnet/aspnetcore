@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Analyzer.Testing;
 
 namespace Microsoft.AspNetCore.Analyzers.IHeaderDictionary;
 
-public class DisallowIHeaderDictionaryAddCodeFixProviderTest
+public class RecommendAgainstIHeaderDictionaryAddCodeFixProviderTest
 {
     [Fact]
     public async Task CodeFix_ReplacesAddWithAppend()
@@ -13,7 +13,7 @@ public class DisallowIHeaderDictionaryAddCodeFixProviderTest
         var source = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddCodeFixProviderTest;
+namespace RecommendAgainstIHeaderDictionaryAddCodeFixProviderTest;
 
 public class Test
 {
@@ -28,7 +28,7 @@ public class Test
         var fixedSource = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddCodeFixProviderTest;
+namespace RecommendAgainstIHeaderDictionaryAddCodeFixProviderTest;
 
 public class Test
 {
@@ -49,7 +49,7 @@ public class Test
         var source = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddCodeFixProviderTest;
+namespace RecommendAgainstIHeaderDictionaryAddCodeFixProviderTest;
 
 public class Test
 {
@@ -64,7 +64,7 @@ public class Test
         var fixedSource = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddCodeFixProviderTest;
+namespace RecommendAgainstIHeaderDictionaryAddCodeFixProviderTest;
 
 public class Test
 {
@@ -82,7 +82,7 @@ public class Test
     private async Task RunTest(string source, int codeFixIndex, string fixedSource)
     {
         // Arrange
-        var analyzerRunner = new TestAnalyzerRunner(new DisallowIHeaderDictionaryAddAnalyzer());
+        var analyzerRunner = new TestAnalyzerRunner(new RecommendAgainstIHeaderDictionaryAddAnalyzer());
         var codeFixRunner = new CodeFixRunner();
 
         var project = TestAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { source });
@@ -93,7 +93,7 @@ public class Test
         var diagnostic = Assert.Single(diagnostics);
 
         var actual = await codeFixRunner.ApplyCodeFixAsync(
-            new DisallowIHeaderDictionaryAddCodeFixProvider(),
+            new RecommendAgainstIHeaderDictionaryAddCodeFixProvider(),
             project.GetDocument(documentId),
             diagnostic,
             codeFixIndex: codeFixIndex);

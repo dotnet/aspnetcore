@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Microsoft.AspNetCore.Analyzers.IHeaderDictionary;
 
-public class DisallowIHeaderDictionaryAddAnalyzerTest
+public class RecommendAgainstIHeaderDictionaryAddAnalyzerTest
 {
     [Fact]
     public async Task Analyze_WithAdd_ReportsDiagnostics()
@@ -19,7 +19,7 @@ public class DisallowIHeaderDictionaryAddAnalyzerTest
         var source = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddAnalyzerTest;
+namespace RecommendAgainstIHeaderDictionaryAddAnalyzerTest;
 
 public class Test
 {
@@ -31,7 +31,7 @@ public class Test
 }
 ";
 
-        var diagnosticResult = new DiagnosticResult(DisallowIHeaderDictionaryAddAnalyzer.Diagnostics.DisallowIHeaderDictionaryAdd)
+        var diagnosticResult = new DiagnosticResult(RecommendAgainstIHeaderDictionaryAddAnalyzer.Diagnostics.RecommendAgainstIHeaderDictionaryAdd)
             .WithLocation(0);
 
         // Act + Assert
@@ -45,7 +45,7 @@ public class Test
         var source = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddAnalyzerTest;
+namespace RecommendAgainstIHeaderDictionaryAddAnalyzerTest;
 
 public class Test
 {
@@ -68,7 +68,7 @@ public class Test
         var source = @"
 using Microsoft.AspNetCore.Http;
 
-namespace DisallowIHeaderDictionaryAddAnalyzerTest;
+namespace RecommendAgainstIHeaderDictionaryAddAnalyzerTest;
 
 public class Test
 {
@@ -86,7 +86,7 @@ public class Test
 
     private static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new DisallowIHeaderDictionaryAddCSharpAnalyzerTest(new DisallowIHeaderDictionaryAddAnalyzer(), TestReferences.MetadataReferences)
+        var test = new RecommendAgainstIHeaderDictionaryAddCSharpAnalyzerTest(new RecommendAgainstIHeaderDictionaryAddAnalyzer(), TestReferences.MetadataReferences)
         {
             TestCode = source,
             ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies
@@ -96,17 +96,17 @@ public class Test
         return test.RunAsync();
     }
 
-    internal sealed class DisallowIHeaderDictionaryAddCSharpAnalyzerTest : CSharpAnalyzerTest<DisallowIHeaderDictionaryAddAnalyzer, XUnitVerifier>
+    internal sealed class RecommendAgainstIHeaderDictionaryAddCSharpAnalyzerTest : CSharpAnalyzerTest<RecommendAgainstIHeaderDictionaryAddAnalyzer, XUnitVerifier>
     {
-        public DisallowIHeaderDictionaryAddCSharpAnalyzerTest(DisallowIHeaderDictionaryAddAnalyzer analyzer, ImmutableArray<MetadataReference> metadataReferences)
+        public RecommendAgainstIHeaderDictionaryAddCSharpAnalyzerTest(RecommendAgainstIHeaderDictionaryAddAnalyzer analyzer, ImmutableArray<MetadataReference> metadataReferences)
         {
-            DisallowIHeaderDictionaryAddAnalyzer = analyzer;
+            RecommendAgainstIHeaderDictionaryAddAnalyzer = analyzer;
             TestState.OutputKind = OutputKind.WindowsApplication;
             TestState.AdditionalReferences.AddRange(metadataReferences);
         }
 
-        public DisallowIHeaderDictionaryAddAnalyzer DisallowIHeaderDictionaryAddAnalyzer { get; }
+        public RecommendAgainstIHeaderDictionaryAddAnalyzer RecommendAgainstIHeaderDictionaryAddAnalyzer { get; }
 
-        protected override IEnumerable<DiagnosticAnalyzer> GetDiagnosticAnalyzers() => new[] { DisallowIHeaderDictionaryAddAnalyzer };
+        protected override IEnumerable<DiagnosticAnalyzer> GetDiagnosticAnalyzers() => new[] { RecommendAgainstIHeaderDictionaryAddAnalyzer };
     }
 }
