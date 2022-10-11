@@ -57,6 +57,12 @@ public class StaticFileMiddleware
         _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
         _matchUrl = _options.RequestPath;
         _logger = loggerFactory.CreateLogger<StaticFileMiddleware>();
+
+        // See HostingEnvironmentExtensions.Initialize
+        if (_fileProvider is NullFileProvider && _fileProvider == hostingEnv.WebRootFileProvider)
+        {
+            _logger.WebRootPathNotFound(Path.GetFullPath(Path.Combine(hostingEnv.ContentRootPath, hostingEnv.WebRootPath ?? "wwwroot")));
+        }
     }
 
     /// <summary>

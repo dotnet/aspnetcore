@@ -54,10 +54,7 @@ internal sealed class HttpsConnectionMiddleware
 
     public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
         {

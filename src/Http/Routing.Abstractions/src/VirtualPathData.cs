@@ -86,7 +86,7 @@ public class VirtualPathData
             return string.Empty;
         }
 
-        if (!path.StartsWith("/", StringComparison.Ordinal))
+        if (!path.StartsWith('/'))
         {
             return "/" + path;
         }

@@ -125,10 +125,7 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, X509Certificate2 serverCertificate)
     {
-        if (serverCertificate == null)
-        {
-            throw new ArgumentNullException(nameof(serverCertificate));
-        }
+        ArgumentNullException.ThrowIfNull(serverCertificate);
 
         return listenOptions.UseHttps(options =>
         {
@@ -146,15 +143,9 @@ public static class ListenOptionsHttpsExtensions
     public static ListenOptions UseHttps(this ListenOptions listenOptions, X509Certificate2 serverCertificate,
         Action<HttpsConnectionAdapterOptions> configureOptions)
     {
-        if (serverCertificate == null)
-        {
-            throw new ArgumentNullException(nameof(serverCertificate));
-        }
+        ArgumentNullException.ThrowIfNull(serverCertificate);
 
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         return listenOptions.UseHttps(options =>
         {
@@ -171,10 +162,7 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, Action<HttpsConnectionAdapterOptions> configureOptions)
     {
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var options = new HttpsConnectionAdapterOptions();
         listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);

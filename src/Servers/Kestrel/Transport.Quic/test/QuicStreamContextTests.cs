@@ -30,6 +30,8 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);

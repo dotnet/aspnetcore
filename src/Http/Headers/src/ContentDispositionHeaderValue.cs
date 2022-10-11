@@ -400,7 +400,7 @@ public class ContentDispositionHeaderValue
         {
             string? result;
             // filename*=utf-8'lang'%7FMyString
-            if (parameter.EndsWith("*", StringComparison.Ordinal))
+            if (parameter.EndsWith('*'))
             {
                 if (TryDecode5987(nameParameter.Value, out result))
                 {

@@ -633,7 +633,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureEndpointDefaults(opt =>
         {
             // Kestrel default.
-            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
             ranDefault = true;
         });
 
@@ -663,14 +663,14 @@ public class KestrelConfigurationLoaderTests
             .LocalhostEndpoint(5002, opt =>
             {
                 // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+                Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
                 ran2 = true;
             })
             .Load();
         serverOptions.ListenAnyIP(0, opt =>
         {
             // Kestrel default.
-            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
             ran3 = true;
         });
 
@@ -1038,13 +1038,15 @@ public class KestrelConfigurationLoaderTests
 
         var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
 
-        Assert.Single(endpointsToStop);
-        Assert.Single(endpointsToStart);
+        // NonDefaultProtocol is unchanged and doesn't need to be stopped/started
+        var stopEndpoint = Assert.Single(endpointsToStop);
+        var startEndpoint = Assert.Single(endpointsToStart);
 
-        Assert.Equal(5000, endpointsToStop[0].IPEndPoint.Port);
-        Assert.Equal(HttpProtocols.Http1AndHttp2, endpointsToStop[0].Protocols);
-        Assert.Equal(5000, endpointsToStart[0].IPEndPoint.Port);
-        Assert.Equal(HttpProtocols.Http1, endpointsToStart[0].Protocols);
+        Assert.Equal(5000, stopEndpoint.IPEndPoint.Port);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, stopEndpoint.Protocols);
+
+        Assert.Equal(5000, startEndpoint.IPEndPoint.Port);
+        Assert.Equal(HttpProtocols.Http1, startEndpoint.Protocols);
     }
 
     [Fact]

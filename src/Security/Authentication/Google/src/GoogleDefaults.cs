@@ -34,8 +34,5 @@ public static class GoogleDefaults
     /// <summary>
     /// The Google endpoint that is used to gather additional user information.
     /// </summary>
-    /// <remarks>
-    /// For more details about this endpoint, see <see href="https://developers.google.com/apis-explorer/#search/oauth2/oauth2/v2/"/>.
-    /// </remarks>
-    public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
+    public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
 }

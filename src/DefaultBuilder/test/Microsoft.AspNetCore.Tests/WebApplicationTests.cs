@@ -463,7 +463,7 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public void WebApplicationBuilderSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
+    public void WebApplicationBuilderSettingInvalidApplicationDoesNotThrowWhenAssemblyLoadForUserSecretsFail()
     {
         var options = new WebApplicationOptions
         {
@@ -471,8 +471,11 @@ public class WebApplicationTests
             EnvironmentName = Environments.Development
         };
 
-        // Use secrets fails to load an invalid assembly name
-        Assert.Throws<FileNotFoundException>(() => WebApplication.CreateBuilder(options).Build());
+        // Use secrets fails to load an invalid assembly name but does not throw
+        var webApplication = WebApplication.CreateBuilder(options).Build();
+
+        Assert.Equal(nameof(WebApplicationTests), webApplication.Environment.ApplicationName);
+        Assert.Equal(Environments.Development, webApplication.Environment.EnvironmentName);
     }
 
     [Fact]

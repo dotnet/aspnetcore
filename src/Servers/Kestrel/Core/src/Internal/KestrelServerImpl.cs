@@ -72,10 +72,7 @@ internal sealed class KestrelServerImpl : IServer
         IEnumerable<IMultiplexedConnectionListenerFactory>? multiplexedFactories,
         ServiceContext serviceContext)
     {
-        if (transportFactories == null)
-        {
-            throw new ArgumentNullException(nameof(transportFactories));
-        }
+        ArgumentNullException.ThrowIfNull(transportFactories);
 
         _transportFactory = transportFactories.LastOrDefault();
         _multiplexedTransportFactory = multiplexedFactories?.LastOrDefault();
@@ -98,14 +95,8 @@ internal sealed class KestrelServerImpl : IServer
 
     private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         var serverOptions = options.Value ?? new KestrelServerOptions();
         var trace = new KestrelTrace(loggerFactory);
