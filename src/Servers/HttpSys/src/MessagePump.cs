@@ -19,7 +19,6 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
     private readonly HttpSysOptions _options;
 
     private readonly int _maxAccepts;
-    private int _acceptorCounts;
 
     private volatile int _stopping;
     private int _outstandingRequests;
@@ -125,10 +124,9 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     private void ActivateRequestProcessingLimits()
     {
-        for (int i = _acceptorCounts; i < _maxAccepts; i++)
+        for (var i = 0; i < _maxAccepts; i++)
         {
-            // Ignore the result
-            _ = ProcessRequestsWorker();
+            ProcessRequestsWorker();
         }
     }
 
@@ -159,64 +157,16 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
     // When we start listening for the next request on one thread, we may need to be sure that the
     // completion continues on another thread as to not block the current request processing.
     // The awaits will manage stack depth for us.
-    private async Task ProcessRequestsWorker()
+    private void ProcessRequestsWorker()
     {
         Debug.Assert(RequestContextFactory != null);
 
         // Allocate and accept context per loop and reuse it for all accepts
-        using var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
+        var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
 
-        int workerIndex = Interlocked.Increment(ref _acceptorCounts);
-        while (!Stopping && workerIndex <= _maxAccepts)
-        {
-            // Receive a request
-            RequestContext requestContext;
-            try
-            {
-                requestContext = await Listener.AcceptAsync(acceptContext);
+        var loop = new AcceptLoop(acceptContext, this);
 
-                if (!Listener.ValidateRequest(requestContext))
-                {
-                    // Dispose the request
-                    requestContext.ReleasePins();
-                    requestContext.Dispose();
-
-                    // If either of these is false then a response has already been sent to the client, so we can accept the next request
-                    continue;
-                }
-            }
-            catch (Exception exception)
-            {
-                Debug.Assert(Stopping);
-                if (Stopping)
-                {
-                    Log.AcceptErrorStopping(_logger, exception);
-                }
-                else
-                {
-                    Log.AcceptError(_logger, exception);
-                }
-                continue;
-            }
-            try
-            {
-                if (_options.UnsafePreferInlineScheduling)
-                {
-                    await requestContext.ExecuteAsync();
-                }
-                else
-                {
-                    ThreadPool.UnsafeQueueUserWorkItem(requestContext, preferLocal: false);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Request processing failed
-                // Log the error message, release throttle and move on
-                Log.RequestListenerProcessError(_logger, ex);
-            }
-        }
-        Interlocked.Decrement(ref _acceptorCounts);
+        ThreadPool.UnsafeQueueUserWorkItem(loop, preferLocal: false);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -274,5 +224,88 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         _shutdownSignal.TrySetResult();
 
         Listener.Dispose();
+    }
+
+    private sealed class AcceptLoop : IThreadPoolWorkItem
+    {
+        private readonly AsyncAcceptContext _asyncAcceptContext;
+        private readonly MessagePump _messagePump;
+        private readonly bool _preferInlineScheduling;
+
+        public AcceptLoop(AsyncAcceptContext asyncAcceptContext,
+                          MessagePump messagePump)
+        {
+            _asyncAcceptContext = asyncAcceptContext;
+            _messagePump = messagePump;
+            _preferInlineScheduling = _messagePump._options.UnsafePreferInlineScheduling;
+        }
+
+        public void Execute()
+        {
+            _ = ExecuteAsync();
+        }
+
+        private async Task ExecuteAsync()
+        {
+            while (!_messagePump.Stopping)
+            {
+                // Receive a request
+                RequestContext requestContext;
+                try
+                {
+                    requestContext = await _messagePump.Listener.AcceptAsync(_asyncAcceptContext);
+
+                    if (!_messagePump.Listener.ValidateRequest(requestContext))
+                    {
+                        // Dispose the request
+                        requestContext.ReleasePins();
+                        requestContext.Dispose();
+
+                        // If either of these is false then a response has already been sent to the client, so we can accept the next request
+                        continue;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Assert(_messagePump.Stopping);
+                    if (_messagePump.Stopping)
+                    {
+                        Log.AcceptErrorStopping(_messagePump._logger, ex);
+                    }
+                    else
+                    {
+                        Log.AcceptError(_messagePump._logger, ex);
+                    }
+                    continue;
+                }
+
+                try
+                {
+                    if (_preferInlineScheduling)
+                    {
+                        await requestContext.ExecuteAsync();
+                    }
+                    else
+                    {
+                        // Queue another accept before we execute the request
+                        ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+
+                        // Use this thread to start the execution of the request (avoid the double threadpool dispatch)
+                        await requestContext.ExecuteAsync();
+
+                        // We're done with this thread
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Request processing failed
+                    // Log the error message, release throttle and move on
+                    Log.RequestListenerProcessError(_messagePump._logger, ex);
+                }
+            }
+
+            _asyncAcceptContext.Dispose();
+        }
     }
 }
