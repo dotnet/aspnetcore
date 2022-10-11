@@ -17,6 +17,9 @@ public class Program
         _reporter = new ConsoleReporter(console);
     }
 
+    // For testing.
+    internal string UserJwtsFilePath { get; set; }
+
     public static void Main(string[] args)
     {
         new Program(PhysicalConsole.Singleton).Run(args);
@@ -34,7 +37,7 @@ public class Program
         // dotnet user-jwts list
         ListCommand.Register(userJwts);
         // dotnet user-jwts create
-        CreateCommand.Register(userJwts);
+        CreateCommand.Register(userJwts, this);
         // dotnet user-jwts print ecd045
         PrintCommand.Register(userJwts);
         // dotnet user-jwts remove ecd045

@@ -580,4 +580,19 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
     }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void Create_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        Assert.NotNull(app.UserJwtsFilePath);
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(app.UserJwtsFilePath));
+    }
 }

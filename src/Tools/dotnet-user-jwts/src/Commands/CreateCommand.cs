@@ -20,7 +20,7 @@ internal sealed class CreateCommand
         @"s\s"
     };
 
-    public static void Register(ProjectCommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app, Program program)
     {
         app.Command("create", cmd =>
         {
@@ -94,7 +94,7 @@ internal sealed class CreateCommand
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, outputOption.Value());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, outputOption.Value(), program);
             });
         });
     }
@@ -227,7 +227,8 @@ internal sealed class CreateCommand
         string projectPath,
         JwtCreatorOptions options,
         string optionsString,
-        string outputFormat)
+        string outputFormat,
+        Program program)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
@@ -238,7 +239,7 @@ internal sealed class CreateCommand
         var jwtIssuer = new JwtIssuer(options.Issuer, keyMaterial);
         var jwtToken = jwtIssuer.Create(options);
 
-        var jwtStore = new JwtStore(userSecretsId);
+        var jwtStore = new JwtStore(userSecretsId, program);
         var jwt = Jwt.Create(options.Scheme, jwtToken, JwtIssuer.WriteToken(jwtToken), options.Scopes, options.Roles, options.Claims);
         if (options.Claims is { } customClaims)
         {
