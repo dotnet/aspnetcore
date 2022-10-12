@@ -16,8 +16,10 @@ public interface IProblemDetailsService
     /// <param name="context">The <see cref="ProblemDetailsContext"/> associated with the current request/response.</param>
     /// <remarks>The <see cref="IProblemDetailsWriter"/> registered services
     /// are processed in sequence and the processing is completed when:
-    /// <list type="bullet">One of them reports that the response was written successfully, or.</list>
-    /// <list type="bullet">All <see cref="IProblemDetailsWriter"/> were executed and none of them was able to write the response successfully.</list>
+    /// <list type="bullet">
+    /// <item><description>One of them reports that the response was written successfully, or.</description></item>
+    /// <item><description>All <see cref="IProblemDetailsWriter"/> were executed and none of them was able to write the response successfully.</description></item>
+    /// </list>
     /// </remarks>
     ValueTask WriteAsync(ProblemDetailsContext context);
 }
