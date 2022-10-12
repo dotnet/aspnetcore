@@ -18,7 +18,6 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.RateLimiting" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
@@ -79,6 +78,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RateLimiting" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.RequestDecompression" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching" />
