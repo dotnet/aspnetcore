@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization;
 /// <see cref="AuthorizationPolicy"/>. MVC recognizes the <see cref="AuthorizeAttribute"/> and adds an instance of
 /// this filter to the associated action or controller.
 /// </summary>
+/// <remarks>
+/// This is not meant to be used in combination with <see cref="AuthorizationOptions.FallbackPolicy"/>. 
+/// The FallbackPolicy will take precedence over this.
+/// </remarks>
 public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
 {
     /// <summary>
