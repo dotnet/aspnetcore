@@ -397,10 +397,10 @@ public class AuthorizationMiddlewareTests
             => _reqs;
     }
 
-    public class Req2Attribute : Attribute, IRequirementData
+    public class ReqAuthorizeAttribute : AuthorizeAttribute, IRequirementData
     {
         IEnumerable<IAuthorizationRequirement> _reqs;
-        public Req2Attribute(params IAuthorizationRequirement[] req)
+        public ReqAuthorizeAttribute(params IAuthorizationRequirement[] req)
             => _reqs = req;
 
         public IEnumerable<IAuthorizationRequirement> GetRequirements()
@@ -451,21 +451,21 @@ public class AuthorizationMiddlewareTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(false, false)]
-    public async Task CanApplyTwoRequirementAttributeDirectlyToEndpoint(bool assertSuccess, bool assert2Success)
+    public async Task CanApplyAuthorizeRequirementAttributeDirectlyToEndpoint(bool anonymous, bool assertSuccess)
     {
         // Arrange
         var calledPolicy = false;
         var req = new AssertionRequirement(_ => { calledPolicy = true; return assertSuccess; });
-        var req2 = new AssertionRequirement(_ => { calledPolicy = true; return assert2Success; });
         var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
         var next = new TestRequestDelegate();
         var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new ReqAttribute(req), new Req2Attribute(req2)));
+        var context = GetHttpContext(anonymous: anonymous, endpoint: CreateEndpoint(new ReqAuthorizeAttribute(req)));
 
         // Act & Assert
         await middleware.Invoke(context);
         Assert.True(calledPolicy);
-        Assert.Equal(assertSuccess && assert2Success, next.Called);
+        Assert.Equal(assertSuccess && !anonymous, next.Called);
     }
 
     [Fact]
