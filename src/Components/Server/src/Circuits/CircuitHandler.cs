@@ -6,20 +6,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// <summary>
 /// A <see cref="CircuitHandler"/> allows running code during specific lifetime events of a <see cref="Circuit"/>.
 /// <list type="bullet">
-/// <item>
+/// <item><description>
 /// <see cref="OnCircuitOpenedAsync(Circuit, CancellationToken)"/> is invoked after an initial circuit to the client
 /// has been established.
-/// </item>
-/// <item>
+/// </description></item>
+/// <item><description>
 /// <see cref="OnConnectionUpAsync(Circuit, CancellationToken)"/> is invoked immediately after the completion of
 /// <see cref="OnCircuitOpenedAsync(Circuit, CancellationToken)"/>. In addition, the method is invoked each time a connection is re-established
 /// with a client after it's been dropped. <see cref="OnConnectionDownAsync(Circuit, CancellationToken)"/> is invoked each time a connection
 /// is dropped.
-/// </item>
-/// <item>
+/// </description></item>
+/// <item><description>
 /// <see cref="OnCircuitClosedAsync(Circuit, CancellationToken)"/> is invoked prior to the server evicting the circuit to the client.
 /// Application users may use this event to save state for a client that can be later rehydrated.
-/// </item>
+/// </description></item>
 /// </list>
 /// </summary>
 public abstract class CircuitHandler
