@@ -37,7 +37,11 @@ public class Project : IDisposable
             }
 
             var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
-            return string.IsNullOrEmpty(testLogFolder) ? GetAssemblyMetadata("ArtifactsLogDir") : testLogFolder;
+            if (string.IsNullOrEmpty(testLogFolder))
+            {
+                throw new InvalidOperationException($"No test log folder specified via {nameof(TestFrameworkFileLoggerAttribute)}.");
+            }
+            return testLogFolder;
         }
     }
 
