@@ -427,6 +427,28 @@ public class AuthorizationMiddlewareTests
     }
 
     [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task CanApplyMultipleRequirements(bool assertSuccess, bool assert2Success)
+    {
+        // Arrange
+        var calledPolicy = false;
+        var req = new AssertionRequirement(_ => { calledPolicy = true; return assertSuccess; });
+        var req2 = new AssertionRequirement(_ => { calledPolicy = true; return assert2Success; });
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new ReqAttribute(req, req2)));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.True(calledPolicy);
+        Assert.Equal(assertSuccess && assert2Success, next.Called);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task CanApplyRequirementAttributeWithAuthorizeDirectlyToEndpoint(bool assertSuccess)
