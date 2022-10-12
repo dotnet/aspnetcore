@@ -13,14 +13,14 @@ jobs:
       value: ${{ parameters.ChannelId }}
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals Build.Server.Amd64.VS2019
+    demands: ImageOverride -equals windows.vs2019.amd64
   steps:
     - task: PowerShell@2
       displayName: Add Build to Channel
       inputs:
         filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
-        arguments: -BuildId $(BARBuildId) 
-          -ChannelId $(ChannelId) 
+        arguments: -BuildId $(BARBuildId)
+          -ChannelId $(ChannelId)
           -MaestroApiAccessToken $(MaestroApiAccessToken)
           -MaestroApiEndPoint $(MaestroApiEndPoint)
           -MaestroApiVersion $(MaestroApiVersion)

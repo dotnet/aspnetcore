@@ -26,7 +26,7 @@ stages:
       - group: DotNet-Symbol-Server-Pats
     pool:
       name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Server.Amd64.VS2019
+      demands: ImageOverride -equals windows.vs2019.amd64
     steps:
       - task: DownloadBuildArtifacts@0
         displayName: Download Blob Artifacts
@@ -76,7 +76,7 @@ stages:
     condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
     pool:
       name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Server.Amd64.VS2019
+      demands: ImageOverride -equals windows.vs2019.amd64
     steps:
       - task: DownloadBuildArtifacts@0
         displayName: Download Package Artifacts

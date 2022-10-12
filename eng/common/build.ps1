@@ -24,6 +24,7 @@ Param(
   [switch] $help,
   [string] $runtimeSourceFeed = "",
   [string] $runtimeSourceFeedKey = "",
+  [switch] $nativeToolsOnMachine,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
@@ -60,6 +61,7 @@ function Print-Usage() {
     Write-Host "  -msbuildEngine <value>        Msbuild engine to use to run build ('dotnet', 'vs', or unspecified)."
     Write-Host "  -runtimeSourceFeed <value>    Alternate feed source for restoring .NET Runtimes and SDKs"
     Write-Host "  -runtimeSourceFeedKey <value> Key value for non-public values of runtimeSourceFeed"
+    Write-Host "  -nativeToolsOnMachine   Sets the native tools on machine environment variable (indicating that the script should use native tools on machine)"
     Write-Host ""
 
     Write-Host "Command line arguments not listed above are passed thru to msbuild."
@@ -134,6 +136,9 @@ try {
     . $configureToolsetScript
   }
 
+  if ($nativeToolsOnMachine) {
+    $env:NativeToolsOnMachine = $true
+  }
   if (($restore) -and ($null -eq $env:DisableNativeToolsetInstalls)) {
     InitializeNativeTools
   }

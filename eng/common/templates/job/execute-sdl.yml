@@ -20,7 +20,7 @@ jobs:
     - group: DotNet-VSTS-Bot
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals Build.Server.Amd64.VS2019
+    demands: ImageOverride -equals windows.vs2019.amd64
   steps:
   - checkout: self
     clean: true
