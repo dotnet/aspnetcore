@@ -152,7 +152,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
             {
                 chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
             }
-            Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
+            Logger.CertificateFailedValidation(clientCertificate.Subject, string.Join(",", chainErrors));
             return AuthenticateResults.InvalidClientCertificate;
         }
 
