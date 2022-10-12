@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
   <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - 디렉터리에 번들의 전체 로컬 복사본을 설치, 복구, 제거 또는
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]디렉터리[\]] - 디렉터리에 번들의 전체 로컬 복사본을 설치, 복구, 제거 또는
    작성합니다. 설치가 기본값입니다.
 
 /passive | /quiet -  프롬프트 없이 최소 UI를 표시하거나 UI 및
