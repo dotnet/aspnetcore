@@ -76,7 +76,7 @@ public class CookieBuilder
 
     /// <summary>
     /// Indicates if this cookie is essential for the application to function correctly. If true then
-    /// consent policy checks may be bypassed. The default value is <c>False</c>
+    /// consent policy checks may be bypassed. The default value is <c>false</c>
     /// but specific components may use a different value.
     /// </summary>
     public virtual bool IsEssential { get; set; }
