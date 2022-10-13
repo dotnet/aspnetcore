@@ -73,7 +73,7 @@ public class Project : IDisposable
         IDictionary<string, string> environmentVariables = null)
     {
         var hiveArg = $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
-        var argString = $"new {templateName} {hiveArg}";
+        var argString = $"new {templateName} {hiveArg} --no-update-check";
         environmentVariables ??= new Dictionary<string, string>();
         if (!string.IsNullOrEmpty(auth))
         {
@@ -361,7 +361,7 @@ public class Project : IDisposable
             AppContext.BaseDirectory,
             DotNetMuxer.MuxerPathOrDefault(),
             arguments +
-                $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
+                $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\" --no-update-check" +
                 $" -o {TemplateOutputDir}");
         await result.Exited;
         Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
