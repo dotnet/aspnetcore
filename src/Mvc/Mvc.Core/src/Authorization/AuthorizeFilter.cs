@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization;
 /// this filter to the associated action or controller.
 /// </summary>
 /// <remarks>
-/// This is not meant to be used in combination with <see cref="AuthorizationOptions.FallbackPolicy"/>. 
-/// The FallbackPolicy will take precedence over this.
+/// An authorize filter is not meant to be used in combination with <see cref="AuthorizationOptions.FallbackPolicy"/>. 
+/// The fallback policy takes precedence over an authorize filter.
 /// </remarks>
 public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
 {
