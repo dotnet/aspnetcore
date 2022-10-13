@@ -604,12 +604,17 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             var usedIds = new ConcurrentBag<string>();
 
             // requests on separate connections in parallel
-            Parallel.For(0, iterations, async i =>
+            var tasks = new List<Task>(iterations);
+            for (var i = 0; i < iterations; i++)
             {
-                var id = await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/");
-                Assert.DoesNotContain(id, usedIds.ToArray());
-                usedIds.Add(id);
-            });
+                tasks.Add(Task.Run(async () =>
+                {
+                    var id = await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/");
+                    Assert.DoesNotContain(id, usedIds.ToArray());
+                    usedIds.Add(id);
+                }));
+            }
+            await Task.WhenAll(tasks);
 
             // requests on same connection
             using (var connection = server.CreateConnection())
