@@ -30,14 +30,18 @@ public class Project : IDisposable
     {
         get
         {
-            var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
-            if (!string.IsNullOrEmpty(testLogFolder))
+            var helixWorkItemUploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (!string.IsNullOrEmpty(helixWorkItemUploadRoot))
             {
-                return testLogFolder;
+                return helixWorkItemUploadRoot;
             }
 
-            var helixWorkItemUploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-            return string.IsNullOrEmpty(helixWorkItemUploadRoot) ? GetAssemblyMetadata("ArtifactsLogDir") : helixWorkItemUploadRoot;
+            var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
+            if (string.IsNullOrEmpty(testLogFolder))
+            {
+                throw new InvalidOperationException($"No test log folder specified via {nameof(TestFrameworkFileLoggerAttribute)}.");
+            }
+            return testLogFolder;
         }
     }
 

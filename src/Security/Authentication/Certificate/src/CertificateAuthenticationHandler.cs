@@ -87,10 +87,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
                 }
             }
 
-            if (_cache != null)
-            {
-                _cache.Put(Context, clientCertificate, result);
-            }
+            _cache?.Put(Context, clientCertificate, result);
             return result;
         }
         catch (Exception ex)

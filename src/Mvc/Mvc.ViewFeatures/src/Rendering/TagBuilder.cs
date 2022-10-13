@@ -404,10 +404,7 @@ public class TagBuilder : IHtmlContent
                 writer.Write(tagBuilder.TagName);
                 tagBuilder.AppendAttributes(writer, encoder);
                 writer.Write(">");
-                if (tagBuilder._innerHtml != null)
-                {
-                    tagBuilder._innerHtml.WriteTo(writer, encoder);
-                }
+                tagBuilder._innerHtml?.WriteTo(writer, encoder);
                 writer.Write("</");
                 writer.Write(tagBuilder.TagName);
                 writer.Write(">");

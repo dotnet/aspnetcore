@@ -152,10 +152,7 @@ public class HttpSysOptions
                 throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
             }
 
-            if (_requestQueue != null)
-            {
-                _requestQueue.SetLengthLimit(_requestQueueLength);
-            }
+            _requestQueue?.SetLengthLimit(_requestQueueLength);
             // Only store it if it succeeds or hasn't started yet
             _requestQueueLength = value;
         }
@@ -211,10 +208,7 @@ public class HttpSysOptions
                 throw new ArgumentOutOfRangeException(nameof(value), value, message);
             }
 
-            if (_requestQueue != null)
-            {
-                _requestQueue.SetRejectionVerbosity(value);
-            }
+            _requestQueue?.SetRejectionVerbosity(value);
             // Only store it if it succeeds or hasn't started yet
             _rejectionVebosityLevel = value;
         }
