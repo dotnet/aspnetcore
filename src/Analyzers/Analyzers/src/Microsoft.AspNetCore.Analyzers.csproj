@@ -20,7 +20,6 @@
   <ItemGroup>
     <!-- This analyzer is supported in VS 2019 and must use a compatible Microsoft.CodeAnalysis version -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(Analyzer_MicrosoftCodeAnalysisCSharpVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
   </ItemGroup>
 
   <ItemGroup>
