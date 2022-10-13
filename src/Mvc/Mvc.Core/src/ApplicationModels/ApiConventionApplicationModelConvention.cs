@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// An <see cref="IActionModelConvention"/> that discovers
 /// <list type="bullet">
-/// <item><see cref="ApiConventionResult"/> from applied <see cref="ApiConventionTypeAttribute"/> or <see cref="ApiConventionMethodAttribute"/>.</item>
-/// <item><see cref="ProducesErrorResponseTypeAttribute"/> that applies to the action.</item>
+/// <item><description><see cref="ApiConventionResult"/> from applied <see cref="ApiConventionTypeAttribute"/> or <see cref="ApiConventionMethodAttribute"/>.</description></item>
+/// <item><description><see cref="ProducesErrorResponseTypeAttribute"/> that applies to the action.</description></item>
 /// </list>
 /// </summary>
 public class ApiConventionApplicationModelConvention : IActionModelConvention

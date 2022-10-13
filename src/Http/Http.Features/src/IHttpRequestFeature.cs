@@ -73,8 +73,8 @@ public interface IHttpRequestFeature
     /// <para>
     /// The values are not split or merged across header lines. E.g. The following headers:
     /// <list type="bullet">
-    /// <item>HeaderA: value1, value2</item>
-    /// <item>HeaderA: value3</item>
+    /// <item><description>HeaderA: value1, value2</description></item>
+    /// <item><description>HeaderA: value3</description></item>
     /// </list>
     /// Result in Headers["HeaderA"] = { "value1, value2", "value3" }
     /// </para>

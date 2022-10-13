@@ -543,9 +543,9 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified <paramref name="url"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
     /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
     /// </list>
     /// </summary>
@@ -566,9 +566,9 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified <paramref name="localUrl"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
     /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
     /// </list>
     /// </summary>
@@ -589,10 +589,10 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified route.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
-    /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
+    /// <item><description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description></item>
     /// </list>
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
