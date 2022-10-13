@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
   <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - バンドルの完全なローカル コピーに対する
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]ディレクトリ[\]] - バンドルの完全なローカル コピーに対する
   ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への作成を行います。既定の設定はインストールです。
 
 /passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも

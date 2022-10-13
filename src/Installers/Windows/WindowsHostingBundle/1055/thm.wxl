@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - yükler, onarır, kaldırır ya da
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]dizin[\]] - yükler, onarır, kaldırır ya da
    dizindeki paketin tam bir yerel kopyasını oluşturur. Varsayılan install değeridir.
 
 /passive | /quiet -  en az düzeyde istemsiz UI gösterir ya da hiç UI göstermez ve

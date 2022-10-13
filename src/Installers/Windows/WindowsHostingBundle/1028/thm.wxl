@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">您確定要取消嗎?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">前一版</String>
   <String Id="HelpHeader">安裝說明</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - 在目錄中安裝、修復、解除安裝或
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]目錄[\]] - 在目錄中安裝、修復、解除安裝或
    建立搭售方案的完整本機複本。預設為安裝。
 
 /passive | /quiet -  顯示最少 UI 且不含提示，或者不顯示 UI，也

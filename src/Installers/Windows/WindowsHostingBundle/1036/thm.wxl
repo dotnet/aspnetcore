@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">Êtes-vous sûr de vouloir annuler ?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Version précédente</String>
   <String Id="HelpHeader">Aide du programme d'installation</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installe, répare, désinstalle ou
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]répertoire[\]] - installe, répare, désinstalle ou
    crée une copie locale complète du bundle dans le répertoire. Install est l'option par défaut.
 
 /passive | /quiet -  affiche une interface utilisateur minimale, sans invite, ou n'affiche 
