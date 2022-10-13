@@ -151,4 +151,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotUseIHeaderDictionaryAdd = new(
+        "ASP0019",
+        new LocalizableResourceString(nameof(Resources.Analyzer_HeaderDictionaryAdd_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Analyzer_HeaderDictionaryAdd_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
