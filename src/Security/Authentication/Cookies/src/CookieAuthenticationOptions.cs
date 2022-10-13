@@ -44,7 +44,7 @@ public class CookieAuthenticationOptions : AuthenticationSchemeOptions
     /// <item><description><see cref="CookieBuilder.SameSite"/> determines if the browser should allow the cookie to be attached to same-site or cross-site requests.
     /// The default is <c>Lax</c>, which means the cookie is only allowed to be attached to cross-site requests using safe HTTP methods and same-site requests.</description></item>
     /// <item><description><see cref="CookieBuilder.HttpOnly"/> determines if the browser should allow the cookie to be accessed by client-side JavaScript.
-    /// The default is <c>true</c>, which means the cookie will only be passed to http requests and is not made available to script on the page.</description></item>
+    /// The default is <c>true</c>, which means the cookie will only be passed to HTTP requests and is not made available to JavaScript on the page.</description></item>
     /// <item><description><see cref="CookieBuilder.Expiration"/> is currently ignored. Use <see cref="ExpireTimeSpan"/> to control lifetime of cookie authentication.</description></item>
     /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.</description></item>
     /// </list>
