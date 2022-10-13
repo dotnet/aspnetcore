@@ -72,9 +72,9 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         string GetString(string id) => "Foo";
         _ = builder.MapDelete("/{id}", GetString)
-            .WithOpenApi(generatedOperation => {
-                generatedOperation.Parameters[0].Schema = new() { Type = "number" };
-                return generatedOperation;
+            .WithOpenApi(operation => new(operation)
+            {
+                Parameters = new List<OpenApiParameter>() { new() { Schema = new() { Type = "number" } } }
             });
 
         var dataSource = GetBuilderEndpointDataSource(builder);
@@ -161,15 +161,13 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         string GetString() => "Foo";
         var myGroup = builder.MapGroup("/group");
-        myGroup.WithOpenApi(o =>
+        myGroup.WithOpenApi(o => new(o)
         {
-            o.Summary = "Set from outer group";
-            return o;
+            Summary = "Set from outer group"
         });
-        myGroup.MapDelete("/a", GetString).WithOpenApi(o =>
+        myGroup.MapDelete("/a", GetString).WithOpenApi(o => new(o)
         {
-            o.Summary = "Set from endpoint";
-            return o;
+            Summary = "Set from endpoint"
         });
 
         // The RotueGroupBuilder adds a single EndpointDataSource.
@@ -195,10 +193,9 @@ public class OpenApiRouteHandlerBuilderExtensionTests
 
         static void WithLocalSummary(RouteHandlerBuilder builder)
         {
-            builder.WithOpenApi(operation =>
+            builder.WithOpenApi(operation => new(operation)
             {
-                operation.Summary = $"| Local Summary | 200 Status Response Content-Type: {operation.Responses["200"].Content.Keys.Single()}";
-                return operation;
+                Summary = $"| Local Summary | 200 Status Response Content-Type: {operation.Responses["200"].Content.Keys.Single()}"
             });
         }
 
@@ -210,19 +207,17 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         WithLocalSummary(outerGroup.MapDelete("/outer-a", GetString));
 
         // The order WithOpenApi() is relative to the MapDelete() methods does not matter.
-        outerGroup.WithOpenApi(operation =>
+        outerGroup.WithOpenApi(operation => new(operation)
         {
-            operation.Summary = $"Outer Group Summary {operation.Summary}";
-            return operation;
+            Summary = $"Outer Group Summary {operation.Summary}"
         });
 
         WithLocalSummary(outerGroup.MapDelete("/outer-b", GetString));
         WithLocalSummary(innerGroup.MapDelete("/inner-a", GetString));
 
-        innerGroup.WithOpenApi(operation =>
+        innerGroup.WithOpenApi(operation => new(operation)
         {
-            operation.Summary = $"| Inner Group Summary {operation.Summary}";
-            return operation;
+            Summary = $"| Inner Group Summary {operation.Summary}"
         });
 
         WithLocalSummary(innerGroup.MapDelete("/inner-b", GetString));

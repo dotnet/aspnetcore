@@ -168,8 +168,12 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         {
             DisplayName = displayName,
             ApplicationServices = _applicationServices,
-            Metadata = { handler.Method },
         };
+
+        if (isRouteHandler)
+        {
+            builder.Metadata.Add(handler.Method);
+        }
 
         if (entry.HttpMethods is not null)
         {

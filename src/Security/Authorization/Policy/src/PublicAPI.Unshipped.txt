@@ -1,5 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.IServiceProvider! services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.AuthorizationMiddleware!>! logger) -> void
 static Microsoft.AspNetCore.Builder.AuthorizationEndpointConventionBuilderExtensions.RequireAuthorization<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> TBuilder
 static Microsoft.AspNetCore.Builder.AuthorizationEndpointConventionBuilderExtensions.RequireAuthorization<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.PolicyServiceCollectionExtensions.AddAuthorizationBuilder(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!

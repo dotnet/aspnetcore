@@ -5,9 +5,9 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -62,7 +62,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44017")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44185")]
     public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
     {
         // Arrange & Act

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 
@@ -32,6 +33,7 @@ public abstract class SharedOptionsBase
 
     /// <summary>
     /// The relative request path that maps to static resources.
+    /// This defaults to the site root '/'.
     /// </summary>
     public PathString RequestPath
     {
@@ -42,6 +44,10 @@ public abstract class SharedOptionsBase
     /// <summary>
     /// The file system used to locate resources
     /// </summary>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public IFileProvider? FileProvider
     {
         get { return SharedOptions.FileProvider; }

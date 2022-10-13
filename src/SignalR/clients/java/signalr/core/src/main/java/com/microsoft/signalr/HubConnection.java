@@ -1375,6 +1375,7 @@ public class HubConnection implements AutoCloseable {
         private Boolean handshakeReceived = false;
         private ScheduledExecutorService handshakeTimeout = null;
         private BehaviorSubject<InvocationMessage> messages = BehaviorSubject.create();
+        private ExecutorService resultInvocationPool = null;
 
         public final Lock lock = new ReentrantLock();
         public final CompletableSubject handshakeResponseSubject = CompletableSubject.create();
@@ -1506,7 +1507,7 @@ public class HubConnection implements AutoCloseable {
                 }
                 handshakeReceived = true;
                 handshakeResponseSubject.onComplete();
-                handleInvocations();
+                startInvocationProcessing();
             }
         }
 
@@ -1528,66 +1529,81 @@ public class HubConnection implements AutoCloseable {
             if (this.handshakeTimeout != null) {
                 this.handshakeTimeout.shutdownNow();
             }
+
+            if (this.resultInvocationPool != null) {
+                this.resultInvocationPool.shutdownNow();
+            }
         }
 
         public void dispatchInvocation(InvocationMessage message) {
             messages.onNext(message);
         }
 
-        private void handleInvocations() {
-            messages.observeOn(Schedulers.io()).subscribe(invocationMessage -> {
-                List<InvocationHandler> handlers = this.connection.handlers.get(invocationMessage.getTarget());
-                boolean expectsResult = invocationMessage.getInvocationId() != null;
-                if (handlers == null) {
-                    if (expectsResult) {
-                        logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
-                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                            null, "Client did not provide a result."));
-                    } else {
-                        logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
-                    }
-                    return;
-                }
-                Object result = null;
-                Exception resultException = null;
-                Boolean hasResult = false;
-                for (InvocationHandler handler : handlers) {
-                    try {
-                        Object action = handler.getAction();
-                        if (handler.getHasResult()) {
-                            FunctionBase function = (FunctionBase)action;
-                            result = function.invoke(invocationMessage.getArguments()).blockingGet();
-                            hasResult = true;
-                        } else {
-                            ((ActionBase)action).invoke(invocationMessage.getArguments()).blockingAwait();
-                        }
-                    } catch (Exception e) {
-                        logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
-                        if (handler.getHasResult()) {
-                            resultException = e;
-                        }
-                    }
-                }
-
-                if (expectsResult) {
-                    if (resultException != null) {
-                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                            null, resultException.getMessage()));
-                    } else if (hasResult) {
-                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                            result, null));
-                    } else {
-                        logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
-                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                            null, "Client did not provide a result."));
-                    }
-                } else if (hasResult) {
-                    logger.warn("Result given for '{}' method but server is not expecting a result.", invocationMessage.getTarget());
+        private void startInvocationProcessing() {
+            this.resultInvocationPool = Executors.newCachedThreadPool();
+            this.messages.observeOn(Schedulers.io()).subscribe(invocationMessage -> {
+                // if client result expected, unblock the invocation processing thread
+                if (invocationMessage.getInvocationId() != null) {
+                    this.resultInvocationPool.submit(() -> handleInvocation(invocationMessage));
+                } else {
+                    handleInvocation(invocationMessage);
                 }
             }, (e) -> {
                 stop(e.getMessage());
             }, () -> {
             });
+        }
+
+        private void handleInvocation(InvocationMessage invocationMessage)
+        {
+            List<InvocationHandler> handlers = this.connection.handlers.get(invocationMessage.getTarget());
+            boolean expectsResult = invocationMessage.getInvocationId() != null;
+            if (handlers == null) {
+                if (expectsResult) {
+                    logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
+                    sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                        null, "Client did not provide a result."));
+                } else {
+                    logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
+                }
+                return;
+            }
+            Object result = null;
+            Exception resultException = null;
+            Boolean hasResult = false;
+            for (InvocationHandler handler : handlers) {
+                try {
+                    Object action = handler.getAction();
+                    if (handler.getHasResult()) {
+                        FunctionBase function = (FunctionBase)action;
+                        result = function.invoke(invocationMessage.getArguments()).blockingGet();
+                        hasResult = true;
+                    } else {
+                        ((ActionBase)action).invoke(invocationMessage.getArguments()).blockingAwait();
+                    }
+                } catch (Exception e) {
+                    logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
+                    if (handler.getHasResult()) {
+                        resultException = e;
+                    }
+                }
+            }
+
+            if (expectsResult) {
+                if (resultException != null) {
+                    sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                        null, resultException.getMessage()));
+                } else if (hasResult) {
+                    sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                        result, null));
+                } else {
+                    logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
+                    sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                        null, "Client did not provide a result."));
+                }
+            } else if (hasResult) {
+                logger.warn("Result given for '{}' method but server is not expecting a result.", invocationMessage.getTarget());
+            }
         }
 
         @Override

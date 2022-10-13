@@ -1281,7 +1281,14 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (invocationMessageChannelReader.TryRead(out var invocationMessage))
                 {
-                    await DispatchInvocationAsync(invocationMessage, connectionState).ConfigureAwait(false);
+                    var invokeTask = DispatchInvocationAsync(invocationMessage, connectionState);
+                    // If a client result is expected we shouldn't block on user code as that could potentially permanently block the application
+                    // Even if it doesn't permanently block, it would be better if non-client result handlers could still be called while waiting for a result
+                    // e.g. chat while waiting for user input for a turn in a game
+                    if (string.IsNullOrEmpty(invocationMessage.InvocationId))
+                    {
+                        await invokeTask.ConfigureAwait(false);
+                    }
                 }
             }
         }

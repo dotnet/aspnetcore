@@ -1,7 +1,6 @@
 # Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
 # See https://help.github.com/articles/about-code-owners/
 
-*                                                                                 @Pilchie
 /**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review
 /global.json                                                                      @dotnet/aspnet-build @dougbu @wtgodbe
 /.azure/                                                                          @dotnet/aspnet-build @dougbu @wtgodbe
@@ -46,8 +45,8 @@
 /src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review @tratcher
 /src/Servers/                                                                     @tratcher @halter73 @BrennanConroy @JamesNK
 /src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73 @BrennanConroy @JamesNK
-/src/Shared/runtime/                                                              @dotnet/http
-/src/Shared/test/Shared.Tests/runtime/                                            @dotnet/http
+/src/Shared/runtime/                                                              @tratcher
+/src/Shared/test/Shared.Tests/runtime/                                            @tratcher
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/SignalR/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @BrennanConroy @halter73
 /src/submodules                                                                   @dotnet/aspnet-build @dougbu @wtgodbe

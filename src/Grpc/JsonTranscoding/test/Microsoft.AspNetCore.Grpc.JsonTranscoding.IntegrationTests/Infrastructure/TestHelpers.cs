@@ -62,13 +62,13 @@ internal static class TestHelpers
         Dictionary<string, RouteParameter>? routeParameterDescriptors = null,
         MessageDescriptor? bodyDescriptor = null,
         bool? bodyDescriptorRepeated = null,
-        List<FieldDescriptor>? bodyFieldDescriptors = null)
+        FieldDescriptor? bodyFieldDescriptor = null)
     {
         return new CallHandlerDescriptorInfo(
             responseBodyDescriptor,
             bodyDescriptor,
             bodyDescriptorRepeated ?? false,
-            bodyFieldDescriptors,
+            bodyFieldDescriptor,
             routeParameterDescriptors ?? new Dictionary<string, RouteParameter>(),
             JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")));
     }

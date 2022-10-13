@@ -239,7 +239,7 @@ public static class StatusCodes
     public const int Status419AuthenticationTimeout = 419; // Not defined in any RFC
 
     /// <summary>
-    /// HTTP status code 422.
+    /// HTTP status code 421.
     /// </summary>
     public const int Status421MisdirectedRequest = 421;
 

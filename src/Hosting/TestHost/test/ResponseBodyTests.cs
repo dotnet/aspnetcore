@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost.Tests;
@@ -117,6 +118,40 @@ public class ResponseBodyTests
         var response = await client.GetAsync("/");
         var responseBytes = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal(contentBytes, responseBytes);
+    }
+
+    [Fact]
+    public async Task BodyStream_ZeroByteRead_Success()
+    {
+        var emptyReadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var contentBytes = new byte[] { 32 };
+        using var host = await CreateHost(async httpContext =>
+        {
+            await httpContext.Response.Body.WriteAsync(contentBytes);
+            await emptyReadStarted.Task;
+            await httpContext.Response.Body.WriteAsync(contentBytes);
+        });
+
+        var client = host.GetTestServer().CreateClient();
+        var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+        var stream = await response.Content.ReadAsStreamAsync();
+        var bytes = new byte[5];
+        var read = await stream.ReadAsync(bytes);
+        Assert.Equal(1, read);
+        Assert.Equal(contentBytes[0], bytes[0]);
+
+        // This will chain to the Memory overload, but that does less restrictive validation on the input.
+        // https://github.com/dotnet/aspnetcore/issues/41692#issuecomment-1248714684
+        var zeroByteRead = stream.ReadAsync(Array.Empty<byte>(), 0, 0);
+        Assert.False(zeroByteRead.IsCompleted);
+        emptyReadStarted.SetResult();
+        read = await zeroByteRead.DefaultTimeout();
+        Assert.Equal(0, read);
+
+        read = await stream.ReadAsync(bytes);
+        Assert.Equal(1, read);
+        Assert.Equal(contentBytes[0], bytes[0]);
     }
 
     private Task<IHost> CreateHost(RequestDelegate appDelegate)

@@ -68,8 +68,6 @@ internal sealed class ResponseBodyReaderStream : Stream
 
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        VerifyBuffer(buffer, offset, count);
-
         return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
@@ -103,22 +101,6 @@ internal sealed class ResponseBodyReaderStream : Stream
         readableBuffer.CopyTo(buffer.Span);
         _pipe.Reader.AdvanceTo(readableBuffer.End);
         return (int)actual;
-    }
-
-    private static void VerifyBuffer(byte[] buffer, int offset, int count)
-    {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-        if (offset < 0 || offset > buffer.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-        }
-        if (count <= 0 || count > buffer.Length - offset)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
-        }
     }
 
     internal void Cancel()

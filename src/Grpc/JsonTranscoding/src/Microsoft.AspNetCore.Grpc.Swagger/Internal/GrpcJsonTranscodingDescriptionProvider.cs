@@ -137,7 +137,7 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             });
         }
 
-        var queryParameters = ServiceDescriptorHelpers.ResolveQueryParameterDescriptors(routeParameters, methodDescriptor, bodyDescriptor?.Descriptor, bodyDescriptor?.FieldDescriptors);
+        var queryParameters = ServiceDescriptorHelpers.ResolveQueryParameterDescriptors(routeParameters, methodDescriptor, bodyDescriptor?.Descriptor, bodyDescriptor?.FieldDescriptor);
         foreach (var queryDescription in queryParameters)
         {
             var fieldType = MessageDescriptorHelpers.ResolveFieldType(queryDescription.Value);

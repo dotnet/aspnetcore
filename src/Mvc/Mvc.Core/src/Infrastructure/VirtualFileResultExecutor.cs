@@ -128,7 +128,7 @@ public partial class VirtualFileResultExecutor : FileResultExecutorBase, IAction
         }
 
         var normalizedPath = result.FileName;
-        if (normalizedPath.StartsWith("~", StringComparison.Ordinal))
+        if (normalizedPath.StartsWith('~'))
         {
             normalizedPath = normalizedPath.Substring(1);
         }
