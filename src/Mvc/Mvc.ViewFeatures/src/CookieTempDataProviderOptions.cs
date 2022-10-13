@@ -43,8 +43,8 @@ public class CookieTempDataProviderOptions
     /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest" />.</description></item>
     /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
     /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>. This property is only considered when a
-    /// user opts into the CookiePolicyMiddleware. If you are using this middleware and want to use.</description></item>
-    /// <item><description><see cref="CookieTempDataProvider"/>, then either set this property to <c>true</c> or
+    /// user opts into the CookiePolicyMiddleware. If you are using the CookiePolicyMiddleware middleware together with 
+    /// <see cref="CookieTempDataProvider"/>, then either set this property to <c>true</c> or
     /// request user consent for non-essential cookies.</description></item>
     /// </list>
     /// </remarks>
