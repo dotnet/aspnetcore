@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">Installazione di [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
@@ -8,8 +8,8 @@
   <String Id="InstallVersion">Versione [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Annullare?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versione precedente</String>
-  <String Id="HelpHeader">Guida alla configurazione</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - installa, ripara, disinstalla o
+  <String Id="HelpHeader">Guida all'installazione</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installa, ripara, disinstalla o
    crea una copia locale completa del bundle nella directory. L'opzione predefinita è install.
 
 /passive | /quiet -  visualizza un'interfaccia utente minima senza prompt oppure non visualizza alcuna interfaccia utente
@@ -27,29 +27,29 @@
   <String Id="OptionsLocationLabel">Percorso di installazione:</String>
   <String Id="OptionsBrowseButton">&amp;Sfoglia</String>
   <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Annulla</String>
+  <String Id="OptionsCancelButton">Ann&amp;ulla</String>
   <String Id="ProgressHeader">Stato installazione</String>
   <String Id="ProgressLabel">Elaborazione di:</String>
   <String Id="OverallProgressPackageText">Inizializzazione in corso...</String>
-  <String Id="ProgressCancelButton">&amp;Annulla</String>
+  <String Id="ProgressCancelButton">Ann&amp;ulla</String>
   <String Id="ModifyHeader">Modifica installazione</String>
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
-  <String Id="SuccessRepairHeader">La riparazione è stata completata</String>
-  <String Id="SuccessUninstallHeader">La disinstallazione è stata completata</String>
-  <String Id="SuccessInstallHeader">L'installazione è stata completata</String> 
-  <String Id="SuccessHeader">L'installazione è stata completata</String>	
+  <String Id="SuccessRepairHeader">Riparazione completata correttamente</String>
+  <String Id="SuccessUninstallHeader">Disinstallazione completata correttamente</String>
+  <String Id="SuccessInstallHeader">Installazione completata correttamente</String>
+  <String Id="SuccessHeader">Installazione completata</String>
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
-  <String Id="SuccessRestartText">Per poter usare il software, è necessario riavviare il computer.</String>
+  <String Id="SuccessRestartText">È necessario riavviare il computer prima di utilizzare il software.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
   <String Id="SuccessCloseButton">&amp;Chiudi</String>
-  <String Id="FailureHeader">L'installazione non è riuscita</String>
-  <String Id="FailureInstallHeader">L'installazione non è riuscita</String>
-  <String Id="FailureUninstallHeader">La disinstallazione non è riuscita</String>
-  <String Id="FailureRepairHeader">La riparazione non è riuscita</String> 
-  <String Id="FailureHyperlinkLogText">L'installazione non è riuscita a causa di uno o più problemi. Risolvere i problemi e ripetere l'installazione. Per altre informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Per completare il rollback del software, è necessario riavviare il computer.</String>
+  <String Id="FailureHeader">Installazione non riuscita</String>
+  <String Id="FailureInstallHeader">Installazione non riuscita</String>
+  <String Id="FailureUninstallHeader">Disinstallazione non riuscita</String>
+  <String Id="FailureRepairHeader">Riparazione non riuscita</String>
+  <String Id="FailureHyperlinkLogText">Installazione non riuscita a causa di uno o più problemi. Risolvere i problemi e ritentare l'installazione. Per ulteriori informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">È necessario riavviare il computer per completare il rollback del software.</String>
   <String Id="FailureRestartButton">&amp;Riavvia</String>
   <String Id="FailureCloseButton">&amp;Chiudi</String>
   <String Id="FilesInUseHeader">File in uso</String>

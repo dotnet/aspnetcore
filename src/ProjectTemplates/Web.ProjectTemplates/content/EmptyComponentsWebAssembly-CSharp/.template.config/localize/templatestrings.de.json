@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly App leer",
   "description": "Eine leere Projektvorlage zum Erstellen einer Blazor-App, die auf WebAssembly ausgeführt und optional von einer ASP.NET Core App gehostet wird. Diese Vorlage enthält keinen Inhalt.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
+  "symbols/Framework/choices/net7.0/description": "Ziel net7.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/Hosted/displayName": "ASP.NET Core _gehostet",
   "symbols/Hosted/description": "Enthält, falls angegeben, einen ASP.NET Core Host für die Blazor WebAssembly App.",
