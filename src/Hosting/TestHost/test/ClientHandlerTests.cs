@@ -332,26 +332,16 @@ public class ClientHandlerTests
     }
 
     [Fact]
-    public void ResponseStart()
+    public void Send_ThrowsNotSupportedException()
     {
-        bool? preHasStarted = null;
-        bool? postHasStarted = null;
-        var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
-        {
-            preHasStarted = context.Response.HasStarted;
-
-            await context.Response.StartAsync();
-
-            postHasStarted = context.Response.HasStarted;
-        }));
+        var handler = new ClientHandler(
+            PathString.Empty,
+            new DummyApplication(context => { return Task.CompletedTask; }));
 
         var invoker = new HttpMessageInvoker(handler);
         var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
 
-        var response = invoker.Send(message, CancellationToken.None);
-
-        Assert.False(preHasStarted);
-        Assert.True(postHasStarted);
+        Assert.Throws<NotSupportedException>(() => invoker.Send(message, CancellationToken.None));
     }
 
     [Fact]
