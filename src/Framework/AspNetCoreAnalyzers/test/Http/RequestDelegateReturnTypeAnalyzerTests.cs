@@ -14,6 +14,42 @@ public class RequestDelegateReturnTypeAnalyzerTests
         $"The method used to create a RequestDelegate returns Task<{type}>. RequestDelegate discards this value. If this isn't intended then don't return a value or change the method signature to not match RequestDelegate.";
 
     [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ThrowError_NoDiagnostics()
+    {
+        // Arrange & Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Use(async (HttpContext context, Func<Task> next) =>
+{
+    context.SetEndpoint(new Endpoint(c => throw new Exception(), EndpointMetadataCollection.Empty, ""Test""));
+    await next();
+});
+");
+    }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnNull_NoDiagnostics()
+    {
+        // Arrange & Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Use(async (HttpContext context, Func<Task> next) =>
+{
+    context.SetEndpoint(new Endpoint(c => null, EndpointMetadataCollection.Empty, ""Test""));
+    await next();
+});
+");
+    }
+
+    [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnType_EndpointCtor_ReportDiagnostics()
     {
         // Arrange & Act & Assert

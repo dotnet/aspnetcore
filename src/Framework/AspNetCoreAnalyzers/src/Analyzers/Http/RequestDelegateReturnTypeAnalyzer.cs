@@ -59,7 +59,10 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
                             var resolvedOperation = WalkDownConversion(returnedValue);
                             var returnType = resolvedOperation.Type;
 
-                            if (SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, wellKnownTypes.TaskOfT))
+                            // Return type could be null if:
+                            // 1. The method returns null.
+                            // 2. The method throws an exception.
+                            if (returnType != null && SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, wellKnownTypes.TaskOfT))
                             {
                                 AddDiagnosticWarning(context, anonymousFunction.Syntax.GetLocation(), returnType);
                                 return;
