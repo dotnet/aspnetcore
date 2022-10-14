@@ -79,7 +79,7 @@ public class HeaderDictionaryAddFixer : CodeFixProvider
             var namespaceName = usingDirectives[i].Name.ToString();
 
             // Always insert the new using directive after any 'System' using directives.
-            if (namespaceName.StartsWith("System"))
+            if (namespaceName.StartsWith("System", StringComparison.Ordinal))
             {
                 insertionIndex = i + 1;
                 continue;
