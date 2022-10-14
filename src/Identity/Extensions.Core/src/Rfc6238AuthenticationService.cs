@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -15,7 +17,6 @@ internal static class Rfc6238AuthenticationService
     private static readonly Encoding _encoding = new UTF8Encoding(false, true);
 #if NETSTANDARD2_0 || NETFRAMEWORK
     private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-    private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
 
     internal static int ComputeTotp(
