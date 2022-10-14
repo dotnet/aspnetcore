@@ -27,4 +27,20 @@ internal static class HeaderEncoding
     {
         return Encoding.GetBytes(myString);
     }
+
+    internal static Span<byte> GetBytes(string myString, UnmanagedBufferWriter writer)
+    {
+        // Compute the maximum amount of bytes needed for the given string.
+        // Include an extra byte for the null terminator.
+        Span<byte> buffer = writer.GetSpan(Encoding.GetMaxByteCount(myString.Length) + 1);
+        int written = Encoding.GetBytes(myString, buffer);
+
+        // Write a null terminator - the GetBytes() API doesn't add one.
+        buffer[written++] = 0;
+
+        // Let the writer know how much was used.
+        writer.Advance(written);
+
+        return buffer;
+    }
 }
