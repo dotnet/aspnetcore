@@ -54,6 +54,7 @@ public class Program
         {
             @"
 using Microsoft.AspNetCore.Mvc;
+
 namespace HeaderDictionaryAddFixerTests;
 public class TestController : ControllerBase
 {
@@ -73,6 +74,7 @@ public class Program
             @"
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 namespace HeaderDictionaryAddFixerTests;
 public class TestController : ControllerBase
 {
@@ -96,6 +98,7 @@ public class Program
             @"
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+
 namespace HeaderDictionaryAddFixerTests;
 public class TestController : ControllerBase
 {
@@ -116,6 +119,7 @@ public class Program
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 namespace HeaderDictionaryAddFixerTests;
 public class TestController : ControllerBase
 {
@@ -163,6 +167,49 @@ public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
         Response.Headers.Append(""Content-Type"", ""text/html"");
         return Ok();
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+    }
+}"
+        };
+
+        yield return new[]
+        {
+            @"
+using System.Collections.Generic;
+
+namespace HeaderDictionaryAddFixerTests;
+public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
+{
+    public Microsoft.AspNetCore.Mvc.IActionResult Endpoint()
+    {
+        {|#0:Response.Headers.Add(""Content-Type"", ""text/html"")|};
+        return Ok(new List<string>());
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+    }
+}",
+            @"
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+
+namespace HeaderDictionaryAddFixerTests;
+public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
+{
+    public Microsoft.AspNetCore.Mvc.IActionResult Endpoint()
+    {
+        Response.Headers.Append(""Content-Type"", ""text/html"");
+        return Ok(new List<string>());
     }
 }
 

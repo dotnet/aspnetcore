@@ -76,10 +76,16 @@ public class HeaderDictionaryAddFixer : CodeFixProvider
 
         for (var i = 0; i < usingDirectives.Count; i++)
         {
-            var result = string.Compare(
-                "Microsoft.AspNetCore.Http",
-                usingDirectives[i].Name.ToString(),
-                StringComparison.Ordinal);
+            var namespaceName = usingDirectives[i].Name.ToString();
+
+            // Always insert the new using directive after any 'System' using directives.
+            if (namespaceName.StartsWith("System"))
+            {
+                insertionIndex = i + 1;
+                continue;
+            }
+
+            var result = string.Compare("Microsoft.AspNetCore.Http", namespaceName, StringComparison.Ordinal);
 
             if (result == 0)
             {
@@ -90,6 +96,7 @@ public class HeaderDictionaryAddFixer : CodeFixProvider
             if (result < 0)
             {
                 insertionIndex = i;
+                break;
             }
         }
 
