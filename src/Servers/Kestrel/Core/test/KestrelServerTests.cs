@@ -106,6 +106,25 @@ public class KestrelServerTests
     }
 
     [Fact]
+    public void StartInformsAboutHttp2BeingDisabledWhenHttp1AndHttp2WithTlsOff()
+    {
+        var testLogger = new TestApplicationErrorLogger();
+        var kestrelOptions = new KestrelServerOptions();
+        kestrelOptions.ListenAnyIP(50000, options =>
+        {
+            options.Protocols = HttpProtocols.Http1AndHttp2;
+        });
+
+        using (var server = CreateServer(kestrelOptions, testLogger))
+        {
+            StartDummyApplication(server);
+
+            var info = testLogger.Messages.Single(log => log.LogLevel == LogLevel.Information);
+            Assert.Contains("HTTP/2 was disabled", info.Message);
+        }
+    }
+
+    [Fact]
     public void StartWithPathBaseInAddressThrows()
     {
         var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
