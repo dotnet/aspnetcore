@@ -115,6 +115,9 @@ public abstract class HttpRequest
     /// <summary>
     /// Gets or sets the request body as a form.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">
+    ///     incorrect content-type.
+    /// </exception>
     /// <remarks>
     ///     <para>
     ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
@@ -127,6 +130,9 @@ public abstract class HttpRequest
     /// <summary>
     /// Reads the request body if it is a form.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">
+    ///     incorrect content-type.
+    /// </exception>
     /// <returns></returns>
     public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
 
