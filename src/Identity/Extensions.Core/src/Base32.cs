@@ -13,7 +13,7 @@ internal static class Base32
     private const string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 #if NET6_0_OR_GREATER
-    public static string ToBase32WithSecureBytes()
+    public static string GenerateBase32()
     {
         const int length = 20;
         return string.Create(((length + 4) / 5) * 8, 0, static (buffer, _) =>

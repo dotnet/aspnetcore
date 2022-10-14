@@ -27,9 +27,9 @@ public class Base32Test
     }
 
     [Fact]
-    public void SecureToBase32IsValid()
+    public void GenerateBase32IsValid()
     {
-        var output = Base32.FromBase32(Base32.ToBase32WithSecureBytes());
+        var output = Base32.FromBase32(Base32.GenerateBase32());
         Assert.Equal(20, output.Length);
     }
 

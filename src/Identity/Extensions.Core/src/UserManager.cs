@@ -2509,7 +2509,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         _rng.GetBytes(bytes);
         return Base32.ToBase32(bytes);
 #else
-        return Base32.ToBase32WithSecureBytes();
+        return Base32.GenerateBase32();
 #endif
     }
 
