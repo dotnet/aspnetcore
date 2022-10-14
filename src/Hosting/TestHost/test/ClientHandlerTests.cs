@@ -332,6 +332,29 @@ public class ClientHandlerTests
     }
 
     [Fact]
+    public void ResponseStart()
+    {
+        bool? preHasStarted = null;
+        bool? postHasStarted = null;
+        var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+        {
+            preHasStarted = context.Response.HasStarted;
+
+            await context.Response.StartAsync();
+
+            postHasStarted = context.Response.HasStarted;
+        }));
+
+        var invoker = new HttpMessageInvoker(handler);
+        var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+        var response = invoker.Send(message, CancellationToken.None);
+
+        Assert.False(preHasStarted);
+        Assert.True(postHasStarted);
+    }
+
+    [Fact]
     public async Task ResubmitRequestWorks()
     {
         int requestCount = 1;

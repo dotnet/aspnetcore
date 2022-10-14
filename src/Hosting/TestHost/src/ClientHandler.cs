@@ -48,10 +48,24 @@ public class ClientHandler : HttpMessageHandler
 
     /// <summary>
     /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
-    /// associated HttpResponseMessage.
+    /// associated HttpResponseMessage synchronously.
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="request">The <see cref="HttpRequestMessage"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns></returns>
+    protected override HttpResponseMessage Send(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return SendAsync(request, cancellationToken).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
+    /// associated HttpResponseMessage asynchronously.
+    /// </summary>
+    /// <param name="request">The <see cref="HttpRequestMessage"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns></returns>
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
