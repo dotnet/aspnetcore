@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">Configuración de [BundleNameFull]</String>
   <String Id="Title">[BundleNameShort]</String>
@@ -6,10 +6,10 @@
   <String Id="InstallHeader">Bienvenido</String>
   <String Id="InstallMessage">El programa de instalación instalará [WixBundleName] en el equipo. Haga clic en Instalar para continuar, en Opciones para establecer el directorio de instalación o en Cerrar para salir.</String>
   <String Id="InstallVersion">Versión [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar?</String>
+  <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar la operación?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versión anterior</String>
-  <String Id="HelpHeader">Ayuda de configuración</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - instala, repara, desinstala o
+  <String Id="HelpHeader">Ayuda del programa de instalación</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directorio[\]] - instala, repara, desinstala o
    crea una copia local completa del paquete en el directorio. Install es la opción predeterminada.
 
 /passive | /quiet -  muestra una IU mínima sin peticiones, o bien no muestra la IU 
@@ -38,16 +38,16 @@
   <String Id="ModifyCloseButton">&amp;Cerrar</String>
   <String Id="SuccessRepairHeader">La reparación se completó correctamente</String>
   <String Id="SuccessUninstallHeader">La desinstalación se completó correctamente</String>
-  <String Id="SuccessInstallHeader">La instalación se completó correctamente</String> 
-  <String Id="SuccessHeader">La instalación o desinstalación se realizó correctamente</String>	
+  <String Id="SuccessInstallHeader">La instalación se completó correctamente</String>
+  <String Id="SuccessHeader">La instalación o desinstalación se realizó correctamente</String>
   <String Id="SuccessLaunchButton">&amp;Iniciar</String>
   <String Id="SuccessRestartText">Debe reiniciar el equipo para poder usar el software.</String>
   <String Id="SuccessRestartButton">&amp;Reiniciar</String>
   <String Id="SuccessCloseButton">&amp;Cerrar</String>
   <String Id="FailureHeader">Error de instalación</String>
-  <String Id="FailureInstallHeader">No se pudo instalar</String>
+  <String Id="FailureInstallHeader">Error de instalación</String>
   <String Id="FailureUninstallHeader">No se pudo desinstalar</String>
-  <String Id="FailureRepairHeader">No se pudo reparar</String> 
+  <String Id="FailureRepairHeader">No se pudo reparar</String>
   <String Id="FailureHyperlinkLogText">Error de instalación debido a uno o varios problemas. Corrija los problemas e intente de nuevo la instalación. Para obtener más información, consulte el &lt;a href="#"&gt;archivo de registro&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Debe reiniciar el equipo para completar la reversión del software.</String>
   <String Id="FailureRestartButton">&amp;Reiniciar</String>
