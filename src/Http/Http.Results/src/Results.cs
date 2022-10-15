@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
@@ -442,7 +443,7 @@ public static partial class Results
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
+    public static IResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
         => TypedResults.Redirect(url, permanent, preserveMethod);
 
     /// <summary>
@@ -466,7 +467,7 @@ public static partial class Results
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
+    public static IResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
         => TypedResults.LocalRedirect(localUrl, permanent, preserveMethod);
 
     /// <summary>

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http;
@@ -126,7 +127,7 @@ public abstract class HttpResponse
     /// </summary>
     /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
     /// where only ASCII characters are allowed.</param>
-    public virtual void Redirect(string location) => Redirect(location, permanent: false);
+    public virtual void Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string location) => Redirect(location, permanent: false);
 
     /// <summary>
     /// Returns a redirect response (HTTP 301 or HTTP 302) to the client.
@@ -134,7 +135,7 @@ public abstract class HttpResponse
     /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
     /// where only ASCII characters are allowed.</param>
     /// <param name="permanent"><c>True</c> if the redirect is permanent (301), otherwise <c>false</c> (302).</param>
-    public abstract void Redirect(string location, bool permanent);
+    public abstract void Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string location, bool permanent);
 
     /// <summary>
     /// Starts the response by calling OnStarting() and making headers unmodifiable.

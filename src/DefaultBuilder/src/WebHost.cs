@@ -38,7 +38,7 @@ public static class WebHost
     /// <param name="url">The URL the hosted application will listen on.</param>
     /// <param name="app">A delegate that handles requests to the application.</param>
     /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-    public static IWebHost Start(string url, RequestDelegate app)
+    public static IWebHost Start([StringSyntax(StringSyntaxAttribute.Uri)] string url, RequestDelegate app)
     {
         var startupAssemblyName = app.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
         return StartWith(url: url, configureServices: null, app: appBuilder => appBuilder.Run(app), applicationName: startupAssemblyName);
@@ -60,7 +60,7 @@ public static class WebHost
     /// <param name="url">The URL the hosted application will listen on.</param>
     /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
     /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-    public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder)
+    public static IWebHost Start([StringSyntax(StringSyntaxAttribute.Uri)] string url, Action<IRouteBuilder> routeBuilder)
     {
         var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
         return StartWith(url, services => services.AddRouting(), appBuilder => appBuilder.UseRouter(routeBuilder), applicationName: startupAssemblyName);
@@ -82,7 +82,7 @@ public static class WebHost
     /// <param name="url">The URL the hosted application will listen on.</param>
     /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
     /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-    public static IWebHost StartWith(string url, Action<IApplicationBuilder> app) =>
+    public static IWebHost StartWith([StringSyntax(StringSyntaxAttribute.Uri)] string url, Action<IApplicationBuilder> app) =>
         StartWith(url: url, configureServices: null, app: app, applicationName: null);
 
     private static IWebHost StartWith(string? url, Action<IServiceCollection>? configureServices, Action<IApplicationBuilder> app, string? applicationName)
