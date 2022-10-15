@@ -23,7 +23,7 @@ public static class HubConnectionBuilderHttpExtensions
     /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
     /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
     /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
-    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url)
+    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("Uri")] string url)
     {
         hubConnectionBuilder.WithUrlCore(new Uri(url), null, null);
         return hubConnectionBuilder;
@@ -36,7 +36,7 @@ public static class HubConnectionBuilderHttpExtensions
     /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
     /// <param name="configureHttpConnection">The delegate that configures the <see cref="HttpConnection"/>.</param>
     /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
-    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url, Action<HttpConnectionOptions> configureHttpConnection)
+    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("Uri")] string url, Action<HttpConnectionOptions> configureHttpConnection)
     {
         hubConnectionBuilder.WithUrlCore(new Uri(url), null, configureHttpConnection);
         return hubConnectionBuilder;
@@ -49,7 +49,7 @@ public static class HubConnectionBuilderHttpExtensions
     /// <param name="url">The URL the <see cref="HttpConnection"/> will use.</param>
     /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
     /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
-    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url, HttpTransportType transports)
+    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("Uri")] string url, HttpTransportType transports)
     {
         hubConnectionBuilder.WithUrlCore(new Uri(url), transports, null);
         return hubConnectionBuilder;
@@ -63,7 +63,7 @@ public static class HubConnectionBuilderHttpExtensions
     /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
     /// <param name="configureHttpConnection">The delegate that configures the <see cref="HttpConnection"/>.</param>
     /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
-    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url, HttpTransportType transports, Action<HttpConnectionOptions> configureHttpConnection)
+    public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, [System.Diagnostics.CodeAnalysis.StringSyntaxAttribute("Uri")] string url, HttpTransportType transports, Action<HttpConnectionOptions> configureHttpConnection)
     {
         hubConnectionBuilder.WithUrlCore(new Uri(url), transports, configureHttpConnection);
         return hubConnectionBuilder;

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
@@ -553,7 +554,7 @@ public static class TypedResults
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
-    public static RedirectHttpResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
+    public static RedirectHttpResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -576,7 +577,7 @@ public static class TypedResults
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
-    public static RedirectHttpResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
+    public static RedirectHttpResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
     {
         if (string.IsNullOrEmpty(localUrl))
         {

@@ -22,7 +22,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     /// provided.
     /// </summary>
     /// <param name="url">The local URL to redirect to.</param>
-    public RedirectResult(string url)
+    public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url)
         : this(url, permanent: false)
     {
         if (url == null)
@@ -37,7 +37,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    public RedirectResult(string url, bool permanent)
+    public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent)
         : this(url, permanent, preserveMethod: false)
     {
     }
@@ -49,7 +49,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
-    public RedirectResult(string url, bool permanent, bool preserveMethod)
+    public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent, bool preserveMethod)
     {
         if (url == null)
         {

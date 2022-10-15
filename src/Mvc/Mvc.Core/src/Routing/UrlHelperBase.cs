@@ -47,7 +47,7 @@ public abstract class UrlHelperBase : IUrlHelper
     public ActionContext ActionContext { get; }
 
     /// <inheritdoc />
-    public virtual bool IsLocalUrl([NotNullWhen(true)] string? url) => CheckIsLocalUrl(url);
+    public virtual bool IsLocalUrl([NotNullWhen(true)][StringSyntax(StringSyntaxAttribute.Uri)] string? url) => CheckIsLocalUrl(url);
 
     /// <inheritdoc />
     [return: NotNullIfNotNull("contentPath")]

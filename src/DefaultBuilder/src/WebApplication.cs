@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -142,7 +143,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <returns>
     /// A <see cref="Task"/> that represents the entire runtime of the <see cref="WebApplication"/> from startup to shutdown.
     /// </returns>
-    public Task RunAsync(string? url = null)
+    public Task RunAsync([StringSyntax(StringSyntaxAttribute.Uri)] string? url = null)
     {
         Listen(url);
         return HostingAbstractionsHostExtensions.RunAsync(this);
@@ -152,7 +153,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// Runs an application and block the calling thread until host shutdown.
     /// </summary>
     /// <param name="url">The URL to listen to if the server hasn't been configured directly.</param>
-    public void Run(string? url = null)
+    public void Run([StringSyntax(StringSyntaxAttribute.Uri)] string? url = null)
     {
         Listen(url);
         HostingAbstractionsHostExtensions.Run(this);

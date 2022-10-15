@@ -21,7 +21,7 @@ public class LocalRedirectResult : ActionResult
     /// provided.
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
-    public LocalRedirectResult(string localUrl)
+    public LocalRedirectResult([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
          : this(localUrl, permanent: false)
     {
     }
@@ -32,7 +32,7 @@ public class LocalRedirectResult : ActionResult
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    public LocalRedirectResult(string localUrl, bool permanent)
+    public LocalRedirectResult([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent)
         : this(localUrl, permanent, preserveMethod: false)
     {
     }
@@ -44,7 +44,7 @@ public class LocalRedirectResult : ActionResult
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request's method.</param>
-    public LocalRedirectResult(string localUrl, bool permanent, bool preserveMethod)
+    public LocalRedirectResult([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent, bool preserveMethod)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
