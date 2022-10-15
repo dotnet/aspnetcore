@@ -42,6 +42,7 @@ internal static class HeaderEncoding
         // Let the writer know how much was used.
         writer.Advance(written);
 
-        return buffer;
+        // The resulting Span should not include the null terminator in its length.
+        return buffer.Slice(0, written - 1);
     }
 }
