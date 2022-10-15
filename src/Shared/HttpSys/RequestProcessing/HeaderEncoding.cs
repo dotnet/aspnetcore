@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -28,7 +29,7 @@ internal static class HeaderEncoding
         return Encoding.GetBytes(myString);
     }
 
-    internal static Span<byte> GetBytes(string myString, UnmanagedBufferWriter writer)
+    internal static Span<byte> GetBytes(string myString, IBufferWriter<byte> writer)
     {
         // Compute the maximum amount of bytes needed for the given string.
         // Include an extra byte for the null terminator.
