@@ -70,7 +70,7 @@ internal sealed unsafe class UnmanagedBufferWriter : IBufferWriter<byte>, IDispo
     {
         foreach (var alloc in _allocations)
         {
-            NativeLibrary.Free(alloc);
+            NativeMemory.AlignedFree((void*)alloc);
         }
     }
 
