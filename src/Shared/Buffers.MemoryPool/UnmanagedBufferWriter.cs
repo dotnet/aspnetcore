@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 /// <summary>
-/// An <see cref="IBufferWriter{T}"/> implementation for writing to unmanaged memory
-/// that is owned by the writer.
+/// An <see cref="IBufferWriter{T}"/> implementation for writing to
+/// unmanaged blocks of memory.
 /// </summary>
 internal sealed unsafe class UnmanagedBufferWriter : IBufferWriter<byte>, IDisposable
 {
@@ -19,7 +19,7 @@ internal sealed unsafe class UnmanagedBufferWriter : IBufferWriter<byte>, IDispo
     /// <summary>
     /// Instantiate an <see cref="UnmanagedBufferWriter"/> instance.
     /// </summary>
-    /// <param name="blockSize">The unmanaged memory block size.</param>
+    /// <param name="blockSize">The unmanaged memory block size in bytes.</param>
     public UnmanagedBufferWriter(int blockSize)
     {
         _blockSize = blockSize;
@@ -52,11 +52,15 @@ internal sealed unsafe class UnmanagedBufferWriter : IBufferWriter<byte>, IDispo
 
         // Allocation request that is beyond the block size
         if (sizeHint > _blockSize)
+        {
             return new Span<byte>(Alloc(sizeHint), sizeHint);
+        }
 
         // Check if there is enough room in the current block
         if (sizeHint > _currentBlockCount)
+        {
             NewBlock();
+        }
 
         return new Span<byte>(_currentBlock, _currentBlockCount);
     }
@@ -71,8 +75,7 @@ internal sealed unsafe class UnmanagedBufferWriter : IBufferWriter<byte>, IDispo
     }
 
     /// <summary>
-    /// Allocate a block of unmanaged memory that will is owned by this
-    /// writer.
+    /// Allocate a block of unmanaged memory owned by this writer.
     /// </summary>
     /// <param name="size">The amount of memory to allocate in bytes.</param>
     /// <returns>The allocated memory.</returns>
