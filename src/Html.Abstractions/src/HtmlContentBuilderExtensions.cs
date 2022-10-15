@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Html;
 
 /// <summary>
@@ -24,7 +26,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>A reference to this instance after the append operation has completed.</returns>
     public static IHtmlContentBuilder AppendFormat(
         this IHtmlContentBuilder builder,
-        string format,
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[] args)
     {
         if (builder == null)
@@ -64,7 +66,7 @@ public static class HtmlContentBuilderExtensions
     public static IHtmlContentBuilder AppendFormat(
         this IHtmlContentBuilder builder,
         IFormatProvider formatProvider,
-        string format,
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[] args)
     {
         if (builder == null)
