@@ -555,13 +555,13 @@ internal sealed class Response
                         // Add Name
                         bytes = HeaderEncoding.GetBytes(headerName, writer);
                         unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytes.Length;
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (byte*)Unsafe.AsPointer(ref bytes[0]);
+                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
 
                         // Add Value
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
                         bytes = HeaderEncoding.GetBytes(headerValue, writer);
                         unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = (byte*)Unsafe.AsPointer(ref bytes[0]);
+                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
                         _nativeResponse.Response_V1.Headers.UnknownHeaderCount++;
                     }
                 }
@@ -570,7 +570,7 @@ internal sealed class Response
                     headerValue = headerValues[0] ?? string.Empty;
                     bytes = HeaderEncoding.GetBytes(headerValue, writer);
                     pKnownHeaders[lookup].RawValueLength = (ushort)bytes.Length;
-                    pKnownHeaders[lookup].pRawValue = (byte*)Unsafe.AsPointer(ref bytes[0]);
+                    pKnownHeaders[lookup].pRawValue = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
                 }
                 else
                 {
@@ -588,6 +588,7 @@ internal sealed class Response
 
                     header->HeaderId = (HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
                     header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
+                    header->KnownHeaderCount = 0;
 
                     var headerAlloc = (HttpApiTypes.HTTP_KNOWN_HEADER*)writer.Alloc(sizeof(HttpApiTypes.HTTP_KNOWN_HEADER) * headerValues.Count);
                     var nativeHeaderValues = new Span<HttpApiTypes.HTTP_KNOWN_HEADER>(headerAlloc, headerValues.Count);
@@ -599,7 +600,7 @@ internal sealed class Response
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
                         bytes = HeaderEncoding.GetBytes(headerValue, writer);
                         nativeHeaderValues[header->KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                        nativeHeaderValues[header->KnownHeaderCount].pRawValue = (byte*)Unsafe.AsPointer(ref bytes[0]);
+                        nativeHeaderValues[header->KnownHeaderCount].pRawValue = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
                         header->KnownHeaderCount++;
                     }
 
