@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CodeAnalysis\StringSyntaxAttribute.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+  </ItemGroup>
+
+  <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 </Project>
