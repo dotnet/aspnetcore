@@ -100,17 +100,12 @@ public class IPNetwork
             return false;
         }
 
-        if (prefix.AddressFamily == AddressFamily.InterNetwork && prefixLength > 32)
+        return prefix.AddressFamily switch
         {
-            return false;
-        }
-
-        if (prefix.AddressFamily == AddressFamily.InterNetworkV6 && prefixLength > 128)
-        {
-            return false;
-        }
-
-        return true;
+            AddressFamily.InterNetwork => prefixLength <= 32,
+            AddressFamily.InterNetworkV6 => prefixLength <= 128,
+            _ => true
+        };
     }
 
     /// <summary>
