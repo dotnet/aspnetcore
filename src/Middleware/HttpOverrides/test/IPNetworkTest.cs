@@ -77,7 +77,7 @@ public class IPNetworkTest
 
     [Theory]
     [MemberData(nameof(ValidPrefixWithPrefixLengthData))]
-    public void Parse_String_WithValidFormat_ParsedCorrectly(string input, string expectedPrefix, int expectedPrefixLength)
+    public void Parse_WithValidFormat_ParsedCorrectly(string input, string expectedPrefix, int expectedPrefixLength)
     {
         // Act
         var network = IPNetwork.Parse(input);
@@ -87,34 +87,28 @@ public class IPNetworkTest
         Assert.Equal(expectedPrefixLength, network.PrefixLength);
     }
 
-        [Fact]
-    public void Parse_String_WithNullArgument_ThrowsArgumentNullException()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => IPNetwork.Parse(null));
-    }
-
     [Theory]
+    [InlineData(null)]
     [MemberData(nameof(InvalidPrefixOrPrefixLengthData))]
-    public void Parse_String_WithInvalidFormat_ThrowsFormatException(string input)
+    public void Parse_WithInvalidFormat_ThrowsFormatException(string input)
     {
-        // Act & Assert
+        // Arrange & Act & Assert
         var ex = Assert.Throws<FormatException>(() => IPNetwork.Parse(input));
         Assert.Equal("An invalid IP address or prefix length was specified.", ex.Message);
     }
 
     [Theory]
     [MemberData(nameof(PrefixLengthOutOfRangeData))]
-    public void Parse_String_WithOutOfRangePrefixLength_ThrowsArgumentOutOfRangeException(string input)
+    public void Parse_WithOutOfRangePrefixLength_ThrowsArgumentOutOfRangeException(string input)
     {
-        // Act & Assert
+        // Arrange & Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => IPNetwork.Parse(input));
         Assert.StartsWith("The prefix length was out of range.", ex.Message);
     }
 
     [Theory]
     [MemberData(nameof(ValidPrefixWithPrefixLengthData))]
-    public void TryParse_String_WithValidFormat_ParsedCorrectly(string input, string expectedPrefix, int expectedPrefixLength)
+    public void TryParse_WithValidFormat_ParsedCorrectly(string input, string expectedPrefix, int expectedPrefixLength)
     {
         // Act
         var result = IPNetwork.TryParse(input, out var network);
@@ -129,78 +123,11 @@ public class IPNetworkTest
     [Theory]
     [InlineData(null)]
     [MemberData(nameof(InvalidPrefixOrPrefixLengthData))]
-    public void TryParse_String_WithInvalidFormat_ReturnsFalse(string input)
+    [MemberData(nameof(PrefixLengthOutOfRangeData))]
+    public void TryParse_WithInvalidFormat_ReturnsFalse(string input)
     {
         // Act
         var result = IPNetwork.TryParse(input, out var network);
-
-        // Assert
-        Assert.False(result);
-        Assert.Null(network);
-    }
-
-    [Theory]
-    [MemberData(nameof(ValidPrefixWithPrefixLengthData))]
-    public void Parse_ReadOnlySpan_WithValidFormat_ParsedCorrectly(string input, string expectedPrefix, int expectedPrefixLength)
-    {
-        // Arrange
-        var spanInput = input.AsSpan();
-
-        // Act
-        var network = IPNetwork.Parse(spanInput);
-
-        // Assert
-        Assert.Equal(expectedPrefix, network.Prefix.ToString());
-        Assert.Equal(expectedPrefixLength, network.PrefixLength);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [MemberData(nameof(InvalidPrefixOrPrefixLengthData))]
-    public void Parse_ReadOnlySpan_WithInvalidFormat_ThrowsFormatException(string input)
-    {
-        // Arrange & Act & Assert
-        var ex = Assert.Throws<FormatException>(() => IPNetwork.Parse(input.AsSpan()));
-        Assert.Equal("An invalid IP address or prefix length was specified.", ex.Message);
-    }
-
-    [Theory]
-    [MemberData(nameof(PrefixLengthOutOfRangeData))]
-    public void Parse_ReadOnlySpan_WithOutOfRangePrefixLength_ThrowsArgumentOutOfRangeException(string input)
-    {
-        // Arrange & Act & Assert
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => IPNetwork.Parse(input.AsSpan()));
-        Assert.StartsWith("The prefix length was out of range.", ex.Message);
-    }
-
-    [Theory]
-    [MemberData(nameof(ValidPrefixWithPrefixLengthData))]
-    public void TryParse_ReadOnlySpan_WithValidFormat_ParsedCorrectly(string input, string expectedPrefix, int expectedPrefixLength)
-    {
-        // Arrange
-        var spanInput = input.AsSpan();
-
-        // Act
-        var result = IPNetwork.TryParse(spanInput, out var network);
-
-        // Assert
-        Assert.True(result);
-        Assert.NotNull(network);
-        Assert.Equal(expectedPrefix, network.Prefix.ToString());
-        Assert.Equal(expectedPrefixLength, network.PrefixLength);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [MemberData(nameof(InvalidPrefixOrPrefixLengthData))]
-    [MemberData(nameof(PrefixLengthOutOfRangeData))]
-    public void TryParse_ReadOnlySpan_WithInvalidFormat_ReturnsFalse(string input)
-    {
-        // Arrange
-        var spanInput = input.AsSpan();
-
-        // Act
-        var result = IPNetwork.TryParse(spanInput, out var network);
 
         // Assert
         Assert.False(result);

@@ -109,25 +109,6 @@ public class IPNetwork
     }
 
     /// <summary>
-    /// Converts the specified <see langword="string"/> representation of an IP address
-    /// and a prefix length to its <see cref="IPNetwork"/> equivalent.
-    /// </summary>
-    /// <param name="networkString">The <see langword="string"/> to convert, in CIDR notation.</param>
-    /// <returns>
-    /// The <see cref="IPNetwork"/> equivalent to the IP address and prefix length contained in <paramref name="networkString"/>.
-    /// </returns>
-    /// <exception cref="ArgumentNullException"><paramref name="networkString"/> is <see langword="null"/>.</exception>
-    /// <exception cref="FormatException"><paramref name="networkString"/> is not in the correct format.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The prefix length contained in <paramref name="networkString"/> is out of range.</exception>
-    /// <inheritdoc cref="TryParseComponents(ReadOnlySpan{char}, out IPAddress?, out int)"/>
-    public static IPNetwork Parse(string? networkString)
-    {
-        ArgumentNullException.ThrowIfNull(networkString);
-
-        return Parse(networkString.AsSpan());
-    }
-
-    /// <summary>
     /// Converts the specified <see cref="ReadOnlySpan{T}"/> of <see langword="char"/> representation of
     /// an IP address and a prefix length to its <see cref="IPNetwork"/> equivalent.
     /// </summary>
@@ -151,27 +132,6 @@ public class IPNetwork
         }
 
         return new IPNetwork(prefix, prefixLength, false);
-    }
-
-    /// <summary>
-    /// Converts the specified <see langword="string"/> representation of an IP address
-    /// and a prefix length to its <see cref="IPNetwork"/> equivalent, and returns a value
-    /// that indicates whether the conversion succeeded.
-    /// </summary>
-    /// <param name="networkString">The <see langword="string"/> to validate.</param>
-    /// <param name="network">
-    /// When this method returns, contains the <see cref="IPNetwork"/> equivalent to the IP address
-    /// and prefix length contained in <paramref name="networkString"/>, if the conversion succeeded,
-    /// or <see langword="null"/> if the conversion failed. This parameter is passed uninitialized.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> if the <paramref name="networkString"/> parameter was
-    /// converted successfully; otherwise <see langword="false"/>.
-    /// </returns>
-    /// <inheritdoc cref="TryParseComponents(ReadOnlySpan{char}, out IPAddress?, out int)"/>
-    public static bool TryParse([NotNullWhen(true)] string? networkString, [NotNullWhen(true)] out IPNetwork? network)
-    {
-        return TryParse(networkString.AsSpan(), out network);
     }
 
     /// <summary>
