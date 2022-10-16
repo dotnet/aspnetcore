@@ -231,7 +231,7 @@ public class IPNetwork
         prefixLength = default;
 
         var forwardSlashIndex = networkSpan.IndexOf('/');
-        if (forwardSlashIndex == -1)
+        if (forwardSlashIndex < 0)
         {
             return false;
         }
