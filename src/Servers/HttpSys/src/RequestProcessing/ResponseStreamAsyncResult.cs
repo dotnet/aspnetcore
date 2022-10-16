@@ -18,7 +18,6 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
     private uint _bytesSent;
     private readonly CancellationToken _cancellationToken;
     private readonly CancellationTokenRegistration _cancellationRegistration;
-    private UnmanagedBufferAllocator _unmanagedAllocator;
 
     internal ResponseStreamAsyncResult(ResponseBody responseStream, CancellationToken cancellationToken)
     {
@@ -32,7 +31,6 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
         }
         _cancellationToken = cancellationToken;
         _cancellationRegistration = cancellationRegistration;
-        _unmanagedAllocator = new();
     }
 
     internal ResponseStreamAsyncResult(ResponseBody responseStream, ArraySegment<byte> data, bool chunked,
@@ -159,11 +157,6 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
         // The address is not set until after we pin it with Overlapped
         chunks[chunkIndex].fromMemory.BufferLength = (uint)segment.Count;
         chunkIndex++;
-    }
-
-    internal ref UnmanagedBufferAllocator UnmanagedAllocator
-    {
-        get { return ref _unmanagedAllocator; }
     }
 
     internal SafeNativeOverlapped? NativeOverlapped
@@ -326,6 +319,5 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
         _overlapped?.Dispose();
         _fileStream?.Dispose();
         _cancellationRegistration.Dispose();
-        _unmanagedAllocator.Dispose();
     }
 }

@@ -46,7 +46,7 @@ internal unsafe struct UnmanagedBufferAllocator : IDisposable
     /// <returns>A pointer to the reserved memory.</returns>
     public T* Alloc<T>(int count) where T : unmanaged
     {
-        int toAlloc = count *sizeof(T);
+        int toAlloc = checked(count * sizeof(T));
         Span<byte> alloc = GetSpan(toAlloc, out bool mustCommit);
         if (mustCommit)
         {
@@ -68,7 +68,8 @@ internal unsafe struct UnmanagedBufferAllocator : IDisposable
 
         // Compute the maximum amount of bytes needed for the given string.
         // Include an extra byte for the null terminator.
-        Span<byte> buffer = GetSpan(Encoding.UTF8.GetMaxByteCount(myString.Length) + 1, out bool mustCommit);
+        int maxAlloc = checked(Encoding.UTF8.GetMaxByteCount(myString.Length) + 1);
+        Span<byte> buffer = GetSpan(maxAlloc, out bool mustCommit);
         length = Encoding.UTF8.GetBytes(myString, buffer);
 
         // Write a null terminator - the GetBytes() API doesn't add one.

@@ -137,12 +137,13 @@ internal sealed partial class ResponseBody : Stream
         }
 
         uint statusCode = 0;
-        HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks;
 
         UnmanagedBufferAllocator allocator = new();
-        var pinnedBuffers = BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks);
+        List<GCHandle>? pinnedBuffers = null;
         try
         {
+            HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks;
+            pinnedBuffers = BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks);
             if (!started)
             {
                 statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
@@ -277,13 +278,16 @@ internal sealed partial class ResponseBody : Stream
         chunkIndex++;
     }
 
-    private static void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+    private static void FreeDataBuffers(List<GCHandle>? pinnedBuffers)
     {
-        foreach (var pin in pinnedBuffers)
+        if (pinnedBuffers != null)
         {
-            if (pin.IsAllocated)
+            foreach (var pin in pinnedBuffers)
             {
-                pin.Free();
+                if (pin.IsAllocated)
+                {
+                    pin.Free();
+                }
             }
         }
     }
@@ -324,11 +328,13 @@ internal sealed partial class ResponseBody : Stream
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
         uint bytesSent = 0;
+
+        UnmanagedBufferAllocator allocator = new();
         try
         {
             if (!started)
             {
-                statusCode = _requestContext.Response.SendHeaders(ref asyncResult.UnmanagedAllocator, null, asyncResult, flags, false);
+                statusCode = _requestContext.Response.SendHeaders(ref allocator, null, asyncResult, flags, false);
                 bytesSent = asyncResult.BytesSent;
             }
             else
@@ -352,6 +358,10 @@ internal sealed partial class ResponseBody : Stream
             asyncResult.Dispose();
             Abort();
             throw;
+        }
+        finally
+        {
+            allocator.Dispose();
         }
 
         if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
@@ -619,11 +629,12 @@ internal sealed partial class ResponseBody : Stream
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, fileStream, offset, count.Value, chunked, cancellationToken);
 
+        UnmanagedBufferAllocator allocator = new();
         try
         {
             if (!started)
             {
-                statusCode = _requestContext.Response.SendHeaders(ref asyncResult.UnmanagedAllocator, null, asyncResult, flags, false);
+                statusCode = _requestContext.Response.SendHeaders(ref allocator, null, asyncResult, flags, false);
                 bytesSent = asyncResult.BytesSent;
             }
             else
@@ -648,6 +659,10 @@ internal sealed partial class ResponseBody : Stream
             asyncResult.Dispose();
             Abort();
             throw;
+        }
+        finally
+        {
+            allocator.Dispose();
         }
 
         if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
