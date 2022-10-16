@@ -236,12 +236,12 @@ public class IPNetwork
             return false;
         }
 
-        if (!IPAddress.TryParse(networkSpan[..forwardSlashIndex], out prefix))
+        if (!IPAddress.TryParse(networkSpan.Slice(0, forwardSlashIndex), out prefix))
         {
             return false;
         }
 
-        if (!int.TryParse(networkSpan[(forwardSlashIndex + 1)..], out prefixLength))
+        if (!int.TryParse(networkSpan.Slice(forwardSlashIndex + 1), out prefixLength))
         {
             return false;
         }
