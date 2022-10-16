@@ -9,7 +9,7 @@ using System.Text;
 /// <summary>
 /// Allocator that manages blocks of unmanaged memory.
 /// </summary>
-internal unsafe struct UnmanagedBufferAllocator
+internal unsafe struct UnmanagedBufferAllocator : IDisposable
 {
     private readonly int _blockSize;
     private int _currentBlockCount;
@@ -62,7 +62,7 @@ internal unsafe struct UnmanagedBufferAllocator
     /// <param name="myString">The string</param>
     /// <param name="length">The length of the returned byte buffer.</param>
     /// <returns>A pointer to the buffer of bytes</returns>
-    public byte* GetEncodedBytes(string myString, out int length)
+    public byte* GetHeaderEncodedBytes(string myString, out int length)
     {
         Debug.Assert(myString is not null);
 
@@ -83,9 +83,7 @@ internal unsafe struct UnmanagedBufferAllocator
         return (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(buffer));
     }
 
-    /// <summary>
-    /// Dispose of the allocator's memory.
-    /// </summary>
+    /// <inheritdoc />
     public void Dispose()
     {
         void** curr = _currentAlloc;

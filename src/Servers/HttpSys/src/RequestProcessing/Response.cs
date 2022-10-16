@@ -278,22 +278,25 @@ internal sealed class Response
     // What would we loose by bypassing HttpSendHttpResponse?
     //
     // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
-    internal unsafe uint SendHeaders(Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks,
+    internal unsafe uint SendHeaders(ref UnmanagedBufferAllocator allocator,
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks,
         ResponseStreamAsyncResult? asyncResult,
         HttpApiTypes.HTTP_FLAGS flags,
         bool isOpaqueUpgrade)
     {
         fixed (HttpApiTypes.HTTP_DATA_CHUNK* chunks = dataChunks)
         {
-            return SendHeaders(chunks, dataChunks.Length, asyncResult, flags, isOpaqueUpgrade);
+            return SendHeaders(ref allocator, chunks, dataChunks.Length, asyncResult, flags, isOpaqueUpgrade);
         }
     }
 
-    private unsafe uint SendHeaders(HttpApiTypes.HTTP_DATA_CHUNK* dataChunks,
+    private unsafe uint SendHeaders(ref UnmanagedBufferAllocator allocator,
+        HttpApiTypes.HTTP_DATA_CHUNK* dataChunks,
         int dataChunksCount,
         ResponseStreamAsyncResult? asyncResult,
         HttpApiTypes.HTTP_FLAGS flags,
-        bool isOpaqueUpgrade)
+        bool isOpaqueUpgrade
+        )
     {
         Debug.Assert(!HasStarted, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
 
@@ -302,40 +305,56 @@ internal sealed class Response
 
         uint statusCode;
         uint bytesSent;
-        UnmanagedBufferAllocator allocator = new();
-        try
+
+        SerializeHeaders(ref allocator, isOpaqueUpgrade);
+
+        if (dataChunks != null)
         {
-            SerializeHeaders(isOpaqueUpgrade, ref allocator);
+            _nativeResponse.Response_V1.EntityChunkCount = (ushort)dataChunksCount;
+            _nativeResponse.Response_V1.pEntityChunks = dataChunks;
+        }
+        else if (asyncResult != null && asyncResult.DataChunks != null)
+        {
+            _nativeResponse.Response_V1.EntityChunkCount = asyncResult.DataChunkCount;
+            _nativeResponse.Response_V1.pEntityChunks = asyncResult.DataChunks;
+        }
+        else
+        {
+            _nativeResponse.Response_V1.EntityChunkCount = 0;
+            _nativeResponse.Response_V1.pEntityChunks = null;
+        }
 
-            if (dataChunks != null)
-            {
-                _nativeResponse.Response_V1.EntityChunkCount = (ushort)dataChunksCount;
-                _nativeResponse.Response_V1.pEntityChunks = dataChunks;
-            }
-            else if (asyncResult != null && asyncResult.DataChunks != null)
-            {
-                _nativeResponse.Response_V1.EntityChunkCount = asyncResult.DataChunkCount;
-                _nativeResponse.Response_V1.pEntityChunks = asyncResult.DataChunks;
-            }
-            else
-            {
-                _nativeResponse.Response_V1.EntityChunkCount = 0;
-                _nativeResponse.Response_V1.pEntityChunks = null;
-            }
+        var cachePolicy = new HttpApiTypes.HTTP_CACHE_POLICY();
+        if (_cacheTtl.HasValue && _cacheTtl.Value > TimeSpan.Zero)
+        {
+            cachePolicy.Policy = HttpApiTypes.HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;
+            cachePolicy.SecondsToLive = (uint)Math.Min(_cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
+        }
 
-            var cachePolicy = new HttpApiTypes.HTTP_CACHE_POLICY();
-            if (_cacheTtl.HasValue && _cacheTtl.Value > TimeSpan.Zero)
-            {
-                cachePolicy.Policy = HttpApiTypes.HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;
-                cachePolicy.SecondsToLive = (uint)Math.Min(_cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
-            }
+        byte* pReasonPhrase = allocator.GetHeaderEncodedBytes(reasonPhrase, out int pReasonPhraseLength);
+        _nativeResponse.Response_V1.ReasonLength = (ushort)pReasonPhraseLength;
+        _nativeResponse.Response_V1.pReason = pReasonPhrase;
 
-            byte* pReasonPhrase = allocator.GetEncodedBytes(reasonPhrase, out int pReasonPhraseLength);
-            _nativeResponse.Response_V1.ReasonLength = (ushort)pReasonPhraseLength;
-            _nativeResponse.Response_V1.pReason = pReasonPhrase;
+        fixed (HttpApiTypes.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
+        {
+            statusCode =
+                HttpApi.HttpSendHttpResponse(
+                    RequestContext.Server.RequestQueue.Handle,
+                    Request.RequestId,
+                    (uint)flags,
+                    pResponse,
+                    &cachePolicy,
+                    &bytesSent,
+                    IntPtr.Zero,
+                    0,
+                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
+                    IntPtr.Zero);
 
-            fixed (HttpApiTypes.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
+            // GoAway is only supported on later versions. Retry.
+            if (statusCode == ErrorCodes.ERROR_INVALID_PARAMETER
+                && (flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY) != 0)
             {
+                flags &= ~HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
                 statusCode =
                     HttpApi.HttpSendHttpResponse(
                         RequestContext.Server.RequestQueue.Handle,
@@ -349,43 +368,20 @@ internal sealed class Response
                         asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
                         IntPtr.Zero);
 
-                // GoAway is only supported on later versions. Retry.
-                if (statusCode == ErrorCodes.ERROR_INVALID_PARAMETER
-                    && (flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY) != 0)
+                // Succeeded without GoAway, disable them.
+                if (statusCode != ErrorCodes.ERROR_INVALID_PARAMETER)
                 {
-                    flags &= ~HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
-                    statusCode =
-                        HttpApi.HttpSendHttpResponse(
-                            RequestContext.Server.RequestQueue.Handle,
-                            Request.RequestId,
-                            (uint)flags,
-                            pResponse,
-                            &cachePolicy,
-                            &bytesSent,
-                            IntPtr.Zero,
-                            0,
-                            asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
-                            IntPtr.Zero);
-
-                    // Succeeded without GoAway, disable them.
-                    if (statusCode != ErrorCodes.ERROR_INVALID_PARAMETER)
-                    {
-                        SupportsGoAway = false;
-                    }
-                }
-
-                if (asyncResult != null &&
-                    statusCode == ErrorCodes.ERROR_SUCCESS &&
-                    HttpSysListener.SkipIOCPCallbackOnSuccess)
-                {
-                    asyncResult.BytesSent = bytesSent;
-                    // The caller will invoke IOCompleted
+                    SupportsGoAway = false;
                 }
             }
-        }
-        finally
-        {
-            allocator.Dispose();
+
+            if (asyncResult != null &&
+                statusCode == ErrorCodes.ERROR_SUCCESS &&
+                HttpSysListener.SkipIOCPCallbackOnSuccess)
+            {
+                asyncResult.BytesSent = bytesSent;
+                // The caller will invoke IOCompleted
+            }
         }
 
         return statusCode;
@@ -493,7 +489,7 @@ internal sealed class Response
         return string.Equals(knownValue, input.ToString().Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
-    private unsafe void SerializeHeaders(bool isOpaqueUpgrade, ref UnmanagedBufferAllocator allocator)
+    private unsafe void SerializeHeaders(ref UnmanagedBufferAllocator allocator, bool isOpaqueUpgrade)
     {
         Headers.IsReadOnly = true; // Prohibit further modifications.
         Span<HttpApiTypes.HTTP_UNKNOWN_HEADER> unknownHeaders = default;
@@ -559,13 +555,13 @@ internal sealed class Response
                     for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                     {
                         // Add Name
-                        bytes = allocator.GetEncodedBytes(headerName, out bytesLength);
+                        bytes = allocator.GetHeaderEncodedBytes(headerName, out bytesLength);
                         unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytesLength;
                         unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = bytes;
 
                         // Add Value
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                        bytes = allocator.GetEncodedBytes(headerValue, out bytesLength);
+                        bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
                         unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytesLength;
                         unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = bytes;
                         _nativeResponse.Response_V1.Headers.UnknownHeaderCount++;
@@ -574,7 +570,7 @@ internal sealed class Response
                 else if (headerPair.Value.Count == 1)
                 {
                     headerValue = headerValues[0] ?? string.Empty;
-                    bytes = allocator.GetEncodedBytes(headerValue, out bytesLength);
+                    bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
                     pKnownHeaders[lookup].RawValueLength = (ushort)bytesLength;
                     pKnownHeaders[lookup].pRawValue = bytes;
                 }
@@ -604,7 +600,7 @@ internal sealed class Response
                     {
                         // Add Value
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                        bytes = allocator.GetEncodedBytes(headerValue, out bytesLength);
+                        bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
                         nativeHeaderValues[header->KnownHeaderCount].RawValueLength = (ushort)bytesLength;
                         nativeHeaderValues[header->KnownHeaderCount].pRawValue = bytes;
                         header->KnownHeaderCount++;
@@ -618,21 +614,7 @@ internal sealed class Response
         }
     }
 
-    private static void FreePinnedHeaders(List<GCHandle>? pinnedHeaders)
-    {
-        if (pinnedHeaders != null)
-        {
-            foreach (GCHandle gcHandle in pinnedHeaders)
-            {
-                if (gcHandle.IsAllocated)
-                {
-                    gcHandle.Free();
-                }
-            }
-        }
-    }
-
-    internal unsafe void SerializeTrailers(HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks, int currentChunk, List<GCHandle> pins)
+    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks, int currentChunk)
     {
         Debug.Assert(currentChunk == dataChunks.Length - 1);
         Debug.Assert(HasTrailers);
@@ -644,59 +626,40 @@ internal sealed class Response
             trailerCount += trailerPair.Value.Count;
         }
 
-        var pinnedHeaders = new List<GCHandle>();
-
-        var unknownHeaders = new HttpApiTypes.HTTP_UNKNOWN_HEADER[trailerCount];
-        var gcHandle = GCHandle.Alloc(unknownHeaders, GCHandleType.Pinned);
-        pinnedHeaders.Add(gcHandle);
+        var unknownHeaders = allocator.Alloc<HttpApiTypes.HTTP_UNKNOWN_HEADER>(trailerCount);
         dataChunks[currentChunk].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
         dataChunks[currentChunk].trailers.trailerCount = (ushort)trailerCount;
-        dataChunks[currentChunk].trailers.pTrailers = gcHandle.AddrOfPinnedObject();
+        dataChunks[currentChunk].trailers.pTrailers = (nint)unknownHeaders;
 
-        try
+        var unknownHeadersOffset = 0;
+
+        foreach (var headerPair in Trailers)
         {
-            var unknownHeadersOffset = 0;
-
-            foreach (var headerPair in Trailers)
+            if (headerPair.Value.Count == 0)
             {
-                if (headerPair.Value.Count == 0)
-                {
-                    continue;
-                }
-
-                var headerName = headerPair.Key;
-                var headerValues = headerPair.Value;
-
-                for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
-                {
-                    // Add Name
-                    var bytes = HeaderEncoding.GetBytes(headerName);
-                    unknownHeaders[unknownHeadersOffset].NameLength = (ushort)bytes.Length;
-                    gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                    pinnedHeaders.Add(gcHandle);
-                    unknownHeaders[unknownHeadersOffset].pName = (byte*)gcHandle.AddrOfPinnedObject();
-
-                    // Add Value
-                    var headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                    bytes = HeaderEncoding.GetBytes(headerValue);
-                    unknownHeaders[unknownHeadersOffset].RawValueLength = (ushort)bytes.Length;
-                    gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                    pinnedHeaders.Add(gcHandle);
-                    unknownHeaders[unknownHeadersOffset].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
-                    unknownHeadersOffset++;
-                }
+                continue;
             }
 
-            Debug.Assert(unknownHeadersOffset == trailerCount);
-        }
-        catch
-        {
-            FreePinnedHeaders(pinnedHeaders);
-            throw;
+            var headerName = headerPair.Key;
+            var headerValues = headerPair.Value;
+
+            for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
+            {
+                // Add Name
+                var bytes = allocator.GetHeaderEncodedBytes(headerName, out int bytesLength);
+                unknownHeaders[unknownHeadersOffset].NameLength = (ushort)bytesLength;
+                unknownHeaders[unknownHeadersOffset].pName = bytes;
+
+                // Add Value
+                var headerValue = headerValues[headerValueIndex] ?? string.Empty;
+                bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
+                unknownHeaders[unknownHeadersOffset].RawValueLength = (ushort)bytesLength;
+                unknownHeaders[unknownHeadersOffset].pRawValue = bytes;
+                unknownHeadersOffset++;
+            }
         }
 
-        // Success, keep the pins.
-        pins.AddRange(pinnedHeaders);
+        Debug.Assert(unknownHeadersOffset == trailerCount);
     }
 
     // Subset of ComputeHeaders
@@ -704,16 +667,24 @@ internal sealed class Response
     {
         _boundaryType = BoundaryType.Close;
 
-        // TODO: Send headers async?
-        ulong errorCode = SendHeaders(null, null,
-            HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
-            HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
-            HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
-            true);
-
-        if (errorCode != ErrorCodes.ERROR_SUCCESS)
+        UnmanagedBufferAllocator allocator = new();
+        try
         {
-            throw new HttpSysException((int)errorCode);
+            // TODO: Send headers async?
+            ulong errorCode = SendHeaders(ref allocator, null, null,
+                HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
+                HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
+                HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
+                true);
+
+            if (errorCode != ErrorCodes.ERROR_SUCCESS)
+            {
+                throw new HttpSysException((int)errorCode);
+            }
+        }
+        finally
+        {
+            allocator.Dispose();
         }
     }
 

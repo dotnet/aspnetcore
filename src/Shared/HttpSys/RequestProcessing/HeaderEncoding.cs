@@ -21,9 +21,4 @@ internal static class HeaderEncoding
             return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding.UTF8);
         }
     }
-
-    internal static byte[] GetBytes(string myString)
-    {
-        return Encoding.UTF8.GetBytes(myString);
-    }
 }
