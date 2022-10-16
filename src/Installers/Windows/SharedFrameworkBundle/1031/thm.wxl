@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang wirklich abbrechen?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Vorherige Version</String>
   <String Id="HelpHeader">Setup-Hilfe</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] – Installiert, repariert, deinstalliert oder
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]Verzeichnis[\]] – Installiert, repariert, deinstalliert oder
    erstellt eine vollständige lokale Kopie des Pakets im Verzeichnis. Standardmäßig wird eine Installation durchgeführt.
 
 /passive | /quiet – Zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen oder weder eine Benutzeroberfläche 
@@ -51,7 +51,7 @@
   <String Id="FailureHyperlinkLogText">Setup ist aufgrund eines oder mehrerer Probleme fehlgeschlagen. Beheben Sie die Probleme, und führen Sie Setup erneut aus. Weitere Informationen finden Sie in der &lt;a href="#"&gt;Protokolldatei&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Sie müssen den Computer neu starten, um das Zurücksetzen der Software abzuschließen.</String>
   <String Id="FailureRestartButton">&amp;Neustart</String>
-  <String Id="FailureCloseButton">S&amp;chließen</String>
+  <String Id="FailureCloseButton">&amp;Schließen</String>
   <String Id="FilesInUseHeader">Dateien in Verwendung</String>
   <String Id="FilesInUseLabel">Die folgenden Anwendungen verwenden Dateien, die aktualisiert werden müssen:</String>
   <String Id="FilesInUseCloseRadioButton">Schließen Sie die &amp;Anwendungen, und versuchen Sie sie erneut zu starten.</String>

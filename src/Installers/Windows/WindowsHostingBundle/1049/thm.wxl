@@ -51,12 +51,12 @@
   <String Id="FailureHyperlinkLogText">Одна или несколько проблем вызывали сбой программы установки. Исправьте эти проблемы и попробуйте повторить установку. Дополнительные сведения см. в &lt;a href="#"&gt;файле журнала&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Необходимо перезагрузить компьютер, чтобы завершить откат программного обеспечения.</String>
   <String Id="FailureRestartButton">&amp;Перезапустить</String>
-  <String Id="FailureCloseButton">&amp;Закрыть</String>
+  <String Id="FailureCloseButton">З&amp;акрыть</String>
   <String Id="FilesInUseHeader">Используемые файлы</String>
   <String Id="FilesInUseLabel">Следующие приложения используют файлы, которые нуждаются в обновлении:</String>
   <String Id="FilesInUseCloseRadioButton">Закройте &amp;приложения и попробуйте перезапустить их.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Не закрывайте приложения. Потребуется перезагрузка компьютера.</String>
-  <String Id="FilesInUseOkButton">&amp;ОК</String>
+  <String Id="FilesInUseOkButton">О&amp;К</String>
   <String Id="FilesInUseCancelButton">&amp;Отменить</String>
 
   <!-- Custom UI strings -->
