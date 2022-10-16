@@ -326,15 +326,15 @@ public class HeaderUtilitiesTest
     [InlineData("", 0)]
     [InlineData("1", 1)]
     [InlineData("0.1", 3)]
-    public void TryParseQualityDouble_WithStartIndexOutOfRange_ReturnsFalse(string inputString, int startIndex)
+    public void TryParseQualityDouble_StartIndexIsOutOfRange_ReturnsFalse(string inputString, int startIndex)
         => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
 
     [Theory]
-    [MemberData(nameof(InvalidLeadingCharacterData))]
-    public void TryParseQualityDouble_HasInvalidLeadingChar_ReturnsFalse(string inputString, int startIndex)
+    [MemberData(nameof(InvalidStartingCharacterData))]
+    public void TryParseQualityDouble_HasInvalidStartingCharacter_ReturnsFalse(string inputString, int startIndex)
         => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
 
-    public static TheoryData<string, int> InvalidLeadingCharacterData() => new()
+    public static TheoryData<string, int> InvalidStartingCharacterData() => new()
     {
         { ".123", 0 },
         { "q=.123", 2 },
@@ -362,13 +362,13 @@ public class HeaderUtilitiesTest
     [Theory]
     [InlineData("0.123456789", 0)]
     [InlineData("q=0.123456789", 2)]
-    public void TryParseQualityDouble_ExceedsQualityValueMaxCharCount_ReturnsFalse(string inputString, int startIndex)
+    public void TryParseQualityDouble_ExceedsQualityValueMaxCharacterCount_ReturnsFalse(string inputString, int startIndex)
         => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
 
     [Theory]
     [InlineData("1.000000001", 0)]
     [InlineData("q=1.000000001", 2)]
-    public void TryParseQualityDouble_QualityExceedsOne_ReturnsFalse(string inputString, int startIndex)
+    public void TryParseQualityDouble_ParsedQualityIsGreaterThanOne_ReturnsFalse(string inputString, int startIndex)
         => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
 
     private static void VerifyTryParseQualityDoubleFailure(string inputString, int startIndex)
