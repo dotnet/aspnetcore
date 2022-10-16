@@ -302,37 +302,38 @@ internal sealed class Response
 
         uint statusCode;
         uint bytesSent;
-        using UnmanagedBufferWriter writer = new(4096);
-        SerializeHeaders(isOpaqueUpgrade, writer);
+        UnmanagedBufferAllocator allocator = new();
+        try
+        {
+            SerializeHeaders(isOpaqueUpgrade, ref allocator);
 
-        if (dataChunks != null)
-        {
-            _nativeResponse.Response_V1.EntityChunkCount = (ushort)dataChunksCount;
-            _nativeResponse.Response_V1.pEntityChunks = dataChunks;
-        }
-        else if (asyncResult != null && asyncResult.DataChunks != null)
-        {
-            _nativeResponse.Response_V1.EntityChunkCount = asyncResult.DataChunkCount;
-            _nativeResponse.Response_V1.pEntityChunks = asyncResult.DataChunks;
-        }
-        else
-        {
-            _nativeResponse.Response_V1.EntityChunkCount = 0;
-            _nativeResponse.Response_V1.pEntityChunks = null;
-        }
+            if (dataChunks != null)
+            {
+                _nativeResponse.Response_V1.EntityChunkCount = (ushort)dataChunksCount;
+                _nativeResponse.Response_V1.pEntityChunks = dataChunks;
+            }
+            else if (asyncResult != null && asyncResult.DataChunks != null)
+            {
+                _nativeResponse.Response_V1.EntityChunkCount = asyncResult.DataChunkCount;
+                _nativeResponse.Response_V1.pEntityChunks = asyncResult.DataChunks;
+            }
+            else
+            {
+                _nativeResponse.Response_V1.EntityChunkCount = 0;
+                _nativeResponse.Response_V1.pEntityChunks = null;
+            }
 
-        var cachePolicy = new HttpApiTypes.HTTP_CACHE_POLICY();
-        if (_cacheTtl.HasValue && _cacheTtl.Value > TimeSpan.Zero)
-        {
-            cachePolicy.Policy = HttpApiTypes.HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;
-            cachePolicy.SecondsToLive = (uint)Math.Min(_cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
-        }
+            var cachePolicy = new HttpApiTypes.HTTP_CACHE_POLICY();
+            if (_cacheTtl.HasValue && _cacheTtl.Value > TimeSpan.Zero)
+            {
+                cachePolicy.Policy = HttpApiTypes.HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;
+                cachePolicy.SecondsToLive = (uint)Math.Min(_cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
+            }
 
-        Span<byte> reasonPhraseBytes = HeaderEncoding.GetBytes(reasonPhrase, writer);
-        fixed (byte* pReasonPhrase = reasonPhraseBytes)
-        {
-            _nativeResponse.Response_V1.ReasonLength = (ushort)reasonPhraseBytes.Length;
-            _nativeResponse.Response_V1.pReason = (byte*)pReasonPhrase;
+            byte* pReasonPhrase = allocator.GetEncodedBytes(reasonPhrase, out int pReasonPhraseLength);
+            _nativeResponse.Response_V1.ReasonLength = (ushort)pReasonPhraseLength;
+            _nativeResponse.Response_V1.pReason = pReasonPhrase;
+
             fixed (HttpApiTypes.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
             {
                 statusCode =
@@ -381,6 +382,10 @@ internal sealed class Response
                     // The caller will invoke IOCompleted
                 }
             }
+        }
+        finally
+        {
+            allocator.Dispose();
         }
 
         return statusCode;
@@ -488,7 +493,7 @@ internal sealed class Response
         return string.Equals(knownValue, input.ToString().Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
-    private unsafe void SerializeHeaders(bool isOpaqueUpgrade, UnmanagedBufferWriter writer)
+    private unsafe void SerializeHeaders(bool isOpaqueUpgrade, ref UnmanagedBufferAllocator allocator)
     {
         Headers.IsReadOnly = true; // Prohibit further modifications.
         Span<HttpApiTypes.HTTP_UNKNOWN_HEADER> unknownHeaders = default;
@@ -501,7 +506,8 @@ internal sealed class Response
         string headerName;
         string headerValue;
         int lookup;
-        Span<byte> bytes;
+        byte* bytes;
+        int bytesLength;
 
         int numUnknownHeaders = 0;
         int numKnownMultiHeaders = 0;
@@ -545,7 +551,7 @@ internal sealed class Response
                 {
                     if (unknownHeaders == null)
                     {
-                        var unknownAlloc = (HttpApiTypes.HTTP_UNKNOWN_HEADER*)writer.Alloc(sizeof(HttpApiTypes.HTTP_UNKNOWN_HEADER) * numUnknownHeaders);
+                        HttpApiTypes.HTTP_UNKNOWN_HEADER* unknownAlloc = allocator.Alloc<HttpApiTypes.HTTP_UNKNOWN_HEADER>(numUnknownHeaders);
                         unknownHeaders = new Span<HttpApiTypes.HTTP_UNKNOWN_HEADER>(unknownAlloc, numUnknownHeaders);
                         _nativeResponse.Response_V1.Headers.pUnknownHeaders = unknownAlloc;
                     }
@@ -553,30 +559,30 @@ internal sealed class Response
                     for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                     {
                         // Add Name
-                        bytes = HeaderEncoding.GetBytes(headerName, writer);
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytes.Length;
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
+                        bytes = allocator.GetEncodedBytes(headerName, out bytesLength);
+                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytesLength;
+                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = bytes;
 
                         // Add Value
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                        bytes = HeaderEncoding.GetBytes(headerValue, writer);
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
+                        bytes = allocator.GetEncodedBytes(headerValue, out bytesLength);
+                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytesLength;
+                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = bytes;
                         _nativeResponse.Response_V1.Headers.UnknownHeaderCount++;
                     }
                 }
                 else if (headerPair.Value.Count == 1)
                 {
                     headerValue = headerValues[0] ?? string.Empty;
-                    bytes = HeaderEncoding.GetBytes(headerValue, writer);
-                    pKnownHeaders[lookup].RawValueLength = (ushort)bytes.Length;
-                    pKnownHeaders[lookup].pRawValue = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
+                    bytes = allocator.GetEncodedBytes(headerValue, out bytesLength);
+                    pKnownHeaders[lookup].RawValueLength = (ushort)bytesLength;
+                    pKnownHeaders[lookup].pRawValue = bytes;
                 }
                 else
                 {
                     if (knownHeaderInfo == null)
                     {
-                        var responseAlloc = (HttpApiTypes.HTTP_RESPONSE_INFO*)writer.Alloc(sizeof(HttpApiTypes.HTTP_RESPONSE_INFO) * numKnownMultiHeaders);
+                        HttpApiTypes.HTTP_RESPONSE_INFO* responseAlloc = allocator.Alloc< HttpApiTypes.HTTP_RESPONSE_INFO>(numKnownMultiHeaders);
                         knownHeaderInfo = new Span<HttpApiTypes.HTTP_RESPONSE_INFO>(responseAlloc, numKnownMultiHeaders);
                         _nativeResponse.pResponseInfo = responseAlloc;
                     }
@@ -584,13 +590,13 @@ internal sealed class Response
                     knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                     knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
 
-                    var header = (HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS*)writer.Alloc(sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS));
+                    HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.Alloc<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
                     header->HeaderId = (HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
                     header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
                     header->KnownHeaderCount = 0;
 
-                    var headerAlloc = (HttpApiTypes.HTTP_KNOWN_HEADER*)writer.Alloc(sizeof(HttpApiTypes.HTTP_KNOWN_HEADER) * headerValues.Count);
+                    HttpApiTypes.HTTP_KNOWN_HEADER* headerAlloc = allocator.Alloc<HttpApiTypes.HTTP_KNOWN_HEADER>(headerValues.Count);
                     var nativeHeaderValues = new Span<HttpApiTypes.HTTP_KNOWN_HEADER>(headerAlloc, headerValues.Count);
                     header->KnownHeaders = headerAlloc;
 
@@ -598,9 +604,9 @@ internal sealed class Response
                     {
                         // Add Value
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                        bytes = HeaderEncoding.GetBytes(headerValue, writer);
-                        nativeHeaderValues[header->KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                        nativeHeaderValues[header->KnownHeaderCount].pRawValue = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
+                        bytes = allocator.GetEncodedBytes(headerValue, out bytesLength);
+                        nativeHeaderValues[header->KnownHeaderCount].RawValueLength = (ushort)bytesLength;
+                        nativeHeaderValues[header->KnownHeaderCount].pRawValue = bytes;
                         header->KnownHeaderCount++;
                     }
 

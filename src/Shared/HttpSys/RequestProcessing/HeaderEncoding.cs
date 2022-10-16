@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal;
 
 internal static class HeaderEncoding
 {
-    private static readonly Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
-
     internal static unsafe string GetString(byte* pBytes, int byteCount, bool useLatin1)
     {
         if (useLatin1)
@@ -20,29 +18,12 @@ internal static class HeaderEncoding
         }
         else
         {
-            return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
+            return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding.UTF8);
         }
     }
 
     internal static byte[] GetBytes(string myString)
     {
-        return Encoding.GetBytes(myString);
-    }
-
-    internal static Span<byte> GetBytes(string myString, IBufferWriter<byte> writer)
-    {
-        // Compute the maximum amount of bytes needed for the given string.
-        // Include an extra byte for the null terminator.
-        Span<byte> buffer = writer.GetSpan(Encoding.GetMaxByteCount(myString.Length) + 1);
-        int written = Encoding.GetBytes(myString, buffer);
-
-        // Write a null terminator - the GetBytes() API doesn't add one.
-        buffer[written++] = 0;
-
-        // Let the writer know how much was used.
-        writer.Advance(written);
-
-        // The resulting Span should not include the null terminator in its length.
-        return buffer.Slice(0, written - 1);
+        return Encoding.UTF8.GetBytes(myString);
     }
 }
