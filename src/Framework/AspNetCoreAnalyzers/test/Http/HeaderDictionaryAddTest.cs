@@ -8,7 +8,7 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
 
 namespace Microsoft.AspNetCore.Analyzers.Http;
 
-public class HeaderDictionaryAddFixerTests
+public class HeaderDictionaryAddTest
 {
     private const string AppendCodeActionEquivalenceKey = "Use 'IHeaderDictionary.Append'";
     private const string IndexerCodeActionEquivalenceKey = "Use indexer";
@@ -272,5 +272,45 @@ public class Program
     }
 }",
         codeActionEquivalenceKey: IndexerCodeActionEquivalenceKey);
+    }
+
+    [Fact]
+    public async Task IHeaderDictionary_WithAppend_DoesNotProduceDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Http;
+namespace HeaderDictionaryAddAnalyzerTests;
+public class Program
+{
+    public static void Main()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Append(""Accept"", ""text/html"");
+    }
+}";
+
+        // Act & Assert
+        await VerifyCS.VerifyCodeFixAsync(source, source);
+    }
+
+    [Fact]
+    public async Task IHeaderDictionary_WithIndexer_DoesNotProduceDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Http;
+namespace HeaderDictionaryAddAnalyzerTests;
+public class Program
+{
+    public static void Main()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers[""Accept""] = ""text/html"";
+    }
+}";
+
+        // Act & Assert
+        await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 }
