@@ -20,8 +20,8 @@ internal unsafe struct UnmanagedBufferAllocator : IDisposable
     /// The default block size for the allocator.
     /// </summary>
     /// <remarks>
-    /// This size assumes a common page size and provides an accomdation
-    /// for the pointer chain used to managed the allocations.
+    /// This size assumes a common page size and provides an accommodation
+    /// for the pointer chain used to track allocated blocks.
     /// </remarks>
     public static int DefaultBlockSize => 4096 - sizeof(void*);
 
