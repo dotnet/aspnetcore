@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.AspNetCore.Analyzers.Http.Fixers;
 
 [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-public class HeaderDictionaryAddFixer : CodeFixProvider
+public sealed class HeaderDictionaryAddFixer : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd.Id);
 
