@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.AspNetCore.Analyzers.Http;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public partial class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
+public sealed class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd);
 
