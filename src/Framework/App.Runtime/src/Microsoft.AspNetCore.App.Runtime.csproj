@@ -42,8 +42,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Pack .ni.r2rmap files in symbols package (native symbols for Linux) -->
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.r2rmap</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
-    <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x or armv6. -->
-    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' ">false</CrossgenOutput>
+    <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x or ppc64le or armv6. -->
+    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' ">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
