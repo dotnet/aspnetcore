@@ -44,6 +44,9 @@ internal unsafe struct UnmanagedBufferAllocator : IDisposable
     /// <typeparam name="T">The type requested</typeparam>
     /// <param name="count">The count in <typeparamref name="T"/> units</param>
     /// <returns>A pointer to the reserved memory.</returns>
+    /// <remarks>
+    /// The allocated memory is uninitialized.
+    /// </remarks>
     public T* Alloc<T>(int count) where T : unmanaged
     {
         int toAlloc = checked(count * sizeof(T));

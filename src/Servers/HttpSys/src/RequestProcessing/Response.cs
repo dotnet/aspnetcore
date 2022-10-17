@@ -277,7 +277,7 @@ internal sealed class Response
     //
     // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
     internal unsafe uint SendHeaders(ref UnmanagedBufferAllocator allocator,
-        HttpApiTypes.HTTP_DATA_CHUNK[]? dataChunks,
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks,
         ResponseStreamAsyncResult? asyncResult,
         HttpApiTypes.HTTP_FLAGS flags,
         bool isOpaqueUpgrade)
@@ -296,7 +296,7 @@ internal sealed class Response
         {
             if (chunks != null)
             {
-                _nativeResponse.Response_V1.EntityChunkCount = checked((ushort)dataChunks!.Length);
+                _nativeResponse.Response_V1.EntityChunkCount = checked((ushort)dataChunks.Length);
                 _nativeResponse.Response_V1.pEntityChunks = chunks;
             }
             else if (asyncResult != null && asyncResult.DataChunks != null)
@@ -565,7 +565,7 @@ internal sealed class Response
                 {
                     if (knownHeaderInfo == null)
                     {
-                        HttpApiTypes.HTTP_RESPONSE_INFO* responseAlloc = allocator.Alloc< HttpApiTypes.HTTP_RESPONSE_INFO>(numKnownMultiHeaders);
+                        HttpApiTypes.HTTP_RESPONSE_INFO* responseAlloc = allocator.Alloc<HttpApiTypes.HTTP_RESPONSE_INFO>(numKnownMultiHeaders);
                         knownHeaderInfo = new Span<HttpApiTypes.HTTP_RESPONSE_INFO>(responseAlloc, numKnownMultiHeaders);
                         _nativeResponse.pResponseInfo = responseAlloc;
                     }
@@ -601,7 +601,7 @@ internal sealed class Response
         }
     }
 
-    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks, int currentChunk)
+    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, int currentChunk)
     {
         Debug.Assert(currentChunk == dataChunks.Length - 1);
         Debug.Assert(HasTrailers);
