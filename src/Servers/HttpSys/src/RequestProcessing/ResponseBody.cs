@@ -143,7 +143,7 @@ internal sealed partial class ResponseBody : Stream
         try
         {
             Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks;
-            pinnedBuffers = BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks);
+            BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks, out pinnedBuffers);
             if (!started)
             {
                 statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
@@ -192,17 +192,14 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private unsafe Span<GCHandle> BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks)
+    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
     {
         const int maxGCHandleCount = 4;
         int gcHandleIndex = 0;
-        var pins = allocator.AllocAsSpan<GCHandle>(maxGCHandleCount);
+        pins = allocator.AllocAsSpan<GCHandle>(maxGCHandleCount);
 
         // Manually initialize the allocated GCHandles
-        for (int i = 0; i < maxGCHandleCount; ++i)
-        {
-            pins[i] = new GCHandle();
-        }
+        pins.Clear();
 
         var hasData = data.Count > 0;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
@@ -216,13 +213,13 @@ internal sealed partial class ResponseBody : Stream
         {
             dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
             pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator));
-            return pins;
+            return;
         }
         else if (!hasData && !addTrailers)
         {
             // No data
             dataChunks = default;
-            return default;
+            return;
         }
 
         // Recompute chunk count based on presence of data.
@@ -275,8 +272,6 @@ internal sealed partial class ResponseBody : Stream
         {
             _requestContext.Response.MakeTrailersReadOnly();
         }
-
-        return pins;
     }
 
     private static GCHandle SetDataChunk(Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks, ref int chunkIndex, ArraySegment<byte> buffer)
