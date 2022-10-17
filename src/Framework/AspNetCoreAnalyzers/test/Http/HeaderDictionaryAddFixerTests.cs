@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Analyzers.Http;
 
 public class HeaderDictionaryAddFixerTests
 {
-    private const string AppendCodeActionEquivalenceKey = "Use IHeaderDictionary.Append";
-    private const string IndexerCodeActionEquivalenceKey = "Use the indexer";
+    private const string AppendCodeActionEquivalenceKey = "Use 'IHeaderDictionary.Append'";
+    private const string IndexerCodeActionEquivalenceKey = "Use indexer";
 
     [Fact]
     public async Task IHeaderDictionary_WithAdd_FixedWithAppend()
