@@ -10,26 +10,6 @@ namespace Microsoft.AspNetCore.Analyzers.Http;
 public class HeaderDictionaryAddAnalyzerTests
 {
     [Fact]
-    public async Task IHeaderDictionary_WithAdd_ReportsDiagnostics()
-    {
-        // Arrange & Act & Assert
-        await VerifyCS.VerifyAnalyzerAsync(@"
-using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddAnalyzerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-    }
-}",
-        new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
-            .WithLocation(0)
-            .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message));
-    }
-
-    [Fact]
     public async Task IHeaderDictionary_WithAppend_NoDiagnostics()
     {
         // Arrange & Act & Assert
