@@ -277,12 +277,11 @@ internal sealed class Response
     //
     // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
     internal unsafe uint SendHeaders(ref UnmanagedBufferAllocator allocator,
-        Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks,
+        HttpApiTypes.HTTP_DATA_CHUNK[]? dataChunks,
         ResponseStreamAsyncResult? asyncResult,
         HttpApiTypes.HTTP_FLAGS flags,
         bool isOpaqueUpgrade)
     {
-
         Debug.Assert(!HasStarted, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
 
         _responseState = ResponseState.Started;
