@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -73,19 +74,19 @@ public class ExternalLoginModel : PageModel
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual IActionResult OnPost(string provider, string? returnUrl = null) => throw new NotImplementedException();
+    public virtual IActionResult OnPost(string provider, [StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnGetCallbackAsync([StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null, string? remoteError = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnPostConfirmationAsync([StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null) => throw new NotImplementedException();
 }
 
 internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
@@ -337,7 +338,7 @@ public abstract class ControllerBase
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual RedirectResult Redirect(string url)
+    public virtual RedirectResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -354,7 +355,7 @@ public abstract class ControllerBase
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual RedirectResult RedirectPermanent(string url)
+    public virtual RedirectResult RedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -372,7 +373,7 @@ public abstract class ControllerBase
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual RedirectResult RedirectPreserveMethod(string url)
+    public virtual RedirectResult RedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -390,7 +391,7 @@ public abstract class ControllerBase
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual RedirectResult RedirectPermanentPreserveMethod(string url)
+    public virtual RedirectResult RedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -407,7 +408,7 @@ public abstract class ControllerBase
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual LocalRedirectResult LocalRedirect(string localUrl)
+    public virtual LocalRedirectResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -424,7 +425,7 @@ public abstract class ControllerBase
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual LocalRedirectResult LocalRedirectPermanent(string localUrl)
+    public virtual LocalRedirectResult LocalRedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -442,7 +443,7 @@ public abstract class ControllerBase
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual LocalRedirectResult LocalRedirectPreserveMethod(string localUrl)
+    public virtual LocalRedirectResult LocalRedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -460,7 +461,7 @@ public abstract class ControllerBase
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     [NonAction]
-    public virtual LocalRedirectResult LocalRedirectPermanentPreserveMethod(string localUrl)
+    public virtual LocalRedirectResult LocalRedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {

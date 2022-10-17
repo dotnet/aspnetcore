@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -19,7 +20,7 @@ public partial class RemoteAuthenticatorViewCore<TAuthenticationState> where TAu
         public static partial void LoginRequiresRedirect(ILogger logger);
 
         [LoggerMessage(4, LogLevel.Debug, "Navigating to {Url}.", EventName = nameof(NavigatingToUrl))]
-        public static partial void NavigatingToUrl(ILogger logger, string url);
+        public static partial void NavigatingToUrl(ILogger logger, [StringSyntax(StringSyntaxAttribute.Uri)] string url);
 
         [LoggerMessage(5, LogLevel.Debug, "Raising LoginCompleted event.", EventName = nameof(InvokingLoginCompletedCallback))]
         public static partial void InvokingLoginCompletedCallback(ILogger logger);
