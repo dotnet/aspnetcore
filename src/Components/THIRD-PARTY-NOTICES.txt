@@ -22,7 +22,7 @@ The actual third-party libraries or other resources may vary depending on the Bl
 2.	AngleSharp  (https://github.com/AngleSharp/AngleSharp)
 3.	SimpleJson (https://github.com/facebook-csharp-sdk/simple-json)
 4.	Bootstrap (https://github.com/twbs/bootstrap)
-5.	Open Iconic (https://ionic.io/ionicons)
+5.	Open Iconic (https://github.com/iconic/open-iconic)
 6.  fast-text-encoding (https://github.com/samthor/fast-text-encoding)
 
 

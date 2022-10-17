@@ -1,7 +1,7 @@
-[Open Iconic v1.1.1](https://ionic.io/ionicons)
+[Open Iconic v1.1.1](https://github.com/iconic/open-iconic)
 ===========
 
-### Open Iconic is the open source sibling of [Iconic](https://ionic.io/ionicons). It is a hyper-legible collection of 223 icons with a tiny footprint&mdash;ready to use with Bootstrap and Foundation. [View the collection](https://ionic.io/ionicons)
+### Open Iconic is the open source sibling of [Iconic](https://github.com/iconic/open-iconic). It is a hyper-legible collection of 223 icons with a tiny footprint&mdash;ready to use with Bootstrap and Foundation. [View the collection](https://github.com/iconic/open-iconic)
 
 
 
@@ -17,7 +17,7 @@
 
 ## Getting Started
 
-#### For code samples and everything else you need to get started with Open Iconic, check out our [Icons](https://ionic.io/ionicons) and [Reference](https://ionic.io/ionicons) sections.
+#### For code samples and everything else you need to get started with Open Iconic, check out our [Icons](https://github.com/iconic/open-iconic) and [Reference](https://github.com/iconic/open-iconic) sections.
 
 ### General Usage
 
