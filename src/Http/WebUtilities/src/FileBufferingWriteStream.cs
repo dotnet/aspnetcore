@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -270,6 +271,14 @@ public sealed class FileBufferingWriteStream : Stream
         {
             var tempFileDirectory = _tempFileDirectoryAccessor();
             var tempFileName = Path.Combine(tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid() + ".tmp");
+
+            // Create a temp file with the correct Unix file mode before moving it to the assigned tempFileName in the _tempFileDirectory.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var tempTempFileName = Path.GetTempFileName();
+                File.Move(tempTempFileName, tempFileName);
+            }
+
             FileStream = new FileStream(
                 tempFileName,
                 FileMode.Create,
