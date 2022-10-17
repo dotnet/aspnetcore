@@ -22,13 +22,14 @@ parameters:
   MirrorRepo: ''
   MirrorBranch: main
   condition: ''
+  JobNameSuffix: ''
 
 jobs:
-- job: OneLocBuild
+- job: OneLocBuild${{ parameters.JobNameSuffix }}
   
   dependsOn: ${{ parameters.dependsOn }}
 
-  displayName: OneLocBuild
+  displayName: OneLocBuild${{ parameters.JobNameSuffix }}
 
   ${{ if ne(parameters.pool, '') }}:
     pool: ${{ parameters.pool }}
