@@ -357,13 +357,13 @@ internal sealed partial class HttpSysListener : IDisposable
         httpResponse.Response_V1.pReason = bytes;
         httpResponse.Response_V1.ReasonLength = checked((ushort)bytesLength);
 
-        int pContentLengthLength = 1;
-        byte* pContentLength = stackalloc byte[pContentLengthLength + 1];
+        const int contentLengthLength = 1;
+        byte* pContentLength = stackalloc byte[contentLengthLength + 1];
         pContentLength[0] = (byte)'0';
         pContentLength[1] = 0; // null terminator
 
         (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = pContentLength;
-        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = checked((ushort)pContentLengthLength);
+        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
         httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
 
         statusCode =
