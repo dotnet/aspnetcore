@@ -317,20 +317,20 @@ internal sealed partial class HttpSysListener : IDisposable
         // Copied from the multi-value headers section of SerializeHeaders
         if (authChallenges != null && authChallenges.Count > 0)
         {
-            HttpApiTypes.HTTP_RESPONSE_INFO* knownHeaderInfo = allocator.Alloc<HttpApiTypes.HTTP_RESPONSE_INFO>(1);
+            HttpApiTypes.HTTP_RESPONSE_INFO* knownHeaderInfo = allocator.AllocAsPointer<HttpApiTypes.HTTP_RESPONSE_INFO>(1);
             httpResponse.pResponseInfo = knownHeaderInfo;
 
             knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
             knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
                 (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
 
-            HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.Alloc<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+            HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.AllocAsPointer<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
             header->HeaderId = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
             header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
             header->KnownHeaderCount = 0;
 
-            HttpApiTypes.HTTP_KNOWN_HEADER* nativeHeaderValues = allocator.Alloc<HttpApiTypes.HTTP_KNOWN_HEADER>(authChallenges.Count);
+            HttpApiTypes.HTTP_KNOWN_HEADER* nativeHeaderValues = allocator.AllocAsPointer<HttpApiTypes.HTTP_KNOWN_HEADER>(authChallenges.Count);
             header->KnownHeaders = nativeHeaderValues;
 
             for (int headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)

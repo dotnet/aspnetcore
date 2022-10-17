@@ -196,7 +196,7 @@ internal sealed partial class ResponseBody : Stream
     {
         const int maxGCHandleCount = 4;
         int gcHandleIndex = 0;
-        var pins = new Span<GCHandle>(allocator.Alloc<GCHandle>(maxGCHandleCount), maxGCHandleCount);
+        var pins = allocator.AllocAsSpan<GCHandle>(maxGCHandleCount);
 
         // Manually initialize the allocated GCHandles
         for (int i = 0; i < maxGCHandleCount; ++i)
@@ -214,7 +214,7 @@ internal sealed partial class ResponseBody : Stream
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
-            dataChunks = new Span<HttpApiTypes.HTTP_DATA_CHUNK>(allocator.Alloc<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount), chunkCount);
+            dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
             pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator));
             return pins;
         }
@@ -244,7 +244,7 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
-        dataChunks = new Span<HttpApiTypes.HTTP_DATA_CHUNK>(allocator.Alloc<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount), chunkCount);
+        dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
 
         if (chunked)
         {

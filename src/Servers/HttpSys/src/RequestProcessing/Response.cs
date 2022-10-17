@@ -534,7 +534,7 @@ internal sealed class Response
                 {
                     if (unknownHeaders == null)
                     {
-                        HttpApiTypes.HTTP_UNKNOWN_HEADER* unknownAlloc = allocator.Alloc<HttpApiTypes.HTTP_UNKNOWN_HEADER>(numUnknownHeaders);
+                        HttpApiTypes.HTTP_UNKNOWN_HEADER* unknownAlloc = allocator.AllocAsPointer<HttpApiTypes.HTTP_UNKNOWN_HEADER>(numUnknownHeaders);
                         unknownHeaders = new Span<HttpApiTypes.HTTP_UNKNOWN_HEADER>(unknownAlloc, numUnknownHeaders);
                         _nativeResponse.Response_V1.Headers.pUnknownHeaders = unknownAlloc;
                     }
@@ -565,7 +565,7 @@ internal sealed class Response
                 {
                     if (knownHeaderInfo == null)
                     {
-                        HttpApiTypes.HTTP_RESPONSE_INFO* responseAlloc = allocator.Alloc<HttpApiTypes.HTTP_RESPONSE_INFO>(numKnownMultiHeaders);
+                        HttpApiTypes.HTTP_RESPONSE_INFO* responseAlloc = allocator.AllocAsPointer<HttpApiTypes.HTTP_RESPONSE_INFO>(numKnownMultiHeaders);
                         knownHeaderInfo = new Span<HttpApiTypes.HTTP_RESPONSE_INFO>(responseAlloc, numKnownMultiHeaders);
                         _nativeResponse.pResponseInfo = responseAlloc;
                     }
@@ -573,13 +573,13 @@ internal sealed class Response
                     knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                     knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
 
-                    HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.Alloc<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+                    HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.AllocAsPointer<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
                     header->HeaderId = (HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
                     header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
                     header->KnownHeaderCount = 0;
 
-                    HttpApiTypes.HTTP_KNOWN_HEADER* headerAlloc = allocator.Alloc<HttpApiTypes.HTTP_KNOWN_HEADER>(headerValues.Count);
+                    HttpApiTypes.HTTP_KNOWN_HEADER* headerAlloc = allocator.AllocAsPointer<HttpApiTypes.HTTP_KNOWN_HEADER>(headerValues.Count);
                     var nativeHeaderValues = new Span<HttpApiTypes.HTTP_KNOWN_HEADER>(headerAlloc, headerValues.Count);
                     header->KnownHeaders = headerAlloc;
 
@@ -613,7 +613,7 @@ internal sealed class Response
             trailerCount += trailerPair.Value.Count;
         }
 
-        var unknownHeaders = allocator.Alloc<HttpApiTypes.HTTP_UNKNOWN_HEADER>(trailerCount);
+        var unknownHeaders = allocator.AllocAsPointer<HttpApiTypes.HTTP_UNKNOWN_HEADER>(trailerCount);
         dataChunks[currentChunk].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
         dataChunks[currentChunk].trailers.trailerCount = checked((ushort)trailerCount);
         dataChunks[currentChunk].trailers.pTrailers = (nint)unknownHeaders;
