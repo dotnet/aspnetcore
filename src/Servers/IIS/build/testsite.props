@@ -1,19 +1,12 @@
 <Project>
   <PropertyGroup>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);win-x64;win-x86</RuntimeIdentifiers>
-    <Platforms>x64;x86</Platforms>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);win-x64</RuntimeIdentifiers>
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
     <PreserveCompilationContext>false</PreserveCompilationContext>
   </PropertyGroup>
 
   <Import Project="assets.props" />
-
-  <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
-    <IISExpressPath>$(MSBuildProgramFiles32)\IIS Express\iisexpress.exe</IISExpressPath>
-    <IISPath>$(SystemRoot)\SysWOW64\inetsrv\w3wp.exe</IISPath>
-    <NativeFolder>Win32</NativeFolder>
-  </PropertyGroup>
 
   <PropertyGroup Condition="'$(NativePlatform)' == 'x64'">
     <IISExpressPath>$(ProgramW6432)\IIS Express\iisexpress.exe</IISExpressPath>
