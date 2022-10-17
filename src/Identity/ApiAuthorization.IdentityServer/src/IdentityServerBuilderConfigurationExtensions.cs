@@ -132,7 +132,7 @@ public static class IdentityServerBuilderConfigurationExtensions
 
     /// <summary>
     /// Adds identity resources from the default configuration to the server using the key
-    /// IdentityServer:Resources
+    /// IdentityServer:Identity
     /// </summary>
     /// <param name="builder">The <see cref="IIdentityServerBuilder"/>.</param>
     /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
