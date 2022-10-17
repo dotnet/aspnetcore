@@ -296,7 +296,7 @@ internal sealed class Response
         {
             if (chunks != null)
             {
-                _nativeResponse.Response_V1.EntityChunkCount = checked((ushort)dataChunks.Length);
+                _nativeResponse.Response_V1.EntityChunkCount = checked((ushort)dataChunks!.Length);
                 _nativeResponse.Response_V1.pEntityChunks = chunks;
             }
             else if (asyncResult != null && asyncResult.DataChunks != null)
