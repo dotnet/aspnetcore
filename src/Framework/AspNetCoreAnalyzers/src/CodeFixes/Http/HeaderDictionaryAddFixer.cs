@@ -32,7 +32,7 @@ public class HeaderDictionaryAddFixer : CodeFixProvider
                     equivalenceKey: appendTitle),
                 diagnostic);
 
-            var indexerTitle = "Use the indexer";
+            var indexerTitle = "Use indexer";
             context.RegisterCodeFix(
                 CodeAction.Create(indexerTitle,
                     cancellationToken => ReplaceAddWithIndexerAsync(diagnostic, context.Document, cancellationToken),
