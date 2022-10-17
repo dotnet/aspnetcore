@@ -359,7 +359,8 @@ describe("hubConnection", () => {
                 await closePromise;
             });
 
-            it("closed with error or start fails if hub cannot be created", async () => {
+            // Skipped: https://github.com/dotnet/aspnetcore/issues/44608
+            xit("closed with error or start fails if hub cannot be created", async () => {
                 const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable", { httpClient })
                     .withHubProtocol(protocol)
                     .build();
