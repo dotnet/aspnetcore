@@ -1,17 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[WixBundleName] セットアップ</String>
+  <String Id="Caption">[WixBundleName]のセットアップ</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
   <String Id="InstallHeader">ようこそ</String>
-  <String Id="InstallMessage">セットアップによって、コンピューターに [WixBundleName] がインストールされます。[\[]インストール[\]]をクリックしてインストール ディレクトリを設定するオプションを表示するか、[\[]閉じる[\]] をクリックして終了します。</String>
+  <String Id="InstallMessage">セットアップによって、コンピューターに [WixBundleName] がインストールされます。\[インストール\] をクリックして続行するか、\[オプション\] でインストール ディレクトリを設定するか、\[閉じる\] で終了します。</String>
   <String Id="InstallVersion">バージョン [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
   <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - バンドルの完全なローカル コピーに対する
-  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への
-  作成を行います。既定の設定はインストールです。
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]ディレクトリ[\]] - バンドルの完全なローカル コピーに対する
+  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への作成を行います。既定の設定はインストールです。
 
 /passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも
    表示しません。既定では UI とすべてのプロンプトが表示されます。
@@ -39,16 +38,16 @@
   <String Id="ModifyCloseButton">閉じる(&amp;C)</String>
   <String Id="SuccessRepairHeader">修復が正常に完了しました</String>
   <String Id="SuccessUninstallHeader">アンインストールが正常に完了しました</String>
-  <String Id="SuccessInstallHeader">インストールが正常に完了しました</String> 
-  <String Id="SuccessHeader">セットアップ完了</String>	
+  <String Id="SuccessInstallHeader">インストールが正常に完了しました</String>
+  <String Id="SuccessHeader">セットアップ完了</String>
   <String Id="SuccessLaunchButton">起動(&amp;L)</String>
   <String Id="SuccessRestartText">ソフトウェアを使用する前にコンピューターを再起動する必要があります。</String>
   <String Id="SuccessRestartButton">再起動(&amp;R)</String>
   <String Id="SuccessCloseButton">閉じる(&amp;C)</String>
-  <String Id="FailureHeader">セットアップ失敗</String>
+  <String Id="FailureHeader">セットアップに失敗しました</String>
   <String Id="FailureInstallHeader">セットアップに失敗しました</String>
   <String Id="FailureUninstallHeader">アンインストールに失敗しました</String>
-  <String Id="FailureRepairHeader">修復に失敗しました</String> 
+  <String Id="FailureRepairHeader">修復に失敗しました</String>
   <String Id="FailureHyperlinkLogText">1 つまたは複数の問題により、セットアップが失敗しました。問題を解決してからセットアップを再試行してください。詳細については、&lt;a href="#"&gt;ログ ファイル&lt;/a&gt;を参照してください。</String>
   <String Id="FailureRestartText">ソフトウェアのロールバックを完了するには、コンピューターを再起動する必要があります。</String>
   <String Id="FailureRestartButton">再起動(&amp;R)</String>
