@@ -25,7 +25,7 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
     {
         foreach (var diagnostic in context.Diagnostics)
         {
-            var appendTitle = "Use IHeaderDictionary.Append";
+            var appendTitle = "Use 'IHeaderDictionary.Append'";
             context.RegisterCodeFix(
                 CodeAction.Create(appendTitle,
                     cancellationToken => ReplaceAddWithAppendAsync(diagnostic, context.Document, cancellationToken),
