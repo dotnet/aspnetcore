@@ -104,7 +104,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri, UriKind.RelativeOrAbsolute)] string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
         => NavigateTo(uri, forceLoad, replace: false);
 
     /// <summary>
@@ -114,7 +114,7 @@ public abstract class NavigationManager
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
     /// <param name="replace">If true, replaces the current entry in the history stack. If false, appends the new entry to the history stack.</param>
-    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri, UriKind.RelativeOrAbsolute)] string uri, bool forceLoad = false, bool replace = false)
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad = false, bool replace = false)
     {
         AssertInitialized();
 
@@ -140,7 +140,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
-    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri, UriKind.RelativeOrAbsolute)] string uri, NavigationOptions options)
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options)
     {
         AssertInitialized();
         NavigateToCore(uri, options);
@@ -156,7 +156,7 @@ public abstract class NavigationManager
     // already override this, so the framework needs to keep using it for the cases when only pre-6.0 options are used.
     // However, for anyone implementing a new NavigationManager post-6.0, we don't want them to have to override this
     // overload any more, so there's now a default implementation that calls the updated overload.
-    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri, UriKind.RelativeOrAbsolute)] string uri, bool forceLoad)
+    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad)
         => NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
 
     /// <summary>
@@ -165,7 +165,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
-    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri, UriKind.RelativeOrAbsolute)] string uri, NavigationOptions options) =>
+    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options) =>
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
     /// <summary>

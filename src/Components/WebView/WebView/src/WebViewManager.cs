@@ -63,7 +63,7 @@ public abstract class WebViewManager : IAsyncDisposable
     /// client-side routing.
     /// </summary>
     /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
-    public void Navigate([StringSyntax(StringSyntaxAttribute.Uri, UriKind.RelativeOrAbsolute)] string url)
+    public void Navigate([StringSyntax(StringSyntaxAttribute.Uri)] string url)
         => NavigateCore(new Uri(_appBaseUri, url));
 
     /// <summary>
