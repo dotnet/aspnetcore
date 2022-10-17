@@ -281,32 +281,60 @@ public class HeaderUtilitiesTest
     }
 
     [Theory]
-    [InlineData("0", 0, 0d, 1)]
-    [InlineData("q=0", 2, 0d, 1)]
-    [InlineData("1", 0, 1d, 1)]
-    [InlineData("q=1", 2, 1d, 1)]
+    [InlineData("text;q=0", 0d, 1)]
+    [InlineData("text;q=1", 1d, 1)]
     public void TryParseQualityDouble_WithoutDecimalPart_ReturnsCorrectQuality(
         string inputString,
-        int startIndex,
         double expectedQuality,
         int expectedLength)
-        => VerifyTryParseQualityDoubleSuccess(inputString, startIndex, expectedQuality, expectedLength);
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
 
     [Theory]
-    [InlineData("0.0", 0, 0d, 3)]
-    [InlineData("q=0.0", 2, 0d, 3)]
-    [InlineData("1.0", 0, 1d, 3)]
-    [InlineData("q=1.0", 2, 1d, 3)]
-    [InlineData("0.1", 0, 0.1d, 3)]
-    [InlineData("q=0.1", 2, 0.1d, 3)]
-    [InlineData("0.12345678", 0, 0.12345678d, 10)]
-    [InlineData("q=0.12345678", 2, 0.12345678d, 10)]
-    public void TryParseQualityDouble_WithDecimalPart_ReturnsCorrectQuality(
+    [InlineData("text;q=0,*;q=1", 0d, 1)]
+    [InlineData("text;q=1,*;q=0", 1d, 1)]
+    public void TryParseQualityDouble_WithoutDecimalPart_WithSubsequentCharacters_ReturnsCorrectQuality(
         string inputString,
-        int startIndex,
         double expectedQuality,
         int expectedLength)
-        => VerifyTryParseQualityDoubleSuccess(inputString, startIndex, expectedQuality, expectedLength);
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
+
+    [Theory]
+    [InlineData("text;q=0.", 0d, 2)]
+    [InlineData("text;q=0.0", 0d, 3)]
+    [InlineData("text;q=0.00000000", 0d, 10)]
+    [InlineData("text;q=1.", 1d, 2)]
+    [InlineData("text;q=1.0", 1d, 3)]
+    [InlineData("text;q=1.000", 1d, 5)]
+    [InlineData("text;q=1.00000000", 1d, 10)]
+    [InlineData("text;q=0.1", 0.1d, 3)]
+    [InlineData("text;q=0.001", 0.001d, 5)]
+    [InlineData("text;q=0.00000001", 0.00000001d, 10)]
+    [InlineData("text;q=0.12345678", 0.12345678d, 10)]
+    [InlineData("text;q=0.98765432", 0.98765432d, 10)]
+    public void TryParseQualityDouble_WithDecimalPart_ReturnsCorrectQuality(
+        string inputString,
+        double expectedQuality,
+        int expectedLength)
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
+
+    [Theory]
+    [InlineData("text;q=0.,*;q=1", 0d, 2)]
+    [InlineData("text;q=0.0,*;q=1", 0d, 3)]
+    [InlineData("text;q=0.00000000,*;q=1", 0d, 10)]
+    [InlineData("text;q=1.,*;q=1", 1d, 2)]
+    [InlineData("text;q=1.0,*;q=1", 1d, 3)]
+    [InlineData("text;q=1.000,*;q=1", 1d, 5)]
+    [InlineData("text;q=1.00000000,*;q=1", 1d, 10)]
+    [InlineData("text;q=0.1,*;q=1", 0.1d, 3)]
+    [InlineData("text;q=0.001,*;q=1", 0.001d, 5)]
+    [InlineData("text;q=0.00000001,*;q=1", 0.00000001d, 10)]
+    [InlineData("text;q=0.12345678,*;q=1", 0.12345678d, 10)]
+    [InlineData("text;q=0.98765432,*;q=1", 0.98765432d, 10)]
+    public void TryParseQualityDouble_WithDecimalPart_WithSubsequentCharacters_ReturnsCorrectQuality(
+    string inputString,
+    double expectedQuality,
+    int expectedLength)
+    => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
 
     private static void VerifyTryParseQualityDoubleSuccess(string inputString, int startIndex, double expectedQuality, int expectedLength)
     {
@@ -322,54 +350,43 @@ public class HeaderUtilitiesTest
         Assert.Equal(expectedLength, actualLength);
     }
 
-    [Theory]
-    [InlineData("", 0)]
-    [InlineData("1", 1)]
-    [InlineData("0.1", 3)]
-    public void TryParseQualityDouble_StartIndexIsOutOfRange_ReturnsFalse(string inputString, int startIndex)
-        => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
+    [Fact]
+    public void TryParseQualityDouble_StartIndexIsOutOfRange_ReturnsFalse()
+        => VerifyTryParseQualityDoubleFailure("text;q=0.1", 10);
 
     [Theory]
-    [MemberData(nameof(InvalidStartingCharacterData))]
-    public void TryParseQualityDouble_HasInvalidStartingCharacter_ReturnsFalse(string inputString, int startIndex)
-        => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
-
-    public static TheoryData<string, int> InvalidStartingCharacterData() => new()
-    {
-        { ".123", 0 },
-        { "q=.123", 2 },
-
-        { $"{(char)('0' - 1)}", 0 },
-        { $"q={(char)('0' - 1)}", 2 },
-
-        { "2", 0 },
-        { "q=2", 2 },
-        { "2.0", 0 },
-        { "q=2.0", 2 },
-
-        { "a", 0 },
-        { "q=a", 2 }
-    };
+    [InlineData("text;q=2")]
+    [InlineData("text;q=a")]
+    [InlineData("text;q=.1")]
+    [InlineData("text;q=/.1")]
+    [InlineData("text;q=:.1")]
+    public void TryParseQualityDouble_HasInvalidStartingCharacter_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
 
     [Theory]
-    [InlineData("00.1", 0)]
-    [InlineData("q=00.1", 2)]
-    [InlineData("01.1", 0)]
-    [InlineData("q=01.1", 2)]
-    public void TryParseQualityDouble_HasMoreThanOneDigitBeforeDot_ReturnsFalse(string inputString, int startIndex)
-        => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
+    [InlineData("text;q=00")]
+    [InlineData("text;q=00.")]
+    [InlineData("text;q=00.0")]
+    [InlineData("text;q=01.0")]
+    [InlineData("text;q=10")]
+    [InlineData("text;q=10.")]
+    [InlineData("text;q=10.0")]
+    [InlineData("text;q=11.0")]
+    public void TryParseQualityDouble_HasMoreThanOneDigitBeforeDot_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
 
     [Theory]
-    [InlineData("0.123456789", 0)]
-    [InlineData("q=0.123456789", 2)]
-    public void TryParseQualityDouble_ExceedsQualityValueMaxCharacterCount_ReturnsFalse(string inputString, int startIndex)
-        => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
+    [InlineData("text;q=0.000000000")]
+    [InlineData("text;q=1.000000000")]
+    [InlineData("text;q=0.000000001")]
+    public void TryParseQualityDouble_ExceedsQualityValueMaxCharacterCount_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
 
     [Theory]
-    [InlineData("1.000000001", 0)]
-    [InlineData("q=1.000000001", 2)]
-    public void TryParseQualityDouble_ParsedQualityIsGreaterThanOne_ReturnsFalse(string inputString, int startIndex)
-        => VerifyTryParseQualityDoubleFailure(inputString, startIndex);
+    [InlineData("text;q=1.000000001")]
+    [InlineData("text;q=2")]
+    public void TryParseQualityDouble_ParsedQualityIsGreaterThanOne_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
 
     private static void VerifyTryParseQualityDoubleFailure(string inputString, int startIndex)
     {
