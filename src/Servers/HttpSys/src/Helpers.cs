@@ -9,22 +9,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal static class Helpers
 {
-    public static PinnedSpan ChunkTerminator { get; } = new PinnedSpan("0\r\n\r\n"u8);
-    public static PinnedSpan CRLF { get; } = new PinnedSpan("\r\n"u8);
-
-    public readonly unsafe struct PinnedSpan
-    {
-        public PinnedSpan(ReadOnlySpan<byte> span)
-        {
-            // This copy can go away if UTF8 literals are guaranteed to be pinned
-            // See https://github.com/dotnet/csharplang/issues/5295
-            Ptr = (void*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(Helpers), span.Length);
-            Length = span.Length;
-            span.CopyTo(new Span<byte>(Ptr, Length));
-        }
-        public readonly void* Ptr;
-        public readonly int Length;
-    }
+    public static ReadOnlySpan<byte> ChunkTerminator => "0\r\n\r\n"u8;
+    public static ReadOnlySpan<byte> CRLF => "\r\n"u8;
 
     internal static ArraySegment<byte> GetChunkHeader(long size)
     {

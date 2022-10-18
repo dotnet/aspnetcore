@@ -66,7 +66,7 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
         if (chunked)
         {
-            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF.Ptr, Helpers.CRLF.Length);
+            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF);
         }
 
         // This call will pin needed memory
@@ -130,7 +130,7 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
                 // No need to pin the CRLF data
                 int currentChunk = 2;
-                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF.Ptr, Helpers.CRLF.Length);
+                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF);
                 Debug.Assert(currentChunk == _dataChunks.Length);
             }
             else
@@ -163,12 +163,15 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
         chunk.fromMemory.BufferLength = (uint)segment.Count;
     }
 
-    private static void SetDataChunkWithPinnedData(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, void* bytes, int bytesLength)
+    private static void SetDataChunkWithPinnedData(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, ReadOnlySpan<byte> bytes)
     {
         ref var chunk = ref chunks[chunkIndex++];
         chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        chunk.fromMemory.pBuffer = (IntPtr)bytes;
-        chunk.fromMemory.BufferLength = (uint)bytesLength;
+        fixed (byte* ptr = bytes)
+        {
+            chunk.fromMemory.pBuffer = (IntPtr)ptr;
+        }
+        chunk.fromMemory.BufferLength = (uint)bytes.Length;
     }
 
     internal SafeNativeOverlapped? NativeOverlapped

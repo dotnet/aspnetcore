@@ -205,7 +205,7 @@ internal sealed partial class ResponseBody : Stream
         if (chunked && !hasData && endOfRequest)
         {
             dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
-            SetDataChunk(dataChunks, ref currentChunk, Helpers.ChunkTerminator.Ptr, Helpers.ChunkTerminator.Length);
+            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
             pins = default;
             return;
         }
@@ -257,11 +257,11 @@ internal sealed partial class ResponseBody : Stream
 
         if (chunked)
         {
-            SetDataChunk(dataChunks, ref currentChunk, Helpers.CRLF.Ptr, Helpers.CRLF.Length);
+            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.CRLF);
 
             if (endOfRequest)
             {
-                SetDataChunk(dataChunks, ref currentChunk, Helpers.ChunkTerminator.Ptr, Helpers.ChunkTerminator.Length);
+                SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
             }
         }
 
@@ -284,19 +284,21 @@ internal sealed partial class ResponseBody : Stream
         out GCHandle handle)
     {
         handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
-        SetDataChunk(chunks, ref chunkIndex, (void*)(handle.AddrOfPinnedObject() + buffer.Offset), buffer.Count);
+        SetDataChunkWithPinnedData(chunks, ref chunkIndex, new ReadOnlySpan<byte>((void*)(handle.AddrOfPinnedObject() + buffer.Offset), buffer.Count));
     }
 
-    private static unsafe void SetDataChunk(
+    private static unsafe void SetDataChunkWithPinnedData(
         Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
-        void* buffer,
-        int length)
+        ReadOnlySpan<byte> bytes)
     {
         ref var chunk = ref chunks[chunkIndex++];
         chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        chunk.fromMemory.pBuffer = (IntPtr)buffer;
-        chunk.fromMemory.BufferLength = (uint)length;
+        fixed (byte* ptr = bytes)
+        {
+            chunk.fromMemory.pBuffer = (IntPtr)ptr;
+        }
+        chunk.fromMemory.BufferLength = (uint)bytes.Length;
     }
 
     private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)
