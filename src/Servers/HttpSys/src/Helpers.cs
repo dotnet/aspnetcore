@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
