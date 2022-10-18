@@ -531,6 +531,70 @@ public class CustomParsableType
     }
 
     [Fact]
+    public async Task Insertion_Space_CustomParsableWithFormatType_EndpointMapGet_HasDelegate_HasItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (CustomParsableType $$
+    }
+}
+
+public class CustomParsableType
+{
+    public static bool TryParse(string s, IFormatProvider provider, out CustomParsableType result)
+    {
+        result = new CustomParsableType();
+        return true;
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+    }
+
+    [Fact]
+    public async Task Insertion_Space_CustomParsableWithFormatType_NonPublic_EndpointMapGet_HasDelegate_NoItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (CustomParsableType $$
+    }
+}
+
+public class CustomParsableType
+{
+    private static bool TryParse(string s, IFormatProvider provider, out CustomParsableType result)
+    {
+        result = new CustomParsableType();
+        return true;
+    }
+}
+");
+
+        // Assert
+        Assert.Empty(result.Completions.ItemsList);
+    }
+
+    [Fact]
     public async Task Insertion_Space_NonParsableType_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -570,6 +634,8 @@ public interface NonParsableType
     [InlineData("int?")]
     [InlineData("Nullable<int>")]
     [InlineData("Nullable<Int32>")]
+    [InlineData("StringComparison")]
+    [InlineData("Uri")]
     public async Task Insertion_Space_SupportedBuiltinTypes_EndpointMapGet_HasDelegate_HasItem(string parameterType)
     {
         // Arrange & Act

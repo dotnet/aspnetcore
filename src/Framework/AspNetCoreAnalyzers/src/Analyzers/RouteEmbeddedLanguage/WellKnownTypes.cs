@@ -144,6 +144,18 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string IFormatProvider = "System.IFormatProvider";
+        if (compilation.GetTypeByMetadataName(IFormatProvider) is not { } iFormatProvider)
+        {
+            return false;
+        }
+
+        const string Uri = "System.Uri";
+        if (compilation.GetTypeByMetadataName(Uri) is not { } uri)
+        {
+            return false;
+        }
+
         wellKnownTypes = new()
         {
             IFromBodyMetadata = iFromBodyMetadata,
@@ -165,6 +177,8 @@ internal sealed class WellKnownTypes
             IFormFile = iFormFile,
             Stream = stream,
             PipeReader = pipeReader,
+            IFormatProvider = iFormatProvider,
+            Uri = uri,
         };
 
         return true;
@@ -189,6 +203,8 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol Stream { get; private init; }
     public INamedTypeSymbol PipeReader { get; private init; }
     public INamedTypeSymbol IFormFile { get; private init; }
+    public INamedTypeSymbol IFormatProvider { get; private init; }
+    public INamedTypeSymbol Uri { get; private init; }
 
     private INamedTypeSymbol[]? _parameterSpecialTypes;
     public INamedTypeSymbol[] ParameterSpecialTypes

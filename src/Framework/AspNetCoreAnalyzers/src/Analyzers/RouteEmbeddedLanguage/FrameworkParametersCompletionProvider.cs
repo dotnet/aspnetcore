@@ -130,7 +130,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
         // Don't offer route parameter names when the parameter type can't be bound to route parameters.
         // e.g. special types like HttpContext, non-primitive types that don't have a static TryParse method.
-        if (!IsCurrentParameterBindable(token, semanticModel, context.CancellationToken))
+        if (!IsCurrentParameterBindable(token, semanticModel, wellKnownTypes, context.CancellationToken))
         {
             return;
         }
@@ -377,7 +377,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         return false;
     }
 
-    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken)
+    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
     {
         if (token.Parent.IsKind(SyntaxKind.PredefinedType))
         {
@@ -387,20 +387,33 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         var parameterTypeSymbol = semanticModel.GetSymbolInfo(token.Parent, cancellationToken).GetAnySymbol();
         if (parameterTypeSymbol is INamedTypeSymbol typeSymbol)
         {
+            // String is valid.
             if (typeSymbol.SpecialType == SpecialType.System_String)
             {
                 return true;
             }
+            // Any enum is valid.
+            if (typeSymbol.TypeKind == TypeKind.Enum)
+            {
+                return true;
+            }
+            // Uri is valid.
+            if (SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Uri))
+            {
+                return true;
+            }
 
-            // Check if the parameter type has a static TryParse method.
+            // Check if the parameter type has a public static TryParse method.
             foreach (var item in typeSymbol.GetMembers("TryParse"))
             {
-                if (item is IMethodSymbol methodSymbol &&
-                    methodSymbol.IsStatic &&
-                    methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                    methodSymbol.Parameters.Length == 2 &&
-                    methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
-                    methodSymbol.Parameters[1].RefKind == RefKind.Out)
+                // bool TryParse(string input, out T value)
+                if (IsTryParse(item))
+                {
+                    return true;
+                }
+
+                // bool TryParse(string input, IFormatProvider provider, out T value)
+                if (IsTryParseWithFormat(item, wellKnownTypes))
                 {
                     return true;
                 }
@@ -414,8 +427,31 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
             return false;
         }
 
-        // Token could the identifier with completion explicitly triggered.
+        // The cursor is on an identifier (parameter name) and completion is explicitly triggered (e.g. CTRL+SPACE)
         return true;
+        
+        static bool IsTryParse(ISymbol item)
+        {
+            return item is IMethodSymbol methodSymbol &&
+                methodSymbol.DeclaredAccessibility == Accessibility.Public &&
+                methodSymbol.IsStatic &&
+                methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                methodSymbol.Parameters.Length == 2 &&
+                methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
+                methodSymbol.Parameters[1].RefKind == RefKind.Out;
+        }
+
+        static bool IsTryParseWithFormat(ISymbol item, WellKnownTypes wellKnownTypes)
+        {
+            return item is IMethodSymbol methodSymbol &&
+                methodSymbol.DeclaredAccessibility == Accessibility.Public &&
+                methodSymbol.IsStatic &&
+                methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                methodSymbol.Parameters.Length == 3 &&
+                methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
+                SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, wellKnownTypes.IFormatProvider) &&
+                methodSymbol.Parameters[2].RefKind == RefKind.Out;
+        }
     }
 
     private static ImmutableArray<string> GetExistingParameterNames(SyntaxNode node)
