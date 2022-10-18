@@ -199,17 +199,13 @@ internal sealed partial class ResponseBody : Stream
         var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
         Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
-        byte* bytes;
-        int bytesLength;
-
         int pinsIndex = 0;
         var currentChunk = 0;
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
-            Helpers.GetChunkTerminator(out bytes, out bytesLength);
             dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
-            SetDataChunk(dataChunks, ref currentChunk, bytes, bytesLength);
+            SetDataChunk(dataChunks, ref currentChunk, Helpers.ChunkTerminator.Ptr, Helpers.ChunkTerminator.Length);
             pins = default;
             return;
         }
@@ -261,13 +257,11 @@ internal sealed partial class ResponseBody : Stream
 
         if (chunked)
         {
-            Helpers.GetCRLF(out bytes, out bytesLength);
-            SetDataChunk(dataChunks, ref currentChunk, bytes, bytesLength);
+            SetDataChunk(dataChunks, ref currentChunk, Helpers.CRLF.Ptr, Helpers.CRLF.Length);
 
             if (endOfRequest)
             {
-                Helpers.GetChunkTerminator(out bytes, out bytesLength);
-                SetDataChunk(dataChunks, ref currentChunk, bytes, bytesLength);
+                SetDataChunk(dataChunks, ref currentChunk, Helpers.ChunkTerminator.Ptr, Helpers.ChunkTerminator.Length);
             }
         }
 

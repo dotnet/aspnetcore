@@ -66,8 +66,7 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
         if (chunked)
         {
-            Helpers.GetCRLF(out byte* bytes, out int bytesLength);
-            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, bytes, bytesLength);
+            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF.Ptr, Helpers.CRLF.Length);
         }
 
         // This call will pin needed memory
@@ -130,9 +129,8 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
                 // Nothing to pin for the file handle.
 
                 // No need to pin the CRLF data
-                Helpers.GetCRLF(out byte* bytes, out int bytesLength);
                 int currentChunk = 2;
-                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, bytes, bytesLength);
+                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF.Ptr, Helpers.CRLF.Length);
                 Debug.Assert(currentChunk == _dataChunks.Length);
             }
             else

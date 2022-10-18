@@ -2,34 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal static class Helpers
 {
-    // Both of these arrays are pinned.
-    private static readonly byte[] ChunkTerminator = CreatePinnedArray("0\r\n\r\n"u8);
-    private static readonly byte[] CRLF = CreatePinnedArray("\r\n"u8);
+    public static PinnedSpan ChunkTerminator { get; } = new PinnedSpan("0\r\n\r\n"u8);
+    public static PinnedSpan CRLF { get; } = new PinnedSpan("\r\n"u8);
 
-    private static byte[] CreatePinnedArray(ReadOnlySpan<byte> data)
+    public readonly unsafe struct PinnedSpan
     {
-        var array = GC.AllocateArray<byte>(data.Length, pinned: true);
-        data.CopyTo(array);
-        return array;
-    }
-
-    internal static unsafe void GetCRLF(out byte* ptr, out int length)
-    {
-        ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(CRLF, 0);
-        length = CRLF.Length;
-    }
-
-    internal static unsafe void GetChunkTerminator(out byte* ptr, out int length)
-    {
-        ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(ChunkTerminator, 0);
-        length = ChunkTerminator.Length;
+        public PinnedSpan(ReadOnlySpan<byte> span)
+        {
+            // This copy can go away if UTF8 literals are guaranteed to be pinned
+            // See https://github.com/dotnet/csharplang/issues/5295
+            Ptr = (void*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(Helpers), span.Length);
+            Length = span.Length;
+            span.CopyTo(new Span<byte>(Ptr, Length));
+        }
+        public readonly void* Ptr;
+        public readonly int Length;
     }
 
     internal static ArraySegment<byte> GetChunkHeader(long size)
