@@ -1,14 +1,14 @@
-[Open Iconic v1.1.1](http://useiconic.com/open)
+[Open Iconic v1.1.1](https://github.com/iconic/open-iconic)
 ===========
 
-### Open Iconic is the open source sibling of [Iconic](http://useiconic.com). It is a hyper-legible collection of 223 icons with a tiny footprint&mdash;ready to use with Bootstrap and Foundation. [View the collection](http://useiconic.com/open#icons)
+### Open Iconic is the open source sibling of [Iconic](https://github.com/iconic/open-iconic). It is a hyper-legible collection of 223 icons with a tiny footprint&mdash;ready to use with Bootstrap and Foundation. [View the collection](https://github.com/iconic/open-iconic)
 
 
 
 ## What's in Open Iconic?
 
 * 223 icons designed to be legible down to 8 pixels
-* Super-light SVG files - 61.8 for the entire set 
+* Super-light SVG files - 61.8 for the entire set
 * SVG sprite&mdash;the modern replacement for icon fonts
 * Webfont (EOT, OTF, SVG, TTF, WOFF), PNG and WebP formats
 * Webfont stylesheets (including versions for Bootstrap and Foundation) in CSS, LESS, SCSS and Stylus formats
@@ -17,7 +17,7 @@
 
 ## Getting Started
 
-#### For code samples and everything else you need to get started with Open Iconic, check out our [Icons](http://useiconic.com/open#icons) and [Reference](http://useiconic.com/open#reference) sections.
+#### For code samples and everything else you need to get started with Open Iconic, check out our [Icons](https://github.com/iconic/open-iconic) and [Reference](https://github.com/iconic/open-iconic) sections.
 
 ### General Usage
 
@@ -33,7 +33,7 @@ We like SVGs and we think they're the way to display icons on the web. Since Ope
 
 Open Iconic also comes in a SVG sprite which allows you to display all the icons in the set with a single request. It's like an icon font, without being a hack.
 
-Adding an icon from an SVG sprite is a little different than what you're used to, but it's still a piece of cake. *Tip: To make your icons easily style able, we suggest adding a general class to the* `<svg>` *tag and a unique class name for each different icon in the* `<use>` *tag.*  
+Adding an icon from an SVG sprite is a little different than what you're used to, but it's still a piece of cake. *Tip: To make your icons easily style able, we suggest adding a general class to the* `<svg>` *tag and a unique class name for each different icon in the* `<use>` *tag.*
 
 ```
 <svg class="icon">
