@@ -2,14 +2,39 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal static class Helpers
 {
-    internal static readonly byte[] ChunkTerminator = new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-    internal static readonly byte[] CRLF = new byte[] { (byte)'\r', (byte)'\n' };
+    // Both of these arrays are pinned.
+    private static readonly byte[] ChunkTerminator;
+    private static readonly byte[] CRLF;
+
+    static Helpers()
+    {
+        var chunkTerm = "0\r\n\r\n"u8;
+        ChunkTerminator = GC.AllocateArray<byte>(chunkTerm.Length, pinned: true);
+        chunkTerm.CopyTo(ChunkTerminator);
+
+        var crlf = "\r\n"u8;
+        CRLF = GC.AllocateArray<byte>(crlf.Length, pinned: true);
+        crlf.CopyTo(CRLF);
+    }
+
+    internal static unsafe void GetCRLF(out byte* ptr, out int length)
+    {
+        ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(CRLF, 0);
+        length = CRLF.Length;
+    }
+
+    internal static unsafe void GetChunkTerminator(out byte* ptr, out int length)
+    {
+        ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(ChunkTerminator, 0);
+        length = ChunkTerminator.Length;
+    }
 
     internal static ArraySegment<byte> GetChunkHeader(long size)
     {

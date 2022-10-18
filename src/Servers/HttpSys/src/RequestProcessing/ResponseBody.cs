@@ -199,20 +199,18 @@ internal sealed partial class ResponseBody : Stream
         var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
         Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
+        byte* bytes;
+        int bytesLength;
+
         int pinsIndex = 0;
-        int chunkCount = 1;
         var currentChunk = 0;
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
-            // Only one handle is needed for this path.
-            pins = allocator.AllocAsSpan<GCHandle>(1);
-
-            // Manually initialize the allocated GCHandle.
-            pins[0] = default;
-
-            dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
-            SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator), out pins[pinsIndex++]);
+            Helpers.GetChunkTerminator(out bytes, out bytesLength);
+            dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
+            SetDataChunk(dataChunks, ref currentChunk, bytes, bytesLength);
+            pins = default;
             return;
         }
         else if (!hasData && !addTrailers)
@@ -224,7 +222,7 @@ internal sealed partial class ResponseBody : Stream
         }
 
         // Recompute chunk count based on presence of data.
-        chunkCount = hasData ? 1 : 0;
+        var chunkCount = hasData ? 1 : 0;
         if (addTrailers)
         {
             chunkCount++;
@@ -242,8 +240,8 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
-        // The chuck count and pin count are the same.
-        pins = allocator.AllocAsSpan<GCHandle>(chunkCount);
+        // We know the max pin count.
+        pins = allocator.AllocAsSpan<GCHandle>(2);
 
         // Manually initialize the allocated GCHandles
         pins.Clear();
@@ -263,17 +261,20 @@ internal sealed partial class ResponseBody : Stream
 
         if (chunked)
         {
-            SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.CRLF), out pins[pinsIndex++]);
+            Helpers.GetCRLF(out bytes, out bytesLength);
+            SetDataChunk(dataChunks, ref currentChunk, bytes, bytesLength);
 
             if (endOfRequest)
             {
-                SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator), out pins[pinsIndex++]);
+                Helpers.GetChunkTerminator(out bytes, out bytesLength);
+                SetDataChunk(dataChunks, ref currentChunk, bytes, bytesLength);
             }
         }
 
         if (addTrailers)
         {
-            _requestContext.Response.SerializeTrailers(ref allocator, dataChunks, currentChunk);
+            _requestContext.Response.SerializeTrailers(ref allocator, out dataChunks[currentChunk++]);
+            Debug.Assert(currentChunk == dataChunks.Length, "Trailers should be the final chunk");
         }
         else if (endOfRequest)
         {
@@ -281,17 +282,26 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private static void SetDataChunk(
+    private static unsafe void SetDataChunk(
         Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
         ArraySegment<byte> buffer,
         out GCHandle handle)
     {
         handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
-        chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        chunks[chunkIndex].fromMemory.pBuffer = handle.AddrOfPinnedObject() + buffer.Offset;
-        chunks[chunkIndex].fromMemory.BufferLength = (uint)buffer.Count;
-        chunkIndex++;
+        SetDataChunk(chunks, ref chunkIndex, (void*)(handle.AddrOfPinnedObject() + buffer.Offset), buffer.Count);
+    }
+
+    private static unsafe void SetDataChunk(
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
+        ref int chunkIndex,
+        void* buffer,
+        int length)
+    {
+        ref var chunk = ref chunks[chunkIndex++];
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        chunk.fromMemory.pBuffer = (IntPtr)buffer;
+        chunk.fromMemory.BufferLength = (uint)length;
     }
 
     private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)

@@ -358,7 +358,7 @@ internal sealed partial class HttpSysListener : IDisposable
         httpResponse.Response_V1.ReasonLength = checked((ushort)bytesLength);
 
         const int contentLengthLength = 1;
-        byte* pContentLength = stackalloc byte[contentLengthLength + 1];
+        byte* pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
         pContentLength[0] = (byte)'0';
         pContentLength[1] = 0; // null terminator
 

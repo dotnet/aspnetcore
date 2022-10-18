@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
@@ -65,7 +66,8 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
         if (chunked)
         {
-            SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, new ArraySegment<byte>(Helpers.CRLF));
+            Helpers.GetCRLF(out byte* bytes, out int bytesLength);
+            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, bytes, bytesLength);
         }
 
         // This call will pin needed memory
@@ -84,9 +86,12 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
         if (chunked)
         {
-            _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
+            // No need to update this chunk, CRLF, because it was already pinned.
+            // However, we increment the counter to ensure we are accounting for all sections.
             currentChunk++;
         }
+
+        Debug.Assert(currentChunk == _dataChunks.Length);
     }
 
     internal ResponseStreamAsyncResult(ResponseBody responseStream, FileStream fileStream, long offset,
@@ -124,9 +129,11 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
                 _dataChunks[1].fromFile.fileHandle = _fileStream.SafeFileHandle.DangerousGetHandle();
                 // Nothing to pin for the file handle.
 
-                _dataChunks[2].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                _dataChunks[2].fromMemory.BufferLength = (uint)Helpers.CRLF.Length;
-                objectsToPin[1] = Helpers.CRLF;
+                // No need to pin the CRLF data
+                Helpers.GetCRLF(out byte* bytes, out int bytesLength);
+                int currentChunk = 2;
+                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, bytes, bytesLength);
+                Debug.Assert(currentChunk == _dataChunks.Length);
             }
             else
             {
@@ -142,9 +149,8 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
 
             if (chunked)
             {
-                // These must be set after pinning with Overlapped.
+                // This must be set after pinning with Overlapped.
                 _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array!, chunkHeaderBuffer.Offset);
-                _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
             }
         }
     }
@@ -153,10 +159,18 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
     {
         objectsToPin[pinIndex] = segment.Array!;
         pinIndex++;
-        chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        ref var chunk = ref chunks[chunkIndex++];
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         // The address is not set until after we pin it with Overlapped
-        chunks[chunkIndex].fromMemory.BufferLength = (uint)segment.Count;
-        chunkIndex++;
+        chunk.fromMemory.BufferLength = (uint)segment.Count;
+    }
+
+    private static void SetDataChunkWithPinnedData(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, void* bytes, int bytesLength)
+    {
+        ref var chunk = ref chunks[chunkIndex++];
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        chunk.fromMemory.pBuffer = (IntPtr)bytes;
+        chunk.fromMemory.BufferLength = (uint)bytesLength;
     }
 
     internal SafeNativeOverlapped? NativeOverlapped

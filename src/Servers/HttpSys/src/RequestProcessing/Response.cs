@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
@@ -601,9 +602,8 @@ internal sealed class Response
         }
     }
 
-    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, int currentChunk)
+    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, out HttpApiTypes.HTTP_DATA_CHUNK dataChunk)
     {
-        Debug.Assert(currentChunk == dataChunks.Length - 1);
         Debug.Assert(HasTrailers);
         MakeTrailersReadOnly();
         var trailerCount = 0;
@@ -614,9 +614,13 @@ internal sealed class Response
         }
 
         var unknownHeaders = allocator.AllocAsPointer<HttpApiTypes.HTTP_UNKNOWN_HEADER>(trailerCount);
-        dataChunks[currentChunk].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
-        dataChunks[currentChunk].trailers.trailerCount = checked((ushort)trailerCount);
-        dataChunks[currentChunk].trailers.pTrailers = (nint)unknownHeaders;
+
+        // Since the dataChunk instance represents an unmanaged union, we are only setting a subset of
+        // overlapping fields. In order to make this clear here, we use Unsafe.SkipInit().
+        Unsafe.SkipInit(out dataChunk);
+        dataChunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
+        dataChunk.trailers.trailerCount = checked((ushort)trailerCount);
+        dataChunk.trailers.pTrailers = (nint)unknownHeaders;
 
         var unknownHeadersOffset = 0;
 
