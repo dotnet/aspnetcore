@@ -129,7 +129,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         }
 
         // Don't offer route parameter names when the parameter type can't be bound to route parameters.
-        // e.g. special types like HttpContext, non-primative types that don't have a static TryParse method.
+        // e.g. special types like HttpContext, non-primitive types that don't have a static TryParse method.
         if (!IsCurrentParameterBindable(token, semanticModel, context.CancellationToken))
         {
             return;
