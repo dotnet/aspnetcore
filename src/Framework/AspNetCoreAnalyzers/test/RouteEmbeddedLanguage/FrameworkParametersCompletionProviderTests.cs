@@ -530,6 +530,32 @@ public class CustomParsableType
             i => Assert.Equal("id", i.DisplayText));
     }
 
+    [Fact]
+    public async Task Insertion_Space_NonParsableType_EndpointMapGet_HasDelegate_NoItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (NonParsableType $$
+    }
+}
+
+public interface NonParsableType
+{
+}
+");
+
+        // Assert
+        Assert.Empty(result.Completions.ItemsList);
+    }
+
     [Theory]
     [InlineData("int")]
     [InlineData("decimal")]
