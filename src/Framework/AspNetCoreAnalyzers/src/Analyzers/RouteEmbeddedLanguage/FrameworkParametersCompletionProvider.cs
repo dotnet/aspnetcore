@@ -415,8 +415,7 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
             {
                 if (argument.Expression is DeclarationExpressionSyntax declarationExpression &&
                     declarationExpression.Designation is SingleVariableDesignationSyntax variableDesignationSyntax &&
-                    variableDesignationSyntax.Identifier is { } identifer &&
-                    !identifer.IsMissing)
+                    variableDesignationSyntax.Identifier is { IsMissing: false } identifer)
                 {
                     builder.Add(identifer.ValueText);
                 }
@@ -436,7 +435,7 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
                 foreach (var p in parameterList.Parameters)
                 {
                     if (p is ParameterSyntax parameter &&
-                        parameter.Identifier is { } identifer && !identifer.IsMissing)
+                        parameter.Identifier is { IsMissing: false } identifer)
                     {
                         builder.Add(identifer.ValueText);
                     }

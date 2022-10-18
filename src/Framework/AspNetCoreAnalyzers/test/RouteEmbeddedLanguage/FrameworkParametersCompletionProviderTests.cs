@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO.Pipelines;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.Completion;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
@@ -138,6 +135,8 @@ class Program
 {
     static void Main()
     {
+        // Out parameters are not supported by Minimal API.
+        // It's useful to provide completion here and then allow dev to fix parameter later.
         EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (out int $$
     }
 }
@@ -316,10 +315,6 @@ class Program
         var result = await GetCompletionsAndServiceAsync(@"
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.Pipelines;
-using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -345,12 +340,7 @@ class Program
         var result = await GetCompletionsAndServiceAsync(@"
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.Pipelines;
-using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 
 class Program
 {
@@ -366,18 +356,86 @@ class Program
     }
 
     [Fact]
+    public async Task Insertion_Space_MultipleArgs_OneParameterAlreadyUsed_EndpointMapGet_HasDelegate_HasItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}/{id2}"", (string id, int $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id2", i.DisplayText));
+    }
+
+    [Fact]
+    public async Task Insertion_Space_MultipleParameters_EndpointMapGet_HasDelegate_HasItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}/{id2}"", (string $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText),
+            i => Assert.Equal("id2", i.DisplayText));
+    }
+
+    [Fact]
+    public async Task Insertion_Space_DuplicateParameters_EndpointMapGet_HasDelegate_HasItems()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}/{id}"", (string $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+    }
+
+    [Fact]
     public async Task Insertion_Space_MultipleArgs_ParameterAlreadyUsed_EndpointMapGet_HasCompleteDelegate_NoItems()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.Pipelines;
-using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 
 class Program
 {
@@ -399,12 +457,7 @@ class Program
         var result = await GetCompletionsAndServiceAsync(@"
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.Pipelines;
-using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 
 class Program
 {
