@@ -274,12 +274,13 @@ internal sealed partial class ResponseBody : Stream
         if (addTrailers)
         {
             _requestContext.Response.SerializeTrailers(ref allocator, out dataChunks[currentChunk++]);
-            Debug.Assert(currentChunk == dataChunks.Length, "Trailers should be the final chunk");
         }
         else if (endOfRequest)
         {
             _requestContext.Response.MakeTrailersReadOnly();
         }
+
+        Debug.Assert(currentChunk == dataChunks.Length, "All chunks should be accounted for");
     }
 
     private static unsafe void SetDataChunk(

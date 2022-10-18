@@ -10,18 +10,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 internal static class Helpers
 {
     // Both of these arrays are pinned.
-    private static readonly byte[] ChunkTerminator;
-    private static readonly byte[] CRLF;
+    private static readonly byte[] ChunkTerminator = CreatePinnedArray("0\r\n\r\n"u8);
+    private static readonly byte[] CRLF = CreatePinnedArray("\r\n"u8);
 
-    static Helpers()
+    private static byte[] CreatePinnedArray(ReadOnlySpan<byte> data)
     {
-        var chunkTerm = "0\r\n\r\n"u8;
-        ChunkTerminator = GC.AllocateArray<byte>(chunkTerm.Length, pinned: true);
-        chunkTerm.CopyTo(ChunkTerminator);
-
-        var crlf = "\r\n"u8;
-        CRLF = GC.AllocateArray<byte>(crlf.Length, pinned: true);
-        crlf.CopyTo(CRLF);
+        var array = GC.AllocateArray<byte>(data.Length, pinned: true);
+        data.CopyTo(array);
+        return array;
     }
 
     internal static unsafe void GetCRLF(out byte* ptr, out int length)
