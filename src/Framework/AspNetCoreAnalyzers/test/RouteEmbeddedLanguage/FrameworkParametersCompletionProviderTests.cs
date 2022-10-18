@@ -334,6 +334,31 @@ class Program
     }
 
     [Fact]
+    public async Task Insertion_Space_SystemString_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (String $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+    }
+
+    [Fact]
     public async Task Insertion_Space_MultipleArgs_ParameterAlreadyUsed_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -470,6 +495,76 @@ class Program
 
         // Assert
         Assert.Empty(result.Completions.ItemsList);
+    }
+
+    [Fact]
+    public async Task Insertion_Space_CustomParsableType_EndpointMapGet_HasDelegate_HasItem()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (CustomParsableType $$
+    }
+}
+
+public class CustomParsableType
+{
+    public static bool TryParse(string s, out CustomParsableType result)
+    {
+        result = new CustomParsableType();
+        return true;
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
+    }
+
+    [Theory]
+    [InlineData("int")]
+    [InlineData("decimal")]
+    [InlineData("DateTime")]
+    [InlineData("Guid")]
+    [InlineData("TimeSpan")]
+    [InlineData("string")]
+    [InlineData("String")]
+    [InlineData("string?")]
+    [InlineData("String?")]
+    [InlineData("Int32")]
+    [InlineData("int?")]
+    [InlineData("Nullable<int>")]
+    [InlineData("Nullable<Int32>")]
+    public async Task Insertion_Space_SupportedBuiltinTypes_EndpointMapGet_HasDelegate_HasItem(string parameterType)
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, @""{id}"", (" + parameterType + @" $$
+    }
+}
+");
+
+        // Assert
+        Assert.Collection(
+            result.Completions.ItemsList,
+            i => Assert.Equal("id", i.DisplayText));
     }
 
     [Theory]

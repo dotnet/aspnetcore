@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 [ExportCompletionProvider(nameof(RoutePatternCompletionProvider), LanguageNames.CSharp)]
 [Shared]
-public class FrameworkParametersCompletionProvider : CompletionProvider
+public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 {
     private const string StartKey = nameof(StartKey);
     private const string LengthKey = nameof(LengthKey);
@@ -128,9 +128,9 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
             return;
         }
 
-        // Don't offer route parameter names when the parameter type can't be bound to route parameters. e.g. HttpContext.
-        var isCurrentParameterSpecialType = IsCurrentParameterNotBindable(token, semanticModel, wellKnownTypes, context.CancellationToken);
-        if (isCurrentParameterSpecialType)
+        // Don't offer route parameter names when the parameter type can't be bound to route parameters.
+        // e.g. special types like HttpContext, non-primative types that don't have a static TryParse method.
+        if (!IsCurrentParameterBindable(token, semanticModel, wellKnownTypes, context.CancellationToken))
         {
             return;
         }
@@ -377,32 +377,45 @@ public class FrameworkParametersCompletionProvider : CompletionProvider
         return false;
     }
 
-    private static bool IsCurrentParameterNotBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
+    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
     {
         if (token.Parent.IsKind(SyntaxKind.PredefinedType))
         {
-            return false;
+            return true;
         }
 
         var parameterTypeSymbol = semanticModel.GetSymbolInfo(token.Parent, cancellationToken).GetAnySymbol();
         if (parameterTypeSymbol is INamedTypeSymbol typeSymbol)
         {
-            // Check if the parameter type is a minimal API special type. e.g. HttpContext.
-            foreach (var specialType in wellKnownTypes.ParameterSpecialTypes)
+            if (typeSymbol.SpecialType == SpecialType.System_String)
             {
-                if (typeSymbol.IsType(specialType))
+                return true;
+            }
+
+            // Check if the parameter type has a static TryParse method.
+            foreach (var item in typeSymbol.GetMembers("TryParse"))
+            {
+                if (item is IMethodSymbol methodSymbol &&
+                    methodSymbol.IsStatic &&
+                    methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                    methodSymbol.Parameters.Length == 2 &&
+                    methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
+                    methodSymbol.Parameters[1].RefKind == RefKind.Out)
                 {
                     return true;
                 }
             }
+
+            return false;
         }
         else if (parameterTypeSymbol is IMethodSymbol)
         {
             // If the parameter type is a method then the method is bound to the minimal API.
-            return true;
+            return false;
         }
 
-        return false;
+        // Token could the identifier with completion explicitly triggered.
+        return true;
     }
 
     private static ImmutableArray<string> GetExistingParameterNames(SyntaxNode node)
