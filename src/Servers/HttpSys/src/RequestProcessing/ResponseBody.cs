@@ -199,7 +199,7 @@ internal sealed partial class ResponseBody : Stream
         var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
         Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
-        int gcHandleIndex = 0;
+        int pinsIndex = 0;
         int chunkCount = 1;
         var currentChunk = 0;
         // Figure out how many data chunks
@@ -208,11 +208,11 @@ internal sealed partial class ResponseBody : Stream
             // Only one handle is needed for this path.
             pins = allocator.AllocAsSpan<GCHandle>(1);
 
-            // Manually initialize the allocated GCHandle
-            pins.Clear();
+            // Manually initialize the allocated GCHandle.
+            pins[0] = default;
 
             dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
-            pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator));
+            SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator), out pins[pinsIndex++]);
             return;
         }
         else if (!hasData && !addTrailers)
@@ -222,12 +222,6 @@ internal sealed partial class ResponseBody : Stream
             pins = default;
             return;
         }
-
-        const int maxGCHandleCount = 4;
-        pins = allocator.AllocAsSpan<GCHandle>(maxGCHandleCount);
-
-        // Manually initialize the allocated GCHandles
-        pins.Clear();
 
         // Recompute chunk count based on presence of data.
         chunkCount = hasData ? 1 : 0;
@@ -248,26 +242,32 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
+        // The chuck count and pin count are the same.
+        pins = allocator.AllocAsSpan<GCHandle>(chunkCount);
+
+        // Manually initialize the allocated GCHandles
+        pins.Clear();
+
         dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
 
         if (chunked)
         {
             var chunkHeaderBuffer = Helpers.GetChunkHeader(data.Count);
-            pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, chunkHeaderBuffer);
+            SetDataChunk(dataChunks, ref currentChunk, chunkHeaderBuffer, out pins[pinsIndex++]);
         }
 
         if (hasData)
         {
-            pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, data);
+            SetDataChunk(dataChunks, ref currentChunk, data, out pins[pinsIndex++]);
         }
 
         if (chunked)
         {
-            pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.CRLF));
+            SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.CRLF), out pins[pinsIndex++]);
 
             if (endOfRequest)
             {
-                pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator));
+                SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator), out pins[pinsIndex++]);
             }
         }
 
@@ -281,14 +281,17 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private static GCHandle SetDataChunk(Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks, ref int chunkIndex, ArraySegment<byte> buffer)
+    private static void SetDataChunk(
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
+        ref int chunkIndex,
+        ArraySegment<byte> buffer,
+        out GCHandle handle)
     {
-        var handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
+        handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
         chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         chunks[chunkIndex].fromMemory.pBuffer = handle.AddrOfPinnedObject() + buffer.Offset;
         chunks[chunkIndex].fromMemory.BufferLength = (uint)buffer.Count;
         chunkIndex++;
-        return handle;
     }
 
     private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)
