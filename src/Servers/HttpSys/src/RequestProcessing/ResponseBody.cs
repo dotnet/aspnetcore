@@ -194,23 +194,23 @@ internal sealed partial class ResponseBody : Stream
 
     private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
     {
-        const int maxGCHandleCount = 4;
-        int gcHandleIndex = 0;
-        pins = allocator.AllocAsSpan<GCHandle>(maxGCHandleCount);
-
-        // Manually initialize the allocated GCHandles
-        pins.Clear();
-
         var hasData = data.Count > 0;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
         Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
+        int gcHandleIndex = 0;
         int chunkCount = 1;
         var currentChunk = 0;
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
+            // Only one handle is needed for this path.
+            pins = allocator.AllocAsSpan<GCHandle>(1);
+
+            // Manually initialize the allocated GCHandle
+            pins.Clear();
+
             dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
             pins[gcHandleIndex++] = SetDataChunk(dataChunks, ref currentChunk, new ArraySegment<byte>(Helpers.ChunkTerminator));
             return;
@@ -219,8 +219,15 @@ internal sealed partial class ResponseBody : Stream
         {
             // No data
             dataChunks = default;
+            pins = default;
             return;
         }
+
+        const int maxGCHandleCount = 4;
+        pins = allocator.AllocAsSpan<GCHandle>(maxGCHandleCount);
+
+        // Manually initialize the allocated GCHandles
+        pins.Clear();
 
         // Recompute chunk count based on presence of data.
         chunkCount = hasData ? 1 : 0;
