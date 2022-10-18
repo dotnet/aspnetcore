@@ -107,6 +107,8 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   const newConnection = connectionBuilder.build();
 
+  options.configureConnection(newConnection);
+
   newConnection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
   newConnection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   newConnection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);

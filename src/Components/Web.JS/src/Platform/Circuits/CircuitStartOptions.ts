@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { LogLevel } from '../Logging/Logger';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 
 export interface CircuitStartOptions {
   configureSignalR: (builder: HubConnectionBuilder) => void;
   logLevel: LogLevel;
   reconnectionOptions: ReconnectionOptions;
   reconnectionHandler?: ReconnectionHandler;
+  configureConnection: (connection: HubConnection) => void;
 }
 
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
@@ -42,4 +43,5 @@ const defaultOptions: CircuitStartOptions = {
     retryIntervalMilliseconds: 20000,
     dialogId: 'components-reconnect-modal',
   },
+  configureConnection: (_) => { },
 };
