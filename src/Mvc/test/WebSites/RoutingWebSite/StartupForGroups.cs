@@ -29,7 +29,7 @@ public class StartupForGroups
             pagesGroup.MapRazorPages();
 
             var controllerGroup = endpoints.MapGroup("/controllers/{org}");
-            controllerGroup.MapControllers();
+            controllerGroup.MapControllerRoute(name: "default", pattern: "{controller}/{action}/{id?}");
         });
     }
 }
