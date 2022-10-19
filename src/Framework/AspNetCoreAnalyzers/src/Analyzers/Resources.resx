@@ -202,7 +202,7 @@
     <value>Unused route parameter</value>
   </data>
   <data name="Analyzer_HeaderDictionaryAdd_Message" xml:space="preserve">
-    <value>Suggest using IHeaderDictionary.Append or the indexer instead of Add</value>
+    <value>Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add duplicate keys.</value>
   </data>
   <data name="Analyzer_HeaderDictionaryAdd_Title" xml:space="preserve">
     <value>Suggest using IHeaderDictionary.Append or the indexer</value>
