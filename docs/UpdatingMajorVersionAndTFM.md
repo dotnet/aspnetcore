@@ -49,10 +49,10 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   1. Create & merge a PR like [this one](https://github.com/dotnet/spa-templates/pull/39) in dotnet/spa-templates updating `precedence` and `identity` elements in all template.json files.
       * Going forward, update precedence values by increasing them to the next integer value whose first digits correspond with the major version. This makes it easier to verify that precedence values for any given template were updated since the previous release.
         * For example, if a precedence value was 9000 for 7.0, increase it to 80000 for 8.0.
-  3. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
+  2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
       * Make sure to update _all_ template.json files, including project templates and item templates.
       * Update precedence values by increasing them to the next integer value whose first digits correspond with the major version.
-  4. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
+  3. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
 * In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs](/src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs), update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 
 ### Validation
