@@ -9,7 +9,7 @@
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+        "$(MicrosoftNETCoreAppRuntimeVersion)"
       ]
     },
     "Git": "2.22.0",
