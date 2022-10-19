@@ -23,7 +23,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
-    protected override string InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
         var callInfo = new JSCallInfo
         {
@@ -42,7 +42,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
         var callInfo = new JSCallInfo
         {
