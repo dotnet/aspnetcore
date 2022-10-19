@@ -78,7 +78,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 
         // Group healthcheck registrations by Delay, Period and Timeout, to build a Dictionary<(TimeSpan, TimeSpan, TimeSpan), List<HealthCheckRegistration>>
         // For HCs with no Delay, Period or Timeout, we default to the publisher values
-        _healthChecksByOptions = _healthCheckServiceOptions.Value.Registrations.GroupBy(r => GetTimerOptionsOrDefault(r)).ToDictionary(g => g.Key, g => g.ToList());
+        _healthChecksByOptions = _healthCheckServiceOptions.Value.Registrations.GroupBy(GetTimerOptionsOrDefault).ToDictionary(g => g.Key, g => g.ToList());
     }
 
     private (TimeSpan Delay, TimeSpan Period, TimeSpan Timeout) GetTimerOptionsOrDefault(HealthCheckRegistration registration)
