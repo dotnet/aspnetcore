@@ -157,7 +157,7 @@ public class HealthCheckPublisherHostedServiceTest
                 new TestPublisher() { Wait = unblock2.Task, },
         };
 
-        var service = CreateService(publishers, configure: (options) =>
+        var service = CreateService(publishers, configurePublisherOptions: (options) =>
         {
             options.Delay = TimeSpan.FromMilliseconds(0);
         });
@@ -290,6 +290,90 @@ public class HealthCheckPublisherHostedServiceTest
             entry => { Assert.Equal(HealthCheckPublisherEventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
     }
 
+    [Fact]
+    public async Task RunAsync_WaitsForCompletion_Single_RegistrationParameters()
+    {
+        // Arrange
+        const string HealthyMessage = "Everything is A-OK";
+
+        var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var unblockDelayedCheck = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var publishers = new TestPublisher[]
+        {
+                new TestPublisher() { Wait = unblock.Task, },
+        };
+
+        var service = CreateService(publishers, configureBuilder: b =>
+        {
+            b.AddAsyncCheck("CheckDefault", _ =>
+            {
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+            });
+
+            b.AddAsyncCheck("CheckDelay2Period18", _ =>
+            {
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+            },
+            parameters: new(delay: TimeSpan.FromSeconds(2), period: TimeSpan.FromSeconds(18)));
+
+            b.AddAsyncCheck("CheckDelay7Period11", _ =>
+            {
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+            },
+            parameters: new(delay: TimeSpan.FromSeconds(7), period: TimeSpan.FromSeconds(11)));
+
+            b.AddAsyncCheck("CheckDelay9Period5", _ =>
+            {
+                unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+            },
+            parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5)));
+
+            b.AddAsyncCheck("DisabledCheck", _ =>
+            {
+                unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+            },
+            parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
+        });
+
+        try
+        {
+            await service.StartAsync();
+
+            // Act
+            var running = service.RunAsync();
+
+            await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+
+            unblock.SetResult(null);
+
+            await running.TimeoutAfter(TimeSpan.FromSeconds(20));
+
+            await Task.WhenAll(unblock.Task, unblockDelayedCheck.Task);
+
+            // Assert
+            Assert.True(service.IsTimerRunning);
+            Assert.False(service.IsStopping);
+
+            for (var i = 0; i < publishers.Length; i++)
+            {
+                Assert.True(publishers[i].Entries.Count == 4);
+                var entries = publishers[i].Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
+                Assert.Equal(
+                    new[] { "CheckDefault", "CheckDelay2Period18", "CheckDelay7Period11", "CheckDelay9Period5" },
+                    entries);
+            }
+        }
+        finally
+        {
+            await service.StopAsync();
+            Assert.False(service.IsTimerRunning);
+            Assert.True(service.IsStopping);
+        }
+    }
+
     // Not testing logs here to avoid differences in logging order
     [Fact]
     public async Task RunAsync_WaitsForCompletion_Multiple()
@@ -409,7 +493,7 @@ public class HealthCheckPublisherHostedServiceTest
                 new TestPublisher(),
         };
 
-        var service = CreateService(publishers, configure: (options) =>
+        var service = CreateService(publishers, configurePublisherOptions: (options) =>
         {
             options.Predicate = (r) => r.Name == "one";
         });
@@ -426,6 +510,88 @@ public class HealthCheckPublisherHostedServiceTest
             {
                 var report = Assert.Single(publishers[i].Entries).report;
                 Assert.Equal(new[] { "one", }, report.Entries.Keys.OrderBy(k => k));
+            }
+        }
+        finally
+        {
+            await service.StopAsync();
+            Assert.False(service.IsTimerRunning);
+            Assert.True(service.IsStopping);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_CanFilterHealthChecks_RegistrationParameters()
+    {
+        // Arrange
+        const string HealthyMessage = "Everything is A-OK";
+
+        var unblockDelayedCheck = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var publishers = new TestPublisher[]
+        {
+                new TestPublisher(),
+                new TestPublisher(),
+        };
+
+        var service = CreateService(
+            publishers,
+            configurePublisherOptions: (options) =>
+            {
+                options.Predicate = (r) => r.Name.Contains("Delay");
+            },
+            configureBuilder: b =>
+            {
+                b.AddAsyncCheck("CheckDefault", _ =>
+                {
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+                });
+
+                b.AddAsyncCheck("CheckDelay2Period18", _ =>
+                {
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+                },
+                parameters: new(delay: TimeSpan.FromSeconds(2), period: TimeSpan.FromSeconds(18)));
+
+                b.AddAsyncCheck("CheckDelay7Period11", _ =>
+                {
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+                },
+                parameters: new(delay: TimeSpan.FromSeconds(7), period: TimeSpan.FromSeconds(11)));
+
+                b.AddAsyncCheck("CheckDelay9Period5", _ =>
+                {
+                    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+                },
+                parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5)));
+
+                b.AddAsyncCheck("DisabledCheck", _ =>
+                {
+                    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
+                },
+                parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
+            });
+
+        try
+        {
+            await service.StartAsync();
+
+            // Act
+            await service.RunAsync().TimeoutAfter(TimeSpan.FromSeconds(20));
+
+            await unblockDelayedCheck.Task;
+
+            // Assert
+            for (var i = 0; i < publishers.Length; i++)
+            {
+                var entries = publishers[i].Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
+
+                Assert.True(entries.Count() == 3);
+                Assert.Equal(
+                    new[] { "CheckDelay2Period18", "CheckDelay7Period11", "CheckDelay9Period5" },
+                    entries);
             }
         }
         finally
@@ -510,15 +676,24 @@ public class HealthCheckPublisherHostedServiceTest
 
     private HealthCheckPublisherHostedService CreateService(
         IHealthCheckPublisher[] publishers,
-        Action<HealthCheckPublisherOptions>? configure = null,
+        Action<HealthCheckPublisherOptions>? configurePublisherOptions = null,
+        Action<IHealthChecksBuilder>? configureBuilder = null,
         TestSink? sink = null)
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddOptions();
         serviceCollection.AddLogging();
-        serviceCollection.AddHealthChecks()
-            .AddCheck("one", () => { return HealthCheckResult.Healthy(); })
-            .AddCheck("two", () => { return HealthCheckResult.Healthy(); });
+
+        IHealthChecksBuilder builder = serviceCollection.AddHealthChecks();
+        if (configureBuilder == null)
+        {
+            builder.AddCheck("one", () => { return HealthCheckResult.Healthy(); })
+                   .AddCheck("two", () => { return HealthCheckResult.Healthy(); });
+        }
+        else
+        {
+            configureBuilder(builder);
+        }
 
         // Choosing big values for tests to make sure that we're not dependent on the defaults.
         // All of the tests that rely on the timer will set their own values for speed.
@@ -537,9 +712,9 @@ public class HealthCheckPublisherHostedServiceTest
             }
         }
 
-        if (configure != null)
+        if (configurePublisherOptions != null)
         {
-            serviceCollection.Configure(configure);
+            serviceCollection.Configure(configurePublisherOptions);
         }
 
         if (sink != null)
