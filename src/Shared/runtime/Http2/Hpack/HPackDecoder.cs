@@ -577,7 +577,7 @@ namespace System.Net.Http.HPack
                     throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
                 }
 
-                _stringOctets = new byte[Math.Max(length, _stringOctets.Length * 2)];
+                _stringOctets = new byte[Math.Max(length, Math.Min(_stringOctets.Length * 2, _maxHeadersLength))];
             }
 
             _stringLength = length;
