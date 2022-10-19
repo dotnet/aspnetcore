@@ -1835,23 +1835,6 @@ public static partial class RequestDelegateFactory
         factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
     }
 
-    private static void TrackFormParameter(
-        ParameterInfo parameter,
-        string key,
-        string trackedParameterSource,
-        RequestDelegateFactoryContext factoryContext,
-        bool isFormFile = false)
-    {
-        factoryContext.FirstFormRequestBodyParameter ??= parameter;
-        factoryContext.TrackedParameters.Add(key, trackedParameterSource);
-        factoryContext.ReadForm = true;
-
-        if (isFormFile)
-        {
-            factoryContext.ReadFormFile = true;
-        }
-    }
-
     private static Expression BindParameterFromFormCollection(
         ParameterInfo parameter,
         RequestDelegateFactoryContext factoryContext)
@@ -1862,13 +1845,15 @@ public static partial class RequestDelegateFactory
             AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormContentType);
         }
 
-        TrackFormParameter(parameter, parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter, factoryContext);
+        factoryContext.FirstFormRequestBodyParameter ??= parameter;
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter);
+        factoryContext.ReadForm = true;
 
         return BindParameterFromExpression(
             parameter,
             FormExpr,
             factoryContext,
-            "form");
+            "body");
     }
 
     private static Expression BindParameterFromFormItem(
@@ -1884,7 +1869,9 @@ public static partial class RequestDelegateFactory
             AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormContentType);
         }
 
-        TrackFormParameter(parameter, key, RequestDelegateFactoryConstants.FormAttribute, factoryContext);
+        factoryContext.FirstFormRequestBodyParameter ??= parameter;
+        factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
+        factoryContext.ReadForm = true;
 
         return BindParameterFromValue(
             parameter,
@@ -1903,7 +1890,10 @@ public static partial class RequestDelegateFactory
             AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
         }
 
-        TrackFormParameter(parameter, parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter, factoryContext, isFormFile: true);
+        factoryContext.FirstFormRequestBodyParameter ??= parameter;
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter);
+        factoryContext.ReadForm = true;
+        factoryContext.ReadFormFile = true;
 
         return BindParameterFromExpression(
             parameter,
@@ -1926,7 +1916,10 @@ public static partial class RequestDelegateFactory
             AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
         }
 
-        TrackFormParameter(parameter, key, trackedParameterSource, factoryContext, isFormFile: true);
+        factoryContext.FirstFormRequestBodyParameter ??= parameter;
+        factoryContext.TrackedParameters.Add(key, trackedParameterSource);
+        factoryContext.ReadForm = true;
+        factoryContext.ReadFormFile = true;
 
         return BindParameterFromExpression(
             parameter,
