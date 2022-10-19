@@ -1,12 +1,11 @@
 #nullable enable
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.Delay.get -> System.TimeSpan?
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.Equals(Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions? other) -> bool
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.HealthCheckOptions(System.TimeSpan? delay = null, System.TimeSpan? period = null, System.TimeSpan? timeout = null) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.Period.get -> System.TimeSpan?
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.Timeout.get -> System.TimeSpan?
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions? options) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions? options) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Options.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions?
-override Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.Equals(object? obj) -> bool
-override Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckOptions.GetHashCode() -> int
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Parameters.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters.Delay.get -> System.TimeSpan?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters.HealthCheckRegistrationParameters(System.TimeSpan? delay = null, System.TimeSpan? period = null, System.TimeSpan? timeout = null, bool isEnabled = true) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters.IsEnabled.get -> bool
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters.IsEnabled.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters.Period.get -> System.TimeSpan?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters.Timeout.get -> System.TimeSpan?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters? parameters) -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistrationParameters? parameters) -> void

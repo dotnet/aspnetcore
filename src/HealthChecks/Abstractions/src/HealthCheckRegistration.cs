@@ -68,8 +68,8 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="options">An optional <see cref="HealthCheckOptions"/> representing the individual health check options.</param>
-    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, HealthCheckOptions? options)
+    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check parameters.</param>
+    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, HealthCheckRegistrationParameters? parameters)
     {
         if (name == null)
         {
@@ -91,7 +91,7 @@ public sealed class HealthCheckRegistration
         Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         _factory = (_) => instance;
         Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
-        Options = options;
+        Parameters = parameters;
     }
 
     /// <summary>
@@ -145,14 +145,14 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="options">An optional <see cref="HealthCheckOptions"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check parameters.</param>
     public HealthCheckRegistration(
         string name,
         Func<IServiceProvider, IHealthCheck> factory,
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout,
-        HealthCheckOptions? options)
+        HealthCheckRegistrationParameters? parameters)
     {
         if (name == null)
         {
@@ -174,7 +174,7 @@ public sealed class HealthCheckRegistration
         Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         _factory = factory;
         Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
-        Options = options;
+        Parameters = parameters;
     }
 
     /// <summary>
@@ -217,9 +217,9 @@ public sealed class HealthCheckRegistration
     }
 
     /// <summary>
-    /// Gets the individual options associated with a health check.
+    /// Gets the individual parameters associated with a health check.
     /// </summary>
-    public HealthCheckOptions? Options { get; }
+    public HealthCheckRegistrationParameters? Parameters { get; }
 
     /// <summary>
     /// Gets or sets the health check name.
