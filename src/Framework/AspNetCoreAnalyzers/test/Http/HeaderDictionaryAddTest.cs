@@ -19,15 +19,10 @@ public class HeaderDictionaryAddTest
         // Arrange & Act & Assert
         await VerifyCS.VerifyCodeFixAsync(@"
 using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddFixerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-    }
-}",
+
+var context = new DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+",
         new[]
         {
             new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
@@ -36,189 +31,70 @@ public class Program
         },
         @"
 using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddFixerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        context.Request.Headers.Append(""Accept"", ""text/html"");
-    }
-}",
+
+var context = new DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html"");
+",
         codeActionEquivalenceKey: AppendCodeActionEquivalenceKey);
     }
 
     public static IEnumerable<object[]> FixedWithAppendAddsUsingDirectiveTestData()
     {
+        // No existing using directives
         yield return new[]
-        {
+{
             @"
-using Microsoft.AspNetCore.Mvc;
-
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : ControllerBase
-{
-    public IActionResult Endpoint()
-    {
-        {|#0:Response.Headers.Add(""Content-Type"", ""text/html"")|};
-        return Ok();
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}",
+var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+",
             @"
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : ControllerBase
-{
-    public IActionResult Endpoint()
-    {
-        Response.Headers.Append(""Content-Type"", ""text/html"");
-        return Ok();
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}"
+var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html"");
+"
         };
 
+        // Inserted alphabetically based on existing using directives
         yield return new[]
         {
             @"
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : ControllerBase
-{
-    public IActionResult Endpoint()
-    {
-        {|#0:Response.Headers.Add(""Content-Type"", ""text/html"")|};
-        return Ok(new List<string>());
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}",
+var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+",
             @"
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : ControllerBase
-{
-    public IActionResult Endpoint()
-    {
-        Response.Headers.Append(""Content-Type"", ""text/html"");
-        return Ok(new List<string>());
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}"
+var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html"");
+"
         };
 
-        yield return new[]
-        {
-            @"
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
-{
-    public Microsoft.AspNetCore.Mvc.IActionResult Endpoint()
-    {
-        {|#0:Response.Headers.Add(""Content-Type"", ""text/html"")|};
-        return Ok();
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}",
-            @"
-using Microsoft.AspNetCore.Http;
-
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
-{
-    public Microsoft.AspNetCore.Mvc.IActionResult Endpoint()
-    {
-        Response.Headers.Append(""Content-Type"", ""text/html"");
-        return Ok();
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}"
-        };
-
+        // Inserted after 'System' using directives
         yield return new[]
         {
             @"
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
-{
-    public Microsoft.AspNetCore.Mvc.IActionResult Endpoint()
-    {
-        {|#0:Response.Headers.Add(""Content-Type"", ""text/html"")|};
-        return Ok(new List<string>());
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}",
+var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+",
             @"
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
-namespace HeaderDictionaryAddFixerTests;
-public class TestController : Microsoft.AspNetCore.Mvc.ControllerBase
-{
-    public Microsoft.AspNetCore.Mvc.IActionResult Endpoint()
-    {
-        Response.Headers.Append(""Content-Type"", ""text/html"");
-        return Ok(new List<string>());
-    }
-}
-
-public class Program
-{
-    public static void Main()
-    {
-    }
-}"
+var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html"");
+"
         };
     }
 
@@ -245,15 +121,10 @@ public class Program
         // Arrange & Act & Assert
         await VerifyCS.VerifyCodeFixAsync(@"
 using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddFixerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-    }
-}",
+
+var context = new DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+",
         new[]
         {
             new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
@@ -262,15 +133,10 @@ public class Program
         },
         @"
 using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddFixerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        context.Request.Headers[""Accept""] = ""text/html"";
-    }
-}",
+
+var context = new DefaultHttpContext();
+context.Request.Headers[""Accept""] = ""text/html"";
+",
         codeActionEquivalenceKey: IndexerCodeActionEquivalenceKey);
     }
 
@@ -280,15 +146,10 @@ public class Program
         // Arrange
         var source = @"
 using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddAnalyzerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        context.Request.Headers.Append(""Accept"", ""text/html"");
-    }
-}";
+
+var context = new DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html"");
+";
 
         // Act & Assert
         await VerifyCS.VerifyCodeFixAsync(source, source);
@@ -300,15 +161,10 @@ public class Program
         // Arrange
         var source = @"
 using Microsoft.AspNetCore.Http;
-namespace HeaderDictionaryAddAnalyzerTests;
-public class Program
-{
-    public static void Main()
-    {
-        var context = new DefaultHttpContext();
-        context.Request.Headers[""Accept""] = ""text/html"";
-    }
-}";
+
+var context = new DefaultHttpContext();
+context.Request.Headers[""Accept""] = ""text/html"";
+";
 
         // Act & Assert
         await VerifyCS.VerifyCodeFixAsync(source, source);
