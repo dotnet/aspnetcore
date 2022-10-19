@@ -1503,7 +1503,7 @@ public partial class HubConnection : IAsyncDisposable
 
         while (nextRetryDelay != null)
         {
-            Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts + 1, nextRetryDelay.Value);
+            Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts, nextRetryDelay.Value);
 
             try
             {
