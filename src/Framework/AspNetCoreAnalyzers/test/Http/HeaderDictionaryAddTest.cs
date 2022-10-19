@@ -13,29 +13,64 @@ public class HeaderDictionaryAddTest
     private const string AppendCodeActionEquivalenceKey = "Use 'IHeaderDictionary.Append'";
     private const string IndexerCodeActionEquivalenceKey = "Use indexer";
 
-    [Fact]
-    public async Task IHeaderDictionary_WithAdd_FixedWithAppend()
+    public static TheoryData<string, DiagnosticResult[], string> FixedWithAppendTestData => new()
     {
-        // Arrange & Act & Assert
-        await VerifyCS.VerifyCodeFixAsync(@"
+        // Single diagnostic
+        {
+            @"
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
 ",
-        new[]
-        {
-            new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
-                .WithLocation(0)
-                .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
-        },
-        @"
+            new[]
+            {
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(0)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
+            },
+            @"
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 context.Request.Headers.Append(""Accept"", ""text/html"");
+"
+        },
+
+        // Multiple diagnostics
+        {
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+{|#1:context.Request.Headers.Add(""Accept"", ""text/html"")|};
 ",
-        codeActionEquivalenceKey: AppendCodeActionEquivalenceKey);
+            new[]
+            {
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(0)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message),
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(1)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
+            },
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html"");
+context.Request.Headers.Append(""Accept"", ""text/html"");
+"
+        }
+    };
+
+    [Theory]
+    [MemberData(nameof(FixedWithAppendTestData))]
+    public async Task IHeaderDictionary_WithAdd_FixedWithAppend(string source, DiagnosticResult[] expectedDiagnostics, string fixedSource)
+    {
+        // Arrange & Act & Assert
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, codeActionEquivalenceKey: AppendCodeActionEquivalenceKey);
     }
 
     public static IEnumerable<object[]> FixedWithAppendAddsUsingDirectiveTestData()
@@ -115,29 +150,64 @@ context.Request.Headers.Append(""Accept"", ""text/html"");
             codeActionEquivalenceKey: AppendCodeActionEquivalenceKey);
     }
 
-    [Fact]
-    public async Task IHeaderDictionary_WithAdd_FixedWithIndexer()
+    public static TheoryData<string, DiagnosticResult[], string> FixedWithIndexerTestData => new()
     {
-        // Arrange & Act & Assert
-        await VerifyCS.VerifyCodeFixAsync(@"
+        // Single diagnostic
+        {
+            @"
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
 ",
-        new[]
-        {
-            new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
-                .WithLocation(0)
-                .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
-        },
-        @"
+            new[]
+            {
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(0)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
+            },
+            @"
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 context.Request.Headers[""Accept""] = ""text/html"";
+"
+        },
+
+        // Multiple diagnostics
+        {
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
+{|#1:context.Request.Headers.Add(""Accept"", ""text/html"")|};
 ",
-        codeActionEquivalenceKey: IndexerCodeActionEquivalenceKey);
+            new[]
+            {
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(0)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message),
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(1)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
+            },
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+context.Request.Headers[""Accept""] = ""text/html"";
+context.Request.Headers[""Accept""] = ""text/html"";
+"
+        }
+    };
+
+    [Theory]
+    [MemberData(nameof(FixedWithIndexerTestData))]
+    public async Task IHeaderDictionary_WithAdd_FixedWithIndexer(string source, DiagnosticResult[] expectedDiagnostics, string fixedSource)
+    {
+        // Arrange & Act & Assert
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, codeActionEquivalenceKey: IndexerCodeActionEquivalenceKey);
     }
 
     [Fact]
