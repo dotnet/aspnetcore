@@ -11,26 +11,14 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public class RequestLocalizationOptions
 {
-    private readonly bool _useUserOverride;
-
     private RequestCulture _defaultRequestCulture =
         new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
     /// <summary>
     /// Creates a new <see cref="RequestLocalizationOptions"/> with default values.
     /// </summary>
-    public RequestLocalizationOptions() : this(useUserOverride: true)
+    public RequestLocalizationOptions()
     {
-
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="RequestLocalizationOptions"/> with default values and ability to specify the culture settings.
-    /// <param name="useUserOverride">Whether to use user-selected culture or default system culture.</param>
-    /// </summary>
-    public RequestLocalizationOptions(bool useUserOverride)
-    {
-        _useUserOverride = useUserOverride;
         RequestCultureProviders = new List<IRequestCultureProvider>
         {
             new QueryStringRequestCultureProvider { Options = this },
@@ -38,6 +26,11 @@ public class RequestLocalizationOptions
             new AcceptLanguageHeaderRequestCultureProvider { Options = this }
         };
     }
+
+    /// <summary>
+    /// Gets or sets whether to use use user-selected culture or default system culture. Defaults to <c>true</c>.
+    /// </summary>
+    public bool CultureInfoUseUserOverride { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the default culture to use for requests when a supported culture could not be determined by
@@ -136,7 +129,7 @@ public class RequestLocalizationOptions
 
         foreach (var culture in cultures)
         {
-            supportedCultures.Add(new CultureInfo(culture, useUserOverride: _useUserOverride));
+            supportedCultures.Add(new CultureInfo(culture, useUserOverride: CultureInfoUseUserOverride));
         }
 
         SupportedCultures = supportedCultures;
@@ -154,7 +147,7 @@ public class RequestLocalizationOptions
         var supportedUICultures = new List<CultureInfo>(uiCultures.Length);
         foreach (var culture in uiCultures)
         {
-            supportedUICultures.Add(new CultureInfo(culture, useUserOverride: _useUserOverride));
+            supportedUICultures.Add(new CultureInfo(culture, useUserOverride: CultureInfoUseUserOverride));
         }
 
         SupportedUICultures = supportedUICultures;
@@ -170,7 +163,7 @@ public class RequestLocalizationOptions
     /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
     public RequestLocalizationOptions SetDefaultCulture(string defaultCulture)
     {
-        DefaultRequestCulture = new RequestCulture(new CultureInfo(defaultCulture, useUserOverride: _useUserOverride));
+        DefaultRequestCulture = new RequestCulture(new CultureInfo(defaultCulture, useUserOverride: CultureInfoUseUserOverride));
 
         return this;
     }

@@ -53,7 +53,6 @@ Microsoft.AspNetCore.Builder.RequestLocalizationOptions.FallBackToParentUICultur
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.RequestCultureProviders.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Localization.IRequestCultureProvider!>!
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.RequestCultureProviders.set -> void
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.RequestLocalizationOptions() -> void
-Microsoft.AspNetCore.Builder.RequestLocalizationOptions.RequestLocalizationOptions(bool useUserOverride) -> void
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.SetDefaultCulture(string! defaultCulture) -> Microsoft.AspNetCore.Builder.RequestLocalizationOptions!
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.SupportedCultures.get -> System.Collections.Generic.IList<System.Globalization.CultureInfo!>?
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.SupportedCultures.set -> void
