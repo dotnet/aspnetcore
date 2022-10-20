@@ -52,7 +52,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(ImplicitUsings)' == 'enable'">
+  <ItemGroup Condition="'$(ImplicitUsings)' == 'enable' or '$(ImplicitUsings)' == 'true'">
     <!-- We should make it obvious when Linq is being used in shipping code -->
     <Using Remove="System.Linq" Condition="'$(_IsSrcProject)' == 'true'" />
     <!-- System.Net.Http types will frequently conflict with ASP.NET Core types-->
