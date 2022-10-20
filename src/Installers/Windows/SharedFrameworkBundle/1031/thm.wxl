@@ -9,7 +9,7 @@
   <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang wirklich abbrechen?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Vorherige Version</String>
   <String Id="HelpHeader">Setup-Hilfe</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] – Installiert, repariert, deinstalliert oder
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]Verzeichnis[\]] – Installiert, repariert, deinstalliert oder
    erstellt eine vollständige lokale Kopie des Pakets im Verzeichnis. Standardmäßig wird eine Installation durchgeführt.
 
 /passive | /quiet – Zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen oder weder eine Benutzeroberfläche 
