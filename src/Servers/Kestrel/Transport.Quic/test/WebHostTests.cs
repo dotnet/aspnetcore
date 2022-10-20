@@ -36,6 +36,10 @@ public class WebHostTests : LoggedTest
                         {
                             listenOptions.Protocols = Core.HttpProtocols.Http3;
                         });
+                        o.ConfigureHttpsDefaults(httpsOptions =>
+                        {
+                            httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                        });
                     })
                     .UseUrls("https://127.0.0.1:0")
                     .Configure(app =>

@@ -846,7 +846,7 @@ public class Http3RequestTests : LoggedTest
                     o.Listen(IPAddress.Parse("127.0.0.1"), port, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                        listenOptions.UseHttps();
+                        listenOptions.UseHttps(TestResources.GetTestCertificate());
                     });
                 });
 
@@ -1405,7 +1405,7 @@ public class Http3RequestTests : LoggedTest
                 kestrel.ListenLocalhost(5001, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http3;
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                     listenOptions.UseConnectionLogging();
                 });
             });
@@ -1509,7 +1509,7 @@ public class Http3RequestTests : LoggedTest
                 kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http3;
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
 
                     IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
                     multiplexedConnectionBuilder.Use(next =>
@@ -1678,7 +1678,7 @@ public class Http3RequestTests : LoggedTest
                 kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http3;
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
 
                     IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
                     multiplexedConnectionBuilder.Use(next =>
@@ -1837,7 +1837,7 @@ public class Http3RequestTests : LoggedTest
             kestrel.Listen(IPAddress.Loopback, 0, listenOptions =>
             {
                 listenOptions.Protocols = protocol;
-                listenOptions.UseHttps();
+                listenOptions.UseHttps(TestResources.GetTestCertificate());
             });
         });
 
