@@ -620,7 +620,7 @@ namespace System.Net.Http.HPack
         {
             if (dst.Length < _stringLength)
             {
-                dst = new byte[Math.Max(_stringLength, dst.Length * 2)];
+                dst = new byte[Math.Max(_stringLength, Math.Min(dst.Length * 2, _maxHeadersLength))];
             }
         }
 
