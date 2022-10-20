@@ -18,17 +18,17 @@ internal sealed class TransportManager
 {
     private readonly List<ActiveTransport> _transports = new List<ActiveTransport>();
 
-    private readonly IConnectionListenerFactory? _transportFactory;
-    private readonly IMultiplexedConnectionListenerFactory? _multiplexedTransportFactory;
+    private readonly List<IConnectionListenerFactory> _transportFactories;
+    private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
     private readonly ServiceContext _serviceContext;
 
     public TransportManager(
-        IConnectionListenerFactory? transportFactory,
-        IMultiplexedConnectionListenerFactory? multiplexedTransportFactory,
+        List<IConnectionListenerFactory> transportFactories,
+        List<IMultiplexedConnectionListenerFactory> multiplexedTransportFactories,
         ServiceContext serviceContext)
     {
-        _transportFactory = transportFactory;
-        _multiplexedTransportFactory = multiplexedTransportFactory;
+        _transportFactories = transportFactories;
+        _multiplexedTransportFactories = multiplexedTransportFactories;
         _serviceContext = serviceContext;
     }
 
@@ -37,19 +37,27 @@ internal sealed class TransportManager
 
     public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)
     {
-        if (_transportFactory is null)
+        if (_transportFactories.Count == 0)
         {
             throw new InvalidOperationException($"Cannot bind with {nameof(ConnectionDelegate)} no {nameof(IConnectionListenerFactory)} is registered.");
         }
 
-        var transport = await _transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
-        StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
-        return transport.EndPoint;
+        foreach (var transportFactory in _transportFactories)
+        {
+            if (transportFactory.CanBind(endPoint))
+            {
+                var transport = await transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
+                StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
+                return transport.EndPoint;
+            }
+        }
+
+        throw new InvalidOperationException($"No registered {nameof(IConnectionListenerFactory)} supports endpoint: {endPoint}");
     }
 
     public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, ListenOptions listenOptions, CancellationToken cancellationToken)
     {
-        if (_multiplexedTransportFactory is null)
+        if (_multiplexedTransportFactories.Count == 0)
         {
             throw new InvalidOperationException($"Cannot bind with {nameof(MultiplexedConnectionDelegate)} no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
         }
@@ -87,9 +95,17 @@ internal sealed class TransportManager
             });
         }
 
-        var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
-        StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
-        return transport.EndPoint;
+        foreach (var multiplexedTransportFactory in _multiplexedTransportFactories)
+        {
+            if (multiplexedTransportFactory.CanBind(endPoint))
+            {
+                var transport = await multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
+                StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
+                return transport.EndPoint;
+            }
+        }
+
+        throw new InvalidOperationException($"No registered {nameof(IMultiplexedConnectionListenerFactory)} supports endpoint: {endPoint}");
     }
 
     /// <summary>

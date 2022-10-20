@@ -19,4 +19,13 @@ public interface IConnectionListenerFactory
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ValueTask{IConnectionListener}"/> that completes when the listener has been bound, yielding a <see cref="IConnectionListener" /> representing the new listener.</returns>
     ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default);
+
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// Returns a value that indicates whether the listener factory supports binding to the specified <see cref="EndPoint"/>.
+    /// </summary>
+    /// <param name="endpoint">The <see cref="EndPoint" /> to bind to.</param>
+    /// <returns>A value that indicates whether the listener factory supports binding to the specified <see cref="EndPoint"/>.</returns>
+    public bool CanBind(EndPoint endpoint) => true;
+#endif
 }
