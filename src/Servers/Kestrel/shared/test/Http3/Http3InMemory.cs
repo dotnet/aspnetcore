@@ -697,11 +697,11 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
 
         var buffer = _headerHandler.HeaderEncodingBuffer.AsMemory();
         var done = QPackHeaderWriter.BeginEncodeHeaders(headers, buffer.Span, ref headersTotalSize, out var length);
-        if (!done)
+        while (!done)
         {
-            throw new InvalidOperationException("Headers not sent.");
+            await SendFrameAsync(Http3FrameType.Headers, buffer.Slice(0, length), endStream: false);
+            done = QPackHeaderWriter.Encode(headers, buffer.Span, ref headersTotalSize, out length);
         }
-
         await SendFrameAsync(Http3FrameType.Headers, buffer.Slice(0, length), endStream);
     }
 
