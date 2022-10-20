@@ -287,7 +287,7 @@ public class KestrelServerTests
         serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0), c =>
         {
             c.Protocols = HttpProtocols.Http3;
-            c.UseHttps();
+            c.UseHttps(TestResources.GetTestCertificate());
         });
 
         var server = new KestrelServerImpl(
@@ -310,7 +310,7 @@ public class KestrelServerTests
         serverOptions.Listen(endpoint, c =>
         {
             c.Protocols = HttpProtocols.Http3;
-            c.UseHttps();
+            c.UseHttps(TestResources.GetTestCertificate());
         });
 
         var transportFactory = new MockMultiplexedTransportFactory();
