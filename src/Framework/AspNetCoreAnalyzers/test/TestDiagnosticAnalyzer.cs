@@ -14,7 +14,6 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Composition;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
@@ -66,17 +65,25 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
         }
     }
 
-    private async Task<(bool success, SyntaxToken token, SemanticModel model, RouteOptions options)> TryGetStringSyntaxTokenAtPositionAsync(int caretPosition, params string[] sources)
+    private async Task<(SyntaxToken token, SemanticModel model)> TryGetStringSyntaxTokenAtPositionAsync(int caretPosition, params string[] sources)
     {
         var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
-        var doc = project.Solution.GetDocument(project.Documents.First().Id);
+        var document = project.Solution.GetDocument(project.Documents.First().Id);
 
-        return await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(doc, caretPosition, CancellationToken.None);
+        var semanticModel = await document.GetSemanticModelAsync(CancellationToken.None).ConfigureAwait(false);
+        if (semanticModel == null)
+        {
+            return default;
+        }
+
+        var token = await RouteStringSyntaxDetectorDocument.GetTokenAtPositionAsync(document, caretPosition, CancellationToken.None);
+
+        return (token: token, model: semanticModel);
     }
 
     public async Task<AspNetCoreBraceMatchingResult?> GetBraceMatchesAsync(int caretPosition, params string[] sources)
     {
-        var (_, token, model, _) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
+        var (token, model) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
         var braceMatcher = new RoutePatternBraceMatcher();
 
         return braceMatcher.FindBraces(model, token, caretPosition, CancellationToken.None);
@@ -84,7 +91,7 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
 
     public async Task<List<AspNetCoreHighlightSpan>> GetHighlightingAsync(int caretPosition, params string[] sources)
     {
-        var (_, token, model, _) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
+        var (token, model) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
         var highlighter = new RoutePatternHighlighter();
 
         var highlights = highlighter.GetDocumentHighlights(model, token, caretPosition, CancellationToken.None);

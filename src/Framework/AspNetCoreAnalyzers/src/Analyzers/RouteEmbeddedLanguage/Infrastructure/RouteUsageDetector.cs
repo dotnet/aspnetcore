@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,7 +18,8 @@ internal enum RouteUsageType
     Other,
     MinimalApi,
     MvcAction,
-    MvcController
+    MvcController,
+    Component
 }
 
 internal record struct ParameterSymbol(ISymbol Symbol, ISymbol? TopLevelSymbol = null)
@@ -30,7 +32,15 @@ internal readonly record struct RouteUsageContext(
     SyntaxNode? MethodSyntax,
     RouteUsageType UsageType,
     ImmutableArray<ISymbol> Parameters,
-    ImmutableArray<ParameterSymbol> ResolvedParameters);
+    ImmutableArray<ParameterSymbol> ResolvedParameters)
+{
+    public RoutePatternOptions RoutePatternOptions => UsageType switch
+    {
+        RouteUsageType.MvcAction or RouteUsageType.MvcController => RoutePatternOptions.MvcAttributeRoute,
+        RouteUsageType.Component => RoutePatternOptions.ComponentsRoute,
+        _ => RoutePatternOptions.DefaultRoute,
+    };
+}
 
 internal readonly record struct MapMethodParts(
     IMethodSymbol Method,
@@ -39,8 +49,18 @@ internal readonly record struct MapMethodParts(
 
 internal static class RouteUsageDetector
 {
-    public static RouteUsageContext BuildContext(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
+    public static RouteUsageContext BuildContext(RouteOptions routeOptions, SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
     {
+        if (routeOptions == RouteOptions.Component)
+        {
+            return new(
+                MethodSymbol: null,
+                MethodSyntax: null,
+                UsageType: RouteUsageType.Component,
+                Parameters: ImmutableArray<ISymbol>.Empty,
+                ResolvedParameters: ImmutableArray<ParameterSymbol>.Empty);
+        }
+
         if (token.Parent is not LiteralExpressionSyntax)
         {
             return default;

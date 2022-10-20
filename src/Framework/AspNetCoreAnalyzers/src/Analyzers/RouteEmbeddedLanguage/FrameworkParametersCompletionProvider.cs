@@ -144,7 +144,6 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
         SyntaxToken routeStringToken;
         SyntaxNode methodNode;
-
         if (container.Parent.IsKind(SyntaxKind.Argument))
         {
             // Minimal API

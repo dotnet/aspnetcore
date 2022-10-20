@@ -13,27 +13,38 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 /// </summary>
 internal static class RouteStringSyntaxDetectorDocument
 {
-    internal static async ValueTask<(bool success, SyntaxToken token, SemanticModel? model, RouteOptions options)> TryGetStringSyntaxTokenAtPositionAsync(
-        Document document, int position, CancellationToken cancellationToken)
+    internal static async ValueTask<SyntaxToken> GetTokenAtPositionAsync(Document document, int position, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (root == null)
         {
             return default;
         }
-        var token = root.FindToken(position);
 
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-        if (semanticModel == null)
-        {
-            return default;
-        }
-
-        if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, cancellationToken, out var options))
-        {
-            return default;
-        }
-
-        return (true, token, semanticModel, options);
+        return root.FindToken(position);
     }
+
+    //internal static async ValueTask<(bool success, SyntaxToken token, SemanticModel? model, RouteOptions options)> TryGetStringSyntaxTokenAtPositionAsync(
+    //    Document document, int position, CancellationToken cancellationToken)
+    //{
+    //    var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+    //    if (root == null)
+    //    {
+    //        return default;
+    //    }
+    //    var token = root.FindToken(position);
+
+    //    var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+    //    if (semanticModel == null)
+    //    {
+    //        return default;
+    //    }
+
+    //    if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, cancellationToken, out var options))
+    //    {
+    //        return default;
+    //    }
+
+    //    return (true, token, semanticModel, options);
+    //}
 }
