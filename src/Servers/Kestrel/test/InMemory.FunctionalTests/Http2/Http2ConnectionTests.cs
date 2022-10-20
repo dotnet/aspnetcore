@@ -2724,7 +2724,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public Task HEADERS_Received_HeaderBlockOverLimit_ConnectionError()
     {
-        // > 32kb
+        // > 32kb * 2 to exceed graceful handling limit
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
@@ -2738,6 +2738,14 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>("f", _4kHeaderValue),
             new KeyValuePair<string, string>("g", _4kHeaderValue),
             new KeyValuePair<string, string>("h", _4kHeaderValue),
+            new KeyValuePair<string, string>("i", _4kHeaderValue),
+            new KeyValuePair<string, string>("j", _4kHeaderValue),
+            new KeyValuePair<string, string>("k", _4kHeaderValue),
+            new KeyValuePair<string, string>("l", _4kHeaderValue),
+            new KeyValuePair<string, string>("m", _4kHeaderValue),
+            new KeyValuePair<string, string>("n", _4kHeaderValue),
+            new KeyValuePair<string, string>("o", _4kHeaderValue),
+            new KeyValuePair<string, string>("p", _4kHeaderValue),
         };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize);
@@ -2746,7 +2754,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public Task HEADERS_Received_TooManyHeaders_ConnectionError()
     {
-        // > MaxRequestHeaderCount (100)
+        // > MaxRequestHeaderCount (100) * 2 to exceed graceful handling limit
         var headers = new List<KeyValuePair<string, string>>();
         headers.AddRange(new[]
         {
@@ -2754,7 +2762,7 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         });
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 200; i++)
         {
             headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
         }
