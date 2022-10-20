@@ -67,6 +67,9 @@ internal sealed class ParameterBindingMethodCache
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
+        // This method is used to find TryParse methods from .NET types using reflection. It's used at app runtime.
+        // Routing analyzers also detect TryParse methods when calculating what types are valid in routes.
+        // Changes here to support new types should be reflected in analyzers.
         Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
@@ -410,7 +413,7 @@ internal sealed class ParameterBindingMethodCache
     {
         return TValue.BindAsync(httpContext, parameter);
     }
-        
+
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
