@@ -107,6 +107,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     public long? MaxRequestBodySize { get; set; }
     public MinDataRate? MinRequestBodyDataRate { get; set; }
     public bool AllowSynchronousIO { get; set; }
+    protected int RequestHeadersParsed => _requestHeadersParsed;
 
     /// <summary>
     /// The request id. <seealso cref="HttpContext.TraceIdentifier"/>
@@ -546,6 +547,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private void IncrementRequestHeadersCount()
     {
         _requestHeadersParsed++;
+        CheckRequestHeadersCountLimit();
+    }
+
+    protected virtual void CheckRequestHeadersCountLimit(bool final = false)
+    {
         if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);

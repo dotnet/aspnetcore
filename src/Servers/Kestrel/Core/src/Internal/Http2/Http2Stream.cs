@@ -25,6 +25,8 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     private bool _decrementCalled;
 
+    public int TotalParsedHeaderSize { get; set; }
+
     public Pipe RequestBodyPipe { get; private set; } = default!;
 
     internal long DrainExpirationTicks { get; set; }
@@ -41,6 +43,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         InputRemaining = null;
         RequestBodyStarted = false;
         DrainExpirationTicks = 0;
+        TotalParsedHeaderSize = 0;
 
         _context = context;
 
@@ -197,6 +200,15 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // We don't need any of the parameters because we don't implement BeginRead to actually
         // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
         endConnection = !TryValidatePseudoHeaders();
+
+        // 431 if the headers are too large
+        if (TotalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+        }
+
+        // 431 if we received too many headers
+        CheckRequestHeadersCountLimit(final: true);
 
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();
@@ -692,6 +704,17 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         if (!HttpRequestHeaders.TryHPackAppend(index, value, checkForNewlineChars: !indexOnly))
         {
             AppendHeader(name, value);
+        }
+    }
+
+    // Final: Has the message been fully received? We allow up to 2x grace while receiving the message
+    // to avoid faulting the entire connection. We check again later when we can reject the request with a 431.
+    protected override void CheckRequestHeadersCountLimit(bool final = false)
+    {
+        if (final && RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount
+            || RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount * 2)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
         }
     }
 
