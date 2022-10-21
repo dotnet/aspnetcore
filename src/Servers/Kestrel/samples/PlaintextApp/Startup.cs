@@ -16,20 +16,23 @@ namespace PlaintextApp;
 
 public class Startup
 {
-    private static readonly byte[] _helloWorldBytes = Encoding.UTF8.GetBytes("Hello, World!");
-
     public void Configure(IApplicationBuilder app)
     {
+        var payload = "Hello, World!"u8.ToArray();
+
         app.Run((httpContext) =>
         {
-            var payload = _helloWorldBytes;
-            var response = httpContext.Response;
+            return Task.RunAsGreenThread(() =>
+            {
+                var response = httpContext.Response;
 
-            response.StatusCode = 200;
-            response.ContentType = "text/plain";
-            response.ContentLength = payload.Length;
+                response.StatusCode = 200;
+                response.ContentType = "text/plain";
+                response.ContentLength = payload.Length;
 
-            return response.BodyWriter.WriteAsync(payload).GetAsTask();
+                // This is synchronous IO!
+                response.Body.Write(payload, 0, payload.Length);
+            });
         });
     }
 
