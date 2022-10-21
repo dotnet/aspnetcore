@@ -21,8 +21,6 @@ internal partial class ResourceInvoker
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                //var routeKeys = action.RouteValues.Keys.ToArray();
-                //var routeValues = action.RouteValues.Values.ToArray();
                 var stringBuilder = new StringBuilder();
                 stringBuilder.Append('{');
                 var index = 0;
