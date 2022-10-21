@@ -135,7 +135,7 @@ public class Http3StreamTests : Http3TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("test", new string('a', 20000))
+            new KeyValuePair<string, string>("test", new string('a', 1024 * 32 + 1))
         };
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers);
@@ -143,7 +143,7 @@ public class Http3StreamTests : Http3TestBase
         await requestStream.WaitForStreamErrorAsync(
             Http3ErrorCode.InternalError,
             AssertExpectedErrorMessages,
-            "The HTTP headers length exceeded the set limit of 16384 bytes.");
+            $"The HTTP headers length exceeded the set limit of {1024 * 32} bytes.");
     }
 
     [Fact]
