@@ -107,7 +107,26 @@ public class ApiBehaviorOptionsSetupTest
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
-            Assert.Equal(Activity.Current.Id, problemDetails.Extensions["traceId"]);
+            Assert.Equal(Activity.Current.TraceId.ToString(), problemDetails.Extensions["traceId"]);
+        }
+    }
+
+    [Fact]
+    public void ProblemDetailsInvalidModelStateResponse_SetsTraceParentId()
+    {
+        // Arrange
+        using (new ActivityReplacer())
+        {
+            var actionContext = GetActionContext();
+            var factory = GetProblemDetailsFactory();
+
+            // Act
+            var result = ApiBehaviorOptionsSetup.ProblemDetailsInvalidModelStateResponse(factory, actionContext);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
+            Assert.Equal(Activity.Current.Id, problemDetails.Extensions["traceparent"]);
         }
     }
 
