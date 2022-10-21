@@ -109,7 +109,6 @@ public class DfaMatcherTest
     [InlineData("{b}-{c}", "/-hello")]
     [InlineData("-{b}--{c}", "/--hello")]
     [InlineData(".{b}-{c}", "/-hello")]
-    [InlineData("{a}{b}-{c}", "/-hello")]
     public async Task MatchAsync_ComplexSegmentEndpointAndPathStartingWithLiteral_NoEndpointMatched(string endpoint, string path)
     {
         // Arrange
