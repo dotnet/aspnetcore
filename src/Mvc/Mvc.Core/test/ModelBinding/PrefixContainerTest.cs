@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -243,7 +243,7 @@ public class PrefixContainerTest
     public void GetKeysFromPrefix_ReturnsSubKeysThatStartWithPrefix()
     {
         // Arrange
-        var keys = new[] { "foo[0].name", "foo.age", "foo[1].name", "food[item].spice" };
+        var keys = new[] { "foo[0].name", "foo.age", "foo[1].name", "food[item].spice", "foo.name.first" };
         var container = new PrefixContainer(keys);
 
         // Act
@@ -265,6 +265,11 @@ public class PrefixContainerTest
             {
                 Assert.Equal("age", item.Key);
                 Assert.Equal("foo.age", item.Value);
+            },
+            item =>
+            {
+                Assert.Equal("name", item.Key);
+                Assert.Equal("foo.name", item.Value);
             });
     }
 
