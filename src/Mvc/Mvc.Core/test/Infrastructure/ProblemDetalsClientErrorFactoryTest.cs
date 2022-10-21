@@ -65,7 +65,7 @@ public class ProblemDetailsClientErrorFactoryTest
     }
 
     [Fact]
-    public void GetClientError_UsesActivityId_ToSetTraceId()
+    public void GetClientError_UsesActivity_ToSetTrace()
     {
         // Arrange
         using (new ActivityReplacer())
