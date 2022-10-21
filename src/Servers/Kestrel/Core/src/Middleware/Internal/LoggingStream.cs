@@ -165,22 +165,25 @@ internal sealed class LoggingStream : Stream
             builder.AppendLine();
         }
 
-        var charBuilder = new StringBuilder();
+        // A maximum of 2 8 byte segments are written at once with a space between them, meaning 17 characters can be written
+        // ........ ........
+        Span<char> charBuilder = stackalloc char[17];
+        var charBuilderIndex = 0;
 
         // Write the hex
         for (int i = 0; i < buffer.Length; i++)
         {
-            builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
+            builder.Append(CultureInfo.InvariantCulture, $"{buffer[i]:X2}");
             builder.Append(' ');
 
             var bufferChar = (char)buffer[i];
             if (char.IsControl(bufferChar))
             {
-                charBuilder.Append('.');
+                charBuilder[charBuilderIndex++] = '.';
             }
             else
             {
-                charBuilder.Append(bufferChar);
+                charBuilder[charBuilderIndex++] = bufferChar;
             }
 
             if ((i + 1) % 16 == 0)
@@ -192,11 +195,12 @@ internal sealed class LoggingStream : Stream
                     builder.AppendLine();
                 }
                 charBuilder.Clear();
+                charBuilderIndex = 0;
             }
             else if ((i + 1) % 8 == 0)
             {
                 builder.Append(' ');
-                charBuilder.Append(' ');
+                charBuilder[charBuilderIndex++] = ' ';
             }
         }
 
@@ -213,8 +217,8 @@ internal sealed class LoggingStream : Stream
                 padLength++;
             }
 
-            builder.Append(new string(' ', padLength));
-            builder.Append(charBuilder);
+            builder.Append(' ', padLength);
+            builder.Append(charBuilder.Slice(0, charBuilderIndex));
         }
 
         _logger.LogDebug(builder.ToString());
