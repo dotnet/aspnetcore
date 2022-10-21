@@ -25,46 +25,63 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
     {
         foreach (var diagnostic in context.Diagnostics)
         {
-            var appendTitle = "Use 'IHeaderDictionary.Append'";
-            context.RegisterCodeFix(
-                CodeAction.Create(appendTitle,
-                    cancellationToken => ReplaceAddWithAppendAsync(diagnostic, context.Document, cancellationToken),
-                    equivalenceKey: appendTitle),
-                diagnostic);
+            context.Document.TryGetSyntaxRoot(out var root);
 
-            var indexerTitle = "Use indexer";
-            context.RegisterCodeFix(
-                CodeAction.Create(indexerTitle,
-                    cancellationToken => ReplaceAddWithIndexerAsync(diagnostic, context.Document, cancellationToken),
-                    equivalenceKey: indexerTitle),
-                diagnostic);
+            if (CanReplaceWithAppend(diagnostic, root, out var invocation))
+            {
+                var appendTitle = "Use 'IHeaderDictionary.Append'";
+                context.RegisterCodeFix(
+                    CodeAction.Create(appendTitle,
+                        cancellationToken => ReplaceWithAppend(diagnostic, context.Document, invocation, cancellationToken),
+                        equivalenceKey: appendTitle),
+                    diagnostic);
+            }
+
+            if (CanReplaceWithIndexer(diagnostic, root, out var assignment))
+            {
+                var indexerTitle = "Use indexer";
+                context.RegisterCodeFix(
+                    CodeAction.Create(indexerTitle,
+                        cancellationToken => ReplaceWithIndexer(diagnostic, context.Document, assignment, cancellationToken),
+                        equivalenceKey: indexerTitle),
+                    diagnostic);
+            }
         }
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> ReplaceAddWithAppendAsync(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
+    private static async Task<Document> ReplaceWithAppend(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-        if (root is not CompilationUnitSyntax compilationUnitSyntax)
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
+
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
+
+        // IHeaderDictionary.Append is defined as an extension method on Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.
+        // We'll need to add the required using directive, when not already present.
+        return document.WithSyntaxRoot(
+            AddRequiredUsingDirectiveForAppend(root.ReplaceNode(diagnosticTarget, invocation)));
+    }
+
+    private static bool CanReplaceWithAppend(Diagnostic diagnostic, SyntaxNode root, out InvocationExpressionSyntax invocation)
+    {
+        invocation = null;
+
+        if (root is not CompilationUnitSyntax)
         {
-            return document;
+            return false;
         }
 
-        var invocation = compilationUnitSyntax.FindNode(diagnostic.Location.SourceSpan);
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
 
-        if (invocation is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name.Identifier: { } identifierToken } })
+        if (diagnosticTarget is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name.Identifier: { } identifierToken } } invocationExpression)
         {
-            compilationUnitSyntax = compilationUnitSyntax.ReplaceToken(identifierToken, SyntaxFactory.Identifier("Append"));
+            invocation = invocationExpression.ReplaceToken(identifierToken, SyntaxFactory.Identifier("Append"));
 
-            // IHeaderDictionary.Append is defined as an extension method on Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.
-            // We'll need to add the required using directive, when not already present.
-            compilationUnitSyntax = AddRequiredUsingDirectiveForAppend(compilationUnitSyntax);
-
-            return document.WithSyntaxRoot(compilationUnitSyntax);
+            return true;
         }
 
-        return document;
+        return false;
     }
 
     private static CompilationUnitSyntax AddRequiredUsingDirectiveForAppend(CompilationUnitSyntax compilationUnitSyntax)
@@ -117,23 +134,33 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
             usingDirectives.Insert(insertionIndex, requiredUsingDirective));
     }
 
-    private static async Task<Document> ReplaceAddWithIndexerAsync(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
+    private static async Task<Document> ReplaceWithIndexer(Diagnostic diagnostic, Document document, AssignmentExpressionSyntax assignment, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-        if (root == null)
+
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
+
+        return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, assignment));
+    }
+
+    private static bool CanReplaceWithIndexer(Diagnostic diagnostic, SyntaxNode root, out AssignmentExpressionSyntax assignment)
+    {
+        assignment = null;
+
+        if (root is null)
         {
-            return document;
+            return false;
         }
 
-        var invocation = root.FindNode(diagnostic.Location.SourceSpan);
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
 
-        if (invocation is InvocationExpressionSyntax
+        if (diagnosticTarget is InvocationExpressionSyntax
             {
                 Expression: MemberAccessExpressionSyntax memberAccessExpression,
                 ArgumentList.Arguments: { Count: 2 } arguments
             })
         {
-            var assignmentExpression =
+            assignment =
                 SyntaxFactory.AssignmentExpression(
                     SyntaxKind.SimpleAssignmentExpression,
                     SyntaxFactory.ElementAccessExpression(
@@ -142,9 +169,9 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
                             SyntaxFactory.SeparatedList(new[] { arguments[0] }))),
                     arguments[1].Expression);
 
-            return document.WithSyntaxRoot(root.ReplaceNode(invocation, assignmentExpression));
+            return true;
         }
 
-        return document;
+        return false;
     }
 }
