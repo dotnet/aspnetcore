@@ -370,7 +370,7 @@ internal sealed class RoutePatternMatcher
                     startIndex--;
                 }
 
-                if (startIndex == 0)
+                if (startIndex <= 0)
                 {
                     return false;
                 }
