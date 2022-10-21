@@ -92,10 +92,16 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
             problemDetails.Type ??= clientErrorData.Link;
         }
 
-        var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
+        var traceId = Activity.Current?.TraceId.ToString() ?? httpContext?.TraceIdentifier;
         if (traceId != null)
         {
             problemDetails.Extensions["traceId"] = traceId;
+        }
+
+        var traceParent = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
+        if (traceParent != null)
+        {
+            problemDetails.Extensions["traceparent"] = traceParent;
         }
 
         _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails });
