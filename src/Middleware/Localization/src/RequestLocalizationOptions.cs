@@ -28,7 +28,7 @@ public class RequestLocalizationOptions
     }
 
     /// <summary>
-    /// Gets or sets whether to use use user-selected culture or default system culture. Defaults to <c>true</c>.
+    /// Configures <see cref="CultureInfo.UseUserOverride "/>. Defaults to <c>true</c>.
     /// </summary>
     public bool CultureInfoUseUserOverride { get; set; } = true;
 
