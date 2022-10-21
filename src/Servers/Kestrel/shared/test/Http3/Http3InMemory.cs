@@ -650,7 +650,7 @@ internal class Http3StreamBase
 
 internal class Http3RequestHeaderHandler
 {
-    public readonly byte[] HeaderEncodingBuffer = new byte[64 * 1024];
+    public readonly byte[] HeaderEncodingBuffer = new byte[96 * 1024];
     public readonly QPackDecoder QpackDecoder = new QPackDecoder(8192);
     public readonly Dictionary<string, string> DecodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }
@@ -697,10 +697,9 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
 
         var buffer = _headerHandler.HeaderEncodingBuffer.AsMemory();
         var done = QPackHeaderWriter.BeginEncodeHeaders(headers, buffer.Span, ref headersTotalSize, out var length);
-        while (!done)
+        if (!done)
         {
-            await SendFrameAsync(Http3FrameType.Headers, buffer.Slice(0, length), endStream: false);
-            done = QPackHeaderWriter.Encode(headers, buffer.Span, ref headersTotalSize, out length);
+            throw new InvalidOperationException("The headers are too large.");
         }
         await SendFrameAsync(Http3FrameType.Headers, buffer.Slice(0, length), endStream);
     }
