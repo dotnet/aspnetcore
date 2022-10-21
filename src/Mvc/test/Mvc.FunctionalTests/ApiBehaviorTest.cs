@@ -78,6 +78,11 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                 {
                     Assert.Equal("traceId", kvp.Key);
                     Assert.NotNull(kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("traceparent", kvp.Key);
+                    Assert.NotNull(kvp.Value);
                 });
         }
     }
@@ -274,6 +279,11 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                 {
                     Assert.Equal("traceId", kvp.Key);
                     Assert.NotNull(kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("traceparent", kvp.Key);
+                    Assert.NotNull(kvp.Value);
                 });
         }
     }
@@ -282,7 +292,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
     public virtual async Task SerializingProblemDetails_IgnoresNullValuedProperties()
     {
         // Arrange
-        var expected = new[] { "status", "title", "traceId", "type" };
+        var expected = new[] { "status", "title", "traceId", "type", "traceparent" };
 
         // Act
         var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");

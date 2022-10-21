@@ -30,6 +30,11 @@ public class ProblemDetailsFactoryTest
             {
                 Assert.Equal("traceId", kvp.Key);
                 Assert.Equal("some-trace", kvp.Value);
+            },
+            kvp =>
+            {
+                Assert.Equal("traceparent", kvp.Key);
+                Assert.Equal("some-trace", kvp.Value);
             });
     }
 
@@ -127,6 +132,11 @@ public class ProblemDetailsFactoryTest
             {
                 Assert.Equal("traceId", kvp.Key);
                 Assert.Equal("some-trace", kvp.Value);
+            },
+            kvp =>
+            {
+                Assert.Equal("traceparent", kvp.Key);
+                Assert.Equal("some-trace", kvp.Value);
             });
         Assert.Collection(
            problemDetails.Errors,
@@ -158,6 +168,11 @@ public class ProblemDetailsFactoryTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
+                Assert.Equal("some-trace", kvp.Value);
+            },
+            kvp =>
+            {
+                Assert.Equal("traceparent", kvp.Key);
                 Assert.Equal("some-trace", kvp.Value);
             });
         Assert.Collection(

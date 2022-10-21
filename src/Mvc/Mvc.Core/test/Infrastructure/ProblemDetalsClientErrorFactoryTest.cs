@@ -88,7 +88,8 @@ public class ProblemDetailsClientErrorFactoryTest
             Assert.Equal(new[] { "application/problem+json", "application/problem+xml" }, objectResult.ContentTypes);
             var problemDetails = Assert.IsType<ProblemDetails>(objectResult.Value);
 
-            Assert.Equal(Activity.Current.Id, problemDetails.Extensions["traceId"]);
+            Assert.Equal(Activity.Current.Id, problemDetails.Extensions["traceparent"]);
+            Assert.Equal(Activity.Current.TraceId.ToString(), problemDetails.Extensions["traceId"]);
         }
     }
 
