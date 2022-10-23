@@ -32,17 +32,17 @@ export interface ReconnectionOptions {
 export interface ReconnectionHandler {
   onConnectionDown(options: ReconnectionOptions, error?: Error): void;
   onConnectionUp(): void;
-  onConnectionRejected(options: ReconnectionOptions): void;
+  onConnectionRejected?(options: ReconnectionOptions): void;
 }
 
 const defaultOptions: CircuitStartOptions = {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    configureSignalR: (_) => { },
-    logLevel: LogLevel.Warning,
-    reconnectionOptions: {
-      maxRetries: 8,
-      retryIntervalMilliseconds: 20000,
-      dialogId: 'components-reconnect-modal',
-      reloadOnCircuitRejected: false,
-    },
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  configureSignalR: (_) => { },
+  logLevel: LogLevel.Warning,
+  reconnectionOptions: {
+    maxRetries: 8,
+    retryIntervalMilliseconds: 20000,
+    dialogId: 'components-reconnect-modal',
+    reloadOnCircuitRejected: false,
+  },
 };
