@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs
 /// for ASP.NET MVC within an application.
 /// </summary>
-internal class EndpointRoutingUrlHelper : UrlHelperBase
+internal sealed class EndpointRoutingUrlHelper : UrlHelperBase
 {
     private readonly ILogger<EndpointRoutingUrlHelper> _logger;
     private readonly LinkGenerator _linkGenerator;

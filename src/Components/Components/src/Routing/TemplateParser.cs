@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 // * Literal path segments. (Like /Path/To/Some/Page)
 // * Parameter path segments (Like /Customer/{Id}/Orders/{OrderId})
 // * Catch-all parameters (Like /blog/{*slug})
-internal class TemplateParser
+internal sealed class TemplateParser
 {
     public static readonly char[] InvalidParameterNameCharacters =
         new char[] { '{', '}', '=', '.' };

@@ -52,6 +52,7 @@
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
         ExtraArgs="$(ILLinkArgs)"
+        NoWarn="$(NoWarn)"
         TrimMode="link"
         ToolExe="$(_DotNetHostFileName)"
         ToolPath="$(_DotNetHostDirectory)" />

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class NoopHostLifetime : IHostLifetime
+internal sealed class NoopHostLifetime : IHostLifetime
 {
     public Task StopAsync(CancellationToken cancellationToken)
     {

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Sets up default options for <see cref="MvcViewOptions"/>.
 /// </summary>
-internal class MvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
+internal sealed class MvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
 {
     private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _dataAnnotationsLocalizationOptions;
     private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;

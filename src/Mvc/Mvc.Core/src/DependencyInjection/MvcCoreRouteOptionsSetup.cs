@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Sets up MVC default options for <see cref="RouteOptions"/>.
 /// </summary>
-internal class MvcCoreRouteOptionsSetup : IConfigureOptions<RouteOptions>
+internal sealed class MvcCoreRouteOptionsSetup : IConfigureOptions<RouteOptions>
 {
     /// <summary>
     /// Configures the <see cref="RouteOptions"/>.

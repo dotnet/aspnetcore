@@ -118,8 +118,8 @@ internal static class CompilationFailedExceptionFactory
     {
         var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
         return new DiagnosticMessage(
-            diagnostic.GetMessage(),
-            CSharpDiagnosticFormatter.Instance.Format(diagnostic),
+            diagnostic.GetMessage(CultureInfo.CurrentCulture),
+            CSharpDiagnosticFormatter.Instance.Format(diagnostic, CultureInfo.CurrentCulture),
             mappedLineSpan.Path,
             mappedLineSpan.StartLinePosition.Line + 1,
             mappedLineSpan.StartLinePosition.Character + 1,

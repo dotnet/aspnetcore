@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
 
-internal class CircuitJavaScriptInitializationMiddleware
+internal sealed class CircuitJavaScriptInitializationMiddleware
 {
     private readonly IList<string> _initializers;
 

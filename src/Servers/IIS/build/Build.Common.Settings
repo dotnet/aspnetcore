@@ -15,12 +15,8 @@
     <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
     <VCProjectVersion>15.0</VCProjectVersion>
-    <VCToolsVersion>14.29.30133</VCToolsVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
-    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
-    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
@@ -43,7 +39,10 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <!-- Microsoft.Security.SystemsADM.10086 - SDL required warnings -->
+      <!-- See https://github.com/dotnet/aspnetcore/issues/40525 -->
       <WarningLevel>Level4</WarningLevel>
+      <TreatSpecificWarningsAsErrors>$(TreatSpecificWarningsAsErrors);4018;4055;4146;4242;4244;4267;4302;4308;4509;4510;4532;4533;4610;4611;4700;4701;4703;4789;4995;4996</TreatSpecificWarningsAsErrors>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

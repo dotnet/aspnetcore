@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 // For more information of flags, and what flags we currently support:
 // https://github.com/aspnet/BasicMiddleware/issues/66
 // http://httpd.apache.org/docs/current/expr.html#vars
-internal class Flags
+internal sealed class Flags
 {
     public IDictionary<FlagType, string> FlagDictionary { get; }
 

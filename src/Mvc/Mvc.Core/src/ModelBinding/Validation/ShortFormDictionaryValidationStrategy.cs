@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 /// Using this key format, the enumerator enumerates model objects of type <typeparamref name="TValue"/>. The
 /// keys of the dictionary are not validated as they must be simple types.
 /// </remarks>
-internal class ShortFormDictionaryValidationStrategy<TKey, TValue> : IValidationStrategy
+internal sealed class ShortFormDictionaryValidationStrategy<TKey, TValue> : IValidationStrategy
     where TKey : notnull
 {
     private readonly ModelMetadata _valueMetadata;
@@ -63,7 +63,7 @@ internal class ShortFormDictionaryValidationStrategy<TKey, TValue> : IValidation
         return new Enumerator(_valueMetadata, KeyMappings, (IDictionary<TKey, TValue>)model);
     }
 
-    private class Enumerator : IEnumerator<ValidationEntry>
+    private sealed class Enumerator : IEnumerator<ValidationEntry>
     {
         private readonly ModelMetadata _metadata;
         private readonly IDictionary<TKey, TValue> _model;

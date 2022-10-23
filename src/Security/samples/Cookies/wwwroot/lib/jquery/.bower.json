@@ -12,14 +12,15 @@
     "library"
   ],
   "homepage": "https://github.com/jquery/jquery-dist",
-  "version": "3.5.1",
-  "_release": "3.5.1",
+  "version": "3.6.0",
+  "_release": "3.6.0",
   "_resolution": {
     "type": "version",
-    "tag": "3.5.1",
-    "commit": "4c0e4becb8263bb5b3e6dadc448d8e7305ef8215"
+    "tag": "3.6.0",
+    "commit": "e786e3d9707ffd9b0dd330ca135b66344dcef85a"
   },
-  "_source": "git://github.com/jquery/jquery-dist.git",
-  "_target": "3.5.1",
-  "_originalSource": "jquery"
+  "_source": "https://github.com/jquery/jquery-dist.git",
+  "_target": "^3.6.0",
+  "_originalSource": "jquery",
+  "_direct": true
 }

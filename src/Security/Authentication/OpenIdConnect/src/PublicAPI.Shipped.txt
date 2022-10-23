@@ -1,6 +1,6 @@
 #nullable enable
-~Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration!>?
-~Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.ConfigurationManager.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration!>?
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.ConfigurationManager.set -> void
 const Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationScheme = "OpenIdConnect" -> string!
 Microsoft.AspNetCore.Authentication.ClaimActionCollectionUniqueExtensions
 Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthenticationFailedContext

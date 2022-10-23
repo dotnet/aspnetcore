@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
@@ -26,15 +28,17 @@ public class DiagnosticProject
     private static readonly ICompilationAssemblyResolver _assemblyResolver = new AppBaseCompilationAssemblyResolver();
     private static readonly Dictionary<Assembly, Solution> _solutionCache = new Dictionary<Assembly, Solution>();
 
-    public static Project Create(Assembly testAssembly, string[] sources)
+    public static Project Create(Assembly testAssembly, string[] sources, Func<Workspace> workspaceFactory = null, Type analyzerReference = null)
     {
         Solution solution;
         lock (_solutionCache)
         {
             if (!_solutionCache.TryGetValue(testAssembly, out solution))
             {
+                workspaceFactory ??= CreateWorkspace;
+
                 var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
-                solution = new AdhocWorkspace()
+                solution = workspaceFactory()
                     .CurrentSolution
                     .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
 
@@ -44,6 +48,13 @@ public class DiagnosticProject
                     {
                         solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
                     }
+                }
+
+                if (analyzerReference != null)
+                {
+                    solution = solution.AddAnalyzerReference(
+                        projectId,
+                        new AnalyzerFileReference(analyzerReference.Assembly.Location, AssemblyLoader.Instance));
                 }
 
                 _solutionCache.Add(testAssembly, solution);
@@ -67,5 +78,24 @@ public class DiagnosticProject
         }
 
         return solution.GetProject(testProject);
+    }
+
+    private static Workspace CreateWorkspace()
+    {
+        return new AdhocWorkspace();
+    }
+
+    internal sealed class AssemblyLoader : IAnalyzerAssemblyLoader
+    {
+        public static AssemblyLoader Instance = new AssemblyLoader();
+
+        public void AddDependencyLocation(string fullPath)
+        {
+        }
+
+        public Assembly LoadFromPath(string fullPath)
+        {
+            return Assembly.LoadFrom(fullPath);
+        }
     }
 }

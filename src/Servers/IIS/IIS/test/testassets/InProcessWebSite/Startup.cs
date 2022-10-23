@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -177,16 +178,6 @@ public partial class Startup
                 context.Response.ContentType = "text/html";
                 await context.Response.Body.WriteAsync(new byte[100], 0, 100);
             });
-    }
-
-    [DllImport("kernel32.dll")]
-    static extern uint GetDllDirectory(uint nBufferLength, [Out] StringBuilder lpBuffer);
-
-    private async Task DllDirectory(HttpContext context)
-    {
-        var builder = new StringBuilder(1024);
-        GetDllDirectory(1024, builder);
-        await context.Response.WriteAsync(builder.ToString());
     }
 
     private async Task GetEnvironmentVariable(HttpContext ctx)
@@ -1068,6 +1059,45 @@ public partial class Startup
         var value = context.Request.Headers["foo"];
         Assert.Equal("�", value);
         return Task.CompletedTask;
+    }
+
+    private async Task TransferEncodingHeadersWithMultipleValues(HttpContext ctx)
+    {
+        try
+        {
+#if !FORWARDCOMPAT
+        Assert.True(ctx.Request.CanHaveBody());
+#endif
+            Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
+            Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);
+            return;
+        }
+        catch (Exception exception)
+        {
+            ctx.Response.StatusCode = 500;
+            await ctx.Response.WriteAsync(exception.ToString());
+        }
+    }
+
+    private async Task TransferEncodingAndContentLengthShouldBeRemove(HttpContext ctx)
+    {
+        try
+        {
+#if !FORWARDCOMPAT
+        Assert.True(ctx.Request.CanHaveBody());
+#endif
+            Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
+            Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);
+            Assert.False(ctx.Request.Headers.ContainsKey("Content-Length"));
+            Assert.True(ctx.Request.Headers.ContainsKey("X-Content-Length"));
+            Assert.Equal("5", ctx.Request.Headers["X-Content-Length"]);
+            return;
+        }
+        catch (Exception exception)
+        {
+            ctx.Response.StatusCode = 500;
+            await ctx.Response.WriteAsync(exception.ToString());
+        }
     }
 
 #if !FORWARDCOMPAT

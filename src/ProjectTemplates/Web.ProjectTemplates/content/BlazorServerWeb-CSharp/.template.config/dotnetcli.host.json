@@ -85,6 +85,10 @@
     "CallsMicrosoftGraph": {
         "longName": "calls-graph",
         "shortName": ""
+    },
+    "UseProgramMain": {
+      "longName": "use-program-main",
+      "shortName": ""
     }
   },
   "usageExamples": [

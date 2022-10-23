@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
@@ -200,6 +201,7 @@ internal sealed class KestrelEventSource : EventSource
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(9, Level = EventLevel.Informational)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
     private void TlsHandshakeStop(string connectionId, string sslProtocols, string applicationProtocol, string hostName)
     {
         WriteEvent(9, connectionId, sslProtocols, applicationProtocol, hostName);
@@ -377,6 +379,7 @@ internal sealed class KestrelEventSource : EventSource
 
     [NonEvent]
     [SkipLocalsInit]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
     private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, string? arg3, string? arg4, string? arg5)
     {
         const int EventDataCount = 5;

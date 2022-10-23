@@ -214,7 +214,7 @@ public class KestrelServerLimitsTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData(1u)]
+    [InlineData(1L)]
     [InlineData(long.MaxValue)]
     public void MaxConnectionsValid(long? value)
     {
@@ -238,8 +238,8 @@ public class KestrelServerLimitsTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData(0)]
-    [InlineData(1)]
+    [InlineData(0L)]
+    [InlineData(1L)]
     [InlineData(long.MaxValue)]
     public void MaxUpgradedConnectionsValid(long? value)
     {
@@ -269,8 +269,8 @@ public class KestrelServerLimitsTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData(0)]
-    [InlineData(1)]
+    [InlineData(0L)]
+    [InlineData(1L)]
     [InlineData(long.MaxValue)]
     public void MaxRequestBodySizeValid(long? value)
     {

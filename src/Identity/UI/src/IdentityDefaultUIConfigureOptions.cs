@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.UI;
 
-internal class IdentityDefaultUIConfigureOptions<TUser> :
+internal sealed class IdentityDefaultUIConfigureOptions<TUser> :
     IPostConfigureOptions<RazorPagesOptions>,
     IConfigureNamedOptions<CookieAuthenticationOptions> where TUser : class
 {
@@ -34,7 +34,7 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
         options.Conventions.AddAreaFolderApplicationModelConvention(
             IdentityUIDefaultAreaName,
             "/",
-            pam => convention.Apply(pam));
+            convention.Apply);
         options.Conventions.AddAreaFolderApplicationModelConvention(
             IdentityUIDefaultAreaName,
             "/Account/Manage",

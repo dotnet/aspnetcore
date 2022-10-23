@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// An implementation of <see cref="IBindingMetadataProvider"/> and <see cref="IDisplayMetadataProvider"/> for
 /// the System.ComponentModel.DataAnnotations attribute classes.
 /// </summary>
-internal class DataAnnotationsMetadataProvider :
+internal sealed class DataAnnotationsMetadataProvider :
     IBindingMetadataProvider,
     IDisplayMetadataProvider,
     IValidationMetadataProvider
@@ -124,7 +124,7 @@ internal class DataAnnotationsMetadataProvider :
             }
             else
             {
-                displayMetadata.Description = () => displayAttribute.GetDescription();
+                displayMetadata.Description = displayAttribute.GetDescription;
             }
         }
 
@@ -146,7 +146,7 @@ internal class DataAnnotationsMetadataProvider :
             }
             else
             {
-                displayMetadata.DisplayName = () => displayAttribute.GetName();
+                displayMetadata.DisplayName = displayAttribute.GetName;
             }
         }
         else if (displayNameAttribute != null)
@@ -274,7 +274,7 @@ internal class DataAnnotationsMetadataProvider :
             }
             else
             {
-                displayMetadata.Placeholder = () => displayAttribute.GetPrompt();
+                displayMetadata.Placeholder = displayAttribute.GetPrompt;
             }
         }
 

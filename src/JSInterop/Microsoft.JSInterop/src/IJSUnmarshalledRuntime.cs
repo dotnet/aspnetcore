@@ -17,6 +17,7 @@ public interface IJSUnmarshalledRuntime
     /// <typeparam name="TResult">The .NET type corresponding to the function's return value type.</typeparam>
     /// <param name="identifier">The identifier used when registering the target function.</param>
     /// <returns>The result of the function invocation.</returns>
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     TResult InvokeUnmarshalled<TResult>(string identifier);
 
     /// <summary>
@@ -27,6 +28,7 @@ public interface IJSUnmarshalledRuntime
     /// <param name="identifier">The identifier used when registering the target function.</param>
     /// <param name="arg0">The first argument.</param>
     /// <returns>The result of the function invocation.</returns>
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0);
 
     /// <summary>
@@ -39,6 +41,7 @@ public interface IJSUnmarshalledRuntime
     /// <param name="arg0">The first argument.</param>
     /// <param name="arg1">The second argument.</param>
     /// <returns>The result of the function invocation.</returns>
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1);
 
     /// <summary>
@@ -53,5 +56,6 @@ public interface IJSUnmarshalledRuntime
     /// <param name="arg1">The second argument.</param>
     /// <param name="arg2">The third argument.</param>
     /// <returns>The result of the function invocation.</returns>
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2);
 }

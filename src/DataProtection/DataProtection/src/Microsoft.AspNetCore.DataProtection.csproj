@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core logic to protect and unprotect data, similar to DPAPI.</Description>
@@ -11,11 +11,14 @@
     <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
     <Nullable>annotations</Nullable>
     <Nullable Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\shared\src\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs"
+    <Compile Include="..\..\shared\src\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs" LinkBase="Shared"
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
       Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 

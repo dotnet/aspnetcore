@@ -1,0 +1,86 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Provides a mechanism for using Blazor components as custom HTML elements.</Description>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <YarnWorkingDir>$(MSBuildThisFileDirectory)js\</YarnWorkingDir>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      CompileJs;
+      IncludeCompileJsOutput;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
+    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\Microsoft.AspNetCore.Components.CustomElements.lib.module.js" />
+
+    <Content Remove="$(YarnWorkingDir)**" />
+    <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
+
+    <UpToDateCheckInput Include="@(YarnInputs)" Set="StaticWebassets" />
+    <UpToDateCheckInput Include="@(YarnOutputs)" Set="StaticWebassets" />
+  </ItemGroup>
+
+  <Target Name="_CreateJsHash" BeforeTargets="CompileJs" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'">
+
+    <PropertyGroup>
+      <JsCompilationCacheFile>$(IntermediateOutputPath)js.cache</JsCompilationCacheFile>
+    </PropertyGroup>
+
+    <Hash ItemsToHash="@(YarnInputs)">
+      <Output TaskParameter="HashResult" PropertyName="_YarnInputsHash" />
+    </Hash>
+
+    <WriteLinesToFile Lines="$(_YarnInputsHash)" File="$(JsCompilationCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(JsCompilationCacheFile)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="CompileJs" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(JsCompilationCacheFile)" Outputs="@(YarnOutputs)">
+    <Yarn Command="install --mutex network --frozen-lockfile" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="run build:production" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+
+    <Message Importance="high" Text="@(_JsBuildOutput->'Emitted %(FullPath)')" />
+
+  </Target>
+
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="_ResolveJsModuleInputs" DependsOnTargets="CompileJs">
+    <ItemGroup>
+      <_JsBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"
+      BasePath="_content\$(PackageId)"
+      CandidateAssets="@(_JsBuildOutput)"
+      RelativePathFilter="**.js"
+    >
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <_JsBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+      <FileWrites Include="$(_JsBuildOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+
+</Project>

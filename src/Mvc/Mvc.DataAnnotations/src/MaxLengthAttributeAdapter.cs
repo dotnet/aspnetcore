@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
-internal class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLengthAttribute>
+internal sealed class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLengthAttribute>
 {
     private readonly string _max;
 

@@ -182,8 +182,8 @@ BOOL MULTISZ::AuxAppend( const WCHAR * pStr, UINT cbStr, BOOL fAddSlop )
     //
 
     //AcIncrement( CacMultiszAppend);
-    
-    // 
+
+    //
     // Check for the arithmetic overflow
     //
     // ( 2 * sizeof( WCHAR ) ) is for the double terminator
@@ -197,7 +197,7 @@ BOOL MULTISZ::AuxAppend( const WCHAR * pStr, UINT cbStr, BOOL fAddSlop )
     if ( QuerySize() < (DWORD) cb64Required )
     {
         ULONGLONG cb64AllocSize = cb64Required + (fAddSlop ? STR_SLOP : 0 );
-        // 
+        //
         // Check for the arithmetic overflow
         //
         if ( cb64AllocSize > MAXULONG )
@@ -310,7 +310,7 @@ MULTISZ::CopyToBuffer( __out_ecount_opt(*lpcch) WCHAR * lpszBuffer, LPDWORD lpcc
         return ( FALSE);
     }
 
-    register DWORD cch = QueryCCH();
+    DWORD cch = QueryCCH();
 
     if ( *lpcch >= cch) {
 
@@ -397,7 +397,7 @@ Return Value:
         hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
         goto Finished;
     }
-    
+
     pmszList->Reset();
 
     /*
@@ -409,7 +409,7 @@ Return Value:
 
         pszEnd: just past the end of the current entry
     */
-    
+
     for ( PCWSTR pszCurrent = pszList,
                  pszNext = wcschr( pszCurrent, L',' )
             ;
@@ -449,7 +449,7 @@ Return Value:
                 goto Finished;
             }
         }
-        
+
         if ( pszNext == NULL )
         {
             break;

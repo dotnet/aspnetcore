@@ -12,48 +12,53 @@ namespace Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(new[]
-    {
-        DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
-    });
+    private const int SequenceParameterOrdinal = 0;
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers);
 
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            var compilation = compilationStartAnalysisContext.Compilation;
+            var compilation = context.Compilation;
 
             if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
             {
                 return;
             }
 
-            compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
+            context.RegisterOperationAction(context =>
             {
-                var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
+                var invocation = (IInvocationOperation)context.Operation;
 
                 if (!IsRenderTreeBuilderMethodWithSequenceParameter(wellKnownTypes, invocation.TargetMethod))
                 {
                     return;
                 }
 
-                var sequenceArgument = invocation.Arguments[0];
-
-                if (!sequenceArgument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
+                foreach (var argument in invocation.Arguments)
                 {
-                    operationAnalysisContext.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
-                        sequenceArgument.Syntax.GetLocation(),
-                        sequenceArgument.Syntax.ToString()));
+                    if (argument.Parameter.Ordinal == SequenceParameterOrdinal)
+                    {
+                        if (!argument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
+                                argument.Syntax.GetLocation(),
+                                argument.Syntax.ToString()));
+                        }
+
+                        break;
+                    }
                 }
+
             }, OperationKind.Invocation);
         });
     }
 
     private static bool IsRenderTreeBuilderMethodWithSequenceParameter(WellKnownTypes wellKnownTypes, IMethodSymbol targetMethod)
         => SymbolEqualityComparer.Default.Equals(wellKnownTypes.RenderTreeBuilder, targetMethod.ContainingType)
-        && targetMethod.Parameters.Length != 0
-        && targetMethod.Parameters[0].Name == "sequence";
+        && targetMethod.Parameters.Length > SequenceParameterOrdinal
+        && targetMethod.Parameters[SequenceParameterOrdinal].Name == "sequence";
 }

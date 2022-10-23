@@ -11,7 +11,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal class HeaderCollection : IHeaderDictionary
+internal sealed class HeaderCollection : IHeaderDictionary
 {
     // https://tools.ietf.org/html/rfc7230#section-4.1.2
     internal static readonly HashSet<string> DisallowedTrailers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

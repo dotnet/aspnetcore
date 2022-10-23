@@ -1,4 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.WebSocketMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WebSocketOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-*REMOVED*~Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.WebSocketMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WebSocketOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.WebSocketMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WebSocketOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

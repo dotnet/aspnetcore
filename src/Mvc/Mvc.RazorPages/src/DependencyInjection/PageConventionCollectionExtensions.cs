@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -466,7 +467,7 @@ public static class PageConventionCollectionExtensions
     /// <param name="pageName">The page name.</param>
     /// <param name="route">The route to associate with the page.</param>
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
-    public static PageConventionCollection AddPageRoute(this PageConventionCollection conventions, string pageName, string route)
+    public static PageConventionCollection AddPageRoute(this PageConventionCollection conventions, string pageName, [StringSyntax("Route")] string route)
     {
         if (conventions == null)
         {
@@ -511,7 +512,7 @@ public static class PageConventionCollectionExtensions
         this PageConventionCollection conventions,
         string areaName,
         string pageName,
-        string route)
+        [StringSyntax("Route")] string route)
     {
         if (conventions == null)
         {
@@ -558,7 +559,7 @@ public static class PageConventionCollectionExtensions
         };
     }
 
-    private class ParameterModelBaseConventionAdapter : IPageConvention, IParameterModelBaseConvention
+    private sealed class ParameterModelBaseConventionAdapter : IPageConvention, IParameterModelBaseConvention
     {
         private readonly IParameterModelBaseConvention _convention;
 

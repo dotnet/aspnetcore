@@ -77,6 +77,7 @@ public class NginxDeployer : SelfHostDeployer
             // Target actual address to avoid going through Nginx proxy
             using (var httpClient = new HttpClient())
             {
+                httpClient.Timeout = TimeSpan.FromSeconds(200);
                 var response = await RetryHelper.RetryRequest(() =>
                 {
                     return httpClient.GetAsync(redirectUri);

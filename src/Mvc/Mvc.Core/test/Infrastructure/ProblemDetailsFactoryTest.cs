@@ -21,7 +21,7 @@ public class ProblemDetailsFactoryTest
         // Assert
         Assert.Equal(500, problemDetails.Status);
         Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Null(problemDetails.Instance);
         Assert.Null(problemDetails.Detail);
         Assert.Collection(
@@ -42,7 +42,7 @@ public class ProblemDetailsFactoryTest
         // Assert
         Assert.Equal(406, problemDetails.Status);
         Assert.Equal("Not Acceptable", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.6", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.7", problemDetails.Type);
         Assert.Null(problemDetails.Instance);
         Assert.Null(problemDetails.Detail);
         Assert.Collection(
@@ -65,7 +65,7 @@ public class ProblemDetailsFactoryTest
         // Assert
         Assert.Equal(406, problemDetails.Status);
         Assert.Equal(title, problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.6", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.7", problemDetails.Type);
         Assert.Null(problemDetails.Instance);
         Assert.Equal(detail, problemDetails.Detail);
         Assert.Collection(
@@ -88,7 +88,7 @@ public class ProblemDetailsFactoryTest
         // Assert
         Assert.Equal(400, problemDetails.Status);
         Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Null(problemDetails.Instance);
         Assert.Null(problemDetails.Detail);
         Assert.Collection(
@@ -150,7 +150,7 @@ public class ProblemDetailsFactoryTest
         // Assert
         Assert.Equal(400, problemDetails.Status);
         Assert.Equal(title, problemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal(instance, problemDetails.Instance);
         Assert.Null(problemDetails.Detail);
         Assert.Collection(

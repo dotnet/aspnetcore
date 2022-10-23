@@ -5,8 +5,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization.Test.TestObjects;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
@@ -40,8 +46,9 @@ public class AuthorizationMiddlewareTests
         var policyProvider = new Mock<IAuthorizationPolicyProvider>();
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(anonymous: true);
 
         // Act
@@ -79,8 +86,9 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint());
 
         // Act
@@ -100,8 +108,9 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
         var authenticationService = new TestAuthenticationService();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute()), authenticationService: authenticationService);
 
         // Act
@@ -120,8 +129,9 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
         var authenticationService = new TestAuthenticationService();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute()), authenticationService: authenticationService);
 
         // Act
@@ -141,8 +151,9 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
         var authenticationService = new TestAuthenticationService();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(endpoint: CreateEndpoint(new AuthorizeAttribute() { AuthenticationSchemes = "whatever" }), authenticationService: authenticationService);
 
         // Act
@@ -162,8 +173,9 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
         var authenticationService = new TestAuthenticationService();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute()), authenticationService: authenticationService);
 
         // Act
@@ -187,7 +199,8 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
             .Callback(() => getFallbackPolicyCount++);
         var next = new TestRequestDelegate();
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute("whatever")));
 
         // Act & Assert
@@ -205,6 +218,170 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, getPolicyCount);
         Assert.Equal(0, getFallbackPolicyCount);
         Assert.Equal(3, next.CalledCount);
+    }
+
+    private static EndpointDataSource CreateDataSource(Endpoint endpoint)
+    {
+        var dataSource = new Mock<EndpointDataSource>();
+        dataSource.Setup(d => d.Endpoints).Returns(new Endpoint[] { endpoint });
+        dataSource.Setup(d => d.GetChangeToken()).Returns(new CancellationChangeToken(new CancellationToken()));
+        return dataSource.Object;
+    }
+
+    [Fact]
+    public async Task OnAuthorizationAsync_WillNotCallPolicyProviderWithCache()
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getPolicyCount = 0;
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetPolicyAsync(It.IsAny<string>())).ReturnsAsync(policy)
+            .Callback(() => getPolicyCount++);
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
+            .Callback(() => getFallbackPolicyCount++);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+        var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+
+        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services, logger.Object);
+        var context = GetHttpContext(anonymous: true, endpoint: endpoint);
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(1, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(2, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(3, next.CalledCount);
+    }
+
+    private class TestDefaultPolicyProvider : DefaultAuthorizationPolicyProvider
+    {
+        public int GetFallbackPolicyCount;
+        public int GetPolicyCount;
+        private readonly bool _canCache;
+
+        public TestDefaultPolicyProvider(IOptions<AuthorizationOptions> options, bool canCache) : base(options)
+        {
+            _canCache = canCache;
+        }
+
+        public new Task<AuthorizationPolicy> GetFallbackPolicyAsync()
+        {
+            GetFallbackPolicyCount++;
+            return base.GetFallbackPolicyAsync();
+        }
+
+        public override Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        {
+            GetPolicyCount++;
+            return Task.FromResult(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
+        }
+
+        public override bool AllowsCachingPolicies => _canCache;
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task OnAuthorizationAsync_WillCallDerviedDefaultPolicyProviderCanCache(bool canCache)
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var policyProvider = new TestDefaultPolicyProvider(Options.Create(new AuthorizationOptions()), canCache);
+        var next = new TestRequestDelegate();
+        var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"));
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider, services, logger.Object);
+        var context = GetHttpContext(anonymous: true, endpoint: endpoint);
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.Equal(1, policyProvider.GetPolicyCount);
+        Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
+        Assert.Equal(1, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(canCache ? 1: 2, policyProvider.GetPolicyCount);
+        Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
+        Assert.Equal(2, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(canCache ? 1 : 3, policyProvider.GetPolicyCount);
+        Assert.Equal(0, policyProvider.GetFallbackPolicyCount);
+        Assert.Equal(3, next.CalledCount);
+    }
+
+    [Fact]
+    public async Task OnAuthorizationAsync_WillCallCustomPolicyProviderWithCache()
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getPolicyCount = 0;
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetPolicyAsync(It.IsAny<string>())).ReturnsAsync(policy)
+            .Callback(() => getPolicyCount++);
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(policy)
+            .Callback(() => getFallbackPolicyCount++);
+        var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
+        var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute("whatever")));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.Equal(1, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(1, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(2, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(2, next.CalledCount);
+
+        await middleware.Invoke(context);
+        Assert.Equal(3, getPolicyCount);
+        Assert.Equal(0, getFallbackPolicyCount);
+        Assert.Equal(3, next.CalledCount);
+    }
+
+    [Fact]
+    public async Task CanApplyPolicyDirectlyToEndpoint()
+    {
+        // Arrange
+        var calledPolicy = false;
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ =>
+        {
+            calledPolicy = true;
+            return true;
+        }).Build();
+
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: false, endpoint: CreateEndpoint(new AuthorizeAttribute(), policy));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.True(calledPolicy);
     }
 
     [Fact]
@@ -277,8 +454,9 @@ public class AuthorizationMiddlewareTests
         policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
         var next = new TestRequestDelegate();
         var authenticationService = new TestAuthenticationService();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, logger: logger.Object);
         var context = GetHttpContext(endpoint: CreateEndpoint(new AuthorizeAttribute()), authenticationService: authenticationService);
 
         // Act
@@ -636,10 +814,32 @@ public class AuthorizationMiddlewareTests
         Assert.Same(authenticateResult, authenticateResultFeature.AuthenticateResult);
     }
 
-    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null)
+    // Validation for https://github.com/dotnet/aspnetcore/issues/43188
+    [Fact]
+    public async Task WebApplicationBuilder_CanRegisterAuthzMiddlewareWithScopedService()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddAuthorization();
+        builder.Services.AddScoped<IAuthorizationHandler, TestAuthorizationHandler>();
+        using var app = builder.Build();
+
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+
+        await app.StartAsync();
+
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+    }
+
+    private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, IServiceProvider services = null, ILogger<AuthorizationMiddleware> logger = null)
     {
         requestDelegate = requestDelegate ?? ((context) => Task.CompletedTask);
-        return new AuthorizationMiddleware(requestDelegate, policyProvider);
+        services ??= new ServiceCollection().BuildServiceProvider();
+        return new AuthorizationMiddleware(requestDelegate, policyProvider, services, logger);
     }
 
     private Endpoint CreateEndpoint(params object[] metadata)
@@ -700,6 +900,11 @@ public class AuthorizationMiddlewareTests
         }
 
         return httpContext;
+    }
+
+    public class TestAuthorizationHandler : IAuthorizationHandler
+    {
+        public Task HandleAsync(AuthorizationHandlerContext context) => Task.CompletedTask;
     }
 
     private class TestRequestDelegate

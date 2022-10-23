@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal class ConnectionManager
+internal sealed class ConnectionManager
 {
     private long _lastConnectionId = long.MinValue;
 

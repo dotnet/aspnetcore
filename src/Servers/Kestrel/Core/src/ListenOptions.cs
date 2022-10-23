@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 {
-    internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
+    internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2AndHttp3;
 
     internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
     internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
@@ -109,6 +109,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 
     internal bool IsTls { get; set; }
     internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
+    internal TlsHandshakeCallbackOptions? HttpsCallbackOptions { get; set; }
 
     /// <summary>
     /// Gets the name of this endpoint to display on command-line when the web server starts.

@@ -23,7 +23,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
-    protected override string InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
         var callInfo = new JSCallInfo
         {
@@ -42,7 +42,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
         var callInfo = new JSCallInfo
         {
@@ -63,16 +63,21 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         var resultJsonOrErrorMessage = dispatchResult.Success
             ? dispatchResult.ResultJson!
             : dispatchResult.Exception!.ToString();
+#pragma warning disable CS0618 // Type or member is obsolete
         InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
             callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     /// <inheritdoc />
     protected override void SendByteArray(int id, byte[] data)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
     {
         var resultType = JSCallResultTypeHelper.FromGeneric<TResult>();
@@ -122,18 +127,22 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<TResult>(string identifier)
         => InvokeUnmarshalled<object?, object?, object?, TResult>(identifier, null, null, null, 0);
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
         => InvokeUnmarshalled<T0, object?, object?, TResult>(identifier, arg0, null, null, 0);
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
         => InvokeUnmarshalled<T0, T1, object?, TResult>(identifier, arg0, arg1, null, 0);
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         => InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2, 0);
 }

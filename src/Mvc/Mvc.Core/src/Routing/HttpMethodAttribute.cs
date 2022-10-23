@@ -32,7 +32,7 @@ public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider
     /// </summary>
     /// <param name="httpMethods">The set of supported methods. May not be null.</param>
     /// <param name="template">The route template.</param>
-    public HttpMethodAttribute(IEnumerable<string> httpMethods, string? template)
+    public HttpMethodAttribute(IEnumerable<string> httpMethods, [StringSyntax("Route")] string? template)
     {
         if (httpMethods == null)
         {
@@ -47,6 +47,7 @@ public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider
     public IEnumerable<string> HttpMethods => _httpMethods;
 
     /// <inheritdoc />
+    [StringSyntax("Route")]
     public string? Template { get; }
 
     /// <summary>

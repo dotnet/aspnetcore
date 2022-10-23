@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
-internal class ForwardedTlsConnectionFeature : ITlsConnectionFeature
+internal sealed class ForwardedTlsConnectionFeature : ITlsConnectionFeature
 {
     private StringValues _header;
     private X509Certificate2? _certificate;

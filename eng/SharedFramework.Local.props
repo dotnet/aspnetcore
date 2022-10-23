@@ -3,7 +3,7 @@
 
   This file contains a complete list of the assemblies which are part of the shared framework.
 
-  This project is generated using the <IsAspNetCoreApp> and <IsPackable> properties from each .csproj in this repository.
+  This file is generated using the <IsAspNetCoreApp/> and <IsPackable/> properties from each .csproj in this repository.
 -->
 <Project>
   <ItemGroup>
@@ -77,6 +77,9 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RateLimiting" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RequestDecompression" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCompression" />

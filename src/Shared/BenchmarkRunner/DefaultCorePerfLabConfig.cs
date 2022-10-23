@@ -13,7 +13,7 @@ using BenchmarkDotNet.Validators;
 
 namespace BenchmarkDotNet.Attributes;
 
-internal class DefaultCorePerfLabConfig : ManualConfig
+internal sealed class DefaultCorePerfLabConfig : ManualConfig
 {
     public DefaultCorePerfLabConfig()
     {

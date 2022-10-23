@@ -1,2 +1,4 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)

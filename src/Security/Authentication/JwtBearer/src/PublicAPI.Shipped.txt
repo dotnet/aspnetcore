@@ -1,6 +1,6 @@
 #nullable enable
-~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration!>?
-~Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.set -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration!>?
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.set -> void
 const Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme = "Bearer" -> string!
 Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext
 Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext.AuthenticationFailedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void

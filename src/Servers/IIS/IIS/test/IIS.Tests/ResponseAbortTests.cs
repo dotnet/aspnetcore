@@ -34,7 +34,6 @@ public class ResponseAbortTests : StrictTestServerTests
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31404")]
     public async Task ClosesAfterDataSent()
     {
         var bodyReceived = CreateTaskCompletionSource();

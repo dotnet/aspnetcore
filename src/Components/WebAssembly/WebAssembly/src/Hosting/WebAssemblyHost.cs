@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -147,6 +148,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
             _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
+
+            WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
             var initializationTcs = new TaskCompletionSource();
             WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>

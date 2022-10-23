@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -29,6 +30,7 @@ internal static class ObjectMethodExecutorFSharpSupport
     private static PropertyInfo _fsharpOptionOfTaskCreationOptionsNoneProperty;
     private static PropertyInfo _fsharpOptionOfCancellationTokenNoneProperty;
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Reflecting over the async FSharpAsync<> contract")]
     public static bool TryBuildCoercerFromFSharpAsyncToAwaitable(
         Type possibleFSharpAsyncType,
         out Expression coerceToAwaitableExpression,
@@ -96,6 +98,9 @@ internal static class ObjectMethodExecutorFSharpSupport
         }
     }
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Reflecting over the async FSharpAsync<> contract")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2055", Justification = "Reflecting over the async FSharpAsync<> contract")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Reflecting over the async FSharpAsync<> contract")]
     private static bool TryPopulateFSharpValueCaches(Type possibleFSharpAsyncGenericType)
     {
         var assembly = possibleFSharpAsyncGenericType.Assembly;

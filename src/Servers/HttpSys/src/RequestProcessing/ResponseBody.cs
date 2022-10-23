@@ -524,10 +524,7 @@ internal sealed partial class ResponseBody : Stream
 
     public override void EndWrite(IAsyncResult asyncResult)
     {
-        if (asyncResult == null)
-        {
-            throw new ArgumentNullException(nameof(asyncResult));
-        }
+        ArgumentNullException.ThrowIfNull(asyncResult);
 
         TaskToApm.End(asyncResult);
     }
@@ -726,10 +723,7 @@ internal sealed partial class ResponseBody : Stream
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     private static partial class Log

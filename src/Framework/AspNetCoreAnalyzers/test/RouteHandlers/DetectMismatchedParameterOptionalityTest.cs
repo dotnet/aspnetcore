@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Testing;
-using VerifyCS = Microsoft.AspNetCore.Analyzers.RouteHandlers.CSharpRouteHandlerCodeFixVerifier<
+using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer,
     Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers.DetectMismatchedParameterOptionalityFixer>;
 
@@ -201,7 +201,7 @@ public static class Helpers
             new DiagnosticResult(DiagnosticDescriptors.DetectMismatchedParameterOptionality).WithArguments("title").WithLocation(1)
         };
 
-        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, usageSource);
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, usageSource: usageSource);
     }
 
     [Fact]

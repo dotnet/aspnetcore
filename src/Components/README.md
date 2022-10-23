@@ -25,6 +25,7 @@ The following contains a description of each sub-directory in the `Components` d
   - `Server`: Contains the implementation for WASM-specific extension methods and the launch logic for the debugging proxy
   - `WebAssembly`: Contains WebAssembly-specific implementations of the renderer, HostBuilder, etc.
   - `WebAssembly.Authentication`: Contains the WASM-specific implementations
+- `WebView`: Contains the source files to support [Blazor Hybrid](https://github.com/dotnet/maui/tree/main/src/BlazorWebView) within [`dotnet/maui`](https://github.com/dotnet/maui). Changes in this project can be tested with `dotnet/maui` following [this guide](https://github.com/dotnet/maui/wiki/Blazor-Desktop#aspnet-core).
 
 ## Development Setup
 

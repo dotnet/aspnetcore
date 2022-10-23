@@ -8,7 +8,7 @@
     <PackageTags>http</PackageTags>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
@@ -201,7 +202,11 @@ public class Startup
         // This is for testing purposes only (karma hosts the client on its own server), never do this in production
         app.UseCors(policy =>
         {
-            policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:", StringComparison.Ordinal) || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal))
+            policy.SetIsOriginAllowed(host =>
+                host.StartsWith("http://localhost:", StringComparison.Ordinal)
+                || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal)
+                || host.StartsWith("https://localhost:", StringComparison.Ordinal)
+                || host.StartsWith("https://127.0.0.1:", StringComparison.Ordinal))
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -221,6 +226,19 @@ public class Startup
             endpoints.MapGet("/generateJwtToken", context =>
             {
                 return context.Response.WriteAsync(GenerateJwtToken());
+            });
+
+            endpoints.MapGet("/clientresult/{id}", async (IHubContext<TestHub> hubContext, string id) =>
+            {
+                try
+                {
+                    var result = await hubContext.Clients.Client(id).InvokeAsync<int>("Result", cancellationToken: default);
+                    return result.ToString(CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
             });
 
             endpoints.MapGet("/deployment", context =>

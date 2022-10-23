@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// <summary>
 /// A default implementation of <see cref="IBindingMetadataProvider"/>.
 /// </summary>
-internal class DefaultBindingMetadataProvider : IBindingMetadataProvider
+internal sealed class DefaultBindingMetadataProvider : IBindingMetadataProvider
 {
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
@@ -168,7 +168,7 @@ internal class DefaultBindingMetadataProvider : IBindingMetadataProvider
         }
     }
 
-    private class CompositePropertyFilterProvider : IPropertyFilterProvider
+    private sealed class CompositePropertyFilterProvider : IPropertyFilterProvider
     {
         private readonly IEnumerable<IPropertyFilterProvider> _providers;
 

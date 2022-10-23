@@ -1,5 +1,5 @@
 #nullable enable
-~Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.JsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions!>! options) -> void
+Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.JsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions!>! options) -> void
 Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions
 Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions.JsonHubProtocolOptions() -> void
 Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions.PayloadSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!

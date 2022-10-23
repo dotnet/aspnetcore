@@ -1,2 +1,3 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.WebApplication.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.Extensions.Hosting.GenericHostBuilderExtensions.ConfigureWebHostDefaults(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions!>! configureOptions) -> Microsoft.Extensions.Hosting.IHostBuilder!

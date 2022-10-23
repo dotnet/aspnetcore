@@ -158,7 +158,7 @@ public sealed class RoutePattern
     }
 
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    private class RequiredValueAnySentinal
+    private sealed class RequiredValueAnySentinal
     {
         private static string DebuggerToString() => "*any*";
     }

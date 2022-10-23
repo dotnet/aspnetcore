@@ -7,7 +7,7 @@
   "description": "SCSS is a language that compiles into CSS",
   "groupIdentity": "Microsoft.DotNet.Web.ClientItems.Scss",
   "precedence": "100",
-  "identity": "Microsoft.DotNet.Web.ClientItems.Scss",
+  "identity": "Microsoft.DotNet.Web.ClientItems.Scss.7.0",
   "shortName": "scss",
   "sourceName": "styleSheet1",
   "tags": {

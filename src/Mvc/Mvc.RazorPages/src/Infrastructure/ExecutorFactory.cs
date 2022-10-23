@@ -143,7 +143,7 @@ internal static class ExecutorFactory
         }
     }
 
-    private class VoidHandlerMethod : HandlerMethod
+    private sealed class VoidHandlerMethod : HandlerMethod
     {
         private readonly Action<object, object?[]?> _thunk;
 
@@ -169,7 +169,7 @@ internal static class ExecutorFactory
         }
     }
 
-    private class ActionResultHandlerMethod : HandlerMethod
+    private sealed class ActionResultHandlerMethod : HandlerMethod
     {
         private readonly Func<object, object?[]?, IActionResult?> _thunk;
 

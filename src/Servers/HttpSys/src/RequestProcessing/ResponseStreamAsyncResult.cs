@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
+internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
 {
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -316,14 +316,8 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
 
     public void Dispose()
     {
-        if (_overlapped != null)
-        {
-            _overlapped.Dispose();
-        }
-        if (_fileStream != null)
-        {
-            _fileStream.Dispose();
-        }
+        _overlapped?.Dispose();
+        _fileStream?.Dispose();
         _cancellationRegistration.Dispose();
     }
 }

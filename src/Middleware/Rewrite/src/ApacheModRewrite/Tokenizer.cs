@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 /// <summary>
 /// Tokenizes a mod_rewrite rule, delimited by spaces.
 /// </summary>
-internal class Tokenizer
+internal sealed class Tokenizer
 {
     private const char Space = ' ';
     private const char Escape = '\\';

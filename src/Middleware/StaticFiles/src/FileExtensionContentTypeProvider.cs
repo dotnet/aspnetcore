@@ -146,7 +146,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".jpe", "image/jpeg" },
                 { ".jpeg", "image/jpeg" },
                 { ".jpg", "image/jpeg" },
-                { ".js", "application/javascript" },
+                { ".js", "text/javascript" },
                 { ".json", "application/json" },
                 { ".jsx", "text/jscript" },
                 { ".latex", "application/x-latex" },

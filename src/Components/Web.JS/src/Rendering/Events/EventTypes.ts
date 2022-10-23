@@ -108,6 +108,8 @@ registerBuiltInEventType([
   'mousemove',
   'mousedown',
   'mouseup',
+  'mouseleave',
+  'mouseenter',
   'dblclick',
 ], {
   createEventArgs: e => parseMouseEvent(e as MouseEvent),
@@ -303,6 +305,8 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     offsetY: event.offsetY,
     pageX: event.pageX,
     pageY: event.pageY,
+    movementX: event.movementX,
+    movementY: event.movementY,
     button: event.button,
     buttons: event.buttons,
     ctrlKey: event.ctrlKey,
@@ -419,6 +423,8 @@ interface MouseEventArgs {
   offsetY: number;
   pageX: number;
   pageY: number;
+  movementX: number;
+  movementY: number;
   button: number;
   buttons: number;
   ctrlKey: boolean;

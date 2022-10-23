@@ -200,7 +200,7 @@ public partial class ModelBinderFactory : IModelBinderFactory
         return _cache.TryGetValue(new Key(metadata, cacheToken), out binder);
     }
 
-    private class DefaultModelBinderProviderContext : ModelBinderProviderContext
+    private sealed class DefaultModelBinderProviderContext : ModelBinderProviderContext
     {
         private readonly ModelBinderFactory _factory;
 

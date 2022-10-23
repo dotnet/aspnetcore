@@ -58,4 +58,8 @@ internal static partial class LoggerExtensions
 
     [LoggerMessage(14, LogLevel.Debug, "The file transmission was cancelled", EventName = "WriteCancelled")]
     public static partial void WriteCancelled(this ILogger logger, Exception ex);
+
+    [LoggerMessage(16, LogLevel.Warning,
+        "The WebRootPath was not found: {WebRootPath}. Static files may be unavailable.", EventName = "WebRootPathNotFound")]
+    public static partial void WebRootPathNotFound(this ILogger logger, string webRootPath);
 }

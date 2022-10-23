@@ -130,6 +130,7 @@ public class CompressionTests : FixtureLoggedTest
         var client = new HttpClient(handler)
         {
             BaseAddress = _fixture.Client.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
         };
         client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
         client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity", 0));

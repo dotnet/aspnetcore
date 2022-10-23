@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubContext<THub, T> : IHubContext<THub, T>
+internal sealed class HubContext<THub, T> : IHubContext<THub, T>
     where THub : Hub<T>
     where T : class
 {
@@ -19,5 +19,5 @@ internal class HubContext<THub, T> : IHubContext<THub, T>
 
     public IHubClients<T> Clients => _clients;
 
-    public virtual IGroupManager Groups { get; }
+    public IGroupManager Groups { get; }
 }

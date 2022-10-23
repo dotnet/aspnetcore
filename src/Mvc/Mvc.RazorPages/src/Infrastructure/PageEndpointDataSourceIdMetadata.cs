@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageEndpointDataSourceIdMetadata
+internal sealed class PageEndpointDataSourceIdMetadata
 {
     public PageEndpointDataSourceIdMetadata(int id)
     {

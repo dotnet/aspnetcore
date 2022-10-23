@@ -18,7 +18,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
-internal class KestrelServerImpl : IServer
+internal sealed class KestrelServerImpl : IServer
 {
     private readonly ServerAddressesFeature _serverAddresses;
     private readonly TransportManager _transportManager;
@@ -72,10 +72,7 @@ internal class KestrelServerImpl : IServer
         IEnumerable<IMultiplexedConnectionListenerFactory>? multiplexedFactories,
         ServiceContext serviceContext)
     {
-        if (transportFactories == null)
-        {
-            throw new ArgumentNullException(nameof(transportFactories));
-        }
+        ArgumentNullException.ThrowIfNull(transportFactories);
 
         _transportFactory = transportFactories.LastOrDefault();
         _multiplexedTransportFactory = multiplexedFactories?.LastOrDefault();
@@ -98,14 +95,8 @@ internal class KestrelServerImpl : IServer
 
     private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         var serverOptions = options.Value ?? new KestrelServerOptions();
         var trace = new KestrelTrace(loggerFactory);
@@ -126,7 +117,7 @@ internal class KestrelServerImpl : IServer
         {
             Log = trace,
             Scheduler = PipeScheduler.ThreadPool,
-            HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
+            HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information), serverOptions.DisableHttp1LineFeedTerminators),
             SystemClock = heartbeatManager,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
@@ -195,6 +186,8 @@ internal class KestrelServerImpl : IServer
                 // multiplexed transport factory, which happens if QUIC isn't supported.
                 var addAltSvcHeader = !options.DisableAltSvcHeader && _multiplexedTransportFactory != null;
 
+                var configuredEndpoint = options.EndPoint;
+
                 // Add the HTTP middleware as the terminal connection middleware
                 if (hasHttp1 || hasHttp2
                     || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
@@ -211,18 +204,27 @@ internal class KestrelServerImpl : IServer
                     // Add the connection limit middleware
                     connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                    options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
+                    options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                 }
 
                 if (hasHttp3 && _multiplexedTransportFactory is not null)
                 {
-                    options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
-                    var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
+                    // Check if a previous transport has changed the endpoint. If it has then the endpoint is dynamic and we can't guarantee it will work for other transports.
+                    // For more details, see https://github.com/dotnet/aspnetcore/issues/42982
+                    if (!configuredEndpoint.Equals(options.EndPoint))
+                    {
+                        Trace.LogError(CoreStrings.DynamicPortOnMultipleTransportsNotSupported);
+                    }
+                    else
+                    {
+                        options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
+                        var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
-                    // Add the connection limit middleware
-                    multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
+                        // Add the connection limit middleware
+                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                    options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
 

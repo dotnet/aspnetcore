@@ -223,6 +223,8 @@ window.jsInteropTests = {
   functionThrowsException: functionThrowsException,
   asyncFunctionThrowsSyncException: asyncFunctionThrowsSyncException,
   asyncFunctionThrowsAsyncException: asyncFunctionThrowsAsyncException,
+  returnUndefined: returnUndefined,
+  returnNull: returnNull,
   returnPrimitive: returnPrimitive,
   returnPrimitiveAsync: returnPrimitiveAsync,
   returnJSObjectReference: returnJSObjectReference,
@@ -232,6 +234,14 @@ window.jsInteropTests = {
   receiveDotNetStreamReference: receiveDotNetStreamReference,
   receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
 };
+
+function returnUndefined() {
+  return undefined;
+}
+
+function returnNull() {
+  return null;
+}
 
 function returnPrimitive() {
   return 123;

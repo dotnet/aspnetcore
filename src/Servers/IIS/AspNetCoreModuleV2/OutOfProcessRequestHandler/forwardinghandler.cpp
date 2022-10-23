@@ -306,7 +306,7 @@ Failure:
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
         static std::string htmlResponse = FILE_UTILITY::GetHtml(g_hOutOfProcessRHModule,
-            OUT_OF_PROCESS_RH_STATIC_HTML,
+            ANCM_ERROR_PAGE,
             502,
             5,
             "ANCM Out-Of-Process Startup Failure",

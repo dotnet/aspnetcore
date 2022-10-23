@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.SignalR.Protocol;
+
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
@@ -131,4 +134,41 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous remove.</returns>
     public abstract Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends an invocation message to the specified connection and waits for a response.
+    /// </summary>
+    /// <typeparam name="T">The type of the response expected.</typeparam>
+    /// <param name="connectionId">The connection ID.</param>
+    /// <param name="methodName">The invocation method name.</param>
+    /// <param name="args">The invocation arguments.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. It is recommended to set a max wait for expecting a result.</param>
+    /// <returns>The response from the connection.</returns>
+    public virtual Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException($"{GetType().Name} does not support client return values.");
+    }
+
+    /// <summary>
+    /// Sets the connection result for an in progress <see cref="InvokeConnectionAsync"/> call.
+    /// </summary>
+    /// <param name="connectionId">The connection ID.</param>
+    /// <param name="result">The result from the connection.</param>
+    /// <returns>A <see cref="Task"/> that represents the result being set or being forwarded to another server.</returns>
+    public virtual Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
+    {
+        throw new NotImplementedException($"{GetType().Name} does not support client return values.");
+    }
+
+    /// <summary>
+    /// Tells <see cref="IHubProtocol"/> implementations what the expected type from a connection result is.
+    /// </summary>
+    /// <param name="invocationId">The ID of the in progress invocation.</param>
+    /// <param name="type">The type the connection is expected to send. Or <see cref="RawResult"/> if the result is intended for another server.</param>
+    /// <returns></returns>
+    public virtual bool TryGetReturnType(string invocationId, [NotNullWhen(true)] out Type? type)
+    {
+        type = null;
+        return false;
+    }
 }

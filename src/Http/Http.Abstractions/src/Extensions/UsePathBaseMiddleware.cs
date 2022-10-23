@@ -53,7 +53,7 @@ public class UsePathBaseMiddleware
         return _next(context);
     }
 
-    private async Task InvokeCore(HttpContext context, string matchedPath, string remainingPath)
+    private async Task InvokeCore(HttpContext context, PathString matchedPath, PathString remainingPath)
     {
         var originalPath = context.Request.Path;
         var originalPathBase = context.Request.PathBase;

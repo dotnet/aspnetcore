@@ -204,7 +204,7 @@ public class BufferedReadStream : Stream
     /// <inheritdoc/>
     public override int Read(byte[] buffer, int offset, int count)
     {
-        ValidateBuffer(buffer, offset, count);
+        ValidateBufferArguments(buffer, offset, count);
 
         // Drain buffer
         if (_bufferCount > 0)
@@ -222,7 +222,6 @@ public class BufferedReadStream : Stream
     /// <inheritdoc/>
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        ValidateBuffer(buffer, offset, count);
         return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
@@ -419,19 +418,6 @@ public class BufferedReadStream : Stream
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(BufferedReadStream));
-        }
-    }
-
-    private static void ValidateBuffer(byte[] buffer, int offset, int count)
-    {
-        // Delegate most of our validation.
-        _ = new ArraySegment<byte>(buffer, offset, count);
-        if (count == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "The value must be greater than zero.");
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(BufferedReadStream));
     }
 }

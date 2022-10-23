@@ -1,0 +1,64 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package xmldoc;
+
+// XmlDoc!
+service XmlDoc {
+  // BasicGet!
+  rpc BasicGet (StringRequest) returns (StringReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+    };
+  }
+  // BodyRootPost!
+  rpc BodyRootPost (StringRequestWithDetail) returns (StringReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter",
+      body: "*"
+    };
+  }
+  // BodyPathPost!
+  rpc BodyPathPost (StringRequestWithDetail) returns (StringReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter/{name}",
+      body: "detail"
+    };
+  }
+  // BasicDelete!
+  rpc BasicDelete (StringRequest) returns (StringReply) {
+    option (google.api.http) = {
+      delete: "/v1/greeter/{name}"
+    };
+  }
+}
+
+// StringRequest!
+message StringRequest {
+  // Name field!
+  string name = 1;
+}
+
+// StringRequestWithDetail!
+message StringRequestWithDetail {
+  // Name field!
+  string name = 1;
+  // Detail field!
+  StringRequestWithDetail.Detail detail = 2;
+
+  // Detail!
+  message Detail {
+    // Age field!
+    int32 age = 1;
+  }
+}
+
+// StringReply!
+message StringReply {
+  // Message field!
+  string message = 1;
+}

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class GroupManager<THub> : IGroupManager where THub : Hub
+internal sealed class GroupManager<THub> : IGroupManager where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
 

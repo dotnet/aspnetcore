@@ -18,7 +18,7 @@ internal struct BufferSegmentStack
         _size = 0;
     }
 
-    public int Count => _size;
+    public readonly int Count => _size;
 
     public bool TryPop([NotNullWhen(true)] out BufferSegment? result)
     {

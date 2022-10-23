@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components;
 
 // A cache for root component types
-internal class RootComponentTypeCache
+internal sealed class RootComponentTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
@@ -24,6 +25,7 @@ internal class RootComponentTypeCache
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     private static Type? ResolveType(Key key, Assembly[] assemblies)
     {
         Assembly? assembly = null;

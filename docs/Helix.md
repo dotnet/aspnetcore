@@ -137,3 +137,20 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 - Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
 - Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/main/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
 - The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json](https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json)
+
+## Investigating helix run time issues
+
+Kusto has all of the helix job data, using a particular job id, with the following query you can get a breakdown of the test projects that take the longest.  Ideally to take advantage of the largest fan out, we want smaller test projects since the longest running test project will be the gate for finishing the entire helix test job.
+
+https://dataexplorer.azure.com/clusters/engsrvprod/databases/engineeringdata
+
+```
+WorkItems
+| where JobName == "bc108374-750c-4084-853e-bc5b9b0d553e"
+| where Name != JobName
+| extend RunTime = Finished-Started
+| top 20 by RunTime desc  
+| project FriendlyName, RunTime
+```
+
+![image](https://user-images.githubusercontent.com/6537861/144129895-e1e82815-4192-431c-a7b3-dd055b813978.png)

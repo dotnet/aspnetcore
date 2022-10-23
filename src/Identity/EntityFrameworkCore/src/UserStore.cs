@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -89,7 +90,7 @@ public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, T
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
 /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
-public class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
+public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
     UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>,
     IProtectedUserStore<TUser>
     where TUser : IdentityUser<TKey>

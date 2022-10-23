@@ -3,7 +3,7 @@
 
 namespace Wasm.Performance.Driver;
 
-internal class BenchmarkOutput
+internal sealed class BenchmarkOutput
 {
     public List<BenchmarkMetadata> Metadata { get; } = new List<BenchmarkMetadata>();
 

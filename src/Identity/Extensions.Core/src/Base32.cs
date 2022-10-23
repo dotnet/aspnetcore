@@ -43,20 +43,20 @@ internal static class Base32
         {
             throw new ArgumentNullException(nameof(input));
         }
-        input = input.TrimEnd('=').ToUpperInvariant();
-        if (input.Length == 0)
+        var trimmedInput = input.AsSpan().TrimEnd('=');
+        if (trimmedInput.Length == 0)
         {
             return Array.Empty<byte>();
         }
 
-        var output = new byte[input.Length * 5 / 8];
+        var output = new byte[trimmedInput.Length * 5 / 8];
         var bitIndex = 0;
         var inputIndex = 0;
         var outputBits = 0;
         var outputIndex = 0;
         while (outputIndex < output.Length)
         {
-            var byteIndex = _base32Chars.IndexOf(input[inputIndex]);
+            var byteIndex = _base32Chars.IndexOf(char.ToUpperInvariant(trimmedInput[inputIndex]));
             if (byteIndex < 0)
             {
                 throw new FormatException();

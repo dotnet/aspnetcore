@@ -23,23 +23,33 @@ parameters:
   # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
   publishUsingPipelines: false
 
+  # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
+  publishAssetsImmediately: false
+
+  artifactsPublishingAdditionalParameters: ''
+
+  signingValidationAdditionalParameters: ''
+
 jobs:
 - job: Asset_Registry_Publish
 
   dependsOn: ${{ parameters.dependsOn }}
 
-  displayName: Publish to Build Asset Registry
+  ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
+    displayName: Publish Assets
+  ${{ else }}:
+    displayName: Publish to Build Asset Registry
 
   pool: ${{ parameters.pool }}
 
   variables:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - name: _BuildConfig
-      value: ${{ parameters.configuration }}
     - group: Publish-Build-Assets
     - group: AzureDevOps-Artifact-Feeds-Pats
     - name: runCodesignValidationInjection
       value: false
+    - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
+      - template: /eng/common/templates/post-build/common-variables.yml
 
   steps:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -52,14 +62,13 @@ jobs:
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
-    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - task: NuGetAuthenticate@0
+    - task: NuGetAuthenticate@0
 
-      - task: PowerShell@2 
-        displayName: Enable cross-org NuGet feed authentication 
-        inputs: 
-          filePath: $(Build.SourcesDirectory)/eng/common/enable-cross-org-publishing.ps1 
-          arguments: -token $(dn-bot-all-orgs-artifact-feeds-rw) 
+    - task: PowerShell@2 
+      displayName: Enable cross-org NuGet feed authentication 
+      inputs: 
+        filePath: $(Build.SourcesDirectory)/eng/common/enable-cross-org-publishing.ps1 
+        arguments: -token $(dn-bot-all-orgs-artifact-feeds-rw) 
 
     - task: PowerShell@2
       displayName: Publish Build Assets
@@ -70,7 +79,6 @@ jobs:
           /p:BuildAssetRegistryToken=$(MaestroAccessToken)
           /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
-          /p:Configuration=$(_BuildConfig)
           /p:OfficialBuildId=$(Build.BuildNumber)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
@@ -114,7 +122,25 @@ jobs:
         PathtoPublish: '$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
         PublishLocation: Container
         ArtifactName: ReleaseConfigs
-        
+
+    - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
+      - template: /eng/common/templates/post-build/setup-maestro-vars.yml
+        parameters:
+          BARBuildId: ${{ parameters.BARBuildId }}
+          PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
+
+      - task: PowerShell@2
+        displayName: Publish Using Darc
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+          arguments: -BuildId $(BARBuildId) 
+            -PublishingInfraVersion 3
+            -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
+            -MaestroToken '$(MaestroApiAccessToken)'
+            -WaitPublishingFinish true
+            -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
+            -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
+
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/templates/steps/publish-logs.yml
         parameters:

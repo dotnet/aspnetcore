@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class IISServerSetupFilter : IStartupFilter
+internal sealed class IISServerSetupFilter : IStartupFilter
 {
     private readonly string _virtualPath;
 

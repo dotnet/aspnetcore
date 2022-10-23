@@ -1,0 +1,3 @@
+#nullable enable
+Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature
+Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature.OnClosed(System.Action<object?>! callback, object? state) -> void

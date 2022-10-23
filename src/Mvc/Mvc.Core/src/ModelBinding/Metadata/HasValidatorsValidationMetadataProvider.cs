@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-internal class HasValidatorsValidationMetadataProvider : IValidationMetadataProvider
+internal sealed class HasValidatorsValidationMetadataProvider : IValidationMetadataProvider
 {
     private readonly bool _hasOnlyMetadataBasedValidators;
     private readonly IMetadataBasedModelValidatorProvider[]? _validatorProviders;

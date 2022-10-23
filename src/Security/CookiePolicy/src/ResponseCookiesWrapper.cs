@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.CookiePolicy;
 
-internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeature
+internal sealed class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeature
 {
     private readonly ILogger _logger;
     private bool? _isConsentNeeded;
@@ -98,20 +98,7 @@ internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeatur
         Debug.Assert(key != null);
         ApplyAppendPolicy(ref key, ref value, options);
 
-        var setCookieHeaderValue = new Net.Http.Headers.SetCookieHeaderValue(
-            Uri.EscapeDataString(key),
-            Uri.EscapeDataString(value))
-        {
-            Domain = options.Domain,
-            Path = options.Path,
-            Expires = options.Expires,
-            MaxAge = options.MaxAge,
-            Secure = options.Secure,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly
-        };
-
-        return setCookieHeaderValue.ToString();
+        return options.CreateCookieHeader(Uri.EscapeDataString(key), Uri.EscapeDataString(value)).ToString();
     }
 
     private bool CheckPolicyRequired()

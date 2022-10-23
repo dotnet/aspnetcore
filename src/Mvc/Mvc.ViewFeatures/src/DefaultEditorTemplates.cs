@@ -460,7 +460,7 @@ internal static class DefaultEditorTemplates
             htmlAttributes: htmlAttributes);
     }
 
-    private class HasContentTextWriter : TextWriter
+    private sealed class HasContentTextWriter : TextWriter
     {
         public bool HasContent { get; private set; }
 
@@ -489,7 +489,7 @@ internal static class DefaultEditorTemplates
 
     // An HTML encoder which passes through all input data. Does no encoding.
     // Copied from Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.
-    private class PassThroughHtmlEncoder : HtmlEncoder
+    private sealed class PassThroughHtmlEncoder : HtmlEncoder
     {
         private PassThroughHtmlEncoder()
         {

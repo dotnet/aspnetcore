@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Identity.Core;
@@ -30,7 +31,7 @@ public class IdentityBuilder
     /// <param name="user">The <see cref="Type"/> to use for the users.</param>
     /// <param name="role">The <see cref="Type"/> to use for the roles.</param>
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
-    public IdentityBuilder(Type user, Type role, IServiceCollection services) : this(user, services)
+    public IdentityBuilder(Type user, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type role, IServiceCollection services) : this(user, services)
         => RoleType = role;
 
     /// <summary>
@@ -47,6 +48,7 @@ public class IdentityBuilder
     /// <value>
     /// The <see cref="Type"/> used for roles.
     /// </value>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     public Type? RoleType { get; private set; }
 
     /// <summary>
@@ -57,7 +59,7 @@ public class IdentityBuilder
     /// </value>
     public IServiceCollection Services { get; }
 
-    private IdentityBuilder AddScoped(Type serviceType, Type concreteType)
+    private IdentityBuilder AddScoped(Type serviceType, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type concreteType)
     {
         Services.AddScoped(serviceType, concreteType);
         return this;
@@ -68,7 +70,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TValidator">The user validator type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddUserValidator<TValidator>() where TValidator : class
+    public virtual IdentityBuilder AddUserValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidator>() where TValidator : class
         => AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
     /// <summary>
@@ -76,7 +78,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TFactory">The type of the claims principal factory.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddClaimsPrincipalFactory<TFactory>() where TFactory : class
+    public virtual IdentityBuilder AddClaimsPrincipalFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>() where TFactory : class
         => AddScoped(typeof(IUserClaimsPrincipalFactory<>).MakeGenericType(UserType), typeof(TFactory));
 
     /// <summary>
@@ -84,7 +86,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TDescriber">The type of the error describer.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : IdentityErrorDescriber
+    public virtual IdentityBuilder AddErrorDescriber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDescriber>() where TDescriber : IdentityErrorDescriber
     {
         Services.AddScoped<IdentityErrorDescriber, TDescriber>();
         return this;
@@ -95,7 +97,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TValidator">The validator type used to validate passwords.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddPasswordValidator<TValidator>() where TValidator : class
+    public virtual IdentityBuilder AddPasswordValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidator>() where TValidator : class
         => AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
     /// <summary>
@@ -103,7 +105,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TStore">The user store type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddUserStore<TStore>() where TStore : class
+    public virtual IdentityBuilder AddUserStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>() where TStore : class
         => AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(TStore));
 
     /// <summary>
@@ -112,7 +114,7 @@ public class IdentityBuilder
     /// <typeparam name="TProvider">The type of the token provider to add.</typeparam>
     /// <param name="providerName">The name of the provider to add.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddTokenProvider<TProvider>(string providerName) where TProvider : class
+    public virtual IdentityBuilder AddTokenProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(string providerName) where TProvider : class
         => AddTokenProvider(providerName, typeof(TProvider));
 
     /// <summary>
@@ -121,7 +123,7 @@ public class IdentityBuilder
     /// <param name="providerName">The name of the provider to add.</param>
     /// <param name="provider">The type of the <see cref="IUserTwoFactorTokenProvider{TUser}"/> to add.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddTokenProvider(string providerName, Type provider)
+    public virtual IdentityBuilder AddTokenProvider(string providerName, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type provider)
     {
         if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).IsAssignableFrom(provider))
         {
@@ -140,7 +142,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TUserManager">The type of the user manager to add.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class
+    public virtual IdentityBuilder AddUserManager<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUserManager>() where TUserManager : class
     {
         var userManagerType = typeof(UserManager<>).MakeGenericType(UserType);
         var customType = typeof(TUserManager);
@@ -160,7 +162,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TRole">The role type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddRoles<TRole>() where TRole : class
+    public virtual IdentityBuilder AddRoles<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>() where TRole : class
     {
         RoleType = typeof(TRole);
         AddRoleValidator<RoleValidator<TRole>>();
@@ -174,7 +176,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TRole">The role validator type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddRoleValidator<TRole>() where TRole : class
+    public virtual IdentityBuilder AddRoleValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>() where TRole : class
     {
         if (RoleType == null)
         {
@@ -189,7 +191,7 @@ public class IdentityBuilder
     /// <typeparam name="TProtector">The personal data protector type.</typeparam>
     /// <typeparam name="TKeyRing">The personal data protector key ring type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddPersonalDataProtection<TProtector, TKeyRing>()
+    public virtual IdentityBuilder AddPersonalDataProtection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProtector, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TKeyRing>()
         where TProtector : class, ILookupProtector
         where TKeyRing : class, ILookupProtectorKeyRing
     {
@@ -204,7 +206,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TStore">The role store.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddRoleStore<TStore>() where TStore : class
+    public virtual IdentityBuilder AddRoleStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>() where TStore : class
     {
         if (RoleType == null)
         {
@@ -218,7 +220,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TRoleManager">The type of the role manager to add.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddRoleManager<TRoleManager>() where TRoleManager : class
+    public virtual IdentityBuilder AddRoleManager<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRoleManager>() where TRoleManager : class
     {
         if (RoleType == null)
         {
@@ -242,6 +244,6 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TUserConfirmation">The type of the user confirmation to add.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    public virtual IdentityBuilder AddUserConfirmation<TUserConfirmation>() where TUserConfirmation : class
+    public virtual IdentityBuilder AddUserConfirmation<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUserConfirmation>() where TUserConfirmation : class
         => AddScoped(typeof(IUserConfirmation<>).MakeGenericType(UserType), typeof(TUserConfirmation));
 }

@@ -34,7 +34,7 @@ jobs:
 - job: Run_SDL
   dependsOn: ${{ parameters.dependsOn }}
   displayName: Run SDL tool
-  condition: eq( ${{ parameters.enable }}, 'true')
+  condition: and(succeededOrFailed(), eq( ${{ parameters.enable }}, 'true'))
   variables:
     - group: DotNet-VSTS-Bot
     - name: AzDOProjectName
@@ -54,12 +54,14 @@ jobs:
     # If it's not devdiv, it's dnceng
     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
       name: NetCore1ESPool-Internal
-      demands: ImageOverride -equals Build.Server.Amd64.VS2019
+      demands: ImageOverride -equals windows.vs2019.amd64
   steps:
   - checkout: self
     clean: true
 
-  - template: /eng/common/templates/post-build/setup-maestro-vars.yml
+  # If the template caller didn't provide an AzDO parameter, set them all up as Maestro vars.
+  - ${{ if not(and(parameters.AzDOProjectName, parameters.AzDOPipelineId, parameters.AzDOBuildId)) }}:
+    - template: /eng/common/templates/post-build/setup-maestro-vars.yml
 
   - ${{ if ne(parameters.downloadArtifacts, 'false')}}:
     - ${{ if ne(parameters.artifactNames, '') }}:

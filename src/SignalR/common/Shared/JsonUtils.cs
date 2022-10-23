@@ -176,7 +176,7 @@ internal static class JsonUtils
         return reader.TokenType != JsonToken.None;
     }
 
-    private class JsonArrayPool<T> : IArrayPool<T>
+    private sealed class JsonArrayPool<T> : IArrayPool<T>
     {
         private readonly ArrayPool<T> _inner;
 

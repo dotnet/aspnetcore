@@ -21,7 +21,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     private Http2StreamContext _context = default!;
     private Http2OutputProducer _http2Output = default!;
     private StreamInputFlowControl _inputFlowControl = default!;
-    private StreamOutputFlowControl _outputFlowControl = default!;
     private Http2MessageBody? _messageBody;
 
     private bool _decrementCalled;
@@ -56,11 +55,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 context.ServerPeerSettings.InitialWindowSize,
                 context.ServerPeerSettings.InitialWindowSize / 2);
 
-            _outputFlowControl = new StreamOutputFlowControl(
-                context.ConnectionOutputFlowControl,
-                context.ClientPeerSettings.InitialWindowSize);
-
-            _http2Output = new Http2OutputProducer(this, context, _outputFlowControl);
+            _http2Output = new Http2OutputProducer(this, context);
 
             RequestBodyPipe = CreateRequestBodyPipe();
 
@@ -69,8 +64,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         else
         {
             _inputFlowControl.Reset();
-            _outputFlowControl.Reset(context.ClientPeerSettings.InitialWindowSize);
-            _http2Output.StreamReset();
+            _http2Output.StreamReset(context.ClientPeerSettings.InitialWindowSize);
             RequestBodyPipe.Reset();
         }
     }
@@ -129,7 +123,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     protected override void OnRequestProcessingEnded()
     {
-        CompleteStream(errored: false);
+        _http2Output.OnRequestProcessingEnded();
     }
 
     public void CompleteStream(bool errored)
@@ -207,6 +201,10 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();
 
+        // Cookies should be merged into a single string separated by "; "
+        // https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.5
+        HttpRequestHeaders.MergeCookies();
+
         return true;
     }
 
@@ -228,18 +226,37 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             return false;
         }
 
-        // CONNECT - :scheme and :path must be excluded
         if (Method == HttpMethod.Connect)
         {
-            if (!String.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !String.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
+            // https://datatracker.ietf.org/doc/html/rfc8441#section-4
+            // HTTP/2 WebSockets
+            if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderProtocol))
+            {
+                // On requests that contain the :protocol pseudo-header field, the :scheme and :path pseudo-header fields of the target URI MUST also be included.
+                if (StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
+                {
+                    ResetAndAbort(new ConnectionAbortedException(CoreStrings.ConnectRequestsWithProtocolRequireSchemeAndPath), Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
+                }
+                ConnectProtocol = HttpRequestHeaders.HeaderProtocol;
+                IsExtendedConnectRequest = true;
+            }
+            // CONNECT - :scheme and :path must be excluded
+            else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
             {
                 ResetAndAbort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;
             }
-
-            RawTarget = hostText;
-
-            return true;
+            else
+            {
+                RawTarget = hostText;
+                return true;
+            }
+        }
+        else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderProtocol))
+        {
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.ProtocolRequiresConnect), Http2ErrorCode.PROTOCOL_ERROR);
+            return false;
         }
 
         // :scheme https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -506,7 +523,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     public bool TryUpdateOutputWindow(int bytes)
     {
-        return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
+        return _http2Output.TryUpdateStreamWindow(bytes);
     }
 
     public void AbortRstStreamReceived()

@@ -1,6 +1,6 @@
-{
-  "author": "Microsoft",
+﻿{
+  "author": "Майкрософт",
   "name": "MVC ViewStart",
-  "description": "An MVC ViewStart Page",
-  "postActions/openInEditor/description": "Opens _ViewStart.cshtml in the editor"
+  "description": "Страница MVC ViewStart",
+  "postActions/openInEditor/description": "Открывает _ViewStart.cshtml в редакторе"
 }

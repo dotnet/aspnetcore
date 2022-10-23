@@ -247,7 +247,7 @@ internal static class ComponentProperties
             $"The property must be assignable from 'Dictionary<string, object>'.");
     }
 
-    private class WritersForType
+    private sealed class WritersForType
     {
         private const int MaxCachedWriterLookups = 100;
         private readonly Dictionary<string, PropertySetter> _underlyingWriters;

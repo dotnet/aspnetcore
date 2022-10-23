@@ -101,7 +101,7 @@ public static class MvcApplicationBuilderExtensions
         return app.UseRouter(routes.Build());
     }
 
-    private class EndpointRouteBuilder : IRouteBuilder
+    private sealed class EndpointRouteBuilder : IRouteBuilder
     {
         public EndpointRouteBuilder(IApplicationBuilder applicationBuilder)
         {

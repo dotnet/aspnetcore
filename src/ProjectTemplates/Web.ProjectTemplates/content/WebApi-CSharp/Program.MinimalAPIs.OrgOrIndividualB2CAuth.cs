@@ -56,22 +56,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 #endif
-#if (RequiresHttps)
+#if (HasHttpsProfile)
 
 app.UseHttpsRedirection();
 #endif
 
-app.UseAuthentication();
-app.UseAuthorization();
-
-var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"];
+var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
 #if (GenerateApi)
-app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
+app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
@@ -90,32 +87,30 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downs
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            DateTime.Now.AddDays(index),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
 
     return forecast;
-})
-#elseif (GenerateGraph)
-app.MapGet("/weahterforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
+#elif (GenerateGraph)
+app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServiceClient graphServiceClient) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    var user = await _graphServiceClient.Me.Request().GetAsync();
+    var user = await graphServiceClient.Me.Request().GetAsync();
 
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            DateTime.Now.AddDays(index),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
 
     return forecast;
-})
 #else
 app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 {
@@ -124,7 +119,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            DateTime.Now.AddDays(index),
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -134,6 +129,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 #if (EnableOpenAPI)
 })
 .WithName("GetWeatherForecast")
+.WithOpenApi()
 .RequireAuthorization();
 #else
 })
@@ -142,7 +138,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 
 app.Run();
 
-record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }

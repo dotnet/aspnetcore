@@ -11,7 +11,7 @@
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewStart",
   "precedence": "600",
-  "identity": "Microsoft.AspNetCore.Mvc.ViewStart.6.0",
+  "identity": "Microsoft.AspNetCore.Mvc.ViewStart.7.0",
   "shortName": "viewstart",
   "sourceName": "ignoreme",
   "primaryOutputs": [

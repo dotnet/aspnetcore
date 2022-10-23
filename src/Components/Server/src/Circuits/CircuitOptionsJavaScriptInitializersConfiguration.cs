@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
-internal class CircuitOptionsJavaScriptInitializersConfiguration : IConfigureOptions<CircuitOptions>
+internal sealed class CircuitOptionsJavaScriptInitializersConfiguration : IConfigureOptions<CircuitOptions>
 {
     private readonly IWebHostEnvironment _environment;
 

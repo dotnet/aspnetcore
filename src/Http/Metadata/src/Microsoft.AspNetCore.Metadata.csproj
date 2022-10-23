@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <Nullable>enable</Nullable>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
 </Project>

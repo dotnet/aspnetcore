@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class StartupLoader
+internal sealed class StartupLoader
 {
     // Creates an <see cref="StartupMethods"/> instance with the actions to run for configuring the application services and the
     // request pipeline of the application.
@@ -68,7 +68,7 @@ internal class StartupLoader
         public abstract Func<IServiceCollection, IServiceProvider> Build();
     }
 
-    private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
+    private sealed class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
     {
         public ConfigureServicesDelegateBuilder(
             IServiceProvider hostingServiceProvider,

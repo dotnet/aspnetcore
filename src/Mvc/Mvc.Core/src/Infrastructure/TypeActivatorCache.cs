@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// Caches <see cref="ObjectFactory"/> instances produced by
 /// <see cref="ActivatorUtilities.CreateFactory(Type, Type[])"/>.
 /// </summary>
-internal class TypeActivatorCache : ITypeActivatorCache
+internal sealed class TypeActivatorCache : ITypeActivatorCache
 {
     private readonly Func<Type, ObjectFactory> _createFactory =
         (type) => ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);

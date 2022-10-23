@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class AsyncStreamWrapper : Stream
+internal sealed class AsyncStreamWrapper : Stream
 {
     private readonly Stream _inner;
     private readonly Func<bool> _allowSynchronousIO;

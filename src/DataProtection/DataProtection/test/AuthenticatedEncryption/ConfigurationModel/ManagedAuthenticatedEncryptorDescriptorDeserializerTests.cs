@@ -50,7 +50,7 @@ public class ManagedAuthenticatedEncryptorDescriptorDeserializerTests
     }
 
     [Fact]
-    public void ImportFromXml_CustomType_CreatesAppropriateDescriptor()
+    public void ImportFromXml_FullyQualifiedBuiltInTypes_CreatesAppropriateDescriptor()
     {
         // Arrange
         var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
@@ -81,6 +81,69 @@ public class ManagedAuthenticatedEncryptorDescriptorDeserializerTests
         byte[] ciphertext = control.Encrypt(new ArraySegment<byte>(plaintext), new ArraySegment<byte>(aad));
         byte[] roundTripPlaintext = test.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
         Assert.Equal(plaintext, roundTripPlaintext);
+    }
+
+    [Fact]
+    public void ImportFromXml_CustomType_CreatesAppropriateDescriptor()
+    {
+        // Arrange
+        var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+
+        var xml = $@"
+                <descriptor>
+                  <encryption algorithm='{typeof(CustomAlgorithm).AssemblyQualifiedName}' keyLength='192' />
+                  <validation algorithm='{typeof(HMACSHA384).AssemblyQualifiedName}' />
+                  <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
+                    <value>{masterKey}</value>
+                  </masterKey>
+                </descriptor>";
+
+        // Act
+        var deserializedDescriptor = new ManagedAuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml));
+        var managedDescriptor = (ManagedAuthenticatedEncryptorDescriptor)deserializedDescriptor;
+
+        // Assert
+        Assert.Equal(typeof(CustomAlgorithm), managedDescriptor.Configuration.EncryptionAlgorithmType);
+    }
+
+    [Fact]
+    public void ImportFromXml_CustomTypeWithoutConstructor_CreatesAppropriateDescriptor()
+    {
+        // Arrange
+        var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+
+        var xml = $@"
+                <descriptor>
+                  <encryption algorithm='{typeof(CustomAlgorithmNoConstructor).AssemblyQualifiedName}' keyLength='192' />
+                  <validation algorithm='{typeof(HMACSHA384).AssemblyQualifiedName}' />
+                  <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
+                    <value>{masterKey}</value>
+                  </masterKey>
+                </descriptor>";
+
+        // Act
+        var ex = Assert.Throws<InvalidOperationException>(() => new ManagedAuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml)));
+
+        // Assert
+        Assert.Equal($"Algorithm type {typeof(CustomAlgorithmNoConstructor).FullName} doesn't have a public parameterless constructor. If the app is published with trimming then the constructor may have been trimmed. Ensure the type's assembly is excluded from trimming.", ex.Message);
+    }
+
+    public class CustomAlgorithm : SymmetricAlgorithm
+    {
+        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV) => throw new NotImplementedException();
+        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV) => throw new NotImplementedException();
+        public override void GenerateIV() => throw new NotImplementedException();
+        public override void GenerateKey() => throw new NotImplementedException();
+    }
+
+    public class CustomAlgorithmNoConstructor : SymmetricAlgorithm
+    {
+        private CustomAlgorithmNoConstructor() { }
+
+        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV) => throw new NotImplementedException();
+        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV) => throw new NotImplementedException();
+        public override void GenerateIV() => throw new NotImplementedException();
+        public override void GenerateKey() => throw new NotImplementedException();
     }
 
     private static IAuthenticatedEncryptor CreateEncryptorInstanceFromDescriptor(ManagedAuthenticatedEncryptorDescriptor descriptor)

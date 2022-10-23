@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC core components. Contains common action result types, attribute routing, application model conventions, API explorer, application parts, filters, formatters, model binding, and more.
@@ -26,11 +26,10 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
@@ -48,6 +47,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.OutputCaching" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />

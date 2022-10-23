@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components;
 
-internal class ProtectedPrerenderComponentApplicationStore : PrerenderComponentApplicationStore
+internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderComponentApplicationStore
 {
     private IDataProtector _protector;
 

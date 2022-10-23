@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Web.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
-internal class CircuitJSComponentInterop : JSComponentInterop
+internal sealed class CircuitJSComponentInterop : JSComponentInterop
 {
     private readonly CircuitOptions _circuitOptions;
     private int _jsRootComponentCount;

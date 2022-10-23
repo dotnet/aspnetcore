@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.Extensions.Logging;
@@ -131,8 +132,16 @@ public class FileSystemXmlRepository : IXmlRepository
         // crashes mid-write, we won't end up with a corrupt .xml file.
 
         Directory.Create(); // won't throw if the directory already exists
+
         var tempFilename = Path.Combine(Directory.FullName, Guid.NewGuid().ToString() + ".tmp");
         var finalFilename = Path.Combine(Directory.FullName, filename + ".xml");
+
+        // Create a temp file with the correct Unix file mode before moving it to the expected finalFilename.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var tempTempFilename = Path.GetTempFileName();
+            File.Move(tempTempFilename, tempFilename);
+        }
 
         try
         {

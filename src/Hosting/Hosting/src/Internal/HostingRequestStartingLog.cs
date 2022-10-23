@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
+internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
 {
     private const string LogPreamble = "Request starting ";
     private const string EmptyEntry = "-";

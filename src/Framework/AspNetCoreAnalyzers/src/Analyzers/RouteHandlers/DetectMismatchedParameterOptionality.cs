@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -21,7 +22,16 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var value = invocation.Arguments[1].Value;
+        IOperation? value = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter.Ordinal == 1)
+            {
+                value = argument.Value;
+            }
+        }
+
+        Debug.Assert(value is not null);
         if (value.ConstantValue is not { HasValue: true } constant ||
             constant.Value is not string routeTemplate)
         {

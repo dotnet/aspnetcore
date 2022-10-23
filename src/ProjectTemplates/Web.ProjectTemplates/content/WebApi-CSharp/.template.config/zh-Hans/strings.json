@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core Web API",
+    "description": "用于创建包含 RESTful HTTP 服务示例控制器的 ASP.NET Core 应用程序的项目模板。此模板还可以用于 ASP.NET Core MVC 视图和控制器。",
+    "parameter.DisableOpenAPI.name": "启用 OpenAPI 支持(_O)",
+    "parameter.DisableOpenAPI.description": "启用 OpenAPI (Swagger)支持",
+    "parameter.UseMinimalAPIs.name": "使用控制器(取消选中以使用最小 API)",
+    "parameter.UseMinimalAPIs.description": "是否生成显式程序类和主方法，而不是顶级语句。"
+  }
+}

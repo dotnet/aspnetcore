@@ -28,4 +28,9 @@ public class LocationChangedEventArgs : EventArgs
     /// Gets a value that determines if navigation for the link was intercepted.
     /// </summary>
     public bool IsNavigationIntercepted { get; }
+
+    /// <summary>
+    /// Gets the state associated with the current history entry.
+    /// </summary>
+    public string? HistoryEntryState { get; internal init; }
 }

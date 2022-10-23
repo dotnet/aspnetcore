@@ -33,6 +33,7 @@ Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserS
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorage.SetAsync(string! key, object! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorage.SetAsync(string! purpose, string! key, object! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>
+Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>.ProtectedBrowserStorageResult() -> void
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>.Success.get -> bool
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>.Value.get -> TValue?
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedLocalStorage

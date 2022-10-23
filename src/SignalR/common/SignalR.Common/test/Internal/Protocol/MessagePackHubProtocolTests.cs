@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -202,5 +196,95 @@ public class MessagePackHubProtocolTests : MessagePackHubProtocolTestBase
         var testData = TestData[testDataName];
 
         TestWriteMessages(testData);
+    }
+
+    public static IDictionary<string, ClientResultTestData> ClientResultData => new[]
+    {
+        new ClientResultTestData("SimpleResult", "lQOAo3h5egMq", typeof(int), 42),
+        new ClientResultTestData("NullResult", "lQOAo3h5egPA", typeof(CustomObject), null),
+
+        new ClientResultTestData("ComplexResult", "lQOAo3h5egOGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM=", typeof(CustomObject),
+            new CustomObject()),
+    }.ToDictionary(t => t.Name);
+
+    public static IEnumerable<object[]> ClientResultDataNames => ClientResultData.Keys.Select(name => new object[] { name });
+
+    [Theory]
+    [MemberData(nameof(ClientResultDataNames))]
+    public void RawResultRoundTripsProperly(string testDataName)
+    {
+        var testData = ClientResultData[testDataName];
+        var bytes = Convert.FromBase64String(testData.Message);
+
+        var binder = new TestBinder(null, typeof(RawResult));
+        var input = Frame(bytes);
+        var data = new ReadOnlySequence<byte>(input);
+        Assert.True(HubProtocol.TryParseMessage(ref data, binder, out var message));
+        var completion = Assert.IsType<CompletionMessage>(message);
+
+        var writer = MemoryBufferWriter.Get();
+        try
+        {
+            // WriteMessage should handle RawResult as Raw Json and write it properly
+            HubProtocol.WriteMessage(completion, writer);
+
+            // Now we check if the Raw Json was written properly and can be read using the expected type
+            binder = new TestBinder(null, testData.ResultType);
+            var written = writer.ToArray();
+            data = new ReadOnlySequence<byte>(written);
+            Assert.True(HubProtocol.TryParseMessage(ref data, binder, out message));
+
+            completion = Assert.IsType<CompletionMessage>(message);
+            Assert.Equal(testData.Result, completion.Result);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
+        }
+    }
+
+    [Fact]
+    public void UnexpectedClientResultGivesEmptyCompletionMessage()
+    {
+        var binder = new TestBinder();
+        var input = Frame(Convert.FromBase64String("lQOAo3h5egPA"));
+        var data = new ReadOnlySequence<byte>(input);
+        Assert.True(HubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.Equal("xyz", completion.InvocationId);
+    }
+
+    [Fact]
+    public void WrongTypeForClientResultGivesErrorCompletionMessage()
+    {
+        var binder = new TestBinder(paramTypes: null, returnType: typeof(int));
+        var input = Frame(Convert.FromBase64String("lQOAo3h5egOmc3RyaW5n"));
+        var data = new ReadOnlySequence<byte>(input);
+        Assert.True(HubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.StartsWith("Error trying to deserialize result to Int32.", completion.Error);
+        Assert.Equal("xyz", completion.InvocationId);
+    }
+
+    public class ClientResultTestData
+    {
+        public string Name { get; }
+        public string Message { get; }
+        public Type ResultType { get; }
+        public object Result { get; }
+
+        public ClientResultTestData(string name, string message, Type resultType, object result)
+        {
+            Name = name;
+            Message = message;
+            ResultType = resultType;
+            Result = result;
+        }
+
+        public override string ToString() => Name;
     }
 }

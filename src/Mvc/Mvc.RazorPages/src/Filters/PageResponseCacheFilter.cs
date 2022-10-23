@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// A <see cref="IPageFilter"/> which sets the appropriate headers related to response caching.
 /// </summary>
-internal class PageResponseCacheFilter : IPageFilter, IResponseCacheFilter
+internal sealed class PageResponseCacheFilter : IPageFilter, IResponseCacheFilter
 {
     private readonly ResponseCacheFilterExecutor _executor;
     private readonly ILogger _logger;

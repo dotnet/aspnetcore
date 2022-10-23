@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>pooling</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

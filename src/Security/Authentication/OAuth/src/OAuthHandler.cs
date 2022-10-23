@@ -61,7 +61,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
 
         if (properties == null)
         {
-            return HandleRequestResult.Fail("The oauth state was missing or invalid.");
+            return HandleRequestResults.InvalidState;
         }
 
         // OAuth2 10.12 CSRF
@@ -211,7 +211,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         requestMessage.Content = requestContent;
         requestMessage.Version = Backchannel.DefaultRequestVersion;
         var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
-        var body = await response.Content.ReadAsStringAsync();
+        var body = await response.Content.ReadAsStringAsync(Context.RequestAborted);
 
         return response.IsSuccessStatusCode switch
         {

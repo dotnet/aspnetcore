@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Sets up JSON formatter options for <see cref="MvcOptions"/>.
 /// </summary>
-internal class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptions>
+internal sealed class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptions>
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly MvcNewtonsoftJsonOptions _jsonOptions;

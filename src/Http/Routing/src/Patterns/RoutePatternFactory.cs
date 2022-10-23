@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
 
@@ -26,7 +27,7 @@ public static class RoutePatternFactory
     /// </summary>
     /// <param name="pattern">The route pattern string to parse.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
-    public static RoutePattern Parse(string pattern)
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern)
     {
         if (pattern == null)
         {
@@ -53,7 +54,8 @@ public static class RoutePatternFactory
     /// Multiple policies can be specified for a key by providing a collection as the value.
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
-    public static RoutePattern Parse(string pattern, object? defaults, object? parameterPolicies)
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies)
     {
         if (pattern == null)
         {
@@ -80,11 +82,40 @@ public static class RoutePatternFactory
     /// and then merged into the parsed route pattern.
     /// Multiple policies can be specified for a key by providing a collection as the value.
     /// </param>
+    /// <returns>The <see cref="RoutePattern"/>.</returns>
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies)
+    {
+        if (pattern == null)
+        {
+            throw new ArgumentNullException(nameof(pattern));
+        }
+
+        var original = RoutePatternParser.Parse(pattern);
+        return PatternCore(original.RawText, defaults, parameterPolicies, requiredValues: null, original.PathSegments);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> from its string representation along
+    /// with provided default values and parameter policies.
+    /// </summary>
+    /// <param name="pattern">The route pattern string to parse.</param>
+    /// <param name="defaults">
+    /// Additional default values to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the parsed route pattern.
+    /// </param>
+    /// <param name="parameterPolicies">
+    /// Additional parameter policies to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the parsed route pattern.
+    /// Multiple policies can be specified for a key by providing a collection as the value.
+    /// </param>
     /// <param name="requiredValues">
     /// Route values that can be substituted for parameters in the route pattern. See remarks on <see cref="RoutePattern.RequiredValues"/>.
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
-    public static RoutePattern Parse(string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
     {
         if (pattern == null)
         {
@@ -93,6 +124,37 @@ public static class RoutePatternFactory
 
         var original = RoutePatternParser.Parse(pattern);
         return PatternCore(original.RawText, Wrap(defaults), Wrap(parameterPolicies), Wrap(requiredValues), original.PathSegments);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> from its string representation along
+    /// with provided default values and parameter policies.
+    /// </summary>
+    /// <param name="pattern">The route pattern string to parse.</param>
+    /// <param name="defaults">
+    /// Additional default values to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the parsed route pattern.
+    /// </param>
+    /// <param name="parameterPolicies">
+    /// Additional parameter policies to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the parsed route pattern.
+    /// Multiple policies can be specified for a key by providing a collection as the value.
+    /// </param>
+    /// <param name="requiredValues">
+    /// Route values that can be substituted for parameters in the route pattern. See remarks on <see cref="RoutePattern.RequiredValues"/>.
+    /// </param>
+    /// <returns>The <see cref="RoutePattern"/>.</returns>
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies, RouteValueDictionary? requiredValues)
+    {
+        if (pattern is null)
+        {
+            throw new ArgumentNullException(nameof(pattern));
+        }
+
+        var original = RoutePatternParser.Parse(pattern);
+        return PatternCore(original.RawText, defaults, parameterPolicies, requiredValues, original.PathSegments);
     }
 
     /// <summary>
@@ -143,6 +205,7 @@ public static class RoutePatternFactory
     /// </param>
     /// <param name="segments">The collection of segments.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RoutePattern Pattern(
         object? defaults,
         object? parameterPolicies,
@@ -154,6 +217,69 @@ public static class RoutePatternFactory
         }
 
         return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+    /// with provided default values and parameter policies.
+    /// </summary>
+    /// <param name="defaults">
+    /// Additional default values to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// </param>
+    /// <param name="parameterPolicies">
+    /// Additional parameter policies to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// Multiple policies can be specified for a key by providing a collection as the value.
+    /// </param>
+    /// <param name="segments">The collection of segments.</param>
+    /// <returns>The <see cref="RoutePattern"/>.</returns>
+    public static RoutePattern Pattern(
+        RouteValueDictionary? defaults,
+        RouteValueDictionary? parameterPolicies,
+        IEnumerable<RoutePatternPathSegment> segments)
+    {
+        if (segments is null)
+        {
+            throw new ArgumentNullException(nameof(segments));
+        }
+
+        return PatternCore(null, defaults, parameterPolicies, requiredValues: null, segments);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+    /// with provided default values and parameter policies.
+    /// </summary>
+    /// <param name="rawText">The raw text to associate with the route pattern. May be null.</param>
+    /// <param name="defaults">
+    /// Additional default values to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// </param>
+    /// <param name="parameterPolicies">
+    /// Additional parameter policies to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// Multiple policies can be specified for a key by providing a collection as the value.
+    /// </param>
+    /// <param name="segments">The collection of segments.</param>
+    /// <returns>The <see cref="RoutePattern"/>.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    public static RoutePattern Pattern(
+        string? rawText,
+        object? defaults,
+        object? parameterPolicies,
+        IEnumerable<RoutePatternPathSegment> segments)
+    {
+        if (segments == null)
+        {
+            throw new ArgumentNullException(nameof(segments));
+        }
+
+        return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -176,8 +302,8 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Pattern(
         string? rawText,
-        object? defaults,
-        object? parameterPolicies,
+        RouteValueDictionary? defaults,
+        RouteValueDictionary? parameterPolicies,
         IEnumerable<RoutePatternPathSegment> segments)
     {
         if (segments == null)
@@ -185,7 +311,7 @@ public static class RoutePatternFactory
             throw new ArgumentNullException(nameof(segments));
         }
 
-        return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+        return PatternCore(rawText, defaults, parameterPolicies, requiredValues: null, segments);
     }
 
     /// <summary>
@@ -236,6 +362,7 @@ public static class RoutePatternFactory
     /// </param>
     /// <param name="segments">The collection of segments.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RoutePattern Pattern(
         object? defaults,
         object? parameterPolicies,
@@ -247,6 +374,69 @@ public static class RoutePatternFactory
         }
 
         return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+    /// with provided default values and parameter policies.
+    /// </summary>
+    /// <param name="defaults">
+    /// Additional default values to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// </param>
+    /// <param name="parameterPolicies">
+    /// Additional parameter policies to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// Multiple policies can be specified for a key by providing a collection as the value.
+    /// </param>
+    /// <param name="segments">The collection of segments.</param>
+    /// <returns>The <see cref="RoutePattern"/>.</returns>
+    public static RoutePattern Pattern(
+        RouteValueDictionary? defaults,
+        RouteValueDictionary? parameterPolicies,
+        params RoutePatternPathSegment[] segments)
+    {
+        if (segments == null)
+        {
+            throw new ArgumentNullException(nameof(segments));
+        }
+
+        return PatternCore(null, defaults, parameterPolicies, requiredValues: null, segments);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> from a collection of segments along
+    /// with provided default values and parameter policies.
+    /// </summary>
+    /// <param name="rawText">The raw text to associate with the route pattern.</param>
+    /// <param name="defaults">
+    /// Additional default values to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// </param>
+    /// <param name="parameterPolicies">
+    /// Additional parameter policies to associated with the route pattern. May be null.
+    /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
+    /// and then merged into the route pattern.
+    /// Multiple policies can be specified for a key by providing a collection as the value.
+    /// </param>
+    /// <param name="segments">The collection of segments.</param>
+    /// <returns>The <see cref="RoutePattern"/>.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    public static RoutePattern Pattern(
+        string? rawText,
+        object? defaults,
+        object? parameterPolicies,
+        params RoutePatternPathSegment[] segments)
+    {
+        if (segments == null)
+        {
+            throw new ArgumentNullException(nameof(segments));
+        }
+
+        return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -269,8 +459,8 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Pattern(
         string? rawText,
-        object? defaults,
-        object? parameterPolicies,
+        RouteValueDictionary? defaults,
+        RouteValueDictionary? parameterPolicies,
         params RoutePatternPathSegment[] segments)
     {
         if (segments == null)
@@ -278,7 +468,7 @@ public static class RoutePatternFactory
             throw new ArgumentNullException(nameof(segments));
         }
 
-        return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+        return PatternCore(rawText, defaults, parameterPolicies, requiredValues: null, segments);
     }
 
     private static RoutePattern PatternCore(
@@ -894,6 +1084,120 @@ public static class RoutePatternFactory
         return ParameterPolicyCore(parameterPolicy);
     }
 
+    /// <summary>
+    /// Creates a <see cref="RoutePattern"/> that combines the specified patterns.
+    /// </summary>
+    /// <param name="left">A string representing the first part of the route.</param>
+    /// <param name="right">A stirng representing the second part of the route.</param>
+    /// <returns>The combined <see cref="RoutePattern"/>.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="RoutePatternException"></exception>
+    public static RoutePattern Combine(RoutePattern? left, RoutePattern right)
+    {
+        static IReadOnlyDictionary<string, TValue> CombineDictionaries<TValue>(
+            IReadOnlyDictionary<string, TValue> leftDictionary,
+            IReadOnlyDictionary<string, TValue> rightDictionary,
+            string rawText,
+            string dictionaryName)
+        {
+            if (leftDictionary.Count is 0)
+            {
+                return rightDictionary;
+            }
+            if (rightDictionary.Count is 0)
+            {
+                return leftDictionary;
+            }
+
+            var combinedDictionary = new Dictionary<string, TValue>(leftDictionary.Count + rightDictionary.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in leftDictionary)
+            {
+                combinedDictionary.Add(key, value);
+            }
+            foreach (var (key, value) in rightDictionary)
+            {
+                if (!combinedDictionary.TryAdd(key, value) && !Equals(combinedDictionary[key], value))
+                {
+                    // Technically, the ParameterPolicies could probably be merged because it's a list, but it makes little sense to add policy
+                    // for the same parameter in both the left and right part of the combined pattern. Defaults and Required values cannot be
+                    // merged because the `TValue` is `object?`, but over-setting a Default or RequiredValue (which may not be in the parameter list)
+                    // seems okay as long as the values are the same for a given key in both the left and right pattern. There's already similar logic
+                    // in PatternCore for when defaults come from both the `defaults` and `segments` param. `requiredValues` cannot be defined in
+                    // `segments` so there's no equivalent to merging these until now.
+                    throw new InvalidOperationException(Resources.FormatMapGroup_RepeatedDictionaryEntry(rawText, dictionaryName, key));
+                }
+            }
+            return combinedDictionary;
+        }
+
+        static Action<RoutePatternParameterPart> CheckDuplicateParameters(int parameterCount, string rawText)
+        {
+            var parameterNameSet = new HashSet<string>(parameterCount, StringComparer.OrdinalIgnoreCase);
+            return parameterPart =>
+            {
+                if (!parameterNameSet.Add(parameterPart.Name))
+                {
+                    var errorText = Resources.FormatTemplateRoute_RepeatedParameter(parameterPart.Name);
+                    throw new RoutePatternException(rawText, errorText);
+                }
+            };
+        }
+
+        if (left is null)
+        {
+            return right;
+        }
+
+        var rawText = $"{left.RawText?.TrimEnd('/')}/{right.RawText?.TrimStart('/')}";
+
+        var parameters = CombineLists(left.Parameters, right.Parameters, CheckDuplicateParameters, rawText);
+        var pathSegments = CombineLists(left.PathSegments, right.PathSegments);
+
+        var defaults = CombineDictionaries(left.Defaults, right.Defaults, rawText, nameof(RoutePattern.Defaults));
+        var requiredValues = CombineDictionaries(left.RequiredValues, right.RequiredValues, rawText, nameof(RoutePattern.RequiredValues));
+        var parameterPolicies = CombineDictionaries(left.ParameterPolicies, right.ParameterPolicies, rawText, nameof(RoutePattern.ParameterPolicies));
+
+        return new RoutePattern(rawText, defaults, parameterPolicies, requiredValues, parameters, pathSegments);
+    }
+
+    internal static IReadOnlyList<T> CombineLists<T>(
+        IReadOnlyList<T> leftList,
+        IReadOnlyList<T> rightList,
+        Func<int, string, Action<T>>? checkDuplicates = null,
+        string? rawText = null)
+    {
+        var leftCount = leftList.Count;
+        if (leftCount is 0)
+        {
+            return rightList;
+        }
+
+        var rightCount = rightList.Count;
+        if (rightCount is 0)
+        {
+            return leftList;
+        }
+
+        var combinedList = new T[leftCount + rightCount];
+        var check = checkDuplicates?.Invoke(combinedList.Length, rawText!);
+
+        for (int i = 0; i < leftCount; i++)
+        {
+            var item = leftList[i];
+            check?.Invoke(item);
+            combinedList[i] = item;
+        }
+
+        for (int i = 0; i < rightCount; i++)
+        {
+            var item = rightList[i];
+            check?.Invoke(item);
+            combinedList[leftCount + i] = rightList[i];
+        }
+
+        return combinedList;
+    }
+
     private static RoutePatternParameterPolicyReference ParameterPolicyCore(string parameterPolicy)
     {
         return new RoutePatternParameterPolicyReference(parameterPolicy);
@@ -904,8 +1208,9 @@ public static class RoutePatternFactory
         return new RoutePatternParameterPolicyReference(parameterPolicy);
     }
 
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     private static RouteValueDictionary? Wrap(object? values)
     {
-        return values == null ? null : new RouteValueDictionary(values);
+        return values is null ? null : new RouteValueDictionary(values);
     }
 }

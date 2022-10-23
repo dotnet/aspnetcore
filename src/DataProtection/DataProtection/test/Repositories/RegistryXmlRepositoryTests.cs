@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing;
@@ -94,7 +95,7 @@ public class RegistryXmlRepositoryTests
             var valueName = valueNames.Single(); // only one value should've been created
 
             // value name should be "{GUID}"
-            Guid parsedGuid = Guid.Parse(valueName as string);
+            Guid parsedGuid = Guid.Parse(valueName as string, CultureInfo.InvariantCulture);
             Assert.NotEqual(Guid.Empty, parsedGuid);
 
             // value contents should be "<element1 />"

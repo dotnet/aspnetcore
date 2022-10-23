@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 
@@ -12,6 +13,21 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 /// </summary>
 public class PassThroughAuthorizationHandler : IAuthorizationHandler
 {
+    private readonly AuthorizationOptions _options;
+
+    /// <summary>
+    /// Creates a new instance of <see cref="PassThroughAuthorizationHandler"/>.
+    /// </summary>
+    public PassThroughAuthorizationHandler() : this(Options.Create(new AuthorizationOptions()))
+    { }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="PassThroughAuthorizationHandler"/>.
+    /// </summary>
+    /// <param name="options">The <see cref="AuthorizationOptions"/> used.</param>
+    public PassThroughAuthorizationHandler(IOptions<AuthorizationOptions> options)
+        => _options = options.Value;
+
     /// <summary>
     /// Makes a decision if authorization is allowed.
     /// </summary>
@@ -21,6 +37,10 @@ public class PassThroughAuthorizationHandler : IAuthorizationHandler
         foreach (var handler in context.Requirements.OfType<IAuthorizationHandler>())
         {
             await handler.HandleAsync(context).ConfigureAwait(false);
+            if (!_options.InvokeHandlersAfterFailure && context.HasFailed)
+            {
+                break;
+            }
         }
     }
 }

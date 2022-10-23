@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class RemotePortSegment : PatternSegment
+internal sealed class RemotePortSegment : PatternSegment
 {
     public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {

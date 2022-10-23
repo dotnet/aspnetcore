@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Platforms Include="x64;x86" />
+    <Platforms Include="x64;x86;arm64" />
     <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>DotNetRedistLtsInstallerx64</BundleNameProperty>
@@ -16,6 +16,11 @@
     <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
+      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+    </RuntimeInstallers>
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe">
+      <TargetPlatform>arm64</TargetPlatform>
+      <BundleNameProperty>DotNetRedistLtsInstallerarm64</BundleNameProperty>
       <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
   </ItemGroup>
@@ -35,6 +40,9 @@
       </RemoteAsset>
       <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
 
@@ -86,6 +94,10 @@
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx86=$(DotNetRedistLtsInstallerProductVersionx86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex86=$(DotNetRedistLtsInstallerProductCodex86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex86=$(DotNetRedistLtsInstallerUpgradeCodex86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerarm64=$(DotNetRedistLtsInstallerarm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionarm64=$(DotNetRedistLtsInstallerProductVersionarm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodearm64=$(DotNetRedistLtsInstallerProductCodearm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodearm64=$(DotNetRedistLtsInstallerUpgradeCodearm64)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>

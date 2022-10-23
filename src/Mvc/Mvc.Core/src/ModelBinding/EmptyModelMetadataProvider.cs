@@ -23,7 +23,7 @@ public class EmptyModelMetadataProvider : DefaultModelMetadataProvider
     {
     }
 
-    private class OptionsAccessor : IOptions<MvcOptions>
+    private sealed class OptionsAccessor : IOptions<MvcOptions>
     {
         public MvcOptions Value { get; } = new MvcOptions();
     }

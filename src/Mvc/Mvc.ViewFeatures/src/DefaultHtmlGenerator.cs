@@ -40,6 +40,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     private readonly IUrlHelperFactory _urlHelperFactory;
     private readonly HtmlEncoder _htmlEncoder;
     private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
+    private readonly FormInputRenderMode _formInputRenderMode;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -94,6 +95,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         _urlHelperFactory = urlHelperFactory;
         _htmlEncoder = htmlEncoder;
         _validationAttributeProvider = validationAttributeProvider;
+        _formInputRenderMode = optionsAccessor.Value.HtmlHelperOptions.FormInputRenderMode;
 
         // Underscores are fine characters in id's.
         IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -134,7 +136,12 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <inheritdoc />
     public string FormatValue(object value, string format)
     {
-        return ViewDataDictionary.FormatValue(value, format);
+        return ViewDataDictionary.FormatValue(value, format, CultureInfo.CurrentCulture);
+    }
+
+    private static string FormatValue(object value, string format, IFormatProvider formatProvider)
+    {
+        return ViewDataDictionary.FormatValue(value, format, formatProvider);
     }
 
     /// <inheritdoc />
@@ -1282,7 +1289,18 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
         }
 
-        var valueParameter = FormatValue(value, format);
+        CultureInfo culture;
+        if (ShouldUseInvariantFormattingForInputType(suppliedTypeString, viewContext.Html5DateRenderingMode))
+        {
+            culture = CultureInfo.InvariantCulture;
+            viewContext.FormContext.InvariantField(fullName, true);
+        }
+        else
+        {
+            culture = CultureInfo.CurrentCulture;
+        }
+
+        var valueParameter = FormatValue(value, format, culture);
         var usedModelState = false;
         switch (inputType)
         {
@@ -1329,29 +1347,16 @@ public class DefaultHtmlGenerator : IHtmlGenerator
 
             case InputType.Text:
             default:
+                if (string.Equals(suppliedTypeString, "file", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(suppliedTypeString, "image", StringComparison.OrdinalIgnoreCase))
+                {
+                    // 'value' attribute is not needed for 'file' and 'image' input types.
+                    break;
+                }
+
                 var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
-                if (attributeValue == null)
-                {
-                    attributeValue = useViewData ? EvalString(viewContext, expression, format) : valueParameter;
-                }
-
-                var addValue = true;
-                object typeAttributeValue;
-                if (htmlAttributes != null && htmlAttributes.TryGetValue("type", out typeAttributeValue))
-                {
-                    var typeAttributeString = typeAttributeValue.ToString();
-                    if (string.Equals(typeAttributeString, "file", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(typeAttributeString, "image", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // 'value' attribute is not needed for 'file' and 'image' input types.
-                        addValue = false;
-                    }
-                }
-
-                if (addValue)
-                {
-                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
-                }
+                attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
+                tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
 
                 break;
         }
@@ -1554,6 +1559,38 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             default:
                 return "text";
         }
+    }
+
+    private bool ShouldUseInvariantFormattingForInputType(string inputType, Html5DateRenderingMode dateRenderingMode)
+    {
+        if (_formInputRenderMode == FormInputRenderMode.DetectCultureFromInputType)
+        {
+            var isNumberInput =
+                string.Equals(inputType, "number", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(inputType, "range", StringComparison.OrdinalIgnoreCase);
+
+            if (isNumberInput)
+            {
+                return true;
+            }
+
+            if (dateRenderingMode != Html5DateRenderingMode.CurrentCulture)
+            {
+                var isDateInput =
+                    string.Equals(inputType, "date", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "datetime-local", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "month", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "time", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "week", StringComparison.OrdinalIgnoreCase);
+
+                if (isDateInput)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static IEnumerable<SelectListItem> GetSelectListItems(

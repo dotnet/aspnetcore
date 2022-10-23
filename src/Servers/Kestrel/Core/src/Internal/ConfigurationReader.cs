@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class ConfigurationReader
+internal sealed class ConfigurationReader
 {
     private const string ProtocolsKey = "Protocols";
     private const string CertificatesKey = "Certificates";
@@ -184,7 +184,17 @@ internal class ConfigurationReader
 
     private static SslProtocols? ParseSslProcotols(IConfigurationSection sslProtocols)
     {
-        var stringProtocols = sslProtocols.Get<string[]>();
+        // Avoid trimming warning from IConfigurationSection.Get<string[]>()
+        string[]? stringProtocols = null;
+        var childrenSections = sslProtocols.GetChildren().ToArray();
+        if (childrenSections.Length > 0)
+        {
+            stringProtocols = new string[childrenSections.Length];
+            for (var i = 0; i < childrenSections.Length; i++)
+            {
+                stringProtocols[i] = childrenSections[i].Value!;
+            }
+        }
 
         return stringProtocols?.Aggregate(SslProtocols.None, (acc, current) =>
         {
@@ -226,7 +236,7 @@ internal class ConfigurationReader
 //     "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
 //     "ClientCertificateMode" : "NoCertificate"
 // }
-internal class EndpointDefaults
+internal sealed class EndpointDefaults
 {
     public HttpProtocols? Protocols { get; set; }
     public SslProtocols? SslProtocols { get; set; }
@@ -254,7 +264,7 @@ internal class EndpointDefaults
 //         }
 //     }
 // }
-internal class EndpointConfig
+internal sealed class EndpointConfig
 {
     private readonly ConfigSectionClone _configSectionClone;
 
@@ -324,7 +334,7 @@ internal class EndpointConfig
     }
 }
 
-internal class SniConfig
+internal sealed class SniConfig
 {
     public HttpProtocols? Protocols { get; set; }
     public SslProtocols? SslProtocols { get; set; }
@@ -350,7 +360,7 @@ internal class SniConfig
 //     "Path": "testCert.pfx",
 //     "Password": "testPassword"
 // }
-internal class CertificateConfig
+internal sealed class CertificateConfig
 {
     public CertificateConfig(IConfigurationSection configSection)
     {

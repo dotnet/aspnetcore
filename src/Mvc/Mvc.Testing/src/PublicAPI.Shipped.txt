@@ -1,5 +1,5 @@
 #nullable enable
-~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
 Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler
 Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.Container.get -> System.Net.CookieContainer!
 Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.CookieContainerHandler() -> void

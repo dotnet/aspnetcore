@@ -37,6 +37,11 @@ public class ViewLocalizer : IViewLocalizer, IViewContextAware
             throw new ArgumentNullException(nameof(hostingEnvironment));
         }
 
+        if (string.IsNullOrEmpty(hostingEnvironment.ApplicationName))
+        {
+            throw new InvalidOperationException($"{nameof(hostingEnvironment)}.ApplicationName must have a value.");
+        }
+
         _applicationName = hostingEnvironment.ApplicationName;
         _localizerFactory = localizerFactory;
     }

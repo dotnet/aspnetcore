@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class RuleRegexParser
+internal sealed class RuleRegexParser
 {
     public static ParsedModRewriteInput ParseRuleRegex(string regex)
     {

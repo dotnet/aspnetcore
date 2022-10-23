@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\Certificates\Certificates.cs" />
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Content Include="$(SharedSourceRoot)test\Certificates\*.cer" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

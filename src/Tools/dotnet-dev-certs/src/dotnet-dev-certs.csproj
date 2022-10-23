@@ -18,4 +18,8 @@
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests" />
+  </ItemGroup>
+
 </Project>

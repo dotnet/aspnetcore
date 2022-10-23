@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class KestrelServerOptions
 {
+    internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
@@ -51,7 +53,7 @@ public class KestrelServerOptions
     /// <summary>
     /// Gets or sets a value that controls whether dynamic compression of response headers is allowed.
     /// For more information about the security considerations of HPack dynamic header compression, visit
-    /// https://tools.ietf.org/html/rfc7541#section-7.
+    /// <see href="https://tools.ietf.org/html/rfc7541#section-7"/>.
     /// </summary>
     /// <remarks>
     /// Defaults to true.
@@ -72,8 +74,8 @@ public class KestrelServerOptions
     /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
     /// connections, http for non-TLS). If <c>true</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests can be set to alternate values
     /// and this will be reflected by `HttpRequest.Scheme`. The Scheme must still be valid according to
-    /// https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1. Only enable this when working with a trusted proxy. This can be used in
-    /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
+    /// <see href="https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1"/>. Only enable this when working with a trusted proxy. This can be used in
+    /// scenarios such as proxies converting from alternate protocols. See <see href="https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3"/>.
     /// Applications that enable this should validate an expected scheme is provided before using it.
     /// </para>
     /// </summary>
@@ -156,6 +158,42 @@ public class KestrelServerOptions
     /// Has the default dev certificate load been attempted?
     /// </summary>
     internal bool IsDevCertLoaded { get; set; }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
+    /// </summary>
+    private bool? _enableWebTransportAndH3Datagrams;
+    internal bool EnableWebTransportAndH3Datagrams
+    {
+        get
+        {
+            if (!_enableWebTransportAndH3Datagrams.HasValue)
+            {
+                _enableWebTransportAndH3Datagrams = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var enabled) && enabled;
+            }
+
+            return _enableWebTransportAndH3Datagrams.Value;
+        }
+        set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// </summary>
+    private bool? _disableHttp1LineFeedTerminators;
+    internal bool DisableHttp1LineFeedTerminators
+    {
+        get
+        {
+            if (!_disableHttp1LineFeedTerminators.HasValue)
+            {
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch(DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled;
+            }
+
+            return _disableHttp1LineFeedTerminators.Value;
+        }
+        set => _disableHttp1LineFeedTerminators = value;
+    }
 
     /// <summary>
     /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
@@ -267,16 +305,13 @@ public class KestrelServerOptions
                         Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
                         logger.DeveloperCertificateFirstRun(status.FailureMessage);
 
-                        // Now that we've displayed a warning in the logs so that the user gets a notification that a prompt might appear, try
-                        // and access the certificate key, which might trigger a prompt.
-                        status = CertificateManager.Instance.CheckCertificateState(DefaultCertificate, interactive: true);
-                        if (!status.Success)
-                        {
-                            logger.BadDeveloperCertificateState();
-                        }
+                        // Prevent binding to HTTPS if the certificate is not valid (avoid the prompt)
+                        DefaultCertificate = null;
                     }
-
-                    logger.LocatedDevelopmentCertificate(DefaultCertificate);
+                    else if (!CertificateManager.Instance.IsTrusted(DefaultCertificate))
+                    {
+                        logger.DeveloperCertificateNotTrusted();
+                    }
                 }
                 else
                 {
@@ -345,10 +380,7 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         Listen(new IPEndPoint(address, port), configure);
     }
@@ -385,14 +417,8 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(endPoint);
         ApplyEndpointDefaults(listenOptions);
@@ -412,10 +438,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenLocalhost(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new LocalhostListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -433,10 +456,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenAnyIP(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new AnyIPListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -458,19 +478,13 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenUnixSocket(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
 
         if (!Path.IsPathRooted(socketPath))
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(socketPath);
         ApplyEndpointDefaults(listenOptions);
@@ -492,10 +506,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenHandle(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(handle);
         ApplyEndpointDefaults(listenOptions);

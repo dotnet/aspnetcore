@@ -14,6 +14,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
 </Project>

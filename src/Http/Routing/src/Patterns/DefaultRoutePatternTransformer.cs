@@ -3,9 +3,11 @@
 
 #nullable disable
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
-internal class DefaultRoutePatternTransformer : RoutePatternTransformer
+internal sealed class DefaultRoutePatternTransformer : RoutePatternTransformer
 {
     private readonly ParameterPolicyFactory _policyFactory;
 
@@ -19,6 +21,8 @@ internal class DefaultRoutePatternTransformer : RoutePatternTransformer
         _policyFactory = policyFactory;
     }
 
+    [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly." +
+        "Consider using a different overload to avoid this issue.")]
     public override RoutePattern SubstituteRequiredValues(RoutePattern original, object requiredValues)
     {
         if (original == null)
@@ -26,11 +30,16 @@ internal class DefaultRoutePatternTransformer : RoutePatternTransformer
             throw new ArgumentNullException(nameof(original));
         }
 
-        return SubstituteRequiredValuesCore(original, new RouteValueDictionary(requiredValues));
+        return SubstituteRequiredValues(original, new RouteValueDictionary(requiredValues));
     }
 
-    private RoutePattern SubstituteRequiredValuesCore(RoutePattern original, RouteValueDictionary requiredValues)
+    public override RoutePattern SubstituteRequiredValues(RoutePattern original, RouteValueDictionary requiredValues)
     {
+        if (original is null)
+        {
+            throw new ArgumentNullException(nameof(original));
+        }
+
         // Process each required value in sequence. Bail if we find any rejection criteria. The goal
         // of rejection is to avoid creating RoutePattern instances that can't *ever* match.
         //

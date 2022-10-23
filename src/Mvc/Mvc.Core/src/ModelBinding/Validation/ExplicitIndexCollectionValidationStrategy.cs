@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 /// <see cref="ModelMetadata.ElementMetadata"/>. The keys captured during model binding are mapped to the elements
 /// in the collection to compute the model prefix keys.
 /// </remarks>
-internal class ExplicitIndexCollectionValidationStrategy : IValidationStrategy
+internal sealed class ExplicitIndexCollectionValidationStrategy : IValidationStrategy
 {
     /// <summary>
     /// Creates a new <see cref="ExplicitIndexCollectionValidationStrategy"/>.
@@ -58,7 +58,7 @@ internal class ExplicitIndexCollectionValidationStrategy : IValidationStrategy
         return new Enumerator(metadata.ElementMetadata!, key, ElementKeys, enumerator);
     }
 
-    private class Enumerator : IEnumerator<ValidationEntry>
+    private sealed class Enumerator : IEnumerator<ValidationEntry>
     {
         private readonly string _key;
         private readonly ModelMetadata _metadata;

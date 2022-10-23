@@ -13,7 +13,11 @@
 
     public void NavigateToPage()
     {
-        NavigationManager.NavigateTo("/subdir");
+        // The purpose of this test case is to show that the @onblur handler doesn't interfere with
+        // navigating to another page (https://github.com/dotnet/aspnetcore/issues/21241). We're doing
+        // a force-load here because the E2E test script wants to verify that the server-side navigation
+        // doesn't get blocked by the presence of the @onblur handler.
+        NavigationManager.NavigateTo("/subdir", true);
     }
 
     public void HandleBlur()

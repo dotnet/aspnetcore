@@ -11,7 +11,9 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class RemoteJSRuntime : JSRuntime
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly CircuitOptions _options;
     private readonly ILogger<RemoteJSRuntime> _logger;

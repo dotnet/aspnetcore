@@ -14,8 +14,6 @@
   <!-- General properties -->
 
   <PropertyGroup>
-    <IisOobWinSdkVersion Condition="'$(IisOobWinSdkVersion)' == ''">10.0.18362.0</IisOobWinSdkVersion>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(IisOobWinSdkVersion)</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
@@ -25,7 +23,10 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <!-- Microsoft.Security.SystemsADM.10086 - SDL required warnings -->
+      <!-- See https://github.com/dotnet/aspnetcore/issues/40525 -->
+      <WarningLevel>Level4</WarningLevel>
+      <TreatSpecificWarningsAsErrors>$(TreatSpecificWarningsAsErrors);4018;4055;4146;4242;4244;4267;4302;4308;4509;4510;4532;4533;4610;4611;4700;4701;4703;4789;4995;4996</TreatSpecificWarningsAsErrors>
     </ClCompile>
   </ItemDefinitionGroup>
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
-internal class ValidatableObjectAdapter : IModelValidator
+internal sealed class ValidatableObjectAdapter : IModelValidator
 {
     public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
     {

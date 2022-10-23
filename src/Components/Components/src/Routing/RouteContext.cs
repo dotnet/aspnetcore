@@ -6,7 +6,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
-internal class RouteContext
+internal sealed class RouteContext
 {
     public RouteContext(string path)
     {

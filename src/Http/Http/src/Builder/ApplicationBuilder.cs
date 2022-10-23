@@ -21,10 +21,8 @@ public class ApplicationBuilder : IApplicationBuilder
     /// Initializes a new instance of <see cref="ApplicationBuilder"/>.
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> for application services.</param>
-    public ApplicationBuilder(IServiceProvider serviceProvider)
+    public ApplicationBuilder(IServiceProvider serviceProvider) : this(serviceProvider, new FeatureCollection())
     {
-        Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
-        ApplicationServices = serviceProvider;
     }
 
     /// <summary>
@@ -33,8 +31,10 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> for application services.</param>
     /// <param name="server">The server instance that hosts the application.</param>
     public ApplicationBuilder(IServiceProvider serviceProvider, object server)
-        : this(serviceProvider)
     {
+        Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
+        ApplicationServices = serviceProvider;
+
         SetProperty(ServerFeaturesKey, server);
     }
 
@@ -61,6 +61,9 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <summary>
     /// Gets the <see cref="IFeatureCollection"/> for server features.
     /// </summary>
+    /// <remarks>
+    /// An empty collection is returned if a server wasn't specified for the application builder.
+    /// </remarks>
     public IFeatureCollection ServerFeatures
     {
         get

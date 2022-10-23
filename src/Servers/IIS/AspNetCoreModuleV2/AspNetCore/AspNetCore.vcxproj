@@ -85,10 +85,7 @@
     <ResourceCompile Include="HtmlResponses.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="InProcessShimStaticHtml.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="OutOfProcessShimStaticHtml.htm">
+    <None Include="ancm_error_page.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>

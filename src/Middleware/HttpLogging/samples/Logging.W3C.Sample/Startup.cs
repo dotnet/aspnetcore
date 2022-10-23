@@ -15,6 +15,9 @@ public class Startup
         {
             // Log all W3C fields
             logging.LoggingFields = W3CLoggingFields.All;
+            logging.AdditionalRequestHeaders.Clear();
+            logging.AdditionalRequestHeaders.Add("x-forwarded-for");
+            logging.AdditionalRequestHeaders.Add("x-client-ssl-protocol");
         });
     }
 

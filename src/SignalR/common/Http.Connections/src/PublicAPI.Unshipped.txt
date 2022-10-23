@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void

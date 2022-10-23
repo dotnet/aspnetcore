@@ -99,7 +99,7 @@ public static class HtmlHelperValueExtensions
     /// </summary>
     /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the return
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the return
     /// value unless that came from model binding.
     /// </param>
     /// <returns>A <see cref="string"/> containing the formatted value.</returns>

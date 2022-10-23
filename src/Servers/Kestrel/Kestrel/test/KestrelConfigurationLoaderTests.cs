@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -16,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -140,6 +135,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureHttpsDefaults(opt =>
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
+            opt.ServerCertificateChain = TestResources.GetTestChain();
             opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
 
@@ -155,6 +151,8 @@ public class KestrelConfigurationLoaderTests
                 ran1 = true;
                 Assert.True(opt.IsHttps);
                 Assert.NotNull(opt.HttpsOptions.ServerCertificate);
+                Assert.NotNull(opt.HttpsOptions.ServerCertificateChain);
+                Assert.Equal(2, opt.HttpsOptions.ServerCertificateChain.Count);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
                 Assert.Equal(HttpProtocols.Http1, opt.ListenOptions.Protocols);
             })
@@ -635,7 +633,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureEndpointDefaults(opt =>
         {
             // Kestrel default.
-            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
             ranDefault = true;
         });
 
@@ -665,14 +663,14 @@ public class KestrelConfigurationLoaderTests
             .LocalhostEndpoint(5002, opt =>
             {
                 // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+                Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
                 ran2 = true;
             })
             .Load();
         serverOptions.ListenAnyIP(0, opt =>
         {
             // Kestrel default.
-            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
             ran3 = true;
         });
 
@@ -1040,13 +1038,15 @@ public class KestrelConfigurationLoaderTests
 
         var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
 
-        Assert.Single(endpointsToStop);
-        Assert.Single(endpointsToStart);
+        // NonDefaultProtocol is unchanged and doesn't need to be stopped/started
+        var stopEndpoint = Assert.Single(endpointsToStop);
+        var startEndpoint = Assert.Single(endpointsToStart);
 
-        Assert.Equal(5000, endpointsToStop[0].IPEndPoint.Port);
-        Assert.Equal(HttpProtocols.Http1AndHttp2, endpointsToStop[0].Protocols);
-        Assert.Equal(5000, endpointsToStart[0].IPEndPoint.Port);
-        Assert.Equal(HttpProtocols.Http1, endpointsToStart[0].Protocols);
+        Assert.Equal(5000, stopEndpoint.IPEndPoint.Port);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, stopEndpoint.Protocols);
+
+        Assert.Equal(5000, startEndpoint.IPEndPoint.Port);
+        Assert.Equal(HttpProtocols.Http1, startEndpoint.Protocols);
     }
 
     [Fact]

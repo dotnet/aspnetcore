@@ -134,7 +134,7 @@ public class FeatureCollection : IFeatureCollection
         this[typeof(TFeature)] = instance;
     }
 
-    private class KeyComparer : IEqualityComparer<KeyValuePair<Type, object>>
+    private sealed class KeyComparer : IEqualityComparer<KeyValuePair<Type, object>>
     {
         public bool Equals(KeyValuePair<Type, object> x, KeyValuePair<Type, object> y)
         {

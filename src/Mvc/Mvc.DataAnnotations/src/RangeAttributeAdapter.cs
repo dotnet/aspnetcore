@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
-internal class RangeAttributeAdapter : AttributeAdapterBase<RangeAttribute>
+internal sealed class RangeAttributeAdapter : AttributeAdapterBase<RangeAttribute>
 {
     private readonly string _max;
     private readonly string _min;

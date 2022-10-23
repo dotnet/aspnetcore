@@ -127,7 +127,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         return new ConnectionEndpointRouteBuilder(compositeConventionBuilder);
     }
 
-    private class CompositeEndpointConventionBuilder : IEndpointConventionBuilder
+    private sealed class CompositeEndpointConventionBuilder : IEndpointConventionBuilder
     {
         private readonly List<IEndpointConventionBuilder> _endpointConventionBuilders;
 
@@ -141,6 +141,14 @@ public static class ConnectionEndpointRouteBuilderExtensions
             foreach (var endpointConventionBuilder in _endpointConventionBuilders)
             {
                 endpointConventionBuilder.Add(convention);
+            }
+        }
+
+        public void Finally(Action<EndpointBuilder> finalConvention)
+        {
+            foreach (var endpointConventionBuilder in _endpointConventionBuilders)
+            {
+                endpointConventionBuilder.Finally(finalConvention);
             }
         }
     }

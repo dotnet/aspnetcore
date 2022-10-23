@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
-internal class NullPipeWriter : PipeWriter
+internal sealed class NullPipeWriter : PipeWriter
 {
     // Should be large enough for any content attempting to write to the buffer
     private readonly byte[] _buffer = new byte[1024 * 128];

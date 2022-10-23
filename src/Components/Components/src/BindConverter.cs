@@ -1826,6 +1826,7 @@ public static class BindConverter
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindFormatter<T> MakeTypeConverterFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));
@@ -2028,6 +2029,7 @@ public static class BindConverter
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));

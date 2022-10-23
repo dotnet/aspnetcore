@@ -145,7 +145,7 @@ public class TagBuilder : IHtmlContent
     /// Valid HTML 4.01 "id" attribute value for an element with the given <paramref name="name"/>.
     /// </returns>
     /// <remarks>
-    /// Valid "id" attributes are defined in https://www.w3.org/TR/html401/types.html#type-id.
+    /// Valid "id" attributes are defined in <see href="https://www.w3.org/TR/html401/types.html#type-id"/>.
     /// </remarks>
     public static string CreateSanitizedId(string? name, string invalidCharReplacement)
     {
@@ -404,10 +404,7 @@ public class TagBuilder : IHtmlContent
                 writer.Write(tagBuilder.TagName);
                 tagBuilder.AppendAttributes(writer, encoder);
                 writer.Write(">");
-                if (tagBuilder._innerHtml != null)
-                {
-                    tagBuilder._innerHtml.WriteTo(writer, encoder);
-                }
+                tagBuilder._innerHtml?.WriteTo(writer, encoder);
                 writer.Write("</");
                 writer.Write(tagBuilder.TagName);
                 writer.Write(">");
@@ -424,7 +421,7 @@ public class TagBuilder : IHtmlContent
         }
     }
 
-    private class RenderTagHtmlContent : IHtmlContent
+    private sealed class RenderTagHtmlContent : IHtmlContent
     {
         private readonly TagBuilder _tagBuilder;
         private readonly TagRenderMode _tagRenderMode;

@@ -39,7 +39,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckCodeFixProvider :
         return Task.CompletedTask;
     }
 
-    private class MyCodeAction : CodeAction
+    private sealed class MyCodeAction : CodeAction
     {
         private readonly Document _document;
         private readonly TextSpan _ifBlockSpan;

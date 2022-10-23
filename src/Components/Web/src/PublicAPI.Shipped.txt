@@ -362,15 +362,18 @@ Microsoft.AspNetCore.Components.Web.TouchPoint.ScreenY.set -> void
 Microsoft.AspNetCore.Components.Web.TouchPoint.TouchPoint() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderDelegate<TItem>
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest
+Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.ItemsProviderRequest() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.Count.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.ItemsProviderRequest(int startIndex, int count, System.Threading.CancellationToken cancellationToken) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.StartIndex.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>
+Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.ItemsProviderResult() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.ItemsProviderResult(System.Collections.Generic.IEnumerable<TItem>! items, int totalItemCount) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.TotalItemCount.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext
+Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.PlaceholderContext() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.Index.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.PlaceholderContext(int index, float size = 0) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.Size.get -> float

@@ -18,6 +18,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
+* In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://docs.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
 
 ### Validation
 
@@ -33,7 +34,7 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 
 * In [eng/Versions.props](/eng/Versions.props), increment `DefaultNetCoreTargetFramework` by 1.
 * Do a global repo search for the current version string, and update almost everything by 1 (e.g. find `net7`, replace with `net8`). See the PR linked above for examples - this shouldn't be done blindly, but on a case-by-case basis. Most things should be updated, and most choices should be obvious.
-  * Exceptions to this are [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj), [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks), and [eng/helix/content/RunTests/RunTests.csproj](/eng/helix/content/RunTests/RunTests.csproj). These build without the workarounds from [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in), and need to be kept at the previous TFM until we get an SDK containing a runtime with the new TFM. Generally this means we have to hard-code the previous TFM for these files, rather than using `DefaultNetCoreTargetFramework`.
+  * Exceptions to this are [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj), [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks), and [eng/tools/HelixTestRunner/HelixTestRunner.csproj](/eng/tools/HelixTestRunner/HelixTestRunner.csproj). These build without the workarounds from [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in), and need to be kept at the previous TFM until we get an SDK containing a runtime with the new TFM. Generally this means we have to hard-code the previous TFM for these files, rather than using `DefaultNetCoreTargetFramework`.
 * Add a reference to the new `SiteExtensions` package for the previous Major Version.
   1. Add references to [src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj](/src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj) to `Microsoft.AspNetCore.AzureAppServices.SiteExtension.{PreviousMajorVersion}.0.x64` and `Microsoft.AspNetCore.AzureAppServices.SiteExtension.{PreviousMajorVersion}.0.x86`.
   2. Add entries in [eng/Versions.props](/eng/Versions.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/216c92b78bce31d5e81a70b589707ec2ae5ab21a/eng/Versions.props#L224-L226) - the version should be from the latest released build of .Net.
@@ -46,8 +47,13 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
     * Do not merge this until the PR from the previous step is merged.
 * Update template precedence
   1. Create & merge a PR like [this one](https://github.com/dotnet/spa-templates/pull/39) in dotnet/spa-templates updating `precedence` and `identity` elements in all template.json files.
+      * Going forward, update precedence values by increasing them to the next integer value whose first digits correspond with the major version. This makes it easier to verify that precedence values for any given template were updated since the previous release.
+        * For example, if a precedence value was 9000 for 7.0, increase it to 80000 for 8.0.
   2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
+      * Make sure to update _all_ template.json files, including project templates and item templates.
+      * Update precedence values by increasing them to the next integer value whose first digits correspond with the major version.
   3. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
+* In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs](/src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs), update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 
 ### Validation
 
@@ -56,4 +62,4 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 
 ## Ingesting an SDK with the new TFM
 
-Typically we update the SDK we use in `main` every Monday. Once we have one that contains `Microsoft.Netcore.App` entries with the new TFM, we can update [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj), [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks), and [eng/helix/content/RunTests/RunTests.csproj](/eng/helix/content/RunTests/RunTests.csproj) to use `DefaultNetCoreTargetFramework` again rather than hard-coding the previous TFM.
+Typically we update the SDK we use in `main` every Monday. Once we have one that contains `Microsoft.Netcore.App` entries with the new TFM, we can update [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj), [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks), and [eng/tools/HelixTestRunner/HelixTestRunner.csproj](/eng/helix/tools/HelixTestRunner.csproj) to use `DefaultNetCoreTargetFramework` again rather than hard-coding the previous TFM.

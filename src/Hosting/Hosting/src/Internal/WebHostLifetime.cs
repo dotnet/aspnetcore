@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class WebHostLifetime : IDisposable
+internal sealed class WebHostLifetime : IDisposable
 {
     private readonly CancellationTokenSource _cts;
     private readonly ManualResetEventSlim _resetEvent;

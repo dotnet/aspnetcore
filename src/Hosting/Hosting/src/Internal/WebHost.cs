@@ -371,7 +371,7 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         [LoggerMessage(4, LogLevel.Debug, "Hosting started", EventName = "Started")]
         public static partial void Started(ILogger logger);
 
-        [LoggerMessage(5, LogLevel.Debug, "Hosting shutdown", EventName = "Started")]
+        [LoggerMessage(5, LogLevel.Debug, "Hosting shutdown", EventName = "Shutdown")]
         public static partial void Shutdown(ILogger logger);
 
         [LoggerMessage(12, LogLevel.Debug, "Server shutdown exception", EventName = "ServerShutdownException")]

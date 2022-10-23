@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 // Both of these actions match "Index" case-insensitively, but there exist two known canonical casings,
 // so we will create an entry for "Index" and an entry for "index". Both of these entries match **both**
 // actions.
-internal class ActionSelectionTable<TItem>
+internal sealed class ActionSelectionTable<TItem>
 {
     private ActionSelectionTable(
         int version,

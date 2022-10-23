@@ -15,8 +15,8 @@ internal struct FlowControl
         IsAborted = false;
     }
 
-    public int Available { get; private set; }
-    public bool IsAborted { get; private set; }
+    public int Available { readonly get; private set; }
+    public bool IsAborted { readonly get; private set; }
 
     public void Advance(int bytes)
     {

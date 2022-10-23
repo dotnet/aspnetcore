@@ -17,17 +17,17 @@ internal class TestServiceContext : ServiceContext
 {
     public TestServiceContext()
     {
-        Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance));
+        Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance), false);
     }
 
-    public TestServiceContext(ILoggerFactory loggerFactory)
+    public TestServiceContext(ILoggerFactory loggerFactory, bool disableHttp1LineFeedTerminators = true)
     {
-        Initialize(loggerFactory, CreateLoggingTrace(loggerFactory));
+        Initialize(loggerFactory, CreateLoggingTrace(loggerFactory), disableHttp1LineFeedTerminators);
     }
 
-    public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace)
+    public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators = true)
     {
-        Initialize(loggerFactory, kestrelTrace);
+        Initialize(loggerFactory, kestrelTrace, disableHttp1LineFeedTerminators);
     }
 
     private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -49,7 +49,7 @@ internal class TestServiceContext : ServiceContext
         SystemClock = heartbeatManager;
     }
 
-    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace)
+    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators)
     {
         LoggerFactory = loggerFactory;
         Log = kestrelTrace;
@@ -58,7 +58,7 @@ internal class TestServiceContext : ServiceContext
         SystemClock = MockSystemClock;
         DateHeaderValueManager = new DateHeaderValueManager();
         ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
-        HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information));
+        HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
         ServerOptions = new KestrelServerOptions
         {
             AddServerHeader = false

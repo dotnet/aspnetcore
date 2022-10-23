@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
@@ -49,5 +49,27 @@ public class CookieBuilderTests
     public void CookieBuilderPreservesDefaultPath()
     {
         Assert.Equal(new CookieOptions().Path, new CookieBuilder().Build(new DefaultHttpContext()).Path);
+    }
+
+    [Fact]
+    public void CookieBuilder_Extensions_Added()
+    {
+        var builder = new CookieBuilder();
+        builder.Extensions.Add("simple");
+        builder.Extensions.Add("key=value");
+
+        var options = builder.Build(new DefaultHttpContext());
+        Assert.Equal(2, options.Extensions.Count);
+        Assert.Contains("simple", options.Extensions);
+        Assert.Contains("key=value", options.Extensions);
+
+        var cookie = options.CreateCookieHeader("name", "value");
+        Assert.Equal("name", cookie.Name);
+        Assert.Equal("value", cookie.Value);
+        Assert.Equal(2, cookie.Extensions.Count);
+        Assert.Contains("simple", cookie.Extensions);
+        Assert.Contains("key=value", cookie.Extensions);
+
+        Assert.Equal("name=value; path=/; simple; key=value", cookie.ToString());
     }
 }

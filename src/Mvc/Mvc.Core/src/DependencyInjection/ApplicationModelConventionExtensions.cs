@@ -150,7 +150,7 @@ public static class ApplicationModelConventionExtensions
         conventions.Add(new ParameterBaseApplicationModelConvention(parameterModelConvention));
     }
 
-    private class ParameterApplicationModelConvention : IApplicationModelConvention
+    private sealed class ParameterApplicationModelConvention : IApplicationModelConvention
     {
         private readonly IParameterModelConvention _parameterModelConvention;
 
@@ -185,7 +185,7 @@ public static class ApplicationModelConventionExtensions
         }
     }
 
-    private class ParameterBaseApplicationModelConvention :
+    private sealed class ParameterBaseApplicationModelConvention :
         IApplicationModelConvention, IParameterModelBaseConvention
     {
         private readonly IParameterModelBaseConvention _parameterBaseModelConvention;
@@ -215,7 +215,7 @@ public static class ApplicationModelConventionExtensions
         }
     }
 
-    private class ActionApplicationModelConvention : IApplicationModelConvention
+    private sealed class ActionApplicationModelConvention : IApplicationModelConvention
     {
         private readonly IActionModelConvention _actionModelConvention;
 
@@ -251,7 +251,7 @@ public static class ApplicationModelConventionExtensions
         }
     }
 
-    private class ControllerApplicationModelConvention : IApplicationModelConvention
+    private sealed class ControllerApplicationModelConvention : IApplicationModelConvention
     {
         private readonly IControllerModelConvention _controllerModelConvention;
 

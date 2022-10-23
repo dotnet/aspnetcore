@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 /// the writer and switches to writing to the unbuffered writer for all further write operations.
 /// </para>
 /// </summary>
-internal class ViewBufferTextWriter : TextWriter
+internal sealed class ViewBufferTextWriter : TextWriter
 {
     private readonly TextWriter _inner;
     private readonly HtmlEncoder _htmlEncoder;
