@@ -203,46 +203,48 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
             }
         }
 
-        var parameterBuilder = new StringBuilder();
+        var stringBuilder = new StringBuilder();
         foreach (var signaturePart in signatureParts)
         {
-            parameterBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
+            stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
         }
-        parameterBuilder.Length--;
-        var parameterString = parameterBuilder.ToString();
+        stringBuilder.Length--;
+        var parameterString = stringBuilder.ToString();
+        stringBuilder.Clear();
 
-        var canonicalizedRequestBuilder = new StringBuilder();
-        canonicalizedRequestBuilder.Append(httpMethod.Method);
-        canonicalizedRequestBuilder.Append('&');
-        canonicalizedRequestBuilder.Append(Uri.EscapeDataString(url));
-        canonicalizedRequestBuilder.Append('&');
-        canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
+        stringBuilder.Append(httpMethod.Method);
+        stringBuilder.Append('&');
+        stringBuilder.Append(Uri.EscapeDataString(url));
+        stringBuilder.Append('&');
+        stringBuilder.Append(Uri.EscapeDataString(parameterString));
 
-        var signature = ComputeSignature(Options.ConsumerSecret!, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
+        var signature = ComputeSignature(Options.ConsumerSecret!, accessToken?.TokenSecret, stringBuilder.ToString());
+        stringBuilder.Clear();
         authorizationParts.Add("oauth_signature", signature);
 
         var queryString = "";
         if (queryParameters != null)
         {
-            var queryStringBuilder = new StringBuilder("?");
+            stringBuilder.Append('?');
             foreach (var queryParam in queryParameters)
             {
-                queryStringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
+                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
             }
-            queryStringBuilder.Length--;
-            queryString = queryStringBuilder.ToString();
+            stringBuilder.Length--;
+            queryString = stringBuilder.ToString();
+            stringBuilder.Clear();
         }
 
-        var authorizationHeaderBuilder = new StringBuilder();
-        authorizationHeaderBuilder.Append("OAuth ");
+        stringBuilder.Append("OAuth ");
         foreach (var authorizationPart in authorizationParts)
         {
-            authorizationHeaderBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
+            stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
         }
-        authorizationHeaderBuilder.Length--;
+        stringBuilder.Length--;
 
         var request = new HttpRequestMessage(httpMethod, url + queryString);
-        request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
+        request.Headers.Add("Authorization", stringBuilder.ToString());
+        stringBuilder.Clear();
 
         // This header is so that the error response is also JSON - without it the success response is already JSON
         request.Headers.Add("Accept", "application/json");
@@ -380,7 +382,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
             foreach (var error in errorResponse.Errors)
             {
                 errorMessageStringBuilder.Append(Environment.NewLine);
-                errorMessageStringBuilder.Append(FormattableString.Invariant($"Code: {error.Code}, Message: '{error.Message}'"));
+                errorMessageStringBuilder.Append(CultureInfo.InvariantCulture, $"Code: {error.Code}, Message: '{error.Message}'");
             }
         }
 
