@@ -262,9 +262,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b38fb072af49cb4336428c57ff28a22cc5d72cc2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-gthread.6.22520.2">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-gthread.6.22524.1">
       <Uri>https://github.com/dotnet/runtimelab</Uri>
-      <Sha>248d62bfe33854375c0cced68dc3ed7d5a9a562c</Sha>
+      <Sha>3e07111d22e33ebdcdc08d0246cc7dac3fe35faf</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="8.0.0-alpha.1.22506.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -278,9 +278,9 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="8.0.0-gthread.6.22520.2">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="8.0.0-gthread.6.22524.1">
       <Uri>https://github.com/dotnet/runtimelab</Uri>
-      <Sha>248d62bfe33854375c0cced68dc3ed7d5a9a562c</Sha>
+      <Sha>3e07111d22e33ebdcdc08d0246cc7dac3fe35faf</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="8.0.0-alpha.1.22506.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
