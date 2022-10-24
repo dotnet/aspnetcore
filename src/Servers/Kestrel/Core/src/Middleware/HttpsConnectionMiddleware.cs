@@ -555,7 +555,7 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
     [LoggerMessage(2, LogLevel.Debug, "Authentication of the HTTPS connection timed out.", EventName = "AuthenticationTimedOut")]
     public static partial void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger);
 
-    [LoggerMessage(3, LogLevel.Debug, "Connection {connectionId} established using the following protocol: {protocol}", EventName = "HttpsConnectionEstablished")]
+    [LoggerMessage(3, LogLevel.Debug, "Connection {ConnectionId} established using the following protocol: {Protocol}", EventName = "HttpsConnectionEstablished")]
     public static partial void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols protocol);
 
     [LoggerMessage(4, LogLevel.Information, "HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.",
