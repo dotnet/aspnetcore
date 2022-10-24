@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.RequestLocalizationOptions.CultureInfoUseUserOverride.get -> bool
+Microsoft.AspNetCore.Builder.RequestLocalizationOptions.CultureInfoUseUserOverride.set -> void
