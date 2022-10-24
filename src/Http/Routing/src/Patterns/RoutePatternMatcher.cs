@@ -364,7 +364,7 @@ internal sealed class RoutePatternMatcher
                 lastLiteral = part;
 
                 var startIndex = lastIndex;
-                //We are at the beginning of the segment and we still need to match a literal
+                // We are at the beginning of the segment and we still need to match a literal
                 if (startIndex == 0)
                 {
                     return false;
