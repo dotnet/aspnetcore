@@ -493,6 +493,17 @@ function MSBuild-Core {
   RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
+function GetDarc {
+    darc_path="$temp_dir/darc"
+    version="$1"
+
+    if [[ -n "$version" ]]; then
+      version="--darcversion $version"
+    fi
+
+    "$eng_root/common/darc-init.sh" --toolpath "$darc_path" $version
+}
+
 ResolvePath "${BASH_SOURCE[0]}"
 _script_dir=`dirname "$_ResolvePath"`
 
