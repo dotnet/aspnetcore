@@ -20,10 +20,10 @@ public class OperationBase
         }
     }
 
-    [JsonProperty("path")]
+    [JsonProperty(nameof(path))]
     public string path { get; set; }
 
-    [JsonProperty("op")]
+    [JsonProperty(nameof(op))]
     public string op
     {
         get
@@ -42,7 +42,7 @@ public class OperationBase
         }
     }
 
-    [JsonProperty("from")]
+    [JsonProperty(nameof(from))]
     public string from { get; set; }
 
     public OperationBase()
