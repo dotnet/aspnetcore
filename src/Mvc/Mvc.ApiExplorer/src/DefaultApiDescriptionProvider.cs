@@ -666,7 +666,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 
         private static Type GetModelType(ModelMetadata metadata)
         {
-            // !IsParseableType && IsConvertibleType
+            // !IsParseableType && !IsConvertibleType
             if (!metadata.IsComplexType)
             {
                 return metadata.ModelType.IsPrimitive ? metadata.ModelType : typeof(string);
