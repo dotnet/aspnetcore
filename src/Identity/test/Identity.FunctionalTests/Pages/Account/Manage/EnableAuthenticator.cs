@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -48,7 +48,7 @@ internal class EnableAuthenticator : DefaultUIPage
         var keyBytes = Base32.FromBase32(key);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var timestep = Convert.ToInt64(unixTimestamp / 30);
-        var topt = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifier: null);
+        var topt = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null);
         return topt.ToString("D6", CultureInfo.InvariantCulture);
     }
 }

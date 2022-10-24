@@ -68,9 +68,9 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
         for (int i = -2; i <= 2; i++)
         {
 #if NET6_0_OR_GREATER
-            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)(timestep + i), modifier: null);
+            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)(timestep + i), modifierBytes: null);
 #else
-            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)(timestep + i), modifier: null);
+            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)(timestep + i), modifierBytes: null);
 #endif
             if (expectedCode == code)
             {
