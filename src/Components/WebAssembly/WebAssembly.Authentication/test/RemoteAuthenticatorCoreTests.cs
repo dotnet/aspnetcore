@@ -117,6 +117,55 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         }
 
         [Fact]
+        public async Task AuthenticationManager_Callbacks_OnlyExecuteOncePerAction()
+        {
+            // Arrange
+            var (remoteAuthenticator, renderer, authServiceMock, jsRuntime) = CreateAuthenticationManager(
+                "https://www.example.com/base/authentication/login-callback?code=1234");
+
+            authServiceMock.CompleteSignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
+            {
+                Status = RemoteAuthenticationStatus.Success,
+            });
+
+            authServiceMock.CompleteSignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
+            {
+                Status = RemoteAuthenticationStatus.Success,
+            });
+
+            var logInCallbackInvocationCount = 0;
+            var logOutCallbackInvocationCount = 0;
+
+            var parameterDictionary = new Dictionary<string, object>
+            {
+                [_action] = RemoteAuthenticationActions.LogInCallback,
+                [_onLogInSucceded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
+                    remoteAuthenticator,
+                    (state) => logInCallbackInvocationCount++),
+                [_onLogOutSucceeded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
+                    remoteAuthenticator,
+                    (state) => logOutCallbackInvocationCount++)
+            };
+
+            var initialParameters = ParameterView.FromDictionary(parameterDictionary);
+
+            parameterDictionary[_action] = RemoteAuthenticationActions.LogOutCallback;
+
+            var finalParameters = ParameterView.FromDictionary(parameterDictionary);
+
+            // Act
+            await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(initialParameters));
+            await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(initialParameters));
+
+            await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(finalParameters));
+            await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(finalParameters));
+
+            // Assert
+            Assert.Equal(1, logInCallbackInvocationCount);
+            Assert.Equal(1, logOutCallbackInvocationCount);
+        }
+
+        [Fact]
         public async Task AuthenticationManager_LoginCallback_ThrowsOnRedirectResult()
         {
             // Arrange
