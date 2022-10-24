@@ -22,16 +22,17 @@ jobs:
     value: ${{ parameters.binlogPath }}
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: source-dot-net stage1 variables
+  - template: /eng/common/templates/variables/pool-providers.yml
 
   ${{ if ne(parameters.pool, '') }}:
     pool: ${{ parameters.pool }}
   ${{ if eq(parameters.pool, '') }}:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: NetCore-Public
+        name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2019.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: NetCore1ESPool-Internal
+        name: $(DncEngInternalBuildPool)
         demands: ImageOverride -equals windows.vs2019.amd64
 
   steps:

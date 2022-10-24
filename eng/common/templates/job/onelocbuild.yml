@@ -31,6 +31,17 @@ jobs:
 
   displayName: OneLocBuild${{ parameters.JobNameSuffix }}
 
+  variables:
+    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+    - name: _GenerateLocProjectArguments
+      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
+        -LanguageSet "${{ parameters.LanguageSet }}"
+        -CreateNeutralXlfs
+    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
+      - name: _GenerateLocProjectArguments
+        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
+    - template: /eng/common/templates/variables/pool-providers.yml
+
   ${{ if ne(parameters.pool, '') }}:
     pool: ${{ parameters.pool }}
   ${{ if eq(parameters.pool, '') }}:
@@ -41,19 +52,8 @@ jobs:
         demands: Cmd
       # If it's not devdiv, it's dnceng
       ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-        name: NetCore1ESPool-Internal
+        name: $(DncEngInternalBuildPool)
         demands: ImageOverride -equals windows.vs2019.amd64
-
-  variables:
-    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
-    - name: _GenerateLocProjectArguments
-      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
-        -LanguageSet "${{ parameters.LanguageSet }}"
-        -CreateNeutralXlfs
-    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
-      - name: _GenerateLocProjectArguments
-        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
-      
 
   steps:
     - task: Powershell@2
