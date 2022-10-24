@@ -149,7 +149,7 @@ public class PrefixContainer
             case '.':
                 // Handle an entry such as "prefix.key", "prefix.key.property" and "prefix.key[index]".
                 var delimiterPosition = entry.AsSpan(keyPosition).IndexOfAny('[', '.');
-                if (delimiterPosition == -1)
+                if (delimiterPosition < 0)
                 {
                     // Neither '.' nor '[' found later in the name. Use rest of the string.
                     key = entry.Substring(keyPosition);

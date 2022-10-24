@@ -409,7 +409,7 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
             {
                 // At start of "property", "property." or "property[0]".
                 var endIndex = path.AsSpan(index).IndexOfAny('.', '[');
-                if (endIndex == -1)
+                if (endIndex < 0)
                 {
                     endIndex = path.Length;
                 }

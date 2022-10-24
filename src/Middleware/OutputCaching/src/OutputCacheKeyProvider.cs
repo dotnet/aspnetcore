@@ -68,7 +68,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     public static bool ContainsDelimiters(string? value)
     {
-        return !string.IsNullOrEmpty(value) && value.AsSpan().IndexOfAny(KeyDelimiter, KeySubDelimiter) > -1;
+        return !string.IsNullOrEmpty(value) && value.AsSpan().IndexOfAny(KeyDelimiter, KeySubDelimiter) >= 0;
     }
 
     public static bool TryAppendKeyPrefix(OutputCacheContext context, StringBuilder builder)

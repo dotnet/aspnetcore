@@ -231,8 +231,8 @@ public abstract class NavigationManager
         }
 
         var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
-        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan().Slice(0, pathEndIndex);
-        if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan().Slice(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
+        if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -497,8 +497,8 @@ public abstract class NavigationManager
         }
 
         var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
-        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan().Slice(0, pathEndIndex);
-        if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan().Slice(0, baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
+        if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan(0, baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
