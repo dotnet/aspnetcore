@@ -673,6 +673,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                     // Those additional types have TypeConverter or TryParse and are not primitives
                     // but should not be considered string in the metadata
                     || metadata.ModelType == typeof(DateTime)
+                    || metadata.ModelType == typeof(DateTimeOffset)                    
                     || metadata.ModelType == typeof(DateOnly)
                     || metadata.ModelType == typeof(TimeOnly)
                     || metadata.ModelType == typeof(decimal)
