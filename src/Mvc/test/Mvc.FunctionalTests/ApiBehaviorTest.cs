@@ -292,7 +292,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
     public virtual async Task SerializingProblemDetails_IgnoresNullValuedProperties()
     {
         // Arrange
-        var expected = new[] { "status", "title", "traceId", "type", "traceparent" };
+        var expected = new[] { "status", "title", "traceId", "traceparent", "type" };
 
         // Act
         var response = await Client.GetAsync("/contact/ActionReturningStatusCodeResult");
