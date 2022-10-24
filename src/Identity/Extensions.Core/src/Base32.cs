@@ -16,6 +16,12 @@ internal static class Base32
     public static string GenerateBase32()
     {
         const int length = 20;
+        // base32 takes 5 bytes and converts them into 8 characters, which would be (byte length / 5) * 8
+        // except that it also pads ('=') for the last processed chunk if it's less than 5 bytes.
+        // So in order to handle the padding we add 1 less than the chunk size to our byte length
+        // which will either be removed due to integer division truncation if the length was already a multiple of 5
+        // or it will increase the divided length by 1 meaning that a 1-4 byte length chunk will be 1 instead of 0
+        // so the padding is now included in our string length calculation
         return string.Create(((length + 4) / 5) * 8, 0, static (buffer, _) =>
         {
             Span<byte> bytes = stackalloc byte[length];
