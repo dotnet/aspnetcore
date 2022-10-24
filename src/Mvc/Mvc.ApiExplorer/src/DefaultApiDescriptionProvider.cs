@@ -658,10 +658,21 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 ModelMetadata = bindingContext.ModelMetadata,
                 Name = GetName(containerName, bindingContext),
                 Source = source,
-                Type = bindingContext.ModelMetadata.ModelType,
+                Type = GetModelType(bindingContext.ModelMetadata),
                 ParameterDescriptor = Parameter,
                 BindingInfo = bindingContext.BindingInfo
             };
+        }
+
+        private static Type GetModelType(ModelMetadata metadata)
+        {
+            // !IsParseableType && IsConvertibleType
+            if (!metadata.IsComplexType)
+            {
+                return metadata.ModelType.IsPrimitive ? metadata.ModelType : typeof(string);
+            }
+
+            return metadata.ModelType;
         }
 
         private static string GetName(string containerName, ApiParameterDescriptionContext metadata)
