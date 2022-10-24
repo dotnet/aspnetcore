@@ -77,7 +77,7 @@ public class DfaMatcherTest
 
         // Assert
         Assert.NotNull(httpContext.GetEndpoint());
-    }   
+    }
 
     [Fact]
     public async Task MatchAsync_InvalidRouteConstraint_NoEndpointMatched()
