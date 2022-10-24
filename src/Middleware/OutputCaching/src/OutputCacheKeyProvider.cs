@@ -17,8 +17,6 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
 
-    private static readonly char[] KeyDelimiters = new[] { KeyDelimiter, KeySubDelimiter };
-
     private readonly ObjectPool<StringBuilder> _builderPool;
     private readonly OutputCacheOptions _options;
 
@@ -70,7 +68,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     public static bool ContainsDelimiters(string? value)
     {
-        return !string.IsNullOrEmpty(value) && value.IndexOfAny(KeyDelimiters) > -1;
+        return !string.IsNullOrEmpty(value) && value.AsSpan().IndexOfAny(KeyDelimiter, KeySubDelimiter) >= 0;
     }
 
     public static bool TryAppendKeyPrefix(OutputCacheContext context, StringBuilder builder)
