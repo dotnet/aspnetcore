@@ -520,7 +520,6 @@ function MSBuild-Core {
   RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
-
 function GetDarc {
     darc_path="$temp_dir/darc"
     version="$1"
