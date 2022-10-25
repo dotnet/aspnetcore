@@ -5,9 +5,6 @@
 # CI mode - set to true on CI server for PR validation build or official build.
 ci=${ci:-false}
 
-# Docker mode - set to true on docker builds.
-docker=${docker:-false}
-
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
 # This flag is meant as a temporary opt-opt for the feature while validate it across
@@ -371,30 +368,6 @@ function InitializeToolset {
   if [[ "$restore" != true ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Toolset version $toolset_version has not been restored."
     ExitWithExitCode 2
-  fi
-
-  if  [[ "$docker" == "true" ]]; then
-    InitializeBuildTool
-
-    local warnaserror_switch=""
-    if [[ $warn_as_error == true ]]; then
-      warnaserror_switch="/warnaserror"
-    fi
-
-    function RunNugetTool {
-      # export ARCADE_BUILD_TOOL_COMMAND="$_InitializeBuildTool nuget --version"
-
-      echo "Running workaround: "
-
-      "$_InitializeBuildTool nuget --version" || {
-        local exit_code=$?
-        # We should not Write-PipelineTaskError here because that message shows up in the build summary
-        # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
-        echo "Build failed with exit code $exit_code. Check errors above."
-      }
-    }
-
-    RunNugetTool
   fi
 
   local proj="$toolset_dir/restore.proj"

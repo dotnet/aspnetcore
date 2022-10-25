@@ -82,6 +82,7 @@ Options:
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+
     --docker                          Docker mode
 
 Description:
@@ -364,6 +365,10 @@ export MSBUILDDEBUGPATH="$log_dir"
 _tmp_restore=$restore
 restore=true
 
+if [[ "$docker" == true ]]; then
+    RunWorkaround
+fi
+
 InitializeToolset
 
 restore=$_tmp_restore=
@@ -386,3 +391,23 @@ if [ "$only_build_repo_tasks" != true ]; then
 fi
 
 ExitWithExitCode 0
+
+
+function RunWorkaround {
+    InitializeBuildTool
+
+    "$_InitializeBuildTool nuget --version" || {
+      local exit_code=$?
+      # We should not Write-PipelineTaskError here because that message shows up in the build summary
+      # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+      echo "Build failed with exit code $exit_code. Check errors above."
+      if [[ "$ci" == "true" ]]; then
+        Write-PipelineSetResult -result "Failed" -message "nuget execution failed."
+        # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
+        # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
+        ExitWithExitCode 0
+      else
+        ExitWithExitCode $exit_code
+      fi
+    }
+}
