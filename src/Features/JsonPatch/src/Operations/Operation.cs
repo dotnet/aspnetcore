@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations;
 
 public class Operation : OperationBase
 {
-    [JsonProperty(nameof(value))]
+    [JsonProperty("value")]
     public object value { get; set; }
 
     public Operation()
