@@ -87,7 +87,7 @@ These principles guide how we create and manage .slnf files:
 ./restore.ps1
 ```
 
-2. After the restore script has finished executing, activate the locally installed .NET by running the following command.
+4. After the restore script has finished executing, activate the locally installed .NET by running the following command.
 
 ```bash
 source activate.sh
@@ -97,14 +97,14 @@ source activate.sh
 . ./activate.ps1
 ```
 
-3. After activating the locally installed .NET, you can open your project of choice by running the `code` command in the directory of choice. For example, if you want to modify code in the `src/Http` project, you can use the following:
+5. After activating the locally installed .NET, you can open your project of choice by running the `code` command in the directory of choice. For example, if you want to modify code in the `src/Http` project, you can use the following:
 
 ```bash
 cd src/Http
 code .
 ```
 
-4. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
+6. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
 > :bulb: The `build.sh` or `build.ps1` script will be local to the directory of the project that you have opened. For example, the script located in the `src/Http` directory.
 
@@ -113,7 +113,7 @@ code .
 ./build.sh -test
 ```
 
-5. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
+7. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
 
 ```bash
 source activate.sh
@@ -137,6 +137,36 @@ If you have [Codespaces enabled on your GitHub user account](https://github.com/
 ### Troubleshooting
 
 See [BuildErrors](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildErrors.md) for a description of common issues you might run into while building the repo.
+
+## A Guide to Build src\Components\Web.JS
+
+Prior to building `src\Components\Web.JS\`
+
+1. You'll need to install [Node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) on your machine.
+2. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
+
+```bash
+./restore.sh
+```
+
+```powershell
+./restore.ps1
+```
+
+3. After the restore script has finished executing, activate the locally installed .NET by running the following command.
+
+```bash
+source activate.sh
+```
+
+```powershell
+. ./activate.ps1
+```
+
+Now you can build `src\Components\Web.JS\` by running the following command in the directory.
+```powershell
+dotnet build
+```
 
 ## A Guide to the Build Script
 
