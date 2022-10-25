@@ -2318,7 +2318,7 @@ public class Http3StreamTests : Http3TestBase
             new KeyValuePair<string, string>("h", _4kHeaderValue),
         };
 
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: true);
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_notImplementedApp, headers, endStream: true);
 
         var receivedHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -2376,7 +2376,7 @@ public class Http3StreamTests : Http3TestBase
             headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
         }
 
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: true);
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_notImplementedApp, headers, endStream: true);
 
         var receivedHeaders = await requestStream.ExpectHeadersAsync();
 
