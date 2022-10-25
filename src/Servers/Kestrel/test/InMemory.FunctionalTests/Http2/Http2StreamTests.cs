@@ -816,7 +816,7 @@ public class Http2StreamTests : Http2TestBase
             new KeyValuePair<string, string>("g", _4kHeaderValue),
             new KeyValuePair<string, string>("h", _4kHeaderValue),
         };
-        await InitializeConnectionAsync(_noopApplication);
+        await InitializeConnectionAsync(_notImplementedApp);
 
         await StartStreamAsync(1, headers, endStream: true);
 
@@ -850,7 +850,7 @@ public class Http2StreamTests : Http2TestBase
             var text = i.ToString(CultureInfo.InvariantCulture);
             headers.Add(new KeyValuePair<string, string>(text, text));
         }
-        await InitializeConnectionAsync(_noopApplication);
+        await InitializeConnectionAsync(_notImplementedApp);
 
         await StartStreamAsync(1, headers, endStream: true);
 

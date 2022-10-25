@@ -202,7 +202,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         endConnection = !TryValidatePseudoHeaders();
 
         // 431 if the headers are too large
-        if (TotalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+        if (TotalParsedHeaderSize > ServerOptions.Limits.MaxRequestHeadersTotalSize)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
         }
