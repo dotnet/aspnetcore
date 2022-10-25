@@ -12,6 +12,7 @@ YELLOW="\033[0;33m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 target_os_name=''
 ci=false
+docker=false
 binary_log=false
 exclude_ci_binary_log=false
 verbosity='minimal'
@@ -81,6 +82,7 @@ Options:
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+    --docker                          Docker mode
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -207,6 +209,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         -ci)
             ci=true
+            ;;
+        -docker)
+            docker=true
             ;;
         -binarylog|-bl)
             binary_log=true
