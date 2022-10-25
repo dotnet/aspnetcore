@@ -381,9 +381,9 @@ function InitializeToolset {
     function RunNugetTool {
       # export ARCADE_BUILD_TOOL_COMMAND="$_InitializeBuildTool nuget --version"
 
-      echo "$_InitializeBuildTool nuget --info"
+      echo "$_InitializeBuildTool nuget --version"
 
-      "$_InitializeBuildTool" " nuget --info" || {
+      "$_InitializeBuildTool" " nuget --version" || {
         local exit_code=$?
         # We should not Write-PipelineTaskError here because that message shows up in the build summary
         # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
