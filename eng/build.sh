@@ -33,6 +33,7 @@ target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
+init_nuget=false
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -81,6 +82,8 @@ Options:
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+
+    --init-nuget                      Run nuget --version.
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -207,6 +210,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         -ci)
             ci=true
+            ;;
+        -init-nuget)
+            init_nuget=true
             ;;
         -binarylog|-bl)
             binary_log=true
@@ -358,6 +364,30 @@ export MSBUILDDEBUGPATH="$log_dir"
 # the toolset is a better default behavior.
 _tmp_restore=$restore
 restore=true
+
+if [[ "$init_nuget" == true ]]; then
+    InitializeBuildTool
+
+    function RunBuildTool {
+        "$_InitializeBuildTool" "$@" || {
+        local exit_code=$?
+        # We should not Write-PipelineTaskError here because that message shows up in the build summary
+        # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+        echo "Build failed with exit code $exit_code. Check errors above."
+        if [[ "$ci" == "true" ]]; then
+            Write-PipelineSetResult -result "Failed" -message "nuget execution failed."
+            # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
+            # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
+            ExitWithExitCode 0
+        else
+            ExitWithExitCode $exit_code
+        fi
+        }
+    }
+
+    echo 'Running dotnet nuget --version (issue: https://github.com/NuGet/Home/issues/12159#issuecomment-1278360511)'
+    RunBuildTool "nuget" "--version"
+fi
 
 InitializeToolset
 
