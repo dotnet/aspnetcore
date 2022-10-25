@@ -370,6 +370,30 @@ function InitializeToolset {
     ExitWithExitCode 2
   fi
 
+  if  [[ "$ci" == "true" ]]; then
+    InitializeBuildTool
+
+    local warnaserror_switch=""
+    if [[ $warn_as_error == true ]]; then
+      warnaserror_switch="/warnaserror"
+    fi
+
+    function RunNugetTool {
+      # export ARCADE_BUILD_TOOL_COMMAND="$_InitializeBuildTool nuget --version"
+
+      echo "$_InitializeBuildTool nuget --version"
+
+      "$_InitializeBuildTool" "nuget --version" || {
+        local exit_code=$?
+        # We should not Write-PipelineTaskError here because that message shows up in the build summary
+        # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+        echo "Build failed with exit code $exit_code. Check errors above."
+      }
+    }
+
+    RunNugetTool
+  fi
+
   local proj="$toolset_dir/restore.proj"
 
   local bl=""
@@ -492,6 +516,7 @@ function MSBuild-Core {
 
   RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
+
 
 function GetDarc {
     darc_path="$temp_dir/darc"
