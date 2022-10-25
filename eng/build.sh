@@ -368,20 +368,25 @@ restore=true
 if [[ "$docker" == true ]]; then
     InitializeBuildTool
 
-    "$_InitializeBuildTool nuget --version" || {
-      exit_code=$?
-      # We should not Write-PipelineTaskError here because that message shows up in the build summary
-      # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
-      echo "Build failed with exit code $exit_code. Check errors above."
-      if [[ "$ci" == "true" ]]; then
-        Write-PipelineSetResult -result "Failed" -message "nuget execution failed."
-        # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
-        # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
-        ExitWithExitCode 0
-      else
-        ExitWithExitCode $exit_code
-      fi
+    function RunBuildTool {
+        #export ARCADE_BUILD_TOOL_COMMAND="$_InitializeBuildTool $@"
+        "$_InitializeBuildTool" "$@" || {
+        local exit_code=$?
+        # We should not Write-PipelineTaskError here because that message shows up in the build summary
+        # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
+        echo "Build failed with exit code $exit_code. Check errors above."
+        if [[ "$ci" == "true" ]]; then
+            Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
+            # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
+            # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
+            ExitWithExitCode 0
+        else
+            ExitWithExitCode $exit_code
+        fi
+        }
     }
+
+    RunBuildTool "nuget" "--version"
 fi
 
 InitializeToolset
