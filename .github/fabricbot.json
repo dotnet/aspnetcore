@@ -3327,6 +3327,40 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "Servicing-approved"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Servicing PR Approved] Let the author know that the PR will be merged by the build team",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hi @${issueAuthor}. This PR was just approved to be included in the upcoming servicing release. Somebody from the @dotnet/aspnet-build team will get it merged when the branches are open. Until then, please make sure all the CI checks pass and the PR is reviewed."
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": []
