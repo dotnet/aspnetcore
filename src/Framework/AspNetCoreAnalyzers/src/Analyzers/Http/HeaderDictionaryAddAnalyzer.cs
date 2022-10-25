@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -17,46 +19,30 @@ public sealed class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
+        context.RegisterCompilationStartAction(OnCompilationStart);
+    }
+
+    private static void OnCompilationStart(CompilationStartAnalysisContext context)
+    {
+        var symbols = new HeaderDictionarySymbols(context.Compilation);
+
+        if (!symbols.HasRequiredSymbols)
+        {
+            return;
+        }
+
         context.RegisterOperationAction(context =>
         {
             var invocation = (IInvocationOperation)context.Operation;
 
-            if (invocation.Instance?.Type is INamedTypeSymbol type &&
-                IsIHeadersDictionaryType(type))
+            if (SymbolEqualityComparer.Default.Equals(symbols.IHeaderDictionary, invocation.Instance?.Type)
+                && IsAddMethod(invocation.TargetMethod)
+                && invocation.TargetMethod.Parameters.Length == 2)
             {
-                if (invocation.TargetMethod.Parameters.Length == 2 &&
-                    IsAddMethod(invocation.TargetMethod))
-                {
-                    AddDiagnosticWarning(context, invocation.Syntax.GetLocation());
-                }
+                AddDiagnosticWarning(context, invocation.Syntax.GetLocation());
             }
-        }, OperationKind.Invocation);
-    }
 
-    private static bool IsIHeadersDictionaryType(INamedTypeSymbol type)
-    {
-        // Only IHeaderDictionary is valid. Types like HeaderDictionary, which implement IHeaderDictionary,
-        // can't access header properties unless cast as IHeaderDictionary.
-        return type is
-        {
-            Name: "IHeaderDictionary",
-            ContainingNamespace:
-            {
-                Name: "Http",
-                ContainingNamespace:
-                {
-                    Name: "AspNetCore",
-                    ContainingNamespace:
-                    {
-                        Name: "Microsoft",
-                        ContainingNamespace:
-                        {
-                            IsGlobalNamespace: true
-                        }
-                    }
-                }
-            }
-        };
+        }, OperationKind.Invocation);
     }
 
     private static bool IsAddMethod(IMethodSymbol method)
@@ -92,5 +78,17 @@ public sealed class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd,
             location));
+    }
+
+    private sealed class HeaderDictionarySymbols
+    {
+        public HeaderDictionarySymbols(Compilation compilation)
+        {
+            IHeaderDictionary = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IHeaderDictionary");
+        }
+
+        public bool HasRequiredSymbols => IHeaderDictionary is not null;
+
+        public INamedTypeSymbol IHeaderDictionary { get; }
     }
 }
