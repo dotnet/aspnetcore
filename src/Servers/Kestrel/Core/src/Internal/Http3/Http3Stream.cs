@@ -96,6 +96,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _requestHeaderParsingState = default;
         _parsedPseudoHeaderFields = default;
         _totalParsedHeaderSize = 0;
+        // Allow up to 2x during parsing, enforce the hard limit after when we can preserve the connection.
+        _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
         StreamTimeoutTicks = 0;
@@ -264,17 +266,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         if (!HttpRequestHeaders.TryQPackAppend(index, value, checkForNewlineChars: !indexOnly))
         {
             AppendHeader(name, value);
-        }
-    }
-
-    // Final: Has the message been fully received? We allow up to 2x grace while receiving the message
-    // to avoid faulting the stream. We check again later when we can reject the request with a 431.
-    protected override void CheckRequestHeadersCountLimit(bool final = false)
-    {
-        if (final && RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount
-            || RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount * 2)
-        {
-            KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
         }
     }
 
@@ -959,7 +950,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // 431 if we received too many headers
-        CheckRequestHeadersCountLimit(final: true);
+        if (RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+        }
 
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();

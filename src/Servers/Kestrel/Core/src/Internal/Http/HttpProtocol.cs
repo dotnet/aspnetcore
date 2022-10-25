@@ -63,6 +63,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     private string? _requestId;
     private int _requestHeadersParsed;
+    // See MaxRequestHeaderCount, enforced during parsing and may be more relaxed to avoid connection faults.
+    protected int _eagerRequestHeadersParsedLimit;
 
     private long _responseBytesWritten;
 
@@ -417,6 +419,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         Output?.Reset();
 
         _requestHeadersParsed = 0;
+        _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount;
 
         _responseBytesWritten = 0;
 
@@ -547,12 +550,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private void IncrementRequestHeadersCount()
     {
         _requestHeadersParsed++;
-        CheckRequestHeadersCountLimit();
-    }
-
-    protected virtual void CheckRequestHeadersCountLimit(bool final = false)
-    {
-        if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+        if (_requestHeadersParsed > _eagerRequestHeadersParsedLimit)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
         }
