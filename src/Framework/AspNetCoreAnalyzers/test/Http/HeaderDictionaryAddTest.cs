@@ -21,8 +21,7 @@ public class HeaderDictionaryAddTest
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
-{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
             new[]
             {
                 new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
@@ -33,8 +32,7 @@ var context = new DefaultHttpContext();
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
-context.Request.Headers.Append(""Accept"", ""text/html"");
-"
+context.Request.Headers.Append(""Accept"", ""text/html"");"
         },
 
         // Multiple diagnostics
@@ -44,8 +42,7 @@ using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-{|#1:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#1:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
             new[]
             {
                 new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
@@ -60,8 +57,27 @@ using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 context.Request.Headers.Append(""Accept"", ""text/html"");
-context.Request.Headers.Append(""Accept"", ""text/html"");
-"
+context.Request.Headers.Append(""Accept"", ""text/html"");"
+        },
+
+        // Missing semicolon
+        {
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|}{|CS1002:|}",
+            new[]
+            {
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(0)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
+            },
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+context.Request.Headers.Append(""Accept"", ""text/html""){|CS1002:|}"
         }
     };
 
@@ -80,14 +96,13 @@ context.Request.Headers.Append(""Accept"", ""text/html"");
 {
             @"
 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
-{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
+
             @"
 using Microsoft.AspNetCore.Http;
 
 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
-context.Request.Headers.Append(""Accept"", ""text/html"");
-"
+context.Request.Headers.Append(""Accept"", ""text/html"");"
         };
 
         // Inserted alphabetically based on existing using directives
@@ -98,16 +113,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
-{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
+
             @"
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
-context.Request.Headers.Append(""Accept"", ""text/html"");
-"
+context.Request.Headers.Append(""Accept"", ""text/html"");"
         };
 
         // Inserted after 'System' using directives
@@ -119,8 +133,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
-{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
+
             @"
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
@@ -128,8 +142,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
-context.Request.Headers.Append(""Accept"", ""text/html"");
-"
+context.Request.Headers.Append(""Accept"", ""text/html"");"
         };
     }
 
@@ -158,8 +171,7 @@ context.Request.Headers.Append(""Accept"", ""text/html"");
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
-{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
             new[]
             {
                 new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
@@ -170,8 +182,7 @@ var context = new DefaultHttpContext();
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
-context.Request.Headers[""Accept""] = ""text/html"";
-"
+context.Request.Headers[""Accept""] = ""text/html"";"
         },
 
         // Multiple diagnostics
@@ -181,8 +192,7 @@ using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 {|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-{|#1:context.Request.Headers.Add(""Accept"", ""text/html"")|};
-",
+{|#1:context.Request.Headers.Add(""Accept"", ""text/html"")|};",
             new[]
             {
                 new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
@@ -197,8 +207,27 @@ using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
 context.Request.Headers[""Accept""] = ""text/html"";
-context.Request.Headers[""Accept""] = ""text/html"";
-"
+context.Request.Headers[""Accept""] = ""text/html"";"
+        },
+
+        // Missing semicolon
+        {
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+{|#0:context.Request.Headers.Add(""Accept"", ""text/html"")|}{|CS1002:|}",
+            new[]
+            {
+                new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
+                    .WithLocation(0)
+                    .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
+            },
+            @"
+using Microsoft.AspNetCore.Http;
+
+var context = new DefaultHttpContext();
+context.Request.Headers[""Accept""] = ""text/html""{|CS1002:|}"
         }
     };
 
@@ -218,8 +247,7 @@ context.Request.Headers[""Accept""] = ""text/html"";
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
-context.Request.Headers.Append(""Accept"", ""text/html"");
-";
+context.Request.Headers.Append(""Accept"", ""text/html"");";
 
         // Act & Assert
         await VerifyCS.VerifyCodeFixAsync(source, source);
@@ -233,8 +261,7 @@ context.Request.Headers.Append(""Accept"", ""text/html"");
 using Microsoft.AspNetCore.Http;
 
 var context = new DefaultHttpContext();
-context.Request.Headers[""Accept""] = ""text/html"";
-";
+context.Request.Headers[""Accept""] = ""text/html"";";
 
         // Act & Assert
         await VerifyCS.VerifyCodeFixAsync(source, source);

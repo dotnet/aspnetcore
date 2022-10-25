@@ -55,7 +55,7 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
 
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         // IHeaderDictionary.Append is defined as an extension method on Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.
         // We'll need to add the required using directive, when not already present.
@@ -72,7 +72,7 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
             return false;
         }
 
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         if (diagnosticTarget is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name.Identifier: { } identifierToken } } invocationExpression)
         {
@@ -138,7 +138,7 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, assignment));
     }
@@ -152,7 +152,7 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
             return false;
         }
 
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan);
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         if (diagnosticTarget is InvocationExpressionSyntax
             {
