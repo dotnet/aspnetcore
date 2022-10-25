@@ -383,7 +383,7 @@ function InitializeToolset {
 
       echo "$_InitializeBuildTool nuget --info"
 
-      "$_InitializeBuildTool" "nuget --info" || {
+      "$_InitializeBuildTool" " nuget --info" || {
         local exit_code=$?
         # We should not Write-PipelineTaskError here because that message shows up in the build summary
         # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
