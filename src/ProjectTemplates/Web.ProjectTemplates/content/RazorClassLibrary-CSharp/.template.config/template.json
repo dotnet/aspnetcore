@@ -69,7 +69,7 @@
       "datatype": "bool",
       "defaultValue": "false",
       "displayName": "Support pages and views",
-      "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
+      "description": "Whether to support adding traditional Razor pages and Views to this library."
     }
   },
   "primaryOutputs": [
