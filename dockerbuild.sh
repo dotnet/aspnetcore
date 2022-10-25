@@ -84,7 +84,7 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-docker_args[${#docker_args[*]}]="--docker"
+build_args[${#build_args[*]}]="--docker"
 
 if [ -z "$image" ]; then
     __usage --no-exit
