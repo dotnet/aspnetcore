@@ -84,8 +84,6 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-build_args[${#build_args[*]}]="--docker"
-
 if [ -z "$image" ]; then
     __usage --no-exit
     __error 'Missing required argument: image'
