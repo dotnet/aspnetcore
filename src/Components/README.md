@@ -61,7 +61,8 @@ source activate.sh
 . ./activate.ps1
 ```
 
-Now you can build `src\Components\Web.JS\` by running the following command in the directory.
+4. Now you can build `src\Components\Web.JS\` by running the following commands in the `src\Components\Web.JS` directory:
+
 ```powershell
 dotnet build
 ```
