@@ -669,16 +669,16 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             // IsParseableType || IsConvertibleType
             if (!metadata.IsComplexType)
             {
-                return metadata.ModelType.IsPrimitive
+                return metadata.UnderlyingOrModelType.IsPrimitive
                     // Those additional types have TypeConverter or TryParse and are not primitives
                     // but should not be considered string in the metadata
-                    || metadata.ModelType == typeof(DateTime)
-                    || metadata.ModelType == typeof(DateTimeOffset)
-                    || metadata.ModelType == typeof(DateOnly)
-                    || metadata.ModelType == typeof(TimeOnly)
-                    || metadata.ModelType == typeof(decimal)
-                    || metadata.ModelType == typeof(Guid)
-                    || metadata.ModelType == typeof(Uri) ? metadata.ModelType : typeof(string);
+                    || metadata.UnderlyingOrModelType == typeof(DateTime)
+                    || metadata.UnderlyingOrModelType == typeof(DateTimeOffset)
+                    || metadata.UnderlyingOrModelType == typeof(DateOnly)
+                    || metadata.UnderlyingOrModelType == typeof(TimeOnly)
+                    || metadata.UnderlyingOrModelType == typeof(decimal)
+                    || metadata.UnderlyingOrModelType == typeof(Guid)
+                    || metadata.UnderlyingOrModelType == typeof(Uri) ? metadata.ModelType : typeof(string);
             }
 
             return metadata.ModelType;
