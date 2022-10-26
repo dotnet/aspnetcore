@@ -35,7 +35,7 @@ To build this specific project from source, follow the instructions [on building
 
 **Note:** You also need to run the preceding `build` command in the command line before building in VS to ensure that the Web.JS dependency is built.
 
-### A Guide to Web.JS
+### A Guide to build Web.JS
 
 Prior to building `src\Components\Web.JS\`
 
