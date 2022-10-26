@@ -138,36 +138,6 @@ If you have [Codespaces enabled on your GitHub user account](https://github.com/
 
 See [BuildErrors](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildErrors.md) for a description of common issues you might run into while building the repo.
 
-## A Guide to Build src\Components\Web.JS
-
-Prior to building `src\Components\Web.JS\`
-
-1. You'll need to install [Node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) on your machine.
-2. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
-
-```bash
-./restore.sh
-```
-
-```powershell
-./restore.ps1
-```
-
-3. After the restore script has finished executing, activate the locally installed .NET by running the following command.
-
-```bash
-source activate.sh
-```
-
-```powershell
-. ./activate.ps1
-```
-
-Now you can build `src\Components\Web.JS\` by running the following command in the directory.
-```powershell
-dotnet build
-```
-
 ## A Guide to the Build Script
 
 This ASP.NET Core repo contains a top-level build script located at `eng/build.cmd` and `eng/build.sh` and local build scripts within each directory. The scripts can be used to restore, build, and test the repo with support for a variety of flags. This section documents the common flags and some recommended invocation patterns.
