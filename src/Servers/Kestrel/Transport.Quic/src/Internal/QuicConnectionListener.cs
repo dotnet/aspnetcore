@@ -36,7 +36,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
     {
         if (!QuicListener.IsSupported)
         {
-            throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
+            throw new NotSupportedException("QUIC and HTTP/3 are not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
         }
 
         if (endpoint is not IPEndPoint listenEndPoint)
