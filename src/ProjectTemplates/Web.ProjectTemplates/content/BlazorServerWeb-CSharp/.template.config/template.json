@@ -11,7 +11,10 @@
   "groupIdentity": "Microsoft.Web.Blazor.Server",
   "precedence": "9000",
   "identity": "Microsoft.Web.Blazor.Server.CSharp.7.0",
-  "shortName": "blazorserver",
+  "shortName": [
+    "blazorserver",
+    "blazor"
+  ],
   "thirdPartyNotices": "https://aka.ms/aspnetcore/7.0-third-party-notices",
   "tags": {
     "language": "C#",
