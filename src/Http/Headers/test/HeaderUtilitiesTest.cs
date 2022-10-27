@@ -312,9 +312,7 @@ public class HeaderUtilitiesTest
     [InlineData("text;q=0.12345678", 0.12345678d, 10)]
     [InlineData("text;q=0.98765432", 0.98765432d, 10)]
     public void TryParseQualityDouble_WithDecimalPart_ReturnsCorrectQuality(
-        string inputString,
-        double expectedQuality,
-        int expectedLength)
+        string inputString, double expectedQuality, int expectedLength)
         => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
 
     [Theory]
