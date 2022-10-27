@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Simplification;
 
 namespace Microsoft.AspNetCore.Analyzers.Http.Fixers;
 
@@ -53,14 +54,18 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
 
     private static async Task<Document> ReplaceWithAppend(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
         var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         // IHeaderDictionary.Append is defined as an extension method on Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.
         // We'll need to add the required using directive, when not already present.
+        var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+        var headerDictionaryExtensionsSymbol = model.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HeaderDictionaryExtensions");
+        var annotation = new SyntaxAnnotation("SymbolId", DocumentationCommentId.CreateReferenceId(headerDictionaryExtensionsSymbol));
+
         return document.WithSyntaxRoot(
-            AddRequiredUsingDirectiveForAppend(root.ReplaceNode(diagnosticTarget, invocation)));
+            root.ReplaceNode(diagnosticTarget, invocation.WithAdditionalAnnotations(Simplifier.AddImportsAnnotation, annotation)));
     }
 
     private static bool CanReplaceWithAppend(Diagnostic diagnostic, SyntaxNode root, out InvocationExpressionSyntax invocation)
@@ -82,56 +87,6 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
         }
 
         return false;
-    }
-
-    private static CompilationUnitSyntax AddRequiredUsingDirectiveForAppend(CompilationUnitSyntax compilationUnitSyntax)
-    {
-        var usingDirectives = compilationUnitSyntax.Usings;
-
-        var includesRequiredUsingDirective = false;
-        var insertionIndex = 0;
-
-        for (var i = 0; i < usingDirectives.Count; i++)
-        {
-            var namespaceName = usingDirectives[i].Name.ToString();
-
-            // Always insert the new using directive after any 'System' using directives.
-            if (namespaceName.StartsWith("System", StringComparison.Ordinal))
-            {
-                insertionIndex = i + 1;
-                continue;
-            }
-
-            var result = string.Compare("Microsoft.AspNetCore.Http", namespaceName, StringComparison.Ordinal);
-
-            if (result == 0)
-            {
-                includesRequiredUsingDirective = true;
-                break;
-            }
-
-            if (result < 0)
-            {
-                insertionIndex = i;
-                break;
-            }
-        }
-
-        if (includesRequiredUsingDirective)
-        {
-            return compilationUnitSyntax;
-        }
-
-        var requiredUsingDirective =
-            SyntaxFactory.UsingDirective(
-                SyntaxFactory.QualifiedName(
-                    SyntaxFactory.QualifiedName(
-                        SyntaxFactory.IdentifierName("Microsoft"),
-                        SyntaxFactory.IdentifierName("AspNetCore")),
-                    SyntaxFactory.IdentifierName("Http")));
-
-        return compilationUnitSyntax.WithUsings(
-            usingDirectives.Insert(insertionIndex, requiredUsingDirective));
     }
 
     private static async Task<Document> ReplaceWithIndexer(Diagnostic diagnostic, Document document, AssignmentExpressionSyntax assignment, CancellationToken cancellationToken)
