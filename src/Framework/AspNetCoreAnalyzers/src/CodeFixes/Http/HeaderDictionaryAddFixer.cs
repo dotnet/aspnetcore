@@ -65,7 +65,7 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
         var annotation = new SyntaxAnnotation("SymbolId", DocumentationCommentId.CreateReferenceId(headerDictionaryExtensionsSymbol));
 
         return document.WithSyntaxRoot(
-            root.ReplaceNode(diagnosticTarget, invocation.WithAdditionalAnnotations(Simplifier.AddImportsAnnotation, annotation)));
+            root.ReplaceNode(diagnosticTarget, invocation.WithAdditionalAnnotations(Simplifier.Annotation, Simplifier.AddImportsAnnotation, annotation)));
     }
 
     private static bool CanReplaceWithAppend(Diagnostic diagnostic, SyntaxNode root, out InvocationExpressionSyntax invocation)
