@@ -2319,7 +2319,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public Task HEADERS_Received_HeaderBlockOverLimit_ConnectionError()
+        public async Task HEADERS_Received_HeaderBlockOverLimit_431()
         {
             // > 32kb
             var headers = new[]
@@ -2336,12 +2336,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("g", _4kHeaderValue),
                 new KeyValuePair<string, string>("h", _4kHeaderValue),
             };
+            var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("431", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockOverLimitx2_ConnectionError()
+        {
+            // > 32kb * 2 to exceed graceful handling limit
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("a", _4kHeaderValue),
+                new KeyValuePair<string, string>("b", _4kHeaderValue),
+                new KeyValuePair<string, string>("c", _4kHeaderValue),
+                new KeyValuePair<string, string>("d", _4kHeaderValue),
+                new KeyValuePair<string, string>("e", _4kHeaderValue),
+                new KeyValuePair<string, string>("f", _4kHeaderValue),
+                new KeyValuePair<string, string>("g", _4kHeaderValue),
+                new KeyValuePair<string, string>("h", _4kHeaderValue),
+                new KeyValuePair<string, string>("i", _4kHeaderValue),
+                new KeyValuePair<string, string>("j", _4kHeaderValue),
+                new KeyValuePair<string, string>("k", _4kHeaderValue),
+                new KeyValuePair<string, string>("l", _4kHeaderValue),
+                new KeyValuePair<string, string>("m", _4kHeaderValue),
+                new KeyValuePair<string, string>("n", _4kHeaderValue),
+                new KeyValuePair<string, string>("o", _4kHeaderValue),
+                new KeyValuePair<string, string>("p", _4kHeaderValue),
+            };
 
             return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http3ErrorCode.RequestRejected);
         }
 
         [Fact]
-        public Task HEADERS_Received_TooManyHeaders_ConnectionError()
+        public async Task HEADERS_Received_TooManyHeaders_431()
         {
             // > MaxRequestHeaderCount (100)
             var headers = new List<KeyValuePair<string, string>>();
@@ -2352,6 +2391,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             });
             for (var i = 0; i < 100; i++)
+            {
+                headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_notImplementedApp);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("431", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_TooManyHeadersx2_ConnectionError()
+        {
+            // > MaxRequestHeaderCount (100) * 2 to exceed graceful handling limit
+            var headers = new List<KeyValuePair<string, string>>();
+            headers.AddRange(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            });
+            for (var i = 0; i < 200; i++)
             {
                 headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
             }
