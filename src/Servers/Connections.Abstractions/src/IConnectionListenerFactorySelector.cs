@@ -6,8 +6,12 @@ using System.Net;
 namespace Microsoft.AspNetCore.Connections;
 
 /// <summary>
-/// Defines an interface that determines the mechanisms for binding to various types of <see cref="EndPoint"/>s.
+/// Defines an interface that determines whether the listener factory supports binding to the specified <see cref="EndPoint"/>.
 /// </summary>
+/// <remarks>
+/// This interface should be implemented by <see cref="IConnectionListenerFactory"/> and <see cref="IMultiplexedConnectionListenerFactory"/>
+/// implementations that want to control want endpoint instances they can bind to.
+/// </remarks>
 public interface IConnectionListenerFactorySelector
 {
     /// <summary>

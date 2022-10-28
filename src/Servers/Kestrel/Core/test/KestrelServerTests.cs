@@ -606,8 +606,6 @@ public class KestrelServerTests
 
                 return new ValueTask<IConnectionListener>(mockTransport.Object);
             });
-        mockTransportFactory.As<IConnectionListenerFactorySelector>()
-            .Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
 
         var mockLoggerFactory = new Mock<ILoggerFactory>();
         var mockLogger = new Mock<ILogger>();
@@ -738,8 +736,6 @@ public class KestrelServerTests
 
                 return new ValueTask<IConnectionListener>(mockTransport.Object);
             });
-        mockTransportFactory.As<IConnectionListenerFactorySelector>()
-            .Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
 
         // Don't use "using". Dispose() could hang if test fails.
         var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
@@ -877,8 +873,6 @@ public class KestrelServerTests
 
                 return new ValueTask<IConnectionListener>(mockTransport.Object);
             });
-        mockTransportFactory.As<IConnectionListenerFactorySelector>()
-            .Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
 
         // Don't use "using". Dispose() could hang if test fails.
         var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
@@ -947,7 +941,7 @@ public class KestrelServerTests
             throw new InvalidOperationException();
         }
 
-        bool IConnectionListenerFactorySelector.CanBind(EndPoint endpoint) => false;
+        public bool CanBind(EndPoint endpoint) => false;
     }
 
     private class NonBindableMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory, IConnectionListenerFactorySelector
@@ -957,7 +951,7 @@ public class KestrelServerTests
             throw new InvalidOperationException();
         }
 
-        bool IConnectionListenerFactorySelector.CanBind(EndPoint endpoint) => false;
+        public bool CanBind(EndPoint endpoint) => false;
     }
 
     private class MockMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory
