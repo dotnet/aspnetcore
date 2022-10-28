@@ -44,7 +44,11 @@ internal sealed class TransportManager
 
         foreach (var transportFactory in _transportFactories)
         {
-            if (transportFactory.CanBind(endPoint))
+            var selector = transportFactory as IConnectionListenerFactorySelector;
+
+            // By default, the last registered factory binds to the endpoint.
+            // A factory can implement IConnectionListenerFactorySelector to decide whether it can bind to the endpoint.
+            if (selector?.CanBind(endPoint) ?? true)
             {
                 var transport = await transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
                 StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
@@ -97,7 +101,11 @@ internal sealed class TransportManager
 
         foreach (var multiplexedTransportFactory in _multiplexedTransportFactories)
         {
-            if (multiplexedTransportFactory.CanBind(endPoint))
+            var selector = multiplexedTransportFactory as IConnectionListenerFactorySelector;
+
+            // By default, the last registered factory binds to the endpoint.
+            // A factory can implement IConnectionListenerFactorySelector to decide whether it can bind to the endpoint.
+            if (selector?.CanBind(endPoint) ?? true)
             {
                 var transport = await multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
                 StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);

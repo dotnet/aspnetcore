@@ -475,7 +475,6 @@ public class KestrelServerTests
 
         var mockTransport = new Mock<IConnectionListener>();
         var mockTransportFactory = new Mock<IConnectionListenerFactory>();
-        mockTransportFactory.Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
         mockTransportFactory
             .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
             .Returns<EndPoint, CancellationToken>((e, token) =>
@@ -533,7 +532,6 @@ public class KestrelServerTests
 
         var mockTransport = new Mock<IConnectionListener>();
         var mockTransportFactory = new Mock<IConnectionListenerFactory>();
-        mockTransportFactory.Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
         mockTransportFactory
             .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
             .Returns<EndPoint, CancellationToken>((e, token) =>
@@ -593,7 +591,6 @@ public class KestrelServerTests
 
         var mockTransport = new Mock<IConnectionListener>();
         var mockTransportFactory = new Mock<IConnectionListenerFactory>();
-        mockTransportFactory.Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
         mockTransportFactory
             .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
             .Returns<EndPoint, CancellationToken>((e, token) =>
@@ -609,6 +606,8 @@ public class KestrelServerTests
 
                 return new ValueTask<IConnectionListener>(mockTransport.Object);
             });
+        mockTransportFactory.As<IConnectionListenerFactorySelector>()
+            .Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
 
         var mockLoggerFactory = new Mock<ILoggerFactory>();
         var mockLogger = new Mock<ILogger>();
@@ -723,7 +722,6 @@ public class KestrelServerTests
 
         var mockTransports = new List<Mock<IConnectionListener>>();
         var mockTransportFactory = new Mock<IConnectionListenerFactory>();
-        mockTransportFactory.Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
         mockTransportFactory
             .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
             .Returns<EndPoint, CancellationToken>((e, token) =>
@@ -740,6 +738,8 @@ public class KestrelServerTests
 
                 return new ValueTask<IConnectionListener>(mockTransport.Object);
             });
+        mockTransportFactory.As<IConnectionListenerFactorySelector>()
+            .Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
 
         // Don't use "using". Dispose() could hang if test fails.
         var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
@@ -861,7 +861,6 @@ public class KestrelServerTests
 
         var mockTransports = new List<Mock<IConnectionListener>>();
         var mockTransportFactory = new Mock<IConnectionListenerFactory>();
-        mockTransportFactory.Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
         mockTransportFactory
             .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
             .Returns<EndPoint, CancellationToken>((e, token) =>
@@ -878,6 +877,8 @@ public class KestrelServerTests
 
                 return new ValueTask<IConnectionListener>(mockTransport.Object);
             });
+        mockTransportFactory.As<IConnectionListenerFactorySelector>()
+            .Setup(m => m.CanBind(It.IsAny<EndPoint>())).Returns(true);
 
         // Don't use "using". Dispose() could hang if test fails.
         var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
@@ -939,24 +940,24 @@ public class KestrelServerTests
         }
     }
 
-    private class NonBindableTransportFactory : IConnectionListenerFactory
+    private class NonBindableTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
     {
         public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException();
         }
 
-        bool IConnectionListenerFactory.CanBind(EndPoint endpoint) => false;
+        bool IConnectionListenerFactorySelector.CanBind(EndPoint endpoint) => false;
     }
 
-    private class NonBindableMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory
+    private class NonBindableMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory, IConnectionListenerFactorySelector
     {
         public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException();
         }
 
-        bool IMultiplexedConnectionListenerFactory.CanBind(EndPoint endpoint) => false;
+        bool IConnectionListenerFactorySelector.CanBind(EndPoint endpoint) => false;
     }
 
     private class MockMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory
