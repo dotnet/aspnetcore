@@ -87,7 +87,7 @@ These principles guide how we create and manage .slnf files:
 ./restore.ps1
 ```
 
-2. After the restore script has finished executing, activate the locally installed .NET by running the following command.
+4. After the restore script has finished executing, activate the locally installed .NET by running the following command.
 
 ```bash
 source activate.sh
@@ -97,14 +97,14 @@ source activate.sh
 . ./activate.ps1
 ```
 
-3. After activating the locally installed .NET, you can open your project of choice by running the `code` command in the directory of choice. For example, if you want to modify code in the `src/Http` project, you can use the following:
+5. After activating the locally installed .NET, you can open your project of choice by running the `code` command in the directory of choice. For example, if you want to modify code in the `src/Http` project, you can use the following:
 
 ```bash
 cd src/Http
 code .
 ```
 
-4. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
+6. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
 > :bulb: The `build.sh` or `build.ps1` script will be local to the directory of the project that you have opened. For example, the script located in the `src/Http` directory.
 
@@ -113,7 +113,7 @@ code .
 ./build.sh -test
 ```
 
-5. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
+7. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
 
 ```bash
 source activate.sh
