@@ -56,7 +56,7 @@ internal sealed class TransportManager
             }
         }
 
-        throw new InvalidOperationException($"No registered {nameof(IConnectionListenerFactory)} supports endpoint: {endPoint}");
+        throw new InvalidOperationException($"No registered {nameof(IConnectionListenerFactory)} supports endpoint {endPoint.GetType().Name}: {endPoint}");
     }
 
     public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, ListenOptions listenOptions, CancellationToken cancellationToken)
@@ -113,7 +113,7 @@ internal sealed class TransportManager
             }
         }
 
-        throw new InvalidOperationException($"No registered {nameof(IMultiplexedConnectionListenerFactory)} supports endpoint: {endPoint}");
+        throw new InvalidOperationException($"No registered {nameof(IMultiplexedConnectionListenerFactory)} supports endpoint {endPoint.GetType().Name}: {endPoint}");
     }
 
     /// <summary>

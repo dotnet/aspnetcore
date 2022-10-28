@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Connections;
 /// </summary>
 /// <remarks>
 /// This interface should be implemented by <see cref="IConnectionListenerFactory"/> and <see cref="IMultiplexedConnectionListenerFactory"/>
-/// implementations that want to control want endpoint instances they can bind to.
+/// types that want to control want endpoint instances they can bind to.
 /// </remarks>
 public interface IConnectionListenerFactorySelector
 {

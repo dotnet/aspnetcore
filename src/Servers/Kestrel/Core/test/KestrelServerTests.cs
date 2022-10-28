@@ -257,7 +257,7 @@ public class KestrelServerTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None));
 
-        Assert.Equal("No registered IConnectionListenerFactory supports endpoint: 127.0.0.1:0", exception.Message);
+        Assert.Equal("No registered IConnectionListenerFactory supports endpoint IPEndPoint: 127.0.0.1:0", exception.Message);
     }
 
     [Fact]
@@ -299,7 +299,7 @@ public class KestrelServerTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None));
 
-        Assert.Equal("No registered IMultiplexedConnectionListenerFactory supports endpoint: 127.0.0.1:0", exception.Message);
+        Assert.Equal("No registered IMultiplexedConnectionListenerFactory supports endpoint IPEndPoint: 127.0.0.1:0", exception.Message);
     }
 
     [Fact]
