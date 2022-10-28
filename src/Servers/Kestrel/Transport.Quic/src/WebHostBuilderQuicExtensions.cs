@@ -19,6 +19,7 @@ public static class WebHostBuilderQuicExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
+        // QuicListener.IsSupported has performance costs. Always register the QUIC factory and then check for support when binding an endpoint.
         return hostBuilder.ConfigureServices(services =>
         {
             services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
