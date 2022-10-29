@@ -45,10 +45,7 @@ internal sealed class TransportManager
         foreach (var transportFactory in _transportFactories)
         {
             var selector = transportFactory as IConnectionListenerFactorySelector;
-
-            // By default, the last registered factory binds to the endpoint.
-            // A factory can implement IConnectionListenerFactorySelector to decide whether it can bind to the endpoint.
-            if (selector?.CanBind(endPoint) ?? true)
+            if (CanBindFactory(endPoint, selector))
             {
                 var transport = await transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
                 StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
@@ -102,10 +99,7 @@ internal sealed class TransportManager
         foreach (var multiplexedTransportFactory in _multiplexedTransportFactories)
         {
             var selector = multiplexedTransportFactory as IConnectionListenerFactorySelector;
-
-            // By default, the last registered factory binds to the endpoint.
-            // A factory can implement IConnectionListenerFactorySelector to decide whether it can bind to the endpoint.
-            if (selector?.CanBind(endPoint) ?? true)
+            if (CanBindFactory(endPoint, selector))
             {
                 var transport = await multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
                 StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
@@ -114,6 +108,13 @@ internal sealed class TransportManager
         }
 
         throw new InvalidOperationException($"No registered {nameof(IMultiplexedConnectionListenerFactory)} supports endpoint {endPoint.GetType().Name}: {endPoint}");
+    }
+
+    private static bool CanBindFactory(EndPoint endPoint, IConnectionListenerFactorySelector? selector)
+    {
+        // By default, the last registered factory binds to the endpoint.
+        // A factory can implement IConnectionListenerFactorySelector to decide whether it can bind to the endpoint.
+        return selector?.CanBind(endPoint) ?? true;
     }
 
     /// <summary>
