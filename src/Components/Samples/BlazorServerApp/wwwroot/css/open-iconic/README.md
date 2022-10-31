@@ -17,7 +17,7 @@
 
 ## Getting Started
 
-#### For code samples and everything else you need to get started with Open Iconic, check out our [Icons](https://github.com/iconic/open-iconic) and [Reference](https://github.com/iconic/open-iconic#reference) sections.
+#### For code samples and everything else you need to get started with Open Iconic, check out our [Icons](https://github.com/iconic/open-iconic) and [Reference](https://github.com/iconic/open-iconic) sections.
 
 ### General Usage
 
