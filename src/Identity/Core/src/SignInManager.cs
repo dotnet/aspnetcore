@@ -652,26 +652,21 @@ public class SignInManager<TUser> where TUser : class
     {
         var auth = await Context.AuthenticateAsync(IdentityConstants.ExternalScheme);
         var items = auth?.Properties?.Items;
-        if (auth?.Principal == null || items == null || !items.ContainsKey(LoginProviderKey))
+        if (auth?.Principal == null || items == null || !items.TryGetValue(LoginProviderKey, out var provider))
         {
             return null;
         }
 
         if (expectedXsrf != null)
         {
-            if (!items.ContainsKey(XsrfKey))
-            {
-                return null;
-            }
-            var userId = items[XsrfKey] as string;
-            if (userId != expectedXsrf)
+            if (!items.TryGetValue(XsrfKey, out var userId) ||
+                userId != expectedXsrf)
             {
                 return null;
             }
         }
 
         var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        var provider = items[LoginProviderKey] as string;
         if (providerKey == null || provider == null)
         {
             return null;
