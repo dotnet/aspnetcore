@@ -1584,6 +1584,44 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ParameterDescription_ParsablePrimitiveType()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsTryParsablePrimitiveType));
+        var parameterDescriptor = action.Parameters.Single();
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal(1, description.ParameterDescriptions.Count);
+
+        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
+        Assert.Same(BindingSource.Query, id.Source);
+        Assert.Equal(typeof(Guid), id.Type);
+    }
+
+    [Fact]
+    public void GetApiDescription_ParameterDescription_NullableParsablePrimitiveType()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsTryParsableNullablePrimitiveType));
+        var parameterDescriptor = action.Parameters.Single();
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal(1, description.ParameterDescriptions.Count);
+
+        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "id");
+        Assert.Same(BindingSource.Query, id.Source);
+        Assert.Equal(typeof(Guid?), id.Type);
+    }
+
+    [Fact]
     public void GetApiDescription_ParameterDescription_ParsableType()
     {
         // Arrange
@@ -2451,6 +2489,14 @@ public class DefaultApiDescriptionProviderTest
     }
 
     private void AcceptsEmployee([FromQuery(Name = "employee")] Employee dto)
+    {
+    }
+
+    private void AcceptsTryParsablePrimitiveType([FromQuery] Guid id)
+    {
+    }
+
+    private void AcceptsTryParsableNullablePrimitiveType([FromQuery] Guid? id)
     {
     }
 
