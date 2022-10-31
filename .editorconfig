@@ -184,6 +184,9 @@ dotnet_diagnostic.CA1847.severity = warning
 # CA1852: Seal internal types
 dotnet_diagnostic.CA1852.severity = warning
 
+# CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
+dotnet_diagnostic.CA1854.severity = warning
+
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = warning
 
@@ -328,6 +331,8 @@ dotnet_diagnostic.CA1846.severity = suggestion
 dotnet_diagnostic.CA1847.severity = suggestion
 # CA1852: Seal internal types
 dotnet_diagnostic.CA1852.severity = suggestion
+# CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
+dotnet_diagnostic.CA1854.severity = suggestion
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = suggestion
 # CA2008: Do not create tasks without passing a TaskScheduler
