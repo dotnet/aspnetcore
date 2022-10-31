@@ -341,7 +341,7 @@ public class KestrelServerLimitsTests
     [Fact]
     public void Http2MaxRequestHeaderFieldSizeDefault()
     {
-        Assert.Equal(16 * 1024, new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize);
+        Assert.Equal(32 * 1024, new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize);
     }
 
     [Theory]

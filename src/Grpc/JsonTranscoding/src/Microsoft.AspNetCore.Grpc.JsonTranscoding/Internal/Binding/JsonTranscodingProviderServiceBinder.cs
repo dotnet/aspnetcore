@@ -237,13 +237,17 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
 
     private static CallHandlerDescriptorInfo CreateDescriptorInfo(string body, string responseBody, MethodDescriptor methodDescriptor, JsonTranscodingRouteAdapter routeAdapter)
     {
-        var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeAdapter.HttpRoutePattern.Variables.Select(v => v.FieldPath).ToList(), methodDescriptor.InputType);
+        var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeAdapter.HttpRoutePattern.Variables, methodDescriptor.InputType);
 
         var bodyDescriptor = ServiceDescriptorHelpers.ResolveBodyDescriptor(body, typeof(TService), methodDescriptor);
 
         FieldDescriptor? responseBodyDescriptor = null;
         if (!string.IsNullOrEmpty(responseBody))
         {
+            if (responseBody.Contains('.', StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
+            }
             responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
             if (responseBodyDescriptor == null)
             {
@@ -255,7 +259,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             responseBodyDescriptor,
             bodyDescriptor?.Descriptor,
             bodyDescriptor?.IsDescriptorRepeated ?? false,
-            bodyDescriptor?.FieldDescriptors,
+            bodyDescriptor?.FieldDescriptor,
             routeParameterDescriptors,
             routeAdapter);
         return descriptorInfo;

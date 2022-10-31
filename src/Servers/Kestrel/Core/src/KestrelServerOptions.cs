@@ -252,9 +252,6 @@ public class KestrelServerOptions
         writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
         writer.WriteBooleanValue(AllowResponseHeaderCompression);
 
-        writer.WritePropertyName(nameof(EnableAltSvc));
-        writer.WriteBooleanValue(EnableAltSvc);
-
         writer.WritePropertyName(nameof(IsDevCertLoaded));
         writer.WriteBooleanValue(IsDevCertLoaded);
 

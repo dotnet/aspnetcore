@@ -35,13 +35,15 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     private readonly int _iterCount;
     private readonly RandomNumberGenerator _rng;
 
+    private static readonly PasswordHasherOptions DefaultOptions = new PasswordHasherOptions();
+
     /// <summary>
     /// Creates a new instance of <see cref="PasswordHasher{TUser}"/>.
     /// </summary>
     /// <param name="optionsAccessor">The options for this instance.</param>
     public PasswordHasher(IOptions<PasswordHasherOptions>? optionsAccessor = null)
     {
-        var options = optionsAccessor?.Value ?? new PasswordHasherOptions();
+        var options = optionsAccessor?.Value ?? DefaultOptions;
 
         _compatibilityMode = options.CompatibilityMode;
         switch (_compatibilityMode)

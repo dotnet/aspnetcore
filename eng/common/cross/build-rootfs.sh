@@ -391,9 +391,9 @@ elif [[ "$__CodeName" == "illumos" ]]; then
         --with-gnu-ld --disable-nls --disable-libgomp --disable-libquadmath --disable-libssp --disable-libvtv --disable-libcilkrts --disable-libada --disable-libsanitizer \
         --disable-libquadmath-support --disable-shared --enable-tls
     make -j "$JOBS" && make install && cd ..
-    BaseUrl=https://pkgsrc.joyent.com
+    BaseUrl=https://pkgsrc.smartos.org
     if [[ "$__UseMirror" == 1 ]]; then
-        BaseUrl=http://pkgsrc.smartos.skylime.net
+        BaseUrl=https://pkgsrc.smartos.skylime.net
     fi
     BaseUrl="$BaseUrl/packages/SmartOS/trunk/${__illumosArch}/All"
     echo "Downloading manifest"
@@ -402,7 +402,8 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     read -ra array <<<"$__IllumosPackages"
     for package in "${array[@]}"; do
         echo "Installing '$package'"
-        package="$(grep ">$package-[0-9]" All | sed -En 's/.*href="(.*)\.tgz".*/\1/p')"
+        # find last occurrence of package in listing and extract its name
+        package="$(sed -En '/.*href="('"$package"'-[0-9].*).tgz".*/h;$!d;g;s//\1/p' All)"
         echo "Resolved name '$package'"
         wget "$BaseUrl"/"$package".tgz
         ar -x "$package".tgz

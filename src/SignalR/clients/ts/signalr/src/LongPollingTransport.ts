@@ -3,7 +3,6 @@
 
 import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
-import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
@@ -14,7 +13,6 @@ import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 /** @private */
 export class LongPollingTransport implements ITransport {
     private readonly _httpClient: HttpClient;
-    private readonly _accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     private readonly _pollAbort: AbortController;
@@ -32,9 +30,8 @@ export class LongPollingTransport implements ITransport {
         return this._pollAbort.aborted;
     }
 
-    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, options: IHttpConnectionOptions) {
+    constructor(httpClient: HttpClient, logger: ILogger, options: IHttpConnectionOptions) {
         this._httpClient = httpClient;
-        this._accessTokenFactory = accessTokenFactory;
         this._logger = logger;
         this._pollAbort = new AbortController();
         this._options = options;
@@ -74,8 +71,6 @@ export class LongPollingTransport implements ITransport {
             pollOptions.responseType = "arraybuffer";
         }
 
-        await this._updateHeaderToken(pollOptions);
-
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
         const pollUrl = `${url}&_=${Date.now()}`;
@@ -94,28 +89,9 @@ export class LongPollingTransport implements ITransport {
         this._receiving = this._poll(this._url, pollOptions);
     }
 
-    private async _updateHeaderToken(request: HttpRequest): Promise<void> {
-        if (!request.headers) {
-            request.headers = {};
-        }
-        if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                request.headers[HeaderNames.Authorization] = `Bearer ${token}`
-            } else {
-                if (request.headers[HeaderNames.Authorization]) {
-                    delete request.headers[HeaderNames.Authorization];
-                }
-            }
-        }
-    }
-
     private async _poll(url: string, pollOptions: HttpRequest): Promise<void> {
         try {
             while (this._running) {
-                // We have to get the access token on each poll, in case it changes
-                await this._updateHeaderToken(pollOptions);
-
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
                     this._logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
@@ -174,7 +150,7 @@ export class LongPollingTransport implements ITransport {
         if (!this._running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url!, this._accessTokenFactory, data, this._options);
+        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url!, data, this._options);
     }
 
     public async stop(): Promise<void> {
@@ -199,7 +175,6 @@ export class LongPollingTransport implements ITransport {
                 timeout: this._options.timeout,
                 withCredentials: this._options.withCredentials,
             };
-            await this._updateHeaderToken(deleteOptions);
             await this._httpClient.delete(this._url!, deleteOptions);
 
             this._logger.log(LogLevel.Trace, "(LongPolling transport) DELETE request sent.");

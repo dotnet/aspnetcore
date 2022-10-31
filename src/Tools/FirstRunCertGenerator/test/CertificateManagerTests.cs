@@ -418,6 +418,32 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
                 e.Oid.Value == CertificateManager.AspNetHttpsOid &&
                 e.RawData[0] == 1);
     }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "https://github.com/dotnet/aspnetcore/issues/6720")]
+    public void EnsureCreateHttpsCertificate_CreatesFilesWithUserOnlyUnixFileMode()
+    {
+        _fixture.CleanupCertificates();
+
+        const string CertificateName = nameof(EnsureCreateHttpsCertificate_CreatesFilesWithUserOnlyUnixFileMode) + ".pem";
+        const string KeyName = nameof(EnsureCreateHttpsCertificate_CreatesFilesWithUserOnlyUnixFileMode) + ".key";
+
+        var certificatePassword = Guid.NewGuid().ToString();
+        var now = DateTimeOffset.UtcNow;
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+
+        var result = _manager
+            .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, keyExportFormat: CertificateKeyExportFormat.Pem, isInteractive: false);
+
+        Assert.Equal(EnsureCertificateResult.Succeeded, result);
+
+        Assert.True(File.Exists(CertificateName));
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(CertificateName));
+
+        Assert.True(File.Exists(KeyName));
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(KeyName));
+    }
 }
 
 public class CertFixture : IDisposable

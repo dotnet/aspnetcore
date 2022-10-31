@@ -9,7 +9,7 @@ internal sealed class HubCallerClients : IHubCallerClients
     private readonly IHubClients _hubClients;
     internal readonly ChannelBasedSemaphore _parallelInvokes;
 
-    internal int ShouldReleaseSemaphore = 1;
+    private int _shouldReleaseSemaphore = 1;
 
     // Client results don't work in OnConnectedAsync
     // This property is set by the hub dispatcher when those methods are being called
@@ -90,6 +90,12 @@ internal sealed class HubCallerClients : IHubCallerClients
         return _hubClients.Users(userIds);
     }
 
+    // false if semaphore is being released by another caller, true if you own releasing the semaphore
+    internal bool TrySetSemaphoreReleased()
+    {
+        return Interlocked.CompareExchange(ref _shouldReleaseSemaphore, 0, 1) == 1;
+    }
+
     private sealed class NoInvokeSingleClientProxy : ISingleClientProxy
     {
         private readonly ISingleClientProxy _proxy;
@@ -125,9 +131,9 @@ internal sealed class HubCallerClients : IHubCallerClients
         {
             // Releases the Channel that is blocking pending invokes, which in turn can block the receive loop.
             // Because we are waiting for a result from the client we need to let the receive loop run otherwise we'll be blocked forever
-            var value = Interlocked.CompareExchange(ref _hubCallerClients.ShouldReleaseSemaphore, 0, 1);
+            var value = _hubCallerClients.TrySetSemaphoreReleased();
             // Only release once, and we set ShouldReleaseSemaphore to 0 so the DefaultHubDispatcher knows not to call Release again
-            if (value == 1)
+            if (value)
             {
                 _hubCallerClients._parallelInvokes.Release();
             }

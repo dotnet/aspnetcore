@@ -20,20 +20,17 @@ internal static class DebugProxyLauncher
     private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
     private static readonly string[] MessageSuppressionPrefixes = new[]
     {
-            "Hosting environment:",
-            "Content root path:",
-            "Now listening on:",
-            "Application started. Press Ctrl+C to shut down.",
-        };
+        "Hosting environment:",
+        "Content root path:",
+        "Now listening on:",
+        "Application started. Press Ctrl+C to shut down.",
+    };
 
     public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider, string devToolsHost)
     {
         lock (LaunchLock)
         {
-            if (LaunchedDebugProxyUrl == null)
-            {
-                LaunchedDebugProxyUrl = LaunchAndGetUrl(serviceProvider, devToolsHost);
-            }
+            LaunchedDebugProxyUrl ??= LaunchAndGetUrl(serviceProvider, devToolsHost);
 
             return LaunchedDebugProxyUrl;
         }
@@ -54,6 +51,7 @@ internal static class DebugProxyLauncher
             Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
         RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
@@ -141,21 +139,40 @@ internal static class DebugProxyLauncher
     private static void CompleteTaskWhenServerIsReady(Process aspNetProcess, TaskCompletionSource<string> taskCompletionSource)
     {
         string? capturedUrl = null;
+        var errorEncountered = false;
+
+        aspNetProcess.ErrorDataReceived += OnErrorDataReceived;
+        aspNetProcess.BeginErrorReadLine();
+
         aspNetProcess.OutputDataReceived += OnOutputDataReceived;
         aspNetProcess.BeginOutputReadLine();
+
+        void OnErrorDataReceived(object sender, DataReceivedEventArgs eventArgs)
+        {
+            if (!string.IsNullOrEmpty(eventArgs.Data))
+            {
+                taskCompletionSource.TrySetException(new InvalidOperationException(
+                    eventArgs.Data));
+                errorEncountered = true;
+            }
+        }
 
         void OnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
         {
             if (string.IsNullOrEmpty(eventArgs.Data))
             {
-                taskCompletionSource.TrySetException(new InvalidOperationException(
-                    "No output has been recevied from the application."));
+                if (!errorEncountered)
+                {
+                    taskCompletionSource.TrySetException(new InvalidOperationException(
+                        "Expected output has not been received from the application."));
+                }
                 return;
             }
 
             if (ApplicationStartedRegex.IsMatch(eventArgs.Data))
             {
                 aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
+                aspNetProcess.ErrorDataReceived -= OnErrorDataReceived;
                 if (!string.IsNullOrEmpty(capturedUrl))
                 {
                     taskCompletionSource.TrySetResult(capturedUrl);

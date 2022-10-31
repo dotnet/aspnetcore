@@ -141,7 +141,7 @@ internal static class TemplatePackageInstaller
         {
             var proc = await RunDotNetNew(output, $"\"{templateName}\"");
 
-            if (!proc.Error.Contains("No templates found matching:"))
+            if (!proc.Error.Contains("No templates or subcommands found matching:"))
             {
                 throw new InvalidOperationException($"Failed to uninstall previous templates. The template '{templateName}' could still be found.");
             }

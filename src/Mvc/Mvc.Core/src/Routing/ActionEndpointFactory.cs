@@ -108,6 +108,7 @@ internal sealed class ActionEndpointFactory
                 var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, route.Order)
                 {
                     DisplayName = action.DisplayName,
+                    ApplicationServices = _serviceProvider,
                 };
                 AddActionDataToBuilder(
                     builder,
@@ -153,6 +154,7 @@ internal sealed class ActionEndpointFactory
             var builder = new RouteEndpointBuilder(requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)
             {
                 DisplayName = action.DisplayName,
+                ApplicationServices = _serviceProvider,
             };
             AddActionDataToBuilder(
                 builder,
@@ -234,6 +236,7 @@ internal sealed class ActionEndpointFactory
             {
                 new SuppressMatchingMetadata(),
             },
+            ApplicationServices = _serviceProvider,
         };
 
         if (route.RouteName != null)
@@ -244,7 +247,7 @@ internal sealed class ActionEndpointFactory
         // See comments on the other usage of EndpointNameMetadata in this class.
         //
         // The set of cases for a conventional route are much simpler. We don't need to check
-        // for Endpoint Name already exising here because there's no way to add an attribute to
+        // for Endpoint Name already existing here because there's no way to add an attribute to
         // a conventional route.
         if (route.RouteName != null && routeNames.Add(route.RouteName))
         {
@@ -336,7 +339,7 @@ internal sealed class ActionEndpointFactory
         return (attributeRoutePattern, resolvedRequiredValues ?? action.RouteValues);
     }
 
-    private void AddActionDataToBuilder(
+    private static void AddActionDataToBuilder(
         EndpointBuilder builder,
         HashSet<string> routeNames,
         ActionDescriptor action,
@@ -360,7 +363,16 @@ internal sealed class ActionEndpointFactory
             groupConventions[i](builder);
         }
 
-        // Add action metadata first so it has a low precedence
+        var controllerActionDescriptor = action as ControllerActionDescriptor;
+
+        // Add metadata inferred from the parameter and/or return type before action-specific metadata.
+        // MethodInfo *should* never be null given a ControllerActionDescriptor, but this is unenforced.
+        if (controllerActionDescriptor?.MethodInfo is not null)
+        {
+            EndpointMetadataPopulator.PopulateMetadata(controllerActionDescriptor.MethodInfo, builder);
+        }
+
+        // Add action-specific metadata early so it has a low precedence
         if (action.EndpointMetadata != null)
         {
             foreach (var d in action.EndpointMetadata)
@@ -383,7 +395,7 @@ internal sealed class ActionEndpointFactory
         // However, Endpoint Routing requires Endpoint Names to be unique.
         //
         // We can use the route name as the endpoint name if it's not set. Note that there's no
-        // attribute for this today so it's unlikley. Using endpoint name on a
+        // attribute for this today so it's unlikely.
         if (routeName != null &&
             !suppressLinkGeneration &&
             routeNames.Add(routeName) &&
@@ -455,7 +467,7 @@ internal sealed class ActionEndpointFactory
             perRouteConventions[i](builder);
         }
 
-        if (builder.FilterFactories.Count > 0 && action is ControllerActionDescriptor cad)
+        if (builder.FilterFactories.Count > 0 && controllerActionDescriptor is not null)
         {
             var routeHandlerFilters = builder.FilterFactories;
 
@@ -466,7 +478,11 @@ internal sealed class ActionEndpointFactory
                 return controllerInvocationContext.ActionDescriptor.CacheEntry!.InnerActionMethodExecutor.Execute(controllerInvocationContext);
             };
 
-            var context = new EndpointFilterFactoryContext(cad.MethodInfo, builder.Metadata, _serviceProvider);
+            var context = new EndpointFilterFactoryContext
+            {
+                MethodInfo = controllerActionDescriptor.MethodInfo,
+                ApplicationServices = builder.ApplicationServices,
+            };
 
             var initialFilteredInvocation = del;
 
@@ -476,7 +492,7 @@ internal sealed class ActionEndpointFactory
                 del = filterFactory(context, del);
             }
 
-            cad.FilterDelegate = ReferenceEquals(del, initialFilteredInvocation) ? null : del;
+            controllerActionDescriptor.FilterDelegate = ReferenceEquals(del, initialFilteredInvocation) ? null : del;
         }
 
         foreach (var perRouteFinallyConvention in perRouteFinallyConventions)

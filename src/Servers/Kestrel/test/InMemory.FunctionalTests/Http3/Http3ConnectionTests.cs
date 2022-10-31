@@ -314,7 +314,30 @@ public class Http3ConnectionTests : Http3TestBase
     }
 
     [Fact]
-    public async Task ControlStream_ServerToClient_Closes_ConnectionError()
+    public async Task GOAWAY_TriggersLifetimeNotification_ConnectionClosedRequested()
+    {
+        var completionSource = new TaskCompletionSource();
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var controlStream = await Http3Api.CreateControlStream(id: 0);
+        await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+        var lifetime = Http3Api.MultiplexedConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>();
+        lifetime.ConnectionClosedRequested.Register(() => completionSource.TrySetResult());
+        Assert.False(lifetime.ConnectionClosedRequested.IsCancellationRequested);
+        
+        await controlStream.SendGoAwayAsync(streamId: 0, false);
+
+        await completionSource.Task.DefaultTimeout();
+        Assert.True(lifetime.ConnectionClosedRequested.IsCancellationRequested);
+
+        // Trigger server shutdown.
+        Http3Api.CloseServerGracefully();
+
+        await Http3Api.WaitForConnectionStopAsync(0, true, expectedErrorCode: Http3ErrorCode.NoError);
+    }
+
+    [Fact]
+    public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
     {
         var now = _serviceContext.MockSystemClock.UtcNow;
 

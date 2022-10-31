@@ -17,14 +17,16 @@ steps:
   
 - ${{ if ne(parameters.overrideGuardianVersion, '') }}:
   - pwsh: |
-      . $(Build.SourcesDirectory)\eng\common\sdl\sdl.ps1
+      Set-Location -Path $(Build.SourcesDirectory)\eng\common\sdl
+      . .\sdl.ps1
       $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts -Version ${{ parameters.overrideGuardianVersion }}
       Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
     displayName: Install Guardian (Overridden)
 
 - ${{ if eq(parameters.overrideGuardianVersion, '') }}:
   - pwsh: |
-      . $(Build.SourcesDirectory)\eng\common\sdl\sdl.ps1
+      Set-Location -Path $(Build.SourcesDirectory)\eng\common\sdl
+      . .\sdl.ps1
       $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts
       Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
     displayName: Install Guardian

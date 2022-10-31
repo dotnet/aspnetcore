@@ -12,27 +12,23 @@ internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
 {
     private readonly StringValues _headerNames;
 
-    /// <summary>
-    /// Creates a policy that doesn't vary the cached content based on headers.
-    /// </summary>
-    public VaryByHeaderPolicy()
+    private VaryByHeaderPolicy()
     {
     }
 
-    /// <summary>
-    /// Creates a policy that varies the cached content based on the specified header name.
-    /// </summary>
-    public VaryByHeaderPolicy(string header)
+    public VaryByHeaderPolicy(string header, params string[] headerNames)
     {
         ArgumentNullException.ThrowIfNull(header);
 
         _headerNames = header;
+
+        if (headerNames != null && headerNames.Length > 0)
+        {
+            _headerNames = StringValues.Concat(_headerNames, headerNames);
+        }
     }
 
-    /// <summary>
-    /// Creates a policy that varies the cached content based on the specified header names.
-    /// </summary>
-    public VaryByHeaderPolicy(params string[] headerNames)
+    public VaryByHeaderPolicy(string[] headerNames)
     {
         ArgumentNullException.ThrowIfNull(headerNames);
 

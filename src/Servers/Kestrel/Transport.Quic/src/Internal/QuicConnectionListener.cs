@@ -75,10 +75,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
                 var serverAuthenticationOptions = await _tlsConnectionCallbackOptions.OnConnection(context, cancellationToken);
 
                 // If the callback didn't set protocols then use the listener's list of protocols.
-                if (serverAuthenticationOptions.ApplicationProtocols == null)
-                {
-                    serverAuthenticationOptions.ApplicationProtocols = _tlsConnectionCallbackOptions.ApplicationProtocols;
-                }
+                serverAuthenticationOptions.ApplicationProtocols ??= _tlsConnectionCallbackOptions.ApplicationProtocols;
 
                 // If the SslServerAuthenticationOptions doesn't have a cert or protocols then the
                 // QUIC connection will fail and the client receives an unhelpful message.
@@ -145,38 +142,54 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
             throw new InvalidOperationException($"The listener needs to be initialized by calling {nameof(CreateListenerAsync)}.");
         }
 
-        try
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
-
-            if (!_pendingConnections.TryGetValue(quicConnection, out var connectionContext))
+            try
             {
-                throw new InvalidOperationException("Couldn't find ConnectionContext for QuicConnection.");
+                var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
+
+                if (!_pendingConnections.TryGetValue(quicConnection, out var connectionContext))
+                {
+                    throw new InvalidOperationException("Couldn't find ConnectionContext for QuicConnection.");
+                }
+                else
+                {
+                    _pendingConnections.Remove(quicConnection);
+                }
+
+                // Verify the connection context was created and set correctly.
+                Debug.Assert(connectionContext != null);
+                Debug.Assert(connectionContext.GetInnerConnection() == quicConnection);
+
+                QuicLog.AcceptedConnection(_log, connectionContext);
+
+                return connectionContext;
             }
-            else
+            catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
             {
-                _pendingConnections.Remove(quicConnection);
+                // OperationAborted is reported when an accept is in-progress and the listener is unbind/disposed.
+                QuicLog.ConnectionListenerAborted(_log, ex);
+                return null;
             }
-
-            // Verify the connection context was created and set correctly.
-            Debug.Assert(connectionContext != null);
-            Debug.Assert(connectionContext.GetInnerConnection() == quicConnection);
-
-            QuicLog.AcceptedConnection(_log, connectionContext);
-
-            return connectionContext;
+            catch (ObjectDisposedException ex)
+            {
+                // ObjectDisposedException is reported when an accept is started after the listener is unbind/disposed.
+                QuicLog.ConnectionListenerAborted(_log, ex);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                // If the client rejects the connection because of an invalid cert then AcceptConnectionAsync throws.
+                // An error thrown inside ConnectionOptionsCallback can also throw from AcceptConnectionAsync.
+                // These are recoverable errors and we don't want to stop accepting connections.
+                QuicLog.ConnectionListenerAcceptConnectionFailed(_log, ex);
+            }
         }
-        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
-        {
-            QuicLog.ConnectionListenerAborted(_log, ex);
-        }
+
         return null;
     }
 
-    public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-    {
-        await DisposeAsync();
-    }
+    public ValueTask UnbindAsync(CancellationToken cancellationToken = default) => DisposeAsync();
 
     public async ValueTask DisposeAsync()
     {

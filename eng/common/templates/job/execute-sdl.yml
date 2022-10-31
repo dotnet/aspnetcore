@@ -34,7 +34,7 @@ jobs:
 - job: Run_SDL
   dependsOn: ${{ parameters.dependsOn }}
   displayName: Run SDL tool
-  condition: eq( ${{ parameters.enable }}, 'true')
+  condition: and(succeededOrFailed(), eq( ${{ parameters.enable }}, 'true'))
   variables:
     - group: DotNet-VSTS-Bot
     - name: AzDOProjectName
@@ -46,6 +46,7 @@ jobs:
     - template: /eng/common/templates/variables/sdl-variables.yml
     - name: GuardianVersion
       value: ${{ coalesce(parameters.overrideGuardianVersion, '$(DefaultGuardianVersion)') }}
+    - template: /eng/common/templates/variables/pool-providers.yml
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
     ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
@@ -53,13 +54,15 @@ jobs:
       demands: Cmd
     # If it's not devdiv, it's dnceng
     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-      name: NetCore1ESPool-Internal
+      name: $(DncEngInternalBuildPool)
       demands: ImageOverride -equals windows.vs2019.amd64
   steps:
   - checkout: self
     clean: true
 
-  - template: /eng/common/templates/post-build/setup-maestro-vars.yml
+  # If the template caller didn't provide an AzDO parameter, set them all up as Maestro vars.
+  - ${{ if not(and(parameters.AzDOProjectName, parameters.AzDOPipelineId, parameters.AzDOBuildId)) }}:
+    - template: /eng/common/templates/post-build/setup-maestro-vars.yml
 
   - ${{ if ne(parameters.downloadArtifacts, 'false')}}:
     - ${{ if ne(parameters.artifactNames, '') }}:

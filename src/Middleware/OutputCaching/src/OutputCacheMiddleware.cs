@@ -312,6 +312,12 @@ internal sealed class OutputCacheMiddleware
     {
         CreateCacheKey(cacheContext);
 
+        // If the cache key can't be computed skip it
+        if (string.IsNullOrEmpty(cacheContext.CacheKey))
+        {
+            return false;
+        }
+
         // Locking cache lookups by default
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
@@ -339,36 +345,6 @@ internal sealed class OutputCacheMiddleware
         if (!string.IsNullOrEmpty(context.CacheKey))
         {
             return;
-        }
-
-        var varyHeaderNames = context.CacheVaryByRules.HeaderNames;
-        var varyRouteValueNames = context.CacheVaryByRules.RouteValueNames;
-        var varyQueryKeys = context.CacheVaryByRules.QueryKeys;
-        var varyByCustomKeys = context.CacheVaryByRules.HasVaryByCustom ? context.CacheVaryByRules.VaryByCustom : null;
-        var varyByPrefix = context.CacheVaryByRules.VaryByPrefix;
-
-        // Check if any vary rules exist
-        if (!StringValues.IsNullOrEmpty(varyHeaderNames) || !StringValues.IsNullOrEmpty(varyRouteValueNames) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
-        {
-            // Normalize order and casing of vary by rules
-            var normalizedVaryHeaderNames = GetOrderCasingNormalizedStringValues(varyHeaderNames);
-            var normalizedVaryRouteValueNames = GetOrderCasingNormalizedStringValues(varyRouteValueNames);
-            var normalizedVaryQueryKeys = GetOrderCasingNormalizedStringValues(varyQueryKeys);
-            var normalizedVaryByCustom = GetOrderCasingNormalizedDictionary(varyByCustomKeys);
-
-            // Update vary rules with normalized values
-            context.CacheVaryByRules.VaryByCustom.Clear();
-            context.CacheVaryByRules.VaryByPrefix = varyByPrefix + normalizedVaryByCustom;
-            context.CacheVaryByRules.HeaderNames = normalizedVaryHeaderNames;
-            context.CacheVaryByRules.RouteValueNames = normalizedVaryRouteValueNames;
-            context.CacheVaryByRules.QueryKeys = normalizedVaryQueryKeys;
-
-            // TODO: Add same condition on LogLevel in Response Caching
-            // Always overwrite the CachedVaryByRules to update the expiry information
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.VaryByRulesUpdated(normalizedVaryHeaderNames.ToString(), normalizedVaryQueryKeys.ToString(), normalizedVaryRouteValueNames.ToString());
-            }
         }
 
         context.CacheKey = _keyProvider.CreateStorageKey(context);
@@ -438,14 +414,16 @@ internal sealed class OutputCacheMiddleware
                 }
 
                 context.CachedResponse.Body = cachedResponseBody;
-                _logger.ResponseCached();
 
                 if (string.IsNullOrEmpty(context.CacheKey))
                 {
-                    throw new InvalidOperationException("Cache key must be defined");
+                    _logger.ResponseNotCached();
                 }
-
-                await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, context.HttpContext.RequestAborted);
+                else
+                {
+                    _logger.ResponseCached();
+                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, context.HttpContext.RequestAborted);
+                }
             }
             else
             {
@@ -566,56 +544,5 @@ internal sealed class OutputCacheMiddleware
         }
 
         return false;
-    }
-
-    // Normalize order and casing
-    internal static StringValues GetOrderCasingNormalizedStringValues(StringValues stringValues)
-    {
-        if (stringValues.Count == 0)
-        {
-            return StringValues.Empty;
-        }
-        else if (stringValues.Count == 1)
-        {
-            return new StringValues(stringValues.ToString().ToUpperInvariant());
-        }
-        else
-        {
-            var originalArray = stringValues.ToArray();
-            var newArray = new string[originalArray.Length];
-
-            for (var i = 0; i < originalArray.Length; i++)
-            {
-                newArray[i] = originalArray[i]!.ToUpperInvariant();
-            }
-
-            // Since the casing has already been normalized, use Ordinal comparison
-            Array.Sort(newArray, StringComparer.Ordinal);
-
-            return new StringValues(newArray);
-        }
-    }
-
-    internal static StringValues GetOrderCasingNormalizedDictionary(IDictionary<string, string>? dictionary)
-    {
-        const char KeySubDelimiter = '\x1f';
-
-        if (dictionary == null || dictionary.Count == 0)
-        {
-            return StringValues.Empty;
-        }
-
-        var newArray = new string[dictionary.Count];
-
-        var i = 0;
-        foreach (var (key, value) in dictionary)
-        {
-            newArray[i++] = $"{key.ToUpperInvariant()}{KeySubDelimiter}{value}";
-        }
-
-        // Since the casing has already been normalized, use Ordinal comparison
-        Array.Sort(newArray, StringComparer.Ordinal);
-
-        return new StringValues(newArray);
     }
 }

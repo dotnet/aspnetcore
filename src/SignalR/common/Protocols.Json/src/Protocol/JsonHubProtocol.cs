@@ -238,7 +238,15 @@ public sealed class JsonHubProtocol : IHubProtocol
                                 }
                                 else
                                 {
-                                    result = BindType(ref reader, input, returnType);
+                                    try
+                                    {
+                                        result = BindType(ref reader, input, returnType);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        error = $"Error trying to deserialize result to {returnType.Name}. {ex.Message}";
+                                        hasResult = false;
+                                    }
                                 }
                             }
                         }
@@ -423,7 +431,15 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else
                         {
-                            result = BindType(ref resultToken, input, returnType);
+                            try
+                            {
+                                result = BindType(ref resultToken, input, returnType);
+                            }
+                            catch (Exception ex)
+                            {
+                                error = $"Error trying to deserialize result to {returnType.Name}. {ex.Message}";
+                                hasResult = false;
+                            }
                         }
                     }
 

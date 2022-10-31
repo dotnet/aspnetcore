@@ -356,6 +356,18 @@ public class MethodHub : TestHub
             }
         });
     }
+
+    public async Task<int> GetClientResultWithStream(ChannelReader<int> channelReader)
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        return sum;
+    }
+
+    public async IAsyncEnumerable<int> StreamWithClientResult()
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        yield return sum;
+    }
 }
 
 internal class SelfRef

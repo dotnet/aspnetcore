@@ -34,7 +34,7 @@ internal sealed class IdentityDefaultUIConfigureOptions<TUser> :
         options.Conventions.AddAreaFolderApplicationModelConvention(
             IdentityUIDefaultAreaName,
             "/",
-            pam => convention.Apply(pam));
+            convention.Apply);
         options.Conventions.AddAreaFolderApplicationModelConvention(
             IdentityUIDefaultAreaName,
             "/Account/Manage",

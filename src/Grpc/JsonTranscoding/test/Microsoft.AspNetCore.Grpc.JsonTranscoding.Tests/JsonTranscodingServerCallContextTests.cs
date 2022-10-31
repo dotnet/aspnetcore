@@ -100,7 +100,7 @@ public class JsonTranscodingServerCallContextTests
                 null,
                 false,
                 null,
-                new Dictionary<string, List<FieldDescriptor>>(),
+                new Dictionary<string, RouteParameter>(),
                 JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")!)),
             NullLogger.Instance);
     }

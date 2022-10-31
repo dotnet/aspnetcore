@@ -65,11 +65,11 @@ internal sealed class RazorPagesRazorViewEngineOptionsSetup : IConfigureOptions<
 
     private static string CombinePath(string path1, string path2)
     {
-        if (path1.EndsWith("/", StringComparison.Ordinal) || path2.StartsWith("/", StringComparison.Ordinal))
+        if (path1.EndsWith('/') || path2.StartsWith('/'))
         {
             return path1 + path2;
         }
-        else if (path1.EndsWith("/", StringComparison.Ordinal) && path2.StartsWith("/", StringComparison.Ordinal))
+        else if (path1.EndsWith('/') && path2.StartsWith('/'))
         {
             return string.Concat(path1, path2.AsSpan(1));
         }

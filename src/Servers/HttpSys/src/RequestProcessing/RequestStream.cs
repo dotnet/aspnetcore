@@ -94,19 +94,6 @@ internal sealed partial class RequestStream : Stream
         _requestContext.Abort();
     }
 
-    private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
-    {
-        ArgumentNullException.ThrowIfNull(buffer);
-        if ((uint)offset > (uint)buffer.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-        }
-        if ((uint)size > (uint)(buffer.Length - offset))
-        {
-            throw new ArgumentOutOfRangeException(nameof(size), size, string.Empty);
-        }
-    }
-
     public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
     {
         if (!RequestContext.AllowSynchronousIO)
@@ -114,7 +101,7 @@ internal sealed partial class RequestStream : Stream
             throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
         }
 
-        ValidateReadBuffer(buffer, offset, size);
+        ValidateBufferArguments(buffer, offset, size);
         CheckSizeLimit();
         if (_closed)
         {
@@ -200,7 +187,7 @@ internal sealed partial class RequestStream : Stream
 
     public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
     {
-        ValidateReadBuffer(buffer, offset, size);
+        ValidateBufferArguments(buffer, offset, size);
         CheckSizeLimit();
         if (_closed)
         {

@@ -15,7 +15,7 @@ public class Http2Limits
     private int _maxStreamsPerConnection = 100;
     private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
     private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
-    private int _maxRequestHeaderFieldSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
+    private int _maxRequestHeaderFieldSize = 32 * 1024; // Matches MaxRequestHeadersTotalSize
     private int _initialConnectionWindowSize = 1024 * 1024; // Equal to SocketTransportOptions.MaxReadBufferSize and larger than any one single stream.
     private int _initialStreamWindowSize = 768 * 1024; // Larger than the default 64kb and able to use most (3/4ths) of the connection window by itself.
     private TimeSpan _keepAlivePingDelay = TimeSpan.MaxValue;

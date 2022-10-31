@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,7 +98,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                     webSocket.Options.Cookies = context.Options.Cookies;
                 }
 
-                if (context.Options.ClientCertificates != null)
+                if (context.Options.ClientCertificates is { Count: > 0 })
                 {
                     webSocket.Options.ClientCertificates.AddRange(context.Options.ClientCertificates);
                 }
@@ -107,6 +108,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                     webSocket.Options.Credentials = context.Options.Credentials;
                 }
 
+                var originalProxy = webSocket.Options.Proxy;
                 if (context.Options.Proxy != null)
                 {
                     webSocket.Options.Proxy = context.Options.Proxy;
@@ -118,6 +120,53 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
 
                 context.Options.WebSocketConfiguration?.Invoke(webSocket.Options);
+
+#if NET7_0_OR_GREATER
+                if (webSocket.Options.HttpVersion >= HttpVersion.Version20)
+                {
+                    // Reset options we set on the users' behalf since they are already on the HttpClient that we're passing to ConnectAsync
+                    // And ConnectAsync will throw if these options are set on the ClientWebSocketOptions
+                    if (ReferenceEquals(webSocket.Options.Cookies, context.Options.Cookies))
+                    {
+                        webSocket.Options.Cookies = null;
+                    }
+                    if (IsX509CertificateCollectionEqual(webSocket.Options.ClientCertificates, context.Options.ClientCertificates))
+                    {
+                        webSocket.Options.ClientCertificates.Clear();
+                    }
+                    if (ReferenceEquals(webSocket.Options.Credentials, context.Options.Credentials))
+                    {
+                        webSocket.Options.Credentials = null;
+                    }
+                    if (webSocket.Options.UseDefaultCredentials == (context.Options.UseDefaultCredentials ?? false))
+                    {
+                        webSocket.Options.UseDefaultCredentials = false;
+                    }
+                    if (ReferenceEquals(webSocket.Options.Proxy, context.Options.Proxy))
+                    {
+                        webSocket.Options.Proxy = originalProxy;
+                    }
+                }
+
+                static bool IsX509CertificateCollectionEqual(X509CertificateCollection? left, X509CertificateCollection? right)
+                {
+                    var leftCount = left?.Count ?? 0;
+                    var rightCount = right?.Count ?? 0;
+                    if (leftCount == rightCount)
+                    {
+                        for (var i = 0; i < rightCount; ++i)
+                        {
+                            if (!ReferenceEquals(left![i], right![i]))
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    return false;
+                }
+#endif
             }
         }
 

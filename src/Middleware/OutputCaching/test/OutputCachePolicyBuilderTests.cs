@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OutputCaching.Policies;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -15,6 +15,15 @@ public class OutputCachePolicyBuilderTests
         var policy = builder.Build();
 
         Assert.Equal(DefaultPolicy.Instance, policy);
+    }
+
+    [Fact]
+    public void BuildPolicy_CreatedWithoutDefaultPolicy()
+    {
+        var builder = new OutputCachePolicyBuilder(true);
+        var policy = builder.Build();
+
+        Assert.Equal(EmptyPolicy.Instance, policy);
     }
 
     [Fact]
@@ -62,6 +71,36 @@ public class OutputCachePolicyBuilderTests
     }
 
     [Fact]
+    public async Task BuildPolicy_AddsCustomPolicyWithoutDefaultPolicy()
+    {
+        var options = new OutputCacheOptions();
+        var name = "MyPolicy";
+        var duration = 42;
+        options.AddPolicy(name, b => b.Expire(TimeSpan.FromSeconds(duration)), true);
+
+        var context = TestUtils.CreateUninitializedContext(options: options);
+
+        var builder = new OutputCachePolicyBuilder(true);
+        var policy = builder.AddPolicy(new NamedPolicy(name)).Build();
+        await policy.CacheRequestAsync(context, cancellation: default);
+
+        Assert.False(context.EnableOutputCaching);
+        Assert.Equal(duration, context.ResponseExpirationTimeSpan?.TotalSeconds);
+    }
+
+    [Fact]
+    public async Task BuildPolicy_NoVaryByHost()
+    {
+        var context = TestUtils.CreateUninitializedContext();
+
+        var builder = new OutputCachePolicyBuilder();
+        var policy = builder.SetVaryByHost(false).Build();
+        await policy.CacheRequestAsync(context, cancellation: default);
+
+        Assert.False(context.CacheVaryByRules.VaryByHost);
+    }
+
+    [Fact]
     public async Task BuildPolicy_CreatesVaryByHeaderPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -69,7 +108,7 @@ public class OutputCachePolicyBuilderTests
         context.HttpContext.Request.Headers["HeaderB"] = "ValueB";
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.VaryByHeader("HeaderA", "HeaderC").Build();
+        var policy = builder.SetVaryByHeader("HeaderA", "HeaderC").Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
@@ -85,7 +124,7 @@ public class OutputCachePolicyBuilderTests
         context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.VaryByQuery("QueryA", "QueryC").Build();
+        var policy = builder.SetVaryByQuery("QueryA", "QueryC").Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
@@ -105,7 +144,7 @@ public class OutputCachePolicyBuilderTests
         };
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.VaryByRouteValue("RouteA", "RouteC").Build();
+        var policy = builder.SetVaryByRouteValue("RouteA", "RouteC").Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
@@ -115,16 +154,83 @@ public class OutputCachePolicyBuilderTests
     }
 
     [Fact]
+    public async Task BuildPolicy_CreatesVaryByRoutePolicyArray()
+    {
+        var context = TestUtils.CreateUninitializedContext();
+        context.HttpContext.Request.RouteValues = new Routing.RouteValueDictionary()
+        {
+            ["RouteA"] = "ValueA",
+            ["RouteB"] = 123.456,
+        };
+
+        var builder = new OutputCachePolicyBuilder();
+        var policy = builder.SetVaryByRouteValue(new string[] { "RouteA", "RouteC" }).Build();
+        await policy.CacheRequestAsync(context, cancellation: default);
+
+        Assert.True(context.EnableOutputCaching);
+        Assert.Contains("RouteA", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.Contains("RouteC", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+    }
+
+    [Fact]
+    public async Task BuildPolicy_CreatesVaryByRoutePolicyReplacesValue()
+    {
+        var context = TestUtils.CreateUninitializedContext();
+        context.HttpContext.Request.RouteValues = new Routing.RouteValueDictionary()
+        {
+            ["RouteA"] = "ValueA",
+            ["RouteB"] = 123.456,
+        };
+
+        var builder = new OutputCachePolicyBuilder();
+        var policy = builder.SetVaryByRouteValue("RouteB").SetVaryByRouteValue("RouteA", "RouteC").Build();
+        await policy.CacheRequestAsync(context, cancellation: default);
+
+        Assert.True(context.EnableOutputCaching);
+        Assert.Contains("RouteA", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.Contains("RouteC", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+        Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
+    }
+
+    [Fact]
+    public async Task BuildPolicy_CreatesVaryByKeyPrefixPolicy()
+    {
+        var context1 = TestUtils.CreateUninitializedContext();
+        var context2 = TestUtils.CreateUninitializedContext();
+        var context3 = TestUtils.CreateUninitializedContext();
+
+        var policy1 = new OutputCachePolicyBuilder().SetCacheKeyPrefix("tenant1").Build();
+        var policy2 = new OutputCachePolicyBuilder().SetCacheKeyPrefix(context => "tenant2").Build();
+        var policy3 = new OutputCachePolicyBuilder().SetCacheKeyPrefix((context, cancellationToken) => ValueTask.FromResult("tenant3")).Build();
+
+        await policy1.CacheRequestAsync(context1, cancellation: default);
+        await policy2.CacheRequestAsync(context2, cancellation: default);
+        await policy3.CacheRequestAsync(context3, cancellation: default);
+
+        Assert.Equal("tenant1", context1.CacheVaryByRules.CacheKeyPrefix);
+        Assert.Equal("tenant2", context2.CacheVaryByRules.CacheKeyPrefix);
+        Assert.Equal("tenant3", context3.CacheVaryByRules.CacheKeyPrefix);
+    }
+
+    [Fact]
     public async Task BuildPolicy_CreatesVaryByValuePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.VaryByValue(context => new KeyValuePair<string, string>("color", "blue")).Build();
+        var policy = builder
+            .VaryByValue("shape", "circle")
+            .VaryByValue(context => new KeyValuePair<string, string>("color", "blue"))
+            .VaryByValue((context, cancellationToken) => ValueTask.FromResult(new KeyValuePair<string, string>("size", "1m")))
+            .Build();
+
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
-        Assert.Equal("blue", context.CacheVaryByRules.VaryByCustom["color"]);
+        Assert.Equal("circle", context.CacheVaryByRules.VaryByValues["shape"]);
+        Assert.Equal("blue", context.CacheVaryByRules.VaryByValues["color"]);
+        Assert.Equal("1m", context.CacheVaryByRules.VaryByValues["size"]);
     }
 
     [Fact]
@@ -159,7 +265,7 @@ public class OutputCachePolicyBuilderTests
         var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.AllowLocking(true).Build();
+        var policy = builder.SetLocking(true).Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.AllowLocking);
@@ -171,7 +277,7 @@ public class OutputCachePolicyBuilderTests
         var context = TestUtils.CreateUninitializedContext();
 
         var builder = new OutputCachePolicyBuilder();
-        var policy = builder.AllowLocking(false).Build();
+        var policy = builder.SetLocking(false).Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.False(context.AllowLocking);
@@ -182,8 +288,8 @@ public class OutputCachePolicyBuilderTests
     {
         var context = TestUtils.CreateUninitializedContext();
 
-        var builder = new OutputCachePolicyBuilder();
-        var policy = builder.Clear().Build();
+        var builder = new OutputCachePolicyBuilder(true);
+        var policy = builder.Build();
         await policy.CacheRequestAsync(context, cancellation: default);
 
         Assert.False(context.AllowLocking);

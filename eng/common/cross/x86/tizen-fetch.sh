@@ -51,7 +51,7 @@ if [ ! -d $TMPDIR ]; then
 	mkdir -p $TMPDIR 
 fi
 
-TIZEN_URL=http://download.tizen.org/snapshots/tizen
+TIZEN_URL=http://download.tizen.org/snapshots/TIZEN/Tizen
 BUILD_XML=build.xml
 REPOMD_XML=repomd.xml
 PRIMARY_XML=primary.xml
@@ -155,7 +155,7 @@ fetch_tizen_pkgs()
 }
 
 Inform "Initialize i686 base"
-fetch_tizen_pkgs_init standard base
+fetch_tizen_pkgs_init standard Tizen-Base
 Inform "fetch common packages"
 fetch_tizen_pkgs i686 gcc gcc-devel-static glibc glibc-devel libicu libicu-devel libatomic linux-glibc-devel keyutils keyutils-devel libkeyutils
 Inform "fetch coreclr packages"
@@ -164,7 +164,7 @@ Inform "fetch corefx packages"
 fetch_tizen_pkgs i686 libcom_err libcom_err-devel zlib zlib-devel libopenssl11 libopenssl1.1-devel krb5 krb5-devel
 
 Inform "Initialize standard unified"
-fetch_tizen_pkgs_init standard unified
+fetch_tizen_pkgs_init standard Tizen-Unified
 Inform "fetch corefx packages"
 fetch_tizen_pkgs i686 gssdp gssdp-devel tizen-release
 

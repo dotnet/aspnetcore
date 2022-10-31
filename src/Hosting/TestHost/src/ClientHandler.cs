@@ -47,12 +47,30 @@ public class ClientHandler : HttpMessageHandler
     internal bool PreserveExecutionContext { get; set; }
 
     /// <summary>
+    /// This synchronous method is not supported due to the risk of threadpool exhaustion when running multiple tests in parallel. 
+    /// </summary>
+    /// <param name="request">The <see cref="HttpRequestMessage"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <exception cref="NotSupportedException">Thrown unconditionally.</exception>
+    /// <remarks>
+    /// Use the asynchronous version of this method, <see cref="SendAsync(HttpRequestMessage, CancellationToken)"/>, instead.
+    /// </remarks>
+    protected override HttpResponseMessage Send(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException(
+            "This synchronous method is not supported due to the risk of threadpool exhaustion " +
+            "when running multiple tests in parallel. Use the asynchronous version of this method instead.");
+    }
+
+    /// <summary>
     /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
     /// associated HttpResponseMessage.
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="request">The <see cref="HttpRequestMessage"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns>A <see cref="Task{TResult}"/> returning the <see cref="HttpResponseMessage"/>.</returns>
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)

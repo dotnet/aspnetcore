@@ -1290,7 +1290,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             return uri;
         }
 
-        if (!uri.StartsWith("/", StringComparison.Ordinal))
+        if (!uri.StartsWith('/'))
         {
             return uri;
         }

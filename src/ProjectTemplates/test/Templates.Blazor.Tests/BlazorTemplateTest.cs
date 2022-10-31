@@ -35,8 +35,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             project.TargetFramework = targetFramework;
         }
 
-        var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
 
         if (!onlyCreate)
         {
@@ -46,15 +45,13 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 targetProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
             }
 
-            var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: false);
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", targetProject, publishResult));
+            await targetProject.RunDotNetPublishAsync(noRestore: false);
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
             // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await targetProject.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", targetProject, buildResult));
+            await targetProject.RunDotNetBuildAsync();
         }
 
         return project;

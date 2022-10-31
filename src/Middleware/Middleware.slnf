@@ -114,6 +114,7 @@
       "src\\Middleware\\WebSockets\\test\\UnitTests\\Microsoft.AspNetCore.WebSockets.Tests.csproj",
       "src\\Middleware\\perf\\Microbenchmarks\\Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj",
       "src\\Middleware\\perf\\ResponseCaching.Microbenchmarks\\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
@@ -122,7 +123,9 @@
       "src\\Servers\\IIS\\IntegrationTesting.IIS\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
-      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj"
+      "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }
 }

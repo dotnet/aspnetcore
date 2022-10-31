@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -278,5 +278,123 @@ public class HeaderUtilitiesTest
     public void SetAndEscapeValue_ThrowsFormatExceptionOnDelCharacter()
     {
         Assert.Throws<FormatException>(() => { var actual = HeaderUtilities.EscapeAsQuotedString($"{(char)0x7F}"); });
+    }
+
+    [Theory]
+    [InlineData("text;q=0", 0d, 1)]
+    [InlineData("text;q=1", 1d, 1)]
+    public void TryParseQualityDouble_WithoutDecimalPart_ReturnsCorrectQuality(
+        string inputString,
+        double expectedQuality,
+        int expectedLength)
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
+
+    [Theory]
+    [InlineData("text;q=0,*;q=1", 0d, 1)]
+    [InlineData("text;q=1,*;q=0", 1d, 1)]
+    public void TryParseQualityDouble_WithoutDecimalPart_WithSubsequentCharacters_ReturnsCorrectQuality(
+        string inputString,
+        double expectedQuality,
+        int expectedLength)
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
+
+    [Theory]
+    [InlineData("text;q=0.", 0d, 2)]
+    [InlineData("text;q=0.0", 0d, 3)]
+    [InlineData("text;q=0.00000000", 0d, 10)]
+    [InlineData("text;q=1.", 1d, 2)]
+    [InlineData("text;q=1.0", 1d, 3)]
+    [InlineData("text;q=1.000", 1d, 5)]
+    [InlineData("text;q=1.00000000", 1d, 10)]
+    [InlineData("text;q=0.1", 0.1d, 3)]
+    [InlineData("text;q=0.001", 0.001d, 5)]
+    [InlineData("text;q=0.00000001", 0.00000001d, 10)]
+    [InlineData("text;q=0.12345678", 0.12345678d, 10)]
+    [InlineData("text;q=0.98765432", 0.98765432d, 10)]
+    public void TryParseQualityDouble_WithDecimalPart_ReturnsCorrectQuality(
+        string inputString, double expectedQuality, int expectedLength)
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
+
+    [Theory]
+    [InlineData("text;q=0.,*;q=1", 0d, 2)]
+    [InlineData("text;q=0.0,*;q=1", 0d, 3)]
+    [InlineData("text;q=0.00000000,*;q=1", 0d, 10)]
+    [InlineData("text;q=1.,*;q=1", 1d, 2)]
+    [InlineData("text;q=1.0,*;q=1", 1d, 3)]
+    [InlineData("text;q=1.000,*;q=1", 1d, 5)]
+    [InlineData("text;q=1.00000000,*;q=1", 1d, 10)]
+    [InlineData("text;q=0.1,*;q=1", 0.1d, 3)]
+    [InlineData("text;q=0.001,*;q=1", 0.001d, 5)]
+    [InlineData("text;q=0.00000001,*;q=1", 0.00000001d, 10)]
+    [InlineData("text;q=0.12345678,*;q=1", 0.12345678d, 10)]
+    [InlineData("text;q=0.98765432,*;q=1", 0.98765432d, 10)]
+    public void TryParseQualityDouble_WithDecimalPart_WithSubsequentCharacters_ReturnsCorrectQuality(
+        string inputString, double expectedQuality, int expectedLength)
+        => VerifyTryParseQualityDoubleSuccess(inputString, 7, expectedQuality, expectedLength);
+
+    private static void VerifyTryParseQualityDoubleSuccess(string inputString, int startIndex, double expectedQuality, int expectedLength)
+    {
+        // Arrange
+        var input = new StringSegment(inputString);
+
+        // Act
+        var result = HeaderUtilities.TryParseQualityDouble(input, startIndex, out var actualQuality, out var actualLength);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(expectedQuality, actualQuality);
+        Assert.Equal(expectedLength, actualLength);
+    }
+
+    [Fact]
+    public void TryParseQualityDouble_StartIndexIsOutOfRange_ReturnsFalse()
+        => VerifyTryParseQualityDoubleFailure("text;q=0.1", 10);
+
+    [Theory]
+    [InlineData("text;q=2")]
+    [InlineData("text;q=a")]
+    [InlineData("text;q=.1")]
+    [InlineData("text;q=/.1")]
+    [InlineData("text;q=:.1")]
+    public void TryParseQualityDouble_HasInvalidStartingCharacter_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
+
+    [Theory]
+    [InlineData("text;q=00")]
+    [InlineData("text;q=00.")]
+    [InlineData("text;q=00.0")]
+    [InlineData("text;q=01.0")]
+    [InlineData("text;q=10")]
+    [InlineData("text;q=10.")]
+    [InlineData("text;q=10.0")]
+    [InlineData("text;q=11.0")]
+    public void TryParseQualityDouble_HasMoreThanOneDigitBeforeDot_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
+
+    [Theory]
+    [InlineData("text;q=0.000000000")]
+    [InlineData("text;q=1.000000000")]
+    [InlineData("text;q=0.000000001")]
+    public void TryParseQualityDouble_ExceedsQualityValueMaxCharacterCount_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
+
+    [Theory]
+    [InlineData("text;q=1.000000001")]
+    [InlineData("text;q=2")]
+    public void TryParseQualityDouble_ParsedQualityIsGreaterThanOne_ReturnsFalse(string inputString)
+        => VerifyTryParseQualityDoubleFailure(inputString, 7);
+
+    private static void VerifyTryParseQualityDoubleFailure(string inputString, int startIndex)
+    {
+        // Arrange
+        var input = new StringSegment(inputString);
+
+        // Act
+        var result = HeaderUtilities.TryParseQualityDouble(input, startIndex, out var quality, out var length);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(0, quality);
+        Assert.Equal(0, length);
     }
 }

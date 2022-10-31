@@ -39,6 +39,8 @@ internal abstract class MessageBody
 
     public bool ExtendedConnect { get; protected set; }
 
+    public HttpProtocol Context => _context;
+
     public virtual bool IsEmpty => false;
 
     protected KestrelTrace Log => _context.ServiceContext.Log;

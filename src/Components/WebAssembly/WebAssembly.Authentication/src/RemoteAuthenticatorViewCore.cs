@@ -17,6 +17,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 {
     private RemoteAuthenticationApplicationPathsOptions _applicationPaths;
     private string _action;
+    private string _lastHandledAction;
     private InteractiveRequestOptions _cachedRequest;
 
     private static readonly NavigationOptions AuthenticationNavigationOptions =
@@ -152,6 +153,13 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
+        if (_lastHandledAction == Action)
+        {
+            // Avoid processing the same action more than once.
+            return;
+        }
+
+        _lastHandledAction = Action;
         Log.ProcessingAuthenticatorAction(Logger, Action);
         switch (Action)
         {

@@ -73,7 +73,7 @@ internal static class HttpHelpers
                                 listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
                                 if (!(plaintext ?? false))
                                 {
-                                    listenOptions.UseHttps();
+                                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                                 }
                             });
                         }

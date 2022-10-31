@@ -495,6 +495,31 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
+    public void Key_CanPrintWithBase64()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme-2" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer-2", "--scheme", "test-scheme" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer-2", "--scheme", "test-scheme-3" });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        _console.ClearOutput();
+
+        app.Run(new[] { "key", "--project", project, "--scheme", "test-scheme", "--issuer", "test-issuer" });
+        var printMatches = Regex.Matches(_console.GetOutput(), "Signing Key: '(.*?)'");
+        var key = printMatches.SingleOrDefault().Groups[1].Value;
+        _console.ClearOutput();
+
+        var buffer = new Span<byte>(new byte[key.Length]);
+        Assert.True(Convert.TryFromBase64String(key, buffer, out var bytesParsed));
+        Assert.Equal(32, bytesParsed);
+    }
+
+    [Fact]
     public void Create_CanHandleNoProjectOptionProvided()
     {
         var projectPath = _fixture.CreateProject();
@@ -554,5 +579,20 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "list" });
 
         Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void Create_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        Assert.NotNull(app.UserJwtsFilePath);
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(app.UserJwtsFilePath));
     }
 }

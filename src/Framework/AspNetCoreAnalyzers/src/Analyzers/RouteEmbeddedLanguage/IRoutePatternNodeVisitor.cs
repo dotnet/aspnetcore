@@ -1,0 +1,24 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+
+namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
+
+internal interface IRoutePatternNodeVisitor
+{
+    void Visit(RoutePatternCompilationUnit node);
+    void Visit(RoutePatternSegmentNode node);
+    void Visit(RoutePatternReplacementNode node);
+    void Visit(RoutePatternParameterNode node);
+    void Visit(RoutePatternLiteralNode node);
+    void Visit(RoutePatternSegmentSeperatorNode node);
+    void Visit(RoutePatternOptionalSeperatorNode node);
+    void Visit(RoutePatternCatchAllParameterPartNode node);
+    void Visit(RoutePatternNameParameterPartNode node);
+    void Visit(RoutePatternPolicyParameterPartNode node);
+    void Visit(RoutePatternPolicyFragmentEscapedNode node);
+    void Visit(RoutePatternPolicyFragment node);
+    void Visit(RoutePatternOptionalParameterPartNode node);
+    void Visit(RoutePatternDefaultValueParameterPartNode node);
+}

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
@@ -11,8 +12,6 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public abstract class NavigationManager
 {
-    private static readonly char[] UriPathEndChar = new[] { '#', '?' };
-
     /// <summary>
     /// An event that fires when the navigation location has changed.
     /// </summary>
@@ -103,7 +102,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-    public void NavigateTo(string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
         => NavigateTo(uri, forceLoad, replace: false);
 
     /// <summary>
@@ -113,7 +112,7 @@ public abstract class NavigationManager
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
     /// <param name="replace">If true, replaces the current entry in the history stack. If false, appends the new entry to the history stack.</param>
-    public void NavigateTo(string uri, bool forceLoad = false, bool replace = false)
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad = false, bool replace = false)
     {
         AssertInitialized();
 
@@ -139,7 +138,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
-    public void NavigateTo(string uri, NavigationOptions options)
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options)
     {
         AssertInitialized();
         NavigateToCore(uri, options);
@@ -155,7 +154,7 @@ public abstract class NavigationManager
     // already override this, so the framework needs to keep using it for the cases when only pre-6.0 options are used.
     // However, for anyone implementing a new NavigationManager post-6.0, we don't want them to have to override this
     // overload any more, so there's now a default implementation that calls the updated overload.
-    protected virtual void NavigateToCore(string uri, bool forceLoad)
+    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad)
         => NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
 
     /// <summary>
@@ -164,7 +163,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
-    protected virtual void NavigateToCore(string uri, NavigationOptions options) =>
+    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options) =>
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
     /// <summary>
@@ -231,9 +230,9 @@ public abstract class NavigationManager
             return uri.Substring(_baseUri.OriginalString.Length);
         }
 
-        var pathEndIndex = uri.IndexOfAny(UriPathEndChar);
-        var uriPathOnly = pathEndIndex < 0 ? uri : uri.Substring(0, pathEndIndex);
-        if ($"{uriPathOnly}/".Equals(_baseUri.OriginalString, StringComparison.Ordinal))
+        var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
+        if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -497,9 +496,9 @@ public abstract class NavigationManager
             return true;
         }
 
-        var pathEndIndex = uri.IndexOfAny(UriPathEndChar);
-        var uriPathOnly = pathEndIndex < 0 ? uri : uri.Substring(0, pathEndIndex);
-        if ($"{uriPathOnly}/".Equals(baseUri.OriginalString, StringComparison.Ordinal))
+        var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
+        if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan(0, baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,

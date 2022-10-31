@@ -89,6 +89,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         const string headerLines = "Header-1: value1\r\nHeader-2: value2\r\n";
         _serviceContext.ServerOptions.Limits.MaxRequestHeaderCount = 1;
+        _http1Connection.Initialize(_http1ConnectionContext);
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;

@@ -197,6 +197,61 @@ public readonly struct ParameterView
         }
     }
 
+    internal bool HasRemovedDirectParameters(in ParameterView oldParameters)
+    {
+        var oldDirectParameterFrames = GetDirectParameterFrames(oldParameters);
+        if (oldDirectParameterFrames.Length == 0)
+        {
+            // Parameters could not have been removed if there were no old direct parameters.
+            return false;
+        }
+
+        var newDirectParameterFrames = GetDirectParameterFrames(this);
+        if (newDirectParameterFrames.Length < oldDirectParameterFrames.Length)
+        {
+            // Parameters must have been removed if there are fewer new direct parameters than
+            // old direct parameters.
+            return true;
+        }
+
+        // Fall back to comparing each set of direct parameters.
+        foreach (var oldFrame in oldDirectParameterFrames)
+        {
+            var found = false;
+            foreach (var newFrame in newDirectParameterFrames)
+            {
+                if (string.Equals(oldFrame.AttributeNameField, newFrame.AttributeNameField, StringComparison.Ordinal))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        static Span<RenderTreeFrame> GetDirectParameterFrames(in ParameterView parameterView)
+        {
+            var frames = parameterView._frames;
+            var ownerIndex = parameterView._ownerIndex;
+            var ownerDescendantsEndIndexExcl = ownerIndex + frames[ownerIndex].ElementSubtreeLength;
+            var attributeFramesStartIndex = ownerIndex + 1;
+            var attributeFramesEndIndexExcl = attributeFramesStartIndex;
+
+            while (attributeFramesEndIndexExcl < ownerDescendantsEndIndexExcl && frames[attributeFramesEndIndexExcl].FrameType == RenderTreeFrameType.Attribute)
+            {
+                attributeFramesEndIndexExcl++;
+            }
+
+            return frames.AsSpan(attributeFramesStartIndex..attributeFramesEndIndexExcl);
+        }
+    }
+
     internal void CaptureSnapshot(ArrayBuilder<RenderTreeFrame> builder)
     {
         builder.Clear();

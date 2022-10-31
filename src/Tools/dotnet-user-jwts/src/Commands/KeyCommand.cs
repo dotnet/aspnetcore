@@ -82,7 +82,7 @@ internal sealed class KeyCommand
             return 0;
         }
 
-        reporter.Output(Resources.FormatKeyCommand_Confirmed(signingKeyMaterial));
+        reporter.Output(Resources.FormatKeyCommand_Confirmed(Convert.ToBase64String(signingKeyMaterial)));
         return 0;
     }
 }

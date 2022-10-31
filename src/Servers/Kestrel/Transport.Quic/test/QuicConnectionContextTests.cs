@@ -21,6 +21,30 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task Abort_AbortAfterDispose_Ignored()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            LoggerFactory,
+            defaultCloseErrorCode: (long)Http3ErrorCode.RequestCancelled);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+
+        await serverConnection.DisposeAsync();
+
+        // Assert
+        serverConnection.Abort(); // Doesn't throw ODE.
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeReported()
     {
         // Arrange

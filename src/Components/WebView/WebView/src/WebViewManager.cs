@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.StaticWebAssets;
@@ -62,7 +63,7 @@ public abstract class WebViewManager : IAsyncDisposable
     /// client-side routing.
     /// </summary>
     /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
-    public void Navigate(string url)
+    public void Navigate([StringSyntax(StringSyntaxAttribute.Uri)] string url)
         => NavigateCore(new Uri(_appBaseUri, url));
 
     /// <summary>

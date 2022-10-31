@@ -256,6 +256,20 @@ public class MessagePackHubProtocolTests : MessagePackHubProtocolTestBase
         Assert.Equal("xyz", completion.InvocationId);
     }
 
+    [Fact]
+    public void WrongTypeForClientResultGivesErrorCompletionMessage()
+    {
+        var binder = new TestBinder(paramTypes: null, returnType: typeof(int));
+        var input = Frame(Convert.FromBase64String("lQOAo3h5egOmc3RyaW5n"));
+        var data = new ReadOnlySequence<byte>(input);
+        Assert.True(HubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.StartsWith("Error trying to deserialize result to Int32.", completion.Error);
+        Assert.Equal("xyz", completion.InvocationId);
+    }
+
     public class ClientResultTestData
     {
         public string Name { get; }

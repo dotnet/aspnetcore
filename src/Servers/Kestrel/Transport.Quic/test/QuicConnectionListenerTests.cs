@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
@@ -24,7 +25,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    public async Task AcceptAsync_AfterUnbind_Error()
+    public async Task AcceptAsync_AfterUnbind_ReturnNull()
     {
         // Arrange
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
@@ -33,7 +34,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         await connectionListener.UnbindAsync().DefaultTimeout();
 
         // Assert
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => connectionListener.AcceptAndAddFeatureAsync().AsTask()).DefaultTimeout();
+        Assert.Null(await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout());
     }
 
     [ConditionalFact]
@@ -51,13 +52,55 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         // Assert
-        await using var serverConnection = await acceptTask.DefaultTimeout();
+        var serverConnection = await acceptTask.DefaultTimeout();
         Assert.False(serverConnection.ConnectionClosed.IsCancellationRequested);
 
         await serverConnection.DisposeAsync().AsTask().DefaultTimeout();
 
         // ConnectionClosed isn't triggered because the server initiated close.
         Assert.False(serverConnection.ConnectionClosed.IsCancellationRequested);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_ClientCreatesInvalidConnection_ServerContinuesToAccept()
+    {
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+        // Act & Assert 1
+        Logger.LogInformation("Client creating successful connection 1");
+        var acceptTask1 = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+        await using var clientConnection1 = await QuicConnection.ConnectAsync(
+            QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint));
+
+        var serverConnection1 = await acceptTask1.DefaultTimeout();
+        Assert.False(serverConnection1.ConnectionClosed.IsCancellationRequested);
+        await serverConnection1.DisposeAsync().AsTask().DefaultTimeout();
+
+        // Act & Assert 2
+        var serverFailureLogTask = WaitForLogMessage(m => m.EventId.Name == "ConnectionListenerAcceptConnectionFailed");
+
+        Logger.LogInformation("Client creating unsuccessful connection 2");
+        var acceptTask2 = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+        var ex = await Assert.ThrowsAsync<AuthenticationException>(async () =>
+        {
+            await QuicConnection.ConnectAsync(
+                QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint, ignoreInvalidCertificate: false));
+        });
+        Assert.Contains("RemoteCertificateChainErrors", ex.Message);
+
+        Assert.False(acceptTask2.IsCompleted, "Accept doesn't return for failed client connection.");
+        var serverFailureLog = await serverFailureLogTask.DefaultTimeout();
+        Assert.NotNull(serverFailureLog.Exception);
+
+        // Act & Assert 3
+        Logger.LogInformation("Client creating successful connection 3");
+        await using var clientConnection2 = await QuicConnection.ConnectAsync(
+            QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint));
+
+        var serverConnection2 = await acceptTask2.DefaultTimeout();
+        Assert.False(serverConnection2.ConnectionClosed.IsCancellationRequested);
+        await serverConnection2.DisposeAsync().AsTask().DefaultTimeout();
     }
 
     [ConditionalFact]
@@ -142,6 +185,85 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         // Assert
         Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerCertificateNotSpecified");
         Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerApplicationProtocolsNotSpecified");
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_UnbindAfterCall_CleanExitAndLog()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync();
+
+        await connectionListener.UnbindAsync().DefaultTimeout();
+
+        // Assert
+        Assert.Null(await acceptTask.AsTask().DefaultTimeout());
+
+        Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_DisposeAfterCall_CleanExitAndLog()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync();
+
+        await connectionListener.DisposeAsync().DefaultTimeout();
+
+        // Assert
+        Assert.Null(await acceptTask.AsTask().DefaultTimeout());
+
+        Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task AcceptAsync_ErrorFromServerCallback_CleanExitAndLog()
+    {
+        // Arrange
+        var throwErrorInCallback = true;
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            new TlsConnectionCallbackOptions
+            {
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                OnConnection = (context, cancellationToken) =>
+                {
+                    if (throwErrorInCallback)
+                    {
+                        throwErrorInCallback = false;
+                        throw new Exception("An error!");
+                    }
+
+                    var options = new SslServerAuthenticationOptions();
+                    options.ServerCertificate = TestResources.GetTestCertificate();
+                    return ValueTask.FromResult(options);
+                }
+            },
+            LoggerFactory);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        var ex = await Assert.ThrowsAsync<AuthenticationException>(() => QuicConnection.ConnectAsync(options).AsTask()).DefaultTimeout();
+        Assert.Equal("Authentication failed because the remote party sent a TLS alert: 'UserCanceled'.", ex.Message);
+
+        // Assert
+        Assert.False(acceptTask.IsCompleted, "Still waiting for non-errored connection.");
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options).DefaultTimeout();
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+
+        Assert.NotNull(serverConnection);
+        Assert.NotNull(clientConnection);
     }
 
     [ConditionalFact]
@@ -265,8 +387,8 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         syncPoint.Continue();
 
-        await Assert.ThrowsAsync<ArgumentException>(() => acceptTask.AsTask()).DefaultTimeout();
         await Assert.ThrowsAsync<AuthenticationException>(() => clientConnectionTask.AsTask()).DefaultTimeout();
+        Assert.False(acceptTask.IsCompleted);
 
         // Assert
         for (var i = 0; i < 20; i++)

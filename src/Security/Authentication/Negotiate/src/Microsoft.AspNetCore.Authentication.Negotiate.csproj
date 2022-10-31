@@ -13,6 +13,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="System.DirectoryServices.Protocols" />
   </ItemGroup>
 

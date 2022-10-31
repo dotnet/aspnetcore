@@ -729,9 +729,6 @@ public partial class HubConnectionContext
         _closedRequestedRegistration?.Dispose();
 
         // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
-        if (_streamTracker != null)
-        {
-            _streamTracker.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
-        }
+        _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
     }
 }

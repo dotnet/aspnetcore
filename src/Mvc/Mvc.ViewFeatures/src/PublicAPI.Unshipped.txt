@@ -3,6 +3,7 @@
 Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode.AlwaysUseCurrentCulture = 1 -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode.DetectCultureFromInputType = 0 -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
+Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.FormInputRenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.FormInputRenderMode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel

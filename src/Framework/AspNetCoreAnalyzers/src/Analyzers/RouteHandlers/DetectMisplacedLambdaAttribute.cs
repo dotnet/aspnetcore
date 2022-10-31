@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,23 +23,17 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         //    Hello();
         //    return "foo";
         // }
-        IMethodSymbol? methodSymbol = null;
 
-        // () => Hello() has a single child which is a BlockOperation so we check to see if
-        // expression associated with that operation is an invocation expression
-        if (lambda.ChildOperations.FirstOrDefault().Syntax is InvocationExpressionSyntax innerInvocation)
+        // All lambdas have a single child which is a BlockOperation. We search ChildOperations for
+        // the invocation expression.
+        if (lambda.ChildOperations.Count != 1 || lambda.ChildOperations.FirstOrDefault() is not IBlockOperation blockOperation)
         {
-            methodSymbol = lambda.Symbol;
-        }
-
-        if (lambda.ChildOperations.FirstOrDefault().ChildOperations.FirstOrDefault() is IReturnOperation returnOperation
-            && returnOperation.ReturnedValue is IInvocationOperation returnedInvocation)
-        {
-            methodSymbol = returnedInvocation.TargetMethod;
+            Debug.Fail("Expected a single top-level BlockOperation for all lambdas.");
+            return;
         }
 
         // If no method definition was found for the lambda, then abort.
-        if (methodSymbol is null)
+        if (GetReturnedInvocation(blockOperation) is not IMethodSymbol methodSymbol)
         {
             return;
         }
@@ -72,6 +67,39 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
 
             return false;
+        }
+
+        static IMethodSymbol? GetReturnedInvocation(IBlockOperation blockOperation)
+        {
+            foreach (var op in blockOperation.ChildOperations.Reverse())
+            {
+                if (op is IReturnOperation returnStatement)
+                {
+                    if (returnStatement.ReturnedValue is IInvocationOperation invocationReturn)
+                    {
+                        return invocationReturn.TargetMethod;
+                    }
+
+                    // Sometimes expression backed lambdas include an IReturnOperation with a null ReturnedValue
+                    // right after the IExpressionStatementOperation whose Operation is the real ReturnedValue,
+                    // so we keep looking backwards rather than returning null immediately.
+                }
+                else if (op is IExpressionStatementOperation expression)
+                {
+                    if (expression.Operation is IInvocationOperation invocationExpression)
+                    {
+                        return invocationExpression.TargetMethod;
+                    }
+
+                    return null;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return null;
         }
     }
 }

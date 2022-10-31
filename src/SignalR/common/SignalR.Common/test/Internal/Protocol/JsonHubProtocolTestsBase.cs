@@ -455,16 +455,35 @@ public abstract class JsonHubProtocolTestsBase
         }
     }
 
-    [Fact]
-    public void UnexpectedClientResultGivesEmptyCompletionMessage()
+    [Theory]
+    [InlineData("{\"type\":3,\"result\":1,\"invocationId\":\"1\"}")]
+    [InlineData("{\"result\":1,\"type\":3,\"invocationId\":\"1\"}")]
+    public void UnexpectedClientResultGivesEmptyCompletionMessage(string input)
     {
         var binder = new TestBinder();
-        var message = Frame("{\"type\":3,\"result\":1,\"invocationId\":\"1\"}");
+        var message = Frame(input);
         var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(message));
         Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
 
         var completion = Assert.IsType<CompletionMessage>(hubMessage);
         Assert.Null(completion.Result);
+        Assert.Null(completion.Error);
+        Assert.Equal("1", completion.InvocationId);
+    }
+
+    [Theory]
+    [InlineData("{\"type\":3,\"result\":\"string\",\"invocationId\":\"1\"}")]
+    [InlineData("{\"result\":\"string\",\"type\":3,\"invocationId\":\"1\"}")]
+    public void WrongTypeForClientResultGivesErrorCompletionMessage(string input)
+    {
+        var binder = new TestBinder(paramTypes: null, returnType: typeof(int));
+        var message = Frame(input);
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(message));
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.StartsWith("Error trying to deserialize result to Int32.", completion.Error);
         Assert.Equal("1", completion.InvocationId);
     }
 

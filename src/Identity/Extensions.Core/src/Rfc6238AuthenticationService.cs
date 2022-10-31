@@ -17,20 +17,7 @@ internal static class Rfc6238AuthenticationService
     private static readonly Encoding _encoding = new UTF8Encoding(false, true);
 #if NETSTANDARD2_0 || NETFRAMEWORK
     private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-    private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
-
-    // Generates a new 80-bit security token
-    public static byte[] GenerateRandomKey()
-    {
-        byte[] bytes = new byte[20];
-#if NETSTANDARD2_0 || NETFRAMEWORK
-        _rng.GetBytes(bytes);
-#else
-        RandomNumberGenerator.Fill(bytes);
-#endif
-        return bytes;
-    }
 
     internal static int ComputeTotp(
 #if NET6_0_OR_GREATER
@@ -39,19 +26,33 @@ internal static class Rfc6238AuthenticationService
         HashAlgorithm hashAlgorithm,
 #endif
         ulong timestepNumber,
-        string? modifier)
+        byte[]? modifierBytes)
     {
         // # of 0's = length of pin
         const int Mod = 1000000;
 
         // See https://tools.ietf.org/html/rfc4226
         // We can add an optional modifier
+#if NET6_0_OR_GREATER
+        Span<byte> timestepAsBytes = stackalloc byte[sizeof(long)];
+        var res = BitConverter.TryWriteBytes(timestepAsBytes, IPAddress.HostToNetworkOrder((long)timestepNumber));
+        Debug.Assert(res);
+#else
         var timestepAsBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((long)timestepNumber));
+#endif
 
 #if NET6_0_OR_GREATER
-        var hash = HMACSHA1.HashData(key, ApplyModifier(timestepAsBytes, modifier));
+        Span<byte> modifierCombinedBytes = timestepAsBytes;
+        if (modifierBytes is not null)
+        {
+            modifierCombinedBytes = ApplyModifier(timestepAsBytes, modifierBytes);
+        }
+        Span<byte> hash = stackalloc byte[HMACSHA1.HashSizeInBytes];
+        res = HMACSHA1.TryHashData(key, modifierCombinedBytes, hash, out var written);
+        Debug.Assert(res);
+        Debug.Assert(written == hash.Length);
 #else
-        var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifier));
+        var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifierBytes));
 #endif
 
         // Generate DT string
@@ -65,16 +66,10 @@ internal static class Rfc6238AuthenticationService
         return binaryCode % Mod;
     }
 
-    private static byte[] ApplyModifier(byte[] input, string? modifier)
+    private static byte[] ApplyModifier(Span<byte> input, byte[] modifierBytes)
     {
-        if (string.IsNullOrEmpty(modifier))
-        {
-            return input;
-        }
-
-        var modifierBytes = _encoding.GetBytes(modifier);
         var combined = new byte[checked(input.Length + modifierBytes.Length)];
-        Buffer.BlockCopy(input, 0, combined, 0, input.Length);
+        input.CopyTo(combined);
         Buffer.BlockCopy(modifierBytes, 0, combined, input.Length, modifierBytes.Length);
         return combined;
     }
@@ -100,12 +95,13 @@ internal static class Rfc6238AuthenticationService
         // Allow a variance of no greater than 9 minutes in either direction
         var currentTimeStep = GetCurrentTimeStepNumber();
 
+        var modifierBytes = modifier is not null ? _encoding.GetBytes(modifier) : null;
 #if NET6_0_OR_GREATER
-        return ComputeTotp(securityToken, currentTimeStep, modifier);
+        return ComputeTotp(securityToken, currentTimeStep, modifierBytes);
 #else
         using (var hashAlgorithm = new HMACSHA1(securityToken))
         {
-            return ComputeTotp(hashAlgorithm, currentTimeStep, modifier);
+            return ComputeTotp(hashAlgorithm, currentTimeStep, modifierBytes);
         }
 #endif
     }
@@ -124,12 +120,13 @@ internal static class Rfc6238AuthenticationService
         using (var hashAlgorithm = new HMACSHA1(securityToken))
 #endif
         {
+            var modifierBytes = modifier is not null ? _encoding.GetBytes(modifier) : null;
             for (var i = -2; i <= 2; i++)
             {
 #if NET6_0_OR_GREATER
-                var computedTotp = ComputeTotp(securityToken, (ulong)((long)currentTimeStep + i), modifier);
+                var computedTotp = ComputeTotp(securityToken, (ulong)((long)currentTimeStep + i), modifierBytes);
 #else
-                var computedTotp = ComputeTotp(hashAlgorithm, (ulong)((long)currentTimeStep + i), modifier);
+                var computedTotp = ComputeTotp(hashAlgorithm, (ulong)((long)currentTimeStep + i), modifierBytes);
 #endif
                 if (computedTotp == code)
                 {

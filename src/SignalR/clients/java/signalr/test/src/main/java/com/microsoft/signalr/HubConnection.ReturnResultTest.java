@@ -395,4 +395,38 @@ class HubConnectionReturnResultTest {
         String expected = "{\"type\":3,\"invocationId\":\"1\",\"result\":\"bob\"}" + RECORD_SEPARATOR;
         assertEquals(expected, TestUtils.byteBufferToString(message));
     }
+
+    @Test
+    public void clientResultHandlerDoesNotBlockOtherHandlers() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+        CompletableSubject resultCalled = CompletableSubject.create();
+        CompletableSubject completeResult = CompletableSubject.create();
+        CompletableSubject nonResultCalled = CompletableSubject.create();
+
+        hubConnection.onWithResult("inc", (i) -> {
+            resultCalled.onComplete();
+            completeResult.timeout(30, TimeUnit.SECONDS).blockingAwait();
+            return Single.just("bob");
+        }, String.class);
+
+        hubConnection.on("inc2", (i) -> {
+            nonResultCalled.onComplete();
+        }, String.class);
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        SingleSubject<ByteBuffer> sendTask = mockTransport.getNextSentMessage();
+        mockTransport.receiveMessage("{\"type\":1,\"invocationId\":\"1\",\"target\":\"inc\",\"arguments\":[\"1\"]}" + RECORD_SEPARATOR);
+        resultCalled.timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        // Send an non-result invocation and make sure it's processed even with a blocking result invocation
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc2\",\"arguments\":[\"1\"]}" + RECORD_SEPARATOR);
+        nonResultCalled.timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        completeResult.onComplete();
+
+        ByteBuffer message = sendTask.timeout(30, TimeUnit.SECONDS).blockingGet();
+        String expected = "{\"type\":3,\"invocationId\":\"1\",\"result\":\"bob\"}" + RECORD_SEPARATOR;
+        assertEquals(expected, TestUtils.byteBufferToString(message));
+    }
 }

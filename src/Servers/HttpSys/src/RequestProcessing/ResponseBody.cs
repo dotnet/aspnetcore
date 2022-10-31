@@ -137,13 +137,16 @@ internal sealed partial class ResponseBody : Stream
         }
 
         uint statusCode = 0;
-        HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks;
-        var pinnedBuffers = PinDataBuffers(endOfRequest, data, out dataChunks);
+
+        UnmanagedBufferAllocator allocator = new();
+        Span<GCHandle> pinnedBuffers = default;
         try
         {
+            Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks;
+            BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks, out pinnedBuffers);
             if (!started)
             {
-                statusCode = _requestContext.Response.SendHeaders(dataChunks, null, flags, false);
+                statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
             }
             else
             {
@@ -166,6 +169,7 @@ internal sealed partial class ResponseBody : Stream
         finally
         {
             FreeDataBuffers(pinnedBuffers);
+            allocator.Dispose();
         }
 
         if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_HANDLE_EOF
@@ -188,29 +192,32 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private List<GCHandle> PinDataBuffers(bool endOfRequest, ArraySegment<byte> data, out HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks)
+    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
     {
-        var pins = new List<GCHandle>();
         var hasData = data.Count > 0;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
         Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
+        int pinsIndex = 0;
         var currentChunk = 0;
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
-            dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[1];
-            SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
-            return pins;
+            dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
+            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
+            pins = default;
+            return;
         }
         else if (!hasData && !addTrailers)
         {
             // No data
-            dataChunks = Array.Empty<HttpApiTypes.HTTP_DATA_CHUNK>();
-            return pins;
+            dataChunks = default;
+            pins = default;
+            return;
         }
 
+        // Recompute chunk count based on presence of data.
         var chunkCount = hasData ? 1 : 0;
         if (addTrailers)
         {
@@ -229,52 +236,72 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
-        dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[chunkCount];
+        // We know the max pin count.
+        pins = allocator.AllocAsSpan<GCHandle>(2);
+
+        // Manually initialize the allocated GCHandles
+        pins.Clear();
+
+        dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
 
         if (chunked)
         {
             var chunkHeaderBuffer = Helpers.GetChunkHeader(data.Count);
-            SetDataChunk(dataChunks, ref currentChunk, pins, chunkHeaderBuffer);
+            SetDataChunk(dataChunks, ref currentChunk, chunkHeaderBuffer, out pins[pinsIndex++]);
         }
 
         if (hasData)
         {
-            SetDataChunk(dataChunks, ref currentChunk, pins, data);
+            SetDataChunk(dataChunks, ref currentChunk, data, out pins[pinsIndex++]);
         }
 
         if (chunked)
         {
-            SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.CRLF));
+            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.CRLF);
 
             if (endOfRequest)
             {
-                SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
+                SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
             }
         }
 
         if (addTrailers)
         {
-            _requestContext.Response.SerializeTrailers(dataChunks, currentChunk, pins);
+            _requestContext.Response.SerializeTrailers(ref allocator, out dataChunks[currentChunk++]);
         }
         else if (endOfRequest)
         {
             _requestContext.Response.MakeTrailersReadOnly();
         }
 
-        return pins;
+        Debug.Assert(currentChunk == dataChunks.Length, "All chunks should be accounted for");
     }
 
-    private static void SetDataChunk(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, List<GCHandle> pins, ArraySegment<byte> buffer)
+    private static unsafe void SetDataChunk(
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
+        ref int chunkIndex,
+        ArraySegment<byte> buffer,
+        out GCHandle handle)
     {
-        var handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
-        pins.Add(handle);
-        chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        chunks[chunkIndex].fromMemory.pBuffer = handle.AddrOfPinnedObject() + buffer.Offset;
-        chunks[chunkIndex].fromMemory.BufferLength = (uint)buffer.Count;
-        chunkIndex++;
+        handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
+        SetDataChunkWithPinnedData(chunks, ref chunkIndex, new ReadOnlySpan<byte>((void*)(handle.AddrOfPinnedObject() + buffer.Offset), buffer.Count));
     }
 
-    private static void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+    private static unsafe void SetDataChunkWithPinnedData(
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
+        ref int chunkIndex,
+        ReadOnlySpan<byte> bytes)
+    {
+        ref var chunk = ref chunks[chunkIndex++];
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        fixed (byte* ptr = bytes)
+        {
+            chunk.fromMemory.pBuffer = (IntPtr)ptr;
+        }
+        chunk.fromMemory.BufferLength = (uint)bytes.Length;
+    }
+
+    private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)
     {
         foreach (var pin in pinnedBuffers)
         {
@@ -321,11 +348,13 @@ internal sealed partial class ResponseBody : Stream
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
         uint bytesSent = 0;
+
+        UnmanagedBufferAllocator allocator = new();
         try
         {
             if (!started)
             {
-                statusCode = _requestContext.Response.SendHeaders(null, asyncResult, flags, false);
+                statusCode = _requestContext.Response.SendHeaders(ref allocator, null, asyncResult, flags, false);
                 bytesSent = asyncResult.BytesSent;
             }
             else
@@ -349,6 +378,10 @@ internal sealed partial class ResponseBody : Stream
             asyncResult.Dispose();
             Abort();
             throw;
+        }
+        finally
+        {
+            allocator.Dispose();
         }
 
         if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
@@ -616,11 +649,12 @@ internal sealed partial class ResponseBody : Stream
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, fileStream, offset, count.Value, chunked, cancellationToken);
 
+        UnmanagedBufferAllocator allocator = new();
         try
         {
             if (!started)
             {
-                statusCode = _requestContext.Response.SendHeaders(null, asyncResult, flags, false);
+                statusCode = _requestContext.Response.SendHeaders(ref allocator, null, asyncResult, flags, false);
                 bytesSent = asyncResult.BytesSent;
             }
             else
@@ -645,6 +679,10 @@ internal sealed partial class ResponseBody : Stream
             asyncResult.Dispose();
             Abort();
             throw;
+        }
+        finally
+        {
+            allocator.Dispose();
         }
 
         if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)

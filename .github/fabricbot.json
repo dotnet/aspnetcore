@@ -1652,7 +1652,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": ".NET 7 Planning"
+                "milestoneName": ".NET 8 Planning"
               }
             },
             {
@@ -1668,12 +1668,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment when an investigation issue moved to .NET 7 Planning",
+        "taskName": "Comment when an investigation issue moved to .NET 8 Planning",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\nWe're moving this issue to the `.NET 7 Planning` milestone for future evaluation / consideration. Because it's not immediately obvious that this is a bug in our framework, we would like to keep this around to collect more feedback, which can later help us determine the impact of it. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
+              "comment": "Thanks for contacting us.\nWe're moving this issue to the `.NET 8 Planning` milestone for future evaluation / consideration. Because it's not immediately obvious that this is a bug in our framework, we would like to keep this around to collect more feedback, which can later help us determine the impact of it. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -2499,7 +2499,7 @@
                 {
                   "name": "isActivitySender",
                   "parameters": {
-                    "user": "dotnet-maestro-bot "
+                    "user": "dotnet-maestro-bot"
                   }
                 }
               ]
@@ -2562,7 +2562,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-alpha1"
+              "milestoneName": "8.0-preview1"
             }
           }
         ],
@@ -2579,54 +2579,9 @@
           "operator": "and",
           "operands": [
             {
-              "name": "addedToProjectColumn",
-              "parameters": {
-                "projectName": " ASP.NET Core 7 Web UI",
-                "columnName": "In Progress"
-              }
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "hasLabel",
-                  "parameters": {
-                    "label": "Working"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "eventType": "issue",
-        "eventNames": [
-          "issues",
-          "project_card"
-        ],
-        "actions": [
-          {
-            "name": "addLabel",
-            "parameters": {
-              "label": "Working"
-            }
-          }
-        ],
-        "taskName": "Add `Working` label to items moved to `In Progress` column on the ` ASP.NET Core 7 Web UI` project"
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "IssuesOnlyResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": ".NET 7 Planning"
+                "milestoneName": ".NET 8 Planning"
               }
             },
             {
@@ -2647,12 +2602,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment when an issue is moved to `.NET 7 Planning` milestone",
+        "taskName": "Comment when an issue is moved to `.NET 8 Planning` milestone",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\n\nWe're moving this issue to the `.NET 7 Planning` milestone for future evaluation / consideration. We would like to keep this around to collect more feedback, which can help us with prioritizing this work. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
+              "comment": "Thanks for contacting us.\n\nWe're moving this issue to the `.NET 8 Planning` milestone for future evaluation / consideration. We would like to keep this around to collect more feedback, which can help us with prioritizing this work. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -2940,7 +2895,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": "5.0.x"
+                "milestoneName": "7.0.x"
               }
             },
             {
@@ -2961,13 +2916,13 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Add 5.0 servicing issues to the servicing project board",
+        "taskName": "Add 7.0 servicing issues to the servicing project board",
         "actions": [
           {
             "name": "addToProject",
             "parameters": {
               "projectName": "Servicing",
-              "columnName": "5.0.x"
+              "columnName": "7.0.x"
             }
           }
         ]
@@ -3368,6 +3323,40 @@
             "name": "addReply",
             "parameters": {
               "comment": "@${issueAuthor}, this change will be considered for inclusion in the blog post for the release it'll ship in. Nice work!\n\nPlease ensure that the original comment in this thread contains a clear explanation of what the change does, why it's important (what problem does it solve?), and, if relevant, include things like code samples and/or performance numbers.\n\nThis content may not be exactly what goes into the blog post, but it will help the team putting together the announcement.\n\nThanks!"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "Servicing-approved"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Servicing PR Approved] Let the author know that the PR will be merged by the build team",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hi @${issueAuthor}. This PR was just approved to be included in the upcoming servicing release. Somebody from the @dotnet/aspnet-build team will get it merged when the branches are open. Until then, please make sure all the CI checks pass and the PR is reviewed."
             }
           }
         ]

@@ -13,26 +13,26 @@ internal sealed class VaryByQueryPolicy : IOutputCachePolicy
 {
     private readonly StringValues _queryKeys;
 
-    /// <summary>
-    /// Creates a policy that doesn't vary the cached content based on query string.
-    /// </summary>
-    public VaryByQueryPolicy()
+    private VaryByQueryPolicy()
     {
     }
 
-    /// <summary>
-    /// Creates a policy that varies the cached content based on the specified query string key.
-    /// </summary>
-    public VaryByQueryPolicy(string queryKey)
+    public VaryByQueryPolicy(string queryKey, params string[] queryKeys)
     {
+        ArgumentNullException.ThrowIfNull(queryKey);
+
         _queryKeys = queryKey;
+
+        if (queryKeys != null && queryKeys.Length > 0)
+        {
+            _queryKeys = StringValues.Concat(_queryKeys, queryKeys);
+        }
     }
 
-    /// <summary>
-    /// Creates a policy that varies the cached content based on the specified query string keys.
-    /// </summary>
-    public VaryByQueryPolicy(params string[] queryKeys)
+    public VaryByQueryPolicy(string[] queryKeys)
     {
+        ArgumentNullException.ThrowIfNull(queryKeys);
+
         _queryKeys = queryKeys;
     }
 

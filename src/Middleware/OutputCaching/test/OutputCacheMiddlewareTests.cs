@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.Metrics;
-using System.Threading.Tasks;
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
@@ -783,38 +780,6 @@ public class OutputCacheMiddlewareTests
     }
 
     [Fact]
-    public void GetOrderCasingNormalizedStringValues_NormalizesCasingToUpper()
-    {
-        var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
-        var lowercaseStrings = new StringValues(new[] { "stringA", "stringB" });
-
-        var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(lowercaseStrings);
-
-        Assert.Equal(uppercaseStrings, normalizedStrings);
-    }
-
-    [Fact]
-    public void GetOrderCasingNormalizedStringValues_NormalizesOrder()
-    {
-        var orderedStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
-        var reverseOrderStrings = new StringValues(new[] { "STRINGB", "STRINGA" });
-
-        var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
-
-        Assert.Equal(orderedStrings, normalizedStrings);
-    }
-
-    [Fact]
-    public void GetOrderCasingNormalizedStringValues_PreservesCommas()
-    {
-        var originalStrings = new StringValues(new[] { "STRINGA, STRINGB" });
-
-        var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
-
-        Assert.Equal(originalStrings, normalizedStrings);
-    }
-
-    [Fact]
     public async Task Locking_PreventsConcurrentRequests()
     {
         var responseCounter = 0;
@@ -870,7 +835,7 @@ public class OutputCacheMiddlewareTests
         var task2Executing = new ManualResetEventSlim(false);
 
         var options = new OutputCacheOptions();
-        options.AddBasePolicy(build => build.Cache().AllowLocking(false));
+        options.AddBasePolicy(build => build.Cache().SetLocking(false));
 
         var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
         {
@@ -887,7 +852,7 @@ public class OutputCacheMiddlewareTests
                     task2Executing.Set();
                     break;
             }
-            
+
             c.Response.Write("Hello" + responseCounter);
             return Task.CompletedTask;
         });
@@ -907,5 +872,32 @@ public class OutputCacheMiddlewareTests
         await Task.WhenAll(task1, task2);
 
         Assert.Equal(2, responseCounter);
+    }
+
+    [Fact]
+    public async Task EmptyCacheKey_IsNotCached()
+    {
+        var cache = new TestOutputCache();
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
+        var context = TestUtils.CreateTestContext(cache: cache);
+
+        middleware.ShimResponseStream(context);
+        context.HttpContext.Response.ContentLength = 5;
+        context.HttpContext.Request.Method = "GET";
+
+        // A response to HEAD should not include a body, but it may be present
+        await context.HttpContext.Response.WriteAsync("Hello");
+
+        context.CachedResponse = new OutputCacheEntry { Headers = new() };
+        context.CacheKey = "";
+        context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+        await middleware.FinalizeCacheBodyAsync(context);
+
+        Assert.Equal(1, cache.SetCount);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.ResponseCached);
     }
 }

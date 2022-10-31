@@ -134,6 +134,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
     protected readonly RequestDelegate _noopApplication;
+    protected readonly RequestDelegate _notImplementedApp;
     protected readonly RequestDelegate _readHeadersApplication;
     protected readonly RequestDelegate _readTrailersApplication;
     protected readonly RequestDelegate _bufferingApplication;
@@ -176,6 +177,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         });
 
         _noopApplication = context => Task.CompletedTask;
+        _notImplementedApp = _ => throw new NotImplementedException();
 
         _readHeadersApplication = context =>
         {
@@ -452,12 +454,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
+        var features = new FeatureCollection();
+        _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
             connectionContext: _mockConnectionContext.Object,
             transport: _pair.Transport,
             memoryPool: _memoryPool,
-            connectionFeatures: new FeatureCollection(),
+            connectionFeatures: features,
             timeoutControl: _mockTimeoutControl.Object);
 
         _connection = new Http2Connection(httpConnectionContext);
@@ -500,11 +504,15 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
     }
 
-    protected void InitializeConnectionWithoutPreface(RequestDelegate application)
+    protected void InitializeConnectionWithoutPreface(RequestDelegate application, bool addKestrelFeatures = false)
     {
         if (_connection == null)
         {
             CreateConnection();
+        }
+        if (addKestrelFeatures)
+        {
+            AddKestrelConnection();
         }
 
         var connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
@@ -525,9 +533,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _connectionTask = CompletePipeOnTaskCompletion();
     }
 
-    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 4, bool expectedWindowUpdate = true)
+    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 4, bool expectedWindowUpdate = true, bool addKestrelFeatures = false)
     {
-        InitializeConnectionWithoutPreface(application);
+        InitializeConnectionWithoutPreface(application, addKestrelFeatures);
 
         // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
         await ThreadPoolAwaitable.Instance;
@@ -552,6 +560,17 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             withLength: 0,
             withFlags: (byte)Http2SettingsFrameFlags.ACK,
             withStreamId: 0);
+    }
+
+    protected void AddKestrelConnection()
+    {
+        new KestrelConnection<BaseConnectionContext>(
+            0,
+            _serviceContext,
+            new TransportConnectionManager(_serviceContext.ConnectionManager),
+            _ => throw new NotImplementedException($"{nameof(_connection.ProcessRequestsAsync)} should invoked instead - hence transport connection manager does not have the connection registered."),
+            _mockConnectionContext.Object,
+            new KestrelTrace(_serviceContext.LoggerFactory));
     }
 
     protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)
@@ -1166,7 +1185,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
     }
 
-    internal async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
+    internal async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = uint.MaxValue)
     {
         var frame = new Http2FrameWithPayload();
 
@@ -1208,7 +1227,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     internal async Task<Http2FrameWithPayload> ExpectAsync(Http2FrameType type, int withLength, byte withFlags, int withStreamId)
     {
-        var frame = await ReceiveFrameAsync((uint)withLength);
+        var frame = await ReceiveFrameAsync();
 
         Assert.Equal(type, frame.Type);
         Assert.Equal(withStreamId, frame.StreamId);

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -95,7 +96,7 @@ internal abstract class CertificateManager
                 var now = DateTimeOffset.Now;
                 var validCertificates = matchingCertificates
                     .Where(c => IsValidCertificate(c, now, requireExportable))
-                    .OrderByDescending(c => GetCertificateVersion(c))
+                    .OrderByDescending(GetCertificateVersion)
                     .ToArray();
 
                 if (Log.IsEnabled())
@@ -548,6 +549,14 @@ internal abstract class CertificateManager
         try
         {
             Log.WriteCertificateToDisk(path);
+
+            // Create a temp file with the correct Unix file mode before moving it to the expected path.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var tempFilename = Path.GetTempFileName();
+                File.Move(tempFilename, path, overwrite: true);
+            }
+
             File.WriteAllBytes(path, bytes);
         }
         catch (Exception ex) when (Log.IsEnabled())
@@ -568,6 +577,14 @@ internal abstract class CertificateManager
             {
                 var keyPath = Path.ChangeExtension(path, ".key");
                 Log.WritePemKeyToDisk(keyPath);
+
+                // Create a temp file with the correct Unix file mode before moving it to the expected path.
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var tempFilename = Path.GetTempFileName();
+                    File.Move(tempFilename, keyPath, overwrite: true);
+                }
+
                 File.WriteAllBytes(keyPath, pemEnvelope);
             }
             catch (Exception ex) when (Log.IsEnabled())

@@ -703,10 +703,7 @@ internal sealed class PageActionInvoker : ResourceInvoker, IActionInvoker
             return;
         }
 
-        if (context.ExceptionDispatchInfo != null)
-        {
-            context.ExceptionDispatchInfo.Throw();
-        }
+        context.ExceptionDispatchInfo?.Throw();
 
         if (context.Exception != null)
         {

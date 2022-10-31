@@ -56,7 +56,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
                     Scheduler = transportScheduler,
                     InputOptions = new PipeOptions(memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
                     OutputOptions = new PipeOptions(memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                    SocketSenderPool = new SocketSenderPool(transportScheduler),
+                    SocketSenderPool = new SocketSenderPool(PipeScheduler.Inline),
                     MemoryPool = memoryPool,
                 };
             }
@@ -65,6 +65,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
         {
             var memoryPool = _options.MemoryPoolFactory();
             var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
+
             _settings = new QueueSettings[]
             {
                 new QueueSettings()
@@ -91,7 +92,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
 
         var connection = new SocketConnection(socket,
             setting.MemoryPool,
-            PipeScheduler.Inline,
+            setting.SocketSenderPool.Scheduler,
             _logger,
             setting.SocketSenderPool,
             setting.InputOptions,

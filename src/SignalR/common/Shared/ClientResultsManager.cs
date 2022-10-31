@@ -42,6 +42,11 @@ internal sealed class ClientResultsManager : IInvocationBinder
     {
         var result = _pendingInvocations.TryAdd(invocationId, invocationInfo);
         Debug.Assert(result);
+        // Should have a 50% chance of happening once every 2.71 quintillion invocations (see UUID in Wikipedia)
+        if (!result)
+        {
+            invocationInfo.Complete(invocationInfo.Tcs, CompletionMessage.WithError(invocationId, "ID collision occurred when using client results. This is likely a bug in SignalR."));
+        }
     }
 
     public void TryCompleteResult(string connectionId, CompletionMessage message)

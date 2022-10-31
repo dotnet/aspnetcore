@@ -300,16 +300,16 @@ internal partial class HttpProtocol
             throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
         }
 
-        if (StatusCode != StatusCodes.Status200OK)
+        if (StatusCode < StatusCodes.Status200OK || StatusCodes.Status300MultipleChoices <= StatusCode)
         {
-            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe200);
+            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe2XX);
         }
 
         IsExtendedConnectAccepted = true;
 
         await FlushAsync();
 
-        return _bodyControl!.Upgrade();
+        return _bodyControl!.AcceptConnect();
     }
 
     void IHttpRequestLifetimeFeature.Abort()

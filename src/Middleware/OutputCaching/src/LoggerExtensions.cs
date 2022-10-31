@@ -35,20 +35,17 @@ internal static partial class LoggerExtensions
     [LoggerMessage(7, LogLevel.Information, "No cached response available for this request.", EventName = "NoResponseServed")]
     internal static partial void NoResponseServed(this ILogger logger);
 
-    [LoggerMessage(8, LogLevel.Debug, "Vary by rules were updated. Header names: {HeaderNames}, Query keys: {QueryKeys}, Route value names: {RouteValueNames}", EventName = "VaryByRulesUpdated")]
-    internal static partial void VaryByRulesUpdated(this ILogger logger, string headerNames, string queryKeys, string routeValueNames);
-
-    [LoggerMessage(9, LogLevel.Information, "The response has been cached.", EventName = "ResponseCached")]
+    [LoggerMessage(8, LogLevel.Information, "The response has been cached.", EventName = "ResponseCached")]
     internal static partial void ResponseCached(this ILogger logger);
 
-    [LoggerMessage(10, LogLevel.Information, "The response could not be cached for this request.", EventName = "ResponseNotCached")]
+    [LoggerMessage(9, LogLevel.Information, "The response could not be cached for this request.", EventName = "ResponseNotCached")]
     internal static partial void ResponseNotCached(this ILogger logger);
 
-    [LoggerMessage(11, LogLevel.Warning, "The response could not be cached for this request because the 'Content-Length' did not match the body length.",
+    [LoggerMessage(10, LogLevel.Warning, "The response could not be cached for this request because the 'Content-Length' did not match the body length.",
         EventName = "ResponseContentLengthMismatchNotCached")]
     internal static partial void ResponseContentLengthMismatchNotCached(this ILogger logger);
 
-    [LoggerMessage(12, LogLevel.Debug, "The response time of the entry is {ResponseTime} and has exceeded its expiry date.",
+    [LoggerMessage(11, LogLevel.Debug, "The response time of the entry is {ResponseTime} and has exceeded its expiry date.",
         EventName = "ExpirationExpiresExceeded")]
     internal static partial void ExpirationExpiresExceeded(this ILogger logger, DateTimeOffset responseTime);
 

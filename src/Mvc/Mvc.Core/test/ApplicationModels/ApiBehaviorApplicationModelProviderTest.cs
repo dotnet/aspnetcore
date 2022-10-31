@@ -133,7 +133,6 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Collection(
             provider.ActionModelConventions,
             c => Assert.IsType<ApiVisibilityConvention>(c),
-            c => Assert.IsType<EndpointMetadataConvention>(c),
             c => Assert.IsType<ClientErrorResultFilterConvention>(c),
             c => Assert.IsType<InvalidModelStateFilterConvention>(c),
             c => Assert.IsType<ConsumesConstraintForFormFileParameterConvention>(c),
