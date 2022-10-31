@@ -107,7 +107,14 @@ public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDispo
 
         if (_confirmExternalNavigation)
         {
-            await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
+            try
+            {
+                await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
+            }
+            catch (JSDisconnectedException)
+            {
+                // If the browser is gone, we don't need it to clean up any browser-side state
+            }
         }
     }
 }
