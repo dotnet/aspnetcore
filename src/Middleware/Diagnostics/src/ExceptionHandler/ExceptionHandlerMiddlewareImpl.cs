@@ -186,7 +186,7 @@ internal class ExceptionHandlerMiddlewareImpl
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
             Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
-        static void WriteDiagnosticEvent<TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
+        static void WriteDiagnosticEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
             => diagnosticSource.Write(name, value);
     }
 
