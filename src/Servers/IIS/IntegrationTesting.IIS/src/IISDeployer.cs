@@ -158,14 +158,14 @@ public class IISDeployer : IISDeployerBase
         {
             // Handle cases where debug file is redirected by test
             var debugLogLocations = new List<string>();
-            if (IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
+            if (IISDeploymentParameters.HandlerSettings.TryGetValue("debugFile", out var debugFile))
             {
-                debugLogLocations.Add(IISDeploymentParameters.HandlerSettings["debugFile"]);
+                debugLogLocations.Add(debugFile);
             }
 
-            if (DeploymentParameters.EnvironmentVariables.ContainsKey("ASPNETCORE_MODULE_DEBUG_FILE"))
+            if (DeploymentParameters.EnvironmentVariables.TryGetValue("ASPNETCORE_MODULE_DEBUG_FILE", out debugFile))
             {
-                debugLogLocations.Add(DeploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"]);
+                debugLogLocations.Add(debugFile);
             }
 
             // default debug file name
@@ -397,7 +397,7 @@ public class IISDeployer : IISDeployerBase
                         Logger.LogInformation($"Stopping pool, state: {state}");
                     }
                 }
-                
+
                 // Make sure all sites are stopped
                 foreach (var site in serverManager.Sites)
                 {
