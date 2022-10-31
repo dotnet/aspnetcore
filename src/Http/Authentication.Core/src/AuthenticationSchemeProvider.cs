@@ -184,15 +184,14 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
     /// <param name="name">The name of the authenticationScheme being removed.</param>
     public virtual void RemoveScheme(string name)
     {
-        if (!_schemes.ContainsKey(name))
+        if (!_schemes.TryGetValue(name, out var scheme))
         {
             return;
         }
         lock (_lock)
         {
-            if (_schemes.ContainsKey(name))
+            if (_schemes.TryGetValue(name, out scheme))
             {
-                var scheme = _schemes[name];
                 if (_requestHandlers.Remove(scheme))
                 {
                     _requestHandlersCopy = _requestHandlers.ToArray();
