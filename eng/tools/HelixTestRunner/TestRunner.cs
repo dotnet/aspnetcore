@@ -36,7 +36,6 @@ public class TestRunner
             ProcessUtil.PrintMessage($"Set VSTEST_DUMP_PATH: {dumpPath}");
             EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
             EnvironmentVariables.Add("DOTNET_CLI_VSTEST_TRACE", "1");
-            EnvironmentVariables.Add("DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER", "1");
 
             if (Options.InstallPlaywright)
             {
