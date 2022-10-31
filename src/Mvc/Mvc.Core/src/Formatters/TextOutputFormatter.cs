@@ -187,9 +187,9 @@ public abstract class TextOutputFormatter : OutputFormatter
     private string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
     {
         if (string.Equals(encoding.WebName, Encoding.UTF8.WebName, StringComparison.OrdinalIgnoreCase) &&
-            OutputMediaTypeCache.ContainsKey(mediaType))
+            OutputMediaTypeCache.TryGetValue(mediaType, out var mediaTypeWithCharset))
         {
-            return OutputMediaTypeCache[mediaType];
+            return mediaTypeWithCharset;
         }
 
         return MediaType.ReplaceEncoding(mediaType, encoding);
