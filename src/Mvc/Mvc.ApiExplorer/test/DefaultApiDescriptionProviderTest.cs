@@ -1603,10 +1603,48 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ParameterDescription_NullableParsableType()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsNullableTryParsableEmployee));
+        var parameterDescriptor = action.Parameters.Single();
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal(1, description.ParameterDescriptions.Count);
+
+        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
+        Assert.Same(BindingSource.Query, id.Source);
+        Assert.Equal(typeof(string), id.Type);
+    }
+
+    [Fact]
     public void GetApiDescription_ParameterDescription_ConvertibleType()
     {
         // Arrange
         var action = CreateActionDescriptor(nameof(AcceptsConvertibleEmployee));
+        var parameterDescriptor = action.Parameters.Single();
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal(1, description.ParameterDescriptions.Count);
+
+        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee");
+        Assert.Same(BindingSource.Query, id.Source);
+        Assert.Equal(typeof(string), id.Type);
+    }
+
+    [Fact]
+    public void GetApiDescription_ParameterDescription_NullableConvertibleType()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsNullableConvertibleEmployee));
         var parameterDescriptor = action.Parameters.Single();
 
         // Act
@@ -2420,7 +2458,15 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
+    private void AcceptsNullableTryParsableEmployee([FromQuery] TryParsableEmployee? employee)
+    {
+    }
+
     private void AcceptsConvertibleEmployee([FromQuery] ConvertibleEmployee employee)
+    {
+    }
+
+    private void AcceptsNullableConvertibleEmployee([FromQuery] ConvertibleEmployee? employee)
     {
     }
 
@@ -2555,7 +2601,7 @@ public class DefaultApiDescriptionProviderTest
         public string Name { get; set; }
     }
 
-    private class TryParsableEmployee : IParsable<TryParsableEmployee>
+    private struct TryParsableEmployee : IParsable<TryParsableEmployee>
     {
         public string Name { get; set; }
 
