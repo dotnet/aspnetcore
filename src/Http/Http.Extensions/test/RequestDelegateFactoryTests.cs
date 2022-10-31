@@ -5282,10 +5282,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
         {
-            ["tryParsable"] = "42"
+            ["tryParsable"] = "https://example.org"
         });
 
-        var factoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromForm]int tryParsable) =>
+        var factoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromForm] MyTryParseRecord tryParsable) =>
         {
             httpContext.Items["tryParsable"] = tryParsable;
         });
@@ -5294,7 +5294,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
-        Assert.Equal(42, httpContext.Items["tryParsable"]);
+        var content = Assert.IsType<MyTryParseRecord>(httpContext.Items["tryParsable"]);
+        Assert.Equal(new Uri("https://example.org"), content.Uri);
     }
 
     private record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
