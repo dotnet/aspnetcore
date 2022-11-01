@@ -2496,15 +2496,7 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
-    private void AcceptsTryParsableNullablePrimitiveType([FromQuery] Guid? id)
-    {
-    }
-
     private void AcceptsTryParsableEmployee([FromQuery] TryParsableEmployee employee)
-    {
-    }
-
-    private void AcceptsNullableTryParsableEmployee([FromQuery] TryParsableEmployee? employee)
     {
     }
 
@@ -2512,9 +2504,21 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
+#nullable enable
+
+    private void AcceptsNullableTryParsableEmployee([FromQuery] TryParsableEmployee? employee)
+    {
+    }
+
+    private void AcceptsTryParsableNullablePrimitiveType([FromQuery] Guid? id)
+    {
+    }
+
     private void AcceptsNullableConvertibleEmployee([FromQuery] ConvertibleEmployee? employee)
     {
     }
+
+#nullable restore
 
     private void AcceptsOrderDTO(OrderDTO dto)
     {
