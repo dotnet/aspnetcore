@@ -3,6 +3,8 @@ Microsoft.AspNetCore.Authorization.AuthorizationBuilder
 Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AuthorizationBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
 Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider.AllowsCachingPolicies.get -> bool
 Microsoft.AspNetCore.Authorization.Infrastructure.PassThroughAuthorizationHandler.PassThroughAuthorizationHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! options) -> void
+Microsoft.AspNetCore.Authorization.IAuthorizationRequirementData
+Microsoft.AspNetCore.Authorization.IAuthorizationRequirementData.GetRequirements() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>!
 static Microsoft.AspNetCore.Authorization.AuthorizationPolicy.CombineAsync(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData!>! authorizeData, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationPolicy!>! policies) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?>!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddDefaultPolicy(string! name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddDefaultPolicy(string! name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
