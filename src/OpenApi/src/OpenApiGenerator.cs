@@ -460,9 +460,6 @@ internal sealed class OpenApiGenerator
         }
         else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
-            // complex types will display as strings since they use custom parsing via TryParse on a string
-            var displayType = !parameter.ParameterType.IsPrimitive && Nullable.GetUnderlyingType(parameter.ParameterType)?.IsPrimitive != true
-                ? typeof(string) : parameter.ParameterType;
             // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
             if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
             {
