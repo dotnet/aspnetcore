@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authorization;
 /// <summary>
 /// Interface that can produce authorization requirements.
 /// </summary>
-public interface IRequirementData
+public interface IAuthorizationRequirementData
 {
     /// <summary>
     /// Returns <see cref="IAuthorizationRequirement"/> that should be satisfied for authorization.

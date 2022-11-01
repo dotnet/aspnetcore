@@ -387,7 +387,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(calledPolicy);
     }
 
-    public class ReqAttribute : Attribute, IRequirementData
+    public class ReqAttribute : Attribute, IAuthorizationRequirementData
     {
         IEnumerable<IAuthorizationRequirement> _reqs;
         public ReqAttribute(params IAuthorizationRequirement[] req)
@@ -397,7 +397,7 @@ public class AuthorizationMiddlewareTests
             => _reqs;
     }
 
-    public class ReqAuthorizeAttribute : AuthorizeAttribute, IRequirementData
+    public class ReqAuthorizeAttribute : AuthorizeAttribute, IAuthorizationRequirementData
     {
         IEnumerable<IAuthorizationRequirement> _reqs;
         public ReqAuthorizeAttribute(params IAuthorizationRequirement[] req)
