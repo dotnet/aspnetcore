@@ -244,6 +244,90 @@ public class KestrelServerTests
     }
 
     [Fact]
+    public async Task StartWithNoValidTransportFactoryThrows()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0));
+
+        var server = new KestrelServerImpl(
+                Options.Create<KestrelServerOptions>(serverOptions),
+                new List<IConnectionListenerFactory> { new NonBindableTransportFactory() },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None));
+
+        Assert.Equal("No registered IConnectionListenerFactory supports endpoint IPEndPoint: 127.0.0.1:0", exception.Message);
+    }
+
+    [Fact]
+    public async Task StartWithMultipleTransportFactories_UseSupported()
+    {
+        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(endpoint);
+
+        var transportFactory = new MockTransportFactory();
+
+        var server = new KestrelServerImpl(
+                Options.Create<KestrelServerOptions>(serverOptions),
+                new List<IConnectionListenerFactory> { transportFactory, new NonBindableTransportFactory() },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        Assert.Collection(transportFactory.BoundEndPoints,
+            ep => Assert.Equal(endpoint, ep.OriginalEndPoint));
+    }
+
+    [Fact]
+    public async Task StartWithNoValidTransportFactoryThrows_Http3()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0), c =>
+        {
+            c.Protocols = HttpProtocols.Http3;
+            c.UseHttps(TestResources.GetTestCertificate());
+        });
+
+        var server = new KestrelServerImpl(
+                Options.Create<KestrelServerOptions>(serverOptions),
+                new List<IConnectionListenerFactory>(),
+                new List<IMultiplexedConnectionListenerFactory> { new NonBindableMultiplexedTransportFactory() },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None));
+
+        Assert.Equal("No registered IMultiplexedConnectionListenerFactory supports endpoint IPEndPoint: 127.0.0.1:0", exception.Message);
+    }
+
+    [Fact]
+    public async Task StartWithMultipleTransportFactories_Http3_UseSupported()
+    {
+        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(endpoint, c =>
+        {
+            c.Protocols = HttpProtocols.Http3;
+            c.UseHttps(TestResources.GetTestCertificate());
+        });
+
+        var transportFactory = new MockMultiplexedTransportFactory();
+
+        var server = new KestrelServerImpl(
+                Options.Create<KestrelServerOptions>(serverOptions),
+                new List<IConnectionListenerFactory>(),
+                new List<IMultiplexedConnectionListenerFactory> { transportFactory, new NonBindableMultiplexedTransportFactory() },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        Assert.Collection(transportFactory.BoundEndPoints,
+            ep => Assert.Equal(endpoint, ep.OriginalEndPoint));
+    }
+
+    [Fact]
     public async Task ListenWithCustomEndpoint_DoesNotThrow()
     {
         var options = new KestrelServerOptions();
@@ -848,6 +932,26 @@ public class KestrelServerTests
         {
             throw new InvalidOperationException();
         }
+    }
+
+    private class NonBindableTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
+    {
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public bool CanBind(EndPoint endpoint) => false;
+    }
+
+    private class NonBindableMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory, IConnectionListenerFactorySelector
+    {
+        public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public bool CanBind(EndPoint endpoint) => false;
     }
 
     private class MockMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory

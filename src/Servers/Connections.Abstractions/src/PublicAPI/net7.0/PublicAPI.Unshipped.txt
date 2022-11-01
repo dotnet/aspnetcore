@@ -1,6 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature
 Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature.OnClosed(System.Action<object?>! callback, object? state) -> void
+Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
+Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool
 Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext
 Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.ClientHelloInfo.get -> System.Net.Security.SslClientHelloInfo
 Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.ClientHelloInfo.set -> void
