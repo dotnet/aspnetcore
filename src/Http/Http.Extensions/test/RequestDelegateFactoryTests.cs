@@ -5194,7 +5194,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("my-trace-id", traceIdArgument.Id);
     }
 
-    public static IEnumerable<object?[]> FormAndFormFileParametersDelegates
+    public static IEnumerable<object[]> FormAndFormFileParametersDelegates
     {
         get
         {
@@ -5210,10 +5210,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                 context.Items["FormArgument"] = form;
             }
 
-            return new List<object?[]>
+            return new List<object[]>
                 {
-                    new object?[] { TestAction },
-                    new object?[] { TestActionDifferentOrder },
+                    new object[] { (Action<HttpContext, IFormCollection, IFormFileCollection>)TestAction },
+                    new object[] { (Action<HttpContext, IFormFileCollection, IFormCollection>)TestActionDifferentOrder },
                 };
         }
     }
