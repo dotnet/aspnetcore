@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -8,6 +9,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
@@ -379,6 +381,12 @@ public static partial class RequestDelegateFactory
 
         if (!factoryContext.MetadataAlreadyInferred)
         {
+            if (factoryContext.ReadForm)
+            {
+                // Add the Accepts metadata when reading from FORM.
+                InferFormAcceptsMetadata(factoryContext);
+            }
+
             PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
 
             // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
@@ -1835,16 +1843,22 @@ public static partial class RequestDelegateFactory
         factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
     }
 
+    private static void InferFormAcceptsMetadata(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.ReadFormFile)
+        {
+            AddInferredAcceptsMetadata(factoryContext, factoryContext.FirstFormRequestBodyParameter!.ParameterType, FormFileContentType);
+        }
+        else
+        {
+            AddInferredAcceptsMetadata(factoryContext, factoryContext.FirstFormRequestBodyParameter!.ParameterType, FormContentType);
+        }
+    }
+
     private static Expression BindParameterFromFormCollection(
         ParameterInfo parameter,
         RequestDelegateFactoryContext factoryContext)
     {
-        // Do not duplicate the metadata if there are multiple form parameters
-        if (!factoryContext.ReadForm)
-        {
-            AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormContentType);
-        }
-
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormCollectionParameter);
         factoryContext.ReadForm = true;
@@ -1863,12 +1877,6 @@ public static partial class RequestDelegateFactory
     {
         var valueExpression = GetValueFromProperty(FormExpr, FormIndexerProperty, key, GetExpressionType(parameter.ParameterType));
 
-        // Do not duplicate the metadata if there are multiple form parameters
-        if (!factoryContext.ReadForm)
-        {
-            AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormContentType);
-        }
-
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
         factoryContext.ReadForm = true;
@@ -1884,12 +1892,6 @@ public static partial class RequestDelegateFactory
         ParameterInfo parameter,
         RequestDelegateFactoryContext factoryContext)
     {
-        // Do not duplicate the metadata if there are multiple form file parameters
-        if (!factoryContext.ReadFormFile)
-        {
-            AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
-        }
-
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter);
         factoryContext.ReadForm = true;
@@ -1909,12 +1911,6 @@ public static partial class RequestDelegateFactory
         string trackedParameterSource)
     {
         var valueExpression = GetValueFromProperty(FormFilesExpr, FormFilesIndexerProperty, key, typeof(IFormFile));
-
-        // Do not duplicate the metadata if there are multiple form file parameters
-        if (!factoryContext.ReadFormFile)
-        {
-            AddInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
-        }
 
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(key, trackedParameterSource);

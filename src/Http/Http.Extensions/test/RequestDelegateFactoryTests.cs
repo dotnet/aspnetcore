@@ -5194,18 +5194,34 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("my-trace-id", traceIdArgument.Id);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesFromBothIFormCollectionAndIFormFileParameters()
+    public static IEnumerable<object?[]> FormAndFormFileParametersDelegates
     {
-        IFormFileCollection? formFilesArgument = null;
-        IFormCollection? formArgument = null;
-
-        void TestAction(IFormCollection form, IFormFileCollection formFiles)
+        get
         {
-            formFilesArgument = formFiles;
-            formArgument = form;
-        }
+            void TestAction(HttpContext context, IFormCollection form, IFormFileCollection formFiles)
+            {
+                context.Items["FormFilesArgument"] = formFiles;
+                context.Items["FormArgument"] = form;
+            }
 
+            void TestActionDifferentOrder(HttpContext context, IFormFileCollection formFiles, IFormCollection form)
+            {
+                context.Items["FormFilesArgument"] = formFiles;
+                context.Items["FormArgument"] = form;
+            }
+
+            return new List<object?[]>
+                {
+                    new object?[] { TestAction },
+                    new object?[] { TestActionDifferentOrder },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(FormAndFormFileParametersDelegates))]
+    public async Task RequestDelegatePopulatesFromBothIFormCollectionAndIFormFileParameters(Delegate action)
+    {
         var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
         var form = new MultipartFormDataContent("some-boundary");
         form.Add(fileContent, "file", "file.txt");
@@ -5221,10 +5237,13 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var factoryResult = RequestDelegateFactory.Create(action);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
+
+        IFormFileCollection? formFilesArgument = httpContext.Items["FormFilesArgument"] as IFormFileCollection;
+        IFormCollection? formArgument = httpContext.Items["FormArgument"] as IFormCollection;
 
         Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
         Assert.NotNull(formFilesArgument!["file"]);
@@ -5241,7 +5260,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
         Assert.Collection(allAcceptsMetadata,
-            (m) => Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, m.ContentTypes),
             (m) => Assert.Equal(new[] { "multipart/form-data" }, m.ContentTypes));
     }
 
