@@ -5228,7 +5228,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
         Assert.NotNull(formFilesArgument!["file"]);
-        Assert.Equal("file.txt", formFilesArgument!["file"]!.Name);
+        Assert.Equal("file.txt", formFilesArgument!["file"]!.FileName);
 
         Assert.Equal(httpContext.Request.Form, formArgument);
         Assert.NotNull(formArgument);
