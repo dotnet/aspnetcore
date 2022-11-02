@@ -275,9 +275,9 @@
     <MicrosoftPlaywrightVersion>1.17.3</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.3</PollyVersion>
-    <SeleniumSupportVersion>4.3.0</SeleniumSupportVersion>
-    <SeleniumWebDriverChromeDriverVersion>103.0.5060.13400</SeleniumWebDriverChromeDriverVersion>
-    <SeleniumWebDriverVersion>4.3.0</SeleniumWebDriverVersion>
+    <SeleniumSupportVersion>4.5.1</SeleniumSupportVersion>
+    <SeleniumWebDriverChromeDriverVersion>107.0.5304.6200</SeleniumWebDriverChromeDriverVersion>
+    <SeleniumWebDriverVersion>4.5.1</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <StackExchangeRedisVersion>2.2.4</StackExchangeRedisVersion>
