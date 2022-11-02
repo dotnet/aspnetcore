@@ -41,7 +41,7 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="FixedWindowRateLimiter"/> with the given <see cref="FixedWindowRateLimiterOptions"/> to the to the application.
+    /// Registers a new <see cref="FixedWindowRateLimiter"/> with the given <see cref="FixedWindowRateLimiterOptions"/> to the to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
     /// Or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
@@ -70,7 +70,7 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="SlidingWindowRateLimiter"/> with the given <see cref="SlidingWindowRateLimiterOptions"/> to the to the application.
+    /// Registers a new <see cref="SlidingWindowRateLimiter"/> with the given <see cref="SlidingWindowRateLimiterOptions"/> to the to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
     /// Or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
@@ -99,7 +99,7 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="ConcurrencyLimiter"/> with the given <see cref="ConcurrencyLimiterOptions"/> to the to the application.
+    /// Registers a new <see cref="ConcurrencyLimiter"/> with the given <see cref="ConcurrencyLimiterOptions"/> to the to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
     /// Or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
