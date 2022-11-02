@@ -78,7 +78,7 @@ internal abstract class CertificateManager
         {
             using var store = new X509Store(storeName, location);
             store.Open(OpenFlags.ReadOnly);
-            PopulateCertificatesFromStore(store, certificates);
+            PopulateCertificatesFromStore(store, certificates, requireExportable);
             IEnumerable<X509Certificate2> matchingCertificates = certificates;
             matchingCertificates = matchingCertificates
                 .Where(c => HasOid(c, AspNetHttpsOid));
@@ -161,7 +161,7 @@ internal abstract class CertificateManager
             GetCertificateVersion(certificate) >= AspNetHttpsCertificateVersion;
     }
 
-    protected virtual void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
+    protected virtual void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates, bool requireExportable)
     {
         certificates.AddRange(store.Certificates.OfType<X509Certificate2>());
     }
