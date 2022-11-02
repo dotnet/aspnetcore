@@ -1019,6 +1019,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
+                _currentHeadersStream.TotalParsedHeaderSize = _totalParsedHeaderSize;
+
                 // This must be initialized before we offload the request or else we may start processing request body frames without it.
                 _currentHeadersStream.InputRemaining = _currentHeadersStream.RequestHeaders.ContentLength;
 
@@ -1279,8 +1281,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
-            _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
-            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            // We don't include the 32 byte overhead hear so we can accept a little more than the advertised limit.
+            _totalParsedHeaderSize += name.Length + value.Length;
+            // Allow a 2x grace before aborting the connection. We'll check the size limit again later where we can send a 431.
+            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize * 2)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
             }

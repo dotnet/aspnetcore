@@ -92,6 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _requestHeaderParsingState = default;
             _parsedPseudoHeaderFields = default;
             _totalParsedHeaderSize = 0;
+            // Allow up to 2x during parsing, enforce the hard limit after when we can preserve the connection.
+            _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
             _isMethodConnect = false;
             _completionState = default;
             StreamTimeoutTicks = 0;
@@ -205,10 +207,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
-            // https://tools.ietf.org/html/rfc7540#section-6.5.2
+            // https://httpwg.org/specs/rfc9114.html#rfc.section.4.2.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
-            _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
-            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            // We don't include the 32 byte overhead hear so we can accept a little more than the advertised limit.
+            _totalParsedHeaderSize += name.Length + value.Length;
+            // Allow a 2x grace before aborting the stream. We'll check the size limit again later where we can send a 431.
+            if (_totalParsedHeaderSize > ServerOptions.Limits.MaxRequestHeadersTotalSize * 2)
             {
                 throw new Http3StreamErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http3ErrorCode.RequestRejected);
             }
@@ -754,6 +758,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {
             endConnection = !TryValidatePseudoHeaders();
+
+            // 431 if the headers are too large
+            if (_totalParsedHeaderSize > ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+            }
+
+            // 431 if we received too many headers
+            if (RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+            }
+
             return true;
         }
 
