@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Testing
 
     internal class Http3RequestHeaderHandler
     {
-        public readonly byte[] HeaderEncodingBuffer = new byte[64 * 1024];
+        public readonly byte[] HeaderEncodingBuffer = new byte[96 * 1024];
         public readonly QPackDecoder QpackDecoder = new QPackDecoder(8192);
         public readonly Dictionary<string, string> DecodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
@@ -639,9 +639,8 @@ namespace Microsoft.AspNetCore.Testing
             var done = QPackHeaderWriter.BeginEncode(headers, buffer.Span, ref headersTotalSize, out var length);
             if (!done)
             {
-                throw new InvalidOperationException("Headers not sent.");
+                throw new InvalidOperationException("The headers are too large.");
             }
-
             await SendFrameAsync(Http3FrameType.Headers, buffer.Slice(0, length), endStream);
         }
 

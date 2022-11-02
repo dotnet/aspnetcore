@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private bool _decrementCalled;
 
+        public int TotalParsedHeaderSize { get; set; }
+
         public Pipe RequestBodyPipe { get; private set; } = default!;
 
         internal long DrainExpirationTicks { get; set; }
@@ -47,6 +49,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             InputRemaining = null;
             RequestBodyStarted = false;
             DrainExpirationTicks = 0;
+            TotalParsedHeaderSize = 0;
+            // Allow up to 2x during parsing, enforce the hard limit after when we can preserve the connection.
+            _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
 
             _context = context;
 
@@ -208,6 +213,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // We don't need any of the parameters because we don't implement BeginRead to actually
             // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
             endConnection = !TryValidatePseudoHeaders();
+
+            // 431 if the headers are too large
+            if (TotalParsedHeaderSize > ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+            }
+
+            // 431 if we received too many headers
+            if (RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+            }
+
             return true;
         }
 

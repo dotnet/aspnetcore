@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         protected readonly RequestDelegate _noopApplication;
+        protected readonly RequestDelegate _notImplementedApp;
         protected readonly RequestDelegate _readHeadersApplication;
         protected readonly RequestDelegate _readTrailersApplication;
         protected readonly RequestDelegate _bufferingApplication;
@@ -193,6 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             _noopApplication = context => Task.CompletedTask;
+            _notImplementedApp = _ => throw new NotImplementedException();
 
             _readHeadersApplication = context =>
             {
