@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         private string _message;
         private RemoteAuthenticationApplicationPathsOptions _applicationPaths;
         private string _action;
+        private string _lastHandledAction;
 
         /// <summary>
         /// Gets or sets the <see cref="RemoteAuthenticationActions"/> action the component needs to handle.
@@ -165,6 +166,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <inheritdoc />
         protected override async Task OnParametersSetAsync()
         {
+            if (_lastHandledAction == Action)
+            {
+                // Avoid processing the same action more than once.
+                return;
+            }
+
+            _lastHandledAction = Action;
             switch (Action)
             {
                 case RemoteAuthenticationActions.LogIn:
