@@ -19,8 +19,8 @@ jobs:
       displayName: Add Build to Channel
       inputs:
         filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
-        arguments: -BuildId $(BARBuildId)
-          -ChannelId $(ChannelId)
+        arguments: -BuildId $(BARBuildId) 
+          -ChannelId $(ChannelId) 
           -MaestroApiAccessToken $(MaestroApiAccessToken)
           -MaestroApiEndPoint $(MaestroApiEndPoint)
           -MaestroApiVersion $(MaestroApiVersion)

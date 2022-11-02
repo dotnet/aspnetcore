@@ -22,7 +22,7 @@ parameters:
 
 jobs:
 - job: OneLocBuild
-
+  
   dependsOn: ${{ parameters.dependsOn }}
 
   displayName: OneLocBuild
@@ -38,7 +38,7 @@ jobs:
     - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
       - name: _GenerateLocProjectArguments
         value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
-
+      
 
   steps:
     - task: Powershell@2
