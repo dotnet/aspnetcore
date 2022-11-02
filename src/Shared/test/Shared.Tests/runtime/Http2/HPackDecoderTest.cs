@@ -494,6 +494,41 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         [Fact]
+        public void DecodesStringLength_ExceedsLimit_Throws()
+        {
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
+            string string8191 = new string('a', MaxHeaderFieldSize - 1);
+            string string8193 = new string('a', MaxHeaderFieldSize + 1);
+            string string8194 = new string('a', MaxHeaderFieldSize + 2);
+
+            var bytes = new byte[3];
+            var success = IntegerEncoder.Encode(8194, 7, bytes, out var written);
+
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
+                .Concat(new byte[] { 0x7f, 0x80, 0x3f }) // 8191 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8191))
+                .Concat(new byte[] { 0x7f, 0x80, 0x3f }) // 8191 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8191))
+                .Concat(_literalHeaderFieldWithoutIndexingNewName)
+                .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8193))
+                .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8193))
+                .Concat(_literalHeaderFieldWithoutIndexingNewName)
+                .Concat(new byte[] { 0x7f, 0x83, 0x3f }) // 8194 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8194))
+                .Concat(new byte[] { 0x7f, 0x83, 0x3f }) // 8194 encoded with 7-bit prefix, no Huffman encoding
+                .Concat(Encoding.ASCII.GetBytes(string8194))
+                .ToArray();
+
+            var ex = Assert.Throws<HPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, MaxHeaderFieldSize + 1), ex.Message);
+            Assert.Equal(string8191, _handler.DecodedHeaders[string8191]);
+            Assert.Equal(string8193, _handler.DecodedHeaders[string8193]);
+            Assert.False(_handler.DecodedHeaders.ContainsKey(string8194));
+        }
+
+        [Fact]
         public void DecodesStringLength_IndividualBytes()
         {
             HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
