@@ -45,8 +45,7 @@ public class RequestHeaderTests
     }
     [ConditionalFact]
     public async Task RequestHeaders_ClientSendsUtf8Headers_Success()
-    {
-       
+    {       
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
         {
