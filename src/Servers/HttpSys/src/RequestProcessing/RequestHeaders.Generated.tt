@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 <# foreach(var length in lengths) { #>
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
-                    if (_<#=prop.Name#>.Count > 0
+                    if ((_<#=prop.Name#>.Count > 0 || !string.IsNullOrEmpty(<#=prop.Name#>))
                         && string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.Ordinal))
                     {
 					    bool wasSet = <#=IsRead(prop.Index)#>;
