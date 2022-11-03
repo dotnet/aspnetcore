@@ -58,7 +58,7 @@ public sealed class InteractiveRequestOptions
     /// <summary>
     /// Tries to retrieve an existing additional parameter.
     /// </summary>
-    public bool TryGetAdditionalParameter<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string name, out TValue? value)
+    public bool TryGetAdditionalParameter<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string name, [NotNullWhen(true)] out TValue? value)
     {
         ArgumentNullException.ThrowIfNull(name);
 
