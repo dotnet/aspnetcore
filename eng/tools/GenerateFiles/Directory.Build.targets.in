@@ -53,7 +53,7 @@
         e.g. tool projects (again, property not set) use latest.
         On the other hand, $(TargetLatestDotNetRuntime) is specific to this repo and controls only the update below.
       -->
-      <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+      <DefaultRuntimeFrameworkVersion Condition=" ('$(IsServicingBuild)' != 'true' OR '$(NETCoreSdkVersion)' == '7.0.100-rtm.22478.12') AND
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
           '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>
