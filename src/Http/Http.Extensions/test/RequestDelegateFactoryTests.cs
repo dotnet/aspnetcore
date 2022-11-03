@@ -6887,6 +6887,27 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void InferMetadata_PopulatesAcceptsMetadata_WhenReadFromForm()
+    {
+        // Arrange
+        var @delegate = void (IFormCollection formCollection) => { };
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(),
+        };
+
+        // Act
+        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
+
+        // Assert
+        var allAcceptsMetadata = metadataResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
