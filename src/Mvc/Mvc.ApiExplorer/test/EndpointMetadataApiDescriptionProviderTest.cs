@@ -299,6 +299,48 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsFromRouteParameterAsPathWithSpecialPrimitiveType()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription, Type expectedTYpe)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedTYpe, param.Type);
+            Assert.Equal(expectedTYpe, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((DateTime foo) => { }, "/{foo}"), typeof(DateTime));
+        AssertPathParameter(GetApiDescription((DateTimeOffset foo) => { }, "/{foo}"), typeof(DateTimeOffset));
+        AssertPathParameter(GetApiDescription((DateOnly foo) => { }, "/{foo}"), typeof(DateOnly));
+        AssertPathParameter(GetApiDescription((TimeOnly foo) => { }, "/{foo}"), typeof(TimeOnly));
+        AssertPathParameter(GetApiDescription((TimeSpan foo) => { }, "/{foo}"), typeof(TimeSpan));
+        AssertPathParameter(GetApiDescription((decimal foo) => { }, "/{foo}"), typeof(decimal));
+        AssertPathParameter(GetApiDescription((Guid foo) => { }, "/{foo}"), typeof(Guid));
+        AssertPathParameter(GetApiDescription((Uri foo) => { }, "/{foo}"), typeof(Uri));
+    }
+
+    [Fact]
+    public void AddsFromRouteParameterAsPathWithNullableSpecialPrimitiveType()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription, Type expectedTYpe)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedTYpe, param.Type);
+            Assert.Equal(expectedTYpe, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((DateTime? foo) => { }, "/{foo}"), typeof(DateTime?));
+        AssertPathParameter(GetApiDescription((DateTimeOffset? foo) => { }, "/{foo}"), typeof(DateTimeOffset?));
+        AssertPathParameter(GetApiDescription((DateOnly? foo) => { }, "/{foo}"), typeof(DateOnly?));
+        AssertPathParameter(GetApiDescription((TimeOnly? foo) => { }, "/{foo}"), typeof(TimeOnly?));
+        AssertPathParameter(GetApiDescription((TimeSpan? foo) => { }, "/{foo}"), typeof(TimeSpan?));
+        AssertPathParameter(GetApiDescription((decimal? foo) => { }, "/{foo}"), typeof(decimal?));
+        AssertPathParameter(GetApiDescription((Guid? foo) => { }, "/{foo}"), typeof(Guid?));
+        AssertPathParameter(GetApiDescription((Uri? foo) => { }, "/{foo}"), typeof(Uri));
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
     {
         static void AssertPathParameter(ApiDescription apiDescription)
