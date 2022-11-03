@@ -69,8 +69,8 @@ public sealed class InteractiveRequestOptions
         }
         if (rawValue is JsonElement json)
         {
-            value = Deserialize(json);
-            AdditionalRequestParameters[name] = value!;
+            value = Deserialize(json)!;
+            AdditionalRequestParameters[name] = value;
             return true;
         }
         else
