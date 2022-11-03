@@ -62,6 +62,7 @@ internal sealed class EndpointModelMetadata : ModelMetadata
             || underlyingType == typeof(DateTimeOffset)
             || underlyingType == typeof(DateOnly)
             || underlyingType == typeof(TimeOnly)
+            || underlyingType == typeof(TimeSpan)
             || underlyingType == typeof(decimal)
             || underlyingType == typeof(Guid)
             || underlyingType == typeof(Uri) ? type : typeof(string);
