@@ -33,7 +33,8 @@ body:
   attributes:
     label: Steps To Reproduce
     description: |
-        
+      Share a repro project
+      
       We ❤ code! Point us to a [minimalistic repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) hosted in a public GitHub repo.
       
       We will close this issue if:
