@@ -2,8 +2,8 @@
 
 When customers plan to report an issue with ASP.NET Core, we will most likely ask them to provide a so called `minimal reproduction project (repro)`.
 This serves two purposes:
-- it helps the issue reporters to validate their assumptions by trying to recreate the behavior in a new project
-- it helps to avoid guess-work and helps with speedy investigations. Also, it helps us to provide workarounds if such applicable, much sooner.
+- It helps issue reporters validate their assumptions by trying to recreate the behavior in a new project.
+- It helps eliminate ambiguity and speeds up investigations. We may also be able to provide workarounds in certain scenarios.
 
 This document describes what a minimal repro project is, and why it's important to us.
 
