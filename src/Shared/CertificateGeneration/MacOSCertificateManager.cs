@@ -391,7 +391,8 @@ internal sealed class MacOSCertificateManager : CertificateManager
             // Note that if we require exportable certs, the actual certs we populate need to be the ones
             // from the store location, and not the version from disk. If we don't require exportability,
             // we favor the version of the cert that's on disk (avoiding unnecessary keychain access
-            // prompts).
+            // prompts). Intersect compares with the specified comparer and returns the matching elements
+            // from the first set.
             var onDiskAndKeychain = requireExportable ? certsFromStore.Intersect(certsFromDisk, ThumbprintComparer.Instance)
                                                       : certsFromDisk.Intersect(certsFromStore, ThumbprintComparer.Instance);
 
