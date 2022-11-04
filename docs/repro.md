@@ -10,7 +10,7 @@ This document describes what a minimal repro project is, and why it's important 
 ## What is a minimal repro project?
 A repro (or a reproduction) is a project, which can be used to reproduce the reported behavior with minimal effort from a product team, which has the minimum code required to demonstrate the concerning behavior.
 
-Here are the steps for creating such a project:
+There are two ways you can provide a minimal repro project. The first and simpler option is to use some type of public web-hosted REPL-based environment which supports ASP.NET Core. The other option is to provide a project hosted in GitHub as described below:
 - Create a new project, based on one of the ASP.NET Core project templates.
   - **Please use the `Empty*` project templates** if they're available for that project type.
 - Add the minimum amount of code necessary to reproduce the behavior you are reporting on this newly created project.
