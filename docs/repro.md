@@ -1,6 +1,6 @@
 # Bug Report Reproduction Guide
 
-When customers plan to report an issue with the ASP.NET Core framework, we will most likely ask them to provide a so called `minimal repro project`.
+When customers plan to report an issue with ASP.NET Core, we will most likely ask them to provide a so called `minimal reproduction project (repro)`.
 This document describes what a minimal repro project is, and why it's important to us.
 
 ## What is a minimal repro project?
