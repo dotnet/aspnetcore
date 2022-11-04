@@ -134,6 +134,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
     protected readonly RequestDelegate _noopApplication;
+    protected readonly RequestDelegate _notImplementedApp;
     protected readonly RequestDelegate _readHeadersApplication;
     protected readonly RequestDelegate _readTrailersApplication;
     protected readonly RequestDelegate _bufferingApplication;
@@ -176,6 +177,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         });
 
         _noopApplication = context => Task.CompletedTask;
+        _notImplementedApp = _ => throw new NotImplementedException();
 
         _readHeadersApplication = context =>
         {

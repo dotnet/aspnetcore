@@ -49,6 +49,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
 
     protected readonly RequestDelegate _noopApplication;
+    protected readonly RequestDelegate _notImplementedApp;
     protected readonly RequestDelegate _echoApplication;
     protected readonly RequestDelegate _readRateApplication;
     protected readonly RequestDelegate _echoMethod;
@@ -79,6 +80,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
     public Http3TestBase()
     {
         _noopApplication = context => Task.CompletedTask;
+        _notImplementedApp = _ => throw new NotImplementedException();
 
         _echoApplication = async context =>
         {
