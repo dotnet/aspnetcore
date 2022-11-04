@@ -9,7 +9,7 @@ A repro, or a reproduction is a project, which can be used to reproduce the repo
 Here are the steps for creating such a project:
 - Create a new project, based on one of the ASP.NET Core project templates.
 - Add the minimum amount of code necessary to reproduce the behavior you try to report on this newly created project
-- Make sure you don't add any dependencies, which are irrelevant to the behavior.
+- Make sure you don't add any dependencies that are irrelevant to the behavior.
 - Host the project as a public repository in GitHub
 - Make sure you haven't included any binaries in your project (this is usually about the `bin` and `obj` folders in your project)
   Note: that this step is important and we won't be able to open zip attachments in your issues.
