@@ -13,7 +13,7 @@ Here are the steps for creating such a project:
 - Host the project as a public repository in GitHub
 - Make sure you haven't included any binaries in your project (this is usually about the `bin` and `obj` folders in your project)
   Note: that this step is important and we won't be able to open zip attachments in your issues.
-  Those are potential attack vectors that we try to avoid at all cost.
+  Zip files are potential attack vectors that we try to avoid at all cost.
   
   ## Important consideratoins
   - **Never** include any sensitive information in your reproduction project
