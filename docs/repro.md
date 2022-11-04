@@ -17,6 +17,6 @@ Here are the steps for creating such a project:
   Zip files are potential attack vectors that we try to avoid at all cost.
   
   ## Important consideratoins
-  - **Never** include any sensitive information in your reproduction project
-  - **Never** include any code that is not intended to be publicized in a repro
+  - **Never** include any sensitive information in your reproduction project.
+  - **Never** include any code that is not intended to be public in a repro.
   - **Do not** reference any external services or data sources.
