@@ -38,8 +38,7 @@ These are some other repos for related projects:
 * [Documentation](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/aspnet/core/
 * [Entity Framework Core](https://github.com/dotnet/efcore) - data access technology
 * [Runtime](https://github.com/dotnet/runtime) - cross-platform runtime for cloud, mobile, desktop, and IoT apps
-* [Razor Compiler](https://github.com/dotnet/razor-compiler) - the parser and the C# code generator for the Razor syntax
-* [Razor Tooling](https://github.com/dotnet/razor-tooling) - tools for working on Razor ASP.NET Core apps using [Visual Studio](https://visualstudio.com), [Visual Studio for Mac](https://visualstudio.microsoft.com/vs/mac/), and [Visual Studio Code](https://code.visualstudio.com/).
+* [Razor](https://github.com/dotnet/razor) - the Razor compiler and tooling for working with Razor syntax (.cshtml, .razor)
 
 ## Code of conduct
 
