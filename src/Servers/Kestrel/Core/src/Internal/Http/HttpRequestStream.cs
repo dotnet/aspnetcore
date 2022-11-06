@@ -51,7 +51,7 @@ internal sealed class HttpRequestStream : Stream
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        if (!_bodyControl.AllowSynchronousIO)
+        if (!_bodyControl.AllowSynchronousIO && !Thread.IsGreenThread)
         {
             throw new InvalidOperationException(CoreStrings.SynchronousReadsDisallowed);
         }

@@ -48,7 +48,7 @@ internal sealed class HttpResponseStream : Stream
 
     public override void Flush()
     {
-        if (!_bodyControl.AllowSynchronousIO)
+        if (!_bodyControl.AllowSynchronousIO && !Thread.IsGreenThread)
         {
             throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
         }
@@ -72,7 +72,7 @@ internal sealed class HttpResponseStream : Stream
     }
     public override void Write(byte[] buffer, int offset, int count)
     {
-        if (!_bodyControl.AllowSynchronousIO)
+        if (!_bodyControl.AllowSynchronousIO && !Thread.IsGreenThread)
         {
             throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
         }
