@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 
@@ -79,6 +80,18 @@ internal sealed class HttpResponseStream : Stream
 
         WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
     }
+
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        if (!_bodyControl.AllowSynchronousIO && !Thread.IsGreenThread)
+        {
+            throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
+        }
+
+        _pipeWriter.Write(buffer);
+        _pipeWriter.FlushAsync().GetAsTask().GetAwaiter().GetResult();
+    }
+
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
         return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);

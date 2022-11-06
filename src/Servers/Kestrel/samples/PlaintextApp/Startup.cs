@@ -1,69 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using System.IO.Pipelines;
-using System.Net;
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Connections;
+var builder = WebApplication.CreateBuilder();
 
-namespace PlaintextApp;
+var app = builder.Build();
 
-public class Startup
+var payload = "Hello, World!"u8.ToArray();
+
+app.Run(context =>
 {
-    public void Configure(IApplicationBuilder app)
+    return Task.RunAsGreenThread(() =>
     {
-        var payload = "Hello, World!"u8.ToArray();
+        var response = context.Response;
 
-        app.Run((httpContext) =>
-        {
-            return Task.RunAsGreenThread(() =>
-            {
-                var response = httpContext.Response;
+        response.StatusCode = 200;
+        response.ContentType = "text/plain";
+        response.ContentLength = payload.Length;
 
-                response.StatusCode = 200;
-                response.ContentType = "text/plain";
-                response.ContentLength = payload.Length;
+        // This is async IO under the covers!
+        response.Body.Write(payload);
+    });
+});
 
-                // This is synchronous IO!
-                response.Body.Write(payload, 0, payload.Length);
-            });
-        });
-    }
-
-    public static async Task Main(string[] args)
-    {
-        var host = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                    .UseKestrel(options =>
-                    {
-                        options.Listen(IPAddress.Loopback, 5000);
-                    })
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseStartup<Startup>();
-            })
-            .Build();
-
-        await host.RunAsync();
-    }
-}
-
-internal static class ValueTaskExtensions
-{
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Task GetAsTask(this in ValueTask<FlushResult> valueTask)
-    {
-        if (valueTask.IsCompletedSuccessfully)
-        {
-            // Signal consumption to the IValueTaskSource
-            valueTask.GetAwaiter().GetResult();
-            return Task.CompletedTask;
-        }
-        else
-        {
-            return valueTask.AsTask();
-        }
-    }
-}
+app.Run();
