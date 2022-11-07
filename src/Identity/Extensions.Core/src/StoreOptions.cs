@@ -3,6 +3,8 @@
 
 namespace Microsoft.AspNetCore.Identity;
 
+using System;
+
 /// <summary>
 /// Used for store specific options
 /// </summary>
@@ -19,4 +21,10 @@ public class StoreOptions
     /// This will be enforced by requiring the store to implement <see cref="IProtectedUserStore{TUser}"/>.
     /// </summary>
     public bool ProtectPersonalData { get; set; }
+
+    /// <summary>
+    /// The schema version for the store, the default is 0.0 which leaves it up to the store
+    /// to determine what version should be used.
+    /// </summary>
+    public Version SchemaVersion { get; set; } = new Version(0, 0);
 }

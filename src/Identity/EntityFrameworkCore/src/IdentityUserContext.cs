@@ -115,6 +115,139 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// </param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        var version = GetStoreOptions()?.SchemaVersion ?? IdentityVersions.Version1;
+        OnModelCreatingVersion(builder, version);
+    }
+
+    /// <summary>
+    /// Configures the schema needed for the identity framework for a specific schema version.
+    /// </summary>
+    /// <param name="builder">
+    /// The builder being used to construct the model for this context.
+    /// </param>
+    /// <param name="schemaVersion">The schema version.</param>
+    protected virtual void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
+    {
+        if (schemaVersion >= IdentityVersions.Version2)
+        {
+            OnModelCreatingVersion2(builder);
+        }
+        else
+        {
+            OnModelCreatingVersion1(builder);
+        }
+    }
+
+    /// <summary>
+    /// Configures the schema needed for the identity framework for schema version 2.0
+    /// </summary>
+    /// <param name="builder">
+    /// The builder being used to construct the model for this context.
+    /// </param>
+    protected virtual void OnModelCreatingVersion2(ModelBuilder builder)
+    {
+        // Differences from Version 1:
+        // - maxKeyLength defaults to 128
+        // - PhoneNumber has a 256 max length
+
+        var storeOptions = GetStoreOptions();
+        var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
+        if (maxKeyLength == 0)
+        {
+            maxKeyLength = 128;
+        }
+        var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;
+        PersonalDataConverter? converter = null;
+
+        builder.Entity<TUser>(b =>
+        {
+            b.HasKey(u => u.Id);
+            b.HasIndex(u => u.NormalizedUserName).HasDatabaseName("UserNameIndex").IsUnique();
+            b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex");
+            b.ToTable("AspNetUsers");
+            b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
+
+            b.Property(u => u.UserName).HasMaxLength(256);
+            b.Property(u => u.NormalizedUserName).HasMaxLength(256);
+            b.Property(u => u.Email).HasMaxLength(256);
+            b.Property(u => u.NormalizedEmail).HasMaxLength(256);
+            b.Property(u => u.PhoneNumber).HasMaxLength(256);
+
+            if (encryptPersonalData)
+            {
+                converter = new PersonalDataConverter(this.GetService<IPersonalDataProtector>());
+                var personalDataProps = typeof(TUser).GetProperties().Where(
+                                prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
+                foreach (var p in personalDataProps)
+                {
+                    if (p.PropertyType != typeof(string))
+                    {
+                        throw new InvalidOperationException(Resources.CanOnlyProtectStrings);
+                    }
+                    b.Property(typeof(string), p.Name).HasConversion(converter);
+                }
+            }
+
+            b.HasMany<TUserClaim>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
+            b.HasMany<TUserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
+            b.HasMany<TUserToken>().WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
+        });
+
+        builder.Entity<TUserClaim>(b =>
+        {
+            b.HasKey(uc => uc.Id);
+            b.ToTable("AspNetUserClaims");
+        });
+
+        builder.Entity<TUserLogin>(b =>
+        {
+            b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+
+            if (maxKeyLength > 0)
+            {
+                b.Property(l => l.LoginProvider).HasMaxLength(maxKeyLength);
+                b.Property(l => l.ProviderKey).HasMaxLength(maxKeyLength);
+            }
+
+            b.ToTable("AspNetUserLogins");
+        });
+
+        builder.Entity<TUserToken>(b =>
+        {
+            b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+
+            if (maxKeyLength > 0)
+            {
+                b.Property(t => t.LoginProvider).HasMaxLength(maxKeyLength);
+                b.Property(t => t.Name).HasMaxLength(maxKeyLength);
+            }
+
+            if (encryptPersonalData)
+            {
+                var tokenProps = typeof(TUserToken).GetProperties().Where(
+                                prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
+                foreach (var p in tokenProps)
+                {
+                    if (p.PropertyType != typeof(string))
+                    {
+                        throw new InvalidOperationException(Resources.CanOnlyProtectStrings);
+                    }
+                    b.Property(typeof(string), p.Name).HasConversion(converter);
+                }
+            }
+
+            b.ToTable("AspNetUserTokens");
+        });
+    }
+
+    /// <summary>
+    /// Configures the schema needed for the identity framework for schema version 1.0
+    /// </summary>
+    /// <param name="builder">
+    /// The builder being used to construct the model for this context.
+    /// </param>
+    protected virtual void OnModelCreatingVersion1(ModelBuilder builder)
+    {
         var storeOptions = GetStoreOptions();
         var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
         var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;

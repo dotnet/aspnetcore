@@ -1,1 +1,6 @@
 #nullable enable
+override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.OnModelCreatingVersion1(Microsoft.EntityFrameworkCore.ModelBuilder! builder) -> void
+override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.OnModelCreatingVersion2(Microsoft.EntityFrameworkCore.ModelBuilder! builder) -> void
+virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.OnModelCreatingVersion(Microsoft.EntityFrameworkCore.ModelBuilder! builder, System.Version! schemaVersion) -> void
+virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.OnModelCreatingVersion1(Microsoft.EntityFrameworkCore.ModelBuilder! builder) -> void
+virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.OnModelCreatingVersion2(Microsoft.EntityFrameworkCore.ModelBuilder! builder) -> void
