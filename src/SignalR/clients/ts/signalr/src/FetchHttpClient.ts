@@ -104,7 +104,7 @@ export class FetchHttpClient extends HttpClient {
                 cache: "no-cache",
                 credentials: request.withCredentials === true ? "include" : "same-origin",
                 headers: {
-                    "X-Requested-With": "XMLHttpRequest",
+                    "X-Requested-With": "Fetch",
                     ...request.headers,
                 },
                 method: request.method!,
