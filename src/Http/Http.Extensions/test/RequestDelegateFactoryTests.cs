@@ -920,12 +920,19 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
 
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "7", "8", "9" })
+        });
+
         var factoryResult = RequestDelegateFactory.Create((HttpContext context,
             [FromHeader(Name = "Custom")] int[] headerValues,
-            [FromQuery(Name = "a")] int[] queryValues) =>
+            [FromQuery(Name = "a")] int[] queryValues,
+            [FromForm(Name = "form")] int[] formValues) =>
         {
             context.Items["headers"] = headerValues;
             context.Items["query"] = queryValues;
+            context.Items["form"] = formValues;
         });
 
         var requestDelegate = factoryResult.RequestDelegate;
@@ -934,6 +941,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
         Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
+        Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
     }
 
     [Fact]
@@ -947,12 +955,19 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
 
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "7", "8", "9" })
+        });
+
         var factoryResult = RequestDelegateFactory.Create((HttpContext context,
             [FromHeader(Name = "Custom")] StringValues headerValues,
-            [FromQuery(Name = "a")] StringValues queryValues) =>
+            [FromQuery(Name = "a")] StringValues queryValues,
+            [FromForm(Name = "form")] StringValues formValues) =>
         {
             context.Items["headers"] = headerValues;
             context.Items["query"] = queryValues;
+            context.Items["form"] = formValues;
         });
 
         var requestDelegate = factoryResult.RequestDelegate;
@@ -961,6 +976,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
         Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
+        Assert.Equal(new StringValues(new[] { "7", "8", "9" }), httpContext.Items["form"]!);
     }
 
     [Fact]
@@ -974,12 +990,19 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
 
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "7", "8", "9" })
+        });
+
         var factoryResult = RequestDelegateFactory.Create((HttpContext context,
             [FromHeader(Name = "Custom")] StringValues? headerValues,
-            [FromQuery(Name = "a")] StringValues? queryValues) =>
+            [FromQuery(Name = "a")] StringValues? queryValues,
+            [FromForm(Name = "form")] StringValues? formValues) =>
         {
             context.Items["headers"] = headerValues;
             context.Items["query"] = queryValues;
+            context.Items["form"] = formValues;
         });
 
         var requestDelegate = factoryResult.RequestDelegate;
@@ -988,6 +1011,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
         Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
+        Assert.Equal(new StringValues(new[] { "7", "8", "9" }), httpContext.Items["form"]!);
     }
 
     [Fact]
@@ -996,10 +1020,12 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var invoked = false;
 
         var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(null);
 
         var factoryResult = RequestDelegateFactory.Create((HttpContext context,
                 [FromHeader(Name = "foo")] StringValues headerValues,
-                [FromQuery(Name = "bar")] StringValues queryValues) =>
+                [FromQuery(Name = "bar")] StringValues queryValues,
+                [FromForm(Name = "form")] StringValues formValues) =>
         {
             invoked = true;
         });
@@ -1015,7 +1041,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         var logs = TestSink.Writes.ToArray();
 
-        Assert.Equal(2, logs.Length);
+        Assert.Equal(3, logs.Length);
 
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
@@ -1024,21 +1050,29 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
         Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
         Assert.Equal(@"Required parameter ""StringValues queryValues"" was not provided from query string.", logs[1].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""StringValues formValues"" was not provided from form.", logs[2].Message);
     }
 
     [Fact]
     public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSourceForUnpresentedValues()
     {
         var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(null);
 
         var factoryResult = RequestDelegateFactory.Create((HttpContext context,
                 [FromHeader(Name = "foo")] StringValues? headerValues,
-                [FromQuery(Name = "bar")] StringValues? queryValues) =>
+                [FromQuery(Name = "bar")] StringValues? queryValues,
+                [FromForm(Name = "form")] StringValues? formValues) =>
         {
             Assert.False(headerValues.HasValue);
             Assert.False(queryValues.HasValue);
+            Assert.False(formValues.HasValue);
             context.Items["headers"] = headerValues;
             context.Items["query"] = queryValues;
+            context.Items["form"] = formValues;
         });
 
         var requestDelegate = factoryResult.RequestDelegate;
@@ -1047,6 +1081,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Null(httpContext.Items["query"]);
         Assert.Null(httpContext.Items["headers"]);
+        Assert.Null(httpContext.Items["form"]);
     }
 
     [Fact]
@@ -4300,25 +4335,33 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public void BuildRequestDelegateThrowsInvalidOperationExceptionBodyAndFormFileParameters()
+    public void BuildRequestDelegateThrowsInvalidOperationExceptionBodyAndFormParameters()
     {
         void TestFormFileAndJson(IFormFile value1, Todo value2) { }
         void TestFormFilesAndJson(IFormFile value1, IFormFile value2, Todo value3) { }
         void TestFormFileCollectionAndJson(IFormFileCollection value1, Todo value2) { }
         void TestFormFileAndJsonWithAttribute(IFormFile value1, [FromBody] int value2) { }
+        void TestFormCollectionAndJson(IFormCollection value1, Todo value2) { }
+        void TestFormWithAttributeAndJson([FromForm] string value1, Todo value2) { }
         void TestJsonAndFormFile(Todo value1, IFormFile value2) { }
         void TestJsonAndFormFiles(Todo value1, IFormFile value2, IFormFile value3) { }
         void TestJsonAndFormFileCollection(Todo value1, IFormFileCollection value2) { }
         void TestJsonAndFormFileWithAttribute(Todo value1, [FromForm] IFormFile value2) { }
+        void TestJsonAndFormCollection(Todo value1, IFormCollection value2) { }
+        void TestJsonAndFormWithAttribute(Todo value1, [FromForm] string value2) { }
 
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJson));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFilesAndJson));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJsonWithAttribute));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileCollectionAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormCollectionAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormWithAttributeAndJson));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFile));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFiles));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileCollection));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileWithAttribute));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormCollection));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormWithAttribute));
     }
 
     [Fact]
@@ -4411,34 +4454,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction));
         Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
-    }
-
-    [Fact]
-    public void CreateThrowsNotSupportedExceptionIfFromFormParameterIsNotIFormFileCollectionOrIFormFile()
-    {
-        void TestActionBool([FromForm] bool value) { };
-        void TestActionInt([FromForm] int value) { };
-        void TestActionObject([FromForm] object value) { };
-        void TestActionString([FromForm] string value) { };
-        void TestActionCancellationToken([FromForm] CancellationToken value) { };
-        void TestActionClaimsPrincipal([FromForm] ClaimsPrincipal value) { };
-        void TestActionHttpContext([FromForm] HttpContext value) { };
-        void TestActionIFormCollection([FromForm] IFormCollection value) { };
-
-        AssertNotSupportedExceptionThrown(TestActionBool);
-        AssertNotSupportedExceptionThrown(TestActionInt);
-        AssertNotSupportedExceptionThrown(TestActionObject);
-        AssertNotSupportedExceptionThrown(TestActionString);
-        AssertNotSupportedExceptionThrown(TestActionCancellationToken);
-        AssertNotSupportedExceptionThrown(TestActionClaimsPrincipal);
-        AssertNotSupportedExceptionThrown(TestActionHttpContext);
-        AssertNotSupportedExceptionThrown(TestActionIFormCollection);
-
-        static void AssertNotSupportedExceptionThrown(Delegate handler)
-        {
-            var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(handler));
-            Assert.Equal("IFromFormMetadata is only supported for parameters of type IFormFileCollection and IFormFile.", nse.Message);
-        }
     }
 
     [Fact]
@@ -4891,6 +4906,416 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("my-trace-id", traceIdArgument.Id);
     }
 
+    public static TheoryData<HttpContent, string> FormContent
+    {
+        get
+        {
+            var dataset = new TheoryData<HttpContent, string>();
+
+            var multipartFormData = new MultipartFormDataContent("some-boundary");
+            multipartFormData.Add(new StringContent("hello"), "message");
+            multipartFormData.Add(new StringContent("foo"), "name");
+            dataset.Add(multipartFormData, "multipart/form-data;boundary=some-boundary");
+
+            var urlEncondedForm = new FormUrlEncodedContent(new Dictionary<string, string> { ["message"] = "hello", ["name"] = "foo" });
+            dataset.Add(urlEncondedForm, "application/x-www-form-urlencoded");
+
+            return dataset;
+        }
+    }
+
+    [Fact]
+    public void CreateThrowsNotSupportedExceptionIfIFormCollectionHasMetadataParameterName()
+    {
+        IFormCollection? formArgument = null;
+
+        void TestAction([FromForm(Name = "foo")] IFormCollection formCollection)
+        {
+            formArgument = formCollection;
+        }
+
+        var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction));
+        Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormCollection.", nse.Message);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromIFormCollectionParameter(HttpContent content, string contentType)
+    {
+        IFormCollection? formArgument = null;
+
+        void TestAction(IFormCollection formCollection)
+        {
+            formArgument = formCollection;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form, formArgument);
+        Assert.NotNull(formArgument);
+        Assert.Collection(formArgument!,
+            (item) =>
+            {
+                Assert.Equal("message", item.Key);
+                Assert.Equal("hello", item.Value);
+            },
+            (item) =>
+            {
+                Assert.Equal("name", item.Key);
+                Assert.Equal("foo", item.Value);
+            });
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromIFormCollectionParameterWithAttribute(HttpContent content, string contentType)
+    {
+        IFormCollection? formArgument = null;
+
+        void TestAction([FromForm] IFormCollection formCollection)
+        {
+            formArgument = formCollection;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form, formArgument);
+        Assert.NotNull(formArgument);
+        Assert.Collection(formArgument!,
+            (item) =>
+            {
+                Assert.Equal("message", item.Key);
+                Assert.Equal("hello", item.Value);
+            },
+            (item) =>
+            {
+                Assert.Equal("name", item.Key);
+                Assert.Equal("foo", item.Value);
+            });
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromOptionalFormParameter(HttpContent content, string contentType)
+    {
+        string? messageArgument = null;
+
+        void TestAction([FromForm] string? message)
+        {
+            messageArgument = message;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form["message"], messageArgument);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromMultipleRequiredFormParameters(HttpContent content, string contentType)
+    {
+        string? messageArgument = null;
+        string? nameArgument = null;
+
+        void TestAction([FromForm] string message, [FromForm] string name)
+        {
+            messageArgument = message;
+            nameArgument = name;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form["message"], messageArgument);
+        Assert.NotNull(messageArgument);
+
+        Assert.Equal(httpContext.Request.Form["name"], nameArgument);
+        Assert.NotNull(nameArgument);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromOptionalMissingFormParameter(HttpContent content, string contentType)
+    {
+        string? messageArgument = null;
+        string? additionalMessageArgument = null;
+
+        void TestAction([FromForm] string? message, [FromForm] string? additionalMessage)
+        {
+            messageArgument = message;
+            additionalMessageArgument = additionalMessage;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form["message"], messageArgument);
+        Assert.NotNull(messageArgument);
+        Assert.Null(additionalMessageArgument);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromFormParameterWithMetadata(HttpContent content, string contentType)
+    {
+        string? textArgument = null;
+
+        void TestAction([FromForm(Name = "message")] string text)
+        {
+            textArgument = text;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form["message"], textArgument);
+        Assert.NotNull(textArgument);
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegatePopulatesFromFormAndBoundParameter(HttpContent content, string contentType)
+    {
+        string? messageArgument = null;
+        TraceIdentifier traceIdArgument = default;
+
+        void TestAction([FromForm] string? message, TraceIdentifier traceId)
+        {
+            messageArgument = message;
+            traceIdArgument = traceId;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.TraceIdentifier = "my-trace-id";
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form["message"], messageArgument);
+        Assert.NotNull(messageArgument);
+
+        Assert.Equal("my-trace-id", traceIdArgument.Id);
+    }
+
+    public static IEnumerable<object[]> FormAndFormFileParametersDelegates
+    {
+        get
+        {
+            void TestAction(HttpContext context, IFormCollection form, IFormFileCollection formFiles)
+            {
+                context.Items["FormFilesArgument"] = formFiles;
+                context.Items["FormArgument"] = form;
+            }
+
+            void TestActionDifferentOrder(HttpContext context, IFormFileCollection formFiles, IFormCollection form)
+            {
+                context.Items["FormFilesArgument"] = formFiles;
+                context.Items["FormArgument"] = form;
+            }
+
+            return new List<object[]>
+                {
+                    new object[] { (Action<HttpContext, IFormCollection, IFormFileCollection>)TestAction },
+                    new object[] { (Action<HttpContext, IFormFileCollection, IFormCollection>)TestActionDifferentOrder },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(FormAndFormFileParametersDelegates))]
+    public async Task RequestDelegatePopulatesFromBothIFormCollectionAndIFormFileParameters(Delegate action)
+    {
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+        form.Add(new StringContent("foo"), "name");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        IFormFileCollection? formFilesArgument = httpContext.Items["FormFilesArgument"] as IFormFileCollection;
+        IFormCollection? formArgument = httpContext.Items["FormArgument"] as IFormCollection;
+
+        Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
+        Assert.NotNull(formFilesArgument!["file"]);
+        Assert.Equal("file.txt", formFilesArgument!["file"]!.FileName);
+
+        Assert.Equal(httpContext.Request.Form, formArgument);
+        Assert.NotNull(formArgument);
+        Assert.Collection(formArgument!,
+            (item) =>
+            {
+                Assert.Equal("name", item.Key);
+                Assert.Equal("foo", item.Value);
+            });
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        Assert.Collection(allAcceptsMetadata,
+            (m) => Assert.Equal(new[] { "multipart/form-data" }, m.ContentTypes));
+    }
+
+    [Theory]
+    [MemberData(nameof(FormContent))]
+    public async Task RequestDelegateSets400ResponseIfRequiredFormItemNotSpecified(HttpContent content, string contentType)
+    {
+        var invoked = false;
+
+        void TestAction([FromForm] string unknownParameter)
+        {
+            invoked = true;
+        }
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = contentType;
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesTryParsableParametersFromForm()
+    {
+        var httpContext = CreateHttpContext();
+
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["tryParsable"] = "https://example.org"
+        });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromForm] MyTryParseRecord tryParsable) =>
+        {
+            httpContext.Items["tryParsable"] = tryParsable;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var content = Assert.IsType<MyTryParseRecord>(httpContext.Items["tryParsable"]);
+        Assert.Equal(new Uri("https://example.org"), content.Uri);
+    }
+
     private record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
 
     private record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
@@ -4946,7 +5371,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             Value = 10;
         }
 
-        public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext, [FromHeader(Name ="Value")] int value)
+        public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext, [FromHeader(Name = "Value")] int value)
         {
             HttpContext = httpContext;
             Value = value;
@@ -5204,7 +5629,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private class ParameterListWitDefaultValue
     {
-        public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute]int value = 42)
+        public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute] int value = 42)
         {
             HttpContext = httpContext;
             Value = value;
@@ -5945,13 +6370,13 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         {
             ValueTask<TodoStruct> ValueTaskOfStructMethod()
             {
-                return ValueTask.FromResult(new TodoStruct {  Name = "Test todo"});
+                return ValueTask.FromResult(new TodoStruct { Name = "Test todo" });
             }
 
             async ValueTask<TodoStruct> ValueTaskOfStructWithYieldMethod()
             {
                 await Task.Yield();
-                return new TodoStruct {  Name = "Test todo" };
+                return new TodoStruct { Name = "Test todo" };
             }
 
             Task<TodoStruct> TaskOfStructMethod()
@@ -6459,6 +6884,27 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is MetadataCountMetadata { Count: 4 }),
             // Entry-specific metadata added after a call to InferMetadata
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
+    }
+
+    [Fact]
+    public void InferMetadata_PopulatesAcceptsMetadata_WhenReadFromForm()
+    {
+        // Arrange
+        var @delegate = void (IFormCollection formCollection) => { };
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(),
+        };
+
+        // Act
+        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
+
+        // Assert
+        var allAcceptsMetadata = metadataResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
     }
 
     [Fact]
