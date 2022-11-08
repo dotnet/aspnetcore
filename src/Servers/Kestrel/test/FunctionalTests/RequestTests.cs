@@ -786,8 +786,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(ConnectionMiddlewareData))]
+        [SkipOnCI]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
             var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
