@@ -5,7 +5,7 @@
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix</HelixQueueFedora34>
     <HelixQueueMariner>(Mariner)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
-    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8</HelixQueueArmDebian11>
+    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)ubuntu.2004.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8</HelixQueueArmDebian11>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
@@ -58,13 +58,13 @@
 
   <!-- IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on it's setup scripts. -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
-    <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="windows.11.arm64.open" Platform="Windows" />
   </ItemGroup>
 
   <PropertyGroup>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
-    <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
+    <IsWindowsHelixQueue Condition="$(HelixTargetQueue.ToUpperInvariant().Contains('WINDOWS'))">true</IsWindowsHelixQueue>
     <IsMacHelixQueue>false</IsMacHelixQueue>
-    <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
+    <IsMacHelixQueue Condition="$(HelixTargetQueue.ToUpperInvariant().Contains('OSX'))">true</IsMacHelixQueue>
   </PropertyGroup>
 </Project>
