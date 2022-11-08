@@ -5,7 +5,7 @@
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix</HelixQueueFedora34>
     <HelixQueueMariner>(Mariner)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
-    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8</HelixQueueArmDebian11>
+    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)ubuntu.2004.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8</HelixQueueArmDebian11>
 
     <!-- Do not attempt to override global property. -->
     <RunQuarantinedTests Condition=" '$(RunQuarantinedTests)' == '' ">false</RunQuarantinedTests>
@@ -53,7 +53,7 @@
         <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />
 
         <!-- IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on its setup scripts. -->
-        <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows"
+        <HelixAvailableTargetQueue Include="windows.11.arm64.open" Platform="Windows"
             Condition=" '$(IsWindowsOnlyTest)' != 'true' "/>
       </ItemGroup>
     </Otherwise>
@@ -69,9 +69,9 @@
     </When>
     <Otherwise>
       <PropertyGroup>
-        <IsArm64HelixQueue>$(HelixTargetQueue.Contains('Arm64'))</IsArm64HelixQueue>
-        <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
-        <IsMacHelixQueue>$(HelixTargetQueue.Contains('OSX'))</IsMacHelixQueue>
+        <IsArm64HelixQueue>$(HelixTargetQueue.ToUpperInvariant().Contains('ARM64'))</IsArm64HelixQueue>
+        <IsWindowsHelixQueue>$(HelixTargetQueue.ToUpperInvariant().Contains('WINDOWS'))</IsWindowsHelixQueue>
+        <IsMacHelixQueue>$(HelixTargetQueue.ToUpperInvariant().Contains('OSX'))</IsMacHelixQueue>
       </PropertyGroup>
     </Otherwise>
   </Choose>
