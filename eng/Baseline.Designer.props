@@ -159,17 +159,17 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
@@ -273,7 +273,7 @@
     <BaselinePackageVersion>6.0.11</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
@@ -324,7 +324,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
@@ -335,7 +335,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[6.0.1, )" />
   </ItemGroup>
@@ -344,7 +344,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[5.0.0, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[6.0.1, )" />
@@ -422,24 +422,24 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
     <BaselinePackageReference Include="System.Net.Http" Version="[4.3.4, )" />
     <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.1' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Common-->
@@ -448,14 +448,14 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.6, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.7, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.6, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' ">
@@ -550,7 +550,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Libuv" Version="[1.10.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client-->
@@ -609,7 +609,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
     <BaselinePackageReference Include="System.Net.Sockets" Version="[4.3.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.6, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.7, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
@@ -618,7 +618,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.6, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[6.0.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.Json-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' ">
@@ -809,19 +809,19 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions-->
@@ -907,19 +907,19 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[6.0.11, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Localization.Abstractions-->
@@ -934,7 +934,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[6.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[6.0.0, )" />
     <BaselinePackageReference Include="System.Net.Http" Version="[4.3.4, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
@@ -943,7 +943,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[6.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[6.0.0, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
@@ -951,7 +951,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[6.0.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[6.0.0, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
