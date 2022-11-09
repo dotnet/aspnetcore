@@ -402,43 +402,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
-        [Fact]
-        public async Task ClientAttemptingToUseUnsupportedProtocolIsLoggedAsDebug()
-        {
-            var loggerProvider = new HandshakeErrorLoggerProvider();
-            LoggerFactory.AddProvider(loggerProvider);
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
-                    {
-                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
-                    });
-                })
-                .ConfigureServices(AddTestLogging)
-                .Configure(app => app.Run(httpContext => Task.CompletedTask));
-
-            using (var host = hostBuilder.Build())
-            {
-                host.Start();
-
-                using (var socket = await HttpClientSlim.GetSocket(new Uri($"https://127.0.0.1:{host.GetPort()}/")))
-                using (var stream = new NetworkStream(socket, ownsSocket: false))
-                using (var sslStream = new SslStream(stream, true, (sender, certificate, chain, errors) => true))
-                {
-                    // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAnyAsync<Exception>(() =>
-                        sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls,
-                            checkCertificateRevocation: false));
-                }
-            }
-
-            await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
-            Assert.Equal(1, loggerProvider.FilterLogger.LastEventId);
-            Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
-        }
-
         private class HandshakeErrorLoggerProvider : ILoggerProvider
         {
             public HttpsConnectionFilterLogger FilterLogger { get; } = new HttpsConnectionFilterLogger();
