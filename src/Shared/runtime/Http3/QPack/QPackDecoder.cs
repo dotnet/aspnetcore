@@ -223,10 +223,10 @@ namespace System.Net.Http.QPack
                         ParseHeaderValue(data, ref currentIndex, handler);
                         break;
                     case State.PostBaseIndex:
-                        ParsePostBaseIndex(data, ref currentIndex, handler);
+                        ParsePostBaseIndex(data, ref currentIndex);
                         break;
                     case State.HeaderNameIndexPostBase:
-                        ParseHeaderNameIndexPostBase(data, ref currentIndex, handler);
+                        ParseHeaderNameIndexPostBase(data, ref currentIndex);
                         break;
                     default:
                         // Can't happen
@@ -253,7 +253,7 @@ namespace System.Net.Http.QPack
             }
         }
 
-        private void ParseHeaderNameIndexPostBase(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        private void ParseHeaderNameIndexPostBase(ReadOnlySpan<byte> data, ref int currentIndex)
         {
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
@@ -261,11 +261,11 @@ namespace System.Net.Http.QPack
             }
         }
 
-        private void ParsePostBaseIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        private void ParsePostBaseIndex(ReadOnlySpan<byte> data, ref int currentIndex)
         {
-            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            if (TryDecodeInteger(data, ref currentIndex, out _))
             {
-                OnPostBaseIndex(intResult, handler);
+                OnPostBaseIndex();
             }
         }
 
@@ -494,14 +494,14 @@ namespace System.Net.Http.QPack
                         break;
                     case 3: // Indexed Header Field With Post-Base Index
                         prefixInt = ~PostBaseIndexMask & b;
-                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out intResult))
+                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out _))
                         {
-                            OnPostBaseIndex(intResult, handler);
+                            OnPostBaseIndex();
                         }
                         else
                         {
                             _state = State.PostBaseIndex;
-                            ParsePostBaseIndex(data, ref currentIndex, handler);
+                            ParsePostBaseIndex(data, ref currentIndex);
                         }
                         break;
                     default: // Literal Header Field With Post-Base Name Reference (at least 4 zeroes, maybe more)
@@ -513,7 +513,7 @@ namespace System.Net.Http.QPack
                         else
                         {
                             _state = State.HeaderNameIndexPostBase;
-                            ParseHeaderNameIndexPostBase(data, ref currentIndex, handler);
+                            ParseHeaderNameIndexPostBase(data, ref currentIndex);
                         }
                         break;
                 }
@@ -710,7 +710,7 @@ namespace System.Net.Http.QPack
             _state = State.HeaderValueLength;
         }
 
-        private static void OnIndexedHeaderNamePostBase(int index)
+        private static void OnIndexedHeaderNamePostBase(int _ /*index*/)
         {
             ThrowDynamicTableNotSupported();
             // TODO update with postbase index
@@ -718,7 +718,7 @@ namespace System.Net.Http.QPack
             // _state = State.HeaderValueLength;
         }
 
-        private static void OnPostBaseIndex(int intResult, IHttpStreamHeadersHandler handler)
+        private static void OnPostBaseIndex()
         {
             ThrowDynamicTableNotSupported();
             // TODO
