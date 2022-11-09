@@ -31,7 +31,7 @@ public static class UseMiddlewareExtensions
     /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
     /// <param name="args">The arguments to pass to the middleware type instance's constructor.</param>
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-    public static IApplicationBuilder UseMiddleware<[DynamicallyAccessedMembers(MiddlewareAccessibility)] TMiddleware>(this IApplicationBuilder app, params object?[] args)
+    public static IApplicationBuilder UseMiddleware<[DynamicallyAccessedMembers(MiddlewareAccessibility)] TMiddleware>(this IApplicationBuilder app, params object?[] args) where T : new()
     {
         return app.UseMiddleware(typeof(TMiddleware), args);
     }
