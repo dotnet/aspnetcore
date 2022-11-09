@@ -13,7 +13,7 @@
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
-        "3.1.30"
+        "3.1.31"
       ]
     },
     "Git": "2.22.0",
