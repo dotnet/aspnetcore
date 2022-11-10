@@ -26,6 +26,7 @@
   <Import Project="..\..\build\assets.props" />
 
   <ItemGroup>
+    <EmbeddedResource Include="Http.SubApp.config" />
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
