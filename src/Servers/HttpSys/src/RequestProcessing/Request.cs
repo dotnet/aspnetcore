@@ -60,6 +60,7 @@ internal sealed partial class Request
 
         PathBase = string.Empty;
         Path = originalPath;
+        var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
 
         // 'OPTIONS * HTTP/1.1'
         if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
@@ -67,31 +68,97 @@ internal sealed partial class Request
             PathBase = string.Empty;
             Path = string.Empty;
         }
-        else
+        // Prefix may be null if the requested has been transfered to our queue
+        else if (prefix is not null)
         {
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
-            // Prefix may be null if the requested has been transfered to our queue
-            if (!(prefix is null))
+            var pathBase = prefix.PathWithoutTrailingSlash;
+
+            // url: /base/path, prefix: /base/, base: /base, path: /path
+            // url: /, prefix: /, base: , path: /
+            if (originalPath.Equals(pathBase, StringComparison.Ordinal))
             {
-                if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
-                {
-                    // They matched exactly except for the trailing slash.
-                    PathBase = originalPath;
-                    Path = string.Empty;
-                }
-                else
-                {
-                    // url: /base/path, prefix: /base/, base: /base, path: /path
-                    // url: /, prefix: /, base: , path: /
-                    PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
-                    Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
-                }
-            }
-            else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost()!, originalPath, out var pathBase, out var path))
-            {
+                // Exact match, no need to preserve the casing
                 PathBase = pathBase;
-                Path = path;
+                Path = string.Empty;
             }
+            else if (originalPath.Equals(pathBase, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve the user input casing
+                PathBase = originalPath;
+                Path = string.Empty;
+            }
+            else if (originalPath.StartsWith(prefix.Path, StringComparison.Ordinal))
+            {
+                // Exact match, no need to preserve the casing
+                PathBase = pathBase;
+                Path = originalPath[pathBase.Length..];
+            }
+            else if (originalPath.StartsWith(prefix.Path, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve the user input casing
+                PathBase = originalPath[..pathBase.Length];
+                Path = originalPath[pathBase.Length..];
+            }
+            else
+            {
+                // Http.Sys path base matching is based on the cooked url which applies some non-standard normalizations that we don't use
+                // like collapsing duplicate slashes "//", converting '\' to '/', and un-escaping "%2F" to '/'. Find the right split and
+                // ignore the normalizations.
+                var originalOffset = 0;
+                var baseOffset = 0;
+                while (originalOffset < originalPath.Length && baseOffset < pathBase.Length)
+                {
+                    var baseValue = pathBase[baseOffset];
+                    var offsetValue = originalPath[originalOffset];
+                    if (baseValue == offsetValue
+                        || char.ToUpperInvariant(baseValue) == char.ToUpperInvariant(offsetValue))
+                    {
+                        // case-insensitive match, continue
+                        originalOffset++;
+                        baseOffset++;
+                    }
+                    else if (baseValue == '/' && offsetValue == '\\')
+                    {
+                        // Http.Sys considers these equivalent
+                        originalOffset++;
+                        baseOffset++;
+                    }
+                    else if (baseValue == '/' && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Http.Sys un-escapes this
+                        originalOffset += 3;
+                        baseOffset++;
+                    }
+                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                        && (offsetValue == '/' || offsetValue == '\\'))
+                    {
+                        // Duplicate slash, skip
+                        originalOffset++;
+                    }
+                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                        && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Duplicate slash equivalent, skip
+                        originalOffset += 3;
+                    }
+                    else
+                    {
+                        // Mismatch, fall back
+                        // The failing test case here is "/base/call//../ball//path1//path2", reduced to "/base/call/ball//path1//path2",
+                        // where http.sys collapses "//" before "../", but we do "../" first. We've lost the context that there were dot segments,
+                        // or duplicate slashes, how do we figure out that "call/" can be eliminated?
+                        originalOffset = 0;
+                        break;
+                    }
+                }
+                PathBase = originalPath[..originalOffset];
+                Path = originalPath[originalOffset..];
+            }
+        }
+        else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost()!, originalPath, out var pathBase, out var path))
+        {
+            PathBase = pathBase;
+            Path = path;
         }
 
         ProtocolVersion = RequestContext.GetVersion();
