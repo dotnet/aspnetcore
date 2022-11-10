@@ -25,61 +25,49 @@
     </RuntimeInstallers>
   </ItemGroup>
 
-  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences">
+  <!--
+    Runs before FetchDependencies but can't be depended up because this sets up the item group that target
+    uses for batching.
+  -->
+  <Target Name="CollectDependencies" BeforeTargets="Restore;CollectPackageReferences">
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
-    <PropertyGroup>
-      <x64RemoteAsset>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</x64RemoteAsset>
-      <x64RemoteAssetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</x64RemoteAssetFileName>
-      <x86RemoteAsset>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</x86RemoteAsset>
-      <x86RemoteAssetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</x86RemoteAssetFileName>
-      <arm64RemoteAsset>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe</arm64RemoteAsset>
-      <arm64RemoteAssetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe</arm64RemoteAssetFileName>
-    </PropertyGroup>
+    <ItemGroup>
+      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
+      </RemoteAsset>
+      <RemoteAsset Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.exe</TargetFileName>
+      </RemoteAsset>
+    </ItemGroup>
 
     <MakeDir Directories="$(DepsPath)" />
-
-    <!-- Try various places to find the installers. It's either released (use official version),
-         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
-    <ItemGroup>
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/$(x64RemoteAsset)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(x64RemoteAsset)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(x64RemoteAsset)">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
-    </ItemGroup>
-
-    <DownloadFile Condition=" ! Exists('$(DepsPath)$(x64RemoteAssetFileName)') "
-                  Uris="@(UrisToDownload)"
-                  DestinationPath="$(DepsPath)$(x64RemoteAssetFileName)" />
-
-    <ItemGroup>
-      <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/$(x86RemoteAsset)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(x86RemoteAsset)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(x86RemoteAsset)">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
-    </ItemGroup>
-
-    <DownloadFile Condition=" ! Exists('$(DepsPath)$(x86RemoteAssetFileName)') "
-                  Uris="@(UrisToDownload)"
-                  DestinationPath="$(DepsPath)$(x86RemoteAssetFileName)" />
-
-    <ItemGroup>
-      <UrisToDownload Remove="@(UrisToDownload)" />
-      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/$(arm64RemoteAsset)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(arm64RemoteAsset)" />
-      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(arm64RemoteAsset)">
-        <token>$(DotnetRuntimeSourceFeedKey)</token>
-      </UrisToDownload>
-    </ItemGroup>
-
-    <DownloadFile Condition=" ! Exists('$(DepsPath)$(arm64RemoteAssetFileName)') "
-                  Uris="@(UrisToDownload)"
-                  DestinationPath="$(DepsPath)$(arm64RemoteAssetFileName)" />
   </Target>
 
-  <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
+  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences"
+      Outputs="$(DepsPath)%(RemoteAsset.TargetFilename)">
+    <!--
+      Try various places to find the runtime. It's either released (use official version), public but
+      unreleased (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal).
+    -->
+    <ItemGroup>
+      <UrisToDownload Remove="@(UrisToDownload)" />
+      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/Runtime/%(RemoteAsset.Identity)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/Runtime/%(RemoteAsset.Identity)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/Runtime/%(RemoteAsset.Identity)"
+          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
+        <token>$(DotnetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
+    </ItemGroup>
+
+    <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFilename)') "
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="$(DepsPath)%(RemoteAsset.TargetFilename)" />
+  </Target>
+
+  <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="CollectDependencies;FetchDependencies" BeforeTargets="BeforeBuild">
     <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
              from inside the ExePackage authoring. -->
     <CreateProperty Value="%(RuntimeInstallers.Filename)%(Extension)">
