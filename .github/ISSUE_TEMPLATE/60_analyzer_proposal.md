@@ -26,10 +26,10 @@ Provide a description of when the analyzer will trigger and the associated analy
 -->
 
 <!--
-Analyzer categories are derived from the categories documented in https://learn.microsoft.com/dotnet/fundamentals/code-analysis/categories. To
-select a category, review each category's description and select the best category based on the functionality of your analyzer.
+Analyzer categories are derived from the categories documented in https://learn.microsoft.com/dotnet/fundamentals/code-analysis/categories
+To select a category, review each category's description and select the best category based on the functionality of your analyzer.
 
-Analyzer severity levels are documented in https://learn.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#configure-severity-levels.
+Analyzer severity levels are documented in https://learn.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#configure-severity-levels
 Review the description to observe how the level set on the analyzer will affect build-time and editor behavior and select the best
 level for the task.
 -->
