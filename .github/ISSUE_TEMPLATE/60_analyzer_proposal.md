@@ -4,13 +4,12 @@ about: Propose a new analyzer/codefixer or an update to an existing one
 title: ''
 labels: api-suggestion, analyzer
 assignees: ''
-
 ---
 
 ## Background and Motivation
 
 <!--
-We welcome new analyzers and codefixers in teh ASP.NET repo!
+We welcome new analyzers and codefixers in the ASP.NET repo!
 
 We use the same process to review both new analyzer/codefixer submissions and API proposals. There is an overview of our process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md). This template will help us gather the information we need to start the review process.
 
@@ -40,7 +39,7 @@ level for the task.
 - [ ] Design
 - [ ] Documentation
 - [ ] Globalization
-- [ ] Interopabilitiy
+- [ ] Interoperability
 - [ ] Maintainability
 - [ ] Naming
 - [ ] Performance
@@ -62,7 +61,6 @@ level for the task.
 Provide code examples that would trigger your analyzer to warn. Identify the spans of code that the analyzer
 will be triggered on. When applicable, describe the result of the code fix associated with the change.
 -->
-
 
 ## Risks
 
