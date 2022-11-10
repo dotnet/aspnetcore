@@ -392,7 +392,9 @@ internal sealed class OpenApiGenerator
             }
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
+            var isOptional = parameter is PropertyAsParameterInfo argument
+                ? argument.IsOptional
+                : parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
             var name = pattern.GetParameter(parameter.Name) is { } routeParameter ? routeParameter.Name : parameter.Name;
             var openApiParameter = new OpenApiParameter()
             {

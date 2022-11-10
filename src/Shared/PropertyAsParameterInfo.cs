@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Internal;
 
@@ -182,7 +183,20 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             _underlyingProperty.IsDefined(attributeType, inherit);
     }
 
-    public new bool IsOptional => HasDefaultValue || NullabilityInfo.ReadState != NullabilityState.NotNull;
+    public new bool IsOptional => NullabilityInfo.ReadState switch
+    {
+        // Anything nullable is optional
+        NullabilityState.Nullable => true,
+        // In an oblivious context, the required modifier makes
+        // members non-optional
+        NullabilityState.Unknown => !GetCustomAttributes(true).OfType<RequiredMemberAttribute>().Any(),
+        // Non-nullable types are only optional if they have a default
+        // value
+        NullabilityState.NotNull => HasDefaultValue,
+        // Assume that types are optional by default so we
+        // don't greedily opt parameters into param checking
+        _ => true
+    };
 
     public NullabilityInfo NullabilityInfo
         => _nullabilityInfo ??= _constructionParameterInfo is not null ?
