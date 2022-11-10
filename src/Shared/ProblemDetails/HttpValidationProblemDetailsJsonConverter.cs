@@ -23,7 +23,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
-            throw new JsonException("Unexcepted end when reading JSON.");
+            throw new JsonException("Unexpected end when reading JSON.");
         }
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
@@ -47,7 +47,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
 
         if (reader.TokenType != JsonTokenType.EndObject)
         {
-            throw new JsonException("Unexcepted end when reading JSON.");
+            throw new JsonException("Unexpected end when reading JSON.");
         }
 
         return problemDetails;
