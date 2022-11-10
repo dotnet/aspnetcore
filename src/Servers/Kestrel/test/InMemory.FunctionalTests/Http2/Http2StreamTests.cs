@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -795,6 +796,77 @@ public class Http2StreamTests : Http2TestBase
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.BadRequest_RequestLineTooLong);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task HEADERS_Received_MaxRequestHeadersTotalSize_431()
+    {
+        // > 32kb
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("a", _4kHeaderValue),
+            new KeyValuePair<string, string>("b", _4kHeaderValue),
+            new KeyValuePair<string, string>("c", _4kHeaderValue),
+            new KeyValuePair<string, string>("d", _4kHeaderValue),
+            new KeyValuePair<string, string>("e", _4kHeaderValue),
+            new KeyValuePair<string, string>("f", _4kHeaderValue),
+            new KeyValuePair<string, string>("g", _4kHeaderValue),
+            new KeyValuePair<string, string>("h", _4kHeaderValue),
+        };
+        await InitializeConnectionAsync(_notImplementedApp);
+
+        await StartStreamAsync(1, headers, endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 40,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("431", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+    }
+
+    [Fact]
+    public async Task HEADERS_Received_MaxRequestHeaderCount_431()
+    {
+        // > 100 headers
+        var headers = new List<KeyValuePair<string, string>>()
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+        for (var i = 0; i < 101; i++)
+        {
+            var text = i.ToString(CultureInfo.InvariantCulture);
+            headers.Add(new KeyValuePair<string, string>(text, text));
+        }
+        await InitializeConnectionAsync(_notImplementedApp);
+
+        await StartStreamAsync(1, headers, endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 40,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("431", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
     }
 
     [Fact]

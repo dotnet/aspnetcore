@@ -373,14 +373,14 @@ internal sealed class MacOSCertificateManager : CertificateManager
         return ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false);
     }
 
-    protected override void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
+    protected override void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates, bool requireExportable)
     {
         if (store.Name! == StoreName.My.ToString() && store.Location == StoreLocation.CurrentUser && Directory.Exists(MacOSUserHttpsCertificateLocation))
         {
             var certsFromDisk = GetCertsFromDisk();
 
             var certsFromStore = new List<X509Certificate2>();
-            base.PopulateCertificatesFromStore(store, certsFromStore);
+            base.PopulateCertificatesFromStore(store, certsFromStore, requireExportable);
 
             // Certs created by pre-.NET 7.
             var onlyOnKeychain = certsFromStore.Except(certsFromDisk, ThumbprintComparer.Instance);
@@ -388,10 +388,13 @@ internal sealed class MacOSCertificateManager : CertificateManager
             // Certs created (or "upgraded") by .NET 7+.
             // .NET 7+ installs the certificate on disk as well as on the user keychain (for backwards
             // compatibility with pre-.NET 7).
-            // Note that the actual certs we populate need to be the ones from the store location, and
-            // not the version from disk, since we may do other operations with these certs later (such
-            // as exporting) which would fail with crypto errors otherwise.
-            var onDiskAndKeychain = certsFromStore.Intersect(certsFromDisk, ThumbprintComparer.Instance);
+            // Note that if we require exportable certs, the actual certs we populate need to be the ones
+            // from the store location, and not the version from disk. If we don't require exportability,
+            // we favor the version of the cert that's on disk (avoiding unnecessary keychain access
+            // prompts). Intersect compares with the specified comparer and returns the matching elements
+            // from the first set.
+            var onDiskAndKeychain = requireExportable ? certsFromStore.Intersect(certsFromDisk, ThumbprintComparer.Instance)
+                                                      : certsFromDisk.Intersect(certsFromStore, ThumbprintComparer.Instance);
 
             // The only times we can find a certificate on the keychain and a certificate on keychain+disk
             // are when the certificate on disk and keychain has expired and a pre-.NET 7 SDK has been
@@ -403,7 +406,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
         else
         {
-            base.PopulateCertificatesFromStore(store, certificates);
+            base.PopulateCertificatesFromStore(store, certificates, requireExportable);
         }
     }
 

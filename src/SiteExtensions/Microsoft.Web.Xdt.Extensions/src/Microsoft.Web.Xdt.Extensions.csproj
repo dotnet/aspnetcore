@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Web.Xdt" />
+    <!-- We need to reference the same version (or lower maybe) as App Service otherwise the custom transform cannot be loaded -->
+    <PackageReference Include="Microsoft.Web.Xdt" Version="1.4.0" AllowExplicitReference="true" />
   </ItemGroup>
 
 </Project>
