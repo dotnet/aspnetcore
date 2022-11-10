@@ -129,4 +129,8 @@ Later on, this will be checked using this condition:
       Microsoft.Owin.Security.Interop;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.39' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
