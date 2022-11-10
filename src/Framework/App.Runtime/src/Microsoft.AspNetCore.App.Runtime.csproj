@@ -95,7 +95,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Crossgen2ToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(Crossgen2ToolFileName).exe</Crossgen2ToolFileName>
 
     <!-- E.g. "PkgMicrosoft_NETCore_App_Runtime_win-x64" (set in obj/Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props). -->
-    <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
+    <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier.Replace('.', '_'))</RuntimePackageRootVariableName>
 
     <!--
       Determine the crossgen2 package path property name. Special case linux-musl-arm and linux-musl-arm64 because they
@@ -104,9 +104,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     -->
     <BuildOsName>$(TargetOsName)</BuildOsName>
     <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</BuildOsName>
+    <BuildOsName Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier.Substring(0,$(TargetRuntimeIdentifier.IndexOf('-'))))</BuildOsName>
     <Crossgen2BuildArchitecture Condition=" '$(BuildOsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
     <Crossgen2BuildArchitecture Condition=" '$(Crossgen2BuildArchitecture)' == '' ">$(BuildArchitecture)</Crossgen2BuildArchitecture>
-    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
+    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName.Replace('.', '_'))-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
