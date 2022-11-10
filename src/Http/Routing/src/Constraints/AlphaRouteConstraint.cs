@@ -17,6 +17,6 @@ public partial class AlphaRouteConstraint : RegexRouteConstraint
     {
     }
 
-    [GeneratedRegex(@"^[A-Za-z]*$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^[A-Za-z]*$")]
     private static partial Regex GetAlphaRouteRegex();
 }
