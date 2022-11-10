@@ -1453,7 +1453,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("ComplexTypeModelBinder_NoParameterlessConstructor_ForParameter"), p0, p1);
 
         /// <summary>
-        /// Action '{0}' has more than one parameter that were specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify query string bound, '{2}' to specify route bound, and '{3}' for parameters to be bound from body:
+        /// Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:
         /// </summary>
         internal static string ApiController_MultipleBodyParametersFound
         {
@@ -1461,10 +1461,80 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Action '{0}' has more than one parameter that were specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify query string bound, '{2}' to specify route bound, and '{3}' for parameters to be bound from body:
+        /// Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:
         /// </summary>
         internal static string FormatApiController_MultipleBodyParametersFound(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiController_MultipleBodyParametersFound"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Collection bound to '{0}' exceeded {1} ({2}). This limit is a safeguard against incorrect model binders and models. Address issues in '{3}'. For example, this type may have a property with a model binder that always succeeds. Otherwise, consider setting the AppContext switch '{4}' to change the default size.
+        /// </summary>
+        internal static string ModelBinding_ExceededMaxModelBindingCollectionSize
+        {
+            get => GetString("ModelBinding_ExceededMaxModelBindingCollectionSize");
+        }
+
+        /// <summary>
+        /// Collection bound to '{0}' exceeded {1} ({2}). This limit is a safeguard against incorrect model binders and models. Address issues in '{3}'. For example, this type may have a property with a model binder that always succeeds. Otherwise, consider setting the AppContext switch '{4}' to change the default size.
+        /// </summary>
+        internal static string FormatModelBinding_ExceededMaxModelBindingCollectionSize(object p0, object p1, object p2, object p3, object p4)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_ExceededMaxModelBindingCollectionSize"), p0, p1, p2, p3, p4);
+
+        /// <summary>
+        /// Model binding system exceeded {0} ({1}). Reduce the potential nesting of '{2}'. For example, this type may have a property with a model binder that always succeeds. Otherwise, consider setting the AppContext switch '{3}' to change the default depth.
+        /// </summary>
+        internal static string ModelBinding_ExceededMaxModelBindingRecursionDepth
+        {
+            get => GetString("ModelBinding_ExceededMaxModelBindingRecursionDepth");
+        }
+
+        /// <summary>
+        /// Model binding system exceeded {0} ({1}). Reduce the potential nesting of '{2}'. For example, this type may have a property with a model binder that always succeeds. Otherwise, consider setting the AppContext switch '{3}' to change the default depth.
+        /// </summary>
+        internal static string FormatModelBinding_ExceededMaxModelBindingRecursionDepth(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_ExceededMaxModelBindingRecursionDepth"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxDepth
+        {
+            get => GetString("ValidationVisitor_ExceededMaxDepth");
+        }
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxDepth(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxDepth"), p0, p1, p2);
+
+        /// <summary>
+        /// This may indicate a very deep or infinitely recursive object graph. Consider setting the AppContext switch '{0}' or suppressing validation on the model type.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxDepthFix
+        {
+            get => GetString("ValidationVisitor_ExceededMaxDepthFix");
+        }
+
+        /// <summary>
+        /// This may indicate a very deep or infinitely recursive object graph. Consider setting the AppContext switch '{0}' or suppressing validation on the model type.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxDepthFix(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxDepthFix"), p0);
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxPropertyDepth
+        {
+            get => GetString("ValidationVisitor_ExceededMaxPropertyDepth");
+        }
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxPropertyDepth(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxPropertyDepth"), p0, p1, p2, p3);
 
         private static string GetString(string name, params string[] formatterNames)
         {

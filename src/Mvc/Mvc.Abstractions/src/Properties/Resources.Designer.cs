@@ -81,6 +81,20 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
             => GetString("ModelStateDictionary_MaxModelStateErrors");
 
         /// <summary>
+        /// The specified key exceeded the maximum ModelState depth: {0}
+        /// </summary>
+        internal static string ModelStateDictionary_MaxModelStateDepth
+        {
+            get => GetString("ModelStateDictionary_MaxModelStateDepth");
+        }
+
+        /// <summary>
+        /// The specified key exceeded the maximum ModelState depth: {0}
+        /// </summary>
+        internal static string FormatModelStateDictionary_MaxModelStateDepth(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ModelStateDictionary_MaxModelStateDepth"), p0);
+
+        /// <summary>
         /// Body
         /// </summary>
         internal static string BindingSource_Body

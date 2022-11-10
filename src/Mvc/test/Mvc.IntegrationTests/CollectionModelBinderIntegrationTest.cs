@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -966,6 +967,79 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
             Assert.NotEmpty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
+        }
+
+        // Regression test for #7052
+        [Fact]
+        public async Task CollectionModelBinder_ThrowsOn1025Items_AtTopLevel()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+               $"MaxModelBindingCollectionSize (1024). This limit is a " +
+               $"safeguard against incorrect model binders and models. Address issues in " +
+               $"'{typeof(SuccessfulModel)}'. For example, this type may have a " +
+               $"property with a model binder that always succeeds. " +
+               $"Otherwise, consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxCollectionSize' to change the default size.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(IList<SuccessfulModel>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers are all empty.
+                request.QueryString = new QueryString("?a=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        private class SuccessfulContainer
+        {
+            public IList<SuccessfulModel> Successes { get; set; }
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_ThrowsOn1025Items()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'Successes' exceeded " +
+               $"MaxModelBindingCollectionSize (1024). This limit is a " +
+               $"safeguard against incorrect model binders and models. Address issues in " +
+               $"'{typeof(SuccessfulModel)}'. For example, this type may have a " +
+               $"property with a model binder that always succeeds. " +
+               $"Otherwise, consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxCollectionSize' to change the default size.";
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(SuccessfulContainer),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers lack matching data.
+                request.QueryString = new QueryString("?Successes[0]=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         private class ClosedGenericCollection : Collection<string>

@@ -7,29 +7,32 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+#if INTEROP
+using Microsoft.Owin.Infrastructure;
+#else
 using Microsoft.Net.Http.Headers;
+#endif
 
 // Keep the type public for Security repo as it would be a breaking change to change the accessor now.
 // Make this type internal for other repos as it could be used by multiple projects and having it public causes type conflicts.
 #if SECURITY
 namespace Microsoft.AspNetCore.Authentication.Cookies
-{
-    /// <summary>
-    /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
-    /// from requests.
-    /// </summary>
-    public class ChunkingCookieManager : ICookieManager
-    {
+#elif INTEROP
+namespace Microsoft.Owin.Security.Interop
 #else
 namespace Microsoft.AspNetCore.Internal
+#endif
 {
     /// <summary>
     /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
     /// from requests.
     /// </summary>
+#if SECURITY || INTEROP
+    public class ChunkingCookieManager : ICookieManager
+#else
     internal class ChunkingCookieManager
-    {
 #endif
+    {
         /// <summary>
         /// The default maximum size of characters in a cookie to send back to the client.
         /// </summary>
@@ -82,7 +85,11 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <returns>The reassembled cookie, if any, or null.</returns>
+#if INTEROP
+        public string GetRequestCookie(IOwinContext context, string key)
+#else
         public string GetRequestCookie(HttpContext context, string key)
+#endif
         {
             if (context == null)
             {
@@ -144,7 +151,11 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
+#if INTEROP
+        public void AppendResponseCookie(IOwinContext context, string key, string value, CookieOptions options)
+#else
         public void AppendResponseCookie(HttpContext context, string key, string value, CookieOptions options)
+# endif
         {
             if (context == null)
             {
@@ -161,6 +172,24 @@ namespace Microsoft.AspNetCore.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
+#if INTEROP
+            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(options.Path);
+            var expiresHasValue = options.Expires.HasValue;
+            var sameSiteLength = options.SameSite == SameSiteMode.None ? "; SameSite=None".Length
+                : options.SameSite == SameSiteMode.Lax ? "; SameSite=Lax".Length
+                : options.SameSite == SameSiteMode.Strict ? "; SameSite=Strict".Length
+                : 0;
+
+            var templateLength = key.Length + "=".Length
+                + (domainHasValue ? "; domain=".Length + options.Domain.Length : 0)
+                + (pathHasValue ? "; path=".Length + options.Path.Length : 0)
+                + (expiresHasValue ? "; expires=ddd, dd-MMM-yyyy HH:mm:ss GMT".Length : 0)
+                + sameSiteLength
+                + (options.Secure ? "; secure".Length : 0)
+                + (options.HttpOnly ? "; HttpOnly".Length : 0);
+#else
+
             var template = new SetCookieHeaderValue(key)
             {
                 Domain = options.Domain,
@@ -173,6 +202,7 @@ namespace Microsoft.AspNetCore.Internal
             };
 
             var templateLength = template.ToString().Length;
+#endif
 
             value = value ?? string.Empty;
 
@@ -221,7 +251,11 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <param name="options"></param>
+#if INTEROP
+        public void DeleteCookie(IOwinContext context, string key, CookieOptions options)
+#else
         public void DeleteCookie(HttpContext context, string key, CookieOptions options)
+#endif
         {
             if (context == null)
             {
@@ -280,11 +314,18 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             var responseHeaders = context.Response.Headers;
+#if INTEROP
+            if (responseHeaders.TryGetValue(Constants.Headers.SetCookie, out var existingValues) && existingValues != null)
+            {
+                responseHeaders.SetValues(Constants.Headers.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
+            }
+#else
             var existingValues = responseHeaders[HeaderNames.SetCookie];
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
                 responseHeaders[HeaderNames.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
             }
+#endif
 
             AppendResponseCookie(
                 context,
@@ -296,7 +337,9 @@ namespace Microsoft.AspNetCore.Internal
                     Domain = options.Domain,
                     SameSite = options.SameSite,
                     Secure = options.Secure,
+#if !INTEROP
                     IsEssential = options.IsEssential,
+#endif
                     Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     HttpOnly = options.HttpOnly,
                 });
@@ -313,7 +356,9 @@ namespace Microsoft.AspNetCore.Internal
                         Domain = options.Domain,
                         SameSite = options.SameSite,
                         Secure = options.Secure,
+#if !INTEROP
                         IsEssential = options.IsEssential,
+#endif
                         Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                         HttpOnly = options.HttpOnly,
                     });

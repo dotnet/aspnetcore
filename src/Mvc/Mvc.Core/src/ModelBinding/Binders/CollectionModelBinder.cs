@@ -9,8 +9,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -58,6 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             ElementBinder = elementBinder;
             Logger = loggerFactory.CreateLogger(GetType());
+            MaxModelBindingCollectionSize = ModelBindingSwitches.MaxCollectionSize;
         }
 
         /// <summary>
@@ -69,6 +72,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// The <see cref="ILogger"/> used for logging in this binder.
         /// </summary>
         protected ILogger Logger { get; }
+
+        // Internal for testing
+        internal int MaxModelBindingCollectionSize { get; set; }
 
         /// <inheritdoc />
         public virtual async Task BindModelAsync(ModelBindingContext bindingContext)
@@ -272,8 +278,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             else
             {
                 indexNamesIsFinite = false;
-                indexNames = Enumerable.Range(0, int.MaxValue)
-                                       .Select(i => i.ToString(CultureInfo.InvariantCulture));
+                var limit = MaxModelBindingCollectionSize == int.MaxValue ?
+                    int.MaxValue :
+                    MaxModelBindingCollectionSize + 1;
+                indexNames = Enumerable
+                    .Range(0, limit)
+                    .Select(i => i.ToString(CultureInfo.InvariantCulture));
             }
 
             var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
@@ -310,6 +320,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
 
                 boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
+            }
+
+            // Did the collection grow larger than the limit?
+            if (boundCollection.Count > MaxModelBindingCollectionSize)
+            {
+                // Look for a non-empty name. Both ModelName and OriginalModelName may be empty at the top level.
+                var name = string.IsNullOrEmpty(bindingContext.ModelName) ?
+                    (string.IsNullOrEmpty(bindingContext.FieldName) &&
+                        bindingContext.ModelMetadata.MetadataKind != ModelMetadataKind.Type ?
+                        bindingContext.ModelMetadata.Name :
+                        bindingContext.FieldName) : // This name may unfortunately be empty.
+                    bindingContext.ModelName;
+
+                throw new InvalidOperationException(Resources.FormatModelBinding_ExceededMaxModelBindingCollectionSize(
+                    name,
+                    nameof(MaxModelBindingCollectionSize),
+                    MaxModelBindingCollectionSize,
+                    bindingContext.ModelMetadata.ElementType,
+                    ModelBindingSwitches.MaxCollectionSize_ConfigKeyName));
             }
 
             return new CollectionResult
