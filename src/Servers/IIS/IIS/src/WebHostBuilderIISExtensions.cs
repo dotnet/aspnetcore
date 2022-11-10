@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Hosting
                         services.AddSingleton(new IISNativeApplication(new NativeSafeHandle(iisConfigData.pNativeApplication)));
                         services.AddSingleton<IServer, IISHttpServer>();
                         services.AddTransient<IISServerAuthenticationHandlerInternal>();
-                        services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();
                         services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
                         {
