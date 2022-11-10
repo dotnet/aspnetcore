@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- This targets file allows annotations.proto and http.proto, which are bundled in package, to be included in Grpc.Tools compilation. -->
+  <!-- This saves the developer having to find and copy these files to the right location when doing gRPC JSON transcoding. -->
+  <PropertyGroup>
+    <!-- The path of the proto files. Content from the nupkg. -->
+    <GrpcJsonTranscoding_ProtosPath>$( [System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../content/protos) )</GrpcJsonTranscoding_ProtosPath>
+  </PropertyGroup>
+
+  <!-- Run immediately before the Protobuf_BeforeCompile extension point. -->
+  <!-- Only include protos if project has set <IncludeHttpRuleProtos> property to true. -->
+  <Target Name="GrpcJsonTranscoding_BeforeCompile"
+          BeforeTargets="Protobuf_BeforeCompile"
+          Condition=" '$(IncludeHttpRuleProtos)' == 'true' ">
+    <PropertyGroup>
+      <!-- Add nupkg proto files by including path in Protobuf_StandardImportsPath. -->
+      <!-- See more info about Grpc.Tools build integration at https://github.com/grpc/grpc/blob/master/src/csharp/BUILD-INTEGRATION.md. -->
+      <Protobuf_StandardImportsPath>$(Protobuf_StandardImportsPath);$(GrpcJsonTranscoding_ProtosPath)</Protobuf_StandardImportsPath>
+    </PropertyGroup>
+    <Message Text="Included proto files at $(GrpcJsonTranscoding_ProtosPath) in import path." Importance="high" />
+    <Message Text="Updated proto imports path: $(Protobuf_StandardImportsPath)" Importance="high" />
+  </Target>
+</Project>
