@@ -233,7 +233,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                     else
                     {
                         // Mismatch, fall back
-                        // The failing test case here is "/base/call//../ball//path1//path2", reduced to "/base/call/ball//path1//path2",
+                        // The failing test case here is "/base/call//../bat//path1//path2", reduced to "/base/call/bat//path1//path2",
                         // where http.sys collapses "//" before "../", but we do "../" first. We've lost the context that there were dot segments,
                         // or duplicate slashes, how do we figure out that "call/" can be eliminated?
                         originalOffset = 0;
