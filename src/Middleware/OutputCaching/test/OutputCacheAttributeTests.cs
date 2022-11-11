@@ -58,7 +58,7 @@ public class OutputCacheAttributeTests
     }
 
     [Fact]
-    public async Task Attribute_NamedPolicyDoesntInjectDefaultPolicy()
+    public async Task Attribute_NamedPolicyDoesNotInjectDefaultPolicy()
     {
         var options = new OutputCacheOptions();
         options.AddPolicy("MyPolicy", b => b.With(x => false).Cache());
