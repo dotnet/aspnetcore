@@ -66,11 +66,17 @@ public sealed class OutputCacheAttribute : Attribute
             return _builtPolicy;
         }
 
-        var builder = new OutputCachePolicyBuilder();
+        OutputCachePolicyBuilder builder;
 
         if (PolicyName != null)
         {
+            // Don't add the default policy if i named one is used as it could already contain it
+            builder = new OutputCachePolicyBuilder(excludeDefaultPolicy: true);
             builder.AddPolicy(new NamedPolicy(PolicyName));
+        }
+        else
+        {
+            builder = new();
         }
 
         if (_noCache != null && _noCache.Value)
