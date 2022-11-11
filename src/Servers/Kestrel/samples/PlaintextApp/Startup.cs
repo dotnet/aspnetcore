@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-var payload = "Hello, World!"u8.ToArray();
+using System.Globalization;
 
 var host = new HostBuilder()
      .ConfigureWebHost(webHost =>
@@ -11,33 +11,24 @@ var host = new HostBuilder()
          webHost.ConfigureServices(services => services.AddRouting());
          webHost.Configure(app =>
          {
+             // Synchronous middleware
+             app.Use(next =>
+             {
+                 return context =>
+                 {
+                     context.Response.Headers["X-Random"] = Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
+                     next(context);
+                 };
+             });
+
              app.UseRouting();
              app.UseEndpoints(endpoints =>
              {
+                 // Synchronous route match
                  endpoints.MapGet("/", context =>
                  {
-                     var response = context.Response;
-
-                     response.StatusCode = 200;
-                     response.ContentType = "text/plain";
-                     response.ContentLength = payload.Length;
-
-                     return response.Body.WriteAsync(payload).AsTask();
-                 });
-
-                 endpoints.MapGet("/green", context =>
-                 {
-                     return Task.RunAsGreenThread(() =>
-                     {
-                         var response = context.Response;
-
-                         response.StatusCode = 200;
-                         response.ContentType = "text/plain";
-                         response.ContentLength = payload.Length;
-
-                         // This is async IO under the covers!
-                         response.Body.Write(payload);
-                     });
+                     // Synchronous JSON
+                     context.Response.WriteAsJson("Hello World");
                  });
              });
          });

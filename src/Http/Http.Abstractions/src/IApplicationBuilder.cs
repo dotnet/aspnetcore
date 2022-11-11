@@ -37,6 +37,35 @@ public interface IApplicationBuilder
     IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware);
 
     /// <summary>
+    /// Adds a middleware delegate to the application's request pipeline.
+    /// </summary>
+    /// <param name="middleware"></param>
+    /// <returns></returns>
+    IApplicationBuilder Use(Func<SyncRequestDelegate, SyncRequestDelegate> middleware) => Use(next =>
+    {
+        var srd = middleware(context =>
+        {
+            if (!Thread.IsGreenThread)
+            {
+                throw new NotSupportedException();
+            }
+
+            next(context).GetAwaiter().GetResult();
+        });
+
+        return context =>
+        {
+            if (!Thread.IsGreenThread)
+            {
+                throw new NotSupportedException();
+            }
+
+            srd(context);
+            return Task.CompletedTask;
+        };
+    });
+
+    /// <summary>
     /// Creates a new <see cref="IApplicationBuilder"/> that shares the <see cref="Properties"/> of this
     /// <see cref="IApplicationBuilder"/>.
     /// </summary>

@@ -7,6 +7,7 @@ abstract Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.HttpContext.g
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.init -> void
 Microsoft.AspNetCore.Builder.EndpointBuilder.FilterFactories.get -> System.Collections.Generic.IList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>!
+Microsoft.AspNetCore.Builder.IApplicationBuilder.Use(System.Func<Microsoft.AspNetCore.Http.SyncRequestDelegate!, Microsoft.AspNetCore.Http.SyncRequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 Microsoft.AspNetCore.Builder.IEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Http.AsParametersAttribute
 Microsoft.AspNetCore.Http.AsParametersAttribute.AsParametersAttribute() -> void
@@ -62,6 +63,7 @@ Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext() -> void
+Microsoft.AspNetCore.Http.SyncRequestDelegate
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void
@@ -91,3 +93,4 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.GetArgument<T>(int index) -> T
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+static Microsoft.AspNetCore.Builder.RunExtensions.Run(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.SyncRequestDelegate! handler) -> void

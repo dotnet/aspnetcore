@@ -84,7 +84,10 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
     // Execute the request
     public Task ProcessRequestAsync(Context context)
     {
-        return _application(context.HttpContext!);
+        return Task.RunAsGreenThread(() =>
+        {
+            _application(context.HttpContext!).GetAwaiter().GetResult();
+        });
     }
 
     // Clean up the request

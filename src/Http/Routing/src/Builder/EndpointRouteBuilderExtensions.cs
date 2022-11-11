@@ -70,6 +70,31 @@ public static class EndpointRouteBuilderExtensions
     }
 
     /// <summary>
+    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+    /// for the specified pattern.
+    /// </summary>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+    /// <param name="pattern">The route pattern.</param>
+    /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static IEndpointConventionBuilder MapGet(
+        this IEndpointRouteBuilder endpoints,
+        [StringSyntax("Route")] string pattern,
+        SyncRequestDelegate requestDelegate)
+    {
+        return MapMethods(endpoints, pattern, GetVerb, context =>
+        {
+            if (!Thread.IsGreenThread)
+            {
+                throw new NotSupportedException();
+            }
+
+            requestDelegate(context);
+            return Task.CompletedTask;
+        });
+    }
+
+    /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP POST requests
     /// for the specified pattern.
     /// </summary>

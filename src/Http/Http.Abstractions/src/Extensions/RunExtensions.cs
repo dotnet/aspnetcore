@@ -29,4 +29,24 @@ public static class RunExtensions
 
         app.Use(_ => handler);
     }
+
+    /// <summary>
+    /// Adds a terminal middleware delegate to the application's request pipeline.
+    /// </summary>
+    /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
+    /// <param name="handler">A delegate that handles the request.</param>
+    public static void Run(this IApplicationBuilder app, SyncRequestDelegate handler)
+    {
+        if (app == null)
+        {
+            throw new ArgumentNullException(nameof(app));
+        }
+
+        if (handler == null)
+        {
+            throw new ArgumentNullException(nameof(handler));
+        }
+
+        app.Use(_ => handler);
+    }
 }
