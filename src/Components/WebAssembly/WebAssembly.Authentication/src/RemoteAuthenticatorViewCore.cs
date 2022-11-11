@@ -210,6 +210,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private async Task ProcessLogIn(string returnUrl)
     {
+        Log.LoginRequest(Logger, Navigation.HistoryEntryState);
         AuthenticationState.ReturnUrl = returnUrl;
         var interactiveRequest = GetCachedNavigationState();
         var result = await AuthenticationService.SignInAsync(new RemoteAuthenticationContext<TAuthenticationState>

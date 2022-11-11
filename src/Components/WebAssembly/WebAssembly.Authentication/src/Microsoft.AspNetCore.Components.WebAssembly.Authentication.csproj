@@ -40,6 +40,10 @@
 
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
+    
+    <EmbeddedResource Include="ILLink.Descriptors.xml">
+      <LogicalName>ILLink.Descriptors.xml</LogicalName>
+    </EmbeddedResource>
 
     <UpToDateCheckInput Include="@(YarnInputs)" Set="StaticWebassets" />
     <UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />

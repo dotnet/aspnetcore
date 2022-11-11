@@ -14,6 +14,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 [JsonConverter(typeof(Converter))]
 public sealed class InteractiveRequestOptions
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+    {
+        MaxDepth = 32,
+        PropertyNameCaseInsensitive = true,
+    };
+
     /// <summary>
     /// Gets the request type.
     /// </summary>
@@ -86,17 +92,29 @@ public sealed class InteractiveRequestOptions
         static TValue Deserialize(JsonElement element) => element.Deserialize<TValue>();
     }
 
-    internal string ToState() => JsonSerializer.Serialize(this, InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions);
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "This method serializes InteractiveRequestOptions which has an 'AdditionalRequestParameters' that might contain user defined types but that have already been annotated by 'TryAddAdditionalParameter'.")]
+    internal string ToState() => JsonSerializer.Serialize(this, SerializerOptions);
 
-    internal static InteractiveRequestOptions FromState(string state) => JsonSerializer.Deserialize(
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "This method deserializes InteractiveRequestOptions which has an 'AdditionalRequestParameters' that might contain user defined types but that have already been annotated by 'TryAddAdditionalParameter'.")]
+    internal static InteractiveRequestOptions FromState(string state) => JsonSerializer.Deserialize<InteractiveRequestOptions>(
         state,
-        InteractiveRequestOptionsSerializerContext.Default.InteractiveRequestOptions);
+        SerializerOptions);
 
     internal class Converter : JsonConverter<InteractiveRequestOptions>
     {
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+            Justification = "This converter reads 'AdditionalRequestParameters' that might contain user defined types but that have already been annotated by 'TryAddAdditionalParameter'.")]
         public override InteractiveRequestOptions Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var requestOptions = JsonSerializer.Deserialize(ref reader, InteractiveRequestOptionsSerializerContext.Default.OptionsRecord);
+            var requestOptions = JsonSerializer.Deserialize<InteractiveOptions>(ref reader, options);
 
             return new InteractiveRequestOptions
             {
@@ -107,26 +125,27 @@ public sealed class InteractiveRequestOptions
             };
         }
 
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+            Justification = "This converter writes 'AdditionalRequestParameters' that might contain user defined types but that have already been annotated by 'TryAddAdditionalParameter'.")]
         public override void Write(Utf8JsonWriter writer, InteractiveRequestOptions value, JsonSerializerOptions options)
         {
             JsonSerializer.Serialize(
                 writer,
-                new OptionsRecord(value.ReturnUrl, value.Scopes, value.Interaction, value.AdditionalRequestParameters),
-                InteractiveRequestOptionsSerializerContext.Default.OptionsRecord);
+                new InteractiveOptions { ReturnUrl = value.ReturnUrl, Scopes = value.Scopes, Interaction = value.Interaction, AdditionalRequestParameters = value.AdditionalRequestParameters },
+                options);
         }
 
-        internal record struct OptionsRecord(
-            [property: JsonInclude] string ReturnUrl,
-            [property: JsonInclude] IEnumerable<string> Scopes,
-            [property: JsonInclude] InteractionType Interaction,
-            [property: JsonInclude] Dictionary<string, object> AdditionalRequestParameters);
-    }
-}
+        public struct InteractiveOptions
+        {
+            public string ReturnUrl { get; set; }
 
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = false)]
-[JsonSerializable(typeof(InteractiveRequestOptions))]
-[JsonSerializable(typeof(InteractiveRequestOptions.Converter.OptionsRecord))]
-[JsonSerializable(typeof(JsonElement))]
-internal partial class InteractiveRequestOptionsSerializerContext : JsonSerializerContext
-{
+            public IEnumerable<string> Scopes { get; set; }
+
+            public InteractionType Interaction { get; set; }
+
+            public Dictionary<string, object> AdditionalRequestParameters { get; set; }
+        }
+    }
 }

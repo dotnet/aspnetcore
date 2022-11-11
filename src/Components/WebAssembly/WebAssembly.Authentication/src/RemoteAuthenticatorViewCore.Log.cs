@@ -53,5 +53,8 @@ public partial class RemoteAuthenticatorViewCore<TAuthenticationState> where TAu
 
         [LoggerMessage(15, LogLevel.Debug, "Logout redirect completed successfully.", EventName = nameof(LogoutRedirectCompletedSuccessfully))]
         public static partial void LogoutRedirectCompletedSuccessfully(ILogger logger);
+
+        [LoggerMessage(16, LogLevel.Debug, "Login request '{Request}'.", EventName = nameof(LoginRequest))]
+        public static partial void LoginRequest(ILogger logger, string request);
     }
 }
