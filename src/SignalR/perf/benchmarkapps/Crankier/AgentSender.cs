@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 StatusInformation = statusInformation
             };
 
-            await SendAsync("status", JToken.FromObject(parameters)); ;
+            await SendAsync("status", JToken.FromObject(parameters));
         }
 
         private async Task SendAsync(string method, JToken parameters)

@@ -99,7 +99,7 @@ public class DefaultApplicationModelProviderTest
                 Assert.Same(controllerModel, property.Controller);
 
                 var attribute = Assert.Single(property.Attributes);
-                Assert.IsType<FromServicesAttribute>(attribute); ;
+                Assert.IsType<FromServicesAttribute>(attribute);
             },
             property =>
             {
