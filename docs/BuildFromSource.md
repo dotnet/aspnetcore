@@ -45,7 +45,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 3. Before opening the project in Visual Studio, run the `restore` script locally to install the required dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
 ```powershell
-.\restore.ps1
+.\restore.cmd
 ```
 
 4. Typically, you'll want to focus on a single project within the repo. You can leverage the `startvs.cmd` command to launch Visual Studio within a particular project area. For example, to launch Visual Studio in the `Components` project.
@@ -84,7 +84,7 @@ These principles guide how we create and manage .slnf files:
 ```
 
 ```powershell
-./restore.ps1
+./restore.cmd
 ```
 
 4. After the restore script has finished executing, activate the locally installed .NET by running the following command.
