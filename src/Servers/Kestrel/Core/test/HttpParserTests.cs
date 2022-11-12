@@ -679,6 +679,22 @@ public class HttpParserTests : LoggedTest
         Assert.True(result);
     }
 
+    [Fact]
+    public void ParseLargeHeaderLineWithGratuitouslySplitBuffers()
+    {
+        // Must be greater than the stackalloc we use (256) to test the array pool path
+        var stringLength = 300;
+        var headers = $"Host: {new string('a', stringLength)}\r\nConnection: keep-alive\r\n";
+        var parser = CreateParser(_nullTrace, false);
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
+
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+        var result = parser.ParseHeaders(requestHandler, ref reader);
+
+        Assert.True(result);
+    }
+
     private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);

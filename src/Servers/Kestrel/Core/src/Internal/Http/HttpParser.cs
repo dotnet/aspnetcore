@@ -288,6 +288,11 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 // This was a multi-line header. Advance the reader.
                 reader.Advance(length);
 
+                if (reader.End)
+                {
+                    return true;
+                }
+
                 continue;
             }
 
@@ -384,36 +389,51 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             header = currentSlice.Slice(reader.Position, lineEnd);
         }
 
-        var headerSpan = header.ToSpan();
+        byte[]? array = null;
+        int length = (int)header.Length;
+        Span<byte> span = length <= 256 ? stackalloc byte[length] : array = ArrayPool<byte>.Shared.Rent(length);
 
-        // 'a:b\n' or 'a:b\r\n'
-        var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;
-        if (headerSpan.Length < minHeaderSpan)
+        try
         {
-            RejectRequestHeader(headerSpan);
-        }
+            header.CopyTo(span);
+            span = span.Slice(0, length);
 
-        var terminatorSize = -1;
-
-        if (headerSpan[^1] == ByteLF)
-        {
-            if (headerSpan[^2] == ByteCR)
+            // 'a:b\n' or 'a:b\r\n'
+            var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;
+            if (span.Length < minHeaderSpan)
             {
-                terminatorSize = 2;
+                RejectRequestHeader(span);
             }
-            else if (!_disableHttp1LineFeedTerminators)
+
+            var terminatorSize = -1;
+
+            if (span[^1] == ByteLF)
             {
-                terminatorSize = 1;
+                if (span[^2] == ByteCR)
+                {
+                    terminatorSize = 2;
+                }
+                else if (!_disableHttp1LineFeedTerminators)
+                {
+                    terminatorSize = 1;
+                }
+            }
+
+            // Last chance to bail if the terminator size is not valid or the header doesn't parse.
+            if (terminatorSize == -1 || !TryTakeSingleHeader(handler, span.Slice(0, span.Length - terminatorSize)))
+            {
+                RejectRequestHeader(span);
+            }
+
+            return span.Length;
+        }
+        finally
+        {
+            if (array is not null)
+            {
+                ArrayPool<byte>.Shared.Return(array);
             }
         }
-
-        // Last chance to bail if the terminator size is not valid or the header doesn't parse.
-        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
-        {
-            RejectRequestHeader(headerSpan);
-        }
-
-        return headerSpan.Length;
     }
 
     private static bool TryTakeSingleHeader(TRequestHandler handler, ReadOnlySpan<byte> headerLine)
