@@ -292,7 +292,7 @@ internal struct StaticFileContext
 
     public async Task SendStatusAsync(int statusCode)
     {
-         await ApplyResponseHeadersAsync(statusCode);
+        await ApplyResponseHeadersAsync(statusCode);
 
         _logger.Handled(statusCode, SubPath);
     }
