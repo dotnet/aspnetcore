@@ -63,6 +63,9 @@ public class StaticFileOptions : SharedOptionsBase
     /// Called after the status code and headers have been set, but before the body has been written.
     /// This can be used to add or change the response headers.
     /// </summary>
+    /// <remarks>
+    /// <see cref="OnPrepareResponse" /> is called before <see cref="OnPrepareResponseAsync" />.
+    /// </remarks>
     public Action<StaticFileResponseContext> OnPrepareResponse { get; set; }
 
     /// <summary>
