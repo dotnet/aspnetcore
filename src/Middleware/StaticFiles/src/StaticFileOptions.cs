@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Builder;
 public class StaticFileOptions : SharedOptionsBase
 {
     internal static readonly Action<StaticFileResponseContext> _defaultOnPrepareResponse = _ => { };
+    internal static readonly Func<StaticFileResponseContext, Task> _defaultOnPrepareResponseAsync = _ => { return Task.CompletedTask; };
 
     /// <summary>
     /// Defaults to all request paths
@@ -28,6 +29,7 @@ public class StaticFileOptions : SharedOptionsBase
     public StaticFileOptions(SharedOptions sharedOptions) : base(sharedOptions)
     {
         OnPrepareResponse = _defaultOnPrepareResponse;
+        OnPrepareResponseAsync = _defaultOnPrepareResponseAsync;
     }
 
     /// <summary>
@@ -62,4 +64,10 @@ public class StaticFileOptions : SharedOptionsBase
     /// This can be used to add or change the response headers.
     /// </summary>
     public Action<StaticFileResponseContext> OnPrepareResponse { get; set; }
+
+    /// <summary>
+    /// Called after the status code and headers have been set, but before the body has been written.
+    /// This can be used to add or change the response headers.
+    /// </summary>
+    public Func<StaticFileResponseContext, Task> OnPrepareResponseAsync { get; set; }
 }

@@ -240,7 +240,7 @@ internal struct StaticFileContext
         IsRangeRequest = isRangeRequest;
     }
 
-    public void ApplyResponseHeaders(int statusCode)
+    public Task ApplyResponseHeadersAsync(int statusCode)
     {
         _response.StatusCode = statusCode;
         if (statusCode < 400)
@@ -265,10 +265,13 @@ internal struct StaticFileContext
             _response.ContentLength = _length;
         }
 
-        if (_options.OnPrepareResponse != StaticFileOptions._defaultOnPrepareResponse)
+        if (_options.OnPrepareResponse != StaticFileOptions._defaultOnPrepareResponse || _options.OnPrepareResponseAsync != StaticFileOptions._defaultOnPrepareResponseAsync)
         {
-            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
+            var context = new StaticFileResponseContext(_context, _fileInfo);
+            _options.OnPrepareResponse(context);
+            return _options.OnPrepareResponseAsync(context);
         }
+        return Task.CompletedTask;
     }
 
     public PreconditionState GetPreconditionState()
@@ -287,12 +290,11 @@ internal struct StaticFileContext
         return max;
     }
 
-    public Task SendStatusAsync(int statusCode)
+    public async Task SendStatusAsync(int statusCode)
     {
-        ApplyResponseHeaders(statusCode);
+         await ApplyResponseHeadersAsync(statusCode);
 
         _logger.Handled(statusCode, SubPath);
-        return Task.CompletedTask;
     }
 
     public async Task ServeStaticFile(HttpContext context, RequestDelegate next)
@@ -344,7 +346,7 @@ internal struct StaticFileContext
     public async Task SendAsync()
     {
         SetCompressionMode();
-        ApplyResponseHeaders(StatusCodes.Status200OK);
+        await ApplyResponseHeadersAsync(StatusCodes.Status200OK);
         try
         {
             await _context.Response.SendFileAsync(_fileInfo, 0, _length, _context.RequestAborted);
@@ -365,7 +367,7 @@ internal struct StaticFileContext
             // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
             // the current length of the selected resource.  e.g. */length
             ResponseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
-            ApplyResponseHeaders(StatusCodes.Status416RangeNotSatisfiable);
+            await ApplyResponseHeadersAsync(StatusCodes.Status416RangeNotSatisfiable);
 
             _logger.RangeNotSatisfiable(SubPath);
             return;
@@ -374,7 +376,7 @@ internal struct StaticFileContext
         ResponseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
         _response.ContentLength = length;
         SetCompressionMode();
-        ApplyResponseHeaders(StatusCodes.Status206PartialContent);
+        await ApplyResponseHeadersAsync(StatusCodes.Status206PartialContent);
 
         try
         {
