@@ -45,11 +45,11 @@ public static class NavigationManagerExtensions
     }
 
     /// <summary>
-    /// Initiates a logout operation by navigating to the log out endpoint.
+    /// Initiates a login operation by navigating to the login endpoint.
     /// </summary>
     /// <remarks>
     /// The navigation includes state that is added to the browser history entry to
-    /// prevent logout operations performed from different contexts.
+    /// prevent login operations performed from different contexts.
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
     /// <param name="loginPath">The path to the login url.</param>
@@ -63,11 +63,11 @@ public static class NavigationManagerExtensions
     }
 
     /// <summary>
-    /// Initiates a logout operation by navigating to the log out endpoint.
+    /// Initiates a login operation by navigating to the login endpoint.
     /// </summary>
     /// <remarks>
     /// The navigation includes state that is added to the browser history entry to
-    /// prevent logout operations performed from different contexts.
+    /// prevent login operations performed from different contexts.
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
     /// <param name="loginPath">The path to the login url.</param>
