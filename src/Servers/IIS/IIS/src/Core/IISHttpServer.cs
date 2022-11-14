@@ -27,6 +27,7 @@ internal sealed class IISHttpServer : IServer
     private readonly IISServerOptions _options;
     private readonly IISNativeApplication _nativeApplication;
     private readonly ServerAddressesFeature _serverAddressesFeature;
+    private readonly string? _virtualPath;
 
     private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool? _websocketAvailable;
@@ -66,6 +67,8 @@ internal sealed class IISHttpServer : IServer
         _logger = logger;
         _options = options.Value;
         _serverAddressesFeature = new ServerAddressesFeature();
+        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
+        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
 
         if (_options.ForwardWindowsAuthentication)
         {
@@ -79,6 +82,8 @@ internal sealed class IISHttpServer : IServer
             _logger.LogWarning(CoreStrings.MaxRequestLimitWarning);
         }
     }
+
+    public string? VirtualPath => _virtualPath;
 
     public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {

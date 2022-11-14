@@ -208,6 +208,7 @@ public class RequestTests
     [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
     [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
     [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
+    [InlineData("/base", "///base/path1/path2", "///base", "/path1/path2")]
     public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
     {
         string root;
