@@ -92,7 +92,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
-    private static readonly NewExpression CompletedValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(Task) })!, CompletedTaskExpr);
+    private static readonly ConstantExpression EmptyResultValueTaskExpr = Expression.Constant(new ValueTask<object?>(EmptyHttpResult.Instance));
 
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
@@ -432,7 +432,7 @@ public static partial class RequestDelegateFactory
         var filteredInvocation = Expression.Lambda<EndpointFilterDelegate>(
             Expression.Condition(
                 Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
-                CompletedValueTaskExpr,
+                EmptyResultValueTaskExpr,
                 handlerInvocation),
             FilterContextExpr).Compile();
         var routeHandlerContext = new EndpointFilterFactoryContext
@@ -463,7 +463,7 @@ public static partial class RequestDelegateFactory
     {
         if (returnType == typeof(void))
         {
-            return Expression.Block(methodCall, Expression.Constant(new ValueTask<object?>(EmptyHttpResult.Instance)));
+            return Expression.Block(methodCall, EmptyResultValueTaskExpr);
         }
         else if (returnType == typeof(Task))
         {
