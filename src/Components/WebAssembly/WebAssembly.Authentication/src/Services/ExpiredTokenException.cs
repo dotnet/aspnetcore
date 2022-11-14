@@ -21,7 +21,7 @@ public class AccessTokenNotAvailableException : Exception
     public AccessTokenNotAvailableException(
         NavigationManager navigation,
         AccessTokenResult tokenResult,
-        IEnumerable<string> scopes)
+        IEnumerable<string>? scopes)
         : base(message: "Unable to provision an access token for the requested scopes: " +
               scopes != null ? $"'{string.Join(", ", scopes ?? Array.Empty<string>())}'" : "(default scopes)")
     {
@@ -42,7 +42,7 @@ public class AccessTokenNotAvailableException : Exception
         else
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            _navigation.NavigateTo(_tokenResult.RedirectUrl);
+            _navigation.NavigateTo(_tokenResult.RedirectUrl!);
 #pragma warning restore CS0618 // Type or member is obsolete
         }
     }
@@ -55,7 +55,7 @@ public class AccessTokenNotAvailableException : Exception
     public void Redirect(Action<InteractiveRequestOptions> configureInteractionOptions)
     {
         ArgumentNullException.ThrowIfNull(configureInteractionOptions);
-        configureInteractionOptions(_tokenResult.InteractionOptions);
-        _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractionOptions);
+        configureInteractionOptions(_tokenResult.InteractionOptions!);
+        _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl!, _tokenResult.InteractionOptions!);
     }
 }
