@@ -30,7 +30,7 @@ public class Program
                 .UseKestrel(options =>
                 {
                     // Default port
-                    options.ListenAnyIP(0);
+                    // options.ListenAnyIP(0);
 
                     // Hub bound to TCP end point
                     //options.Listen(IPAddress.Any, 9001, builder =>

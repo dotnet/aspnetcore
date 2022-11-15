@@ -16,7 +16,7 @@ using Log = Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcherLog;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub>, IHubDefinition where THub : Hub
 {
     private readonly Dictionary<string, HubMethodDescriptor> _methods = new(StringComparer.OrdinalIgnoreCase);
     private readonly Utf8HashLookup _cachedMethodNames = new();
@@ -312,6 +312,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 InitializeHub(hub, connection);
                 Task? invocation = null;
 
+                if (descriptor.HubInvocationDelegate is { } d)
+                {
+                    await d(hub, connection, connection.StreamTracker, hubMethodInvocationMessage, connection.ConnectionAborted);
+                    return true;
+                }
+
                 var arguments = hubMethodInvocationMessage.Arguments;
                 CancellationTokenSource? cts = null;
                 if (descriptor.HasSyntheticArguments)
@@ -576,7 +582,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
     private static Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object?[] hubMethodArguments, Hub hub)
     {
         // If there are no policies we don't need to run auth
-        if (descriptor.Policies.Count == 0)
+        if (descriptor.Policies is null || descriptor.Policies.Count == 0)
         {
             return TaskCache.True;
         }
@@ -680,6 +686,14 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         var hubTypeInfo = hubType.GetTypeInfo();
         var hubName = hubType.Name;
 
+        var bindHubMethod = hubType.GetMethod("BindHub", BindingFlags.Public | BindingFlags.Static);
+
+        if (bindHubMethod is { } m && m.CreateDelegate<Action<IHubDefinition>>() is { } d)
+        {
+            d(this);
+            return;
+        }
+
         using var scope = _serviceScopeFactory.CreateScope();
 
         IServiceProviderIsService? serviceProviderIsService = null;
@@ -711,6 +725,17 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
             Log.HubMethodBound(_logger, hubName, methodName);
         }
+    }
+
+    public void AddHubMethod(string name, HubInvocationDelegate handler)
+    {
+        _methods[name] = new HubMethodDescriptor(handler, typeof(THub).GetMethod(name, BindingFlags.Public | BindingFlags.Instance)!);
+        _cachedMethodNames.Add(name);
+    }
+
+    public void SetHubInitializer(HubInitializerDelegate initializer)
+    {
+        
     }
 
     public override IReadOnlyList<Type> GetParameterTypes(string methodName)

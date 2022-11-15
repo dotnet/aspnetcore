@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Channels;
@@ -10,7 +12,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR;
 
-internal sealed class StreamTracker
+internal sealed class StreamTracker : IStreamTracker
 {
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
     private readonly object[] _streamConverterArgs;
@@ -87,12 +89,47 @@ internal sealed class StreamTracker
         return new ChannelConverter<T>(streamBufferCapacity);
     }
 
+    public void AddStream(string name, Func<object, ValueTask> writeStreamItem, Func<Exception, bool> completeStream)
+    {
+        _lookup[name] = new StreamConverter(writeStreamItem, completeStream);
+    }
+
+    public void RemoveStream(string name)
+    {
+        throw new NotImplementedException();
+    }
+
     private interface IStreamConverter
     {
         Type GetItemType();
         object GetReaderAsObject(Type type);
         Task WriteToStream(object? item);
         void TryComplete(Exception? ex);
+    }
+
+    private class StreamConverter : IStreamConverter
+    {
+        private readonly Func<object, ValueTask> writeStreamItem;
+        private readonly Func<Exception, bool> completeStream;
+
+        public StreamConverter(Func<object?, ValueTask> writeStreamItem, Func<Exception, bool> completeStream)
+        {
+            this.writeStreamItem = writeStreamItem;
+            this.completeStream = completeStream;
+        }
+
+        public Type GetItemType() => typeof(object);
+        public object GetReaderAsObject(Type type) => null!;
+
+        public Task WriteToStream(object? item)
+        {
+            return writeStreamItem(item!).AsTask();
+        }
+
+        public void TryComplete(Exception? ex)
+        {
+            completeStream(ex!);
+        }
     }
 
     private sealed class ChannelConverter<T> : IStreamConverter

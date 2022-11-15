@@ -1,11 +1,19 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.HubInitializerDelegate
+Microsoft.AspNetCore.SignalR.HubInvocationDelegate
 Microsoft.AspNetCore.SignalR.HubOptions.DisableImplicitFromServicesParameters.get -> bool
 Microsoft.AspNetCore.SignalR.HubOptions.DisableImplicitFromServicesParameters.set -> void
 Microsoft.AspNetCore.SignalR.IHubCallerClients.Caller.get -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
 Microsoft.AspNetCore.SignalR.IHubCallerClients.Client(string! connectionId) -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
 Microsoft.AspNetCore.SignalR.IHubClients.Client(string! connectionId) -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
+Microsoft.AspNetCore.SignalR.IHubDefinition
+Microsoft.AspNetCore.SignalR.IHubDefinition.AddHubMethod(string! name, Microsoft.AspNetCore.SignalR.HubInvocationDelegate! handler, System.Collections.Generic.List<System.Type!>! parameterTypes) -> void
+Microsoft.AspNetCore.SignalR.IHubDefinition.SetHubInitializer(Microsoft.AspNetCore.SignalR.HubInitializerDelegate! initializer) -> void
 Microsoft.AspNetCore.SignalR.ISingleClientProxy
 Microsoft.AspNetCore.SignalR.ISingleClientProxy.InvokeCoreAsync<T>(string! method, object?[]! args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<T>!
+Microsoft.AspNetCore.SignalR.IStreamTracker
+Microsoft.AspNetCore.SignalR.IStreamTracker.AddStream(string! name, System.Func<object!, System.Threading.Tasks.ValueTask>! writeStreamItem, System.Func<System.Exception!, bool>! completeStream) -> void
+Microsoft.AspNetCore.SignalR.IStreamTracker.RemoveStream(string! name) -> void
 override Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>.InvokeConnectionAsync<T>(string! connectionId, string! methodName, object?[]! args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<T>!
 override Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>.SetConnectionResultAsync(string! connectionId, Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage! result) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>.TryGetReturnType(string! invocationId, out System.Type? type) -> bool

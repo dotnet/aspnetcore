@@ -27,6 +27,54 @@ internal sealed class HubMethodDescriptor
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
 
+    public HubMethodDescriptor(HubInvocationDelegate hubInvocationDelegate, MethodInfo methodInfo)
+    {
+        HubInvocationDelegate = hubInvocationDelegate;
+
+        // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
+        ParameterTypes = methodInfo.GetParameters().Where((p, index) =>
+        {
+            // Only streams can take CancellationTokens currently
+            if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
+            {
+                HasSyntheticArguments = true;
+                return false;
+            }
+            else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true))
+            {
+                if (StreamingParameters == null)
+                {
+                    StreamingParameters = new List<Type>();
+                }
+
+                StreamingParameters.Add(p.ParameterType.GetGenericArguments()[0]);
+                HasSyntheticArguments = true;
+                return false;
+            }
+            else if (p.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) /*||
+                serviceProviderIsService?.IsService(p.ParameterType) == true*/)
+            {
+                if (index >= 64)
+                {
+                    throw new InvalidOperationException(
+                        "Hub methods can't use services from DI in the parameters after the 64th parameter.");
+                }
+                _isServiceArgument |= (1UL << index);
+                HasSyntheticArguments = true;
+                return false;
+            }
+            return true;
+        }).Select(p => p.ParameterType).ToArray();
+
+        if (HasSyntheticArguments)
+        {
+            OriginalParameterTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
+        }
+
+    }
+
+    public HubInvocationDelegate HubInvocationDelegate { get; }
+
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
     {
         MethodExecutor = methodExecutor;

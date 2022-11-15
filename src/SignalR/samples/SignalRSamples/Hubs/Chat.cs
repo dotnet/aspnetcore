@@ -62,4 +62,33 @@ public class Chat : Hub
     {
         return Clients.Caller.SendAsync("Send", $"{name}: {message}");
     }
+
+    static async Task SendThunk(Microsoft.AspNetCore.SignalR.Hub hub, Microsoft.AspNetCore.SignalR.HubConnectionContext connection, Microsoft.AspNetCore.SignalR.IStreamTracker streamTracker, Microsoft.AspNetCore.SignalR.Protocol.HubMessage message, System.Threading.CancellationToken cancellationToken)
+    {
+        var invocation = (Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage)message;
+        var args = invocation.Arguments;
+        try
+        {
+            await ((Chat)hub).Send((string)args[0], (string)args[1]);
+        }
+        catch (Exception ex) when (invocation.InvocationId is not null)
+        {
+            await connection.WriteAsync(Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.WithError(invocation.InvocationId, "Invoking Send failed"));
+            return;
+        }
+        finally
+        {
+        }
+
+        if (invocation.InvocationId is not null)
+        {
+            await connection.WriteAsync(Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.WithResult(invocation.InvocationId, null));
+        }
+    }
+
+    public static void BindHub(Microsoft.AspNetCore.SignalR.IHubDefinition definition)
+    {
+        // Streaming parameters, tokens and from services
+        definition.AddHubMethod("Send", SendThunk);
+    }
 }

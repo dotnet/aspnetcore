@@ -83,7 +83,7 @@ public partial class HubConnectionContext
         ActiveInvocationLimit = new ChannelBasedSemaphore(maxInvokeLimit);
     }
 
-    internal StreamTracker StreamTracker
+    internal StreamTracker StreamTracker 
     {
         get
         {
