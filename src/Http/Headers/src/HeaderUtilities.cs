@@ -534,7 +534,7 @@ public static class HeaderUtilities
             return "0";
         }
 
-        return ((long)value).ToString(NumberFormatInfo.InvariantInfo);
+        return value.ToString(NumberFormatInfo.InvariantInfo);
     }
 
     /// <summary>
