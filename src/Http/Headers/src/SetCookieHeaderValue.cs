@@ -561,8 +561,6 @@ public class SetCookieHeaderValue
                     return 0;
                 }
 
-                offset = offset + HttpRuleParser.GetWhitespaceLength(input, offset);
-
                 var isNegative = false;
                 if (input[offset] == '-')
                 {
