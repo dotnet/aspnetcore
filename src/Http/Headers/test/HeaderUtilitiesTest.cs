@@ -116,6 +116,19 @@ public class HeaderUtilitiesTest
     }
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(-1)]
+    [InlineData(-1234567890)]
+    [InlineData(1234567890)]
+    [InlineData(long.MinValue)]
+    [InlineData(long.MaxValue)]
+    public void FormatInt64_MatchesToString(long value)
+    {
+        Assert.Equal(value.ToString(CultureInfo.InvariantCulture), HeaderUtilities.FormatInt64(value));
+    }
+
+    [Theory]
     [InlineData("h", "h", true)]
     [InlineData("h=", "h", true)]
     [InlineData("h=1", "h", true)]

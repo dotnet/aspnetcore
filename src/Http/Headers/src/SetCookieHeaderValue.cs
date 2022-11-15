@@ -200,7 +200,7 @@ public class SetCookieHeaderValue
 
         if (MaxAge.HasValue)
         {
-            maxAge = ((long)MaxAge.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
+            maxAge = HeaderUtilities.FormatInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
             length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
         }
 
@@ -347,7 +347,7 @@ public class SetCookieHeaderValue
 
         if (MaxAge.HasValue)
         {
-            AppendSegment(builder, MaxAgeToken, ((long)MaxAge.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+            AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
         }
 
         if (Domain != null)
