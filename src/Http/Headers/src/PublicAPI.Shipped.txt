@@ -234,7 +234,6 @@ static Microsoft.Net.Http.Headers.HeaderUtilities.EscapeAsQuotedString(Microsoft
 static Microsoft.Net.Http.Headers.HeaderUtilities.FormatDate(System.DateTimeOffset dateTime) -> string!
 static Microsoft.Net.Http.Headers.HeaderUtilities.FormatDate(System.DateTimeOffset dateTime, bool quoted) -> string!
 static Microsoft.Net.Http.Headers.HeaderUtilities.FormatNonNegativeInt64(long value) -> string!
-static Microsoft.Net.Http.Headers.HeaderUtilities.FormatInt64(long value) -> string!
 static Microsoft.Net.Http.Headers.HeaderUtilities.IsQuoted(Microsoft.Extensions.Primitives.StringSegment input) -> bool
 static Microsoft.Net.Http.Headers.HeaderUtilities.RemoveQuotes(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Extensions.Primitives.StringSegment
 static Microsoft.Net.Http.Headers.HeaderUtilities.TryParseDate(Microsoft.Extensions.Primitives.StringSegment input, out System.DateTimeOffset result) -> bool

@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Net.Http.Headers.HeaderUtilities.IsQuoted(Microsoft.Extensions.Primitives.StringSegment input) -> bool
