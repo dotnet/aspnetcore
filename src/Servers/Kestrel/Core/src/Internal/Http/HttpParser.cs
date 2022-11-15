@@ -288,11 +288,6 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 // This was a multi-line header. Advance the reader.
                 reader.Advance(length);
 
-                if (reader.End)
-                {
-                    return true;
-                }
-
                 continue;
             }
 
@@ -333,7 +328,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // Skip the first segment as the caller already searched it for CR/LF
         if (!currentSlice.TryGet(ref position, out ReadOnlyMemory<byte> memory) || position.GetObject() == null)
         {
-            // Shouldn't be possible, unless maybe there was a 0 length second segment and no more segments after?
+            // Only 1 segment in the reader currently, this is a partial header, wait for more data
             return -1;
         }
 

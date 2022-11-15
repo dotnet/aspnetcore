@@ -684,7 +684,7 @@ public class HttpParserTests : LoggedTest
     {
         // Must be greater than the stackalloc we use (256) to test the array pool path
         var stringLength = 300;
-        var headers = $"Host: {new string('a', stringLength)}\r\nConnection: keep-alive\r\n";
+        var headers = $"Host: {new string('a', stringLength)}\r\nConnection: keep-alive\r\n\r\n";
         var parser = CreateParser(_nullTrace, false);
         var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
 
@@ -693,6 +693,91 @@ public class HttpParserTests : LoggedTest
         var result = parser.ParseHeaders(requestHandler, ref reader);
 
         Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData("Host:\nConnection: keep-alive", "\n\r\n", false)]
+    [InlineData("Host:\nConnection: keep-aliv", "e\n\r\n", false)]
+    [InlineData("Host:\nC", "onnection: keep-alive\n\r\n", false)]
+    [InlineData("Connection: keep-alive", "\nHost:\n\r\n", false)]
+    [InlineData("Host:\r\nConnection: keep-alive", "\r\n\r\n", true)]
+    [InlineData("Host:\r\nConnection: keep-aliv", "e\r\n\r\n", true)]
+    [InlineData("Host:\r\nC", "onnection: keep-alive\r\n\r\n", true)]
+    [InlineData("Connection: keep-alive", "\r\nHost:\r\n\r\n", true)]
+    public void ParseHeaderLineWithSplitBuffers(string firstHeadersSegment, string secondHeadersSegment, bool quirkMode)
+    {
+        var parser = CreateParser(_nullTrace, quirkMode);
+        var buffer = ReadOnlySequenceFactory.CreateSegments(
+            Encoding.ASCII.GetBytes(firstHeadersSegment),
+            Encoding.ASCII.GetBytes(secondHeadersSegment));
+
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+        var result = parser.ParseHeaders(requestHandler, ref reader);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void ParseHeadersWithSplitBufferReturnsFalseWhenGivenIncompleteHeaders()
+    {
+        var parser = CreateParser(_nullTrace, false);
+        var buffer = ReadOnlySequenceFactory.CreateSegments(
+            Encoding.ASCII.GetBytes("Host:\nConnection: keep-aliv"),
+            Encoding.ASCII.GetBytes("e\n"));
+
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+        var result = parser.ParseHeaders(requestHandler, ref reader);
+
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("H", "e")]
+    [InlineData("Header", ":")]
+    [InlineData("Header:", " ")]
+    [InlineData("Header: ", "v")]
+    [InlineData("Header: value", "\r")]
+    [InlineData("Header: value", "\r\n")]
+    [InlineData("Header: value", "\r\n\r")]
+    [InlineData("Header-1: value1", "\r\nH")]
+    [InlineData("Header-1: value1\r\nHeader-2", ":")]
+    [InlineData("Header-1: value1\r\nHeader-2: value", "2\r")]
+    [InlineData("Header-1: value1\r\nHeader-2: value2", "\r\n")]
+    [InlineData("Header-1: value1\r\nHeader-2: value2\r", "\n\r")]
+    public void ParseHeadersWithSplitBuffersReturnsFalseWhenGivenIncompleteHeaders(string firstHeadersSegment, string secondHeadersSegment)
+    {
+        var parser = CreateParser(_nullTrace, false);
+
+        var buffer = ReadOnlySequenceFactory.CreateSegments(
+            Encoding.ASCII.GetBytes(firstHeadersSegment),
+            Encoding.ASCII.GetBytes(secondHeadersSegment));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+        Assert.False(parser.ParseHeaders(requestHandler, ref reader));
+    }
+
+    [Fact]
+    public void ParseHeadersWithSplitBuffersThrowsForSmallHeader()
+    {
+        var parser = CreateParser(CreateEnabledTrace(), false);
+
+        var buffer = ReadOnlySequenceFactory.CreateSegments(
+            Encoding.ASCII.GetBytes("a"),
+            Encoding.ASCII.GetBytes("b\n"));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"ab\x0A"), exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
     private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
