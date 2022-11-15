@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.Net.Http.Headers.HeaderUtilities.FormatNonNegativeInt64(long value) -> string!

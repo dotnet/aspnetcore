@@ -527,14 +527,14 @@ public static class HeaderUtilities
     /// The string representation of the value of this instance, consisting of a sequence of digits ranging from 0 to 9 with no leading zeroes.
     /// In case of negative numeric value it will have a leading minus sign.
     /// </returns>
-    public static string FormatInt64(long value)
+    internal static string FormatInt64(long value)
     {
-        if (value == 0)
+        return value switch
         {
-            return "0";
-        }
-
-        return value.ToString(NumberFormatInfo.InvariantInfo);
+            0 => "0",
+            1 => "1",
+            _ => value.ToString(NumberFormatInfo.InvariantInfo)
+        };
     }
 
     /// <summary>
