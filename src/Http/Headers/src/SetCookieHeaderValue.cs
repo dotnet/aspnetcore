@@ -586,7 +586,7 @@ public class SetCookieHeaderValue
 
                 if (isNegative)
                 {
-                    maxAge *= -1;
+                    maxAge = -maxAge;
                 }
 
                 result.MaxAge = TimeSpan.FromSeconds(maxAge);
