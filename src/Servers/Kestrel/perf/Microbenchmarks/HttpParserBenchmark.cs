@@ -29,35 +29,35 @@ public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
         _multispanHeader = new ReadOnlySequence<byte>(segment, 0, next, next.Memory.Length);
     }
 
-    //[Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-    //public void PlaintextTechEmpower()
-    //{
-    //    for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-    //    {
-    //        InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
-    //        ParseData();
-    //    }
-    //}
+    [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void PlaintextTechEmpower()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
+            ParseData();
+        }
+    }
 
-    //[Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-    //public void JsonTechEmpower()
-    //{
-    //    for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-    //    {
-    //        InsertData(RequestParsingData.JsonTechEmpowerRequest);
-    //        ParseData();
-    //    }
-    //}
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void JsonTechEmpower()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.JsonTechEmpowerRequest);
+            ParseData();
+        }
+    }
 
-    //[Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-    //public void LiveAspNet()
-    //{
-    //    for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-    //    {
-    //        InsertData(RequestParsingData.LiveaspnetRequest);
-    //        ParseData();
-    //    }
-    //}
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void LiveAspNet()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.LiveaspnetRequest);
+            ParseData();
+        }
+    }
 
     [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
     public void Unicode()

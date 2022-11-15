@@ -399,25 +399,24 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             header = currentSlice.Slice(0, headerLength);
         }
 
-        byte[]? array = null;
-        var length = headerLength;
-        Span<byte> span = length <= 256 ? stackalloc byte[256] : array = ArrayPool<byte>.Shared.Rent(length);
-
-        header.CopyTo(span);
-        span = span.Slice(0, length);
-
         // 'a:b\n' or 'a:b\r\n'
         var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;
-        if (span.Length < minHeaderSpan)
+        if (headerLength < minHeaderSpan)
         {
-            RejectRequestHeader(span);
+            RejectRequestHeader(currentSlice.Slice(0, headerLength).ToSpan());
         }
+
+        byte[]? array = null;
+        Span<byte> headerSpan = headerLength <= 256 ? stackalloc byte[256] : array = ArrayPool<byte>.Shared.Rent(headerLength);
+
+        header.CopyTo(headerSpan);
+        headerSpan = headerSpan.Slice(0, headerLength);
 
         var terminatorSize = -1;
 
-        if (span[^1] == ByteLF)
+        if (headerSpan[^1] == ByteLF)
         {
-            if (span[^2] == ByteCR)
+            if (headerSpan[^2] == ByteCR)
             {
                 terminatorSize = 2;
             }
@@ -428,16 +427,16 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         // Last chance to bail if the terminator size is not valid or the header doesn't parse.
-        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, span.Slice(0, span.Length - terminatorSize)))
+        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
         {
-            RejectRequestHeader(span);
+            RejectRequestHeader(headerSpan);
         }
 
         if (array is not null)
         {
             ArrayPool<byte>.Shared.Return(array);
         }
-        return length;
+        return headerLength;
     }
 
     private static bool TryTakeSingleHeader(TRequestHandler handler, ReadOnlySpan<byte> headerLine)
