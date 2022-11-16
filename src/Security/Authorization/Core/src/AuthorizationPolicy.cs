@@ -173,7 +173,6 @@ public class AuthorizationPolicy
                 {
                     var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
                     policyBuilder.RequireRole(trimmedRolesSplit);
-                    useDefaultPolicy = false;
                 }
 
                 var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
