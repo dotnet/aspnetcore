@@ -69,7 +69,7 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
         var collection = new RequestCookieCollection();
         var store = collection.Store!;
 
-        if (CookieHeaderParserShared.TryParseValues(values, store, supportsMultipleValues: true))
+        if (CookieHeaderParserShared.TryParseValues(values, store))
         {
             if (store.Count == 0)
             {

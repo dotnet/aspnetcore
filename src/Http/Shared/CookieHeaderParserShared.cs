@@ -9,7 +9,7 @@ namespace Microsoft.Net.Http.Headers;
 
 internal static class CookieHeaderParserShared
 {
-    public static bool TryParseValues(StringValues values, IDictionary<string, string> store, bool supportsMultipleValues)
+    public static bool TryParseValues(StringValues values, IDictionary<string, string> store)
     {
         // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
         // can ignore the value.
@@ -26,7 +26,7 @@ internal static class CookieHeaderParserShared
 
             while (!string.IsNullOrEmpty(value) && index < value.Length)
             {
-                if (TryParseValue(value, ref index, supportsMultipleValues, out var parsedName, out var parsedValue))
+                if (TryParseValue(value, ref index, false, out var parsedName, out var parsedValue))
                 {
                     // The entry may not contain an actual value, like " , "
                     store[parsedName.Value.Value!] = Uri.UnescapeDataString(parsedValue.Value.Value!);

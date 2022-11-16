@@ -261,10 +261,12 @@ public class SetCookieHeaderValueTest
             };
             var invalidString3 = "ipt={\"v\":{\"L\":3},\"pt\":{\"d:3},\"ct\":{},\"_t\":44,\"_v\":\"2\"}; domain=domain1; expires=Sun, 06 Nov 1994 08:49:37 GMT";
 
+            var invalidString4 = "dd,:(\"sa;";
+
             dataset.Add(null, new[] { invalidString1 });
             dataset.Add(new[] { invalidHeader2a, invalidHeader2b }.ToList(), new[] { invalidString2 });
             dataset.Add(new[] { invalidHeader3 }.ToList(), new[] { invalidString3 });
-            dataset.Add(new[] { header1 }.ToList(), new[] { string1, invalidString1 });
+            dataset.Add(new[] { header1 }.ToList(), new[] { string1, invalidString1, invalidString4 });
             dataset.Add(new[] { header1 }.ToList(), new[] { invalidString1, null, "", " ", ",", " , ", string1 });
             dataset.Add(new[] { header1 }.ToList(), new[] { string1 + ", " + invalidString1 });
             dataset.Add(new[] { header1 }.ToList(), new[] { invalidString1 + ", " + string1 });
