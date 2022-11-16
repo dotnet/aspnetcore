@@ -1708,325 +1708,448 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if ((_TE.Count > 0 || !string.IsNullOrEmpty(TE))
-                        && string.Equals(key, HeaderNames.TE, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.TE, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x2u) != 0);
-                        TE = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Te))
+                        {
+                            TE = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 3:
-                    if ((_Via.Count > 0 || !string.IsNullOrEmpty(Via))
-                        && string.Equals(key, HeaderNames.Via, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Via, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x80u) != 0);
-                        Via = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Via))
+                        {
+                            Via = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 4:
-                    if ((_Date.Count > 0 || !string.IsNullOrEmpty(Date))
-                        && string.Equals(key, HeaderNames.Date, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Date, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x10000u) != 0);
-                        Date = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Date))
+                        {
+                            Date = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_From.Count > 0 || !string.IsNullOrEmpty(From))
-                        && string.Equals(key, HeaderNames.From, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.From, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x80000u) != 0);
-                        From = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.From))
+                        {
+                            From = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Host.Count > 0 || !string.IsNullOrEmpty(Host))
-                        && string.Equals(key, HeaderNames.Host, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Host, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x100000u) != 0);
-                        Host = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Host))
+                        {
+                            Host = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 5:
-                    if ((_Allow.Count > 0 || !string.IsNullOrEmpty(Allow))
-                        && string.Equals(key, HeaderNames.Allow, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Allow, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x10u) != 0);
-                        Allow = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Allow))
+                        {
+                            Allow = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Range.Count > 0 || !string.IsNullOrEmpty(Range))
-                        && string.Equals(key, HeaderNames.Range, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Range, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x80000000u) != 0);
-                        Range = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Range))
+                        {
+                            Range = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 6:
-                    if ((_Accept.Count > 0 || !string.IsNullOrEmpty(Accept))
-                        && string.Equals(key, HeaderNames.Accept, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Accept, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x1u) != 0);
-                        Accept = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Accept))
+                        {
+                            Accept = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Cookie.Count > 0 || !string.IsNullOrEmpty(Cookie))
-                        && string.Equals(key, HeaderNames.Cookie, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Cookie, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x8000u) != 0);
-                        Cookie = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Cookie))
+                        {
+                            Cookie = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Expect.Count > 0 || !string.IsNullOrEmpty(Expect))
-                        && string.Equals(key, HeaderNames.Expect, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Expect, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x20000u) != 0);
-                        Expect = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Expect))
+                        {
+                            Expect = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Pragma.Count > 0 || !string.IsNullOrEmpty(Pragma))
-                        && string.Equals(key, HeaderNames.Pragma, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Pragma, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x20000000u) != 0);
-                        Pragma = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Pragma))
+                        {
+                            Pragma = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 7:
-                    if ((_Expires.Count > 0 || !string.IsNullOrEmpty(Expires))
-                        && string.Equals(key, HeaderNames.Expires, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Expires, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x40000u) != 0);
-                        Expires = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Expires))
+                        {
+                            Expires = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Referer.Count > 0 || !string.IsNullOrEmpty(Referer))
-                        && string.Equals(key, HeaderNames.Referer, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Referer, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x1u) != 0);
-                        Referer = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Referer))
+                        {
+                            Referer = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Trailer.Count > 0 || !string.IsNullOrEmpty(Trailer))
-                        && string.Equals(key, HeaderNames.Trailer, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Trailer, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x4u) != 0);
-                        Trailer = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Trailer))
+                        {
+                            Trailer = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Upgrade.Count > 0 || !string.IsNullOrEmpty(Upgrade))
-                        && string.Equals(key, HeaderNames.Upgrade, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Upgrade, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x20u) != 0);
-                        Upgrade = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Upgrade))
+                        {
+                            Upgrade = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_Warning.Count > 0 || !string.IsNullOrEmpty(Warning))
-                        && string.Equals(key, HeaderNames.Warning, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Warning, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x100u) != 0);
-                        Warning = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Warning))
+                        {
+                            Warning = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 8:
-                    if ((_IfMatch.Count > 0 || !string.IsNullOrEmpty(IfMatch))
-                        && string.Equals(key, HeaderNames.IfMatch, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.IfMatch, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x200000u) != 0);
-                        IfMatch = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfMatch))
+                        {
+                            IfMatch = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_IfRange.Count > 0 || !string.IsNullOrEmpty(IfRange))
-                        && string.Equals(key, HeaderNames.IfRange, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.IfRange, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x1000000u) != 0);
-                        IfRange = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfRange))
+                        {
+                            IfRange = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 9:
-                    if ((_Translate.Count > 0 || !string.IsNullOrEmpty(Translate))
-                        && string.Equals(key, HeaderNames.Translate, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Translate, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x10u) != 0);
-                        Translate = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Translate))
+                        {
+                            Translate = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 10:
-                    if ((_Connection.Count > 0 || !string.IsNullOrEmpty(Connection))
-                        && string.Equals(key, HeaderNames.Connection, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Connection, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x80u) != 0);
-                        Connection = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Connection))
+                        {
+                            Connection = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_KeepAlive.Count > 0 || !string.IsNullOrEmpty(KeepAlive))
-                        && string.Equals(key, HeaderNames.KeepAlive, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x4000000u) != 0);
-                        KeepAlive = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.KeepAlive))
+                        {
+                            KeepAlive = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_UserAgent.Count > 0 || !string.IsNullOrEmpty(UserAgent))
-                        && string.Equals(key, HeaderNames.UserAgent, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.UserAgent, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x40u) != 0);
-                        UserAgent = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.UserAgent))
+                        {
+                            UserAgent = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 11:
-                    if ((_ContentMD5.Count > 0 || !string.IsNullOrEmpty(ContentMD5))
-                        && string.Equals(key, HeaderNames.ContentMD5, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x1000u) != 0);
-                        ContentMD5 = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentMd5))
+                        {
+                            ContentMD5 = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 12:
-                    if ((_ContentType.Count > 0 || !string.IsNullOrEmpty(ContentType))
-                        && string.Equals(key, HeaderNames.ContentType, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.ContentType, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x4000u) != 0);
-                        ContentType = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentType))
+                        {
+                            ContentType = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_MaxForwards.Count > 0 || !string.IsNullOrEmpty(MaxForwards))
-                        && string.Equals(key, HeaderNames.MaxForwards, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x10000000u) != 0);
-                        MaxForwards = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.MaxForwards))
+                        {
+                            MaxForwards = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 13:
-                    if ((_Authorization.Count > 0 || !string.IsNullOrEmpty(Authorization))
-                        && string.Equals(key, HeaderNames.Authorization, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Authorization, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x20u) != 0);
-                        Authorization = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Authorization))
+                        {
+                            Authorization = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_CacheControl.Count > 0 || !string.IsNullOrEmpty(CacheControl))
-                        && string.Equals(key, HeaderNames.CacheControl, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.CacheControl, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x40u) != 0);
-                        CacheControl = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.CacheControl))
+                        {
+                            CacheControl = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_ContentRange.Count > 0 || !string.IsNullOrEmpty(ContentRange))
-                        && string.Equals(key, HeaderNames.ContentRange, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentRange, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x2000u) != 0);
-                        ContentRange = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentRange))
+                        {
+                            ContentRange = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_IfNoneMatch.Count > 0 || !string.IsNullOrEmpty(IfNoneMatch))
-                        && string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x800000u) != 0);
-                        IfNoneMatch = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfNoneMatch))
+                        {
+                            IfNoneMatch = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_LastModified.Count > 0 || !string.IsNullOrEmpty(LastModified))
-                        && string.Equals(key, HeaderNames.LastModified, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.LastModified, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x8000000u) != 0);
-                        LastModified = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.LastModified))
+                        {
+                            LastModified = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 14:
-                    if ((_AcceptCharset.Count > 0 || !string.IsNullOrEmpty(AcceptCharset))
-                        && string.Equals(key, HeaderNames.AcceptCharset, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x2u) != 0);
-                        AcceptCharset = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.AcceptCharset))
+                        {
+                            AcceptCharset = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_ContentLength.Count > 0 || !string.IsNullOrEmpty(ContentLength))
-                        && string.Equals(key, HeaderNames.ContentLength, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentLength, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x400u) != 0);
-                        ContentLength = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentLength))
+                        {
+                            ContentLength = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 15:
-                    if ((_AcceptEncoding.Count > 0 || !string.IsNullOrEmpty(AcceptEncoding))
-                        && string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x4u) != 0);
-                        AcceptEncoding = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.AcceptEncoding))
+                        {
+                            AcceptEncoding = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_AcceptLanguage.Count > 0 || !string.IsNullOrEmpty(AcceptLanguage))
-                        && string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x8u) != 0);
-                        AcceptLanguage = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.AcceptLanguage))
+                        {
+                            AcceptLanguage = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 16:
-                    if ((_ContentEncoding.Count > 0 || !string.IsNullOrEmpty(ContentEncoding))
-                        && string.Equals(key, HeaderNames.ContentEncoding, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x100u) != 0);
-                        ContentEncoding = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentEncoding))
+                        {
+                            ContentEncoding = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_ContentLanguage.Count > 0 || !string.IsNullOrEmpty(ContentLanguage))
-                        && string.Equals(key, HeaderNames.ContentLanguage, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x200u) != 0);
-                        ContentLanguage = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentLanguage))
+                        {
+                            ContentLanguage = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_ContentLocation.Count > 0 || !string.IsNullOrEmpty(ContentLocation))
-                        && string.Equals(key, HeaderNames.ContentLocation, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x800u) != 0);
-                        ContentLocation = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentLocation))
+                        {
+                            ContentLocation = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 17:
-                    if ((_IfModifiedSince.Count > 0 || !string.IsNullOrEmpty(IfModifiedSince))
-                        && string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x400000u) != 0);
-                        IfModifiedSince = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfModifiedSince))
+                        {
+                            IfModifiedSince = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_TransferEncoding.Count > 0 || !string.IsNullOrEmpty(TransferEncoding))
-                        && string.Equals(key, HeaderNames.TransferEncoding, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag1 & 0x8u) != 0);
-                        TransferEncoding = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.TransferEncoding))
+                        {
+                            TransferEncoding = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
                 case 19:
-                    if ((_IfUnmodifiedSince.Count > 0 || !string.IsNullOrEmpty(IfUnmodifiedSince))
-                        && string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x2000000u) != 0);
-                        IfUnmodifiedSince = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince))
+                        {
+                            IfUnmodifiedSince = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
-                    if ((_ProxyAuthorization.Count > 0 || !string.IsNullOrEmpty(ProxyAuthorization))
-                        && string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.Ordinal))
                     {
-                        bool wasSet = ((_flag0 & 0x40000000u) != 0);
-                        ProxyAuthorization = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ProxyAuthorization))
+                        {
+                            ProxyAuthorization = StringValues.Empty;
+                            return true;
+                        }
+                        return false;
                     }
+
                     break;
             }
             return false;

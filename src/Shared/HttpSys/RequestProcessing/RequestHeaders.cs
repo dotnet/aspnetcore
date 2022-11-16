@@ -62,6 +62,11 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         return _requestMemoryBlob.GetKnownHeader(header);
     }
 
+    private bool HasKnownHeader(HttpSysRequestHeader header)
+    {
+        return true;
+    }
+
     private void GetUnknownHeaders(IDictionary<string, StringValues> extra)
     {
         _requestMemoryBlob.GetUnknownHeaders(extra);
