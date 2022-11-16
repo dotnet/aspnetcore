@@ -229,12 +229,12 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var finger = new PointerInputDevice(PointerKind.Touch);
-        var tap = new ActionBuilder()
-            .AddAction(finger.CreatePointerMove(input, 0, 0, TimeSpan.Zero))
-            .AddAction(finger.CreatePointerDown(MouseButton.Left))
-            .AddAction(finger.CreatePointerUp(MouseButton.Left));
-        ((IActionExecutor)Browser).PerformActions(tap.ToActionSequenceList());
+        var touchPointer = new PointerInputDevice(PointerKind.Touch);
+        var singleTap = new ActionBuilder()
+            .AddAction(touchPointer.CreatePointerMove(input, 0, 0, TimeSpan.Zero))
+            .AddAction(touchPointer.CreatePointerDown(MouseButton.Touch))
+            .AddAction(touchPointer.CreatePointerUp(MouseButton.Touch));
+        ((IActionExecutor)Browser).PerformActions(singleTap.ToActionSequenceList());
 
         Browser.Equal("touchstart,touchend,", () => output.Text);
     }
