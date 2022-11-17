@@ -29,18 +29,4 @@ public class RequestCookiesCollectionTests
 
         Assert.Equal(12, cookies.Count);
     }
-
-
-    [Fact]
-    public void ParseInvalidCookies()
-    {
-        var cookies = RequestCookieCollection.Parse(new StringValues(new[]
-        {
-            "er=dd,cc,bb",
-            "errorcookie=dd,:(\"sa;",
-            "s;"
-        }));
-
-        Assert.Empty(cookies);
-    }
 }
