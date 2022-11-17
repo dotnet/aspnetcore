@@ -325,8 +325,13 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         var currentSlice = reader.UnreadSequence;
 
         SequencePosition position = currentSlice.Start;
+
         // Skip the first segment as the caller already searched it for CR/LF
-        if (!currentSlice.TryGet(ref position, out ReadOnlyMemory<byte> memory) || position.GetObject() == null)
+        var result = currentSlice.TryGet(ref position, out ReadOnlyMemory<byte> memory);
+        // there will always be at least 1 segment so this will never return false
+        Debug.Assert(result);
+
+        if (position.GetObject() == null)
         {
             // Only 1 segment in the reader currently, this is a partial header, wait for more data
             return -1;
@@ -377,7 +382,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             }
         }
 
-        ReadOnlySequence<byte> header = new();
+        ReadOnlySequence<byte> header;
         if (memory.Span[index] == ByteCR)
         {
             // First EOL char is CR, include the char after CR
@@ -436,6 +441,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         {
             ArrayPool<byte>.Shared.Return(array);
         }
+
         return headerLength;
     }
 
