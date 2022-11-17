@@ -327,6 +327,39 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
+    internal bool HasKnownHeader(HttpSysRequestHeader header)
+    {
+        if (PermanentlyPinned)
+        {
+            return HasKnowHeaderHelper(header, 0, _nativeRequest);
+        }
+        else
+        {
+            fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
+            {
+                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
+                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                return HasKnowHeaderHelper(header, fixup, request);
+            }
+        }
+    }
+
+    private bool HasKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
+    {
+        int headerIndex = (int)header;
+        string? value = null;
+
+        HttpApiTypes.HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
+        // For known headers, when header value is empty, RawValueLength will be 0 and
+        // pRawValue will point to empty string ("\0")
+        if (pKnownHeader->RawValueLength > 0)
+        {
+            return true;
+        }
+
+        return false; 
+    }
+
     private string? GetKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
     {
         int headerIndex = (int)header;
