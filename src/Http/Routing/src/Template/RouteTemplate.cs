@@ -53,7 +53,7 @@ public class RouteTemplate
     /// </summary>
     /// <param name="template">A string representation of the route template.</param>
     /// <param name="segments">A list of <see cref="TemplateSegment"/>.</param>
-    public RouteTemplate([StringSyntax("Route")] string template, List<TemplateSegment> segments)
+    public RouteTemplate(string template, List<TemplateSegment> segments)
     {
         if (segments == null)
         {
