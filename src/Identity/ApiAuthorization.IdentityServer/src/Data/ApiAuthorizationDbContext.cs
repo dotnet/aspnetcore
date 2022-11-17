@@ -34,6 +34,14 @@ public class ApiAuthorizationDbContext<TUser> : IdentityDbContext<TUser>, IPersi
     }
 
     /// <summary>
+    /// Gets or sets the user sessions.
+    /// </summary>
+    /// <value>
+    /// The keys.
+    /// </value>
+    public DbSet<ServerSideSession> ServerSideSessions { get; set; }
+
+    /// <summary>
     /// Gets or sets the <see cref="DbSet{PersistedGrant}"/>.
     /// </summary>
     public DbSet<PersistedGrant> PersistedGrants { get; set; }
