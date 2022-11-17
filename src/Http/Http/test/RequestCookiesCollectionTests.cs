@@ -37,14 +37,6 @@ public class RequestCookiesCollectionTests
     [InlineData("s;", null)]
     public void ParseInvalidCookies(string cookieToParse, string[] expectedCookieValues)
     {
-        //var cookies = RequestCookieCollection.Parse(new StringValues(new[]
-        //{
-        //    "er=dd,cc,bb",
-        //    "er=dd,err=cc,errr=bb",
-        //    "errorcookie=dd,:(\"sa;",
-        //    "s;"
-        //}));
-
         var cookies = RequestCookieCollection.Parse(new StringValues(new[] { cookieToParse }));
 
         if(expectedCookieValues == null)
@@ -54,7 +46,6 @@ public class RequestCookiesCollectionTests
         }
 
         Assert.Equal(expectedCookieValues.Length, cookies.Count);
-
         for (int i = 0; i < expectedCookieValues.Length; i++)
         {
             var value = expectedCookieValues[i];
