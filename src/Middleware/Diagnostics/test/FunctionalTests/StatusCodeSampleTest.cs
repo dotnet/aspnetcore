@@ -92,7 +92,7 @@ public class StatusCodeSampleTest : IClassFixture<TestFixture<StatusCodePagesSam
     }
 
     [Fact]
-    public async Task StatusCodePage_ProducesProblemDetails_WhenNoAcceptHeader()
+    public async Task StatusCodePage_ProducesProblemDetails_WithoutAcceptHeader()
     {
         // Arrange
         var httpStatusCode = 400;
