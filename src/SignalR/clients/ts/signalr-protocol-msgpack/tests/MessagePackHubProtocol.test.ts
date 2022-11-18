@@ -218,6 +218,40 @@ describe("MessagePackHubProtocol", () => {
         expect(new Uint8Array(buffer)).toEqual(payload);
     });
 
+    it("can write completion message with false result", () => {
+        const payload = new Uint8Array([
+            0x09, // length prefix
+            0x95, // message array length = 5 (fixarray)
+            0x03, // type = 3 = Completion
+            0x80, // headers
+            0xa3, // invocationID = string length 3
+            0x61, // a
+            0x62, // b
+            0x63, // c
+            0x03, // result type, 3 - non-void result
+            0xc2, // false
+        ]);
+        const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.Completion, invocationId: "abc", result: false });
+        expect(new Uint8Array(buffer)).toEqual(payload);
+    });
+
+    it("can write completion message with null result", () => {
+        const payload = new Uint8Array([
+            0x09, // length prefix
+            0x95, // message array length = 5 (fixarray)
+            0x03, // type = 3 = Completion
+            0x80, // headers
+            0xa3, // invocationID = string length 3
+            0x61, // a
+            0x62, // b
+            0x63, // c
+            0x03, // result type, 3 - non-void result
+            0xc0, // null
+        ]);
+        const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.Completion, invocationId: "abc", result: null });
+        expect(new Uint8Array(buffer)).toEqual(payload);
+    });
+
     it("will preserve double precision", () => {
         const invocation = {
             arguments: [Number(0.005)],
