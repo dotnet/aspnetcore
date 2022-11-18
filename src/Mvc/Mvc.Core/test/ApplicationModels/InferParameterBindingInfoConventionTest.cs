@@ -544,7 +544,7 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
-    public void InferBindingSourceForParameter_eturnsBodyForIEnumerableOfSimpleTypes()
+    public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfSimpleTypes()
     {
         // Arrange
         var actionName = nameof(ParameterBindingController.IEnumerableOfSimpleTypes);
