@@ -120,7 +120,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     {
         if (IsComplexTypeParameter(parameter))
         {
-            if (_serviceProviderIsService?.IsService(parameter.ParameterType) is true)
+            if (IsService(parameter.ParameterType))
             {
                 return BindingSource.Services;
             }
@@ -134,6 +134,25 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         }
 
         return BindingSource.Query;
+    }
+
+    private bool IsService(Type type)
+    {
+        if (_serviceProviderIsService == null)
+        {
+            return false;
+        }
+
+        // IServiceProviderIsService will special case IEnumerable<> and always return true
+        // , so, in this case checking the element type instead
+        if (type.IsConstructedGenericType &&
+            type.GetGenericTypeDefinition() is Type genericDefinition &&
+            genericDefinition == typeof(IEnumerable<>))
+        {
+            type = type.GenericTypeArguments[0];
+        }
+
+        return _serviceProviderIsService.IsService(type);
     }
 
     private static bool ParameterExistsInAnyRoute(ActionModel action, string parameterName)
