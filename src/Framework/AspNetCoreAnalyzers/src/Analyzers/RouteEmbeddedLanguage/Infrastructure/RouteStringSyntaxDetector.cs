@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -13,6 +14,9 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class RouteStringSyntaxDetector
 {
+    private static readonly ImmutableArray<string> _languageIdentifiers = ImmutableArray.Create("Route");
+    private static readonly EmbeddedLanguageCommentDetector _commentDetector = new(_languageIdentifiers);
+    
     public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken)
     {
         if (!IsAnyStringLiteral(token.RawKind))
@@ -49,6 +53,11 @@ internal static class RouteStringSyntaxDetector
         {
             identifier = null;
             return false;
+        }
+
+        if (HasLanguageComment(token, out identifier, out var _))
+        {
+            return true;
         }
 
         var container = token.TryFindContainer();
@@ -116,6 +125,84 @@ internal static class RouteStringSyntaxDetector
         identifier = null;
         return false;
     }
+
+    private static bool HasLanguageComment(
+        SyntaxToken token,
+        [NotNullWhen(true)] out string? identifier,
+        [NotNullWhen(true)] out IEnumerable<string>? options)
+    {
+        if (HasLanguageComment(token.GetPreviousToken().TrailingTrivia, out identifier, out options))
+        {
+            return true;
+        }
+
+        for (var node = token.Parent; node != null; node = node.Parent)
+        {
+            if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
+            {
+                return true;
+            }
+            // Stop walking up once we hit a statement.  We don't need/want statements higher up the parent chain to
+            // have any impact on this token.
+            if (IsStatement(node))
+            {
+                break;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasLanguageComment(
+        SyntaxTriviaList list,
+        [NotNullWhen(true)] out string? identifier,
+        [NotNullWhen(true)] out IEnumerable<string>? options)
+    {
+        foreach (var trivia in list)
+        {
+            if (HasLanguageComment(trivia, out identifier, out options))
+            {
+                return true;
+            }
+        }
+
+        identifier = null;
+        options = null;
+        return false;
+    }
+
+    private static bool HasLanguageComment(
+        SyntaxTrivia trivia,
+        [NotNullWhen(true)] out string? identifier,
+        [NotNullWhen(true)] out IEnumerable<string>? options)
+    {
+        if (IsRegularComment(trivia))
+        {
+            // Note: ToString on SyntaxTrivia is non-allocating.  It will just return the
+            // underlying text that the trivia is already pointing to.
+            var text = trivia.ToString();
+            if (_commentDetector.TryMatch(text, out identifier, out options))
+            {
+                return true;
+            }
+        }
+
+        identifier = null;
+        options = null;
+        return false;
+    }
+
+    public static bool IsStatement([NotNullWhen(true)] SyntaxNode? node)
+       => node is StatementSyntax;
+
+    public static bool IsRegularComment(this SyntaxTrivia trivia)
+        => trivia.IsSingleOrMultiLineComment() || trivia.IsShebangDirective();
+
+    public static bool IsSingleOrMultiLineComment(this SyntaxTrivia trivia)
+        => trivia.IsKind(SyntaxKind.MultiLineCommentTrivia) || trivia.IsKind(SyntaxKind.SingleLineCommentTrivia);
+
+    public static bool IsShebangDirective(this SyntaxTrivia trivia)
+        => trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia);
 
     public static bool IsEqualsValueOfPropertyDeclaration(SyntaxNode? node)
         => node?.Parent is PropertyDeclarationSyntax propertyDeclaration && propertyDeclaration.Initializer == node;
