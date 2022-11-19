@@ -14,8 +14,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class RouteStringSyntaxDetector
 {
-    private static readonly ImmutableArray<string> _languageIdentifiers = ImmutableArray.Create("Route");
-    private static readonly EmbeddedLanguageCommentDetector _commentDetector = new(_languageIdentifiers);
+    private static readonly EmbeddedLanguageCommentDetector _commentDetector = new(ImmutableArray.Create("Route"));
     
     public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken)
     {
