@@ -667,7 +667,7 @@ public class SignInManager<TUser> where TUser : class
             }
         }
 
-        var providerKey = auth.Principal.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? auth.Principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
         if (providerKey == null || provider == null)
         {
             return null;
