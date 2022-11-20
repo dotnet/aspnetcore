@@ -202,6 +202,142 @@ public class StaticFileMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task OnPrepareResponse_Executed_Test()
+    {
+        var baseUrl = "";
+        var baseDir = @".";
+        var requestUrl = "/testDocument.Txt";
+
+        var onPrepareResponseExecuted = false;
+
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
+        {
+            using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+            {
+                RequestPath = new PathString(baseUrl),
+                FileProvider = fileProvider,
+                OnPrepareResponse = context =>
+                {
+                    onPrepareResponseExecuted = true;
+                }
+            }));
+            using var server = host.GetTestServer();
+            var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+            var response = await server.CreateRequest(requestUrl).GetAsync();
+            var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+            Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+            Assert.NotNull(response.Headers.ETag);
+
+            using (var stream = fileInfo.CreateReadStream())
+            {
+                var fileContents = new byte[stream.Length];
+                stream.Read(fileContents, 0, (int)stream.Length);
+                Assert.True(responseContent.SequenceEqual(fileContents));
+            }
+        }
+
+        Assert.True(onPrepareResponseExecuted);
+    }
+
+    [Fact]
+    public async Task OnPrepareResponseAsync_Executed_Test()
+    {
+        var baseUrl = "";
+        var baseDir = @".";
+        var requestUrl = "/testDocument.Txt";
+
+        var onPrepareResponseExecuted = false;
+
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
+        {
+            using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+            {
+                RequestPath = new PathString(baseUrl),
+                FileProvider = fileProvider,
+                OnPrepareResponseAsync = context =>
+                {
+                    onPrepareResponseExecuted = true;
+
+                    return Task.CompletedTask;
+                }
+            }));
+            using var server = host.GetTestServer();
+            var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+            var response = await server.CreateRequest(requestUrl).GetAsync();
+            var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+            Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+            Assert.NotNull(response.Headers.ETag);
+
+            using (var stream = fileInfo.CreateReadStream())
+            {
+                var fileContents = new byte[stream.Length];
+                stream.Read(fileContents, 0, (int)stream.Length);
+                Assert.True(responseContent.SequenceEqual(fileContents));
+            }
+        }
+
+        Assert.True(onPrepareResponseExecuted);
+    }
+
+    [Fact]
+    public async Task OnPrepareResponse_Execution_Order_Test()
+    {
+        var baseUrl = "";
+        var baseDir = @".";
+        var requestUrl = "/testDocument.Txt";
+
+        DateTime onPrepareExecutionTime = DateTime.MinValue;
+        DateTime onPrepareAsyncExecutionTime = DateTime.MinValue;
+
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
+        {
+            using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+            {
+                RequestPath = new PathString(baseUrl),
+                FileProvider = fileProvider,
+                OnPrepareResponse = context =>
+                {
+                    onPrepareExecutionTime = DateTime.Now;
+                },
+                OnPrepareResponseAsync = context =>
+                {
+                    onPrepareAsyncExecutionTime = DateTime.Now;
+                    return Task.CompletedTask;
+                }
+            }));
+            using var server = host.GetTestServer();
+            var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+            var response = await server.CreateRequest(requestUrl).GetAsync();
+            var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+            Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+            Assert.NotNull(response.Headers.ETag);
+
+            using (var stream = fileInfo.CreateReadStream())
+            {
+                var fileContents = new byte[stream.Length];
+                stream.Read(fileContents, 0, (int)stream.Length);
+                Assert.True(responseContent.SequenceEqual(fileContents));
+            }
+        }
+        Assert.NotEqual(DateTime.MinValue, onPrepareExecutionTime);
+        Assert.NotEqual(DateTime.MinValue, onPrepareAsyncExecutionTime);
+
+        Assert.True(onPrepareExecutionTime.Ticks < onPrepareAsyncExecutionTime.Ticks);
+    }
+
+    [Fact]
     public async Task File_Served_If_Endpoint_With_Null_RequestDelegate_Is_Active()
     {
         using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
