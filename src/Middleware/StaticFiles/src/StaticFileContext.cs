@@ -292,9 +292,9 @@ internal struct StaticFileContext
 
     public Task SendStatusAsync(int statusCode)
     {
-        ApplyResponseHeadersAsync(statusCode);
+        _logger.Handled(statusCode, SubPath);
 
-        return Task.CompletedTask;
+        return ApplyResponseHeadersAsync(statusCode);
     }
 
     public async Task ServeStaticFile(HttpContext context, RequestDelegate next)
@@ -307,7 +307,6 @@ internal struct StaticFileContext
                 if (IsHeadMethod)
                 {
                     await SendStatusAsync(StatusCodes.Status200OK);
-                    _logger.Handled(StatusCodes.Status200OK, SubPath);
                     return;
                 }
 
@@ -332,12 +331,10 @@ internal struct StaticFileContext
             case PreconditionState.NotModified:
                 _logger.FileNotModified(SubPath);
                 await SendStatusAsync(StatusCodes.Status304NotModified);
-                _logger.Handled(StatusCodes.Status304NotModified, SubPath);
                 return;
             case PreconditionState.PreconditionFailed:
                 _logger.PreconditionFailed(SubPath);
                 await SendStatusAsync(StatusCodes.Status412PreconditionFailed);
-                _logger.Handled(StatusCodes.Status412PreconditionFailed, SubPath);
                 return;
             default:
                 var exception = new NotImplementedException(GetPreconditionState().ToString());
