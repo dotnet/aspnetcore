@@ -293,9 +293,6 @@ public class StaticFileMiddlewareTests : LoggedTest
         var baseDir = @".";
         var requestUrl = "/testDocument.Txt";
 
-        DateTime onPrepareExecutionTime = DateTime.MinValue;
-        DateTime onPrepareAsyncExecutionTime = DateTime.MinValue;
-
         using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
         {
             using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
@@ -310,7 +307,9 @@ public class StaticFileMiddlewareTests : LoggedTest
                 },
                 OnPrepareResponseAsync = context =>
                 {
-                    onPrepareAsyncExecutionTime = DateTime.Now;
+                    Assert.True(syncCallbackInvoked);
+                    Assert.False(asyncCallbackInvoked);
+                    asyncCallbackInvoked = true;
                     return Task.CompletedTask;
                 }
             }));
@@ -332,9 +331,9 @@ public class StaticFileMiddlewareTests : LoggedTest
                 Assert.True(responseContent.SequenceEqual(fileContents));
             }
         }
-        Assert.NotEqual(DateTime.MinValue, onPrepareExecutionTime);
-        Assert.NotEqual(DateTime.MinValue, onPrepareAsyncExecutionTime);
 
+        Assert.True(syncCallbackInvoked);
+        Assert.True(asyncCallbackInvoked);
         Assert.True(onPrepareExecutionTime.Ticks < onPrepareAsyncExecutionTime.Ticks);
     }
 
