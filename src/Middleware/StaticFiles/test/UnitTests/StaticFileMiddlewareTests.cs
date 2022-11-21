@@ -305,7 +305,9 @@ public class StaticFileMiddlewareTests : LoggedTest
                 FileProvider = fileProvider,
                 OnPrepareResponse = context =>
                 {
-                    onPrepareExecutionTime = DateTime.Now;
+                    Assert.False(syncCallbackInvoked);
+                    Assert.False(asyncCallbackInvoked);
+                    syncCallbackInvoked = true;
                 },
                 OnPrepareResponseAsync = context =>
                 {
