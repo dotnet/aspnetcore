@@ -1139,6 +1139,12 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider.G
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider.ComplexTypeModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinder.DateOnlyModelBinder(System.Globalization.DateTimeStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinderProvider.DateOnlyModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinder
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinder.DateTimeModelBinder(System.Globalization.DateTimeStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
@@ -1206,6 +1212,12 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinder.SimpleTypeMo
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider.SimpleTypeModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinder.TimeOnlyModelBinder(System.Globalization.DateTimeStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinderProvider.TimeOnlyModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingBehavior
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingBehavior.Never = 1 -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingBehavior
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingBehavior.Optional = 0 -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingBehavior

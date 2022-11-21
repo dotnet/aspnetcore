@@ -74,6 +74,8 @@ internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IP
         options.ModelBinderProviders.Add(new ArrayModelBinderProvider());
         options.ModelBinderProviders.Add(new CollectionModelBinderProvider());
         options.ModelBinderProviders.Add(new ComplexObjectModelBinderProvider());
+        options.ModelBinderProviders.Add(new DateOnlyModelBinderProvider());
+        options.ModelBinderProviders.Add(new TimeOnlyModelBinderProvider());
 
         // Set up filters
         options.Filters.Add(new UnsupportedContentTypeFilter());
