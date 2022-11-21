@@ -4,5 +4,6 @@
       "version" : "107.0.5304.62"
     }
   },
-  "ignoreExtraDrivers": true
+  "ignoreExtraDrivers": true,
+  "javaArgs": []
 }

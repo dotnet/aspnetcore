@@ -232,7 +232,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var actions = new TouchActions(Browser).SingleTap(input);
+        var actions = new Actions(Browser).Click(input);
 
         actions.Perform();
         Browser.Equal("touchstart,touchend,", () => output.Text);

@@ -104,7 +104,11 @@ public class SeleniumStandaloneServer : IDisposable
         var chromeDriverPathEnvVar = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
         if (!string.IsNullOrEmpty(chromeDriverPathEnvVar))
         {
-            chromeDriverArg = $"--javaArgs=-Dwebdriver.chrome.driver={chromeDriverPathEnvVar}/chromedriver";
+            var configContent = File.ReadAllText(seleniumConfigPath);
+            configContent = configContent.Replace("javaArgs: []", $"javaArgs: ['-Dwebdriver.chrome.driver={chromeDriverPathEnvVar}/chromedriver']");
+            var modifiedConfigFile = Path.Combine(Directory.GetCurrentDirectory(), "modifiedConfig.json");
+            File.WriteAllText(modifiedConfigFile, configContent);
+            seleniumConfigPath = modifiedConfigFile;
             output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
         }
 
