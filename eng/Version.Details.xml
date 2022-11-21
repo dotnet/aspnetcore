@@ -131,7 +131,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="6.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>4437f088ec63a72bdbc05a1792307415e45d20ad</Sha>
+      <Sha>943474ca16db7c65ba6cff4a89c3ebd219dde3e5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="6.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -235,7 +235,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="6.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>4437f088ec63a72bdbc05a1792307415e45d20ad</Sha>
+      <Sha>943474ca16db7c65ba6cff4a89c3ebd219dde3e5</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="6.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -278,7 +278,7 @@
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <Dependency Name="Microsoft.NETCore.Platforms" Version="6.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>4437f088ec63a72bdbc05a1792307415e45d20ad</Sha>
+      <Sha>943474ca16db7c65ba6cff4a89c3ebd219dde3e5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.22561.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
