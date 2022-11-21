@@ -210,8 +210,7 @@ public class StaticFileMiddlewareTests : LoggedTest
 
         var onPrepareResponseExecuted = false;
 
-        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
-        {
+        using var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir));
             using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = new PathString(baseUrl),
