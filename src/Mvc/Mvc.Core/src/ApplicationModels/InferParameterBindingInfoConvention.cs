@@ -144,7 +144,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         }
 
         // IServiceProviderIsService will special case IEnumerable<> and always return true
-        // , so, in this case checking the element type instead
+        // so, in this case checking the element type instead
         if (type.IsConstructedGenericType &&
             type.GetGenericTypeDefinition() is Type genericDefinition &&
             genericDefinition == typeof(IEnumerable<>))
