@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -472,5 +473,13 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
 
         await host.StartAsync();
         return host;
+    }
+
+    private static HttpResponseMessage ReturnJsonResponse(object content, HttpStatusCode code = HttpStatusCode.OK)
+    {
+        var res = new HttpResponseMessage(code);
+        var text = Newtonsoft.Json.JsonConvert.SerializeObject(content);
+        res.Content = new StringContent(text, Encoding.UTF8, "application/json");
+        return res;
     }
 }
