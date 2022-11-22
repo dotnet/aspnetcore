@@ -283,12 +283,12 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
     }
 
     /// <summary>
-    /// Constructs the OAuth challenge url.
+    /// Constructs the query of the OAuth challenge url.
     /// </summary>
     /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
     /// <param name="redirectUri">The url to redirect to once the challenge is completed.</param>
-    /// <returns>The challenge url.</returns>
-    protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
+    /// <returns>The challenge url query.</returns>
+    protected virtual IDictionary<string, string> BuildChallengeUrlQuery(AuthenticationProperties properties, string redirectUri)
     {
         var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
         var scope = scopeParameter != null ? FormatScope(scopeParameter) : FormatScope();
@@ -319,8 +319,17 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
 
         parameters["state"] = Options.StateDataFormat.Protect(properties);
 
-        return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters!);
+        return parameters;
     }
+
+    /// <summary>
+    /// Constructs the OAuth challenge url.
+    /// </summary>
+    /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+    /// <param name="redirectUri">The url to redirect to once the challenge is completed.</param>
+    /// <returns>The challenge url.</returns>
+    protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri) =>
+        QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, BuildChallengeUrlQuery(properties, redirectUri));
 
     /// <summary>
     /// Format a list of OAuth scopes.

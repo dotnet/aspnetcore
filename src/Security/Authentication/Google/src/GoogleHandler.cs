@@ -53,15 +53,12 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
     }
 
     /// <inheritdoc />
-    protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
+    protected override IDictionary<string, string> BuildChallengeUrlQuery(AuthenticationProperties properties, string redirectUri)
     {
         // Google Identity Platform Manual:
         // https://developers.google.com/identity/protocols/OAuth2WebServer
 
-        var queryStrings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        queryStrings.Add("response_type", "code");
-        queryStrings.Add("client_id", Options.ClientId);
-        queryStrings.Add("redirect_uri", redirectUri);
+        var queryStrings = base.BuildChallengeUrlQuery(properties, redirectUri);
 
         AddQueryString(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);
         AddQueryString(queryStrings, properties, GoogleChallengeProperties.AccessTypeKey, Options.AccessType);
@@ -70,11 +67,7 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
         AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
         AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
 
-        var state = Options.StateDataFormat.Protect(properties);
-        queryStrings.Add("state", state);
-
-        var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
-        return authorizationEndpoint;
+        return queryStrings;
     }
 
     private static void AddQueryString<T>(
