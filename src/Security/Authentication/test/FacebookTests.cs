@@ -303,6 +303,8 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
         Assert.Contains("redirect_uri=", location);
         Assert.Contains("scope=", location);
         Assert.Contains("state=", location);
+        Assert.Contains("code_challenge=", location);
+        Assert.Contains("code_challenge_method=S256", location);
     }
 
     [Fact]

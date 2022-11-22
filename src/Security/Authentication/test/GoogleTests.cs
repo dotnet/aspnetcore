@@ -59,6 +59,8 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Contains("&redirect_uri=", location);
         Assert.Contains("&scope=", location);
         Assert.Contains("&state=", location);
+        Assert.Contains("&code_challenge=", location);
+        Assert.Contains("&code_challenge_method=S256", location);
 
         Assert.DoesNotContain("access_type=", location);
         Assert.DoesNotContain("prompt=", location);
