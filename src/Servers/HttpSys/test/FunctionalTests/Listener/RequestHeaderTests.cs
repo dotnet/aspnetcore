@@ -43,6 +43,7 @@ public class RequestHeaderTests
             await responseTask;
         }
     }
+
     [ConditionalFact]
     public async Task RequestHeaders_ClientSendsUtf8Headers_Success()
     {       
