@@ -174,7 +174,7 @@ internal sealed class W3CLoggingMiddleware
                     {
                         shouldLog |= AddToList(elements, _userAgentIndex, agent.ToString());
                     }
-                }                
+                }
             }
         }
         
