@@ -307,26 +307,6 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    // These methods are for accessing the request structure after it has been unpinned. They need to adjust addresses
-    // in case GC has moved the original object.
-
-    internal string? GetKnownHeader(HttpSysRequestHeader header)
-    {
-        if (PermanentlyPinned)
-        {
-            return GetKnowHeaderHelper(header, 0, _nativeRequest);
-        }
-        else
-        {
-            fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
-            {
-                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
-                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
-                return GetKnowHeaderHelper(header, fixup, request);
-            }
-        }
-    }
-
     internal bool HasKnownHeader(HttpSysRequestHeader header)
     {
         if (PermanentlyPinned)
@@ -357,8 +337,28 @@ internal unsafe class NativeRequestContext : IDisposable
             return true;
         }
 
-        return false; 
+        return false;
     }
+
+    // These methods are for accessing the request structure after it has been unpinned. They need to adjust addresses
+    // in case GC has moved the original object.
+
+    internal string? GetKnownHeader(HttpSysRequestHeader header)
+    {
+        if (PermanentlyPinned)
+        {
+            return GetKnowHeaderHelper(header, 0, _nativeRequest);
+        }
+        else
+        {
+            fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
+            {
+                var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
+                long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
+                return GetKnowHeaderHelper(header, fixup, request);
+            }
+        }
+    }  
 
     private string? GetKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
     {
