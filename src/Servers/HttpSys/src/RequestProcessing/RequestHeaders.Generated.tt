@@ -168,7 +168,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 <# foreach(var prop in length) { #>
                     if(string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.Ordinal))
                     {
-                        if (HasKnownHeader(<#=prop.ID#>))                            
+                         if ((<#=IsRead(prop.Index)#> && <#=prop.Name#>.Count > 0)
+                            || (!<#=IsRead(prop.Index)#> && HasKnownHeader(<#=prop.ID#>)))                            
                         {					        
                             <#=prop.Name#> = StringValues.Empty;
                             return true;
