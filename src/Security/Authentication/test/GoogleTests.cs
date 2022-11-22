@@ -1012,6 +1012,75 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.StartsWith("https://www.facebook.com/", transaction.Response.Headers.Location.OriginalString);
     }
 
+    [Fact]
+    public async Task PkceSentToTokenEndpoint()
+    {
+        using var host = await CreateHost(o =>
+        {
+            o.ClientId = "Test Client Id";
+            o.ClientSecret = "Test Client Secret";
+            o.BackchannelHttpHandler = new TestHttpMessageHandler
+            {
+                Sender = req =>
+                {
+                    if (req.RequestUri.AbsoluteUri == "https://oauth2.googleapis.com/token")
+                    {
+                        var body = req.Content.ReadAsStringAsync().Result;
+                        var form = new FormReader(body);
+                        var entries = form.ReadForm();
+                        Assert.Equal("Test Client Id", entries["client_id"]);
+                        Assert.Equal("https://example.com/signin-google", entries["redirect_uri"]);
+                        Assert.Equal("Test Client Secret", entries["client_secret"]);
+                        Assert.Equal("TestCode", entries["code"]);
+                        Assert.Equal("authorization_code", entries["grant_type"]);
+                        Assert.False(string.IsNullOrEmpty(entries["code_verifier"]));
+
+                        return ReturnJsonResponse(new
+                        {
+                            access_token = "Test Access Token",
+                            expire_in = 3600,
+                            token_type = "Bearer",
+                        });
+                    }
+                    else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/oauth2/v3/userinfo")
+                    {
+                        return ReturnJsonResponse(new
+                        {
+                            id = "Test User ID",
+                            displayName = "Test Name",
+                            givenName = "Test Given Name",
+                            surname = "Test Family Name",
+                            mail = "Test email"
+                        });
+                    }
+
+                    return null;
+                }
+            };
+        });
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync("https://example.com/challenge");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        var locationUri = transaction.Response.Headers.Location;
+        Assert.StartsWith("https://accounts.google.com/o/oauth2/v2/auth", locationUri.AbsoluteUri);
+
+        var queryParams = QueryHelpers.ParseQuery(locationUri.Query);
+        Assert.False(string.IsNullOrEmpty(queryParams["code_challenge"]));
+        Assert.Equal("S256", queryParams["code_challenge_method"]);
+
+        var nonceCookie = transaction.SetCookie.Single();
+        nonceCookie = nonceCookie.Substring(0, nonceCookie.IndexOf(';'));
+
+        transaction = await server.SendAsync(
+            "https://example.com/signin-google?code=TestCode&state=" + queryParams["state"],
+            nonceCookie);
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+        Assert.Equal(2, transaction.SetCookie.Count);
+        Assert.StartsWith(".AspNetCore.Correlation.", transaction.SetCookie[0]);
+        Assert.StartsWith(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+    }
+
     private HttpMessageHandler CreateBackchannel()
     {
         return new TestHttpMessageHandler()
