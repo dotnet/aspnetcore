@@ -393,9 +393,9 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
                                 var body = req.Content.ReadAsStringAsync().Result;
                                 var form = new FormReader(body);
                                 var entries = form.ReadForm();
-                                Assert.Equal("Test Client Id", entries["client_id"]);
+                                Assert.Equal("Test App Id", entries["client_id"]);
                                 Assert.Equal("https://example.com/signin-facebook", entries["redirect_uri"]);
-                                Assert.Equal("Test Client Secret", entries["client_secret"]);
+                                Assert.Equal("Test App Secret", entries["client_secret"]);
                                 Assert.Equal("TestCode", entries["code"]);
                                 Assert.Equal("authorization_code", entries["grant_type"]);
                                 Assert.False(string.IsNullOrEmpty(entries["code_verifier"]));
