@@ -246,7 +246,7 @@ public class StaticFileMiddlewareTests : LoggedTest
     {
         var baseUrl = "";
         var baseDir = @".";
-        var requestUrl = "/testDocument.Txt";
+        var requestUrl = "/testDocument.txt";
 
         var onPrepareResponseExecuted = false;
 
@@ -288,7 +288,7 @@ public class StaticFileMiddlewareTests : LoggedTest
     {
         var baseUrl = "";
         var baseDir = @".";
-        var requestUrl = "/testDocument.Txt";
+        var requestUrl = "/testDocument.txt";
 
         var syncCallbackInvoked = false;
         var asyncCallbackInvoked = false;
