@@ -609,6 +609,50 @@ public class TestController
             i => Assert.Equal("id", i.DisplayText));
     }
 
+    [Fact]
+    public async Task Invoke_Comment_PolicyColon_ReturnPolicies()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System.Diagnostics.CodeAnalysis;
+
+class Program
+{
+    static void Main()
+    {
+        // lang=Route
+        var s = @""{hi:$$"";
+    }
+}
+", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.NotEmpty(result.Completions.ItemsList);
+        Assert.Equal("alpha", result.Completions.ItemsList[0].DisplayText);
+    }
+
+    [Fact]
+    public async Task Invoke_Comment_Component_PolicyColon_ReturnPolicies()
+    {
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System.Diagnostics.CodeAnalysis;
+
+class Program
+{
+    static void Main()
+    {
+        // lang=Route,Component
+        var s = @""{hi:$$"";
+    }
+}
+", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.NotEmpty(result.Completions.ItemsList);
+        Assert.Equal("bool", result.Completions.ItemsList[0].DisplayText);
+    }
+
     private Task<CompletionResult> GetCompletionsAndServiceAsync(string source, CompletionTrigger? completionTrigger = null)
     {
         return CompletionTestHelpers.GetCompletionsAndServiceAsync(Runner, source, completionTrigger);

@@ -16,14 +16,16 @@ internal static class RouteStringSyntaxDetector
 {
     private static readonly EmbeddedLanguageCommentDetector _commentDetector = new(ImmutableArray.Create("Route"));
     
-    public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken)
+    public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken, out RouteOptions options)
     {
+        options = default;
+        
         if (!IsAnyStringLiteral(token.RawKind))
         {
             return false;
         }
 
-        if (!TryGetStringFormat(token, semanticModel, cancellationToken, out var identifier))
+        if (!TryGetStringFormat(token, semanticModel, cancellationToken, out var identifier, out var stringOptions))
         {
             return false;
         }
@@ -31,6 +33,11 @@ internal static class RouteStringSyntaxDetector
         if (identifier != "Route")
         {
             return false;
+        }
+
+        if (stringOptions != null)
+        {
+            return EmbeddedLanguageCommentOptions<RouteOptions>.TryGetOptions(stringOptions, out options);
         }
 
         return true;
@@ -46,15 +53,22 @@ internal static class RouteStringSyntaxDetector
                rawKind == (int)SyntaxKind.Utf8MultiLineRawStringLiteralToken;
     }
 
-    private static bool TryGetStringFormat(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken, [NotNullWhen(true)] out string identifier)
+    private static bool TryGetStringFormat(
+        SyntaxToken token,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken,
+        [NotNullWhen(true)] out string identifier,
+        [NotNullWhen(true)] out IEnumerable<string>? options)
     {
+        options = null;
+        
         if (token.Parent is not LiteralExpressionSyntax)
         {
             identifier = null;
             return false;
         }
 
-        if (HasLanguageComment(token, out identifier, out var _))
+        if (HasLanguageComment(token, out identifier, out options))
         {
             return true;
         }
