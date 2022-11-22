@@ -29,8 +29,20 @@ public class RequestHeaderTests
 
             var headers = context.Request.Headers;
             bool removed = headers.Remove("Connection");
+            Assert.False(headers.TryGetValue("Connection", out _));
+            Assert.True(StringValues.IsNullOrEmpty(headers["Connection"]));
+            Assert.True(StringValues.IsNullOrEmpty(headers.Connection));
+
+            removed = headers.Remove("Custom-Header");
+            Assert.True(removed);
+            Assert.False(headers.TryGetValue("Custom-Header", out _));
+            Assert.True(StringValues.IsNullOrEmpty(headers["Custom-Header"]));
 
             headers["Connection"] = "foo";
+            Assert.True(headers.TryGetValue("Connection", out var connectionValue));
+            Assert.Equal("foo", connectionValue);
+            Assert.Equal("foo", headers["Connection"]);
+
             bool removedAfterAssignValue = headers.Remove("Connection");
             bool removedAgain = headers.Remove("Connection");
 
