@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 public class TimeOnlyModelBinderProvider : IModelBinderProvider
 {
-    internal const DateTimeStyles SupportedStyles = DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces;
+    internal const DateTimeStyles SupportedStyles = DateTimeStyles.AllowWhiteSpaces;
 
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)

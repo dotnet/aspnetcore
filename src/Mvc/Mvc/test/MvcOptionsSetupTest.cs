@@ -62,7 +62,9 @@ public class MvcOptionsSetupTest
             binder => Assert.IsType<DictionaryModelBinderProvider>(binder),
             binder => Assert.IsType<ArrayModelBinderProvider>(binder),
             binder => Assert.IsType<CollectionModelBinderProvider>(binder),
-            binder => Assert.IsType<ComplexObjectModelBinderProvider>(binder));
+            binder => Assert.IsType<ComplexObjectModelBinderProvider>(binder),
+            binder => Assert.IsType<DateOnlyModelBinderProvider>(binder),
+            binder => Assert.IsType<TimeOnlyModelBinderProvider>(binder));
     }
 
     [Fact]
