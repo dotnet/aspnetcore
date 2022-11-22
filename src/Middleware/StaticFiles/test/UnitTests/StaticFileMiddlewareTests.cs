@@ -330,7 +330,6 @@ public class StaticFileMiddlewareTests : LoggedTest
             Assert.True(responseContent.SequenceEqual(fileContents));
         }
 
-
         Assert.True(syncCallbackInvoked);
         Assert.True(asyncCallbackInvoked);
     }
