@@ -53,7 +53,7 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
     }
 
     /// <inheritdoc />
-    protected override IDictionary<string, string> BuildChallengeUrlQuery(AuthenticationProperties properties, string redirectUri)
+    protected override IDictionary<string, string?> BuildChallengeUrlQuery(AuthenticationProperties properties, string redirectUri)
     {
         // Google Identity Platform Manual:
         // https://developers.google.com/identity/protocols/OAuth2WebServer
