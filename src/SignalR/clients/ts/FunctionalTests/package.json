@@ -56,7 +56,8 @@
     "lodash": ">=4.17.21",
     "ua-parser-js": "^0.7.30",
     "minimist": ">=1.2.6",
-    "ws": ">=7.4.6"
+    "ws": ">=7.4.6",
+    "saucelabs": ">=7.2.0"
   },
   "author": "",
   "license": "MIT"
