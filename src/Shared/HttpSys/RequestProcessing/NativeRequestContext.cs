@@ -326,8 +326,7 @@ internal unsafe class NativeRequestContext : IDisposable
 
     private bool HasKnowHeaderHelper(HttpSysRequestHeader header, long fixup, HttpApiTypes.HTTP_REQUEST* request)
     {
-        int headerIndex = (int)header;
-        string? value = null;
+        int headerIndex = (int)header;        
 
         HttpApiTypes.HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
         // For known headers, when header value is empty, RawValueLength will be 0 and
