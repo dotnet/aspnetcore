@@ -174,15 +174,15 @@ internal sealed class W3CLoggingMiddleware
                     {
                         shouldLog |= AddToList(elements, _userAgentIndex, agent.ToString());
                     }
-                }
-
-                if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
-                {
-                    if (request.Headers.TryGetValue(HeaderNames.Cookie, out var cookie))
-                    {
-                        shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
-                    }
-                }
+                }                
+            }
+        }
+        
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
+        {
+            if (request.Headers.TryGetValue(HeaderNames.Cookie, out var cookie))
+            {
+                shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
             }
         }
 
