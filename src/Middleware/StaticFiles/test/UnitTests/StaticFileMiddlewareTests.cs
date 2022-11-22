@@ -206,7 +206,7 @@ public class StaticFileMiddlewareTests : LoggedTest
     {
         var baseUrl = "";
         var baseDir = @".";
-        var requestUrl = "/testDocument.Txt";
+        var requestUrl = "/TestDocument.txt";
 
         var onPrepareResponseExecuted = false;
 
