@@ -24,7 +24,7 @@ internal sealed class SpaProxyStartupFilter : IStartupFilter
     {
         Task.Run(async () =>
         {
-            if (!await _spaProxyLaunchManager.IsSpaProxyRunning(new CancellationToken()))
+            if (!await _spaProxyLaunchManager.IsSpaProxyRunning(_hostLifetime.ApplicationStopping))
             {
                 _spaProxyLaunchManager.StartInBackground(_hostLifetime.ApplicationStopping);
             }
