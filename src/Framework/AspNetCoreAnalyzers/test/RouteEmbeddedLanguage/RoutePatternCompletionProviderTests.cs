@@ -610,7 +610,7 @@ public class TestController
     }
 
     [Fact]
-    public async Task Invoke_Comment_PolicyColon_ReturnPolicies()
+    public async Task Invoke_Comment_PolicyColon_ReturnHttpPolicies()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -632,7 +632,7 @@ class Program
     }
 
     [Fact]
-    public async Task Invoke_Comment_Component_PolicyColon_ReturnPolicies()
+    public async Task Invoke_Comment_Http_PolicyColon_ReturnHttpPolicies()
     {
         // Arrange & Act
         var result = await GetCompletionsAndServiceAsync(@"
@@ -642,9 +642,33 @@ class Program
 {
     static void Main()
     {
+        // lang=Route,Http
+        var s = @""{hi:$$"";
+    }
+}
+", CompletionTrigger.Invoke);
+
+        // Assert
+        Assert.NotEmpty(result.Completions.ItemsList);
+        Assert.Equal("alpha", result.Completions.ItemsList[0].DisplayText);
+    }
+
+    [Fact]
+    public async Task Invoke_Comment_Component_PolicyColon_ReturnComponentPolicies()
+    {
+        // Note: This test adds #line pragma comment to simulate that situation in generated Razor source code.
+        // See example in https://github.com/dotnet/razor/pull/6997
+
+        // Arrange & Act
+        var result = await GetCompletionsAndServiceAsync(@"
+using System.Diagnostics.CodeAnalysis;
+
+class Program
+{
+    static void Main()
+    {
         // lang=Route,Component
-        // lang=Route,Component
-        #line 1 "/user/foo/index.razor"
+        #line 1 ""/user/foo/index.razor""
         var s = @""{hi:$$"";
     }
 }
