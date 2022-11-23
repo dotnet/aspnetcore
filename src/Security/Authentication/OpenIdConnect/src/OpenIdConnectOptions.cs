@@ -70,7 +70,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
             Name = OpenIdConnectDefaults.CookieNoncePrefix,
             HttpOnly = true,
             SameSite = SameSiteMode.None,
-            SecurePolicy = CookieSecurePolicy.SameAsRequest,
+            SecurePolicy = CookieSecurePolicy.Always,
             IsEssential = true,
         };
     }
