@@ -55,7 +55,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var location = transaction.Response.Headers.Location;
 
-        Assert.StartsWith("https://accounts.google.com/o/oauth2/v2/auth?", locationUri.AbsoluteUri);
+        Assert.StartsWith("https://accounts.google.com/o/oauth2/v2/auth?", location.AbsoluteUri);
 
         var queryParams = QueryHelpers.ParseQuery(locationUri.Query);
         Assert.Equal("code", queryParams["response_type"]);
