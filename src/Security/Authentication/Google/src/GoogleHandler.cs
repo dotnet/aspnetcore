@@ -61,17 +61,20 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
 
         var queryStrings = QueryHelpers.ParseQuery(new Uri(base.BuildChallengeUrl(properties, redirectUri)).Query);
 
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.AccessTypeKey, Options.AccessType);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.AccessTypeKey, Options.AccessType);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
+
+        // Some properties are removed when setting query params above, so the state has to be reset
+        queryStrings["state"] = Options.StateDataFormat.Protect(properties);
 
         return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
     }
 
-    private static void AddQueryString<T>(
+    private static void SetQueryParam<T>(
         IDictionary<string, StringValues> queryStrings,
         AuthenticationProperties properties,
         string name,
@@ -98,10 +101,10 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
         }
     }
 
-    private static void AddQueryString(
+    private static void SetQueryParam(
         IDictionary<string, StringValues> queryStrings,
         AuthenticationProperties properties,
         string name,
         string? defaultValue = null)
-        => AddQueryString(queryStrings, properties, name, x => x, defaultValue);
+        => SetQueryParam(queryStrings, properties, name, x => x, defaultValue);
 }

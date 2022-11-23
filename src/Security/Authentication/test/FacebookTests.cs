@@ -364,7 +364,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
             $".AspNetCore.Correlation.{correlationValue}=N");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-        Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+        Assert.Equal("/challenge", transaction.Response.Headers.GetValues("Location").First());
         Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));
         Assert.Contains("fields=email,timezone,picture", finalUserInfoEndpoint);
         Assert.Contains("&access_token=", finalUserInfoEndpoint);

@@ -53,20 +53,24 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         using var server = host.GetTestServer();
         var transaction = await server.SendAsync("https://example.com/challenge");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-        var location = transaction.Response.Headers.Location.ToString();
-        Assert.Contains("https://accounts.google.com/o/oauth2/v2/auth?response_type=code", location);
-        Assert.Contains("&client_id=", location);
-        Assert.Contains("&redirect_uri=", location);
-        Assert.Contains("&scope=", location);
-        Assert.Contains("&state=", location);
-        Assert.Contains("&code_challenge=", location);
-        Assert.Contains("&code_challenge_method=S256", location);
+        var location = transaction.Response.Headers.Location;
 
-        Assert.DoesNotContain("access_type=", location);
-        Assert.DoesNotContain("prompt=", location);
-        Assert.DoesNotContain("approval_prompt=", location);
-        Assert.DoesNotContain("login_hint=", location);
-        Assert.DoesNotContain("include_granted_scopes=", location);
+        Assert.StartsWith("https://accounts.google.com/o/oauth2/v2/auth?", locationUri.AbsoluteUri);
+
+        var queryParams = QueryHelpers.ParseQuery(locationUri.Query);
+        Assert.Equal("code", queryParams["response_type"]);
+        Assert.Equal("Test Id", queryParams["client_id"]);
+        Assert.True(queryParams.ContainsKey("redirect_uri"));
+        Assert.True(queryParams.ContainsKey("scope"));
+        Assert.True(queryParams.ContainsKey("state"));
+        Assert.True(queryParams.ContainsKey("code_challenge"));
+        Assert.Equal("S256", queryParams["code_challenge_method"]);
+
+        Assert.False(queryParams.ContainsKey("access_type"));
+        Assert.False(queryParams.ContainsKey("prompt"));
+        Assert.False(queryParams.ContainsKey("approval_prompt"));
+        Assert.False(queryParams.ContainsKey("login_hint"));
+        Assert.False(queryParams.ContainsKey("include_granted_scopes"));
     }
 
     [Fact]
@@ -1075,7 +1079,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
             "https://example.com/signin-google?code=TestCode&state=" + queryParams["state"],
             nonceCookie);
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-        Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+        Assert.Equal("/challenge", transaction.Response.Headers.GetValues("Location").First());
         Assert.Equal(2, transaction.SetCookie.Count);
         Assert.StartsWith(".AspNetCore.Correlation.", transaction.SetCookie[0]);
         Assert.StartsWith(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
