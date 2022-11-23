@@ -60,7 +60,7 @@ internal sealed class NamedPolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
-        return policy.CacheRequestAsync(context, cancellationToken); ;
+        return policy.CacheRequestAsync(context, cancellationToken);
     }
 
     internal IOutputCachePolicy? GetProfilePolicy(OutputCacheContext context)

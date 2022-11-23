@@ -1846,7 +1846,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).DefaultTimeout();
 
                 await secondClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupA").DefaultTimeout();
-                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout(); ;
+                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout();
 
                 var groupNames = new List<string> { "GroupA", "GroupB" };
                 await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleGroups), "test", groupNames).DefaultTimeout();

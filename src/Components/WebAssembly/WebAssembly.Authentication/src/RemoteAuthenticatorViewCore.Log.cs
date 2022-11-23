@@ -11,7 +11,7 @@ public partial class RemoteAuthenticatorViewCore<TAuthenticationState> where TAu
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "Processing action {Action}.", EventName = nameof(ProcessingAuthenticatorAction))]
-        public static partial void ProcessingAuthenticatorAction(ILogger logger, string action);
+        public static partial void ProcessingAuthenticatorAction(ILogger logger, string? action);
 
         [LoggerMessage(2, LogLevel.Debug, "Login completed successfully.", EventName = nameof(LoginCompletedSuccessfully))]
         public static partial void LoginCompletedSuccessfully(ILogger logger);

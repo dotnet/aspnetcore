@@ -231,6 +231,11 @@ public partial class Startup
         }
     }
 
+    private Task PathAndPathBase(HttpContext ctx)
+    {
+        return ctx.Response.WriteAsync($"PathBase: {ctx.Request.PathBase.Value}; Path: {ctx.Request.Path.Value}");
+    }
+
     private async Task FeatureCollectionSetRequestFeatures(HttpContext ctx)
     {
         try

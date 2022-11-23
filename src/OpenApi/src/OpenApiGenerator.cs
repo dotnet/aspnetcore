@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -192,7 +193,7 @@ internal sealed class OpenApiGenerator
 
         foreach (var annotation in eligibileAnnotations)
         {
-            var statusCode = annotation.Key.ToString(CultureInfo.InvariantCulture);
+            var statusCode = annotation.Key;
 
             // TODO: Use the discarded response Type for schema generation
             var (_, contentTypes) = annotation.Value;
@@ -203,7 +204,7 @@ internal sealed class OpenApiGenerator
                 responseContent[contentType] = new OpenApiMediaType();
             }
 
-            responses[statusCode] = new OpenApiResponse
+            responses[statusCode.ToString(CultureInfo.InvariantCulture)] = new OpenApiResponse
             {
                 Content = responseContent,
                 Description = GetResponseDescription(statusCode)
@@ -212,23 +213,8 @@ internal sealed class OpenApiGenerator
         return responses;
     }
 
-    private static string GetResponseDescription(string statusCode)
-    {
-        if (statusCode.Length != 3)
-        {
-            return string.Empty;
-        }
-        var first = statusCode[0];
-        return first switch
-        {
-            '1' => "Information",
-            '2' => "Success",
-            '3' => "Redirection",
-            '4' => "Client error",
-            '5' => "Server error",
-            _ => string.Empty,
-        };
-    }
+    private static string GetResponseDescription(int statusCode)
+        => ReasonPhrases.GetReasonPhrase(statusCode);
 
     private static void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type? discoveredTypeAnnotation)
     {
@@ -460,9 +446,6 @@ internal sealed class OpenApiGenerator
         }
         else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
-            // complex types will display as strings since they use custom parsing via TryParse on a string
-            var displayType = !parameter.ParameterType.IsPrimitive && Nullable.GetUnderlyingType(parameter.ParameterType)?.IsPrimitive != true
-                ? typeof(string) : parameter.ParameterType;
             // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
             if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
             {

@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Issue with Razor tooling
-    url:  https://github.com/dotnet/razor-tooling/issues/new/choose
-    about: Please open issues relating to Razor tooling in dotnet/razor-tooling.
+  - name: Issue with Razor
+    url:  https://github.com/dotnet/razor/issues/new/choose
+    about: Please open issues relating to Razor tooling or the Razor compiler in dotnet/razor.
   - name: Issue with .NET runtime or core .NET libraries
     url:  https://github.com/dotnet/runtime/issues/new/choose
     about: Please open issues relating to the .NET runtime or core .NET libraries in dotnet/runtime.
@@ -12,9 +12,6 @@ contact_links:
   - name: Issue with Entity Framework Core
     url:  https://github.com/dotnet/efcore/issues/new/choose
     about: Please open issues relating to Entity Framework Core in dotnet/efcore.
-  - name: Issue with Razor compiler
-    url:  https://github.com/dotnet/razor-compiler/issues/new/choose
-    about: Please open issues relating to the Razor compiler in dotnet/razor-compiler.
   - name: Issue with Roslyn compiler
     url:  https://github.com/dotnet/roslyn/issues/new/choose
     about: Please open issues relating to the Roslyn .NET compiler in dotnet/roslyn.

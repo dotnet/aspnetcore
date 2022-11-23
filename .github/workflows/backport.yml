@@ -2,98 +2,67 @@ name: Backport PR to branch
 on:
   issue_comment:
     types: [created]
+  schedule:
+    # once a day at 13:00 UTC to cleanup old runs
+    - cron: '0 13 * * *'
 
 permissions:
   contents: write
   issues: write
   pull-requests: write
+  actions: write
 
 jobs:
   backport:
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/backport to')
-    runs-on: ubuntu-20.04
-    steps:
-    - name: Extract backport target branch
-      uses: actions/github-script@v6
-      id: target-branch-extractor
-      with:
-        result-encoding: string
-        script: |
-          if (context.eventName !== "issue_comment") throw "Error: This action only works on issue_comment events.";
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@main
+    with:
+      pr_description_template: |
+        Backport of #%source_pr_number% to %target_branch%
 
-          // extract the target branch name from the trigger phrase containing these characters: a-z, A-Z, digits, forward slash, dot, hyphen, underscore
-          const regex = /\/backport to ([a-zA-Z\d\/\.\-\_]+)/;
-          target_branch = regex.exec(context.payload.comment.body);
-          if (target_branch == null) throw "Error: No backport branch found in the trigger phrase.";
+        /cc %cc_users%
 
-          return target_branch[1];
-    - name: Post backport started comment to pull request
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const backport_start_body = `Started backporting to ${{ steps.target-branch-extractor.outputs.result }}: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-          await github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: backport_start_body
-          });
-    - name: Checkout repo
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Run backport
-      uses: ./eng/actions/backport
-      with:
-        target_branch: ${{ steps.target-branch-extractor.outputs.result }}
-        auth_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_description_template: |
-          Backport of #%source_pr_number% to %target_branch%
+        # %source_pr_title%
 
-          /cc %cc_users%
+        Summary of the changes (Less than 80 chars)
 
-          # {PR title}
+        ## Description
 
-          Summary of the changes (Less than 80 chars)
+        {Detail}
 
-          ## Description
+        Fixes #{bug number} (in this specific format)
 
-          {Detail}
+        ## Customer Impact
 
-          Fixes #{bug number} (in this specific format)
+        {Justification}
 
-          ## Customer Impact
+        ## Regression?
 
-          {Justification}
+        - [ ] Yes
+        - [ ] No
 
-          ## Regression?
+        [If yes, specify the version the behavior has regressed from]
 
-          - [ ] Yes
-          - [ ] No
+        ## Risk
 
-          [If yes, specify the version the behavior has regressed from]
+        - [ ] High
+        - [ ] Medium
+        - [ ] Low
 
-          ## Risk
+        [Justify the selection above]
 
-          - [ ] High
-          - [ ] Medium
-          - [ ] Low
+        ## Verification
 
-          [Justify the selection above]
+        - [ ] Manual (required)
+        - [ ] Automated
 
-          ## Verification
+        ## Packaging changes reviewed?
 
-          - [ ] Manual (required)
-          - [ ] Automated
+        - [ ] Yes
+        - [ ] No
+        - [ ] N/A
 
-          ## Packaging changes reviewed?
+        ----
 
-          - [ ] Yes
-          - [ ] No
-          - [ ] N/A
+        ## When servicing release/2.1
 
-          ----
-
-          ## When servicing release/2.1
-
-          - [ ] Make necessary changes in eng/PatchConfig.props
+        - [ ] Make necessary changes in eng/PatchConfig.props
