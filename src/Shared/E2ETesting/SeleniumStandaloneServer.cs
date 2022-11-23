@@ -85,7 +85,7 @@ public class SeleniumStandaloneServer : IDisposable
     private static async Task InitializeInstance(ITestOutputHelper output)
     {
         var port = FindAvailablePort();
-        var uri = new UriBuilder("http", "localhost", port, "/wd/hub").Uri;
+        var uri = new UriBuilder("http", "localhost", port).Uri;
 
         var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
