@@ -166,6 +166,18 @@ internal sealed class KestrelServerImpl : IServer
                     // Http/1 without TLS, no-op HTTP/2 and 3.
                     if (hasHttp1)
                     {
+                        if (options.ProtocolsSetExplicitly)
+                        {
+                            if (hasHttp2)
+                            {
+                                Trace.LogWarning(CoreStrings.Http2DisabledWithHttp1AndNoTls);
+                            }
+                            if (hasHttp3)
+                            {
+                                Trace.LogInformation(CoreStrings.Http3DisabledWithHttp1AndNoTls);
+                            }
+                        }
+
                         hasHttp2 = false;
                         hasHttp3 = false;
                     }

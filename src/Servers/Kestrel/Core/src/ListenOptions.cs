@@ -74,11 +74,27 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     /// </summary>
     public KestrelServerOptions KestrelServerOptions { get; internal set; } = default!; // Set via ConfigureKestrel callback
 
+    private HttpProtocols _protocols = DefaultHttpProtocols;
+
     /// <summary>
     /// The protocols enabled on this endpoint.
     /// </summary>
-    /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
-    public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
+    /// <remarks>Defaults to HTTP/1.x, HTTP/2, and HTTP/3.</remarks>
+    public HttpProtocols Protocols
+    {
+        get => _protocols;
+        set
+        {
+            _protocols = value;
+            ProtocolsSetExplicitly = true;
+        }
+    }
+
+    /// <summary>
+    /// Tracks whether <see cref="Protocols"/> has been set explicitly so that we can determine whether
+    /// or not the value reflects the user's intention.
+    /// </summary>
+    internal bool ProtocolsSetExplicitly { get; private set; }
 
     /// <summary>
     /// Gets or sets a value that controls whether the "Alt-Svc" header is included with response headers.
