@@ -643,6 +643,8 @@ class Program
     static void Main()
     {
         // lang=Route,Component
+        // lang=Route,Component
+        #line 1 "/user/foo/index.razor"
         var s = @""{hi:$$"";
     }
 }
