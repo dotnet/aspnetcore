@@ -364,7 +364,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
             $".AspNetCore.Correlation.{correlationValue}=N");
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-        Assert.Equal("/challenge", transaction.Response.Headers.GetValues("Location").First());
+        Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
         Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));
         Assert.Contains("fields=email,timezone,picture", finalUserInfoEndpoint);
         Assert.Contains("&access_token=", finalUserInfoEndpoint);
@@ -446,7 +446,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             "https://example.com/signin-facebook?code=TestCode&state=" + queryParams["state"],
             nonceCookie);
         Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-        Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+        Assert.Equal("/challenge", transaction.Response.Headers.GetValues("Location").First());
         Assert.Equal(2, transaction.SetCookie.Count);
         Assert.StartsWith(".AspNetCore.Correlation.", transaction.SetCookie[0]);
         Assert.StartsWith(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
