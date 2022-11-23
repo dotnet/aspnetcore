@@ -57,7 +57,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
 
         Assert.StartsWith("https://accounts.google.com/o/oauth2/v2/auth?", location.AbsoluteUri);
 
-        var queryParams = QueryHelpers.ParseQuery(locationUri.Query);
+        var queryParams = QueryHelpers.ParseQuery(location.Query);
         Assert.Equal("code", queryParams["response_type"]);
         Assert.Equal("Test Id", queryParams["client_id"]);
         Assert.True(queryParams.ContainsKey("redirect_uri"));
