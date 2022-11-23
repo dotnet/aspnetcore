@@ -67,7 +67,7 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
         AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
         AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
 
-        return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
+        return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
     }
 
     private static void AddQueryString<T>(
