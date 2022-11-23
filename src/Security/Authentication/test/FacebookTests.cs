@@ -378,51 +378,55 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                services.AddAuthentication(o =>
+                {
+                    o.DefaultScheme = TestExtensions.CookieAuthenticationScheme;
+                    o.DefaultChallengeScheme = FacebookDefaults.AuthenticationScheme;
+                })
                     .AddCookie()
                     .AddFacebook(o =>
-                {
-                    o.AppId = "Test App Id";
-                    o.AppSecret = "Test App Secret";
-                    o.BackchannelHttpHandler = new TestHttpMessageHandler
                     {
-                        Sender = req =>
+                        o.AppId = "Test App Id";
+                        o.AppSecret = "Test App Secret";
+                        o.BackchannelHttpHandler = new TestHttpMessageHandler
                         {
-                            if (req.RequestUri.AbsoluteUri == "https://graph.facebook.com/v14.0/oauth/access_token")
+                            Sender = req =>
                             {
-                                var body = req.Content.ReadAsStringAsync().Result;
-                                var form = new FormReader(body);
-                                var entries = form.ReadForm();
-                                Assert.Equal("Test App Id", entries["client_id"]);
-                                Assert.Equal("https://example.com/signin-facebook", entries["redirect_uri"]);
-                                Assert.Equal("Test App Secret", entries["client_secret"]);
-                                Assert.Equal("TestCode", entries["code"]);
-                                Assert.Equal("authorization_code", entries["grant_type"]);
-                                Assert.False(string.IsNullOrEmpty(entries["code_verifier"]));
-
-                                return ReturnJsonResponse(new
+                                if (req.RequestUri.AbsoluteUri == "https://graph.facebook.com/v14.0/oauth/access_token")
                                 {
-                                    access_token = "Test Access Token",
-                                    expire_in = 3600,
-                                    token_type = "Bearer",
-                                });
-                            }
-                            else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://graph.facebook.com/v14.0/me")
-                            {
-                                return ReturnJsonResponse(new
-                                {
-                                    id = "Test User ID",
-                                    displayName = "Test Name",
-                                    givenName = "Test Given Name",
-                                    surname = "Test Family Name",
-                                    mail = "Test email"
-                                });
-                            }
+                                    var body = req.Content.ReadAsStringAsync().Result;
+                                    var form = new FormReader(body);
+                                    var entries = form.ReadForm();
+                                    Assert.Equal("Test App Id", entries["client_id"]);
+                                    Assert.Equal("https://example.com/signin-facebook", entries["redirect_uri"]);
+                                    Assert.Equal("Test App Secret", entries["client_secret"]);
+                                    Assert.Equal("TestCode", entries["code"]);
+                                    Assert.Equal("authorization_code", entries["grant_type"]);
+                                    Assert.False(string.IsNullOrEmpty(entries["code_verifier"]));
 
-                            return null;
-                        }
-                    };
-                });
+                                    return ReturnJsonResponse(new
+                                    {
+                                        access_token = "Test Access Token",
+                                        expire_in = 3600,
+                                        token_type = "Bearer",
+                                    });
+                                }
+                                else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://graph.facebook.com/v14.0/me")
+                                {
+                                    return ReturnJsonResponse(new
+                                    {
+                                        id = "Test User ID",
+                                        displayName = "Test Name",
+                                        givenName = "Test Given Name",
+                                        surname = "Test Family Name",
+                                        mail = "Test email"
+                                    });
+                                }
+
+                                return null;
+                            }
+                        };
+                    });
             },
             async context =>
             {
