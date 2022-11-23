@@ -52,7 +52,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
             else
             {
                 var token = child.AsToken();
-                if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken, out var options))
+                if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken, out var _))
                 {
                     continue;
                 }
