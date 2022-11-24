@@ -429,7 +429,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw;
         }
 
-        // TODO: Error handling
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
@@ -469,7 +468,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw;
         }
 
-        // TODO: Error handling
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
