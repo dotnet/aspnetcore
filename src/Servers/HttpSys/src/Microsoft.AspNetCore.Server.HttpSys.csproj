@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
@@ -13,6 +13,15 @@
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+
+
+  <ItemGroup>
+    <None Include="$(SharedSourceRoot)HttpSys\RequestProcessing\RequestHeaders.Generated.tt" Link="RequestProcessing\RequestHeaders.Generated.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>RequestHeaders.Generated.cs</LastGenOutput>
+    </None>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
@@ -32,6 +41,14 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.FunctionalTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.NonHelixTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="$(SharedSourceRoot)HttpSys\RequestProcessing\RequestHeaders.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RequestHeaders.Generated.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

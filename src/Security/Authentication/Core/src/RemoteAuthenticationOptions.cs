@@ -26,7 +26,7 @@ public class RemoteAuthenticationOptions : AuthenticationSchemeOptions
             Name = CorrelationPrefix,
             HttpOnly = true,
             SameSite = SameSiteMode.None,
-            SecurePolicy = CookieSecurePolicy.SameAsRequest,
+            SecurePolicy = CookieSecurePolicy.Always,
             IsEssential = true,
         };
     }
