@@ -59,6 +59,7 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
         // Google Identity Platform Manual:
         // https://developers.google.com/identity/protocols/OAuth2WebServer
 
+        // Some query params and features (e.g. PKCE) are handled by the base class but some params have to be modified or added here
         var queryStrings = QueryHelpers.ParseQuery(new Uri(base.BuildChallengeUrl(properties, redirectUri)).Query);
 
         SetQueryParam(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);

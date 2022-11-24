@@ -378,12 +378,8 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             app => app.UseAuthentication(),
             services =>
             {
-                services.AddAuthentication(o =>
-                {
-                    o.DefaultScheme = TestExtensions.CookieAuthenticationScheme;
-                    o.DefaultChallengeScheme = FacebookDefaults.AuthenticationScheme;
-                })
-                    .AddCookie()
+                services.AddAuthentication(TestExtensions.CookieAuthenticationScheme)
+                    .AddCookie(TestExtensions.CookieAuthenticationScheme)
                     .AddFacebook(o =>
                     {
                         o.AppId = "Test App Id";
