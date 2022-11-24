@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Win32.SafeHandles;
 using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -73,6 +72,27 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+
+    private long _lastConnectTicks = DateTimeOffset.UtcNow.Ticks;
+    private long _firstErrorTimeTicks;
+    private long _previousErrorTimeTicks;
+
+    //// StackExchange.Redis will also be trying to reconnect internally,
+    //// so limit how often we recreate the ConnectionMultiplexer instance
+    //// in an attempt to reconnect
+    private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
+    private readonly TimeSpan ReconnectErrorThreshold = TimeSpan.FromSeconds(30);
+
+    private static DateTimeOffset ReadTimeTicks(ref long field)
+    {
+        var ticks = Interlocked.Read(ref field); // avoid torn values
+        return ticks == 0 ? DateTimeOffset.MinValue : new DateTimeOffset(ticks, TimeSpan.Zero);
+    }
+    private static void WriteTimeTicks(ref long field, DateTimeOffset value)
+    {
+        var ticks = value == DateTimeOffset.MinValue ? 0L : value.UtcTicks;
+        Interlocked.Exchange(ref field, ticks); // avoid torn values
+    }
 
     /// <summary>
     /// Initializes a new instance of <see cref="RedisCache"/>.
@@ -347,6 +367,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private void PrepareConnection(IConnectionMultiplexer connection)
     {
+        Interlocked.Exchange(ref _lastConnectTicks, DateTimeOffset.UtcNow.UtcTicks);
         ValidateServerFeatures(connection);
         TryRegisterProfiler(connection);
     }
@@ -633,8 +654,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
 
         _disposed = true;
-        using var muxer = Interlocked.Exchange(ref _cache, null)?.Multiplexer;
-        muxer?.Close();
+        ReleaseConnection(Interlocked.Exchange(ref _cache, null));
+
     }
 
     private void CheckDisposed()
@@ -649,10 +670,62 @@ public partial class RedisCache : IDistributedCache, IDisposable
     {
         if (exception is RedisConnectionException or SocketException)
         {
-            // wipe the shared field, but *only* if it is the cache we were
+            var utcNow = DateTimeOffset.UtcNow;
+            var previousConnectTime = ReadTimeTicks(ref _lastConnectTicks);
+            TimeSpan elapsedSinceLastReconnect = utcNow - previousConnectTime;
+
+            // We want to limit how often we perform this top-level reconnect, so we check how long it's been since our last attempt.
+            if (elapsedSinceLastReconnect < ReconnectMinInterval)
+            {
+                return;
+            }
+
+            var firstErrorTime = ReadTimeTicks(ref _firstErrorTimeTicks);
+            if (firstErrorTime == DateTimeOffset.MinValue)
+            {
+                WriteTimeTicks(ref _firstErrorTimeTicks, utcNow);
+                WriteTimeTicks(ref _previousErrorTimeTicks, utcNow);
+                return;
+            }
+
+            TimeSpan elapsedSinceFirstError = utcNow - firstErrorTime;
+            TimeSpan elapsedSinceMostRecentError = utcNow - ReadTimeTicks(ref _previousErrorTimeTicks);
+
+            bool shouldReconnect =
+                    elapsedSinceFirstError >= ReconnectErrorThreshold // Make sure we gave the multiplexer enough time to reconnect on its own if it could.
+                    && elapsedSinceMostRecentError <= ReconnectErrorThreshold; // Make sure we aren't working on stale data (e.g. if there was a gap in errors, don't reconnect yet).
+
+            // Update the previousErrorTime timestamp to be now (e.g. this reconnect request).
+            WriteTimeTicks(ref _previousErrorTimeTicks, utcNow);
+
+            if (!shouldReconnect)
+            {
+                return;
+            }
+
+            WriteTimeTicks(ref _firstErrorTimeTicks, DateTimeOffset.MinValue);
+            WriteTimeTicks(ref _previousErrorTimeTicks, DateTimeOffset.MinValue);
+
+            // wipe the shared field, but *only* if it is still the cache we were
             // thinking about (once it is null, the next caller will reconnect)
-            using var muxer = Interlocked.CompareExchange(ref _cache, null, cache)?.Multiplexer;
-            muxer?.Close();
+            ReleaseConnection(Interlocked.CompareExchange(ref _cache, null, cache));
+        }
+    }
+
+    static void ReleaseConnection(IDatabase? cache)
+    {
+        var connection = cache?.Multiplexer;
+        if (connection is not null)
+        {
+            try
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
     }
 }
