@@ -43,15 +43,7 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
         // to get the enum descriptor from.
         //
         // Search for enum descriptor using the enum type in a registry of descriptors.
-        foreach (var enumDescriptor in Context.DescriptorRegistry.GetEnumDescriptors())
-        {
-            if (enumDescriptor.ClrType == typeToConvert)
-            {
-                return enumDescriptor;
-            }
-        }
-
-        return null;
+        return Context.DescriptorRegistry.FindEnumDescriptorByType(typeToConvert);
     }
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)

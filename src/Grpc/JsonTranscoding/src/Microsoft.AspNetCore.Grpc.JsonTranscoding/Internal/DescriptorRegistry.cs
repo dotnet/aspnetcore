@@ -19,23 +19,26 @@ internal sealed class DescriptorRegistry
     {
         var added = _fileDescriptors.Add(fileDescriptor);
 
-        // If a descriptor is already added then all its types and dependencies must have already be present.
-        // This guards against the possibility of cyclical dependencies.
+        // If a descriptor is already added then all its types and dependencies are already be present.
+        // In this case, exit immediately. This guards against the possibility of cyclical dependencies between files.
         if (!added)
         {
             return;
         }
 
+        // Non-nested enums.
         foreach (var descriptor in fileDescriptor.EnumTypes)
         {
             _enumDescriptors.Add(descriptor);
         }
 
+        // Search messages for nested enums.
         foreach (var messageDescriptor in fileDescriptor.MessageTypes)
         {
             AddNestedEnumDescriptorsRecursive(messageDescriptor);
         }
 
+        // Search imported files.
         foreach (var dependencyFile in fileDescriptor.Dependencies)
         {
             AddFileDescriptorsRecursive(dependencyFile);
@@ -55,8 +58,16 @@ internal sealed class DescriptorRegistry
         }
     }
 
-    public IEnumerable<EnumDescriptor> GetEnumDescriptors()
+    public EnumDescriptor? FindEnumDescriptorByType(Type enumType)
     {
-        return _enumDescriptors;
+        foreach (var enumDescriptor in _enumDescriptors)
+        {
+            if (enumDescriptor.ClrType == enumType)
+            {
+                return enumDescriptor;
+            }
+        }
+
+        return null;
     }
 }

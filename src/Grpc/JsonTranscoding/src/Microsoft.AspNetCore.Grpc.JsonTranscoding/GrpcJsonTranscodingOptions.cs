@@ -28,6 +28,8 @@ public sealed class GrpcJsonTranscodingOptions
 
     internal JsonSerializerOptions UnarySerializerOptions => _unaryOptions.Value;
     internal JsonSerializerOptions ServerStreamingSerializerOptions => _serverStreamingOptions.Value;
+
+    // Registry is set by DI during startup.
     internal DescriptorRegistry DescriptorRegistry { get; set; } = default!;
 
     /// <summary>
