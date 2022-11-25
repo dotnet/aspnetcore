@@ -15,8 +15,7 @@
   "BrowserOptions": {
     "Chromium": {
       "BrowserKind": "Chromium",
-      "IsEnabled": true,
-      "Headless": false
+      "IsEnabled": true
     },
     "Firefox": {
       "BrowserKind": "Firefox",

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Playwright;
 
 namespace OpenQA.Selenium;
@@ -44,27 +45,17 @@ public class By
         _ => throw new NotImplementedException(),
     };
 
-    public async Task<IReadOnlyList<IElementHandle>> MatchAsync(IElementHandle elem)
+    public Task<IReadOnlyList<IElementHandle>> MatchAsync(IElementHandle elem)
+        => MatchAsync(new QuerySelectable(elem));
+
+    public Task<IReadOnlyList<IElementHandle>> MatchAsync(IPage page)
+        => MatchAsync(new QuerySelectable(page));
+
+    private async Task<IReadOnlyList<IElementHandle>> MatchAsync(QuerySelectable root)
     {
         if (_byType == ByType.LinkText)
         {
-            var links = await elem.QuerySelectorAllAsync("a");
-            var linksWithText = await Task.WhenAll(links.Select(async l =>
-            {
-                var text = await l.TextContentAsync();
-                return new { Link = l, Text = text };
-            }));
-            return linksWithText.Where(l => l.Text == LinkTextValue).Select(l => l.Link).ToList();
-        }
-
-        return await elem.QuerySelectorAllAsync(ToQuerySelector());
-    }
-
-    public async Task<IReadOnlyList<IElementHandle>> MatchAsync(IPage page)
-    {
-        if (_byType == ByType.LinkText)
-        {
-            var links = await page.QuerySelectorAllAsync("a");
+            var links = await root.QuerySelectorAllAsync("a");
             var linksWithText = await Task.WhenAll(links.Select(async l =>
             {
                 var text = await l.TextContentAsync();
@@ -73,6 +64,25 @@ public class By
             return linksWithText.Where(l => l.Text.Trim() == LinkTextValue).Select(l => l.Link).ToList();
         }
 
-        return await page.QuerySelectorAllAsync(ToQuerySelector());
+        return await root.QuerySelectorAllAsync(ToQuerySelector());
+    }
+
+    // Playwright has both IPage and IElementHandle with QuerySelectorAllAsync, but there's no
+    // common base type. This normalizes over them both.
+    private readonly struct QuerySelectable
+    {
+        private readonly IPage _page;
+        private readonly IElementHandle _elem;
+
+        public QuerySelectable(IPage page)
+            => _page = page ?? throw new ArgumentNullException(nameof(page));
+
+        public QuerySelectable(IElementHandle elem)
+            => _elem = elem ?? throw new ArgumentNullException(nameof(elem));
+
+        public Task<IReadOnlyList<IElementHandle>> QuerySelectorAllAsync(string selector)
+            => _page is not null
+            ? _page.QuerySelectorAllAsync(selector)
+            : _elem.QuerySelectorAllAsync(selector);
     }
 }
