@@ -88,6 +88,7 @@ public class BrowserAdapter : IAsyncDisposable, IJavaScriptExecutor
                 JsonValueKind.Object => result.Value,
                 JsonValueKind.Undefined => null,
                 JsonValueKind.Null => null,
+                _ => throw new NotImplementedException($"Unknown value kind {result.Value.ValueKind}"),
             };
         }
 
