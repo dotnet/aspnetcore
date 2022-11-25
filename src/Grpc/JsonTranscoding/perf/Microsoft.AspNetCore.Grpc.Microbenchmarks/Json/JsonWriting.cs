@@ -7,6 +7,7 @@ using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Greet;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 namespace Microsoft.AspNetCore.Grpc.Microbenchmarks.Json;
@@ -22,7 +23,7 @@ public class JsonWriting
     {
         _request = new HelloRequest() { Name = "Hello world" };
         _serializerOptions = JsonConverterHelper.CreateSerializerOptions(
-            new JsonContext(new GrpcJsonSettings { WriteIndented = false }, TypeRegistry.Empty));
+            new JsonContext(new GrpcJsonSettings { WriteIndented = false }, TypeRegistry.Empty, new DescriptorRegistry()));
         _jsonFormatter = new JsonFormatter(new JsonFormatter.Settings(formatDefaultValues: false));
     }
 

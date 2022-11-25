@@ -1,11 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Google.Api;
+using System.Xml.Linq;
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -27,6 +31,7 @@ public static class GrpcJsonTranscodingServiceExtensions
         }
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.Services.AddSingleton<DescriptorRegistry>();
 
         return builder;
     }
@@ -45,6 +50,14 @@ public static class GrpcJsonTranscodingServiceExtensions
         }
 
         builder.Services.Configure(configureOptions);
+        builder.Services.AddTransient<IConfigureOptions<GrpcJsonTranscodingOptions>>(services =>
+        {
+            return new ConfigureOptions<GrpcJsonTranscodingOptions>(options =>
+            {
+                options.ServiceDescriptorRegistry = services.GetRequiredService<DescriptorRegistry>();
+            });
+        });
+
         return builder.AddJsonTranscoding();
     }
 }

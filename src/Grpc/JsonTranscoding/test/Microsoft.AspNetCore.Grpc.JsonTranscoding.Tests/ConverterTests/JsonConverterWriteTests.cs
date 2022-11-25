@@ -3,9 +3,11 @@
 
 using System.Text;
 using System.Text.Json;
+using Example.Hello;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Transcoding;
 using Xunit.Abstractions;
@@ -466,6 +468,15 @@ public class JsonConverterWriteTests
         AssertWrittenJson(dataTypes, new GrpcJsonSettings { WriteEnumsAsIntegers = true, IgnoreDefaultValues = true });
     }
 
+    [Fact]
+    public void Enum_Imported()
+    {
+        var m = new SayRequest();
+        m.Country = Example.Country.Alpha3CountryCode.Afg;
+
+        AssertWrittenJson(m);
+    }
+
     private void AssertWrittenJson<TValue>(TValue value, GrpcJsonSettings? settings = null, bool? compareRawStrings = null) where TValue : IMessage
     {
         var typeRegistery = TypeRegistry.FromFiles(
@@ -500,7 +511,7 @@ public class JsonConverterWriteTests
 
     internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery)
     {
-        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty);
+        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty, new DescriptorRegistry());
 
         return JsonConverterHelper.CreateSerializerOptions(context);
     }
