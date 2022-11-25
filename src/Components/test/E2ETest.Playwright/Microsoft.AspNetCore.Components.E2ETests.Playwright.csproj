@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" />
+
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -16,11 +18,18 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\E2ETest\Infrastructure\ServerFixtures\*.cs" LinkBase="Infrastructure\ServerFixtures" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="playwrightSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Copied from E2ETesting.targets -->
