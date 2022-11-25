@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
@@ -381,7 +382,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         return false;
     }
 
-    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
+    internal static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
     {
         if (token.Parent.IsKind(SyntaxKind.PredefinedType))
         {
@@ -391,39 +392,8 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         var parameterTypeSymbol = semanticModel.GetSymbolInfo(token.Parent!, cancellationToken).GetAnySymbol();
         if (parameterTypeSymbol is INamedTypeSymbol typeSymbol)
         {
-            // String is valid.
-            if (typeSymbol.SpecialType == SpecialType.System_String)
-            {
-                return true;
-            }
-            // Any enum is valid.
-            if (typeSymbol.TypeKind == TypeKind.Enum)
-            {
-                return true;
-            }
-            // Uri is valid.
-            if (SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Get(WellKnownType.System_Uri)))
-            {
-                return true;
-            }
+            return ParsabilityHelper.IsTypeParsable(typeSymbol, wellKnownTypes);
 
-            // Check if the parameter type has a public static TryParse method.
-            foreach (var item in typeSymbol.GetMembers("TryParse"))
-            {
-                // bool TryParse(string input, out T value)
-                if (IsTryParse(item))
-                {
-                    return true;
-                }
-
-                // bool TryParse(string input, IFormatProvider provider, out T value)
-                if (IsTryParseWithFormat(item, wellKnownTypes))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
         else if (parameterTypeSymbol is IMethodSymbol)
         {
@@ -433,29 +403,6 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
         // The cursor is on an identifier (parameter name) and completion is explicitly triggered (e.g. CTRL+SPACE)
         return true;
-
-        static bool IsTryParse(ISymbol item)
-        {
-            return item is IMethodSymbol methodSymbol &&
-                methodSymbol.DeclaredAccessibility == Accessibility.Public &&
-                methodSymbol.IsStatic &&
-                methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                methodSymbol.Parameters.Length == 2 &&
-                methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
-                methodSymbol.Parameters[1].RefKind == RefKind.Out;
-        }
-
-        static bool IsTryParseWithFormat(ISymbol item, WellKnownTypes wellKnownTypes)
-        {
-            return item is IMethodSymbol methodSymbol &&
-                methodSymbol.DeclaredAccessibility == Accessibility.Public &&
-                methodSymbol.IsStatic &&
-                methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                methodSymbol.Parameters.Length == 3 &&
-                methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
-                SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, wellKnownTypes.Get(WellKnownType.System_IFormatProvider)) &&
-                methodSymbol.Parameters[2].RefKind == RefKind.Out;
-        }
     }
 
     private static ImmutableArray<string> GetExistingParameterNames(SyntaxNode node)
@@ -624,7 +571,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
             // things that completion could insert.  In this case, the only regex character
             // that is relevant is the \ character, and it's only relevant if we insert into
             // a normal string and not a verbatim string.  There are no other regex characters
-            // that completion will produce that need any escaping. 
+            // that completion will produce that need any escaping.
             Debug.Assert(token.IsKind(SyntaxKind.StringLiteralToken));
             return token.IsVerbatimStringLiteral()
                 ? text
