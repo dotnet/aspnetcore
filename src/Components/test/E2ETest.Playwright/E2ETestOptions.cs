@@ -9,6 +9,10 @@ internal class E2ETestOptions
 {
     public static readonly E2ETestOptions Instance = new E2ETestOptions();
 
+    public int DefaultWaitTimeoutInSeconds { get; set; } = 15;
+
+    public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 10;
+
     public bool SauceTest => false;
 
     public SauceOptions Sauce { get; } = new();

@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Compile Include="..\E2ETest\Infrastructure\ServerFixtures\*.cs" LinkBase="Infrastructure\ServerFixtures" />
+    <Compile Include="..\E2ETest\Infrastructure\WebDriverExtensions\BasicTestAppWebDriverExtensions.cs" LinkBase="Infrastructure\WebDriverExtensions" />
     <Compile Include="..\E2ETest\Tests\StandaloneAppTest.cs" LinkBase="Tests" />
   </ItemGroup>
 

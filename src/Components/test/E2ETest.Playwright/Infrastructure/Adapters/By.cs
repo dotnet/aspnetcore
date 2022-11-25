@@ -11,11 +11,17 @@ public class By
 {
     private readonly ByType _byType;
     private string CssSelectorValue { get; init; }
+    private string ClassNameValue { get; init; }
+    private string IdValue { get; init; }
     private string TagNameValue { get; init; }
     private string LinkTextValue { get; init; }
+    private string XPathValue { get; init; }
 
-    public enum ByType { CssSelector, TagName, LinkText };
-
+    public enum ByType { CssSelector, TagName, LinkText,
+        Id,
+        XPath,
+        ClassName
+    }
     private By(ByType byType)
     {
         _byType = byType;
@@ -24,24 +30,39 @@ public class By
     public static By CssSelector(string cssSelector)
         => new By(ByType.CssSelector) { CssSelectorValue = cssSelector };
 
+    public static By Id(string id)
+        => new By(ByType.Id) { IdValue = id };
+
     public static By TagName(string tagName)
         => new By(ByType.TagName) { TagNameValue = tagName };
 
     public static By LinkText(string linkText)
         => new By(ByType.LinkText) { LinkTextValue = linkText };
 
+    public static By XPath(string xpathValue)
+        => new By(ByType.XPath) { XPathValue = xpathValue };
+
+    public static By ClassName(string classNameValue)
+        => new By(ByType.ClassName) { ClassNameValue = classNameValue };
+
     private string ToQuerySelector() => _byType switch
     {
         ByType.TagName => TagNameValue,
         ByType.CssSelector => CssSelectorValue,
+        ByType.Id => $"#{IdValue}",
+        ByType.XPath => $"xpath={XPathValue}",
+        ByType.ClassName => $".{ClassNameValue}",
         _ => throw new NotImplementedException(),
     };
 
     public override string ToString() => _byType switch
     {
         ByType.TagName => $"[Tagname: {TagNameValue}]",
+        ByType.Id => $"[Id: {IdValue}]",
         ByType.CssSelector => $"[CssSelector: {CssSelectorValue}]",
         ByType.LinkText => $"[LinkText: {LinkTextValue}]",
+        ByType.XPath => $"[XPath: {XPathValue}]",
+        ByType.ClassName => $"[ClassName: {ClassNameValue}]",
         _ => throw new NotImplementedException(),
     };
 

@@ -6,24 +6,14 @@ using OpenQA.Selenium;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.Playwright.Infrastructure.Adapters;
 
-public class WebElement
+public class WebElement : IWebElement
 {
-    private readonly IElementHandle _elem;
-
     public WebElement(IElementHandle match)
     {
-        _elem = match;
+        Element = match;
     }
 
-    public string Text => _elem.TextContentAsync().Result;
+    public IElementHandle Element { get; }
 
-    public void Click()
-    {
-        _elem.ClickAsync().Wait();
-    }
-
-    public IReadOnlyList<WebElement> FindElements(By selector)
-    {
-        return selector.MatchAsync(_elem).Result.Select(elem => new WebElement(elem)).ToArray();
-    }
+    public string Text => Element.TextContentAsync().Result.Trim(); // Selenium trims
 }
