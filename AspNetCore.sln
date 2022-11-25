@@ -1752,6 +1752,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAppSample", "src\Framewo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F43CC5EA-6032-4A11-A9B2-6D48CB5EB082}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.E2ETests.Playwright", "src\Components\test\E2ETest.Playwright\Microsoft.AspNetCore.Components.E2ETests.Playwright.csproj", "{6B89A6B7-0FFA-402D-880B-0ED961986E43}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10513,6 +10515,22 @@ Global
 		{A8E2AB77-8F57-47C2-A961-2F316793CAFF}.Release|x64.Build.0 = Release|Any CPU
 		{A8E2AB77-8F57-47C2-A961-2F316793CAFF}.Release|x86.ActiveCfg = Release|Any CPU
 		{A8E2AB77-8F57-47C2-A961-2F316793CAFF}.Release|x86.Build.0 = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|arm64.Build.0 = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|x64.Build.0 = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Debug|x86.Build.0 = Debug|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|arm64.ActiveCfg = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|arm64.Build.0 = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|x64.ActiveCfg = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|x64.Build.0 = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|x86.ActiveCfg = Release|Any CPU
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11378,6 +11396,7 @@ Global
 		{890B5210-48EF-488F-93A2-F13BCB07C780} = {4DA84F2B-1948-439B-85AB-E99E31331A9C}
 		{A8E2AB77-8F57-47C2-A961-2F316793CAFF} = {890B5210-48EF-488F-93A2-F13BCB07C780}
 		{F43CC5EA-6032-4A11-A9B2-6D48CB5EB082} = {4DA84F2B-1948-439B-85AB-E99E31331A9C}
+		{6B89A6B7-0FFA-402D-880B-0ED961986E43} = {0508E463-0269-40C9-B5C2-3B600FB2A28B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

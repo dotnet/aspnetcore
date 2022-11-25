@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <TestDependsOnAspnetPackages>true</TestDependsOnAspnetPackages>
+    <TestDependsOnAspnetRuntime>true</TestDependsOnAspnetRuntime>
+    <TestDependsOnAspnetAppPackages>false</TestDependsOnAspnetAppPackages>
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
+    <IsTestProject>true</IsTestProject>
+    <TestGroupName>Components.E2ETests.Playwright</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\E2ETest\Infrastructure\ServerFixtures\*.cs" LinkBase="Infrastructure\ServerFixtures" />
+  </ItemGroup>
+
+  <!-- Copied from E2ETesting.targets -->
+  <Target Name="_ResolveTestProjectReferences" DependsOnTargets="ResolveReferences">
+    <PropertyGroup>
+      <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
+      <_DefaultProjectRoot>$([System.IO.Path]::GetFullPath($(_DefaultProjectFilter)))</_DefaultProjectRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ContentRootProjectReferences
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
+    <ItemGroup>
+      <_ContentRootMetadata
+        Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
+        Include="%(_ContentRootProjectReferences.Identity)"
+        AssemblyName="%(_ContentRootProjectReferences.FusionName)"
+        ContentRootPath="$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
+        ContentRootTest="$([System.IO.Path]::GetFileName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
+        Priority="0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AssemblyAttribute
+        Condition=" '%(_ContentRootMetadata.Identity)' != '' "
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>TestAssemblyApplication[%(_ContentRootMetadata.AssemblyName)]</_Parameter1>
+        <_Parameter2>%(_ContentRootMetadata.ContentRootPath)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+</Project>
