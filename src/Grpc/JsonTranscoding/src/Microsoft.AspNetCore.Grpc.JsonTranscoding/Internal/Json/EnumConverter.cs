@@ -37,22 +37,32 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
         }
     }
 
-    private static EnumDescriptor? ResolveEnumDescriptor(Type typeToConvert)
+    private EnumDescriptor? ResolveEnumDescriptor(Type typeToConvert)
     {
-        var containingType = typeToConvert?.DeclaringType?.DeclaringType;
+        // If enum is declared as a nested type then go to its parent type and find descriptor from it.
+        //var containingType = typeToConvert.DeclaringType?.DeclaringType;
+        //if (containingType != null)
+        //{
+        //    var messageDescriptor = JsonConverterHelper.GetMessageDescriptor(containingType);
+        //    if (messageDescriptor != null)
+        //    {
+        //        for (var i = 0; i < messageDescriptor.EnumTypes.Count; i++)
+        //        {
+        //            if (messageDescriptor.EnumTypes[i].ClrType == typeToConvert)
+        //            {
+        //                return messageDescriptor.EnumTypes[i];
+        //            }
+        //        }
+        //    }
+        //}
 
-        if (containingType != null)
+        // Enum is not nested. There isn't a way to link the enum to a descriptor using reflection.
+        // Search through registered service descriptors.
+        foreach (var enumDescriptor in Context.ServiceDescriptorRegistry.GetEnumDescriptors())
         {
-            var messageDescriptor = JsonConverterHelper.GetMessageDescriptor(containingType);
-            if (messageDescriptor != null)
+            if (enumDescriptor.ClrType == typeToConvert)
             {
-                for (var i = 0; i < messageDescriptor.EnumTypes.Count; i++)
-                {
-                    if (messageDescriptor.EnumTypes[i].ClrType == typeToConvert)
-                    {
-                        return messageDescriptor.EnumTypes[i];
-                    }
-                }
+                return enumDescriptor;
             }
         }
 
