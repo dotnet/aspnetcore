@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Google.Api;
-using System.Xml.Linq;
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
@@ -54,7 +52,7 @@ public static class GrpcJsonTranscodingServiceExtensions
         {
             return new ConfigureOptions<GrpcJsonTranscodingOptions>(options =>
             {
-                options.ServiceDescriptorRegistry = services.GetRequiredService<DescriptorRegistry>();
+                options.DescriptorRegistry = services.GetRequiredService<DescriptorRegistry>();
             });
         });
 
