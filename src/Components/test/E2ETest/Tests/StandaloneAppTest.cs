@@ -126,10 +126,12 @@ public class StandaloneAppTest
         Browser.NotEqual("Loading...", () => app.Text);
     }
 
+#if !PLAYWRIGHT_ADAPTER
     public void Dispose()
     {
         // Make the tests run faster by navigating back to the home page when we are done
         // If we don't, then the next test will reload the whole page before it starts
         Browser.Exists(By.LinkText("Home")).Click();
     }
+#endif
 }

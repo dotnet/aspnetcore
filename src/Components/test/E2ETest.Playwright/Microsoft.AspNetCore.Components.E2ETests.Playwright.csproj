@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" />
 
@@ -12,24 +12,37 @@
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <IsTestProject>true</IsTestProject>
     <TestGroupName>Components.E2ETests.Playwright</TestGroupName>
+    <DefineConstants>$(DefineConstants); PLAYWRIGHT_ADAPTER</DefineConstants>
+
+    <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
+    <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\E2ETest\Infrastructure\ServerFixtures\*.cs" LinkBase="Infrastructure\ServerFixtures" />
+    <Compile Include="..\E2ETest\Tests\StandaloneAppTest.cs" LinkBase="Tests" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="playwrightSettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedApps</_Parameter1>
+      <_Parameter2>$(TestTrimmedApps)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <!-- Copied from E2ETesting.targets -->
@@ -39,27 +52,17 @@
       <_DefaultProjectRoot>$([System.IO.Path]::GetFullPath($(_DefaultProjectFilter)))</_DefaultProjectRoot>
     </PropertyGroup>
     <ItemGroup>
-      <_ContentRootProjectReferences
-        Include="@(ReferencePath)"
-        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
+      <_ContentRootProjectReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
     </ItemGroup>
   </Target>
 
   <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
     <ItemGroup>
-      <_ContentRootMetadata
-        Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
-        Include="%(_ContentRootProjectReferences.Identity)"
-        AssemblyName="%(_ContentRootProjectReferences.FusionName)"
-        ContentRootPath="$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
-        ContentRootTest="$([System.IO.Path]::GetFileName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
-        Priority="0" />
+      <_ContentRootMetadata Condition="'%(_ContentRootProjectReferences.Identity)' != ''" Include="%(_ContentRootProjectReferences.Identity)" AssemblyName="%(_ContentRootProjectReferences.FusionName)" ContentRootPath="$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))" ContentRootTest="$([System.IO.Path]::GetFileName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))" Priority="0" />
     </ItemGroup>
 
     <ItemGroup>
-      <AssemblyAttribute
-        Condition=" '%(_ContentRootMetadata.Identity)' != '' "
-        Include="System.Reflection.AssemblyMetadataAttribute">
+      <AssemblyAttribute Condition=" '%(_ContentRootMetadata.Identity)' != '' " Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>TestAssemblyApplication[%(_ContentRootMetadata.AssemblyName)]</_Parameter1>
         <_Parameter2>%(_ContentRootMetadata.ContentRootPath)</_Parameter2>
       </AssemblyAttribute>
