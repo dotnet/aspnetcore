@@ -1,224 +1,91 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
+using System.Buffers;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Http;
 
 internal static class HttpCharacters
 {
-    private const int _tableSize = 128;
-    private static readonly bool[] _alphaNumeric = InitializeAlphaNumeric();
-    private static readonly bool[] _authority = InitializeAuthority();
-    private static readonly bool[] _token = InitializeToken();
-    private static readonly bool[] _host = InitializeHost();
-    private static readonly bool[] _fieldValue = InitializeFieldValue();
+    // ALPHA and DIGIT https://tools.ietf.org/html/rfc5234#appendix-B.1
+    private const string AlphaNumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    internal static void Initialize()
-    {
-        // Access _alphaNumeric to initialize static fields
-        var _ = _alphaNumeric;
-    }
+    // Authority https://tools.ietf.org/html/rfc3986#section-3.2
+    // Examples:
+    // microsoft.com
+    // hostname:8080
+    // [::]:8080
+    // [fe80::]
+    // 127.0.0.1
+    // user@host.com
+    // user:password@host.com
+    private static readonly IndexOfAnyValues<byte> _allowedAuthorityBytes = IndexOfAnyValues.Create(":.-[]@0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
 
-    private static bool[] InitializeAlphaNumeric()
-    {
-        // ALPHA and DIGIT https://tools.ietf.org/html/rfc5234#appendix-B.1
-        var alphaNumeric = new bool[_tableSize];
-        for (var c = '0'; c <= '9'; c++)
-        {
-            alphaNumeric[c] = true;
-        }
-        for (var c = 'A'; c <= 'Z'; c++)
-        {
-            alphaNumeric[c] = true;
-        }
-        for (var c = 'a'; c <= 'z'; c++)
-        {
-            alphaNumeric[c] = true;
-        }
-        return alphaNumeric;
-    }
+    // Matches Http.Sys
+    // Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
+    private static readonly IndexOfAnyValues<char> _allowedHostChars = IndexOfAnyValues.Create("!$&'()-._~" + AlphaNumeric);
 
-    private static bool[] InitializeAuthority()
-    {
-        // Authority https://tools.ietf.org/html/rfc3986#section-3.2
-        // Examples:
-        // microsoft.com
-        // hostname:8080
-        // [::]:8080
-        // [fe80::]
-        // 127.0.0.1
-        // user@host.com
-        // user:password@host.com
-        var authority = new bool[_tableSize];
-        Array.Copy(_alphaNumeric, authority, _tableSize);
-        authority[':'] = true;
-        authority['.'] = true;
-        authority['-'] = true;
-        authority['['] = true;
-        authority[']'] = true;
-        authority['@'] = true;
-        return authority;
-    }
+    // tchar https://tools.ietf.org/html/rfc7230#appendix-B
+    private static readonly IndexOfAnyValues<char> _allowedTokenChars = IndexOfAnyValues.Create("!#$%&'*+-.^_`|~" + AlphaNumeric);
+    private static readonly IndexOfAnyValues<byte> _allowedTokenBytes = IndexOfAnyValues.Create("!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
 
-    private static bool[] InitializeToken()
-    {
-        // tchar https://tools.ietf.org/html/rfc7230#appendix-B
-        var token = new bool[_tableSize];
-        Array.Copy(_alphaNumeric, token, _tableSize);
-        token['!'] = true;
-        token['#'] = true;
-        token['$'] = true;
-        token['%'] = true;
-        token['&'] = true;
-        token['\''] = true;
-        token['*'] = true;
-        token['+'] = true;
-        token['-'] = true;
-        token['.'] = true;
-        token['^'] = true;
-        token['_'] = true;
-        token['`'] = true;
-        token['|'] = true;
-        token['~'] = true;
-        return token;
-    }
+    // field-value https://tools.ietf.org/html/rfc7230#section-3.2
+    private static readonly IndexOfAnyValues<char> _allowedFieldChars = CreateAllowedFieldChars();
 
-    private static bool[] InitializeHost()
-    {
-        // Matches Http.Sys
-        // Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
-        var host = new bool[_tableSize];
-        Array.Copy(_alphaNumeric, host, _tableSize);
-        host['!'] = true;
-        host['$'] = true;
-        host['&'] = true;
-        host['\''] = true;
-        host['('] = true;
-        host[')'] = true;
-        host['-'] = true;
-        host['.'] = true;
-        host['_'] = true;
-        host['~'] = true;
-        return host;
-    }
-
-    private static bool[] InitializeFieldValue()
+    private static IndexOfAnyValues<char> CreateAllowedFieldChars()
     {
         // field-value https://tools.ietf.org/html/rfc7230#section-3.2
-        var fieldValue = new bool[_tableSize];
 
-        fieldValue[0x9] = true; // HTAB
+        Span<char> tmp = stackalloc char[128];
+        tmp[0] = (char)0x9;     // HTAB
+        var count = 1;
 
-        for (var c = 0x20; c <= 0x7e; c++) // VCHAR and SP
+        for (var c = 0x20; c <= 0x7E; ++c)  // VCHAR and SP
         {
-            fieldValue[c] = true;
-        }
-        return fieldValue;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool ContainsInvalidAuthorityChar(Span<byte> s)
-    {
-        var authority = _authority;
-
-        for (var i = 0; i < s.Length; i++)
-        {
-            var c = s[i];
-            if (c >= (uint)authority.Length || !authority[c])
-            {
-                return true;
-            }
+            tmp[count++] = (char)c;
         }
 
-        return false;
+        Debug.Assert(count <= tmp.Length);
+        return IndexOfAnyValues.Create(tmp[..count]);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOfInvalidHostChar(string s)
-    {
-        var host = _host;
+    public static bool ContainsInvalidAuthorityChar(ReadOnlySpan<byte> span) => span.IndexOfAnyExcept(_allowedAuthorityBytes) >= 0;
 
-        for (var i = 0; i < s.Length; i++)
-        {
-            var c = s[i];
-            if (c >= (uint)host.Length || !host[c])
-            {
-                return i;
-            }
-        }
+    public static int IndexOfInvalidHostChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedHostChars);
 
-        return -1;
-    }
+    public static int IndexOfInvalidTokenChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedTokenChars);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOfInvalidTokenChar(string s)
-    {
-        var token = _token;
-
-        for (var i = 0; i < s.Length; i++)
-        {
-            var c = s[i];
-            if (c >= (uint)token.Length || !token[c])
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOfInvalidTokenChar(ReadOnlySpan<byte> span)
-    {
-        var token = _token;
-
-        for (var i = 0; i < span.Length; i++)
-        {
-            var c = span[i];
-            if (c >= (uint)token.Length || !token[c])
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
+    public static int IndexOfInvalidTokenChar(ReadOnlySpan<byte> span) => span.IndexOfAnyExcept(_allowedTokenBytes);
 
     // Follows field-value rules in https://tools.ietf.org/html/rfc7230#section-3.2
     // Disallows characters > 0x7E.
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOfInvalidFieldValueChar(string s)
-    {
-        var fieldValue = _fieldValue;
-
-        for (var i = 0; i < s.Length; i++)
-        {
-            var c = s[i];
-            if (c >= (uint)fieldValue.Length || !fieldValue[c])
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
+    public static int IndexOfInvalidFieldValueChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedFieldChars);
 
     // Follows field-value rules for chars <= 0x7F. Allows extended characters > 0x7F.
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOfInvalidFieldValueCharExtended(string s)
+    public static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span)
     {
-        var fieldValue = _fieldValue;
+        var idx = span.IndexOfAnyExcept(_allowedFieldChars);
 
-        for (var i = 0; i < s.Length; i++)
+        return idx < 0 ? -1 : IndexOfInvalidFieldValueCharExtended(span, idx);
+    }
+
+    private static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span, int idx)
+    {
+        while (true)
         {
-            var c = s[i];
-            if (c < (uint)fieldValue.Length && !fieldValue[c])
+            if (span[idx] <= 0x7F)
             {
-                return i;
+                return idx;
             }
-        }
 
-        return -1;
+            var tmpIdx = span.Slice(idx + 1).IndexOfAnyExcept(_allowedFieldChars);
+            if (tmpIdx < 0)
+            {
+                return -1;
+            }
+
+            idx += 1 + tmpIdx;
+        }
     }
 }
