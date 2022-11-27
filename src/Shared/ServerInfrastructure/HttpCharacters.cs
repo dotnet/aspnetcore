@@ -31,7 +31,7 @@ internal static class HttpCharacters
 
     // field-value https://tools.ietf.org/html/rfc7230#section-3.2
     // HTAB, [VCHAR, SP]
-    private static readonly IndexOfAnyValues<char> _allowedFieldChars = IndexOfAnyValues.Create("\t !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+    private static readonly IndexOfAnyValues<char> _allowedFieldChars = IndexOfAnyValues.Create("\t !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" + AlphaNumeric);
 
     private static readonly IndexOfAnyValues<char> _invalidFieldChars = IndexOfAnyValues.Create(
         "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u000A\u000B\u000C\u000D\u000E\u000F\u0010" +
