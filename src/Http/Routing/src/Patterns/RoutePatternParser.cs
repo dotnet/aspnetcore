@@ -14,10 +14,9 @@ internal static class RoutePatternParser
     private const char OpenBrace = '{';
     private const char CloseBrace = '}';
     private const char QuestionMark = '?';
-    private const char Asterisk = '*';
     private const string PeriodString = ".";
 
-    private static readonly IndexOfAnyValues<char> _invalidParameterNameChars = IndexOfAnyValues.Create("/{}?*");
+    internal static readonly IndexOfAnyValues<char> InvalidParameterNameChars = IndexOfAnyValues.Create("/{}?*");
 
     public static RoutePattern Parse(string pattern)
     {
@@ -425,7 +424,7 @@ internal static class RoutePatternParser
 
     private static bool IsValidParameterName(Context context, string parameterName)
     {
-        if (parameterName.Length == 0 || parameterName.AsSpan().IndexOfAny(_invalidParameterNameChars) >= 0)
+        if (parameterName.Length == 0 || parameterName.AsSpan().IndexOfAny(InvalidParameterNameChars) >= 0)
         {
             context.Error = Resources.FormatTemplateRoute_InvalidParameterName(parameterName);
             return false;
