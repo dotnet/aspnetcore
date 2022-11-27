@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -31,24 +30,12 @@ internal static class HttpCharacters
     private static readonly IndexOfAnyValues<byte> _allowedTokenBytes = IndexOfAnyValues.Create("!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
 
     // field-value https://tools.ietf.org/html/rfc7230#section-3.2
-    private static readonly IndexOfAnyValues<char> _allowedFieldChars = CreateAllowedFieldChars();
+    // HTAB, [VCHAR, SP]
+    private static readonly IndexOfAnyValues<char> _allowedFieldChars = IndexOfAnyValues.Create("\t !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
-    private static IndexOfAnyValues<char> CreateAllowedFieldChars()
-    {
-        // field-value https://tools.ietf.org/html/rfc7230#section-3.2
-
-        Span<char> tmp = stackalloc char[128];
-        tmp[0] = (char)0x9;     // HTAB
-        var count = 1;
-
-        for (var c = 0x20; c <= 0x7E; ++c)  // VCHAR and SP
-        {
-            tmp[count++] = (char)c;
-        }
-
-        Debug.Assert(count <= tmp.Length);
-        return IndexOfAnyValues.Create(tmp[..count]);
-    }
+    private static readonly IndexOfAnyValues<char> _invalidFieldChars = IndexOfAnyValues.Create(
+        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u000A\u000B\u000C\u000D\u000E\u000F\u0010" +
+        "\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F\u007F");
 
     public static bool ContainsInvalidAuthorityChar(ReadOnlySpan<byte> span) => span.IndexOfAnyExcept(_allowedAuthorityBytes) >= 0;
 
@@ -63,29 +50,5 @@ internal static class HttpCharacters
     public static int IndexOfInvalidFieldValueChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedFieldChars);
 
     // Follows field-value rules for chars <= 0x7F. Allows extended characters > 0x7F.
-    public static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span)
-    {
-        var idx = span.IndexOfAnyExcept(_allowedFieldChars);
-
-        return idx < 0 ? -1 : IndexOfInvalidFieldValueCharExtended(span, idx);
-    }
-
-    private static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span, int idx)
-    {
-        while (true)
-        {
-            if (span[idx] <= 0x7F)
-            {
-                return idx;
-            }
-
-            var tmpIdx = span.Slice(idx + 1).IndexOfAnyExcept(_allowedFieldChars);
-            if (tmpIdx < 0)
-            {
-                return -1;
-            }
-
-            idx += 1 + tmpIdx;
-        }
-    }
+    public static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span) => span.IndexOfAny(_invalidFieldChars);
 }
