@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Buffers;
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
@@ -16,14 +17,7 @@ internal static class RoutePatternParser
     private const char Asterisk = '*';
     private const string PeriodString = ".";
 
-    internal static readonly char[] InvalidParameterNameChars = new char[]
-    {
-        Separator,
-        OpenBrace,
-        CloseBrace,
-        QuestionMark,
-        Asterisk
-    };
+    private static readonly IndexOfAnyValues<char> _invalidParameterNameChars = IndexOfAnyValues.Create("/{}?*");
 
     public static RoutePattern Parse(string pattern)
     {
@@ -431,7 +425,7 @@ internal static class RoutePatternParser
 
     private static bool IsValidParameterName(Context context, string parameterName)
     {
-        if (parameterName.Length == 0 || parameterName.IndexOfAny(InvalidParameterNameChars) >= 0)
+        if (parameterName.Length == 0 || parameterName.AsSpan().IndexOfAny(_invalidParameterNameChars) >= 0)
         {
             context.Error = Resources.FormatTemplateRoute_InvalidParameterName(parameterName);
             return false;
