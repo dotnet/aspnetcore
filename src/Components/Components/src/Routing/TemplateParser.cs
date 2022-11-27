@@ -74,6 +74,7 @@ internal sealed class TemplateParser
                 var invalidCharacter = segment.AsSpan(1, segment.Length - 2).IndexOfAny(_invalidParameterNameCharacters);
                 if (invalidCharacter >= 0)
                 {
+                    invalidCharacter++;     // accommodate the slice above
                     throw new InvalidOperationException(
                         $"Invalid template '{template}'. The character '{segment[invalidCharacter]}' in parameter segment '{segment}' is not allowed.");
                 }
