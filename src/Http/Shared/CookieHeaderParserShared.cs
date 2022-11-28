@@ -28,8 +28,15 @@ internal static class CookieHeaderParserShared
             {
                 if (TryParseValue(value, ref index, supportsMultipleValues, out var parsedName, out var parsedValue))
                 {
+                    if(parsedName == null || string.IsNullOrEmpty(parsedName.Value.Value)
+                        || parsedValue == null || string.IsNullOrEmpty(parsedValue.Value.Value))
+                    {
+                        // Successfully parsed, but no values.
+                        continue;
+                    }
+
                     // The entry may not contain an actual value, like " , "
-                    store[parsedName.Value.Value!] = Uri.UnescapeDataString(parsedValue.Value.Value!);
+                    store[parsedName.Value.Value] = Uri.UnescapeDataString(parsedValue.Value.Value);
                     hasFoundValue = true;
                 }
                 else
@@ -108,8 +115,8 @@ internal static class CookieHeaderParserShared
         // empty values, continue until the current character is neither a separator nor a whitespace.
         separatorFound = true;
 
-        // We accept single separator, but separator at the end of a value is ignored.
-        if (input.Length >= 1 && current + 1 == input.Length)
+        //We accept single separator, but separator at the end of a value is ignored.
+        if (input.Length > 1 && current + 1 == input.Length)
         {
             return current;
         }
