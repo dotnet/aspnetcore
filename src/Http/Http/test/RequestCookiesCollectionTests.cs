@@ -31,6 +31,8 @@ public class RequestCookiesCollectionTests
     }
 
     [Theory]
+    [InlineData(",", null)]
+    [InlineData(";", null)]
     [InlineData("er=dd,cc,bb", new[] { "dd" })]
     [InlineData("er=dd,err=cc,errr=bb", new[] { "dd", "cc", "bb" })]
     [InlineData("errorcookie=dd,:(\"sa;", new[] { "dd" })]

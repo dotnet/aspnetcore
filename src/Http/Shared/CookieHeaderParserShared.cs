@@ -109,7 +109,7 @@ internal static class CookieHeaderParserShared
         separatorFound = true;
 
         // We accept single separator, but separator at the end of a value is ignored.
-        if (input.Length > 1 && current + 1 == input.Length)
+        if (input.Length >= 1 && current + 1 == input.Length)
         {
             return current;
         }
