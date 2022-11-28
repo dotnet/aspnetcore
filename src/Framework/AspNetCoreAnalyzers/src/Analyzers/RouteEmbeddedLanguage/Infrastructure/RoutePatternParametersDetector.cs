@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -25,11 +26,11 @@ internal static class RoutePatternParametersDetector
 
             foreach (var child in childSymbols)
             {
-                if (HasSpecialType(child, wellKnownTypes.ParameterSpecialTypes) || HasExplicitNonRouteAttribute(child, wellKnownTypes.NonRouteMetadataTypes))
+                if (HasSpecialType(child, wellKnownTypes, RouteWellKnownTypes.ParameterSpecialTypes) || HasExplicitNonRouteAttribute(child, wellKnownTypes, RouteWellKnownTypes.NonRouteMetadataTypes))
                 {
                     continue;
                 }
-                else if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
+                else if (child.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
                 {
                     resolvedParameterSymbols.AddRange(ResolvedParametersCore(child.GetParameterType(), child, wellKnownTypes));
                 }
@@ -52,34 +53,25 @@ internal static class RoutePatternParametersDetector
         };
     }
 
-    private static bool HasSpecialType(ISymbol child, INamedTypeSymbol[] specialTypes)
+    private static bool HasSpecialType(ISymbol child, WellKnownTypes wellKnownTypes, WellKnownType[] specialTypes)
     {
         if (child.GetParameterType() is not INamedTypeSymbol type)
         {
             return false;
         }
 
-        foreach (var specialType in specialTypes)
-        {
-            if (type.IsType(specialType))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return wellKnownTypes.IsType(type, specialTypes);
     }
 
-    private static bool HasExplicitNonRouteAttribute(ISymbol child, INamedTypeSymbol[] allNoneRouteMetadataTypes)
+    private static bool HasExplicitNonRouteAttribute(ISymbol child, WellKnownTypes wellKnownTypes, WellKnownType[] allNoneRouteMetadataTypes)
     {
         foreach (var attributeData in child.GetAttributes())
         {
-            foreach (var nonRouteMetadata in allNoneRouteMetadataTypes)
+            var attributeClass = attributeData.AttributeClass;
+
+            if (wellKnownTypes.Implements(attributeClass, allNoneRouteMetadataTypes))
             {
-                if (attributeData.AttributeClass.Implements(nonRouteMetadata))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
