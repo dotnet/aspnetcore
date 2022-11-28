@@ -99,7 +99,6 @@ internal class WellKnownTypes
         "Microsoft.AspNetCore.Http.RequestDelegate",
         "System.Threading.Tasks.Task`1",
     };
-    private static readonly Dictionary<string, WellKnownType> _nameToTypeIdMap = new Dictionary<string, WellKnownType>(_wellKnownTypeNames.Length);
     
     public static WellKnownTypes GetOrCreate(Compilation compilation) =>
         _compilationToLazyWellKnownTypes.GetValue(compilation, static c => new WellKnownTypes(c));
@@ -115,7 +114,6 @@ internal class WellKnownTypes
         {
             var name = _wellKnownTypeNames[i];
             var typeId = (WellKnownType)i;
-            _nameToTypeIdMap.Add(name, typeId);
         }
     }
     
@@ -143,24 +141,28 @@ internal class WellKnownTypes
 
     private WellKnownTypes(Compilation compilation)
     {
-        _lazyWellKnownTypes = new INamedTypeSymbol?[_nameToTypeIdMap.Count];
+        _lazyWellKnownTypes = new INamedTypeSymbol?[_wellKnownTypeNames.Length];
         _compilation = compilation;
     }
 
     public INamedTypeSymbol Get(WellKnownType type)
     {
         var index = (int)type;
-        if (_lazyWellKnownTypes[index] is null)
+        var result = _lazyWellKnownTypes[index];
+        if (result is not null)
         {
-            var result = _compilation.GetTypeByMetadataName(_wellKnownTypeNames[index]);
-            if (result == null)
-            {
-                throw new InvalidOperationException($"Failed to resolve well-known type '{_wellKnownTypeNames[index]}'.");
-            }
-            
-            Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
+            return result;
         }
 
+        result = _compilation.GetTypeByMetadataName(_wellKnownTypeNames[index]);
+        if (result == null)
+        {
+            throw new InvalidOperationException($"Failed to resolve well-known type '{_wellKnownTypeNames[index]}'.");
+        }
+        Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
+
+        // GetTypeByMetadataName should always return the same instance for a name.
+        // To ensure we have a consistent value, for thread safety, return symbol from array.
         return _lazyWellKnownTypes[index]!;
     }
 
