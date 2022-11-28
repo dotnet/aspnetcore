@@ -23,10 +23,7 @@ public class TimeOnlyModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public TimeOnlyModelBinder(DateTimeStyles supportedStyles, ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory, nameof(loggerFactory));
 
         _supportedStyles = supportedStyles;
         _logger = loggerFactory.CreateLogger<TimeOnlyModelBinder>();
@@ -35,10 +32,7 @@ public class TimeOnlyModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext, nameof(bindingContext));
 
         _logger.AttemptingToBindModel(bindingContext);
 
