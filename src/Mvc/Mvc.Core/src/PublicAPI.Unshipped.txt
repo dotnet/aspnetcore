@@ -36,3 +36,15 @@ virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TO
 static Microsoft.AspNetCore.Mvc.ControllerBase.Empty.get -> Microsoft.AspNetCore.Mvc.EmptyResult!
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.ModelBinding.DefaultPropertyFilterProvider<TModel>.PropertyIncludeExpressions.get -> System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<TModel!, object!>!>!>?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.DefaultPropertyFilterProvider<TModel>.PropertyIncludeExpressions.get -> System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>!>?
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinder.DateOnlyModelBinder(System.Globalization.DateTimeStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinderProvider.DateOnlyModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateOnlyModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinder.TimeOnlyModelBinder(System.Globalization.DateTimeStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinderProvider.TimeOnlyModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TimeOnlyModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
