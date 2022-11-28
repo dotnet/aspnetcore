@@ -259,8 +259,24 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <ItemGroup>
       <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
-      <ReferenceCopyLocalPaths Include="@(RuntimePackageFiles)" Condition="'%(FileName)' == 'System.Formats.Asn1'"/>
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.FileName)' == '%(RuntimePackageFiles.FileName)' " />
+      <!--
+        Filter out any overlap between our SharedFx (ReferenceCopyLocalPaths) and dotnet/runtime's SharedFx (RuntimePackageFiles).
+        Most of the time there is no overlap, but in certain rare corner cases there can be.
+        See https://github.com/dotnet/aspnetcore/issues/45033 for more detail.
+      -->
+      <ReferenceCopyLocalPathsFileNames Include="%(ReferenceCopyLocalPaths.FileName)">
+        <OriginalIdentity>%(Identity)</OriginalIdentity>
+      </ReferenceCopyLocalPathsFileNames>
+      <RuntimePackageFilesFileNames Include="%(RuntimePackageFiles.FileName)" />
+    </ItemGroup>
+
+    <JoinItems Left="@(ReferenceCopyLocalPathsFileNames)" Right="@(RuntimePackageFilesFileNames)" LeftMetadata="*" RightMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="_SharedFxOverlap" />
+    </JoinItems>
+
+    <ItemGroup>
+      <ReferenceCopyLocalPathsOverlap Include="%(_SharedFxOverlap.OriginalIdentity)" />
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPathsOverlap)"/>
     </ItemGroup>
   </Target>
 
