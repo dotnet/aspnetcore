@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -109,12 +108,6 @@ internal class WellKnownTypes
     static WellKnownTypes()
     {
         AssertEnumAndTableInSync();
-
-        for (var i = 0; i < _wellKnownTypeNames.Length; i++)
-        {
-            var name = _wellKnownTypeNames[i];
-            var typeId = (WellKnownType)i;
-        }
     }
     
     [Conditional("DEBUG")]
