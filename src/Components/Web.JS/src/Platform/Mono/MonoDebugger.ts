@@ -34,7 +34,7 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
       if (!debugBuild && !hasReferencedPdbs) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
       } else if (!currentBrowserIsChromeOrEdge) {
-        console.error('Currently, only Microsoft Edge (80+), or Google Chrome, or Chromium, are supported for debugging.');
+        console.error('Currently, only Microsoft Edge (80+), Google Chrome, or Chromium, are supported for debugging.');
       } else {
         launchDebugger();
       }
