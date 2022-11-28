@@ -263,19 +263,19 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         Most of the time there is no overlap, but in certain rare corner cases there can be.
         See https://github.com/dotnet/aspnetcore/issues/45033 for more detail.
       -->
-      <ReferenceCopyLocalPathsFileNames Include="%(ReferenceCopyLocalPaths.FileName)">
+      <_ReferenceCopyLocalPathsFileNames Include="%(ReferenceCopyLocalPaths.FileName)">
         <OriginalIdentity>%(Identity)</OriginalIdentity>
-      </ReferenceCopyLocalPathsFileNames>
-      <RuntimePackageFilesFileNames Include="%(RuntimePackageFiles.FileName)" />
+      </_ReferenceCopyLocalPathsFileNames>
+      <_RuntimePackageFilesFileNames Include="%(RuntimePackageFiles.FileName)" />
     </ItemGroup>
 
-    <JoinItems Left="@(ReferenceCopyLocalPathsFileNames)" Right="@(RuntimePackageFilesFileNames)" LeftMetadata="*" RightMetadata="*">
+    <JoinItems Left="@(_ReferenceCopyLocalPathsFileNames)" Right="@(_RuntimePackageFilesFileNames)" LeftMetadata="*" RightMetadata="*">
       <Output TaskParameter="JoinResult" ItemName="_SharedFxOverlap" />
     </JoinItems>
 
     <ItemGroup>
-      <ReferenceCopyLocalPathsOverlap Include="%(_SharedFxOverlap.OriginalIdentity)" />
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPathsOverlap)"/>
+      <_ReferenceCopyLocalPathsOverlap Include="%(_SharedFxOverlap.OriginalIdentity)" />
+      <ReferenceCopyLocalPaths Remove="@(_ReferenceCopyLocalPathsOverlap)"/>
     </ItemGroup>
   </Target>
 
