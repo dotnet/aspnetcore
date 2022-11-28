@@ -397,7 +397,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="PrepareForCrossGen"
           Condition="'$(CrossgenOutput)' == 'true'"
-          DependsOnTargets="_ExpandRuntimePackageRoot">
+          DependsOnTargets="FilterUnwantedContent">
     <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
     <RemoveDir Directories="$(CrossgenPlatformAssembliesDir)" />
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
