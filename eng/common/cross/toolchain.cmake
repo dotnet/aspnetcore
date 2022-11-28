@@ -1,5 +1,12 @@
 set(CROSS_ROOTFS $ENV{ROOTFS_DIR})
 
+# reset platform variables (e.g. cmake 3.25 sets LINUX=1)
+unset(LINUX)
+unset(FREEBSD)
+unset(ILLUMOS)
+unset(ANDROID)
+unset(TIZEN)
+
 set(TARGET_ARCH_NAME $ENV{TARGET_BUILD_ARCH})
 if(EXISTS ${CROSS_ROOTFS}/bin/freebsd-version)
   set(CMAKE_SYSTEM_NAME FreeBSD)
