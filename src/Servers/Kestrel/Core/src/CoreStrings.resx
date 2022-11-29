@@ -720,9 +720,9 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>Responses to 'CONNECT' requests with the success status code '{StatusCode}' cannot have a response body. Use the 'IHttpExtendedConnectFeature' to accept and write to the 'CONNECT' stream.</value>
   </data>
   <data name="Http2DisabledWithHttp1AndNoTls" xml:space="preserve">
-    <value>Disabling HTTP/2 since TLS is disabled and HTTP/1.1 is available.</value>
+    <value>Disabling HTTP/2 for {endpoint} since TLS is disabled and HTTP/1.1 is available.</value>
   </data>
   <data name="Http3DisabledWithHttp1AndNoTls" xml:space="preserve">
-    <value>Disabling HTTP/3 since TLS is disabled and HTTP/1.1 is available.</value>
+    <value>Disabling HTTP/3 for {endpoint} since TLS is disabled and HTTP/1.1 is available.</value>
   </data>
 </root>
