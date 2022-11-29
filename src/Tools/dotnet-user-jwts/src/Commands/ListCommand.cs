@@ -19,16 +19,21 @@ internal sealed class ListCommand
                 Resources.ListCommand_ShowTokenOption_Description,
                 CommandOptionType.NoValue);
 
+            var outputOption = cmd.Option(
+                "-o|--output",
+                Resources.ListCommand_OutputOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), showTokensOption.HasValue());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), showTokensOption.HasValue(), outputOption.Value());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool showTokens)
+    private static int Execute(IReporter reporter, string projectPath, bool showTokens, string outputFormat)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
@@ -36,33 +41,42 @@ internal sealed class ListCommand
         }
         var jwtStore = new JwtStore(userSecretsId);
 
-        reporter.Output(Resources.FormatListCommand_Project(project));
-        reporter.Output(Resources.FormatListCommand_UserSecretsId(userSecretsId));
-
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
-            var table = new ConsoleTable(reporter);
-            table.AddColumns(Resources.JwtPrint_Id, Resources.JwtPrint_Scheme, Resources.JwtPrint_Audiences, Resources.JwtPrint_IssuedOn, Resources.JwtPrint_ExpiresOn);
-
-            if (showTokens)
+            switch (outputFormat)
             {
-                table.AddColumns(Resources.JwtPrint_Token);
-            }
+                case "json":
+                    reporter.Output(JsonSerializer.Serialize(jwts, new JsonSerializerOptions { WriteIndented = true }));
+                    break;
+                default:
+                    reporter.Output(Resources.FormatListCommand_Project(project));
+                    reporter.Output(Resources.FormatListCommand_UserSecretsId(userSecretsId));
 
-            foreach (var jwtRow in jwts)
-            {
-                var jwt = jwtRow.Value;
-                if (showTokens)
-                {
-                    table.AddRow(jwt.Id, jwt.Scheme, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"), jwt.Token);
-                }
-                else
-                {
-                    table.AddRow(jwt.Id, jwt.Scheme, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"));
-                }
-            }
+                    var table = new ConsoleTable(reporter);
 
-            table.Write();
+                    table.AddColumns(Resources.JwtPrint_Id, Resources.JwtPrint_Scheme, Resources.JwtPrint_Audiences, Resources.JwtPrint_IssuedOn, Resources.JwtPrint_ExpiresOn);
+
+                    if (showTokens)
+                    {
+                        table.AddColumns(Resources.JwtPrint_Token);
+                    }
+
+                    foreach (var jwtRow in jwts)
+                    {
+                        var jwt = jwtRow.Value;
+                        if (showTokens)
+                        {
+                            table.AddRow(jwt.Id, jwt.Scheme, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"), jwt.Token);
+                        }
+                        else
+                        {
+                            table.AddRow(jwt.Id, jwt.Scheme, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"));
+                        }
+                    }
+
+                    table.Write();
+                    break;
+            }
         }
         else
         {
