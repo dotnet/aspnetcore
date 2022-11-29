@@ -141,13 +141,20 @@ internal class WellKnownTypes
     public INamedTypeSymbol Get(WellKnownType type)
     {
         var index = (int)type;
-        var result = _lazyWellKnownTypes[index];
-        if (result is not null)
+        var symbol = _lazyWellKnownTypes[index];
+        if (symbol is not null)
         {
-            return result;
+            return symbol;
         }
 
-        result = _compilation.GetTypeByMetadataName(WellKnownTypeNames[index]);
+        // Symbol hasn't been added to the cache yet.
+        // Resolve symbol from name, cache, and return.
+        return GetAndCache(index);
+    }
+
+    private INamedTypeSymbol GetAndCache(int index)
+    {
+        var result = _compilation.GetTypeByMetadataName(WellKnownTypeNames[index]);
         if (result == null)
         {
             throw new InvalidOperationException($"Failed to resolve well-known type '{WellKnownTypeNames[index]}'.");
@@ -155,7 +162,7 @@ internal class WellKnownTypes
         Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
 
         // GetTypeByMetadataName should always return the same instance for a name.
-        // To ensure we have a consistent value, for thread safety, return symbol from array.
+        // To ensure we have a consistent value, for thread safety, return symbol set in the array.
         return _lazyWellKnownTypes[index]!;
     }
 
