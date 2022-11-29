@@ -12,13 +12,16 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -63,7 +66,7 @@ public static partial class RequestDelegateFactory
     private static readonly PropertyInfo FormFilesIndexerProperty = typeof(IFormFileCollection).GetProperty("Item")!;
     private static readonly PropertyInfo FormIndexerProperty = typeof(IFormCollection).GetProperty("Item")!;
 
-    private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo JsonResultOfTWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -1102,14 +1105,13 @@ public static partial class RequestDelegateFactory
         {
             throw GetUnsupportedReturnTypeException(returnType);
         }
-        else if (returnType.IsValueType)
-        {
-            var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box);
-        }
+        //else if (returnType.IsValueType)
+        //{
+        //    return Expression.Call(JsonResultOfTWriteResponseAsyncMethod.MakeGenericMethod(returnType), HttpResponseExpr, methodCall);
+        //}
         else
         {
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall);
+            return Expression.Call(JsonResultOfTWriteResponseAsyncMethod.MakeGenericMethod(returnType), HttpResponseExpr, methodCall);
         }
     }
 
@@ -2241,13 +2243,29 @@ public static partial class RequestDelegateFactory
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
     }
 
-    private static Task WriteJsonResponse(HttpResponse response, object? value)
+    private static Task WriteJsonResponse<T>(HttpResponse response, T? value)
     {
+        // waiting for https://github.com/dotnet/runtime/issues/77051
+
+        if (value is null)
+        {
+            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, typeof(object), default);
+        }
+
+        var declaredType = typeof(T);
+        var options = response.HttpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        var jsonTypeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(declaredType);
+
+        if (declaredType.IsValueType || jsonTypeInfo.PolymorphismOptions is not null)
+        {
+            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
+        }
+
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value is null ? typeof(object) : value.GetType(), default);
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value.GetType(), default);
 
     }
 
