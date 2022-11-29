@@ -68,13 +68,19 @@ internal sealed class LocalhostListenOptions : ListenOptions
         var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
         {
             KestrelServerOptions = KestrelServerOptions,
-            Protocols = Protocols,
             DisableAltSvcHeader = DisableAltSvcHeader,
             IsTls = IsTls,
             HttpsOptions = HttpsOptions,
             HttpsCallbackOptions = HttpsCallbackOptions,
             EndpointConfig = EndpointConfig
         };
+
+        // Don't propagate Protocols unless it was set explicitly
+        // (otherwise, the clone will flag the default value as set explicitly)
+        if (ProtocolsSetExplicitly)
+        {
+            options.Protocols = Protocols;
+        }
 
         options._middleware.AddRange(_middleware);
         options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
