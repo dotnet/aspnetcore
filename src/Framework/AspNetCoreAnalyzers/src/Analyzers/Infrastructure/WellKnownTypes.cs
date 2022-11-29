@@ -3,8 +3,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -55,8 +55,8 @@ internal enum WellKnownType
 
 internal class WellKnownTypes
 {
-    private static readonly ConditionalWeakTable<Compilation, WellKnownTypes> _compilationToLazyWellKnownTypes = new();
-    private static readonly string[] _wellKnownTypeNames = new[]
+    private static readonly BoundedCacheWithFactory<Compilation, WellKnownTypes> LazyWellKnownTypesCache = new();
+    private static readonly string[] WellKnownTypeNames = new[]
     {
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
         "Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata",
@@ -100,7 +100,7 @@ internal class WellKnownTypes
     };
     
     public static WellKnownTypes GetOrCreate(Compilation compilation) =>
-        _compilationToLazyWellKnownTypes.GetValue(compilation, static c => new WellKnownTypes(c));
+        LazyWellKnownTypesCache.GetOrCreateValue(compilation, static c => new WellKnownTypes(c));
     
     private readonly INamedTypeSymbol?[] _lazyWellKnownTypes;
     private readonly Compilation _compilation;
@@ -113,9 +113,9 @@ internal class WellKnownTypes
     [Conditional("DEBUG")]
     private static void AssertEnumAndTableInSync()
     {
-        for (var i = 0; i < _wellKnownTypeNames.Length; i++)
+        for (var i = 0; i < WellKnownTypeNames.Length; i++)
         {
-            var name = _wellKnownTypeNames[i];
+            var name = WellKnownTypeNames[i];
             var typeId = (WellKnownType)i;
 
             var typeIdName = typeId.ToString().Replace("__", "+").Replace('_', '.');
@@ -134,7 +134,7 @@ internal class WellKnownTypes
 
     private WellKnownTypes(Compilation compilation)
     {
-        _lazyWellKnownTypes = new INamedTypeSymbol?[_wellKnownTypeNames.Length];
+        _lazyWellKnownTypes = new INamedTypeSymbol?[WellKnownTypeNames.Length];
         _compilation = compilation;
     }
 
@@ -147,10 +147,10 @@ internal class WellKnownTypes
             return result;
         }
 
-        result = _compilation.GetTypeByMetadataName(_wellKnownTypeNames[index]);
+        result = _compilation.GetTypeByMetadataName(WellKnownTypeNames[index]);
         if (result == null)
         {
-            throw new InvalidOperationException($"Failed to resolve well-known type '{_wellKnownTypeNames[index]}'.");
+            throw new InvalidOperationException($"Failed to resolve well-known type '{WellKnownTypeNames[index]}'.");
         }
         Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
 
