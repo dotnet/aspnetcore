@@ -2566,7 +2566,7 @@
             }
           }
         ],
-        "taskName": "Assign `Current Milestone` to PRs merged to main"
+        "taskName": "[Milestone Assignments] Assign `Current Milestone` to PRs merged to main"
       }
     },
     {
@@ -3357,6 +3357,126 @@
             "name": "addReply",
             "parameters": {
               "comment": "Hi @${issueAuthor}. This PR was just approved to be included in the upcoming servicing release. Somebody from the @dotnet/aspnet-build team will get it merged when the branches are open. Until then, please make sure all the CI checks pass and the PR is reviewed."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/3.1"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/3.1 branch",
+        "actions": [
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "3.1.33"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/6.0"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch",
+        "actions": [
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "6.0.13"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/7.0"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch",
+        "actions": [
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "7.0.3"
             }
           }
         ]
