@@ -32,6 +32,7 @@
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\Servers\\HttpSys\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks.csproj",
       "src\\Servers\\HttpSys\\samples\\HotAddSample\\HotAddSample.csproj",
       "src\\Servers\\HttpSys\\samples\\QueueSharing\\QueueSharing.csproj",
       "src\\Servers\\HttpSys\\samples\\SelfHostServer\\SelfHostServer.csproj",

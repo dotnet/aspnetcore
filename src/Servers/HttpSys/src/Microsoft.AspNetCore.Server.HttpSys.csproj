@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
@@ -39,8 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.FunctionalTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.NonHelixTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks" />
   </ItemGroup>
 
   <ItemGroup>
