@@ -41,6 +41,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.FunctionalTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.NonHelixTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks" />
   </ItemGroup>
 
   <ItemGroup>

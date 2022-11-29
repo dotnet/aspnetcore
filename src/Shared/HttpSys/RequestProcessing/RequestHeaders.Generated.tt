@@ -168,8 +168,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 <# foreach(var prop in length) { #>
                     if (string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.Ordinal))
                     {
-                        if ((<#=IsRead(prop.Index)#> && <#=prop.Name#>.Count > 0)
-                            || (!<#=IsRead(prop.Index)#> && HasKnownHeader(<#=prop.ID#>)))
+                        if (HasKnownHeader(<#=prop.ID#>))
                         {
                             <#=prop.Name#> = StringValues.Empty;
                             return true;
@@ -213,5 +212,28 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
 <# } #>
         }
+
+        private static ReadOnlySpan<byte> HeaderKeys => new byte[]
+        {
+<# foreach(var prop in props) { #>
+            (byte)<#=prop.ID#>,
+<# } #>
+        };
+
+        private string GetHeaderKeyName(HttpSysRequestHeader header) => header switch
+        {
+<# foreach(var prop in props) { #>
+            <#=prop.ID#> => HeaderNames.<#=prop.Name#>,
+<# } #>
+            _ => throw new NotImplementedException()
+        };
+
+        private bool HasKnownHeader(HttpSysRequestHeader header) => header switch
+        {
+<# foreach(var prop in props) { #>
+            <#=prop.ID#> => <#=IsRead(prop.Index)#> ? _<#=prop.Name#>.Count > 0 : _requestMemoryBlob.HasKnownHeader(<#=prop.ID#>),
+<# } #>
+            _ => throw new NotImplementedException()
+        };
     }
 }
