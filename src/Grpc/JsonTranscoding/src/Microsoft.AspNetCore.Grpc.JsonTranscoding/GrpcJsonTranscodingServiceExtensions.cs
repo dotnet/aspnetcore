@@ -29,7 +29,8 @@ public static class GrpcJsonTranscodingServiceExtensions
         }
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
-        builder.Services.AddSingleton<DescriptorRegistry>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
+        builder.Services.TryAddSingleton<DescriptorRegistry>();
 
         return builder;
     }
@@ -48,14 +49,27 @@ public static class GrpcJsonTranscodingServiceExtensions
         }
 
         builder.Services.Configure(configureOptions);
-        builder.Services.AddTransient<IConfigureOptions<GrpcJsonTranscodingOptions>>(services =>
-        {
-            return new ConfigureOptions<GrpcJsonTranscodingOptions>(options =>
-            {
-                options.DescriptorRegistry = services.GetRequiredService<DescriptorRegistry>();
-            });
-        });
 
         return builder.AddJsonTranscoding();
+    }
+
+    internal sealed class GrpcJsonTranscodingOptionsSetup : IConfigureOptions<GrpcJsonTranscodingOptions>
+    {
+        private readonly DescriptorRegistry _descriptorRegistry;
+
+        public GrpcJsonTranscodingOptionsSetup(DescriptorRegistry descriptorRegistry)
+        {
+            _descriptorRegistry = descriptorRegistry;
+        }
+
+        public void Configure(GrpcJsonTranscodingOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            options.DescriptorRegistry = _descriptorRegistry;
+        }
     }
 }
