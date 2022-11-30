@@ -3476,7 +3476,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.3"
+              "milestoneName": "7.0.2"
             }
           }
         ]
