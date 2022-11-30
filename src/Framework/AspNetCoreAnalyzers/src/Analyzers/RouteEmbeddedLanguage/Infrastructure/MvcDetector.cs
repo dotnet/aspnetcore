@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -42,12 +43,12 @@ internal static class MvcDetector
 
         // Check name before attribute's for performance.
         if (!typeSymbol.Name.EndsWith(ControllerTypeNameSuffix, StringComparison.OrdinalIgnoreCase) &&
-            !typeSymbol.HasAttribute(wellKnownTypes.ControllerAttribute))
+            !typeSymbol.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_ControllerAttribute)))
         {
             return false;
         }
 
-        if (typeSymbol.HasAttribute(wellKnownTypes.NonControllerAttribute))
+        if (typeSymbol.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_NonControllerAttribute)))
         {
             return false;
         }
@@ -97,7 +98,7 @@ internal static class MvcDetector
             return false;
         }
 
-        if (methodSymbol.HasAttribute(wellKnownTypes.NonActionAttribute))
+        if (methodSymbol.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_NonControllerAttribute)))
         {
             return false;
         }

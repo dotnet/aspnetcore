@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -30,15 +31,15 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
     {
         var returnType = UnwrapPossibleAsyncReturnType(methodSymbol.ReturnType);
 
-        if (wellKnownTypes.IResult.IsAssignableFrom(returnType))
+        if (wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IResult).IsAssignableFrom(returnType))
         {
             // This type returns some form of IResult. Nothing to do here.
             return;
         }
 
         if (methodBody is null &&
-            (wellKnownTypes.IActionResult.IsAssignableFrom(returnType) ||
-            wellKnownTypes.IConvertToActionResult.IsAssignableFrom(returnType)))
+            (wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_IActionResult).IsAssignableFrom(returnType) ||
+            wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_Infrastructure_IConvertToActionResult).IsAssignableFrom(returnType)))
         {
             // if we don't have a method body, and the action is IResult or ActionResult<T> returning, produce diagnostics for the entire method.
             context.ReportDiagnostic(Diagnostic.Create(
@@ -68,12 +69,12 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            if (wellKnownTypes.IResult.IsAssignableFrom(type))
+            if (wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IResult).IsAssignableFrom(type))
             {
                 continue;
             }
 
-            if (wellKnownTypes.IActionResult.IsAssignableFrom(type))
+            if (wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_IActionResult).IsAssignableFrom(type))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,

@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -31,14 +32,14 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         var cancellationToken = context.CancellationToken;
 
         var root = syntaxTree.GetRoot(cancellationToken);
-        WellKnownTypes? wellKnownTypes = null;
-        Analyze(context, root, ref wellKnownTypes, cancellationToken);
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
+        Analyze(context, root, wellKnownTypes, cancellationToken);
     }
 
     private void Analyze(
         SemanticModelAnalysisContext context,
         SyntaxNode node,
-        ref WellKnownTypes? wellKnownTypes,
+        WellKnownTypes wellKnownTypes,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -47,7 +48,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         {
             if (child.IsNode)
             {
-                Analyze(context, child.AsNode()!, ref wellKnownTypes, cancellationToken);
+                Analyze(context, child.AsNode()!, wellKnownTypes, cancellationToken);
             }
             else
             {
@@ -55,11 +56,6 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                 if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken, out var _))
                 {
                     continue;
-                }
-
-                if (wellKnownTypes == null && !WellKnownTypes.TryGetOrCreate(context.SemanticModel.Compilation, out wellKnownTypes))
-                {
-                    return;
                 }
 
                 var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, wellKnownTypes, cancellationToken);
