@@ -53,7 +53,7 @@ public static class GrpcJsonTranscodingServiceExtensions
         return builder.AddJsonTranscoding();
     }
 
-    internal sealed class GrpcJsonTranscodingOptionsSetup : IConfigureOptions<GrpcJsonTranscodingOptions>
+    private sealed class GrpcJsonTranscodingOptionsSetup : IConfigureOptions<GrpcJsonTranscodingOptions>
     {
         private readonly DescriptorRegistry _descriptorRegistry;
 
