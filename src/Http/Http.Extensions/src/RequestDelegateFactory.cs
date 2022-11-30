@@ -281,6 +281,7 @@ public static partial class RequestDelegateFactory
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             EndpointBuilder = endpointBuilder,
             MetadataAlreadyInferred = metadataResult is not null,
+            JsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions,
         };
 
         return factoryContext;
@@ -999,25 +1000,22 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType == typeof(object))
         {
-            var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
             return Expression.Call(ExecuteAwaitedReturnMethod, methodCall, HttpContextExpr,
-                Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
         }
         else if (returnType == typeof(ValueTask<object>))
         {
-            var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
             return Expression.Call(ExecuteValueTaskOfObjectMethod,
                 methodCall,
                 HttpContextExpr,
-                Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
         }
         else if (returnType == typeof(Task<object>))
         {
-            var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
             return Expression.Call(ExecuteTaskOfObjectMethod,
                 methodCall,
                 HttpContextExpr,
-                Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
         }
         else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
         {
@@ -1053,12 +1051,11 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
                     return Expression.Call(
                         ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                        Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
                 }
             }
             else if (returnType.IsGenericType &&
@@ -1083,12 +1080,11 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
                     return Expression.Call(
                         ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                        Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
                 }
             }
             else
@@ -1116,16 +1112,14 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType.IsValueType)
         {
-            var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
             var box = Expression.TypeAs(methodCall, typeof(object));
             return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box,
-                Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
         }
         else
         {
-            var serializerOptions = factoryContext.ServiceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
             return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall,
-                Expression.Constant(serializerOptions, typeof(JsonSerializerOptions)));
+                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
         }
     }
 
@@ -1206,7 +1200,8 @@ public static partial class RequestDelegateFactory
                     parameterTypeName,
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
-                    factoryContext.ThrowOnBadRequest);
+                    factoryContext.ThrowOnBadRequest,
+                    factoryContext.JsonSerializerOptions);
 
                 if (!successful)
                 {
@@ -1230,7 +1225,8 @@ public static partial class RequestDelegateFactory
                     parameterTypeName,
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
-                    factoryContext.ThrowOnBadRequest);
+                    factoryContext.ThrowOnBadRequest,
+                    factoryContext.JsonSerializerOptions);
 
                 if (!successful)
                 {
@@ -1247,7 +1243,8 @@ public static partial class RequestDelegateFactory
             string parameterTypeName,
             string parameterName,
             bool allowEmptyRequestBody,
-            bool throwOnBadRequest)
+            bool throwOnBadRequest,
+            JsonSerializerOptions? jsonSerializerOptions)
         {
             object? defaultBodyValue = null;
 
@@ -1269,7 +1266,7 @@ public static partial class RequestDelegateFactory
                 }
                 try
                 {
-                    bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType, jsonSerializerOptions);
                 }
                 catch (IOException ex)
                 {

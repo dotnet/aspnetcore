@@ -3,6 +3,7 @@
 
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -56,4 +57,7 @@ internal sealed class RequestDelegateFactoryContext
     public bool FilterFactoriesHaveRunWithoutModifyingPerRequestBehavior { get; set; }
 
     public List<ParameterInfo> Parameters { get; set; } = new();
+
+    // Grab these options upfront to avoid the per request DI scope that would be made otherwise to get the options when writing Json
+    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
 }
