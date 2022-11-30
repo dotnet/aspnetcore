@@ -59,7 +59,8 @@ public class ConnectionDispatcherTests : LoggedTest
     {
         var serviceContext = new TestServiceContext(LoggerFactory);
 
-        var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, _ => Task.CompletedTask, new TransportConnectionManager(serviceContext.ConnectionManager));
+        var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, _ => Task.CompletedTask, new TransportConnectionManager(serviceContext.ConnectionManager),
+            new(new IPEndPoint(IPAddress.Any, 80)));
 
         await dispatcher.StartAcceptingConnections(new ThrowingListener());
 
