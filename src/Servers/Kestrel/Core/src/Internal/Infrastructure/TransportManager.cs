@@ -35,7 +35,7 @@ internal sealed class TransportManager
     private ConnectionManager ConnectionManager => _serviceContext.ConnectionManager;
     private KestrelTrace Trace => _serviceContext.Log;
 
-    public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)
+    public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, ListenOptions listenOptions, CancellationToken cancellationToken)
     {
         if (_transportFactories.Count == 0)
         {
@@ -48,7 +48,7 @@ internal sealed class TransportManager
             if (CanBindFactory(endPoint, selector))
             {
                 var transport = await transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
-                StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
+                StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), listenOptions);
                 return transport.EndPoint;
             }
         }
@@ -102,7 +102,7 @@ internal sealed class TransportManager
             if (CanBindFactory(endPoint, selector))
             {
                 var transport = await multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
-                StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
+                StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions);
                 return transport.EndPoint;
             }
         }
@@ -160,13 +160,13 @@ internal sealed class TransportManager
         public override ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
 
-    private void StartAcceptLoop<T>(IConnectionListener<T> connectionListener, Func<T, Task> connectionDelegate, EndpointConfig? endpointConfig) where T : BaseConnectionContext
+    private void StartAcceptLoop<T>(IConnectionListener<T> connectionListener, Func<T, Task> connectionDelegate, ListenOptions listenOptions) where T : BaseConnectionContext
     {
         var transportConnectionManager = new TransportConnectionManager(_serviceContext.ConnectionManager);
-        var connectionDispatcher = new ConnectionDispatcher<T>(_serviceContext, connectionDelegate, transportConnectionManager);
+        var connectionDispatcher = new ConnectionDispatcher<T>(_serviceContext, connectionDelegate, transportConnectionManager, listenOptions);
         var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(connectionListener);
 
-        _transports.Add(new ActiveTransport(connectionListener, acceptLoopTask, transportConnectionManager, endpointConfig));
+        _transports.Add(new ActiveTransport(connectionListener, acceptLoopTask, transportConnectionManager, listenOptions.EndpointConfig));
     }
 
     public Task StopEndpointsAsync(List<EndpointConfig> endpointsToStop, CancellationToken cancellationToken)

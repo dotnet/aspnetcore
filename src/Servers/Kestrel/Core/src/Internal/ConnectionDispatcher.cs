@@ -13,12 +13,15 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
     private readonly Func<T, Task> _connectionDelegate;
     private readonly TransportConnectionManager _transportConnectionManager;
     private readonly TaskCompletionSource _acceptLoopTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly int _concurrentAccepts;
 
-    public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager)
+    public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager,
+        ListenOptions listenOptions)
     {
         _serviceContext = serviceContext;
         _connectionDelegate = connectionDelegate;
         _transportConnectionManager = transportConnectionManager;
+        _concurrentAccepts = Math.Max(listenOptions.MaxAccepts, 1); // treat non-positive as "1";
     }
 
     private KestrelTrace Log => _serviceContext.Log;
@@ -31,8 +34,10 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
     private void StartAcceptingConnectionsCore(IConnectionListener<T> listener)
     {
-        // REVIEW: Multiple accept loops in parallel?
-        _ = AcceptConnectionsAsync();
+        for (var i = 0; i < _concurrentAccepts; i++)
+        {
+            _ = AcceptConnectionsAsync();
+        }
 
         async Task AcceptConnectionsAsync()
         {

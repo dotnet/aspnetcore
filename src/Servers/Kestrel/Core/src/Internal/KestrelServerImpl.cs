@@ -204,7 +204,7 @@ internal sealed class KestrelServerImpl : IServer
                     // Add the connection limit middleware
                     connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                    options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
+                    options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, connectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
                 }
 
                 if (hasHttp3 && _multiplexedTransportFactories.Count > 0)

@@ -112,6 +112,12 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     internal TlsHandshakeCallbackOptions? HttpsCallbackOptions { get; set; }
 
     /// <summary>
+    /// The maximum number of concurrent accepts.
+    /// The default is the number of processors as returned by <see cref="Environment.ProcessorCount" />.
+    /// </summary>
+    public int MaxAccepts { get; set; } = Environment.ProcessorCount; // note: HttpSysOptions.MaxAccepts uses 5 * {proccount}; we can be a *little* less aggressive
+
+    /// <summary>
     /// Gets the name of this endpoint to display on command-line when the web server starts.
     /// </summary>
     internal virtual string GetDisplayName()
