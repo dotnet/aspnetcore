@@ -2154,6 +2154,7 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteTaskWithEmptyResult(Task task)
     {
+        Debug.Assert(EmptyHttpResultInstance is not null);
         static async ValueTask<object?> ExecuteAwaited(Task task)
         {
             await task;
@@ -2170,6 +2171,7 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteValueTaskWithEmptyResult(ValueTask valueTask)
     {
+        Debug.Assert(EmptyHttpResultInstance is not null);
         static async ValueTask<object?> ExecuteAwaited(ValueTask task)
         {
             await task;
