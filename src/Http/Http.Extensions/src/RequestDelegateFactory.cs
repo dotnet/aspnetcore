@@ -270,6 +270,7 @@ public static partial class RequestDelegateFactory
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder(serviceProvider);
+        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -281,7 +282,8 @@ public static partial class RequestDelegateFactory
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             EndpointBuilder = endpointBuilder,
             MetadataAlreadyInferred = metadataResult is not null,
-            JsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions,
+            JsonSerializerOptions = jsonSerializerOptions,
+            JsonSerializerOptionsExpression = Expression.Constant(jsonSerializerOptions, typeof(JsonSerializerOptions)),
         };
 
         return factoryContext;
@@ -1000,22 +1002,19 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType == typeof(object))
         {
-            return Expression.Call(ExecuteAwaitedReturnMethod, methodCall, HttpContextExpr,
-                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+            return Expression.Call(ExecuteAwaitedReturnMethod, methodCall, HttpContextExpr, factoryContext.JsonSerializerOptionsExpression);
         }
         else if (returnType == typeof(ValueTask<object>))
         {
             return Expression.Call(ExecuteValueTaskOfObjectMethod,
                 methodCall,
-                HttpContextExpr,
-                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+                HttpContextExpr, factoryContext.JsonSerializerOptionsExpression);
         }
         else if (returnType == typeof(Task<object>))
         {
             return Expression.Call(ExecuteTaskOfObjectMethod,
                 methodCall,
-                HttpContextExpr,
-                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+                HttpContextExpr, factoryContext.JsonSerializerOptionsExpression);
         }
         else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
         {
@@ -1055,7 +1054,7 @@ public static partial class RequestDelegateFactory
                         ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+                        factoryContext.JsonSerializerOptionsExpression);
                 }
             }
             else if (returnType.IsGenericType &&
@@ -1084,7 +1083,7 @@ public static partial class RequestDelegateFactory
                         ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+                        factoryContext.JsonSerializerOptionsExpression);
                 }
             }
             else
@@ -1113,13 +1112,11 @@ public static partial class RequestDelegateFactory
         else if (returnType.IsValueType)
         {
             var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box,
-                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, factoryContext.JsonSerializerOptionsExpression);
         }
         else
         {
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall,
-                Expression.Constant(factoryContext.JsonSerializerOptions, typeof(JsonSerializerOptions)));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression);
         }
     }
 
