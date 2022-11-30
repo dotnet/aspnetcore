@@ -98,7 +98,18 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
         var httpContext = CreateHttpContext();
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    var response = await next(context);
+                    Assert.IsType<EmptyHttpResult>(response);
+                    return response;
+                }
+            }),
+        });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
