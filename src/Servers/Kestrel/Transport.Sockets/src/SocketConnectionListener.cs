@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
-internal sealed class SocketConnectionListener : IConnectionListener
+internal sealed class SocketConnectionListener : IConnectionListener, IConcurrentConnectionListener
 {
     private readonly SocketConnectionContextFactory _factory;
     private readonly ILogger _logger;
@@ -18,6 +18,7 @@ internal sealed class SocketConnectionListener : IConnectionListener
     private readonly SocketTransportOptions _options;
 
     public EndPoint EndPoint { get; private set; }
+    int IConcurrentConnectionListener.MaxAccepts => int.MaxValue; // not restricted
 
     internal SocketConnectionListener(
         EndPoint endpoint,

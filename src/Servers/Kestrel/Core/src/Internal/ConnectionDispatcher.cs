@@ -13,7 +13,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
     private readonly Func<T, Task> _connectionDelegate;
     private readonly TransportConnectionManager _transportConnectionManager;
     private readonly TaskCompletionSource _acceptLoopTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly int _concurrentAccepts;
+    private readonly int _maxAccepts;
 
     public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager,
         ListenOptions listenOptions)
@@ -21,7 +21,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
         _serviceContext = serviceContext;
         _connectionDelegate = connectionDelegate;
         _transportConnectionManager = transportConnectionManager;
-        _concurrentAccepts = Math.Max(listenOptions.MaxAccepts, 1); // treat non-positive as "1";
+        _maxAccepts = listenOptions.MaxAccepts;
     }
 
     private KestrelTrace Log => _serviceContext.Log;
@@ -34,7 +34,13 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
     private void StartAcceptingConnectionsCore(IConnectionListener<T> listener)
     {
-        for (var i = 0; i < _concurrentAccepts; i++)
+        int concurrency = 1, exited = 0;
+        if (listener is IConcurrentConnectionListener concurrent)
+        {
+            concurrency = Math.Clamp(_maxAccepts, 1, concurrent.MaxAccepts);
+        }
+
+        for (var i = 0; i < concurrency; i++)
         {
             _ = AcceptConnectionsAsync();
         }
@@ -73,7 +79,13 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
             }
             finally
             {
-                _acceptLoopTcs.TrySetResult();
+                // don't decr concurrency - that has a race if things fail
+                // while we're still spinning up; instead, track exited count
+                // explicitly, and compare to that
+                if (Interlocked.Increment(ref exited) == concurrency)
+                {   // last listener has dropped
+                    _acceptLoopTcs.TrySetResult();
+                }
             }
         }
     }

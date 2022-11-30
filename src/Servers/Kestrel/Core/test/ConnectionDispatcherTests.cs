@@ -54,17 +54,21 @@ public class ConnectionDispatcherTests : LoggedTest
         Assert.True(testLogger.Scopes.IsEmpty);
     }
 
-    [Fact]
-    public async Task StartAcceptingConnectionsAsyncLogsIfAcceptAsyncThrows()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public async Task StartAcceptingConnectionsAsyncLogsIfAcceptAsyncThrows(int concurrency)
     {
         var serviceContext = new TestServiceContext(LoggerFactory);
 
         var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, _ => Task.CompletedTask, new TransportConnectionManager(serviceContext.ConnectionManager),
             new(new IPEndPoint(IPAddress.Any, 80)));
 
-        await dispatcher.StartAcceptingConnections(new ThrowingListener());
+        await dispatcher.StartAcceptingConnections(new ThrowingListener(concurrency));
 
-        var critical = TestSink.Writes.SingleOrDefault(m => m.LogLevel == LogLevel.Critical);
+        var criticalList = TestSink.Writes.Where(m => m.LogLevel == LogLevel.Critical).ToList();
+        Assert.Equal(concurrency, criticalList.Count);
+        var critical = criticalList.FirstOrDefault();
         Assert.NotNull(critical);
         Assert.IsType<InvalidOperationException>(critical.Exception);
         Assert.Equal("Unexpected error listening", critical.Exception.Message);
@@ -116,9 +120,14 @@ public class ConnectionDispatcherTests : LoggedTest
         Assert.Equal("An error occurred running an IConnectionCompleteFeature.OnCompleted callback.", errors[0].Message);
     }
 
-    private class ThrowingListener : IConnectionListener<ConnectionContext>
+    private class ThrowingListener : IConnectionListener<ConnectionContext>, IConcurrentConnectionListener
     {
+        private readonly int _concurrency;
+        public ThrowingListener(int concurrency) => _concurrency = concurrency;
+
         public EndPoint EndPoint { get; set; }
+
+        public int MaxAccepts => _concurrency;
 
         public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
