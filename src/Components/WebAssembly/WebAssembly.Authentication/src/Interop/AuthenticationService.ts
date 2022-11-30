@@ -304,7 +304,7 @@ class OidcAuthorizeService implements AuthorizeService {
         } catch (error) {
             const message = this.getExceptionMessage(error);
             this.debug(`Complete sign out error '${message}'`);
-            return this.error(error);
+            return this.error(message);
         }
     }
 
