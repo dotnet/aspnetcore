@@ -28,8 +28,8 @@ internal static class CookieHeaderParserShared
             {
                 if (TryParseValue(value, ref index, supportsMultipleValues, out var parsedName, out var parsedValue))
                 {
-                    if (parsedName == null || string.IsNullOrEmpty(parsedName.Value.Value)
-                        || parsedValue == null || string.IsNullOrEmpty(parsedValue.Value.Value))
+                    if (parsedName == null || StringSegment.IsNullOrEmpty(parsedName.Value)
+                        || parsedValue == null || StringSegment.IsNullOrEmpty(parsedValue.Value))
                     {
                         // Successfully parsed, but no values.
                         continue;
