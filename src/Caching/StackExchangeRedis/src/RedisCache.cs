@@ -681,6 +681,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
             var firstErrorTime = ReadTimeTicks(ref _firstErrorTimeTicks);
             if (firstErrorTime == DateTimeOffset.MinValue)
             {
+                // note: order/timing here (between the two fields) is not critical
                 WriteTimeTicks(ref _firstErrorTimeTicks, utcNow);
                 WriteTimeTicks(ref _previousErrorTimeTicks, utcNow);
                 return;
