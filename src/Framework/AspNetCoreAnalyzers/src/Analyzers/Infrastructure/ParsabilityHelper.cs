@@ -15,7 +15,6 @@ internal static class ParsabilityHelper
 {
     private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
-        
         // Any enum is valid.
         if (typeSymbol.TypeKind == TypeKind.Enum)
         {
