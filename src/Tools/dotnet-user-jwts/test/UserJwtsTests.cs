@@ -94,7 +94,6 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     public void List_ReturnsIdForGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
-        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--scheme", "MyCustomScheme" });
@@ -102,6 +101,40 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         app.Run(new[] { "list", "--project", project });
         Assert.Contains("MyCustomScheme", _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_ReturnsIdForGeneratedToken_WithJsonFormat()
+    {
+        var schemeName = "MyCustomScheme";
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--scheme", schemeName });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+        _console.ClearOutput();
+
+        app.Run(new[] { "list", "--project", project, "--output", "json" });
+        var output = _console.GetOutput();
+        var deserialized = JsonSerializer.Deserialize<Dictionary<string, Jwt>>(output);
+
+        var jwt = deserialized[id];
+
+        Assert.NotNull(deserialized);
+        Assert.Equal(schemeName, jwt.Scheme);
+    }
+
+    [Fact]
+    public void List_ReturnsEmptyListWhenNoTokens_WithJsonFormat()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "list", "--project", project, "--output", "json" });
+        var output = _console.GetOutput();
+
+        Assert.Equal("[]\n", output);
     }
 
     [Fact]
@@ -267,6 +300,26 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"Name: {Environment.UserName}", output);
         Assert.Contains($"Scheme: {DevJwtsDefaults.Scheme}", output);
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
+    }
+
+    [Fact]
+    public void PrintCommand_ShowsBasicOptions_WithJsonFormat()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+        _console.ClearOutput();
+
+        app.Run(new[] { "print", id, "--project", project, "--output", "json" });
+        var output = _console.GetOutput();
+        var deserialized = JsonSerializer.Deserialize<Jwt>(output);
+
+        Assert.Equal(Environment.UserName, deserialized.Name);
+        Assert.Equal(DevJwtsDefaults.Scheme, deserialized.Scheme);
+        Assert.Equal($"http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", deserialized.Audience);
     }
 
     [Fact]
