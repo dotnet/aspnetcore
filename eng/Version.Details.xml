@@ -244,7 +244,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>686b81b44342e719432b36f3116014beb6790000</Sha>
+      <Sha>97203d38ba734d76d39984c5206f2747f792fa89</Sha>
     </Dependency>
     <Dependency Name="System.Threading.AccessControl" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
