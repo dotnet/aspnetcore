@@ -15,6 +15,7 @@ using Grpc.Core;
 using Grpc.Shared;
 using Grpc.Shared.Server;
 using Grpc.Tests.Shared;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
@@ -341,7 +342,7 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
         var jsonSettings = jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
-        var jsonContext = new JsonContext(jsonSettings, jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty);
+        var jsonContext = new JsonContext(jsonSettings, jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty, new DescriptorRegistry());
 
         return new ServerStreamingServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse>(
             callInvoker,
