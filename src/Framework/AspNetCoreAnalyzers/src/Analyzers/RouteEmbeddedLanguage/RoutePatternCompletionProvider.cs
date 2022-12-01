@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
@@ -102,10 +103,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
-        {
-            return;
-        }
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
 
         var (methodSymbol, _, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, wellKnownTypes, context.CancellationToken);
 

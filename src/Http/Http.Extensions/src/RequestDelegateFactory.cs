@@ -2283,7 +2283,8 @@ public static partial class RequestDelegateFactory
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value?.GetType() ?? typeof(object), options, default);
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value is null ? typeof(object) : value.GetType(), options, default);
+
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
