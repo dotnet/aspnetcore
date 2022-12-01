@@ -46,8 +46,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var parameterTypeSymbol = ResovleParameterTypeSymbol(handlerDelegateParameter);
 
             // If the parameter is one of the special request delegate types we can skip it.
-            if (RouteWellKnownTypes.ParameterSpecialTypes.Any(specialWellKnownType => SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(specialWellKnownType), parameterTypeSymbol)))
-            {
+            if (wellKnownTypes.IsType(parameterTypeSymbol, RouteWellKnownTypes.ParameterSpecialTypes))
+            { 
                 continue;
             }
 

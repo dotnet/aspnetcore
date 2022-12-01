@@ -30,30 +30,4 @@ internal static class RouteWellKnownTypes
         WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata,
         WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata,
     };
-
-    public static readonly WellKnownType[] NumericTypes = new[]
-    {
-        WellKnownType.System_SByte,
-        WellKnownType.System_Int16,
-        WellKnownType.System_Int32,
-        WellKnownType.System_Int64,
-        WellKnownType.System_Byte,
-        WellKnownType.System_UInt16,
-        WellKnownType.System_UInt32,
-        WellKnownType.System_UInt64,
-        WellKnownType.System_Single,
-        WellKnownType.System_Double,
-        WellKnownType.System_Half,
-        WellKnownType.System_Decimal,
-        WellKnownType.System_IntPtr,
-        WellKnownType.System_Numerics_BigInteger
-    };
-
-    public static readonly WellKnownType[] TemporalTypes = new[]
-    {
-        WellKnownType.System_DateTime,
-        WellKnownType.System_DateTimeOffset,
-        WellKnownType.System_DateOnly,
-        WellKnownType.System_TimeOnly
-    };
 }

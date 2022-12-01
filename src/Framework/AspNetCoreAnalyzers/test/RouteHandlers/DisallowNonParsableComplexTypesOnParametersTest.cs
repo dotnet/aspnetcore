@@ -10,7 +10,7 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
-public partial class DisallowNonParsableComplexTypesOnParameters
+public partial class DisallowNonParsableComplexTypesOnParametersTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 

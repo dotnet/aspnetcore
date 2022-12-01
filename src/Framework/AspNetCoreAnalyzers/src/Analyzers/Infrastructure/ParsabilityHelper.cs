@@ -33,18 +33,6 @@ internal static class ParsabilityHelper
             return true;
         }
 
-        // Numerics are valid.
-        if (RouteWellKnownTypes.NumericTypes.Any(wkt => SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Get(wkt))))
-        {
-            return true;
-        }
-
-        // Temporals are valid.
-        if (RouteWellKnownTypes.TemporalTypes.Any(wkt => SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Get(wkt))))
-        {
-            return true;
-        }
-
         return false;
     }
 
@@ -159,7 +147,7 @@ internal static class ParsabilityHelper
         }
 
         var bindAsyncMethods = typeSymbol.GetMembers("BindAsync").OfType<IMethodSymbol>();
-        foreach (IMethodSymbol methodSymbol in bindAsyncMethods)
+        foreach (var methodSymbol in bindAsyncMethods)
         {
             if (IsBindAsync(methodSymbol, typeSymbol, wellKnownTypes) || IsBindAsyncWithParameter(methodSymbol, typeSymbol, wellKnownTypes))
             {
