@@ -38,8 +38,8 @@
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
   <String Id="SuccessRepairHeader">La riparazione è stata completata</String>
   <String Id="SuccessUninstallHeader">La disinstallazione è stata completata</String>
-  <String Id="SuccessInstallHeader">L'installazione è stata completata</String> 
-  <String Id="SuccessHeader">L'installazione è stata completata</String>	
+  <String Id="SuccessInstallHeader">L'installazione è stata completata</String>
+  <String Id="SuccessHeader">L'installazione è stata completata</String>
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
   <String Id="SuccessRestartText">Per poter usare il software, è necessario riavviare il computer.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
@@ -47,7 +47,7 @@
   <String Id="FailureHeader">L'installazione non è riuscita</String>
   <String Id="FailureInstallHeader">L'installazione non è riuscita</String>
   <String Id="FailureUninstallHeader">La disinstallazione non è riuscita</String>
-  <String Id="FailureRepairHeader">La riparazione non è riuscita</String> 
+  <String Id="FailureRepairHeader">La riparazione non è riuscita</String>
   <String Id="FailureHyperlinkLogText">L'installazione non è riuscita a causa di uno o più problemi. Risolvere i problemi e ripetere l'installazione. Per altre informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Per completare il rollback del software, è necessario riavviare il computer.</String>
   <String Id="FailureRestartButton">&amp;Riavvia</String>
@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Installazione di [WixBundleName].</String>
-  <String Id="InstallResetIIS">Riavviare IIS dopo il completamento dell'installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS non è abilitato in questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Riavviare IIS dopo il completamento dell'installazione. Per altre informazioni, vedere &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS non è abilitato in questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Per altre informazioni, vedere &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;informativa sulla privacy&lt;/a&gt; di [WixBundleName].</String>
-  <String Id="ModifyResetIIS">Riavviare IIS dopo il completamento dell'installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS non è abilitato in questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Riavviare IIS dopo il completamento dell'installazione. Per altre informazioni, vedere &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS non è abilitato in questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Per altre informazioni, vedere &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
 </WixLocalization>

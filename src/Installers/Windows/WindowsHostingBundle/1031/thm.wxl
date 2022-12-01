@@ -38,8 +38,8 @@
   <String Id="ModifyCloseButton">S&amp;chließen</String>
   <String Id="SuccessRepairHeader">Die Reparatur wurde erfolgreich abgeschlossen.</String>
   <String Id="SuccessUninstallHeader">Die Deinstallation wurde erfolgreich abgeschlossen.</String>
-  <String Id="SuccessInstallHeader">Die Installation wurde erfolgreich abgeschlossen.</String> 
-  <String Id="SuccessHeader">Setup wurde erfolgreich abgeschlossen</String>	
+  <String Id="SuccessInstallHeader">Die Installation wurde erfolgreich abgeschlossen.</String>
+  <String Id="SuccessHeader">Setup wurde erfolgreich abgeschlossen</String>
   <String Id="SuccessLaunchButton">&amp;Starten</String>
   <String Id="SuccessRestartText">Sie müssen den Computer neu starten, bevor Sie die Software verwenden können.</String>
   <String Id="SuccessRestartButton">&amp;Neu starten</String>
@@ -47,7 +47,7 @@
   <String Id="FailureHeader">Setupfehler</String>
   <String Id="FailureInstallHeader">Setupfehler</String>
   <String Id="FailureUninstallHeader">Deinstallationsfehler</String>
-  <String Id="FailureRepairHeader">Reparaturfehler</String> 
+  <String Id="FailureRepairHeader">Reparaturfehler</String>
   <String Id="FailureHyperlinkLogText">Setup ist aufgrund eines oder mehrerer Probleme fehlgeschlagen. Beheben Sie die Probleme, und führen Sie das Setup erneut aus. Weitere Informationen finden Sie in der &lt;a href="#"&gt;Protokolldatei&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Sie müssen den Computer neu starten, um das Zurücksetzen der Software abzuschließen.</String>
   <String Id="FailureRestartButton">&amp;Neu starten</String>
@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Willkommen beim Setup von [WixBundleName].</String>
-  <String Id="InstallResetIIS">Starten Sie IIS nach Abschluss der Installation neu. Zusätzliche Informationen finden Sie &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;hier&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS ist auf diesem Computer nicht aktiviert. Wenn Sie ASP.NET Core-Anwendungen mit IIS ausführen möchten, müssen Sie IIS installieren, bevor Sie diesen Installer ausführen. Zusätzliche Informationen finden Sie &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;hier&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Starten Sie IIS nach Abschluss der Installation neu. Zusätzliche Informationen finden Sie &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;hier&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS ist auf diesem Computer nicht aktiviert. Wenn Sie ASP.NET Core-Anwendungen mit IIS ausführen möchten, müssen Sie IIS installieren, bevor Sie diesen Installer ausführen. Zusätzliche Informationen finden Sie &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;hier&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Lizenzbedingungen&lt;/a&gt; und &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;Datenschutzerklärung&lt;/a&gt; für [WixBundleName].</String>
-  <String Id="ModifyResetIIS">Starten Sie IIS nach Abschluss der Installation neu. Zusätzliche Informationen finden Sie &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;hier&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS ist auf diesem Computer nicht aktiviert. Wenn Sie ASP.NET Core-Anwendungen mit IIS ausführen möchten, müssen Sie IIS installieren, bevor Sie diesen Installer ausführen. Zusätzliche Informationen finden Sie &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;hier&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Starten Sie IIS nach Abschluss der Installation neu. Zusätzliche Informationen finden Sie &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;hier&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS ist auf diesem Computer nicht aktiviert. Wenn Sie ASP.NET Core-Anwendungen mit IIS ausführen möchten, müssen Sie IIS installieren, bevor Sie diesen Installer ausführen. Zusätzliche Informationen finden Sie &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;hier&lt;/a&gt;.</String>
 </WixLocalization>
