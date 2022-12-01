@@ -36,7 +36,7 @@ internal static class CookieHeaderParserShared
                     }
 
                     // The entry may not contain an actual value, like " , "
-                    store[parsedName.Value.Value] = Uri.UnescapeDataString(parsedValue.Value.Value);
+                    store[parsedName.Value.Value!] = Uri.UnescapeDataString(parsedValue.Value.Value!);
                     hasFoundValue = true;
                 }
                 else
