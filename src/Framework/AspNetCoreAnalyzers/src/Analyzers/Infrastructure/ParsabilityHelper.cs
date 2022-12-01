@@ -113,6 +113,7 @@ internal static class ParsabilityHelper
 
         return implementsIParsable;
     }
+
     private static bool IsBindableViaIBindableFromHttpContext(ITypeSymbol typeSymbol)
     {
         var implementsIBindableFromHttpContext = typeSymbol.AllInterfaces.Any(
