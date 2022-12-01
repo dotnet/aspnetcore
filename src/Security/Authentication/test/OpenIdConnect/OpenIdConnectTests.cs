@@ -480,7 +480,7 @@ public class OpenIdConnectTests
         Assert.Equal(OpenIdConnectDefaults.CookieNoncePrefix, options.NonceCookie.Name);
         Assert.True(options.NonceCookie.IsEssential);
         Assert.True(options.NonceCookie.HttpOnly);
-        Assert.Equal(CookieSecurePolicy.SameAsRequest, options.NonceCookie.SecurePolicy);
+        Assert.Equal(CookieSecurePolicy.Always, options.NonceCookie.SecurePolicy);
         Assert.Equal(TimeSpan.FromMinutes(1), options.BackchannelTimeout);
     }
 

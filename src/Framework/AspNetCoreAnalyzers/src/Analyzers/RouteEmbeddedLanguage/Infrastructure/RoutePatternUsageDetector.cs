@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -156,8 +157,8 @@ internal static class RoutePatternUsageDetector
         // IEndpointRouteBuilder may be removed from symbol because the method is called as an extension method.
         // ReducedFrom includes the original IEndpointRouteBuilder parameter.
         if (!(method.ReducedFrom ?? method).Parameters.Any(
-            a => SymbolEqualityComparer.Default.Equals(a.Type, wellKnownTypes.IEndpointRouteBuilder) ||
-                a.Type.Implements(wellKnownTypes.IEndpointRouteBuilder)))
+            a => SymbolEqualityComparer.Default.Equals(a.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Routing_IEndpointRouteBuilder)) ||
+                a.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Routing_IEndpointRouteBuilder))))
         {
             return null;
         }
