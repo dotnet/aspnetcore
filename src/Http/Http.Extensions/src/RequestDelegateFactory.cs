@@ -2272,12 +2272,12 @@ public static partial class RequestDelegateFactory
             jsonTypeInfo.Type.IsValueType ||
             jsonTypeInfo.Type == value?.GetType()))
         {
-            // waiting for https://github.com/dotnet/runtime/issues/77051
-
             // In this case the polymorphism is not
-            // relevant for us and will be handled by STJ.
+            // relevant for us and will be handled by STJ, if needed.
             return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, (JsonTypeInfo<T>)jsonTypeInfo, default);
         }
+
+        // We cannot use JsonTypeInfo here, waiting for https://github.com/dotnet/runtime/issues/77051
 
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.

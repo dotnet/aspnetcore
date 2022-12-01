@@ -43,6 +43,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             };
         }
 
+        // TODO: Verify
         jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
         jsonSerializerOptions.MakeReadOnly();
 
@@ -73,6 +74,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
 
         var httpContext = context.HttpContext;
 
+        // Maybe we could use the jsontypeinfo overload but we need the untyped,
         // waiting for https://github.com/dotnet/runtime/issues/77051
 
         // context.ObjectType reflects the declared model type when specified.
