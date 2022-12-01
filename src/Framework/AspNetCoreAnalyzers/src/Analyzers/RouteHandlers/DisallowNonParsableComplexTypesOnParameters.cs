@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
+using System;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
@@ -47,19 +47,21 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             // If the parameter is one of the special request delegate types we can skip it.
             if (wellKnownTypes.IsType(parameterTypeSymbol, RouteWellKnownTypes.ParameterSpecialTypes))
-            { 
+            {
                 continue;
             }
 
+            var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
+            var location = syntax.GetLocation();
+
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
-            if (parser.TryGetRouteParameter(handlerDelegateParameter.Name, out RouteParameter routeParameter))
+            if (parser.TryGetRouteParameter(handlerDelegateParameter.Name, out var routeParameter))
             {
                 if (!(ParsabilityHelper.IsTypeParsable(parameterTypeSymbol, wellKnownTypes) || ParsabilityHelper.IsTypeBindable(parameterTypeSymbol, wellKnownTypes)))
                 {
-                    var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
                     context.ReportDiagnostic(Diagnostic.Create(
                         DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
-                        syntax.GetLocation(),
+                        location,
                         routeParameter.Name,
                         parameterTypeSymbol.Name
                         ));
@@ -68,47 +70,56 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var fromHeaderAttributeTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_FromHeaderAttribute);
-            if (handlerDelegateParameter.HasAttribute(fromHeaderAttributeTypeSymbol) && !ParsabilityHelper.IsTypeParsable(parameterTypeSymbol, wellKnownTypes))
+            if (ReportFromAttributeDiagnostic(
+                context,
+                WellKnownType.Microsoft_AspNetCore_Mvc_FromHeaderAttribute,
+                DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
+                wellKnownTypes,
+                handlerDelegateParameter,
+                parameterTypeSymbol,
+                location,
+                ParsabilityHelper.IsTypeParsable
+                )) { continue; }
+
+            if (ReportFromAttributeDiagnostic(
+                context,
+                WellKnownType.Microsoft_AspNetCore_Mvc_FromQueryAttribute,
+                DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
+                wellKnownTypes,
+                handlerDelegateParameter,
+                parameterTypeSymbol,
+                location,
+                ParsabilityHelper.IsTypeParsable
+                )) { continue; }
+
+            if (ReportFromAttributeDiagnostic(
+                context,
+                WellKnownType.Microsoft_AspNetCore_Mvc_FromBodyAttribute,
+                DiagnosticDescriptors.RouteHandlerParamterComplexTypeIsNotBindable,
+                wellKnownTypes,
+                handlerDelegateParameter,
+                parameterTypeSymbol,
+                location,
+                ParsabilityHelper.IsTypeBindable
+                )) { continue; }
+        }
+
+        static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromAttributeType, DiagnosticDescriptor descriptor, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location, Func<ITypeSymbol, WellKnownTypes, bool> check)
+        {
+            var fromAttributeTypeSymbol = wellKnownTypes.Get(fromAttributeType);
+            if (parameter.HasAttribute(fromAttributeTypeSymbol) && !check(parameterTypeSymbol, wellKnownTypes))
             {
-                var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
                 context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
-                    syntax.GetLocation(),
-                    routeParameter.Name,
+                    descriptor,
+                    location,
+                    parameter.Name,
                     parameterTypeSymbol.Name
                     ));
 
-                continue;
+                return true;
             }
 
-            var fromQueryAttributeTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_FromQueryAttribute);
-            if (handlerDelegateParameter.HasAttribute(fromQueryAttributeTypeSymbol) && !ParsabilityHelper.IsTypeParsable(parameterTypeSymbol, wellKnownTypes))
-            {
-                var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
-                context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
-                    syntax.GetLocation(),
-                    handlerDelegateParameter.Name,
-                    parameterTypeSymbol.Name
-                    ));
-
-                continue;
-            }
-
-            var fromBodyAttributeTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_FromBodyAttribute);
-            if (handlerDelegateParameter.HasAttribute(fromBodyAttributeTypeSymbol) && !ParsabilityHelper.IsTypeBindable(parameterTypeSymbol, wellKnownTypes))
-            {
-                var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
-                context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.RouteHandlerParamterComplexTypeIsNotBindable,
-                    syntax.GetLocation(),
-                    handlerDelegateParameter.Name,
-                    parameterTypeSymbol.Name
-                    ));
-
-                continue;
-            }
+            return false;
         }
 
         static INamedTypeSymbol ResovleParameterTypeSymbol(IParameterSymbol parameterSymbol)

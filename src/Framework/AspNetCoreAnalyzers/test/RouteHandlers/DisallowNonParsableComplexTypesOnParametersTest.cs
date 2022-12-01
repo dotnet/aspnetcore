@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using Microsoft.AspNetCore.Analyzer.Testing;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier<Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer>;
 
@@ -188,7 +184,7 @@ webApp.MapGet("/", (int[] id) => {});
     }
 
     [Fact]
-    public  async Task Route_Parameter_withNonParsableComplexType_Fails()
+    public async Task Route_Parameter_withNonParsableComplexType_Fails()
     {
         // Arrange
         var source = $$"""

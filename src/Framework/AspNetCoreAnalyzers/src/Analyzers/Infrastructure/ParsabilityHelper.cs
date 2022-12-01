@@ -36,7 +36,7 @@ internal static class ParsabilityHelper
         return false;
     }
 
-    internal static bool IsTypeParsable(INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    internal static bool IsTypeParsable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes))
         {
