@@ -12,7 +12,7 @@
   <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]répertoire[\]] - installe, répare, désinstalle ou
    crée une copie locale complète du bundle dans le répertoire. Install est l'option par défaut.
 
-/passive | /quiet -  affiche une interface utilisateur minimale, sans invite, ou n'affiche 
+/passive | /quiet -  affiche une interface utilisateur minimale, sans invite, ou n'affiche
    ni interface utilisateur, ni invite. Par défaut, l'interface utilisateur et toutes les invites sont affichées.
 
 /norestart   - supprime toutes les tentatives de redémarrage. Par défaut, l'interface utilisateur affiche une invite avant le redémarrage.
@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Bienvenue dans le programme d'installation de [WixBundleName].</String>
-  <String Id="InstallResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://aka.ms/aspnet/7.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://aka.ms/aspnet/7.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;termes du contrat de licence&lt;/a&gt; et &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;déclaration de confidentialité&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://aka.ms/aspnet/7.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://aka.ms/aspnet/7.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
 </WixLocalization>
