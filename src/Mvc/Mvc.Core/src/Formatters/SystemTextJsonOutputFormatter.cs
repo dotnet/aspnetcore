@@ -5,6 +5,7 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -41,6 +42,9 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             };
         }
+
+        jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
+        jsonSerializerOptions.MakeReadOnly();
 
         return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
     }

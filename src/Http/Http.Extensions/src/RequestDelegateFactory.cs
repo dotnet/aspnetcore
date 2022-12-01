@@ -273,6 +273,13 @@ public static partial class RequestDelegateFactory
         var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
 
+        // TODO: Verify
+        if (jsonSerializerOptions is not null)
+        {
+            jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
+            jsonSerializerOptions.MakeReadOnly();
+        }
+
         var factoryContext = new RequestDelegateFactoryContext
         {
             Handler = handler,
@@ -1003,19 +1010,19 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType == typeof(object))
         {
-            return Expression.Call(ExecuteAwaitedReturnMethod, methodCall, HttpContextExpr, factoryContext.JsonSerializerOptionsExpression);
+            return Expression.Call(ExecuteAwaitedReturnMethod, methodCall, HttpContextExpr, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(null, typeof(JsonTypeInfo)));
         }
         else if (returnType == typeof(ValueTask<object>))
         {
             return Expression.Call(ExecuteValueTaskOfObjectMethod,
                 methodCall,
-                HttpContextExpr, factoryContext.JsonSerializerOptionsExpression);
+                HttpContextExpr, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(null, typeof(JsonTypeInfo)));
         }
         else if (returnType == typeof(Task<object>))
         {
             return Expression.Call(ExecuteTaskOfObjectMethod,
                 methodCall,
-                HttpContextExpr, factoryContext.JsonSerializerOptionsExpression);
+                HttpContextExpr, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(null, typeof(JsonTypeInfo)));
         }
         else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
         {
@@ -1051,11 +1058,14 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
+                    var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(typeArg);
+
                     return Expression.Call(
                         ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        factoryContext.JsonSerializerOptionsExpression);
+                        factoryContext.JsonSerializerOptionsExpression,
+                        Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
                 }
             }
             else if (returnType.IsGenericType &&
@@ -1080,11 +1090,13 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
+                    var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(typeArg);
                     return Expression.Call(
                         ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        factoryContext.JsonSerializerOptionsExpression);
+                        factoryContext.JsonSerializerOptionsExpression,
+                        Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
                 }
             }
             else
@@ -1110,14 +1122,15 @@ public static partial class RequestDelegateFactory
         {
             throw GetUnsupportedReturnTypeException(returnType);
         }
-        else if (returnType.IsValueType)
-        {
-            var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, factoryContext.JsonSerializerOptionsExpression);
-        }
+        //else if (returnType.IsValueType)
+        //{
+        //    var box = Expression.TypeAs(methodCall, typeof(object));
+        //    return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, factoryContext.JsonSerializerOptionsExpression);
+        //}
         else
         {
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression);
+            var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(returnType);
+            return Expression.Call(JsonResultOfTWriteResponseAsyncMethod.MakeGenericMethod(returnType), HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
         }
     }
 
@@ -2054,37 +2067,37 @@ public static partial class RequestDelegateFactory
     // if necessary and restart the cycle until we've reached a terminal state (unknown type).
     // We currently don't handle Task<unknown> or ValueTask<unknown>. We can support this later if this
     // ends up being a common scenario.
-    private static Task ExecuteValueTaskOfObject(ValueTask<object> valueTask, HttpContext httpContext, JsonSerializerOptions? options)
+    private static Task ExecuteValueTaskOfObject(ValueTask<object> valueTask, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(ValueTask<object> valueTask, HttpContext httpContext, JsonSerializerOptions? options)
+        static async Task ExecuteAwaited(ValueTask<object> valueTask, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
         {
-            await ExecuteAwaitedReturn(await valueTask, httpContext, options);
+            await ExecuteAwaitedReturn(await valueTask, httpContext, options, jsonTypeInfo);
         }
 
         if (valueTask.IsCompletedSuccessfully)
         {
-            return ExecuteAwaitedReturn(valueTask.GetAwaiter().GetResult(), httpContext, options);
+            return ExecuteAwaitedReturn(valueTask.GetAwaiter().GetResult(), httpContext, options, jsonTypeInfo);
         }
 
-        return ExecuteAwaited(valueTask, httpContext, options);
+        return ExecuteAwaited(valueTask, httpContext, options, jsonTypeInfo);
     }
 
-    private static Task ExecuteTaskOfObject(Task<object> task, HttpContext httpContext, JsonSerializerOptions? options)
+    private static Task ExecuteTaskOfObject(Task<object> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(Task<object> task, HttpContext httpContext, JsonSerializerOptions? options)
+        static async Task ExecuteAwaited(Task<object> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
         {
-            await ExecuteAwaitedReturn(await task, httpContext, options);
+            await ExecuteAwaitedReturn(await task, httpContext, options, jsonTypeInfo);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return ExecuteAwaitedReturn(task.GetAwaiter().GetResult(), httpContext, options);
+            return ExecuteAwaitedReturn(task.GetAwaiter().GetResult(), httpContext, options, jsonTypeInfo);
         }
 
-        return ExecuteAwaited(task, httpContext, options);
+        return ExecuteAwaited(task, httpContext, options, jsonTypeInfo);
     }
 
-    private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext, JsonSerializerOptions? options)
+    private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
         // Terminal built ins
         if (obj is IResult result)
@@ -2099,25 +2112,25 @@ public static partial class RequestDelegateFactory
         else
         {
             // Otherwise, we JSON serialize when we reach the terminal state
-            return WriteJsonResponse(httpContext.Response, obj, options);
+            return WriteJsonResponse(httpContext.Response, obj, options, jsonTypeInfo);
         }
     }
 
-    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options)
+    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
         EnsureRequestTaskNotNull(task);
 
-        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options)
+        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
         {
-            await WriteJsonResponse(httpContext.Response, await task, options);
+            await WriteJsonResponse(httpContext.Response, await task, options, jsonTypeInfo);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), options);
+            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), options, jsonTypeInfo);
         }
 
-        return ExecuteAwaited(task, httpContext, options);
+        return ExecuteAwaited(task, httpContext, options, jsonTypeInfo);
     }
 
     private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
@@ -2193,19 +2206,19 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(valueTask);
     }
 
-    private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options)
+    private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options)
+        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
         {
-            await WriteJsonResponse(httpContext.Response, await task, options);
+            await WriteJsonResponse(httpContext.Response, await task, options, jsonTypeInfo);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), options);
+            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), options, jsonTypeInfo);
         }
 
-        return ExecuteAwaited(task, httpContext, options);
+        return ExecuteAwaited(task, httpContext, options, jsonTypeInfo);
     }
 
     private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
@@ -2252,30 +2265,25 @@ public static partial class RequestDelegateFactory
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
     }
 
-    private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions? options)
+    private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
-        // waiting for https://github.com/dotnet/runtime/issues/77051
-
-        if (value is null)
+        if (jsonTypeInfo is not null &&
+            (jsonTypeInfo.PolymorphismOptions is not null ||
+            jsonTypeInfo.Type.IsValueType ||
+            jsonTypeInfo.Type == value?.GetType()))
         {
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, typeof(object), default);
-        }
+            // waiting for https://github.com/dotnet/runtime/issues/77051
 
-        var declaredType = typeof(T);
-        var options = response.HttpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
-        var jsonTypeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(declaredType);
-
-        if (declaredType.IsValueType || jsonTypeInfo.PolymorphismOptions is not null)
-        {
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
+            // In this case the polymorphism is not
+            // relevant for us and will be handled by STJ.
+            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, (JsonTypeInfo<T>)jsonTypeInfo, default);
         }
 
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value.GetType(), options, default);
-
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value?.GetType() ?? typeof(object), options, default);
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
