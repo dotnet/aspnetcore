@@ -114,13 +114,6 @@ internal static class CookieHeaderParserShared
         // If we have a separator, skip the separator and all following whitespaces. If we support
         // empty values, continue until the current character is neither a separator nor a whitespace.
         separatorFound = true;
-
-        //We accept single separator, but separator at the end of a value is ignored.
-        if (input.Length > 1 && current + 1 == input.Length)
-        {
-            return current;
-        }
-
         current++; // skip delimiter.
         current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
