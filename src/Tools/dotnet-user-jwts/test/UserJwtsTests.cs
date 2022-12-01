@@ -134,7 +134,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "list", "--project", project, "--output", "json" });
         var output = _console.GetOutput();
 
-        Assert.Equal("[]\n", output);
+        Assert.Equal("[]", output.Trim());
     }
 
     [Fact]
