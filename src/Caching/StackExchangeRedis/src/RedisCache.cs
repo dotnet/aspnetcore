@@ -85,13 +85,13 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private static DateTimeOffset ReadTimeTicks(ref long field)
     {
-        var ticks = Interlocked.Read(ref field); // avoid torn values
+        var ticks = Volatile.Read(ref field); // avoid torn values
         return ticks == 0 ? DateTimeOffset.MinValue : new DateTimeOffset(ticks, TimeSpan.Zero);
     }
     private static void WriteTimeTicks(ref long field, DateTimeOffset value)
     {
         var ticks = value == DateTimeOffset.MinValue ? 0L : value.UtcTicks;
-        Interlocked.Exchange(ref field, ticks); // avoid torn values
+        Volatile.Write(ref field, ticks); // avoid torn values
     }
 
     /// <summary>
@@ -367,7 +367,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private void PrepareConnection(IConnectionMultiplexer connection)
     {
-        Interlocked.Exchange(ref _lastConnectTicks, DateTimeOffset.UtcNow.UtcTicks);
+        WriteTimeTicks(ref _lastConnectTicks, DateTimeOffset.UtcNow);
         ValidateServerFeatures(connection);
         TryRegisterProfiler(connection);
     }
