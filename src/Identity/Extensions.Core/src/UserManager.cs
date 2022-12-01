@@ -2486,7 +2486,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 return validate;
             }
         }
-        var hash = newPassword != null ? PasswordHasher.HashPassword(user, newPassword) : null;
+        var hash = newPassword ?? PasswordHasher.HashPassword(user, newPassword);
         await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken).ConfigureAwait(false);
         await UpdateSecurityStampInternal(user).ConfigureAwait(false);
         return IdentityResult.Success;
