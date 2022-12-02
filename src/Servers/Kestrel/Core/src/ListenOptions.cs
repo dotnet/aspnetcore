@@ -18,8 +18,9 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 {
     internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2AndHttp3;
 
-    internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
-    internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
+    private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+    private readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
+    private HttpProtocols _protocols = DefaultHttpProtocols;
 
     internal ListenOptions(EndPoint endPoint)
     {
@@ -73,8 +74,6 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     /// Only set if accessed from the callback of a <see cref="KestrelServerOptions"/> Listen* method.
     /// </summary>
     public KestrelServerOptions KestrelServerOptions { get; internal set; } = default!; // Set via ConfigureKestrel callback
-
-    private HttpProtocols _protocols = DefaultHttpProtocols;
 
     /// <summary>
     /// The protocols enabled on this endpoint.
@@ -205,5 +204,30 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
         await AddressBinder.BindEndpointAsync(this, context, cancellationToken).ConfigureAwait(false);
         context.Addresses.Add(GetDisplayName());
+    }
+
+    /// <summary>
+    /// used for cloning to two IPEndpoints
+    /// </summary>
+    /// <remarks>
+    /// Internal for testing
+    /// </remarks>
+    protected internal ListenOptions Clone(IPAddress address)
+    {
+        var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
+        {
+            KestrelServerOptions = KestrelServerOptions,
+            _protocols = _protocols, // Avoid side-effects from setting Protocols
+            ProtocolsSetExplicitly = ProtocolsSetExplicitly,
+            DisableAltSvcHeader = DisableAltSvcHeader,
+            IsTls = IsTls,
+            HttpsOptions = HttpsOptions,
+            HttpsCallbackOptions = HttpsCallbackOptions,
+            EndpointConfig = EndpointConfig
+        };
+
+        options._middleware.AddRange(_middleware);
+        options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
+        return options;
     }
 }

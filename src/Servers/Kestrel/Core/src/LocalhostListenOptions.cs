@@ -61,29 +61,4 @@ internal sealed class LocalhostListenOptions : ListenOptions
         // The port cannot change for "localhost".
         context.Addresses.Add(GetDisplayName());
     }
-
-    // used for cloning to two IPEndpoints
-    internal ListenOptions Clone(IPAddress address)
-    {
-        var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
-        {
-            KestrelServerOptions = KestrelServerOptions,
-            DisableAltSvcHeader = DisableAltSvcHeader,
-            IsTls = IsTls,
-            HttpsOptions = HttpsOptions,
-            HttpsCallbackOptions = HttpsCallbackOptions,
-            EndpointConfig = EndpointConfig
-        };
-
-        // Don't propagate Protocols unless it was set explicitly
-        // (otherwise, the clone will flag the default value as set explicitly)
-        if (ProtocolsSetExplicitly)
-        {
-            options.Protocols = Protocols;
-        }
-
-        options._middleware.AddRange(_middleware);
-        options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
-        return options;
-    }
 }
