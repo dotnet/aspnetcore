@@ -76,32 +76,18 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         // Maybe we could use the jsontypeinfo overload but we need the untyped,
         // waiting for https://github.com/dotnet/runtime/issues/77051
 
-        static Type GetSerializationType(object? content, Type? declaredType, JsonSerializerOptions options)
+        var declaredType = context.ObjectType;
+        var runtimeType = context.Object?.GetType();
+        var objectType = runtimeType ?? declaredType ?? typeof(object);
+
+        if (declaredType is not null &&
+            runtimeType != declaredType &&
+            SerializerOptions.GetTypeInfo(declaredType).PolymorphismOptions is not null)
         {
-            // context.ObjectType reflects the declared model type when specified.
-            // For polymorphic scenarios where the user declares a return type, but returns a derived type,
-            // we want to serialize all the properties on the derived type. This keeps parity with
-            // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
-
-            if (content is null)
-            {
-                return declaredType ?? typeof(object);
-            }
-
-            var runtimeType = content.GetType();
-
-            if (declaredType is not null &&
-                runtimeType != declaredType &&
-                options.GetTypeInfo(declaredType).PolymorphismOptions is not null)
-            {
-                // Using declared type in this case. The polymorphism is not
-                // relevant for us and will be handled by STJ, if needed.
-                return declaredType;
-            }
-            return runtimeType;
+            // Using declared type in this case. The polymorphism is not
+            // relevant for us and will be handled by STJ, if needed.
+            objectType = declaredType;
         }
-
-        var objectType = GetSerializationType(context.Object, context.ObjectType, SerializerOptions);
 
         var responseStream = httpContext.Response.Body;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
