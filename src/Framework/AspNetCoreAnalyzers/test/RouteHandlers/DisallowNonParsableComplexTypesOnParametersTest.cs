@@ -21,10 +21,7 @@ webApp.MapGet(""/{name}"", (string name) => {});
 ";
 
         // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source);
-
-        // Assert
-        Assert.Empty(diagnostics);
+        await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
