@@ -48,6 +48,24 @@ public class ListenOptionsTests
     }
 
     [Fact]
+    public void ClonePreservesProtocolsSetExplicitly()
+    {
+        var localhostListenOptions = new LocalhostListenOptions(1004);
+        Assert.False(localhostListenOptions.ProtocolsSetExplicitly);
+
+        var clone1 = localhostListenOptions.Clone(IPAddress.IPv6Loopback);
+        Assert.False(clone1.ProtocolsSetExplicitly);
+        Assert.Equal(localhostListenOptions.Protocols, clone1.Protocols);
+
+        localhostListenOptions.Protocols = HttpProtocols.Http1;
+        Assert.True(localhostListenOptions.ProtocolsSetExplicitly);
+
+        var clone2 = localhostListenOptions.Clone(IPAddress.IPv6Loopback);
+        Assert.True(clone2.ProtocolsSetExplicitly);
+        Assert.Equal(localhostListenOptions.Protocols, clone2.Protocols);
+    }
+
+    [Fact]
     public void ListenOptionsSupportsAnyEndPoint()
     {
         var listenOptions = new ListenOptions(new UriEndPoint(new Uri("http://127.0.0.1:5555")));
