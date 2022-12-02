@@ -76,13 +76,18 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         // Maybe we could use the jsontypeinfo overload but we need the untyped,
         // waiting for https://github.com/dotnet/runtime/issues/77051
 
+        var runtimeType = context.Object?.GetType();
+
         // context.ObjectType reflects the declared model type when specified.
         // For polymorphic scenarios where the user declares a return type, but returns a derived type,
         // we want to serialize all the properties on the derived type. This keeps parity with
         // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
-        var objectType = context.Object?.GetType() ?? context.ObjectType ?? typeof(object);
+        var objectType = runtimeType ?? context.ObjectType ?? typeof(object);
 
-        if (context.ObjectType is not null && SerializerOptions.GetTypeInfo(context.ObjectType).PolymorphismOptions is not null)
+        if (runtimeType is not null &&
+            context.ObjectType is not null &&
+            runtimeType != context.ObjectType &&
+            SerializerOptions.GetTypeInfo(context.ObjectType).PolymorphismOptions is not null)
         {
             // type is polymorphic, so, we should use the declared type
             objectType = context.ObjectType;
