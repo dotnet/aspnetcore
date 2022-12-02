@@ -76,7 +76,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         // Maybe we could use the jsontypeinfo overload but we need the untyped,
         // waiting for https://github.com/dotnet/runtime/issues/77051
 
-        Type GetSerializationType(object? content, Type? declaredType)
+        static Type GetSerializationType(object? content, Type? declaredType, JsonSerializerOptions options)
         {
             // context.ObjectType reflects the declared model type when specified.
             // For polymorphic scenarios where the user declares a return type, but returns a derived type,
@@ -92,7 +92,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
 
             if (declaredType is not null &&
                 runtimeType != declaredType &&
-                SerializerOptions.GetTypeInfo(declaredType).PolymorphismOptions is not null)
+                options.GetTypeInfo(declaredType).PolymorphismOptions is not null)
             {
                 // Using declared type in this case. The polymorphism is not
                 // relevant for us and will be handled by STJ, if needed.
@@ -101,7 +101,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             return runtimeType;
         }
 
-        var objectType = GetSerializationType(context.Object, context.ObjectType);
+        var objectType = GetSerializationType(context.Object, context.ObjectType, SerializerOptions);
 
         var responseStream = httpContext.Response.Body;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)

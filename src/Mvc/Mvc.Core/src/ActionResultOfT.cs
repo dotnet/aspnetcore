@@ -79,11 +79,6 @@ public sealed class ActionResult<TValue> : IConvertToActionResult
     {
         if (Result != null)
         {
-            if (Result is ObjectResult objectResult)
-            {
-                objectResult.DeclaredType ??= typeof(TValue);
-                return objectResult;
-            }
             return Result;
         }
 
