@@ -112,7 +112,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
                     as IUserTwoFactorTokenProvider<TUser>;
                 if (provider != null)
                 {
-                    RegisterTokenProvider(providerName, provider);
+                    RegisterTokenProviderCore(providerName, provider);
                 }
             }
         }
@@ -1766,7 +1766,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="providerName">The name of the provider to register.</param>
     /// <param name="provider">The provider to register.</param>
-    public virtual void RegisterTokenProvider(string providerName, IUserTwoFactorTokenProvider<TUser> provider)
+    protected void RegisterTokenProviderCore(string providerName, IUserTwoFactorTokenProvider<TUser> provider)
     {
         ThrowIfDisposed();
         if (provider == null)
@@ -1774,6 +1774,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(provider));
         }
         _tokenProviders[providerName] = provider;
+    }
+
+    /// <summary>
+    /// Registers a token provider.
+    /// </summary>
+    /// <param name="providerName">The name of the provider to register.</param>
+    /// <param name="provider">The provider to register.</param>
+    public virtual void RegisterTokenProvider(string providerName, IUserTwoFactorTokenProvider<TUser> provider)
+    {
+        RegisterTokenProviderCore(providerName, provider);
     }
 
     /// <summary>
