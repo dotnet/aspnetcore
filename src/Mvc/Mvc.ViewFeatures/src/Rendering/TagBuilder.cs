@@ -170,7 +170,7 @@ public class TagBuilder : IHtmlContent
         }
 
         var firstChar = name[0];
-        var startsWithAsciiLetter = Html401IdUtil.IsAsciiLetter(firstChar);
+        var startsWithAsciiLetter = char.IsAsciiLetter(firstChar);
         if (!startsWithAsciiLetter)
         {
             // The first character must be a letter according to the HTML 4.01 specification.
@@ -440,19 +440,9 @@ public class TagBuilder : IHtmlContent
 
     private static class Html401IdUtil
     {
-        public static bool IsAsciiLetter(char testChar)
-        {
-            return (('A' <= testChar && testChar <= 'Z') || ('a' <= testChar && testChar <= 'z'));
-        }
-
         public static bool IsValidIdCharacter(char testChar)
         {
-            return (IsAsciiLetter(testChar) || IsAsciiDigit(testChar) || IsAllowableSpecialCharacter(testChar));
-        }
-
-        private static bool IsAsciiDigit(char testChar)
-        {
-            return ('0' <= testChar && testChar <= '9');
+            return char.IsAsciiLetter(testChar) || char.IsAsciiDigit(testChar) || IsAllowableSpecialCharacter(testChar);
         }
 
         private static bool IsAllowableSpecialCharacter(char testChar)
