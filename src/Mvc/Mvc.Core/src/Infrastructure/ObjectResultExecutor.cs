@@ -89,7 +89,9 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
 
         var objectType = result.DeclaredType;
 
-        if (objectType == null || objectType == typeof(object))
+        if (objectType == null ||
+            objectType == typeof(object) ||
+            result.Value?.GetType() is { } runtimeType && !objectType.IsAssignableFrom(runtimeType))
         {
             objectType = result.Value?.GetType();
         }

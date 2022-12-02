@@ -21,8 +21,10 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
     public async Task WriteResponseBodyAsync_AllowsConfiguringPreserveReferenceHandling()
     {
         // Arrange
-        var formatter = GetOutputFormatter();
-        ((SystemTextJsonOutputFormatter)formatter).SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        var jsonOptions = new JsonOptions();
+        jsonOptions.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+
+        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
         var expectedContent = "{\"$id\":\"1\",\"name\":\"Person\",\"child\":{\"$id\":\"2\",\"name\":\"Child\",\"child\":null,\"parent\":{\"$ref\":\"1\"}},\"parent\":null}";
         var person = new Person
         {
