@@ -8,6 +8,7 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Transcoding;
 using Xunit.Abstractions;
 
@@ -472,7 +473,7 @@ public class JsonConverterReadTests
         var objectOld = formatter.Parse<TValue>(value);
 
         descriptorRegistry ??= new DescriptorRegistry();
-        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(typeof(TValue))!.File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TValue)).File);
         var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, descriptorRegistry);
 
         var objectNew = JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions)!;
@@ -495,7 +496,7 @@ public class JsonConverterReadTests
             Timestamp.Descriptor.File);
 
         serviceDescriptorRegistry ??= new DescriptorRegistry();
-        serviceDescriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(typeof(TValue))!.File);
+        serviceDescriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TValue)).File);
         var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, serviceDescriptorRegistry);
 
         var ex = Assert.ThrowsAny<Exception>(() => JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions));

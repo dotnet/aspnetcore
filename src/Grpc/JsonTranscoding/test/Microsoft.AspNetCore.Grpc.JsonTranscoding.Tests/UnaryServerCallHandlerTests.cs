@@ -1272,8 +1272,8 @@ public class UnaryServerCallHandlerTests : LoggedTest
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
         var descriptorRegistry = new DescriptorRegistry();
-        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(typeof(TRequest))!.File);
-        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(typeof(TResponse))!.File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TResponse)).File);
 
         var jsonContext = new JsonContext(
             jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings(),

@@ -9,6 +9,7 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
 using Transcoding;
 using Xunit.Abstractions;
@@ -517,7 +518,7 @@ public class JsonConverterWriteTests
     private static DescriptorRegistry CreateDescriptorRegistry(Type type)
     {
         var descriptorRegistry = new DescriptorRegistry();
-        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(type)!.File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(type).File);
         return descriptorRegistry;
     }
 

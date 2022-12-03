@@ -344,8 +344,8 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
         var jsonSettings = jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
 
         var descriptorRegistry = new DescriptorRegistry();
-        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(typeof(TRequest))!.File);
-        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(typeof(TResponse))!.File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TResponse)).File);
 
         var jsonContext = new JsonContext(jsonSettings, jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty, descriptorRegistry);
 
