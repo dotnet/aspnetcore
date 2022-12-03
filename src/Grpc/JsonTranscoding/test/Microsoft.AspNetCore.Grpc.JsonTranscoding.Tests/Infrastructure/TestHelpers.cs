@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;

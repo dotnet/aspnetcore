@@ -10,7 +10,6 @@ using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
-using Newtonsoft.Json.Linq;
 using Transcoding;
 using Xunit.Abstractions;
 using Type = System.Type;
