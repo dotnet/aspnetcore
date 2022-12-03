@@ -1064,7 +1064,7 @@ public static partial class RequestDelegateFactory
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(typeArg);
 
                     if (jsonTypeInfo is not null &&
-                        (typeArg.IsSealed || typeArg.IsValueType))
+                        (typeArg.IsSealed || typeArg.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
                     {
                         return Expression.Call(
                             ExecuteTaskOfTFastMethod.MakeGenericMethod(typeArg),
@@ -1106,7 +1106,7 @@ public static partial class RequestDelegateFactory
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(typeArg);
 
                     if (jsonTypeInfo is not null &&
-                        (typeArg.IsSealed || typeArg.IsValueType))
+                        (typeArg.IsSealed || typeArg.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
                     {
                         return Expression.Call(
                             ExecuteValueTaskOfTFastMethod.MakeGenericMethod(typeArg),
@@ -1151,7 +1151,7 @@ public static partial class RequestDelegateFactory
             var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(returnType);
 
             if (jsonTypeInfo is not null &&
-                (returnType.IsSealed || returnType.IsValueType))
+                (returnType.IsSealed || returnType.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
             {
                 return Expression.Call(
                     JsonResultOfTWriteResponseFastAsyncMethod.MakeGenericMethod(returnType),
@@ -2332,9 +2332,9 @@ public static partial class RequestDelegateFactory
 
     private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
     {
-        if (jsonTypeInfo is not null &&
-            (jsonTypeInfo.PolymorphismOptions is not null ||
-            jsonTypeInfo.Type == value?.GetType()))
+        var runtimeType = value is null ? typeof(object) : value.GetType();
+
+        if (jsonTypeInfo is not null && jsonTypeInfo.Type == runtimeType)
         {
             // In this case the polymorphism is not
             // relevant for us and will be handled by STJ, if needed.
@@ -2347,7 +2347,7 @@ public static partial class RequestDelegateFactory
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value is null ? typeof(object) : value.GetType(), options, default);
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, runtimeType, options, default);
 
     }
 
