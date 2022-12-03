@@ -322,6 +322,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
 
         AssertPathParameter(GetOpenApiOperation((int foo) => { }, "/{foo}"));
@@ -335,6 +336,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecord foo) => { }, pattern: "/{foo}"));
     }
@@ -346,6 +348,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
 
         AssertPathParameter(GetOpenApiOperation((int? foo) => { }, "/{foo}"));
@@ -359,6 +362,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecordStruct foo) => { }, pattern: "/{foo}"));
     }
@@ -370,6 +374,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Query, param.In);
+            Assert.Empty(param.Content);
         }
 
         AssertQueryParameter(GetOpenApiOperation((int foo) => { }, "/"), "integer");
@@ -388,6 +393,7 @@ public class OpenApiOperationGeneratorTests
         var param = Assert.Single(operation.Parameters);
 
         Assert.Equal(ParameterLocation.Header, param.In);
+        Assert.Empty(param.Content);
     }
 
     [Fact]
@@ -430,11 +436,13 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("foo", fooParam.Name);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
+        Assert.Empty(fooParam.Content);
 
         var barParam = operation.Parameters[1];
         Assert.Equal("bar", barParam.Name);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.True(barParam.Required);
+        Assert.Empty(barParam.Content);
 
         var fromBodyParam = operation.RequestBody;
         var fromBodyContent = Assert.Single(fromBodyParam.Content);
@@ -455,12 +463,14 @@ public class OpenApiOperationGeneratorTests
                     Assert.Equal(capturedName, param.Name);
                     Assert.Equal(ParameterLocation.Path, param.In);
                     Assert.True(param.Required);
+                    Assert.Empty(param.Content);
                 },
                 param =>
                 {
                     Assert.Equal("Bar", param.Name);
                     Assert.Equal(ParameterLocation.Query, param.In);
                     Assert.True(param.Required);
+                    Assert.Empty(param.Content);
                 }
             );
         }
@@ -485,11 +495,13 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("foo", fooParam.Name);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
+        Assert.Empty(fooParam.Content);
 
         var barParam = operation.Parameters[1];
         Assert.Equal("bar", barParam.Name);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.False(barParam.Required);
+        Assert.Empty(barParam.Content);
     }
 
     [Fact]

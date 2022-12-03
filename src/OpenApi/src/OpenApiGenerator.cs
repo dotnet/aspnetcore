@@ -77,7 +77,7 @@ internal sealed class OpenApiGenerator
             Summary = metadata.GetMetadata<IEndpointSummaryMetadata>()?.Summary,
             Description = metadata.GetMetadata<IEndpointDescriptionMetadata>()?.Description,
             Tags = GetOperationTags(methodInfo, metadata),
-            Parameters = GetOpenApiParameters(methodInfo, metadata, pattern, disableInferredBody),
+            Parameters = GetOpenApiParameters(methodInfo, pattern, disableInferredBody),
             RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
@@ -356,7 +356,7 @@ internal sealed class OpenApiGenerator
         return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
+    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         var openApiParameters = new List<OpenApiParameter>();
@@ -384,7 +384,6 @@ internal sealed class OpenApiGenerator
             {
                 Name = name,
                 In = parameterLocation,
-                Content = GetOpenApiParameterContent(metadata),
                 Required = !isOptional
 
             };
@@ -392,21 +391,6 @@ internal sealed class OpenApiGenerator
         }
 
         return openApiParameters;
-    }
-
-    private static Dictionary<string, OpenApiMediaType> GetOpenApiParameterContent(EndpointMetadataCollection metadata)
-    {
-        var openApiParameterContent = new Dictionary<string, OpenApiMediaType>();
-        var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
-        if (acceptsMetadata is not null)
-        {
-            foreach (var contentType in acceptsMetadata.ContentTypes)
-            {
-                openApiParameterContent.Add(contentType, new OpenApiMediaType());
-            }
-        }
-
-        return openApiParameterContent;
     }
 
     private (bool isBodyOrForm, ParameterLocation? locatedIn) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
