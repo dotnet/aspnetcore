@@ -20,7 +20,7 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
         switch (reader.TokenType)
         {
             case JsonTokenType.String:
-                var enumDescriptor = ResolveEnumDescriptor(typeToConvert);
+                var enumDescriptor = (EnumDescriptor?)Context.DescriptorRegistry.FindDescriptorByType(typeToConvert);
                 if (enumDescriptor == null)
                 {
                     throw new InvalidOperationException($"Unable to resolve descriptor for {typeToConvert}.");
@@ -35,15 +35,6 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
             default:
                 throw new InvalidOperationException($"Unexpected JSON token: {reader.TokenType}.");
         }
-    }
-
-    private EnumDescriptor? ResolveEnumDescriptor(Type typeToConvert)
-    {
-        // Enum types in generated DTOs are regular enum types. That means there is no static Descriptor property
-        // to get the enum descriptor from.
-        //
-        // Search for enum descriptor using the enum type in a registry of descriptors.
-        return Context.DescriptorRegistry.FindEnumDescriptorByType(typeToConvert);
     }
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)

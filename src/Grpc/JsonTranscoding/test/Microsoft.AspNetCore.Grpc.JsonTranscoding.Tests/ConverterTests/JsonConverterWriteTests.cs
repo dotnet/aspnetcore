@@ -9,8 +9,10 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
+using Newtonsoft.Json.Linq;
 using Transcoding;
 using Xunit.Abstractions;
+using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.ConverterTests;
 
@@ -221,8 +223,9 @@ public class JsonConverterWriteTests
     {
         var v = new Int64Value { Value = 1 };
 
+        var descriptorRegistry = CreateDescriptorRegistry(typeof(Int64Value));
         var settings = new GrpcJsonSettings { WriteInt64sAsStrings = writeInt64sAsStrings };
-        var jsonSerializerOptions = CreateSerializerOptions(settings, TypeRegistry.Empty);
+        var jsonSerializerOptions = CreateSerializerOptions(settings, TypeRegistry.Empty, descriptorRegistry);
         var json = JsonSerializer.Serialize(v, jsonSerializerOptions);
 
         Assert.Equal(expectedJson, json);
@@ -235,8 +238,9 @@ public class JsonConverterWriteTests
     {
         var v = new UInt64Value { Value = 2 };
 
+        var descriptorRegistry = CreateDescriptorRegistry(typeof(UInt64Value));
         var settings = new GrpcJsonSettings { WriteInt64sAsStrings = writeInt64sAsStrings };
-        var jsonSerializerOptions = CreateSerializerOptions(settings, TypeRegistry.Empty);
+        var jsonSerializerOptions = CreateSerializerOptions(settings, TypeRegistry.Empty, descriptorRegistry);
         var json = JsonSerializer.Serialize(v, jsonSerializerOptions);
 
         Assert.Equal(expectedJson, json);
@@ -496,7 +500,8 @@ public class JsonConverterWriteTests
         _output.WriteLine("Old:");
         _output.WriteLine(jsonOld);
 
-        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery);
+        var descriptorRegistry = CreateDescriptorRegistry(typeof(TValue));
+        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, descriptorRegistry);
         var jsonNew = JsonSerializer.Serialize(value, jsonSerializerOptions);
 
         _output.WriteLine("New:");
@@ -509,9 +514,16 @@ public class JsonConverterWriteTests
         Assert.True(comparer.Equals(doc1.RootElement, doc2.RootElement));
     }
 
-    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery)
+    private static DescriptorRegistry CreateDescriptorRegistry(Type type)
     {
-        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty, new DescriptorRegistry());
+        var descriptorRegistry = new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(JsonConverterHelper.GetMessageDescriptor(type)!.File);
+        return descriptorRegistry;
+    }
+
+    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery, DescriptorRegistry descriptorRegistry)
+    {
+        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty, descriptorRegistry);
 
         return JsonConverterHelper.CreateSerializerOptions(context);
     }

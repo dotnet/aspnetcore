@@ -1,18 +1,30 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using Google.Protobuf.Reflection;
+using Google.Rpc;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 
 internal sealed class DescriptorRegistry
 {
+    private readonly object _lock = new object();
     private readonly HashSet<FileDescriptor> _fileDescriptors = new HashSet<FileDescriptor>();
-    private readonly HashSet<EnumDescriptor> _enumDescriptors = new HashSet<EnumDescriptor>();
+    private readonly ConcurrentDictionary<Type, DescriptorBase> _typeDescriptorMap = new ConcurrentDictionary<Type, DescriptorBase>();
+
+    public DescriptorRegistry()
+    {
+        // For Grpc.Rpc.Status, which is used to send error responses.
+        AddFileDescriptorsRecursive(StatusReflection.Descriptor);
+    }
 
     public void RegisterFileDescriptor(FileDescriptor fileDescriptor)
     {
-        AddFileDescriptorsRecursive(fileDescriptor);
+        lock (_lock)
+        {
+            AddFileDescriptorsRecursive(fileDescriptor);
+        }
     }
 
     private void AddFileDescriptorsRecursive(FileDescriptor fileDescriptor)
@@ -27,15 +39,15 @@ internal sealed class DescriptorRegistry
         }
 
         // Non-nested enums.
-        foreach (var descriptor in fileDescriptor.EnumTypes)
+        foreach (var enumDescriptor in fileDescriptor.EnumTypes)
         {
-            _enumDescriptors.Add(descriptor);
+            _typeDescriptorMap[enumDescriptor.ClrType] = enumDescriptor;
         }
 
         // Search messages for nested enums.
         foreach (var messageDescriptor in fileDescriptor.MessageTypes)
         {
-            AddNestedEnumDescriptorsRecursive(messageDescriptor);
+            AddDescriptorsRecursive(messageDescriptor);
         }
 
         // Search imported files.
@@ -45,29 +57,27 @@ internal sealed class DescriptorRegistry
         }
     }
 
-    private void AddNestedEnumDescriptorsRecursive(MessageDescriptor messageDescriptor)
+    private void AddDescriptorsRecursive(MessageDescriptor messageDescriptor)
     {
+        if (messageDescriptor.ClrType != null)
+        {
+            _typeDescriptorMap[messageDescriptor.ClrType] = messageDescriptor;
+        }
+
         foreach (var enumDescriptor in messageDescriptor.EnumTypes)
         {
-            _enumDescriptors.Add(enumDescriptor);
+            _typeDescriptorMap[enumDescriptor.ClrType] = enumDescriptor;
         }
 
         foreach (var nestedMessageDescriptor in messageDescriptor.NestedTypes)
         {
-            AddNestedEnumDescriptorsRecursive(nestedMessageDescriptor);
+            AddDescriptorsRecursive(nestedMessageDescriptor);
         }
     }
 
-    public EnumDescriptor? FindEnumDescriptorByType(Type enumType)
+    public DescriptorBase? FindDescriptorByType(Type enumType)
     {
-        foreach (var enumDescriptor in _enumDescriptors)
-        {
-            if (enumDescriptor.ClrType == enumType)
-            {
-                return enumDescriptor;
-            }
-        }
-
-        return null;
+        _typeDescriptorMap.TryGetValue(enumType, out var value);
+        return value;
     }
 }

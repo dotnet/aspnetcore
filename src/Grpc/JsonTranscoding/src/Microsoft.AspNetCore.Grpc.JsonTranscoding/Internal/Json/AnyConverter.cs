@@ -35,6 +35,9 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
             throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'.");
         }
 
+        // Ensure the payload descriptor is registered.
+        Context.DescriptorRegistry.RegisterFileDescriptor(descriptor.File);
+
         IMessage data;
         if (ServiceDescriptorHelpers.IsWellKnownType(descriptor))
         {
@@ -67,6 +70,10 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         {
             throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'.");
         }
+
+        // Ensure the payload descriptor is registered.
+        Context.DescriptorRegistry.RegisterFileDescriptor(descriptor.File);
+        
         var valueMessage = descriptor.Parser.ParseFrom(data);
         writer.WriteStartObject();
         writer.WriteString(AnyTypeUrlField, typeUrl);

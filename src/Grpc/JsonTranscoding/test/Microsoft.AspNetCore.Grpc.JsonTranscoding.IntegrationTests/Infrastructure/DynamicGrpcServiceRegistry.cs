@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
@@ -41,10 +40,7 @@ public class DynamicGrpcServiceRegistry
 
         AddServiceCore(c =>
         {
-            // File descriptor is done in JsonTranscodingServiceMethodProvider.
-            // Need to replicate that logic here so tests that lookup descriptors are successful.
-            var descriptorRegistry = _serviceProvider.GetRequiredService<DescriptorRegistry>();
-            descriptorRegistry.RegisterFileDescriptor(methodDescriptor.File);
+            RegisterDescriptor(methodDescriptor);
 
             var unaryMethod = new UnaryServerMethod<DynamicService, TRequest, TResponse>((service, request, context) => callHandler(request, context));
             var binder = CreateJsonTranscodingBinder<TRequest, TResponse>(methodDescriptor, c, new DynamicServiceInvokerResolver(unaryMethod));
@@ -63,6 +59,8 @@ public class DynamicGrpcServiceRegistry
 
         AddServiceCore(c =>
         {
+            RegisterDescriptor(methodDescriptor);
+
             var serverStreamingMethod = new ServerStreamingServerMethod<DynamicService, TRequest, TResponse>((service, request, stream, context) => callHandler(request, stream, context));
             var binder = CreateJsonTranscodingBinder<TRequest, TResponse>(methodDescriptor, c, new DynamicServiceInvokerResolver(serverStreamingMethod));
 
@@ -110,6 +108,14 @@ public class DynamicGrpcServiceRegistry
                 m.MergeFrom(d);
                 return m;
             });
+    }
+
+    private void RegisterDescriptor(MethodDescriptor methodDescriptor)
+    {
+        // File descriptor is done in JsonTranscodingServiceMethodProvider.
+        // Need to replicate that logic here so tests that lookup descriptors are successful.
+        var descriptorRegistry = _serviceProvider.GetRequiredService<DescriptorRegistry>();
+        descriptorRegistry.RegisterFileDescriptor(methodDescriptor.File);
     }
 
     private class DynamicEndpointRouteBuilder : IEndpointRouteBuilder
