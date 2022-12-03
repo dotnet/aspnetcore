@@ -170,11 +170,11 @@ internal sealed class KestrelServerImpl : IServer
                         {
                             if (hasHttp2)
                             {
-                                Trace.LogWarning(CoreStrings.Http2DisabledWithHttp1AndNoTls, options.EndPoint);
+                                Trace.Http2DisabledWithHttp1AndNoTls(options.EndPoint);
                             }
                             if (hasHttp3)
                             {
-                                Trace.LogInformation(CoreStrings.Http3DisabledWithHttp1AndNoTls, options.EndPoint);
+                                Trace.Http3DisabledWithHttp1AndNoTls(options.EndPoint);
                             }
                         }
 

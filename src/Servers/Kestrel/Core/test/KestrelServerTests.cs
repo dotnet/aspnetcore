@@ -199,9 +199,7 @@ public class KestrelServerTests
         using (var server = CreateServer(kestrelOptions, testLogger))
         {
             StartDummyApplication(server);
-            var filteredMessages = testLogger.Messages.Where(log => log.Message.Contains("since TLS is disabled"));
-
-            return (filteredMessages.Where(log => log.LogLevel == LogLevel.Warning), filteredMessages.Where(log => log.LogLevel == LogLevel.Information));
+            return (testLogger.Messages.Where(log => log.EventId == 64), testLogger.Messages.Where(log => log.EventId == 65));
         }
     }
 
