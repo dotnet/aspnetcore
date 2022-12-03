@@ -489,15 +489,15 @@ public class JsonConverterReadTests
         return objectNew;
     }
 
-    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? serviceDescriptorRegistry = null) where TValue : IMessage, new()
+    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
             Timestamp.Descriptor.File);
 
-        serviceDescriptorRegistry ??= new DescriptorRegistry();
-        serviceDescriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TValue)).File);
-        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, serviceDescriptorRegistry);
+        descriptorRegistry ??= new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TValue)).File);
+        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, descriptorRegistry);
 
         var ex = Assert.ThrowsAny<Exception>(() => JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions));
         assertException(ex);
@@ -510,12 +510,12 @@ public class JsonConverterReadTests
         assertException(ex);
     }
 
-    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery, DescriptorRegistry serviceDescriptorRegistry)
+    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery, DescriptorRegistry descriptorRegistry)
     {
         var context = new JsonContext(
             settings ?? new GrpcJsonSettings(),
             typeRegistery ?? TypeRegistry.Empty,
-            serviceDescriptorRegistry);
+            descriptorRegistry);
 
         return JsonConverterHelper.CreateSerializerOptions(context);
     }
