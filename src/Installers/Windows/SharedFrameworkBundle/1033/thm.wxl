@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption"><!--_locComment_text="{Locked='[BundleNameFull]'}"-->[BundleNameFull] Setup</String>
-  <String Id="Title"><!--_locComment_text="{Locked}"-->[BundleNameShort]</String>
+  <String Id="Title"><!--_locComment_text="{Locked}"-->[BundleNameShortNoBuild]</String>
   <String Id="SubTitle"><!--_locComment_text="{Locked}"-->[BundleNameSub]</String>
   <String Id="InstallVersion"><!--_locComment_text="{Locked='[WixBundleVersion]'}"-->Version [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Are you sure you want to cancel?</String>
@@ -50,6 +50,7 @@
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Cancel</String>
 
+  <!-- Custom UI strings -->
   <String Id="Welcome"><!--_locComment_text="{Locked='[WixBundleName]'}"-->Welcome to the [WixBundleName] Setup.</String>
-  <String Id="EulaPrivacy"><!--_locComment_text="{Locked='[WixBundleName]'}"-->[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;license terms&lt;/a&gt; and &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;privacy statement&lt;/a&gt;.</String>
+  <String Id="EulaPrivacy"><!--_locComment_text="{Locked='[BundleNameNoBuild]'}"-->[BundleNameNoBuild] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;license terms&lt;/a&gt; and &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;privacy statement&lt;/a&gt;.</String>
 </WixLocalization>

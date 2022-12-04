@@ -83,6 +83,7 @@
     <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
 
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
+    <BundleNameShortNoBuild>Microsoft .NET $(PackageBrandingVersionNoBuild)</BundleNameShortNoBuild>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
     <SharedFxMsiVersion>$(PackageVersion)</SharedFxMsiVersion>
     <SharedFxMsiVersion
@@ -92,15 +93,16 @@
   <PropertyGroup>
     <BundleNameSub>Windows Server Hosting</BundleNameSub>
     <BundleName>$(BundleNameShort) - $(BundleNameSub)</BundleName>
+    <BundleNameNoBuild>$(BundleNameShortNoBuild) - $(BundleNameSub)</BundleNameNoBuild>
     <BundleNameFull>$(BundleName) ($(Platform))</BundleNameFull>
+    <BundleRegName>$(BundleNameFull)</BundleRegName>
+
     <BundleManufacturer>Microsoft Corporation</BundleManufacturer>
     <BundleLogPrefix>dd_DotNetCoreWinSvrHosting</BundleLogPrefix>
 
     <!-- Registration -->
     <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
     <BundleRegFamily>.NET</BundleRegFamily>
-    <BundleRegName>Microsoft .NET $(PackageBrandingVersion) - Windows Server Hosting</BundleRegName>
-    <BundleRegName>$(BundleNameFull)</BundleRegName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -123,8 +125,9 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>
-    <DefineConstants>$(DefineConstants);BundleNameFull=$(BundleNameFull)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameNoBuild=$(BundleNameNoBuild)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameShortNoBuild=$(BundleNameShortNoBuild)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleNameSub=$(BundleNameSub)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleManufacturer=$(BundleManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleLogPrefix=$(BundleLogPrefix)</DefineConstants>

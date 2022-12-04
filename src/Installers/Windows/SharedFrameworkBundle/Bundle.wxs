@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation"
+            UpgradeCode="$(var.BundleUpgradeCode)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
             <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
@@ -84,7 +87,10 @@
         <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />
         <OptionalUpdateRegistration Manufacturer="$(var.BundleRegManufacturer)" ProductFamily="$(var.BundleRegFamily)" Name="$(var.BundleRegName)" />
 
+        <!-- Bundle variables -->
+        <Variable Name="BundleNameNoBuild" Value="$(var.BundleNameNoBuild)"/>
         <Variable Name="BundleNameShort" Value="$(var.BundleNameShort)"/>
+        <Variable Name="BundleNameShortNoBuild" Value="$(var.BundleNameShortNoBuild)" />
         <Variable Name="BundleNameSub" Value="$(var.BundleNameSub)"/>
         <Variable Name="BundleNameFull" Value="$(var.BundleNameFull)"/>
 

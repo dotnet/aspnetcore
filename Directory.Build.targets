@@ -39,10 +39,19 @@
   <!-- Properties which should be set after the project has been evaluated -->
 
   <PropertyGroup Label="Versioning settings">
-    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
-    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(VersionSuffix)</BrandingVersionSuffix>
-    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
-    <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
+    <!--
+      The 'human friendly' versions to display in installers. In pre-release builds, these might be
+      "8.0.0 Alpha 1" and "8.0.0 Alpha 1 Build alpha.1.22616.7". In final builds, both should be "8.0.0".
+      ??? Thoughts on instead using $(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay) when $(VersionSuffix) is
+      ??? non-empty? That would avoid repeating "Alpha 1" / "alpha.1" in $(PackageBrandingVersion). Seems this
+      ??? property is used only for display names, even in the registry (with the exception of e.g.
+      ??? "HKLM\SOFTWARE\WOW6432Node\Microsoft\Updates\.NET\Microsoft ASP.NET Core 8.0.0 Alpha 1 Build alpha.1.22616.7 - Shared Framework (x86)").
+    -->
+    <PackageBrandingVersionNoBuild>$(VersionPrefix)</PackageBrandingVersionNoBuild>
+    <PackageBrandingVersionNoBuild
+        Condition=" '$(PreReleaseBrandingLabel)' != '' ">$(PackageBrandingVersionNoBuild) $(PreReleaseBrandingLabel.Trim())</PackageBrandingVersionNoBuild>
+    <PackageBrandingVersion>$(PackageBrandingVersionNoBuild)</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) Build $(VersionSuffix.Trim())</PackageBrandingVersion>
 
     <SiteExtensionVersion>$(VersionPrefix)</SiteExtensionVersion>
     <SiteExtensionVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionVersion>

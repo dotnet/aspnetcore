@@ -6,10 +6,12 @@
     <Name>AspNetCoreSharedFrameworkBundle</Name>
     <OutputName>$(Name)-$(Platform)</OutputName>
     <IsShipping>true</IsShipping>
-    <OutputType>Bundle</OutputType>
-    <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ProjectGuid>{D6C54D8B-043F-4877-B751-60E7390F9EC6}</ProjectGuid>
+    <OutputType>Bundle</OutputType>
     <SchemaVersion>2.0</SchemaVersion>
+
+    <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
+    <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,9 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="thm.xml" />
     <Compile Include="Bundle.wxs" />
     <EmbeddedResource Include="thm.wxl" />
-    <Content Include="thm.xml" />
   </ItemGroup>
 
   <Choose>
@@ -65,8 +67,15 @@
     <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
 
     <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
+    <!--
+      Title still truncated to e.g. "Microsoft ASP.NET Core 8.0.0 Release".
+      ??? Thoughts on sharing branding w/ the hosting bundle e.g. "Microsoft .NET 8.0.0 Release Candidate 1"?
+      ??? If we go that route, could make the subtitle "ASP.NET Shared Framework" or "ASP.NET Core...".
+    -->
+    <BundleNameShortNoBuild>Microsoft ASP.NET Core $(PackageBrandingVersionNoBuild)</BundleNameShortNoBuild>
     <BundleNameSub>Shared Framework</BundleNameSub>
     <BundleName>$(BundleNameShort) - $(BundleNameSub) ($(Platform))</BundleName>
+    <BundleNameNoBuild>$(BundleNameShortNoBuild) - $(BundleNameSub) ($(Platform))</BundleNameNoBuild>
     <BundleNameFull>$(BundleName)</BundleNameFull>
     <BundleRegName>$(BundleNameFull)</BundleRegName>
 
@@ -77,9 +86,11 @@
     <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
     <BundleRegFamily>.NET</BundleRegFamily>
 
-    <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameNoBuild=$(BundleNameNoBuild)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleNameFull=$(BundleNameFull)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameShortNoBuild=$(BundleNameShortNoBuild)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleNameSub=$(BundleNameSub)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleManufacturer=$(BundleManufacturer)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleLogPrefix=$(BundleLogPrefix)</DefineConstants>
