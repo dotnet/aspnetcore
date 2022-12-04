@@ -37,8 +37,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         foreach (var handlerDelegateParameter in methodSymbol.Parameters)
         {
             // If the parameter is decorated with a FromServices attribute then we can skip it.
-            var fromServicesAttributeTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_FromServicesAttribute);
-            if (handlerDelegateParameter.HasAttribute(fromServicesAttributeTypeSymbol))
+            var fromServiceMetadataTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+            if (handlerDelegateParameter.HasAttribute(fromServiceMetadataTypeSymbol))
             {
                 continue;
             }
