@@ -48,6 +48,22 @@ export class HubConnectionBuilder {
     /** @internal */
     public logger?: ILogger;
 
+    /** The server timeout in milliseconds.
+     *
+     * If this timeout elapses without receiving any messages from the server, the connection will be terminated with an error.
+     * The default timeout value is 30,000 milliseconds (30 seconds).
+     */
+    public serverTimeoutInMilliseconds?: number;
+
+    /** Default interval at which to ping the server.
+     *
+     * The default value is 15,000 milliseconds (15 seconds).
+     * Allows the server to detect hard disconnects (like when a client unplugs their computer).
+     * The ping will happen at most as often as the server pings.
+     * If the server pings every 5 seconds, a value lower than 5 will ping every 5 seconds.
+     */
+    public keepAliveIntervalInMilliseconds?: number;
+
     /** If defined, this indicates the client should automatically attempt to reconnect if the connection is lost. */
     /** @internal */
     public reconnectPolicy?: IRetryPolicy;
@@ -204,11 +220,21 @@ export class HubConnectionBuilder {
         }
         const connection = new HttpConnection(this.url, httpConnectionOptions);
 
-        return HubConnection.create(
+        const hubConnection = HubConnection.create(
             connection,
             this.logger || NullLogger.instance,
             this.protocol || new JsonHubProtocol(),
             this.reconnectPolicy);
+
+        if (this.serverTimeoutInMilliseconds !== undefined) {
+            hubConnection.serverTimeoutInMilliseconds = this.serverTimeoutInMilliseconds;
+        }
+
+        if (this.keepAliveIntervalInMilliseconds !== undefined) {
+            hubConnection.keepAliveIntervalInMilliseconds = this.keepAliveIntervalInMilliseconds;
+        }
+
+        return hubConnection;
     }
 }
 
