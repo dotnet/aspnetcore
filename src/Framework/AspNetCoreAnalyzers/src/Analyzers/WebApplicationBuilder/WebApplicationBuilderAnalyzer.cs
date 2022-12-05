@@ -151,7 +151,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseHostConfigureLogging,
                             invocation));
                 }
-                
+
                 // var builder = WebApplication.CreateBuilder(args);
                 // builder.Host.ConfigureServices(x => {});
                 if (IsDisallowedMethod(
@@ -183,7 +183,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseHostConfigureServices,
                             invocation));
                 }
-                
+
                 // var builder = WebApplication.CreateBuilder();
                 // builder.WebHost.ConfigureAppConfiguration(builder => {});
                 if (IsDisallowedMethod(
@@ -333,7 +333,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
             string disallowedMethodName,
             INamedTypeSymbol[] disallowedMethodTypes)
         {
-            if (!string.Equals(methodSymbol?.Name, disallowedMethodName, StringComparison.Ordinal))
+            if (!string.Equals(methodSymbol.Name, disallowedMethodName, StringComparison.Ordinal))
             {
                 return false;
             }

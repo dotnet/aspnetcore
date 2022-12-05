@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
@@ -15,7 +15,7 @@ internal struct EmbeddedDiagnostic : IEquatable<EmbeddedDiagnostic>
 
     public EmbeddedDiagnostic(string message, TextSpan span)
     {
-        Debug.Assert(message != null);
+        AnalyzerDebug.Assert(message != null);
         Message = message;
         Span = span;
     }

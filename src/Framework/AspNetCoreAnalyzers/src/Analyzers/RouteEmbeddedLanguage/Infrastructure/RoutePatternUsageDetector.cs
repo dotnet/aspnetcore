@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal readonly record struct RoutePatternUsageContext(
     IMethodSymbol? MethodSymbol,
-    SyntaxNode MethodSyntax,
+    SyntaxNode? MethodSyntax,
     bool IsMinimal,
     bool IsMvcAttribute);
 
@@ -81,7 +81,7 @@ internal static class RoutePatternUsageDetector
     private static SyntaxNode? FindAttributeParent(SyntaxNode container)
     {
         var argument = container.Parent;
-        if (argument.Parent is not AttributeArgumentListSyntax argumentList)
+        if (argument?.Parent is not AttributeArgumentListSyntax argumentList)
         {
             return null;
         }
@@ -99,9 +99,9 @@ internal static class RoutePatternUsageDetector
         return attributeList.Parent;
     }
 
-    private static IMethodSymbol? FindMvcMethod(WellKnownTypes wellKnownTypes, IMethodSymbol methodSymbol)
+    private static IMethodSymbol? FindMvcMethod(WellKnownTypes wellKnownTypes, IMethodSymbol? methodSymbol)
     {
-        if (methodSymbol.ContainingType is not INamedTypeSymbol typeSymbol)
+        if (methodSymbol?.ContainingType is not INamedTypeSymbol typeSymbol)
         {
             return null;
         }
@@ -122,7 +122,7 @@ internal static class RoutePatternUsageDetector
     public static MapMethodParts? FindMapMethodParts(SemanticModel semanticModel, WellKnownTypes wellKnownTypes, SyntaxNode container, CancellationToken cancellationToken)
     {
         var argument = container.Parent;
-        if (argument.Parent is not BaseArgumentListSyntax argumentList ||
+        if (argument?.Parent is not BaseArgumentListSyntax argumentList ||
             argumentList.Parent is null)
         {
             return null;
@@ -195,7 +195,7 @@ internal static class RoutePatternUsageDetector
         return new MapMethodParts(method, literalExpression, delegateArgument.Expression);
     }
 
-    private static ArgumentSyntax? GetArgumentSyntax(BaseArgumentListSyntax argumentList, IMethodSymbol methodSymbol, IParameterSymbol? parameterSymbol)
+    private static ArgumentSyntax? GetArgumentSyntax(BaseArgumentListSyntax argumentList, IMethodSymbol methodSymbol, IParameterSymbol parameterSymbol)
     {
         foreach (var argument in argumentList.Arguments)
         {

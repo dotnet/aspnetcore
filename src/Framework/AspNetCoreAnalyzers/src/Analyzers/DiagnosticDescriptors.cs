@@ -88,7 +88,7 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
-  
+
     internal static readonly DiagnosticDescriptor DoNotUseHostConfigureServices = new(
         "ASP0012",
         "Suggest using builder.Services over Host.ConfigureServices or WebHost.ConfigureServices",

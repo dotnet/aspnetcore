@@ -22,7 +22,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var modelBindingAttribute = parameter.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_ModelBinding_IBinderTypeProviderMetadata)).FirstOrDefault() ??
                 parameter.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_BindAttribute)).FirstOrDefault();
 
-            if (modelBindingAttribute is not null)
+            if (modelBindingAttribute?.AttributeClass is not null)
             {
                 var location = Location.None;
                 if (!parameter.DeclaringSyntaxReferences.IsEmpty)

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
@@ -236,7 +235,7 @@ internal struct RoutePatternLexer
         if (hasInvalidChar)
         {
             token = token.AddDiagnosticIfNone(
-                new EmbeddedDiagnostic(Resources.FormatTemplateRoute_InvalidParameterName(token.Value.ToString().Replace("{{", "{").Replace("}}", "}")), token.GetSpan()));
+                new EmbeddedDiagnostic(Resources.FormatTemplateRoute_InvalidParameterName(token.Value!.ToString().Replace("{{", "{").Replace("}}", "}")), token.GetSpan()));
         }
 
         return token;

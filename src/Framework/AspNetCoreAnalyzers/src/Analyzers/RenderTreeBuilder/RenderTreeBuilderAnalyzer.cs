@@ -36,7 +36,7 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 
                 foreach (var argument in invocation.Arguments)
                 {
-                    if (argument.Parameter.Ordinal == SequenceParameterOrdinal)
+                    if (argument.Parameter?.Ordinal == SequenceParameterOrdinal)
                     {
                         if (!argument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
                         {

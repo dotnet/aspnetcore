@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -25,13 +25,13 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         IOperation? value = null;
         foreach (var argument in invocation.Arguments)
         {
-            if (argument.Parameter.Ordinal == 1)
+            if (argument.Parameter?.Ordinal == 1)
             {
                 value = argument.Value;
             }
         }
 
-        Debug.Assert(value is not null);
+        AnalyzerDebug.Assert(value is not null);
         if (value.ConstantValue is not { HasValue: true } constant ||
             constant.Value is not string routeTemplate)
         {

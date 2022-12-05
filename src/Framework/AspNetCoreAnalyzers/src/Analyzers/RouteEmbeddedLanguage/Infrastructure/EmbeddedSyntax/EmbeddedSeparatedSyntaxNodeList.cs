@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
@@ -63,8 +64,8 @@ internal readonly struct EmbeddedSeparatedSyntaxNodeList<TSyntaxKind, TSyntaxNod
                 // x2 here to get only even indexed numbers. Follows same logic 
                 // as SeparatedSyntaxList in that the separator tokens are not returned
                 var nodeOrToken = NodesAndTokens[index * 2];
-                Debug.Assert(nodeOrToken.IsNode);
-                Debug.Assert(nodeOrToken.Node != null);
+                AnalyzerDebug.Assert(nodeOrToken.IsNode);
+                AnalyzerDebug.Assert(nodeOrToken.Node != null);
                 return (TDerivedNode)nodeOrToken.Node;
             }
 

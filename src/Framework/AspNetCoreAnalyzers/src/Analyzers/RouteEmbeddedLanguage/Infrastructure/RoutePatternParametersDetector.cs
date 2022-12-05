@@ -69,7 +69,7 @@ internal static class RoutePatternParametersDetector
         {
             var attributeClass = attributeData.AttributeClass;
 
-            if (wellKnownTypes.Implements(attributeClass, allNoneRouteMetadataTypes))
+            if (attributeClass != null && wellKnownTypes.Implements(attributeClass, allNoneRouteMetadataTypes))
             {
                 return true;
             }

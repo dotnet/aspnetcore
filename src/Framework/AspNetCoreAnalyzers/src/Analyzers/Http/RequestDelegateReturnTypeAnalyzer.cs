@@ -22,7 +22,7 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
         {
             var compilation = context.Compilation;
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
-            
+
             context.RegisterOperationAction(context =>
             {
                 var methodReference = (IMethodReferenceOperation)context.Operation;
