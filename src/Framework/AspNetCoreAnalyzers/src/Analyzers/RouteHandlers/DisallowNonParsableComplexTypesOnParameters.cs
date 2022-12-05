@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
@@ -72,7 +73,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             if (ReportFromAttributeDiagnostic(
                 context,
-                WellKnownType.Microsoft_AspNetCore_Mvc_FromHeaderAttribute,
+                WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata,
                 DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
                 wellKnownTypes,
                 handlerDelegateParameter,
@@ -83,31 +84,21 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             if (ReportFromAttributeDiagnostic(
                 context,
-                WellKnownType.Microsoft_AspNetCore_Mvc_FromQueryAttribute,
+                WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata,
                 DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
                 wellKnownTypes,
                 handlerDelegateParameter,
                 parameterTypeSymbol,
                 location,
                 ParsabilityHelper.IsTypeParsable
-                )) { continue; }
-
-            if (ReportFromAttributeDiagnostic(
-                context,
-                WellKnownType.Microsoft_AspNetCore_Mvc_FromBodyAttribute,
-                DiagnosticDescriptors.RouteHandlerParamterComplexTypeIsNotBindable,
-                wellKnownTypes,
-                handlerDelegateParameter,
-                parameterTypeSymbol,
-                location,
-                ParsabilityHelper.IsTypeBindable
                 )) { continue; }
         }
 
-        static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromAttributeType, DiagnosticDescriptor descriptor, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location, Func<ITypeSymbol, WellKnownTypes, bool> check)
+        static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromMetadataInterfaceType, DiagnosticDescriptor descriptor, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location, Func<ITypeSymbol, WellKnownTypes, bool> check)
         {
-            var fromAttributeTypeSymbol = wellKnownTypes.Get(fromAttributeType);
-            if (parameter.HasAttribute(fromAttributeTypeSymbol) && !check(parameterTypeSymbol, wellKnownTypes))
+            var fromMetadataInterfaceTypeSymbol = wellKnownTypes.Get(fromMetadataInterfaceType);
+            if (parameter.GetAttributes().Any(ad => ad.AttributeClass.Implements(fromMetadataInterfaceTypeSymbol)) &&
+                !check(parameterTypeSymbol, wellKnownTypes))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     descriptor,

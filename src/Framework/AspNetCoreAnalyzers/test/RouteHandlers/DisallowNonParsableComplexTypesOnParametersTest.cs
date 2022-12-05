@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Policy;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier<Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer>;
 
@@ -308,7 +309,7 @@ webApp.MapGet("/customers/{customer}/contacts", (int? customer) => {});
     }
 
     [Fact]
-    public async Task Handler_Parameter_withUnbindableComplexType_Fails()
+    public async Task Handler_Parameter_withFromBodyAttribute_Works()
     {
         // Arrange
         var source = $$"""
@@ -318,7 +319,7 @@ using Microsoft.AspNetCore.Builder;
 var webApp = WebApplication.Create();
 webApp.MapPost(
     "/customers",
-    ({|#0:[FromBody]Customer customer|}) => {
+    ([FromBody]Customer customer) => {
     });
 
 public class Customer
@@ -326,43 +327,8 @@ public class Customer
 }
 """;
 
-        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteHandlerParamterComplexTypeIsNotBindable)
-            .WithArguments("customer", "Customer")
-            .WithLocation(0);
         // Act
-        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
-    }
-
-    [Fact]
-    public async Task Handler_Parameter_withInvalidBindAsyncImplementation_Fails()
-    {
-        // Arrange
-        var source = $$"""
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Builder;
-
-var webApp = WebApplication.Create();
-webApp.MapPost(
-    "/customers",
-    ({|#0:[FromBody]Customer customer|}) => {
-    });
-
-public class Customer
-{
-    public async static Task<Customer> BindAsync(HttpContext context)
-    {
-        return new Customer();
-    }
-}
-""";
-
-        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteHandlerParamterComplexTypeIsNotBindable)
-            .WithArguments("customer", "Customer")
-            .WithLocation(0);
-        // Act
-        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
+        await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
