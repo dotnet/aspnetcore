@@ -9,5 +9,9 @@ Microsoft.AspNetCore.Mvc.RazorPages.PageBase.TryUpdateModelAsync<TModel>(TModel!
 Microsoft.AspNetCore.Mvc.RazorPages.PageBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.RazorPages.PageModel.TryUpdateModelAsync<TModel>(TModel! model, string! name, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider! valueProvider, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.RazorPages.PageModel.TryUpdateModelAsync<TModel>(TModel! model, string! name, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult
+Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RazorComponentResult(System.Type! componentType) -> void
+Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RazorComponentResult(System.Type! componentType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters) -> void
+Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.WithParameter(string! name, object? value) -> Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult!
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> void

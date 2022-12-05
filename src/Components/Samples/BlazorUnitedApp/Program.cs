@@ -1,4 +1,8 @@
+using System.Globalization;
 using BlazorUnitedApp.Data;
+using BlazorUnitedApp.Pages;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,5 +26,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapRazorComponents();
+
+app.MapPost("/counter", (HttpContext httpContext) =>
+{
+    var count = int.Parse(httpContext.Request.Form["currentCount"]!, CultureInfo.InvariantCulture);
+    return new RazorComponentResult(typeof(Counter)).WithParameter(nameof(Counter.CurrentCount), count + 1);
+});
 
 app.Run();

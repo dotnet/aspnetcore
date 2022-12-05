@@ -4,15 +4,13 @@
 
 <h1>Counter</h1>
 
-<p id="counter">Current count: @currentCount</p>
+<p id="counter">Current count: @CurrentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<form method="post">
+    <input type="hidden" name="currentCount" value="@CurrentCount" />
+    <button class="btn btn-primary">Click me</button>
+</form>
 
 @code {
-    int currentCount = 0;
-
-    void IncrementCount()
-    {
-        currentCount++;
-    }
+    [Parameter] public int CurrentCount { get; set; }
 }
