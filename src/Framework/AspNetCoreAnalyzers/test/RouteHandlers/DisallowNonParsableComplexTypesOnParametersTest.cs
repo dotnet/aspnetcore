@@ -241,6 +241,50 @@ public class Customer : IParsable<Customer>
     }
 
     [Fact]
+    public async Task Route_Parameter_withParsableComplexType_viaExplicitIParsable_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{customer}", (Customer customer) => {});
+
+public class Customer : IParsable<Customer>
+{
+    static Customer IParsable<Customer>.Parse(string s, IFormatProvider provider)
+    {
+        if (TryParse(s, provider, out Customer customer))
+        {
+            return customer;
+        }
+        else
+        {
+            throw new ArgumentException(s);
+        }
+    }
+
+    static bool IParsable<Customer>.TryParse(string s, IFormatProvider? provider, out Customer result)
+    {
+        return TryParse(s, provider, out result);
+    }
+
+    // HACK: Can't call IParsable<Customer>.TryParse(...) from IParsable<Customer>.Parse(...)
+    private static bool TryParse(string s, IFormatProvider? provider, out Customer result)
+    {
+        result = new Customer();
+        return true;
+    }
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+
+    [Fact]
     public async Task Route_Parameter_withParsableComplexType_viaMethodConvention_Works()
     {
         // Arrange
@@ -282,6 +326,33 @@ webApp.MapGet("/customers/{customer}", (Customer customer) => {});
 public class Customer : IBindableFromHttpContext<Customer>
 {
     public static async ValueTask<Customer?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        return new Customer();
+    }
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withHttpContextBindableComplexType_viaExplicitIBindableFromHttp_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{customer}", (Customer customer) => {});
+
+public class Customer : IBindableFromHttpContext<Customer>
+{
+    static async ValueTask<Customer?> IBindableFromHttpContext<Customer>.BindAsync(HttpContext context, ParameterInfo parameter)
     {
         return new Customer();
     }
