@@ -25,7 +25,7 @@ public static class HealthCheckEndpointRouteBuilderExtensions
     /// <returns>A convention routes for the health checks endpoint.</returns>
     public static IEndpointConventionBuilder MapHealthChecks(
        this IEndpointRouteBuilder endpoints,
-       string pattern)
+       [StringSyntax("Route")] string pattern)
     {
         if (endpoints == null)
         {
@@ -44,7 +44,7 @@ public static class HealthCheckEndpointRouteBuilderExtensions
     /// <returns>A convention routes for the health checks endpoint.</returns>
     public static IEndpointConventionBuilder MapHealthChecks(
        this IEndpointRouteBuilder endpoints,
-       string pattern,
+       [StringSyntax("Route")] string pattern,
        HealthCheckOptions options)
     {
         if (endpoints == null)

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>HTTP API for gRPC ASP.NET Core</Description>
     <PackageTags>gRPC RPC HTTP/2 REST</PackageTags>
@@ -28,5 +28,14 @@
     <Reference Include="Google.Api.CommonProtos" />
     <Reference Include="Google.Protobuf" />
     <Reference Include="Grpc.AspNetCore.Server" />
+
+    <None Update="protos\google\api\*.proto">
+      <Pack>true</Pack>
+      <PackagePath>content</PackagePath>
+    </None>
+    <None Include="build\*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
   </ItemGroup>
 </Project>

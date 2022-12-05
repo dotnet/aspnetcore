@@ -50,7 +50,7 @@ public class AccountClaimsPrincipalFactory<TAccount> where TAccount : RemoteUser
                 if (value != null ||
                     (value is JsonElement element && element.ValueKind != JsonValueKind.Undefined && element.ValueKind != JsonValueKind.Null))
                 {
-                    identity.AddClaim(new Claim(name, value.ToString()));
+                    identity.AddClaim(new Claim(name, value.ToString()!));
                 }
             }
         }

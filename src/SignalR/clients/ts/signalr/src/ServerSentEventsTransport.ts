@@ -18,7 +18,7 @@ export class ServerSentEventsTransport implements ITransport {
     private _url?: string;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
-    public onclose: ((error?: Error) => void) | null;
+    public onclose: ((error?: Error | unknown) => void) | null;
 
     constructor(httpClient: HttpClient, accessToken: string | undefined, logger: ILogger,
                 options: IHttpConnectionOptions) {
@@ -116,7 +116,7 @@ export class ServerSentEventsTransport implements ITransport {
         return Promise.resolve();
     }
 
-    private _close(e?: Error) {
+    private _close(e?: Error | unknown) {
         if (this._eventSource) {
             this._eventSource.close();
             this._eventSource = undefined;

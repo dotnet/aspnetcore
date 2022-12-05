@@ -1652,7 +1652,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                     })))
             .Build();
         await host1.StartAsync();
-        using var server1 = host1.GetTestServer(); ;
+        using var server1 = host1.GetTestServer();
 
         var transaction = await SendAsync(server1, "http://example.com/stuff");
         Assert.NotNull(transaction.SetCookie);

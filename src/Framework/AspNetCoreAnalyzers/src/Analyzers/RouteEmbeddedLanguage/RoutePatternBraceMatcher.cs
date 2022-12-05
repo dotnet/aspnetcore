@@ -7,6 +7,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
@@ -18,11 +19,7 @@ internal class RoutePatternBraceMatcher : IAspNetCoreEmbeddedLanguageBraceMatche
 {
     public AspNetCoreBraceMatchingResult? FindBraces(SemanticModel semanticModel, SyntaxToken token, int position, CancellationToken cancellationToken)
     {
-        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
-        {
-            return null;
-        }
-
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
         var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
 
         var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);

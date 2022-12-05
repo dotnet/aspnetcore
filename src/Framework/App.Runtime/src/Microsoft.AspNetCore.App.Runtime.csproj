@@ -250,10 +250,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
 
-  <Target Name="FilterUnwantedContent">
+  <Target Name="FilterUnwantedContent"
+          DependsOnTargets="_ExpandRuntimePackageRoot">
     <ItemGroup>
       <!-- These files end up in this item group as a result of setting CopyLocalLockFileAssemblies, but shouldn't be. -->
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(FileName)' == 'apphost' OR '%(FileName)' == '$(LibPrefix)hostfxr' OR '%(FileName)' == '$(LibPrefix)hostpolicy' "/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
+      <!--
+        Filter out any overlap between our SharedFx (ReferenceCopyLocalPaths) and dotnet/runtime's SharedFx (RuntimePackageFiles).
+        Most of the time there is no overlap, but in certain rare corner cases there can be.
+        See https://github.com/dotnet/aspnetcore/issues/45033 for more detail.
+      -->
+      <ReferenceCopyLocalPaths Remove="@(RuntimePackageFiles)" MatchOnMetadata="FileName"/>
     </ItemGroup>
   </Target>
 
@@ -386,7 +397,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="PrepareForCrossGen"
           Condition="'$(CrossgenOutput)' == 'true'"
-          DependsOnTargets="_ExpandRuntimePackageRoot">
+          DependsOnTargets="FilterUnwantedContent">
     <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
     <RemoveDir Directories="$(CrossgenPlatformAssembliesDir)" />
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
@@ -426,10 +437,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         Lines="@(Crossgen2PlatformAssemblyPaths)"
         File="$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp"
         Overwrite="true" />
-
-    <ItemGroup>
-      <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
-    </ItemGroup>
 
     <Error Text="Could not find crossgen2 $(CrossgenToolPath)" Condition=" ! Exists($(CrossgenToolPath))" />
 

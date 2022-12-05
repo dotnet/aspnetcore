@@ -13,7 +13,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
-    "@types/webpack": "^4.41.26",
+    "@types/webpack": "^5.28.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
     "eslint": "^8.16.0",

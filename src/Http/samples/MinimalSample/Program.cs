@@ -40,7 +40,7 @@ inner.MapGet("/innerget", () => "I'm more nested.");
 
 inner.AddEndpointFilterFactory((routeContext, next) =>
 {
-    Console.WriteLine($"Building filter! Num args: {routeContext.MethodInfo.GetParameters().Length}"); ;
+    Console.WriteLine($"Building filter! Num args: {routeContext.MethodInfo.GetParameters().Length}");
     return async invocationContext =>
     {
         Console.WriteLine("Running filter!");

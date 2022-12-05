@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -76,7 +77,7 @@ internal sealed class OpenApiGenerator
             Summary = metadata.GetMetadata<IEndpointSummaryMetadata>()?.Summary,
             Description = metadata.GetMetadata<IEndpointDescriptionMetadata>()?.Description,
             Tags = GetOperationTags(methodInfo, metadata),
-            Parameters = GetOpenApiParameters(methodInfo, metadata, pattern, disableInferredBody),
+            Parameters = GetOpenApiParameters(methodInfo, pattern, disableInferredBody),
             RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
@@ -192,7 +193,7 @@ internal sealed class OpenApiGenerator
 
         foreach (var annotation in eligibileAnnotations)
         {
-            var statusCode = annotation.Key.ToString(CultureInfo.InvariantCulture);
+            var statusCode = annotation.Key;
 
             // TODO: Use the discarded response Type for schema generation
             var (_, contentTypes) = annotation.Value;
@@ -203,7 +204,7 @@ internal sealed class OpenApiGenerator
                 responseContent[contentType] = new OpenApiMediaType();
             }
 
-            responses[statusCode] = new OpenApiResponse
+            responses[statusCode.ToString(CultureInfo.InvariantCulture)] = new OpenApiResponse
             {
                 Content = responseContent,
                 Description = GetResponseDescription(statusCode)
@@ -212,23 +213,8 @@ internal sealed class OpenApiGenerator
         return responses;
     }
 
-    private static string GetResponseDescription(string statusCode)
-    {
-        if (statusCode.Length != 3)
-        {
-            return string.Empty;
-        }
-        var first = statusCode[0];
-        return first switch
-        {
-            '1' => "Information",
-            '2' => "Success",
-            '3' => "Redirection",
-            '4' => "Client error",
-            '5' => "Server error",
-            _ => string.Empty,
-        };
-    }
+    private static string GetResponseDescription(int statusCode)
+        => ReasonPhrases.GetReasonPhrase(statusCode);
 
     private static void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type? discoveredTypeAnnotation)
     {
@@ -370,7 +356,7 @@ internal sealed class OpenApiGenerator
         return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
+    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         var openApiParameters = new List<OpenApiParameter>();
@@ -398,7 +384,6 @@ internal sealed class OpenApiGenerator
             {
                 Name = name,
                 In = parameterLocation,
-                Content = GetOpenApiParameterContent(metadata),
                 Required = !isOptional
 
             };
@@ -406,21 +391,6 @@ internal sealed class OpenApiGenerator
         }
 
         return openApiParameters;
-    }
-
-    private static Dictionary<string, OpenApiMediaType> GetOpenApiParameterContent(EndpointMetadataCollection metadata)
-    {
-        var openApiParameterContent = new Dictionary<string, OpenApiMediaType>();
-        var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
-        if (acceptsMetadata is not null)
-        {
-            foreach (var contentType in acceptsMetadata.ContentTypes)
-            {
-                openApiParameterContent.Add(contentType, new OpenApiMediaType());
-            }
-        }
-
-        return openApiParameterContent;
     }
 
     private (bool isBodyOrForm, ParameterLocation? locatedIn) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)

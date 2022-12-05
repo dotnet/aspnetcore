@@ -12,5 +12,5 @@ public class RemoteAuthenticationState
     /// Gets or sets the URL to which the application should redirect after a successful authentication operation.
     /// It must be a url within the page.
     /// </summary>
-    public string ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 }

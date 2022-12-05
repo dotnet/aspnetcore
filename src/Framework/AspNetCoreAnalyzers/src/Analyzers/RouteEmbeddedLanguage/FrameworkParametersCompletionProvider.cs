@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
@@ -123,10 +124,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
             return;
         }
 
-        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
-        {
-            return;
-        }
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
 
         // Don't offer route parameter names when the parameter type can't be bound to route parameters.
         // e.g. special types like HttpContext, non-primitive types that don't have a static TryParse method.
@@ -357,15 +355,13 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
                     if (attributeTypeSymbol != null)
                     {
-                        foreach (var nonRouteMetadataType in wellKnownTypes.NonRouteMetadataTypes)
+                        if (attributeTypeSymbol.ContainingSymbol is ITypeSymbol typeSymbol &&
+                            wellKnownTypes.Implements(typeSymbol, RouteWellKnownTypes.NonRouteMetadataTypes))
                         {
-                            if (attributeTypeSymbol.ContainingSymbol is ITypeSymbol typeSymbol &&
-                                typeSymbol.Implements(nonRouteMetadataType))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
-                        if (SymbolEqualityComparer.Default.Equals(attributeTypeSymbol.ContainingSymbol, wellKnownTypes.AsParametersAttribute))
+
+                        if (SymbolEqualityComparer.Default.Equals(attributeTypeSymbol.ContainingSymbol, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
                         {
                             return true;
                         }
@@ -398,7 +394,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
                 return true;
             }
             // Uri is valid.
-            if (SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Uri))
+            if (SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Get(WellKnownType.System_Uri)))
             {
                 return true;
             }
@@ -449,7 +445,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
                 methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
                 methodSymbol.Parameters.Length == 3 &&
                 methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_String &&
-                SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, wellKnownTypes.IFormatProvider) &&
+                SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, wellKnownTypes.Get(WellKnownType.System_IFormatProvider)) &&
                 methodSymbol.Parameters[2].RefKind == RefKind.Out;
         }
     }
