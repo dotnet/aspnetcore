@@ -77,4 +77,32 @@ public class HubConnectionBuilderTests
 
         Assert.IsType<MessagePackHubProtocol>(serviceProvider.GetService<IHubProtocol>());
     }
+
+    [Fact]
+    public void CanSetServerTimeout()
+    {
+        var serverTimeout = TimeSpan.FromMinutes(1);
+        var builder = new HubConnectionBuilder();
+        builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+        builder.WithUrl("http://example.com");
+        builder.ServerTimeout = serverTimeout;
+
+        var connection = builder.Build();
+
+        Assert.Equal(builder.ServerTimeout, connection.ServerTimeout);
+    }
+
+    [Fact]
+    public void CanSetKeepAliveInterval()
+    {
+        var keepAliveInterval = TimeSpan.FromMinutes(2);
+        var builder = new HubConnectionBuilder();
+        builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+        builder.WithUrl("http://example.com");
+        builder.KeepAliveInterval = keepAliveInterval;
+
+        var connection = builder.Build();
+
+        Assert.Equal(builder.KeepAliveInterval, connection.KeepAliveInterval);
+    }
 }

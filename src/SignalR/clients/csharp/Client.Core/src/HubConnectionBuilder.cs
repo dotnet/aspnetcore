@@ -22,6 +22,22 @@ public class HubConnectionBuilder : IHubConnectionBuilder
     public IServiceCollection Services { get; }
 
     /// <summary>
+    /// Gets or sets the server timeout interval for the connection.
+    /// </summary>
+    /// <remarks>
+    /// The client times out if it hasn't heard from the server for `this` long.
+    /// </remarks>
+    public TimeSpan? ServerTimeout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the interval at which the client sends ping messages.
+    /// </summary>
+    /// <remarks>
+    /// Sending any message resets the timer to the start of the interval.
+    /// </remarks>
+    public TimeSpan? KeepAliveInterval { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionBuilder"/> class.
     /// </summary>
     public HubConnectionBuilder()
@@ -52,7 +68,19 @@ public class HubConnectionBuilder : IHubConnectionBuilder
         var endPoint = serviceProvider.GetService<EndPoint>() ??
             throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(EndPoint)} was not configured.");
 
-        return serviceProvider.GetRequiredService<HubConnection>();
+        var hubConnection =  serviceProvider.GetRequiredService<HubConnection>();
+
+        if (ServerTimeout.HasValue)
+        {
+            hubConnection.ServerTimeout = ServerTimeout.Value;
+        }
+            
+        if (KeepAliveInterval.HasValue)
+        {
+            hubConnection.KeepAliveInterval = KeepAliveInterval.Value;
+        }
+            
+        return hubConnection;
     }
 
     // Prevents from being displayed in intellisense
