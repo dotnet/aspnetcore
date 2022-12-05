@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -20,6 +21,7 @@ internal sealed class HtmlRenderer : Renderer
 
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly IViewBufferScope _viewBufferScope;
+    private Channel<RenderBatch> _streamingRenderBatches;
 
     public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope)
         : base(serviceProvider, loggerFactory)
@@ -28,6 +30,8 @@ internal sealed class HtmlRenderer : Renderer
     }
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
+
+    public ChannelReader<RenderBatch> StreamingRenderBatches { get; private set; }
 
     /// <inheritdoc />
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -44,6 +48,13 @@ internal sealed class HtmlRenderer : Renderer
         // the contract that OnAfterRender should only be called when the display has successfully been updated
         // and the application is interactive. (Element and component references are populated and JavaScript interop
         // is available).
+
+        if (_streamingRenderBatches is not null)
+        {
+            return _streamingRenderBatches.Writer.WriteAsync(renderBatch).AsTask()
+                .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
+        }
+
         return CanceledRenderTask;
     }
 
@@ -57,6 +68,17 @@ internal sealed class HtmlRenderer : Renderer
         if (awaitQuiescence)
         {
             await quiescenceTask;
+        }
+        else
+        {
+            // For any subsequent render batches, we'll advertise them through a channel so that
+            // streaming rendering can observe them
+            _streamingRenderBatches = Channel.CreateUnbounded<RenderBatch>();
+            StreamingRenderBatches = _streamingRenderBatches.Reader;
+            _ = quiescenceTask.ContinueWith(task =>
+            {
+                _streamingRenderBatches.Writer.Complete(task.Exception);
+            }, TaskScheduler.Current); // TODO: Preemptively cancel if request is cancelled?
         }
 
         return new ComponentRenderedText(componentId, new ComponentHtmlContent(this, componentId));
