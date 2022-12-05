@@ -442,7 +442,7 @@ public class TagBuilder : IHtmlContent
     {
         public static bool IsValidIdCharacter(char testChar)
         {
-            return char.IsAsciiLetter(testChar) || char.IsAsciiDigit(testChar) || IsAllowableSpecialCharacter(testChar);
+            return char.IsAsciiLetterOrDigit(testChar) || IsAllowableSpecialCharacter(testChar);
         }
 
         private static bool IsAllowableSpecialCharacter(char testChar)
