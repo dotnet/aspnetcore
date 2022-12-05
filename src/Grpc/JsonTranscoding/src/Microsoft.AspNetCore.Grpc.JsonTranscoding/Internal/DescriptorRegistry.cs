@@ -59,6 +59,7 @@ internal sealed class DescriptorRegistry
 
     private void AddDescriptorsRecursive(MessageDescriptor messageDescriptor)
     {
+        // Type is null for map entry message types. Just skip adding them.
         if (messageDescriptor.ClrType != null)
         {
             _typeDescriptorMap[messageDescriptor.ClrType] = messageDescriptor;
