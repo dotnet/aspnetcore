@@ -94,7 +94,8 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
             var result = await staticComponentRenderer.PrerenderComponentAsync(
                 rootComponentParameters,
                 httpContext,
-                rootComponentType);
+                rootComponentType,
+                awaitQuiescence: false);
 
             var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(RazorComponentsEndpointRouteBuilderExtensions), ViewBuffer.ViewPageSize);
             viewBuffer.AppendHtml(result);

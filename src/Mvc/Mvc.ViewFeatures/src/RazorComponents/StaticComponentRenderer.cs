@@ -27,7 +27,8 @@ internal sealed class StaticComponentRenderer
     public async ValueTask<IHtmlContent> PrerenderComponentAsync(
         ParameterView parameters,
         HttpContext httpContext,
-        Type componentType)
+        Type componentType,
+        bool awaitQuiescence)
     {
         await InitializeStandardComponentServicesAsync(httpContext);
 
@@ -36,7 +37,8 @@ internal sealed class StaticComponentRenderer
         {
             result = await _renderer.Dispatcher.InvokeAsync(() => _renderer.RenderComponentAsync(
                 componentType,
-                parameters));
+                parameters,
+                awaitQuiescence));
         }
         catch (NavigationException navigationException)
         {

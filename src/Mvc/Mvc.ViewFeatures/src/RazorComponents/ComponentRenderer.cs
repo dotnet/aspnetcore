@@ -123,7 +123,8 @@ internal sealed class ComponentRenderer : IComponentRenderer
         return _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
             context,
-            type);
+            type,
+            awaitQuiescence: true);
     }
 
     private async Task<IHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
@@ -142,7 +143,8 @@ internal sealed class ComponentRenderer : IComponentRenderer
         var result = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
             context,
-            type);
+            type,
+            awaitQuiescence: true);
 
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ViewBuffer.ViewPageSize);
         ServerComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
@@ -162,7 +164,8 @@ internal sealed class ComponentRenderer : IComponentRenderer
         var result = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
             context,
-            type);
+            type,
+            awaitQuiescence: true);
 
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ViewBuffer.ViewPageSize);
         WebAssemblyComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);

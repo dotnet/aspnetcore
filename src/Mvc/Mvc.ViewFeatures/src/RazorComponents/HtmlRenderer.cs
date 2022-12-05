@@ -47,18 +47,24 @@ internal sealed class HtmlRenderer : Renderer
         return CanceledRenderTask;
     }
 
-    public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters)
+    public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters, bool awaitQuiescence)
     {
         var component = InstantiateComponent(componentType);
         var componentId = AssignRootComponentId(component);
 
-        await RenderRootComponentAsync(componentId, initialParameters);
+        var quiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
+
+        if (awaitQuiescence)
+        {
+            await quiescenceTask;
+        }
+
         return new ComponentRenderedText(componentId, new ComponentHtmlContent(this, componentId));
     }
 
-    public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
+    public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters, bool awaitQuiescence) where TComponent : IComponent
     {
-        return RenderComponentAsync(typeof(TComponent), initialParameters);
+        return RenderComponentAsync(typeof(TComponent), initialParameters, awaitQuiescence);
     }
 
     /// <inheritdoc />
