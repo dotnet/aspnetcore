@@ -96,7 +96,7 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(64, LogLevel.Warning, "HTTP/2 is not enabled for {Endpoint}. The endpoint is configured to use HTTP/1.1 and HTTP/2, but TLS is not enabled. HTTP/2 requires TLS application protocol negotiation. Connections to this endpoint will use HTTP/1.1.", EventName = "Http2DisabledWithHttp1AndNoTls")]
         public static partial void Http2DisabledWithHttp1AndNoTls(ILogger logger, EndPoint endPoint);
 
-        [LoggerMessage(65, LogLevel.Information, "HTTP/3 is not enabled for {Endpoint}. HTTP/3 requires TLS. Connections to this endpoint will use HTTP/1.1.", EventName = "Http3DisabledWithHttp1AndNoTls")]
+        [LoggerMessage(65, LogLevel.Warning, "HTTP/3 is not enabled for {Endpoint}. HTTP/3 requires TLS. Connections to this endpoint will use HTTP/1.1.", EventName = "Http3DisabledWithHttp1AndNoTls")]
         public static partial void Http3DisabledWithHttp1AndNoTls(ILogger logger, EndPoint endPoint);
 
         // Highest shared ID is 65. New consecutive IDs start at 66
