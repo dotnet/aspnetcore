@@ -44,9 +44,10 @@ internal class PassiveComponentRenderer
         var routeData = httpContext.GetRouteData();
         var rootComponentType = typeof(RouteView);
         var combinedParametersDict = GetCombinedParameters(routeData, parameters);
+        var formValues = httpContext.Request.HasFormContentType ? httpContext.Request.Form : null;
         var rootComponentParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            { nameof(RouteView.RouteData), new Components.RouteData(componentType, combinedParametersDict!) },
+            { nameof(RouteView.RouteData), new Components.RouteData(componentType, combinedParametersDict!) { FormValues = formValues } },
         });
 
         var result = await staticComponentRenderer.PrerenderComponentAsync(

@@ -57,7 +57,7 @@ internal sealed class QueryParameterValueSupplier
             for (var destinationIndex = 0; destinationIndex < _destinations.Length; destinationIndex++)
             {
                 ref var destination = ref _destinations[destinationIndex];
-                var blankValue = destination.IsArray ? destination.Parser.ParseMultiple(default, string.Empty) : null;
+                var blankValue = destination.IsArray ? destination.Parser.ParseMultiple((StringSegmentAccumulator)default, string.Empty) : null;
                 builder.AddAttribute(0, destination.ComponentParameterName, blankValue);
             }
             return;

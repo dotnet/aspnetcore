@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -43,4 +44,9 @@ public sealed class RouteData
     /// Gets route parameter values extracted from the matched route.
     /// </summary>
     public IReadOnlyDictionary<string, object> RouteValues { get; }
+
+    /// <summary>
+    /// Gets form values associated with the current page load.
+    /// </summary>
+    public IEnumerable<KeyValuePair<string, StringValues>>? FormValues { get; init; }
 }

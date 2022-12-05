@@ -7,10 +7,10 @@
 <p id="counter">Current count: @CurrentCount</p>
 
 <form method="post">
-    <input type="hidden" name="currentCount" value="@CurrentCount" />
+    <input type="hidden" name="@nameof(CurrentCount)" value="@(CurrentCount + 1)" />
     <button class="btn btn-primary">Click me</button>
 </form>
 
 @code {
-    [Parameter] public int CurrentCount { get; set; }
+    [Parameter, SupplyParameterFromForm] public int CurrentCount { get; set; }
 }

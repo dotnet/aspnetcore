@@ -111,6 +111,14 @@ public class RouteView : IComponent
             queryParameterSupplier.RenderParametersFromQueryString(builder, query);
         }
 
+        if (RouteData.FormValues is { } formValues
+            && FormParameterValueSupplier.ForType(RouteData.PageType) is { } formParameterValueSupplier)
+        {
+            // Form parameters are only set during passive rendering, so we don't need to be concerned with
+            // them changing later
+            formParameterValueSupplier.RenderParametersFromForm(builder, formValues);
+        }
+
         builder.CloseComponent();
     }
 }

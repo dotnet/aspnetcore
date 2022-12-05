@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -94,6 +95,8 @@ internal abstract class UrlValueConstraint
 
     public abstract Array ParseMultiple(StringSegmentAccumulator values, string destinationNameForMessage);
 
+    public abstract Array ParseMultiple(StringValues values, string destinationNameForMessage);
+
     private class TypedUrlValueConstraint<T> : UrlValueConstraint
     {
         private readonly TryParseDelegate<T> _parser;
@@ -140,6 +143,27 @@ internal abstract class UrlValueConstraint
             for (var i = 0; i < count; i++)
             {
                 if (!_parser(values[i].Span, out result[i]))
+                {
+                    throw new InvalidOperationException($"Cannot parse the value '{values[i]}' as type '{typeof(T)}' for '{destinationNameForMessage}'.");
+                }
+            }
+
+            return result;
+        }
+
+        public override Array ParseMultiple(StringValues values, string destinationNameForMessage)
+        {
+            var count = values.Count;
+            if (count == 0)
+            {
+                return Array.Empty<T>();
+            }
+
+            var result = new T?[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                if (!_parser(values[i], out result[i]))
                 {
                     throw new InvalidOperationException($"Cannot parse the value '{values[i]}' as type '{typeof(T)}' for '{destinationNameForMessage}'.");
                 }

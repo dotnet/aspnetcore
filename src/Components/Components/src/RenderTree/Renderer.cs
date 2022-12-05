@@ -131,6 +131,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // Before re-rendering the root component, also clear any well-known caches in the framework
         ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
+        Routing.FormParameterValueSupplier.ClearCache();
         Routing.QueryParameterValueSupplier.ClearCache();
 
         await Dispatcher.InvokeAsync(() =>

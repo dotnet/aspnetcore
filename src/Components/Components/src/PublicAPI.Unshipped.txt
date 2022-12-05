@@ -6,6 +6,8 @@ Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandle
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void
+Microsoft.AspNetCore.Components.RouteData.FormValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>?
+Microsoft.AspNetCore.Components.RouteData.FormValues.init -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get -> System.Threading.CancellationToken
@@ -18,6 +20,10 @@ Microsoft.AspNetCore.Components.Routing.LocationChangingContext.LocationChanging
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation() -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.get -> string!
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.init -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Action! callback) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Func<System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.Task!
