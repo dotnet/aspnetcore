@@ -382,7 +382,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         return false;
     }
 
-    internal static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
+    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
     {
         if (token.Parent.IsKind(SyntaxKind.PredefinedType))
         {
