@@ -1,0 +1,23 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+
+<button @attributes="@AdditionalAttributes" type="submit" name="@FormActionKey" value="@Name">@ChildContent</button>
+
+@code {
+    const string FormActionKey = "__formaction";
+
+    [Parameter, EditorRequired] public string Name { get; set; } = default!;
+    [Parameter, EditorRequired] public EventCallback OnClick { get; set; } = default!;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var req = HttpContextAccessor.HttpContext?.Request;
+        var form = req?.HasFormContentType == true ? req.Form : null;
+        if (form?.TryGetValue(FormActionKey, out var postedAction) == true && postedAction == Name)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+}
+

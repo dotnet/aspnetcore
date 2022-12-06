@@ -27,6 +27,9 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
             .AddDataAnnotations()
             .AddRazorPages();
 
+        // TODO: Create a better way to get the passive request's HTTP context
+        services.AddHttpContextAccessor();
+
         services.AddScoped<PassiveComponentRenderer>();
     }
 

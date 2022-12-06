@@ -4,26 +4,35 @@
 
 <h1>Counter</h1>
 
-<p id="counter">Current count: @CurrentCount</p>
+<p>Current count: @CurrentCount</p>
 
 <form method="post">
     <input name="@nameof(CurrentCount)" type="hidden" value="@CurrentCount" />
-    <button name="@nameof(Action)" value="@ActionType.Increment" class="btn btn-primary">Increment</button>
-    <button name="@nameof(Action)" value="@ActionType.Decrement" class="btn btn-primary">Decrement</button>
+
+    <ActionButton Name="inc" OnClick="@(() => ChangeCount(1))" class="btn btn-primary" disabled="@inProgress">
+        Increment
+    </ActionButton>
+
+    <ActionButton Name="dec" OnClick="@(() => ChangeCount(-1))" class="btn btn-primary" disabled="@inProgress">
+        Decrement
+    </ActionButton>
+
+    @if (inProgress)
+    {
+        <span class="ml-4 text-black-50">Please wait...</span>
+    }
 </form>
 
 @code {
     [Parameter, SupplyParameterFromForm] public int CurrentCount { get; set; }
-    [Parameter, SupplyParameterFromForm] public ActionType Action { get; set; }
 
-    protected override void OnInitialized()
+    bool inProgress;
+
+    async Task ChangeCount(int offset)
     {
-        switch (Action)
-        {
-            case ActionType.Increment: CurrentCount++; break;
-            case ActionType.Decrement: CurrentCount--; break;
-        }
+        inProgress = true;
+        await Task.Delay(500);
+        CurrentCount += offset;
+        inProgress = false;
     }
-
-    public enum ActionType { Increment, Decrement }
 }
