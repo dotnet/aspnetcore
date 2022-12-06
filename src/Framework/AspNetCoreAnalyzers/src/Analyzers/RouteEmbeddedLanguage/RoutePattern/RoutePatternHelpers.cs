@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 
@@ -24,7 +25,11 @@ internal static class RoutePatternHelpers
     {
         if (Equals(nodeOrToken.Kind, kind))
         {
-            node = nodeOrToken.Node!;
+            // Caller is specifying the kind so should know that the kind is for a node.
+            // Double check just in case.
+            AnalyzerDebug.Assert(nodeOrToken.Node != null);
+
+            node = nodeOrToken.Node;
             return true;
         }
 
