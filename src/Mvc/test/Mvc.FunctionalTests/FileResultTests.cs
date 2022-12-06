@@ -289,7 +289,7 @@ public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows)]
+    [OSSkipCondition(OperatingSystems.Windows)] // Creating symlinks requires special permissions on Windows
     public async Task FileFromDisk_ReturnsFileFromSymlink()
     {
         // Arrange & Act
