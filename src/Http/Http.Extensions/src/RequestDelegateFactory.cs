@@ -66,6 +66,7 @@ public static partial class RequestDelegateFactory
     private static readonly PropertyInfo FormIndexerProperty = typeof(IFormCollection).GetProperty("Item")!;
 
     private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo JsonResultWriteResponseOfTAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponseOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -1111,8 +1112,8 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType.IsValueType)
         {
-            var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, factoryContext.JsonSerializerOptionsExpression);
+            return Expression.Call(JsonResultWriteResponseOfTAsyncMethod.MakeGenericMethod(returnType),
+                HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression);
         }
         else
         {
@@ -2258,7 +2259,13 @@ public static partial class RequestDelegateFactory
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
         return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, value is null ? typeof(object) : value.GetType(), options, default);
+    }
 
+    // Only for use with structs, use WriteJsonResponse for classes to preserve polymorphism
+    private static Task WriteJsonResponseOfT<T>(HttpResponse response, T value, JsonSerializerOptions? options)
+    {
+        Debug.Assert(typeof(T).IsValueType);
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, options, default);
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
