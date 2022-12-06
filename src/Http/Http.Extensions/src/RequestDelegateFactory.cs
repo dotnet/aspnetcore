@@ -2264,6 +2264,7 @@ public static partial class RequestDelegateFactory
     // Only for use with structs, use WriteJsonResponse for classes to preserve polymorphism
     private static Task WriteJsonResponseOfT<T>(HttpResponse response, T value, JsonSerializerOptions? options)
     {
+        Debug.Assert(typeof(T).IsValueType);
         return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, options, default);
     }
 
