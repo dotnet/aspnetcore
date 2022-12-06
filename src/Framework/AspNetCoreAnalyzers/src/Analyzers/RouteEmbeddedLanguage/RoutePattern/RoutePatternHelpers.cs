@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
@@ -23,10 +24,10 @@ internal static class RoutePatternHelpers
         where TSyntaxKind : struct
         where TSyntaxNode : EmbeddedSyntaxNode<TSyntaxKind, TSyntaxNode>
     {
-        if (Equals(nodeOrToken.Kind, kind))
+        // Use EqualityComparer.Equals instead of object.Equals to avoid boxing.
+        if (EqualityComparer<TSyntaxKind>.Default.Equals(nodeOrToken.Kind, kind))
         {
-            // Caller is specifying the kind so should know that the kind is for a node.
-            // Double check just in case.
+            // Caller is specifying the kind so should know that the kind is for a node. Assert to double check.
             AnalyzerDebug.Assert(nodeOrToken.Node != null);
 
             node = nodeOrToken.Node;
