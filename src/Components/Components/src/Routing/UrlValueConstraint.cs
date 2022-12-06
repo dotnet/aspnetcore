@@ -86,8 +86,30 @@ internal abstract class UrlValueConstraint
         var x when x == typeof(int?) => new NullableTypedUrlValueConstraint<int>(TryParse),
         var x when x == typeof(long) => new TypedUrlValueConstraint<long>(TryParse),
         var x when x == typeof(long?) => new NullableTypedUrlValueConstraint<long>(TryParse),
+
+        // TODO: Support enums not of int type
+        var x when x.IsEnum => new TypedUrlValueConstraint<int>(TryParseEnum<int>(x)),
+        var x when Nullable.GetUnderlyingType(x) is Type underlying && underlying.IsEnum => new NullableTypedUrlValueConstraint<int>(TryParseEnum<int>(underlying)),
+
         var x => null
     };
+
+    private static TryParseDelegate<T> TryParseEnum<T>(Type enumType)
+    {
+        return (ReadOnlySpan<char> str, [MaybeNullWhen(false)] out T result) =>
+        {
+            if (Enum.TryParse(enumType, str, out var parsedAsEnum))
+            {
+                result = (T)parsedAsEnum;
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        };
+    }
 
     public abstract bool TryParse(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out object result);
 
