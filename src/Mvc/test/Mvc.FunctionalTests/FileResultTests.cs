@@ -288,7 +288,8 @@ public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup
         Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows)]
     public async Task FileFromDisk_ReturnsFileFromSymlink()
     {
         // Arrange & Act
