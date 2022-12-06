@@ -288,28 +288,25 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         return SyntaxFacts.IsPredefinedType(token.Kind()) || token.IsKind(SyntaxKind.IdentifierToken);
     }
 
-    private static SyntaxToken? TryGetMvcActionRouteToken(CompletionContext context, SemanticModel semanticModel, MethodDeclarationSyntax? method)
+    private static SyntaxToken? TryGetMvcActionRouteToken(CompletionContext context, SemanticModel semanticModel, MethodDeclarationSyntax method)
     {
-        if (method != null)
+        foreach (var attributeList in method.AttributeLists)
         {
-            foreach (var attributeList in method.AttributeLists)
+            foreach (var attribute in attributeList.Attributes)
             {
-                foreach (var attribute in attributeList.Attributes)
+                if (attribute.ArgumentList != null)
                 {
-                    if (attribute.ArgumentList != null)
+                    foreach (var attributeArgument in attribute.ArgumentList.Arguments)
                     {
-                        foreach (var attributeArgument in attribute.ArgumentList.Arguments)
+                        if (RouteStringSyntaxDetector.IsArgumentToAttributeParameterWithMatchingStringSyntaxAttribute(
+                            semanticModel,
+                            attributeArgument,
+                            context.CancellationToken,
+                            out var identifer) &&
+                            identifer == "Route" &&
+                            attributeArgument.Expression is LiteralExpressionSyntax literalExpression)
                         {
-                            if (RouteStringSyntaxDetector.IsArgumentToAttributeParameterWithMatchingStringSyntaxAttribute(
-                                semanticModel,
-                                attributeArgument,
-                                context.CancellationToken,
-                                out var identifer) &&
-                                identifer == "Route" &&
-                                attributeArgument.Expression is LiteralExpressionSyntax literalExpression)
-                            {
-                                return literalExpression.Token;
-                            }
+                            return literalExpression.Token;
                         }
                     }
                 }

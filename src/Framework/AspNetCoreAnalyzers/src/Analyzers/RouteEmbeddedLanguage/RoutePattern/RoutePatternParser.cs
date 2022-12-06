@@ -7,8 +7,11 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 
@@ -126,7 +129,7 @@ internal partial struct RoutePatternParser
         RoutePatternParameterNode? catchAllParameterNode = null;
         foreach (var part in root)
         {
-            if (part.Kind == RoutePatternKind.Segment)
+            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
             {
                 if (catchAllParameterNode != null)
                 {
@@ -136,15 +139,15 @@ internal partial struct RoutePatternParser
                 }
 
                 // Check that segment doesn't have catch-all in a complex segment.
-                foreach (var segmentPart in part.Node!)
+                foreach (var segmentPart in segmentNode)
                 {
-                    if (segmentPart.Kind == RoutePatternKind.Parameter)
+                    if (segmentPart.TryGetNode(RoutePatternKind.Parameter, out var parameterNode))
                     {
-                        var catchAllParameterPart = (RoutePatternCatchAllParameterPartNode?)segmentPart.Node!.GetChildNode(RoutePatternKind.CatchAll);
+                        var catchAllParameterPart = parameterNode.GetChildNode(RoutePatternKind.CatchAll);
                         if (catchAllParameterPart != null)
                         {
-                            catchAllParameterNode = (RoutePatternParameterNode)segmentPart.Node!;
-                            if (part.Node.ChildCount > 1)
+                            catchAllParameterNode = (RoutePatternParameterNode)parameterNode;
+                            if (segmentNode.ChildCount > 1)
                             {
                                 diagnostics.Add(new EmbeddedDiagnostic(Resources.TemplateRoute_CannotHaveCatchAllInMultiSegment, catchAllParameterNode.GetSpan()));
                             }
@@ -160,9 +163,9 @@ internal partial struct RoutePatternParser
         RoutePatternNode? previousNode = null;
         foreach (var part in root)
         {
-            if (part.Kind == RoutePatternKind.Segment)
+            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
             {
-                foreach (var segmentPart in part.Node!)
+                foreach (var segmentPart in segmentNode)
                 {
                     if (previousNode != null && previousNode.Kind == RoutePatternKind.Parameter)
                     {
@@ -171,16 +174,15 @@ internal partial struct RoutePatternParser
                         if (isOptional)
                         {
                             var message = Resources.FormatTemplateRoute_OptionalParameterHasTobeTheLast(
-                                part.Node.ToString(),
+                                segmentNode.ToString(),
                                 previousParameterNode.GetChildNode(RoutePatternKind.ParameterName)!.ToString(),
                                 segmentPart.Node!.ToString());
-                            diagnostics.Add(new EmbeddedDiagnostic(message, part.Node.GetSpan()));
+                            diagnostics.Add(new EmbeddedDiagnostic(message, segmentNode.GetSpan()));
                         }
                     }
 
-                    if (segmentPart.Kind == RoutePatternKind.Parameter && previousNode != null)
+                    if (previousNode != null && segmentPart.TryGetNode(RoutePatternKind.Parameter, out var parameterNode))
                     {
-                        var parameterNode = (RoutePatternParameterNode)segmentPart.Node!;
                         var isOptional = parameterNode.GetChildNode(RoutePatternKind.Optional) != null;
                         if (isOptional)
                         {
@@ -189,7 +191,7 @@ internal partial struct RoutePatternParser
                             if (previousNode.Kind != RoutePatternKind.Literal || ((RoutePatternLiteralNode)previousNode).LiteralToken.Value!.ToString() != ".")
                             {
                                 var message = Resources.FormatTemplateRoute_OptionalParameterCanbBePrecededByPeriod(
-                                    part.Node.ToString(),
+                                    segmentNode.ToString(),
                                     parameterNode.GetChildNode(RoutePatternKind.ParameterName)!.ToString(),
                                     previousNode.ToString());
                                 diagnostics.Add(new EmbeddedDiagnostic(message, parameterNode.GetSpan()));
@@ -214,13 +216,12 @@ internal partial struct RoutePatternParser
     {
         foreach (var part in root)
         {
-            if (part.Kind == RoutePatternKind.Segment)
+            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
             {
-                foreach (var segmentPart in part.Node!)
+                foreach (var segmentPart in segmentNode)
                 {
-                    if (segmentPart.Kind == RoutePatternKind.Parameter)
+                    if (segmentPart.TryGetNode(RoutePatternKind.Parameter, out var parameterNode))
                     {
-                        var parameterNode = (RoutePatternParameterNode)segmentPart.Node!;
                         var hasOptional = false;
                         var hasCatchAll = false;
                         var encodeSlashes = true;
@@ -229,33 +230,36 @@ internal partial struct RoutePatternParser
                         var policies = ImmutableArray.CreateBuilder<string>();
                         foreach (var parameterPart in parameterNode)
                         {
-                            switch (parameterPart.Kind)
+                            if (parameterPart.Node != null)
                             {
-                                case RoutePatternKind.ParameterName:
-                                    var parameterNameNode = (RoutePatternNameParameterPartNode)parameterPart.Node!;
-                                    if (!parameterNameNode.ParameterNameToken.IsMissing)
-                                    {
-                                        name = parameterNameNode.ParameterNameToken.Value!.ToString();
-                                    }
-                                    break;
-                                case RoutePatternKind.Optional:
-                                    hasOptional = true;
-                                    break;
-                                case RoutePatternKind.DefaultValue:
-                                    var defaultValueNode = (RoutePatternDefaultValueParameterPartNode)parameterPart.Node!;
-                                    if (!defaultValueNode.DefaultValueToken.IsMissing)
-                                    {
-                                        defaultValue = defaultValueNode.DefaultValueToken.Value!.ToString();
-                                    }
-                                    break;
-                                case RoutePatternKind.CatchAll:
-                                    var catchAllNode = (RoutePatternCatchAllParameterPartNode)parameterPart.Node!;
-                                    encodeSlashes = catchAllNode.AsteriskToken.VirtualChars.Length == 1;
-                                    hasCatchAll = true;
-                                    break;
-                                case RoutePatternKind.ParameterPolicy:
-                                    policies.Add(parameterPart.Node!.ToString());
-                                    break;
+                                switch (parameterPart.Kind)
+                                {
+                                    case RoutePatternKind.ParameterName:
+                                        var parameterNameNode = (RoutePatternNameParameterPartNode)parameterPart.Node;
+                                        if (!parameterNameNode.ParameterNameToken.IsMissing)
+                                        {
+                                            name = parameterNameNode.ParameterNameToken.Value!.ToString();
+                                        }
+                                        break;
+                                    case RoutePatternKind.Optional:
+                                        hasOptional = true;
+                                        break;
+                                    case RoutePatternKind.DefaultValue:
+                                        var defaultValueNode = (RoutePatternDefaultValueParameterPartNode)parameterPart.Node;
+                                        if (!defaultValueNode.DefaultValueToken.IsMissing)
+                                        {
+                                            defaultValue = defaultValueNode.DefaultValueToken.Value!.ToString();
+                                        }
+                                        break;
+                                    case RoutePatternKind.CatchAll:
+                                        var catchAllNode = (RoutePatternCatchAllParameterPartNode)parameterPart.Node;
+                                        encodeSlashes = catchAllNode.AsteriskToken.VirtualChars.Length == 1;
+                                        hasCatchAll = true;
+                                        break;
+                                    case RoutePatternKind.ParameterPolicy:
+                                        policies.Add(parameterPart.Node.ToString());
+                                        break;
+                                }
                             }
                         }
 
@@ -291,9 +295,9 @@ internal partial struct RoutePatternParser
         RoutePatternSegmentSeperatorNode? previousNode = null;
         foreach (var part in root)
         {
-            if (part.Kind == RoutePatternKind.Seperator)
+            if (part.TryGetNode(RoutePatternKind.Seperator, out var seperatorNode))
             {
-                var currentNode = (RoutePatternSegmentSeperatorNode)part.Node!;
+                var currentNode = (RoutePatternSegmentSeperatorNode)seperatorNode;
                 if (previousNode != null)
                 {
                     diagnostics.Add(
