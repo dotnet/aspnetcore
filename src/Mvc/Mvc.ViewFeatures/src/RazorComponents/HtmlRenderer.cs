@@ -6,8 +6,12 @@ using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
@@ -21,12 +25,14 @@ internal sealed class HtmlRenderer : Renderer
 
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly IViewBufferScope _viewBufferScope;
+    private readonly IServiceProvider _serviceProvider;
     private Channel<RenderBatch> _streamingRenderBatches;
 
     public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope)
         : base(serviceProvider, loggerFactory)
     {
         _viewBufferScope = viewBufferScope;
+        _serviceProvider = serviceProvider;
     }
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
@@ -146,8 +152,22 @@ internal sealed class HtmlRenderer : Renderer
         int position)
     {
         ref var frame = ref frames.Array[position];
+
+        var marker = (ServerComponentMarker?)null;
+        if (frame.ComponentRenderMode == WebComponentRenderMode.Server.NumericValue)
+        {
+            marker = context.SerializeInvocation(frames, position, prerendered: true);
+            ServerComponentSerializer.AppendPreamble(context.HtmlContentBuilder, marker.Value);
+        }
+
         var childFrames = GetCurrentRenderTreeFrames(frame.ComponentId);
         RenderFrames(context, childFrames, 0, childFrames.Count);
+
+        if (marker.HasValue)
+        {
+            ServerComponentSerializer.AppendEpilogue(context.HtmlContentBuilder, marker.Value);
+        }
+
         return position + frame.ComponentSubtreeLength;
     }
 
@@ -278,7 +298,7 @@ internal sealed class HtmlRenderer : Renderer
     private ViewBuffer GetRenderedHtmlContent(int componentId)
     {
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-        var context = new HtmlRenderingContext(viewBuffer);
+        var context = new HtmlRenderingContext(viewBuffer, _serviceProvider);
 
         var frames = GetCurrentRenderTreeFrames(componentId);
         var newPosition = RenderFrames(context, frames, 0, frames.Count);
@@ -289,14 +309,33 @@ internal sealed class HtmlRenderer : Renderer
 
     private sealed class HtmlRenderingContext
     {
-        public HtmlRenderingContext(ViewBuffer viewBuffer)
+        private readonly IServiceProvider _serviceProvider;
+        private ServerComponentSerializer _serverComponentSerializer;
+        private ServerComponentInvocationSequence _serverComponentSequence;
+
+        public HtmlRenderingContext(ViewBuffer viewBuffer, IServiceProvider serviceProvider)
         {
             HtmlContentBuilder = viewBuffer;
+            _serviceProvider = serviceProvider;
         }
 
         public ViewBuffer HtmlContentBuilder { get; }
 
         public string ClosestSelectValueAsString { get; set; }
+
+        public ServerComponentMarker SerializeInvocation(ArrayRange<RenderTreeFrame> frames, int position, bool prerendered)
+        {
+            if (_serverComponentSerializer is null)
+            {
+                var dataProtectionProvider = _serviceProvider.GetRequiredService<IDataProtectionProvider>();
+                _serverComponentSerializer = new ServerComponentSerializer(dataProtectionProvider);
+                _serverComponentSequence = new();
+            }
+
+            ref var componentFrame = ref frames.Array[position];
+            var parameters = ParameterView.DangerouslyCaptureUnboundComponentParameters(frames, position);
+            return _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered);
+        }
     }
 
     /// <summary>

@@ -298,6 +298,15 @@ public readonly struct ParameterView
     }
 
     /// <summary>
+    /// TODO: This should not be public. It's safe when used like HtmlRenderer does (just to immediately
+    /// serialize out the data, not holding it across renders) but would be dangerous in more general cases.
+    /// </summary>
+    public static ParameterView DangerouslyCaptureUnboundComponentParameters(ArrayRange<RenderTreeFrame> frames, int ownerIndex)
+    {
+        return new ParameterView(ParameterViewLifetime.Unbound, frames.Array, ownerIndex);
+    }
+
+    /// <summary>
     /// For each parameter property on <paramref name="target"/>, updates its value to
     /// match the corresponding entry in the <see cref="ParameterView"/>.
     /// </summary>

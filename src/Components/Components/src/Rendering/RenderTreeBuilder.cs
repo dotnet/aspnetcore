@@ -430,6 +430,34 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Adds an attribute specifying the render mode of the closest component frame.
+    ///
+    /// TEMPORARY. Longer term, we should make the Razor compiler have a native @rendermode directive attribute,
+    /// which will produce a call to some distinct API instead of relying on an AddAttribute overload.
+    /// </summary>
+    public void AddAttribute(int sequence, string name, ComponentRenderMode renderMode)
+    {
+        if (string.Equals(name, "rendermode"))
+        {
+            AssertCanAddAttribute();
+
+            var componentFrameIndex = GetCurrentParentFrameIndex()!;
+            ref var componentFrame = ref _entries.Buffer[componentFrameIndex.Value];
+            if (componentFrame.FrameType != RenderTreeFrameType.Component)
+            {
+                throw new InvalidOperationException("'rendermode' can only be specified on components.");
+            }
+
+            componentFrame = componentFrame.WithRenderMode(renderMode);
+        }
+        else
+        {
+            // Fall back to treating as a normal attribute
+            AddAttribute(sequence, name, (object)renderMode);
+        }
+    }
+
+    /// <summary>
     /// Adds frames representing multiple attributes with the same sequence number.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>

@@ -1,11 +1,15 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ComponentRenderMode
+Microsoft.AspNetCore.Components.ComponentRenderMode.ComponentRenderMode(byte numericValue) -> void
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.set -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChangingAsync(string! uri, string? state, bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!, System.Threading.Tasks.ValueTask>! locationChangingHandler) -> System.IDisposable!
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, Microsoft.AspNetCore.Components.ComponentRenderMode! renderMode) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentRenderMode.get -> byte
 Microsoft.AspNetCore.Components.RouteData.FormValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>?
 Microsoft.AspNetCore.Components.RouteData.FormValues.init -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
@@ -24,6 +28,7 @@ Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
+readonly Microsoft.AspNetCore.Components.ComponentRenderMode.NumericValue -> byte
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Action! callback) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Func<System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.Task!
@@ -60,6 +65,8 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.Crea
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<short?> setter, short? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<string?> setter, string! existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> setter, T existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.ParameterView.DangerouslyCaptureUnboundComponentParameters(Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> frames, int ownerIndex) -> Microsoft.AspNetCore.Components.ParameterView
+static readonly Microsoft.AspNetCore.Components.ComponentRenderMode.Unspecified -> Microsoft.AspNetCore.Components.ComponentRenderMode!
 virtual Microsoft.AspNetCore.Components.NavigationManager.HandleLocationChangingHandlerException(System.Exception! ex, Microsoft.AspNetCore.Components.Routing.LocationChangingContext! context) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.SetNavigationLockState(bool value) -> void
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!

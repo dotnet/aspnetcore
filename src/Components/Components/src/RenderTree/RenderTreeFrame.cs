@@ -136,6 +136,7 @@ public struct RenderTreeFrame
     // RenderTreeFrameType.Component
     // --------------------------------------------------------------------------------
 
+    [FieldOffset(6)] internal byte ComponentRenderModeField;
     [FieldOffset(8)] internal int ComponentSubtreeLengthField;
     [FieldOffset(12)] internal int ComponentIdField;
     [FieldOffset(16)]
@@ -143,6 +144,12 @@ public struct RenderTreeFrame
     internal Type ComponentTypeField;
     [FieldOffset(24)] internal ComponentState ComponentStateField;
     [FieldOffset(32)] internal object ComponentKeyField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
+    /// gets the component render mode's numeric value.
+    /// </summary>
+    public byte ComponentRenderMode => ComponentRenderModeField;
 
     /// <summary>
     /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
@@ -262,7 +269,7 @@ public struct RenderTreeFrame
     }
 
     // Component constructor
-    private RenderTreeFrame(int sequence, int componentSubtreeLength, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, ComponentState componentState, object componentKey)
+    private RenderTreeFrame(int sequence, int componentSubtreeLength, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, ComponentState componentState, object componentKey, byte componentRenderMode)
         : this()
     {
         SequenceField = sequence;
@@ -270,6 +277,7 @@ public struct RenderTreeFrame
         ComponentSubtreeLengthField = componentSubtreeLength;
         ComponentTypeField = componentType;
         ComponentKeyField = componentKey;
+        ComponentRenderModeField = componentRenderMode;
 
         if (componentState != null)
         {
@@ -349,10 +357,10 @@ public struct RenderTreeFrame
         => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value, attributeEventHandlerId: 0, attributeEventUpdatesAttributeName: null);
 
     internal static RenderTreeFrame ChildComponent(int sequence, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType)
-        => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
+        => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null, default);
 
     internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)
-        => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null);
+        => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null, default);
 
     internal static RenderTreeFrame Region(int sequence)
         => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
@@ -367,13 +375,16 @@ public struct RenderTreeFrame
         => new RenderTreeFrame(SequenceField, elementSubtreeLength: elementSubtreeLength, ElementNameField, ElementKeyField);
 
     internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
-        => new RenderTreeFrame(SequenceField, componentSubtreeLength: componentSubtreeLength, ComponentTypeField, ComponentStateField, ComponentKeyField);
+        => new RenderTreeFrame(SequenceField, componentSubtreeLength: componentSubtreeLength, ComponentTypeField, ComponentStateField, ComponentKeyField, ComponentRenderModeField);
 
     internal RenderTreeFrame WithAttributeSequence(int sequence)
         => new RenderTreeFrame(sequence, attributeName: AttributeNameField, AttributeValueField, AttributeEventHandlerIdField, AttributeEventUpdatesAttributeNameField);
 
     internal RenderTreeFrame WithComponent(ComponentState componentState)
-        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, componentState, ComponentKeyField);
+        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, componentState, ComponentKeyField, ComponentRenderModeField);
+
+    internal RenderTreeFrame WithRenderMode(ComponentRenderMode componentRenderMode)
+        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, ComponentStateField, ComponentKeyField, componentRenderMode.NumericValue);
 
     internal RenderTreeFrame WithAttributeEventHandlerId(ulong eventHandlerId)
         => new RenderTreeFrame(SequenceField, attributeName: AttributeNameField, AttributeValueField, eventHandlerId, AttributeEventUpdatesAttributeNameField);
@@ -394,7 +405,7 @@ public struct RenderTreeFrame
         => new RenderTreeFrame(SequenceField, elementSubtreeLength: ElementSubtreeLengthField, ElementNameField, elementKey);
 
     internal RenderTreeFrame WithComponentKey(object componentKey)
-        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, ComponentStateField, componentKey);
+        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, ComponentStateField, componentKey, ComponentRenderModeField);
 
     /// <inheritdoc />
     // Just to be nice for debugging and unit tests.
