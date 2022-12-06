@@ -4,7 +4,6 @@
 using System;
 using System.Reflection;
 using System.Threading;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -19,17 +18,14 @@ internal class RoutePatternBraceMatcher : IAspNetCoreEmbeddedLanguageBraceMatche
 {
     public AspNetCoreBraceMatchingResult? FindBraces(SemanticModel semanticModel, SyntaxToken token, int position, CancellationToken cancellationToken)
     {
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-        var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
-
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
-        if (tree == null)
+        var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(token, cancellationToken);
+        if (routeUsage is null)
         {
             return null;
         }
 
-        return GetMatchingBraces(tree, position);
+        return GetMatchingBraces(routeUsage.RoutePattern, position);
     }
 
     private static AspNetCoreBraceMatchingResult? GetMatchingBraces(RoutePatternTree tree, int position)

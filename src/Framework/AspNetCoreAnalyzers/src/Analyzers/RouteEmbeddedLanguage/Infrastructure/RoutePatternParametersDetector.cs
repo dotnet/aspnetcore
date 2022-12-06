@@ -8,11 +8,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
-internal record struct ParameterSymbol(ISymbol Symbol, ISymbol? TopLevelSymbol = null)
-{
-    public bool IsNested => TopLevelSymbol != null;
-}
-
 internal static class RoutePatternParametersDetector
 {
     public static ImmutableArray<ParameterSymbol> ResolvedParameters(ISymbol symbol, WellKnownTypes wellKnownTypes)

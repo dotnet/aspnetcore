@@ -108,19 +108,18 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-
-        var (methodSymbol, _, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, wellKnownTypes, context.CancellationToken);
-
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(stringToken);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: isMvcAttribute);
-        if (tree == null)
+        var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(stringToken, context.CancellationToken);
+        if (routeUsage is null)
         {
             return;
         }
 
         var routePatternCompletionContext = new EmbeddedCompletionContext(
-            context, tree, stringToken, wellKnownTypes, methodSymbol, options, isMinimal, isMvcAttribute);
+            context,
+            routeUsage,
+            stringToken,
+            options);
         ProvideCompletions(routePatternCompletionContext);
 
         if (routePatternCompletionContext.Items.Count == 0)
@@ -217,7 +216,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
     private (RoutePatternNode Parent, RoutePatternToken Token)? GetCurrentToken(EmbeddedCompletionContext context)
     {
-        var previousVirtualCharOpt = context.Tree.Text.Find(context.Position - 1);
+        var previousVirtualCharOpt = context.RouteUsage.RoutePattern.Text.Find(context.Position - 1);
         if (previousVirtualCharOpt == null)
         {
             // We didn't have a previous character.  Can't determine the set of 
@@ -226,18 +225,17 @@ public class RoutePatternCompletionProvider : CompletionProvider
         }
 
         var previousVirtualChar = previousVirtualCharOpt.Value;
-        return FindToken(context.Tree.Root, previousVirtualChar);
+        return FindToken(context.RouteUsage.RoutePattern.Root, previousVirtualChar);
     }
 
     private static void ProvideParameterCompletions(EmbeddedCompletionContext context, RoutePatternNode? parentOpt)
     {
-        if (context.MethodSymbol != null)
+        if (context.RouteUsage.UsageContext.MethodSymbol != null)
         {
-            var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(context.MethodSymbol, context.WellKnownTypes);
-            foreach (var parameterSymbol in resolvedParameterSymbols)
+            foreach (var parameterSymbol in context.RouteUsage.UsageContext.ResolvedParameters)
             {
                 // Don't suggest parameter name if it already exists in the route.
-                if (!context.Tree.TryGetRouteParameter(parameterSymbol.Symbol.Name, out _))
+                if (!context.RouteUsage.RoutePattern.TryGetRouteParameter(parameterSymbol.Symbol.Name, out _))
                 {
                     context.AddIfMissing(parameterSymbol.Symbol.Name, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: parentOpt);
                 }
@@ -327,12 +325,8 @@ If there are two arguments then the string length must be greater than, or equal
         private readonly CompletionContext _context;
         private readonly HashSet<string> _names = new();
 
-        public readonly RoutePatternTree Tree;
+        public readonly RouteUsageModel RouteUsage;
         public readonly SyntaxToken StringToken;
-        public readonly WellKnownTypes WellKnownTypes;
-        public readonly IMethodSymbol? MethodSymbol;
-        public readonly bool IsMinimal;
-        public readonly bool IsMvcAttribute;
         public readonly CancellationToken CancellationToken;
         public readonly int Position;
         public readonly CompletionTrigger Trigger;
@@ -347,22 +341,14 @@ If there are two arguments then the string length must be greater than, or equal
 
         public EmbeddedCompletionContext(
             CompletionContext context,
-            RoutePatternTree tree,
+            RouteUsageModel routeUsage,
             SyntaxToken stringToken,
-            WellKnownTypes wellKnownTypes,
-            IMethodSymbol? methodSymbol,
-            RouteOptions options,
-            bool isMinimal,
-            bool isMvcAttribute)
+            RouteOptions options)
         {
             _context = context;
-            Tree = tree;
+            RouteUsage = routeUsage;
             StringToken = stringToken;
-            WellKnownTypes = wellKnownTypes;
-            MethodSymbol = methodSymbol;
             Options = options;
-            IsMinimal = isMinimal;
-            IsMvcAttribute = isMvcAttribute;
             Position = _context.Position;
             Trigger = _context.Trigger;
             CancellationToken = _context.CancellationToken;

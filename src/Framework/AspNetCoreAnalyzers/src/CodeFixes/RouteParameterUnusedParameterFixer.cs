@@ -7,7 +7,6 @@ using System.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -41,7 +40,7 @@ public class RouteParameterUnusedParameterFixer : CodeFixProvider
             return;
         }
 
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
+        var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -49,27 +48,27 @@ public class RouteParameterUnusedParameterFixer : CodeFixProvider
             {
                 context.RegisterCodeFix(
                     CodeAction.Create($"Add parameter '{routeParameterName}'",
-                        cancellationToken => AddRouteParameterAsync(diagnostic, root, semanticModel, wellKnownTypes, context.Document, cancellationToken),
+                        cancellationToken => AddRouteParameterAsync(diagnostic, root, routeUsageCache, context.Document, cancellationToken),
                         equivalenceKey: DiagnosticDescriptors.RoutePatternUnusedParameter.Id),
                     diagnostic);
             }
         }
     }
 
-    private static Task<Document> AddRouteParameterAsync(Diagnostic diagnostic, SyntaxNode root, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, Document document, CancellationToken cancellationToken)
+    private static Task<Document> AddRouteParameterAsync(Diagnostic diagnostic, SyntaxNode root, RouteUsageCache routeUsageCache, Document document, CancellationToken cancellationToken)
     {
         var param = root.FindNode(diagnostic.Location.SourceSpan);
 
         var token = param.GetFirstToken();
-        var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
+        var routeUsage = routeUsageCache.Get(token, cancellationToken);
 
         // Check that the route is used in a context with a method, e.g. attribute on an action or Map method.
-        if (usageContext.MethodSyntax == null)
+        if (routeUsage?.UsageContext.MethodSyntax == null)
         {
             return Task.FromResult(document);
         }
 
-        return Task.FromResult(UpdateDocument(diagnostic, root, document, usageContext.MethodSyntax));
+        return Task.FromResult(UpdateDocument(diagnostic, root, document, routeUsage.UsageContext.MethodSyntax));
     }
 
     private static Document UpdateDocument(Diagnostic diagnostic, SyntaxNode root, Document document, SyntaxNode methodSyntax)

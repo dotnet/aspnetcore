@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -33,6 +34,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             var compilation = context.Compilation;
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
+            var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
 
             context.RegisterOperationAction(context =>
             {
@@ -58,6 +60,17 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
+                if (!TryGetStringToken(invocation, out var token))
+                {
+                    return;
+                }
+
+                var routeUsage = routeUsageCache.Get(token, context.CancellationToken);
+                if (routeUsage is null)
+                {
+                    return;
+                }
+
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {
                     var lambda = (IAnonymousFunctionOperation)delegateCreation.Target;
@@ -65,14 +78,14 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     DisallowNonParsableComplexTypesOnParameters(in context, invocation, lambda.Symbol);
                     DisallowReturningActionResultFromMapMethods(in context, wellKnownTypes, invocation, lambda, delegateCreation.Syntax);
                     DetectMisplacedLambdaAttribute(context, lambda);
-                    DetectMismatchedParameterOptionality(in context, invocation, lambda.Symbol);
+                    DetectMismatchedParameterOptionality(in context, routeUsage, lambda.Symbol);
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
                     var methodReference = (IMethodReferenceOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in context, wellKnownTypes, invocation, methodReference.Method);
                     DisallowNonParsableComplexTypesOnParameters(in context, invocation, methodReference.Method);
-                    DetectMismatchedParameterOptionality(in context, invocation, methodReference.Method);
+                    DetectMismatchedParameterOptionality(in context, routeUsage, methodReference.Method);
 
                     var foundMethodReferenceBody = false;
                     if (!methodReference.Method.DeclaringSyntaxReferences.IsEmpty)
@@ -122,6 +135,28 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 }
             }, OperationKind.Invocation);
         });
+    }
+
+    private static bool TryGetStringToken(IInvocationOperation invocation, out SyntaxToken token)
+    {
+        IArgumentOperation? argumentOperation = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == 1)
+            {
+                argumentOperation = argument;
+            }
+        }
+
+        if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
+            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        {
+            token = default;
+            return false;
+        }
+
+        token = routePatternArgumentLiteralSyntax.Token;
+        return true;
     }
 
     private static bool IsRouteHandlerInvocation(
