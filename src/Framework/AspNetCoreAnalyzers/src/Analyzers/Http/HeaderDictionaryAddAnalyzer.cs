@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -22,20 +23,15 @@ public sealed class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
 
     private static void OnCompilationStart(CompilationStartAnalysisContext context)
     {
-        var symbols = new HeaderDictionarySymbols(context.Compilation);
-
-        if (!symbols.HasRequiredSymbols)
-        {
-            return;
-        }
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.Compilation);
 
         context.RegisterOperationAction(context =>
         {
             var invocation = (IInvocationOperation)context.Operation;
 
-            if (SymbolEqualityComparer.Default.Equals(symbols.IHeaderDictionary, invocation.Instance?.Type)
-                && IsAddMethod(invocation.TargetMethod)
-                && invocation.TargetMethod.Parameters.Length == 2)
+            if (IsAddMethod(invocation.TargetMethod)
+                && invocation.TargetMethod.Parameters.Length == 2
+                && SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IHeaderDictionary), invocation.Instance?.Type))
             {
                 AddDiagnosticWarning(context, invocation.Syntax.GetLocation());
             }
@@ -76,17 +72,5 @@ public sealed class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd,
             location));
-    }
-
-    private sealed class HeaderDictionarySymbols
-    {
-        public HeaderDictionarySymbols(Compilation compilation)
-        {
-            IHeaderDictionary = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IHeaderDictionary");
-        }
-
-        public bool HasRequiredSymbols => IHeaderDictionary is not null;
-
-        public INamedTypeSymbol IHeaderDictionary { get; }
     }
 }

@@ -85,7 +85,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                     // Get method parameters, including properties on AsParameters objects.
                     var parameterSymbols = RoutePatternParametersDetector.GetParameterSymbols(usageContext.MethodSymbol);
                     var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(usageContext.MethodSymbol, wellKnownTypes);
-                    
+
                     foreach (var parameter in resolvedParameterSymbols)
                     {
                         routeParameterNames.Remove(parameter.Symbol.Name);
@@ -110,7 +110,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                         }
 
                         // These properties are used by the fixer.
-                        var propertiesBuilder = ImmutableDictionary.CreateBuilder<string, string>();
+                        var propertiesBuilder = ImmutableDictionary.CreateBuilder<string, string?>();
                         propertiesBuilder.Add("RouteParameterName", unusedParameter.Name);
                         propertiesBuilder.Add("RouteParameterPolicy", string.Join(string.Empty, unusedParameter.Policies));
                         propertiesBuilder.Add("RouteParameterIsOptional", unusedParameter.IsOptional.ToString(CultureInfo.InvariantCulture));

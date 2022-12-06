@@ -7,6 +7,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <Nullable>Enable</Nullable>
     <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +21,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
   </ItemGroup>
 
 </Project>

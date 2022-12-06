@@ -19,7 +19,7 @@ internal static class EmbeddedSyntaxHelpers
     public static TextSpan GetSpan(VirtualChar firstChar, VirtualChar lastChar)
         => TextSpan.FromBounds(firstChar.Span.Start, lastChar.Span.End);
 
-    public static RoutePatternNode GetChildNode(this RoutePatternNode node, RoutePatternKind kind)
+    public static RoutePatternNode? GetChildNode(this RoutePatternNode node, RoutePatternKind kind)
     {
         foreach (var child in node)
         {

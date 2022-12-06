@@ -44,7 +44,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 IDelegateCreationOperation? delegateCreation = null;
                 foreach (var argument in invocation.Arguments)
                 {
-                    if (argument.Parameter.Ordinal == DelegateParameterOrdinal)
+                    if (argument.Parameter?.Ordinal == DelegateParameterOrdinal)
                     {
                         delegateCreation = argument.Descendants().OfType<IDelegateCreationOperation>().FirstOrDefault();
                         break;
@@ -75,7 +75,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     {
                         var syntaxReference = methodReference.Method.DeclaringSyntaxReferences.Single();
                         var syntaxNode = syntaxReference.GetSyntax(context.CancellationToken);
-                        var methodOperation = syntaxNode.SyntaxTree == invocation.SemanticModel.SyntaxTree
+                        var methodOperation = syntaxNode.SyntaxTree == invocation.SemanticModel!.SyntaxTree
                             ? invocation.SemanticModel.GetOperation(syntaxNode, context.CancellationToken)
                             : null;
                         if (methodOperation is ILocalFunctionOperation { Body: not null } localFunction)

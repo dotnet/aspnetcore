@@ -57,14 +57,14 @@ public class RoutePatternCompletionProvider : CompletionProvider
         return false;
     }
 
-    public override Task<CompletionDescription> GetDescriptionAsync(Document document, CompletionItem item, CancellationToken cancellationToken)
+    public override Task<CompletionDescription?> GetDescriptionAsync(Document document, CompletionItem item, CancellationToken cancellationToken)
     {
         if (!item.Properties.TryGetValue(DescriptionKey, out var description))
         {
-            return Task.FromResult<CompletionDescription>(null);
+            return Task.FromResult<CompletionDescription?>(null);
         }
 
-        return Task.FromResult(CompletionDescription.Create(
+        return Task.FromResult<CompletionDescription?>(CompletionDescription.Create(
             ImmutableArray.Create(new TaggedText(TextTags.Text, description))));
     }
 
@@ -103,6 +103,11 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
+        if (semanticModel is null)
+        {
+            return;
+        }
+
         var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
 
         var (methodSymbol, _, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, wellKnownTypes, context.CancellationToken);
@@ -131,7 +136,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
             var properties = ImmutableDictionary.CreateBuilder<string, string>();
             properties.Add(StartKey, textChange.Span.Start.ToString(CultureInfo.InvariantCulture));
             properties.Add(LengthKey, textChange.Span.Length.ToString(CultureInfo.InvariantCulture));
-            properties.Add(NewTextKey, textChange.NewText);
+            properties.Add(NewTextKey, textChange.NewText ?? string.Empty);
             properties.Add(DescriptionKey, embeddedItem.FullDescription);
 
             if (change.NewPosition != null)
@@ -364,8 +369,8 @@ If there are two arguments then the string length must be greater than, or equal
         }
 
         public void AddIfMissing(
-            string displayText, string suffix, string description, string glyph,
-            RoutePatternNode parentOpt, int? positionOffset = null, string insertionText = null)
+            string displayText, string? suffix, string? description, string glyph,
+            RoutePatternNode? parentOpt, int? positionOffset = null, string? insertionText = null)
         {
             var replacementStart = parentOpt != null
                 ? parentOpt.GetSpan().Start
@@ -386,7 +391,7 @@ If there are two arguments then the string length must be greater than, or equal
             }
 
             AddIfMissing(new RoutePatternItem(
-                displayText, suffix, description, glyph,
+                displayText, suffix ?? string.Empty, description ?? string.Empty, glyph,
                 CompletionChange.Create(
                     new TextChange(replacementSpan, escapedInsertionText),
                     newPosition)));
