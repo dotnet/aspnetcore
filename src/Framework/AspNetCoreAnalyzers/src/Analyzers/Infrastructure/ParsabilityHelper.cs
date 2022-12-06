@@ -44,7 +44,7 @@ internal static class ParsabilityHelper
         }
 
         // MyType : IParsable<MyType>()
-        if (IsParsableViaIParsable(typeSymbol))
+        if (IsParsableViaIParsable(typeSymbol, wellKnownTypes))
         {
             return true;
         }
@@ -91,23 +91,21 @@ internal static class ParsabilityHelper
             methodSymbol.Parameters[2].RefKind == RefKind.Out;
     }
 
-    private static bool IsParsableViaIParsable(ITypeSymbol typeSymbol)
+    private static bool IsParsableViaIParsable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
+        var iParsableTypeSymbol = wellKnownTypes.Get(WellKnownType.System_IParsable_T);
         var implementsIParsable = typeSymbol.AllInterfaces.Any(
-            i => i.Name == "IParsable" && // ... implements IParsable
-                 i.TypeArguments.Length == 1 && // ... being pedantic that it has just one type argument.
-                 i.TypeArguments.All(t => t.Name == typeSymbol.Name)); // ... and the type argument is the same as the type symbol
-
+            i => SymbolEqualityComparer.Default.Equals(i.ConstructedFrom, iParsableTypeSymbol)
+            );
         return implementsIParsable;
     }
 
-    private static bool IsBindableViaIBindableFromHttpContext(ITypeSymbol typeSymbol)
+    private static bool IsBindableViaIBindableFromHttpContext(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
+        var iBindableFromHttpContextTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IBindableFromHttpContext_T);
         var implementsIBindableFromHttpContext = typeSymbol.AllInterfaces.Any(
-            i => i.Name == "IBindableFromHttpContext" && // ... implements IParsable
-                 i.TypeArguments.Length == 1 && // ... being pedantic that it has just one type argument.
-                 i.TypeArguments.All(t => t.Name == typeSymbol.Name)); // ... and the type argument is the same as the type symbol
-
+            i => SymbolEqualityComparer.Default.Equals(i.ConstructedFrom, iBindableFromHttpContextTypeSymbol)
+            );
         return implementsIBindableFromHttpContext;
     }
 
@@ -141,7 +139,7 @@ internal static class ParsabilityHelper
             return true;
         }
 
-        if (IsBindableViaIBindableFromHttpContext(typeSymbol))
+        if (IsBindableViaIBindableFromHttpContext(typeSymbol, wellKnownTypes))
         {
             return true;
         }

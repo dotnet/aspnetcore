@@ -54,7 +54,9 @@ internal enum WellKnownType
     Microsoft_AspNetCore_Http_RequestDelegate,
     System_Threading_Tasks_Task_T,
     System_Threading_Tasks_ValueTask_T,
-    System_Reflection_ParameterInfo
+    System_Reflection_ParameterInfo,
+    Microsoft_AspNetCore_Http_IBindableFromHttpContext_T,
+    System_IParsable_T
 }
 
 internal class WellKnownTypes
@@ -104,7 +106,9 @@ internal class WellKnownTypes
         "Microsoft.AspNetCore.Http.RequestDelegate",
         "System.Threading.Tasks.Task`1",
         "System.Threading.Tasks.ValueTask`1",
-        "System.Reflection.ParameterInfo"
+        "System.Reflection.ParameterInfo",
+        "Microsoft.AspNetCore.Http.IBindableFromHttpContext`1",
+        "System.IParsable`1"
     };
 
     public static WellKnownTypes GetOrCreate(Compilation compilation) =>

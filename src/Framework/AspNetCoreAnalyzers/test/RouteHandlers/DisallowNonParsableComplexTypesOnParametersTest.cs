@@ -283,7 +283,6 @@ public class Customer : IParsable<Customer>
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-
     [Fact]
     public async Task Route_Parameter_withParsableComplexType_viaMethodConvention_Works()
     {
