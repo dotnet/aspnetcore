@@ -124,8 +124,11 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         {
             _listener = await QuicListener.ListenAsync(_quicListenerOptions);
         }
-        catch (QuicException ex) when (ex.QuicError == QuicError.AddressInUse)
+        catch (QuicException ex) when (ex.QuicError == QuicError.AddressInUse || ex.QuicError == QuicError.AlpnInUse)
         {
+            // System.Net.Quic has a different error status depending upon the address in use scenario.
+            // It has a status of AddressInUse when another process is using the UDP port.
+            // It has a status of AlpnInUse when the current process is using the UDP port _and_ the ALPN is the same.
             throw new AddressInUseException(ex.Message, ex);
         }
 

@@ -9,6 +9,7 @@ using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.I
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -17,11 +18,7 @@ internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
 {
     public void RegisterClassifications(AspNetCoreEmbeddedLanguageClassificationContext context)
     {
-        if (!WellKnownTypes.TryGetOrCreate(context.SemanticModel.Compilation, out var wellKnownTypes))
-        {
-            return;
-        }
-
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
         var usageContext = RoutePatternUsageDetector.BuildContext(context.SyntaxToken, context.SemanticModel, wellKnownTypes, context.CancellationToken);
 
         var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(context.SyntaxToken);

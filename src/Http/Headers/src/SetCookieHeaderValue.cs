@@ -200,7 +200,7 @@ public class SetCookieHeaderValue
 
         if (MaxAge.HasValue)
         {
-            maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
+            maxAge = HeaderUtilities.FormatInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
             length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
         }
 
@@ -347,7 +347,7 @@ public class SetCookieHeaderValue
 
         if (MaxAge.HasValue)
         {
-            AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
+            AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
         }
 
         if (Domain != null)
@@ -552,7 +552,7 @@ public class SetCookieHeaderValue
                 }
                 result.Expires = expirationDate;
             }
-            // max-age-av = "Max-Age=" non-zero-digit *DIGIT
+            // max-age-av = "Max-Age=" digit *DIGIT ; valid positive and negative values following the RFC6265, Section 5.2.2
             else if (StringSegment.Equals(token, MaxAgeToken, StringComparison.OrdinalIgnoreCase))
             {
                 // = (no spaces)
@@ -561,11 +561,19 @@ public class SetCookieHeaderValue
                     return 0;
                 }
 
+                var isNegative = false;
+                if (input[offset] == '-')
+                {
+                    isNegative = true;
+                    offset++;
+                }
+
                 itemLength = HttpRuleParser.GetNumberLength(input, offset, allowDecimal: false);
                 if (itemLength == 0)
                 {
                     return 0;
                 }
+
                 var numberString = input.Subsegment(offset, itemLength);
                 long maxAge;
                 if (!HeaderUtilities.TryParseNonNegativeInt64(numberString, out maxAge))
@@ -573,6 +581,12 @@ public class SetCookieHeaderValue
                     // Invalid expiration date, abort
                     return 0;
                 }
+
+                if (isNegative)
+                {
+                    maxAge = -maxAge;
+                }
+
                 result.MaxAge = TimeSpan.FromSeconds(maxAge);
                 offset += itemLength;
             }

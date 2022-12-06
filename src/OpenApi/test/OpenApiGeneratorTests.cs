@@ -242,10 +242,10 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(2, operation.Responses.Count);
 
         var successResponse = operation.Responses["201"];
-        Assert.Equal("Success", successResponse.Description);
+        Assert.Equal("Created", successResponse.Description);
 
         var clientErrorResponse = operation.Responses["400"];
-        Assert.Equal("Client error", clientErrorResponse.Description);
+        Assert.Equal("Bad Request", clientErrorResponse.Description);
     }
 
     [Fact]
@@ -259,10 +259,10 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(2, operation.Responses.Count);
 
         var continueResponse = operation.Responses["100"];
-        Assert.Equal("Information", continueResponse.Description);
+        Assert.Equal("Continue", continueResponse.Description);
 
         var switchingProtocolsResponse = operation.Responses["101"];
-        Assert.Equal("Information", switchingProtocolsResponse.Description);
+        Assert.Equal("Switching Protocols", switchingProtocolsResponse.Description);
     }
 
     [Fact]
@@ -279,19 +279,19 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(5, operation.Responses.Count);
 
         var continueResponse = operation.Responses["100"];
-        Assert.Equal("Information", continueResponse.Description);
+        Assert.Equal("Continue", continueResponse.Description);
 
         var createdResponse = operation.Responses["201"];
-        Assert.Equal("Success", createdResponse.Description);
+        Assert.Equal("Created", createdResponse.Description);
 
         var multipleChoicesResponse = operation.Responses["300"];
-        Assert.Equal("Redirection", multipleChoicesResponse.Description);
+        Assert.Equal("Multiple Choices", multipleChoicesResponse.Description);
 
         var badRequestResponse = operation.Responses["400"];
-        Assert.Equal("Client error", badRequestResponse.Description);
+        Assert.Equal("Bad Request", badRequestResponse.Description);
 
         var InternalServerErrorResponse = operation.Responses["500"];
-        Assert.Equal("Server error", InternalServerErrorResponse.Description);
+        Assert.Equal("Internal Server Error", InternalServerErrorResponse.Description);
     }
 
     [Fact]
@@ -322,6 +322,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
 
         AssertPathParameter(GetOpenApiOperation((int foo) => { }, "/{foo}"));
@@ -335,6 +336,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecord foo) => { }, pattern: "/{foo}"));
     }
@@ -346,6 +348,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
 
         AssertPathParameter(GetOpenApiOperation((int? foo) => { }, "/{foo}"));
@@ -359,6 +362,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Empty(param.Content);
         }
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecordStruct foo) => { }, pattern: "/{foo}"));
     }
@@ -368,8 +372,9 @@ public class OpenApiOperationGeneratorTests
     {
         static void AssertQueryParameter(OpenApiOperation operation, string type)
         {
-            var param = Assert.Single(operation.Parameters); ;
+            var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Query, param.In);
+            Assert.Empty(param.Content);
         }
 
         AssertQueryParameter(GetOpenApiOperation((int foo) => { }, "/"), "integer");
@@ -388,6 +393,7 @@ public class OpenApiOperationGeneratorTests
         var param = Assert.Single(operation.Parameters);
 
         Assert.Equal(ParameterLocation.Header, param.In);
+        Assert.Empty(param.Content);
     }
 
     [Fact]
@@ -430,11 +436,13 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("foo", fooParam.Name);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
+        Assert.Empty(fooParam.Content);
 
         var barParam = operation.Parameters[1];
         Assert.Equal("bar", barParam.Name);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.True(barParam.Required);
+        Assert.Empty(barParam.Content);
 
         var fromBodyParam = operation.RequestBody;
         var fromBodyContent = Assert.Single(fromBodyParam.Content);
@@ -455,12 +463,14 @@ public class OpenApiOperationGeneratorTests
                     Assert.Equal(capturedName, param.Name);
                     Assert.Equal(ParameterLocation.Path, param.In);
                     Assert.True(param.Required);
+                    Assert.Empty(param.Content);
                 },
                 param =>
                 {
                     Assert.Equal("Bar", param.Name);
                     Assert.Equal(ParameterLocation.Query, param.In);
                     Assert.True(param.Required);
+                    Assert.Empty(param.Content);
                 }
             );
         }
@@ -485,11 +495,13 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("foo", fooParam.Name);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
+        Assert.Empty(fooParam.Content);
 
         var barParam = operation.Parameters[1];
         Assert.Equal("bar", barParam.Name);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.False(barParam.Required);
+        Assert.Empty(barParam.Content);
     }
 
     [Fact]

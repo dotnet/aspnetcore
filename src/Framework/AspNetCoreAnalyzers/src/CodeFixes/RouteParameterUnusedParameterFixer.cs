@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -57,14 +58,10 @@ public class RouteParameterUnusedParameterFixer : CodeFixProvider
             return document;
         }
 
-        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
-        {
-            return document;
-        }
-
         var param = root.FindNode(diagnostic.Location.SourceSpan);
 
         var token = param.GetFirstToken();
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
         var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
 
         // Check that the route is used in a context with a method, e.g. attribute on an action or Map method.

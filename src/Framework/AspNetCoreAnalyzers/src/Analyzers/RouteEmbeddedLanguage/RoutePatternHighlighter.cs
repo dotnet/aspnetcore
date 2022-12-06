@@ -9,6 +9,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
@@ -21,10 +22,7 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
     public ImmutableArray<AspNetCoreDocumentHighlights> GetDocumentHighlights(
         SemanticModel semanticModel, SyntaxToken token, int position, CancellationToken cancellationToken)
     {
-        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
-        {
-            return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
-        }
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
 
         var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
 

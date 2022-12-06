@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -21,22 +21,19 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(context =>
         {
             var compilation = context.Compilation;
-
-            if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
-            {
-                return;
-            }
+            var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
+            
             context.RegisterOperationAction(context =>
             {
                 var methodReference = (IMethodReferenceOperation)context.Operation;
                 if (methodReference.Parent is { } parent &&
                     parent.Kind == OperationKind.DelegateCreation &&
-                    SymbolEqualityComparer.Default.Equals(parent.Type, wellKnownTypes.RequestDelegate))
+                    SymbolEqualityComparer.Default.Equals(parent.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_RequestDelegate)))
                 {
                     // Inspect return type of method signature for Task<T>.
                     var returnType = methodReference.Method.ReturnType;
 
-                    if (SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, wellKnownTypes.TaskOfT))
+                    if (SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, wellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task_T)))
                     {
                         AddDiagnosticWarning(context, methodReference.Syntax.GetLocation(), returnType);
                     }
@@ -47,7 +44,7 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
                 var anonymousFunction = (IAnonymousFunctionOperation)context.Operation;
                 if (anonymousFunction.Parent is { } parent &&
                     parent.Kind == OperationKind.DelegateCreation &&
-                    SymbolEqualityComparer.Default.Equals(parent.Type, wellKnownTypes.RequestDelegate))
+                    SymbolEqualityComparer.Default.Equals(parent.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_RequestDelegate)))
                 {
                     // Inspect contents of anonymous function and search for return statements.
                     // Return statement of Task<T> means a value was returned.
@@ -62,7 +59,7 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
                             // Return type could be null if:
                             // 1. The method returns null.
                             // 2. The method throws an exception.
-                            if (returnType != null && SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, wellKnownTypes.TaskOfT))
+                            if (returnType != null && SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, wellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task_T)))
                             {
                                 AddDiagnosticWarning(context, anonymousFunction.Syntax.GetLocation(), returnType);
                                 return;
@@ -90,36 +87,5 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
         }
 
         return operation;
-    }
-
-    internal sealed class WellKnownTypes
-    {
-        public static bool TryCreate(Compilation compilation, [NotNullWhen(returnValue: true)] out WellKnownTypes? wellKnownTypes)
-        {
-            wellKnownTypes = default;
-
-            const string RequestDelegate = "Microsoft.AspNetCore.Http.RequestDelegate";
-            if (compilation.GetTypeByMetadataName(RequestDelegate) is not { } requestDelegate)
-            {
-                return false;
-            }
-
-            const string TaskOfT = "System.Threading.Tasks.Task`1";
-            if (compilation.GetTypeByMetadataName(TaskOfT) is not { } taskOfT)
-            {
-                return false;
-            }
-
-            wellKnownTypes = new()
-            {
-                RequestDelegate = requestDelegate,
-                TaskOfT = taskOfT
-            };
-
-            return true;
-        }
-
-        public INamedTypeSymbol RequestDelegate { get; private init; }
-        public INamedTypeSymbol TaskOfT { get; private init; }
     }
 }

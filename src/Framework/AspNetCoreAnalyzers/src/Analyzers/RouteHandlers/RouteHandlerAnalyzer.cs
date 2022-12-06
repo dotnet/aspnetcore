@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -30,11 +30,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(static context =>
         {
             var compilation = context.Compilation;
-            if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
-            {
-                Debug.Fail("One or more types could not be found. This usually means you are bad at spelling C# type names.");
-                return;
-            }
+            var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
 
             context.RegisterOperationAction(context =>
             {
@@ -130,9 +126,9 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         IMethodSymbol targetMethod)
     {
         return targetMethod.Name.StartsWith("Map", StringComparison.Ordinal) &&
-            SymbolEqualityComparer.Default.Equals(wellKnownTypes.EndpointRouteBuilderExtensions, targetMethod.ContainingType) &&
+            SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_EndpointRouteBuilderExtensions), targetMethod.ContainingType) &&
             invocation.Arguments.Length == 3 &&
             targetMethod.Parameters.Length == 3 &&
-            SymbolEqualityComparer.Default.Equals(wellKnownTypes.Delegate, targetMethod.Parameters[DelegateParameterOrdinal].Type);
+            SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.System_Delegate), targetMethod.Parameters[DelegateParameterOrdinal].Type);
     }
 }

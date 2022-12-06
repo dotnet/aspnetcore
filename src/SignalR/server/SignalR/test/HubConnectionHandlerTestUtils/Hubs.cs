@@ -1372,6 +1372,11 @@ public class ServicesHub : TestHub
         return 1;
     }
 
+    public int IEnumerableOfServiceWithoutAttribute(IEnumerable<Service1> services)
+    {
+        return 1;
+    }
+
     public async Task Stream(ChannelReader<int> channelReader)
     {
         while (await channelReader.WaitToReadAsync())

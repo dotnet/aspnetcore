@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -120,7 +121,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToPage(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         string page)
     {
         if (endpoints == null)
@@ -251,7 +252,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToAreaPage(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         string page,
         string area)
     {
@@ -308,7 +309,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
     /// </para>
     /// </remarks>
-    public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
+    public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern)
         where TTransformer : DynamicRouteValueTransformer
     {
         MapDynamicPageRoute<TTransformer>(endpoints, pattern, state: null);
@@ -332,7 +333,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
     /// </para>
     /// </remarks>
-    public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object? state)
+    public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object? state)
         where TTransformer : DynamicRouteValueTransformer
     {
         if (endpoints == null)
@@ -373,7 +374,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
     /// </para>
     /// </remarks>
-    public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state, int order)
+    public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object state, int order)
         where TTransformer : DynamicRouteValueTransformer
     {
         if (endpoints == null)

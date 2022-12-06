@@ -537,7 +537,7 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
             e =>
             {
                 Assert.Equal("/test", e.RoutePattern.RawText);
-                Assert.Equal(new[] { "C1", "C2" }, e.Metadata.GetOrderedMetadata<string>()); ;
+                Assert.Equal(new[] { "C1", "C2" }, e.Metadata.GetOrderedMetadata<string>());
             });
     }
 

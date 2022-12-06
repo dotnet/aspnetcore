@@ -34,7 +34,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private readonly GrpcServiceOptions _globalOptions;
     private readonly GrpcServiceOptions<TService> _serviceOptions;
     private readonly IGrpcServiceActivator<TService> _serviceActivator;
-    private readonly GrpcJsonTranscodingOptions _JsonTranscodingOptions;
+    private readonly GrpcJsonTranscodingOptions _jsonTranscodingOptions;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
@@ -46,7 +46,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         GrpcServiceOptions<TService> serviceOptions,
         ILoggerFactory loggerFactory,
         IGrpcServiceActivator<TService> serviceActivator,
-        GrpcJsonTranscodingOptions JsonTranscodingOptions)
+        GrpcJsonTranscodingOptions jsonTranscodingOptions)
     {
         _context = context;
         _invokerResolver = invokerResolver;
@@ -54,7 +54,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _globalOptions = globalOptions;
         _serviceOptions = serviceOptions;
         _serviceActivator = serviceActivator;
-        _JsonTranscodingOptions = JsonTranscodingOptions;
+        _jsonTranscodingOptions = jsonTranscodingOptions;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
@@ -168,7 +168,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.UnarySerializerOptions);
+            _jsonTranscodingOptions.UnarySerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -195,7 +195,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.ServerStreamingSerializerOptions);
+            _jsonTranscodingOptions.ServerStreamingSerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }

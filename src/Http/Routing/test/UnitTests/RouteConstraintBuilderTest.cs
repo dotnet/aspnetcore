@@ -139,7 +139,7 @@ public class RouteConstraintBuilderTest
         Assert.Equal("name", result.First().Key);
         Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
         var optionalConstraint = (OptionalRouteConstraint)result.First().Value;
-        var compositeConstraint = Assert.IsType<CompositeRouteConstraint>(optionalConstraint.InnerConstraint); ;
+        var compositeConstraint = Assert.IsType<CompositeRouteConstraint>(optionalConstraint.InnerConstraint);
         Assert.Equal(2, compositeConstraint.Constraints.Count());
 
         Assert.Single(compositeConstraint.Constraints, c => c is MinLengthRouteConstraint);

@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Example.Hello;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Transcoding;
 using Xunit.Abstractions;
@@ -90,7 +92,10 @@ public class JsonConverterReadTests
   ""singleEnum"": ""NESTED_ENUM_UNSPECIFIED""
 }";
 
-        AssertReadJson<HelloRequest.Types.DataTypes>(json);
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        AssertReadJson<HelloRequest.Types.DataTypes>(json, serviceDescriptorRegistry: serviceDescriptorRegistry);
     }
 
     [Theory]
@@ -446,7 +451,18 @@ public class JsonConverterReadTests
         AssertReadJson<Int64Value>(json);
     }
 
-    private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null) where TValue : IMessage, new()
+    [Fact]
+    public void Enum_Imported()
+    {
+        var json = @"{""name"":"""",""country"":""ALPHA_3_COUNTRY_CODE_AFG""}";
+
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(HelloService.Descriptor.File);
+
+        AssertReadJson<SayRequest>(json, serviceDescriptorRegistry: serviceDescriptorRegistry);
+    }
+
+    private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null, DescriptorRegistry? serviceDescriptorRegistry = null) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -458,7 +474,7 @@ public class JsonConverterReadTests
 
         var objectOld = formatter.Parse<TValue>(value);
 
-        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery);
+        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, serviceDescriptorRegistry);
 
         var objectNew = JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions)!;
 
@@ -473,13 +489,13 @@ public class JsonConverterReadTests
         return objectNew;
     }
 
-    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null) where TValue : IMessage, new()
+    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? serviceDescriptorRegistry = null) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
             Timestamp.Descriptor.File);
 
-        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery);
+        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery, serviceDescriptorRegistry);
 
         var ex = Assert.ThrowsAny<Exception>(() => JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions));
         assertException(ex);
@@ -492,9 +508,12 @@ public class JsonConverterReadTests
         assertException(ex);
     }
 
-    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery)
+    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery, DescriptorRegistry? serviceDescriptorRegistry)
     {
-        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty);
+        var context = new JsonContext(
+            settings ?? new GrpcJsonSettings(),
+            typeRegistery ?? TypeRegistry.Empty,
+            serviceDescriptorRegistry ?? new DescriptorRegistry());
 
         return JsonConverterHelper.CreateSerializerOptions(context);
     }
