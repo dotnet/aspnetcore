@@ -29,7 +29,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
     private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
-    private readonly ILogger<Renderer> _logger;
+    private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
