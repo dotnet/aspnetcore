@@ -93,7 +93,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
 
         _serviceProvider = serviceProvider;
-        _logger = loggerFactory.CreateLogger<Renderer>();
+        // Would normally use ILogger<T> here to get the benefit of the string name being cached but this is a public ctor that
+        // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
+        // logger name in here as a string literal.
+        _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator);
     }
 
