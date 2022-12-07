@@ -44,7 +44,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 
     internal static ReferenceAssemblies GetReferenceAssemblies()
     {
-        return ReferenceAssemblies.Net.Net70.AddAssemblies(ImmutableArray.Create(
+        return ReferenceAssemblies.Net.Net80.AddAssemblies(ImmutableArray.Create(
             TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.BindAttribute).Assembly.Location),
