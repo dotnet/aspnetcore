@@ -21,9 +21,12 @@ public class JsonWriting
     [GlobalSetup]
     public void GlobalSetup()
     {
+        var descriptorRegistry = new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(HelloRequest.Descriptor.File);
+
         _request = new HelloRequest() { Name = "Hello world" };
         _serializerOptions = JsonConverterHelper.CreateSerializerOptions(
-            new JsonContext(new GrpcJsonSettings { WriteIndented = false }, TypeRegistry.Empty, new DescriptorRegistry()));
+            new JsonContext(new GrpcJsonSettings { WriteIndented = false }, TypeRegistry.Empty, descriptorRegistry));
         _jsonFormatter = new JsonFormatter(new JsonFormatter.Settings(formatDefaultValues: false));
     }
 
