@@ -20,8 +20,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
         DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
         DiagnosticDescriptors.DetectMismatchedParameterOptionality,
-        DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
-        DiagnosticDescriptors.RouteHandlerParamterComplexTypeIsNotBindable
+        DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable,
+        DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT
     );
 
     public override void Initialize(AnalysisContext context)

@@ -161,7 +161,7 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
-    internal static readonly DiagnosticDescriptor RouteParameterComplexTypeIsNotParsable = new(
+    internal static readonly DiagnosticDescriptor RouteParameterComplexTypeIsNotParsableOrBindable = new(
         "ASP0020",
         "Complex types referenced by route parameters must be parsable",
         "Parameter '{0}' of type {1} should define a bool TryParse(string, IFormatProvider, out {1}) method, or implement IParsable<{1}>, or define a ValueTask<{1}> BindAsync(HttpContext), or implement IBindableFromHttpContext<{1}>.",
@@ -170,10 +170,10 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
-    internal static readonly DiagnosticDescriptor RouteHandlerParamterComplexTypeIsNotBindable = new(
+    internal static readonly DiagnosticDescriptor BindAsyncSignatureMustReturnValueTaskOfT = new(
         "ASP0021",
-        "Complex types referenced on route handlers that are not injected from services or route parameters must be bindable.",
-        "Parameter '{0}' of type {1} should define a ValueTask<{1}> BindAsync(HttpContext) or implement IBindableFromHttpContext<{1}>.",
+        "When implementing BindAsync(...) method, the return type must be ValueTask<T>.",
+        "Parameter '{0}' of type {1} has a BindAsync(...) method, but the return type is not ValueTask<{1}>. Consider implementing IBindFromHttpContext<{1}> to enforce implementation.",
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,

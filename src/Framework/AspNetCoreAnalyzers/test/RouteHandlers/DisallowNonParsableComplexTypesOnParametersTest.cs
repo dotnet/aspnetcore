@@ -195,7 +195,35 @@ public class Customer
 }
 """;
 
-        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable)
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable)
+            .WithArguments("customer", "Customer")
+            .WithLocation(0);
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withBindAsyncMethodThatReturnsTask_of_T_Fails()
+    {
+        // Arrange
+        var source = $$"""
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{customer}", ({|#0:Customer customer|}) => {});
+
+public class Customer
+{
+    public async static Task<Customer> BindAsync(HttpContext context)
+    {
+        return new Customer();
+    }
+}
+""";
+
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT)
             .WithArguments("customer", "Customer")
             .WithLocation(0);
 

@@ -392,7 +392,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         var parameterTypeSymbol = semanticModel.GetSymbolInfo(token.Parent!, cancellationToken).GetAnySymbol();
         if (parameterTypeSymbol is INamedTypeSymbol typeSymbol)
         {
-            return ParsabilityHelper.IsTypeParsable(typeSymbol, wellKnownTypes);
+            return ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) == Parsability.Parsable;
 
         }
         else if (parameterTypeSymbol is IMethodSymbol)

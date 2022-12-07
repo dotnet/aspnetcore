@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -55,13 +54,36 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
             var location = syntax.GetLocation();
 
+            if (ReportFromAttributeDiagnostic(
+                context,
+                WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata,
+                wellKnownTypes,
+                handlerDelegateParameter,
+                parameterTypeSymbol,
+                location
+            )) { continue; }
+
+            if (ReportFromAttributeDiagnostic(
+                context,
+                WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata,
+                wellKnownTypes,
+                handlerDelegateParameter,
+                parameterTypeSymbol,
+                location
+                )) { continue; }
+
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
             if (parser.TryGetRouteParameter(handlerDelegateParameter.Name, out var routeParameter))
             {
-                if (!(ParsabilityHelper.IsTypeParsable(parameterTypeSymbol, wellKnownTypes) || ParsabilityHelper.IsTypeBindable(parameterTypeSymbol, wellKnownTypes)))
+                var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
+                var bindability = ParsabilityHelper.GetBindability(parameterTypeSymbol, wellKnownTypes);
+
+                if (!(parsability == Parsability.Parsable || bindability == Bindability.Bindable))
                 {
+                    var descriptor = SelectDescriptor(parsability, bindability);
+
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
+                        descriptor,
                         location,
                         routeParameter.Name,
                         parameterTypeSymbol.Name
@@ -70,36 +92,21 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                 continue;
             }
-
-            if (ReportFromAttributeDiagnostic(
-                context,
-                WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata,
-                DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
-                wellKnownTypes,
-                handlerDelegateParameter,
-                parameterTypeSymbol,
-                location,
-                ParsabilityHelper.IsTypeParsable
-                )) { continue; }
-
-            if (ReportFromAttributeDiagnostic(
-                context,
-                WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata,
-                DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
-                wellKnownTypes,
-                handlerDelegateParameter,
-                parameterTypeSymbol,
-                location,
-                ParsabilityHelper.IsTypeParsable
-                )) { continue; }
         }
 
-        static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromMetadataInterfaceType, DiagnosticDescriptor descriptor, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location, Func<ITypeSymbol, WellKnownTypes, bool> check)
+        static bool HasAttributeImplementingFromMetadataInterfaceType(IParameterSymbol parameter, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes)
         {
             var fromMetadataInterfaceTypeSymbol = wellKnownTypes.Get(fromMetadataInterfaceType);
-            if (parameter.GetAttributes().Any(ad => ad.AttributeClass.Implements(fromMetadataInterfaceTypeSymbol)) &&
-                !check(parameterTypeSymbol, wellKnownTypes))
+            return parameter.GetAttributes().Any(ad => ad.AttributeClass.Implements(fromMetadataInterfaceTypeSymbol));
+        }
+
+        static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location)
+        {
+            var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
+            if (HasAttributeImplementingFromMetadataInterfaceType(parameter, fromMetadataInterfaceType, wellKnownTypes) && parsability != Parsability.Parsable)
             {
+                var descriptor = SelectDescriptor(parsability, Bindability.NotBindable);
+
                 context.ReportDiagnostic(Diagnostic.Create(
                     descriptor,
                     location,
@@ -134,6 +141,17 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
 
             return parameterTypeSymbol;
+        }
+
+        static DiagnosticDescriptor SelectDescriptor(Parsability parsability, Bindability bindability)
+        {
+            // This abomination is used to take the parsability and bindability and together figure
+            // out what the most optimal diagnostic message is to give to our plucky user.
+            return (parsability, bindability) switch
+            {
+                { parsability: Parsability.NotParsable, bindability: Bindability.InvalidReturnType } => DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT,
+                _ => DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable
+            };
         }
     }
 }
