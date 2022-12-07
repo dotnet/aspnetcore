@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly Uygulaması",
   "description": "WebAssembly üzerinde çalışan ve isteğe bağlı olarak bir ASP.NET Core uygulamasında barındırılan Blazor uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net7.0/description": "Hedef net7.0",
+  "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/Hosted/displayName": "ASP.NET Core tarafından _Barındırılan",
   "symbols/Hosted/description": "Belirtilmişse Blazor WebAssembly uygulaması için ASP.NET Core konağı içerir.",
