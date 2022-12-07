@@ -20,7 +20,7 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 let renderingFailed = false;
 let connection: HubConnection;
 
-export async function startCircuit(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
+export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[]): Promise<void> {
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);
@@ -48,9 +48,8 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>): 
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
-  const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const appState = discoverPersistedState(document);
-  const circuit = new CircuitDescriptor(components, appState || '');
+  const circuit = new CircuitDescriptor(components || [], appState || '');
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {

@@ -1,13 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function discoverComponents(document: Document, type: 'webassembly' | 'server'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
+export function discoverComponents(document: Document, type: 'webassembly' | 'server' | 'auto'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] | AutoComponentDescriptor[] {
   switch (type){
     case 'webassembly':
       return discoverWebAssemblyComponents(document);
     case 'server':
       return discoverServerComponents(document);
+    case 'auto':
+      return discoverAutoComponents(document);
   }
+}
+
+function discoverAutoComponents(document: Document): AutoComponentDescriptor[] {
+  const componentComments = resolveComponentComments(document, 'auto') as AutoComponentComment[];
+  const discoveredComponents: AutoComponentDescriptor[] = [];
+  for (let i = 0; i < componentComments.length; i++) {
+    const s = componentComments[i].server;
+    const w = componentComments[i].webAssembly;
+    discoveredComponents.push({
+      type: 'auto',
+      serverDescriptor: new ServerComponentDescriptor(s.type, s.start, s.end, s.sequence, s.descriptor),
+      webAssemblyDescriptor: new WebAssemblyComponentDescriptor(w.type, w.start, w.end, w.assembly, w.typeName, w.parameterDefinitions, w.parameterValues),
+    });
+  }
+
+  return discoveredComponents.sort((a, b): number => a.serverDescriptor.sequence - b.serverDescriptor.sequence);
 }
 
 function discoverServerComponents(document: Document): ServerComponentDescriptor[] {
@@ -79,10 +97,7 @@ function discoverWebAssemblyComponents(document: Document): WebAssemblyComponent
   return discoveredComponents.sort((a, b): number => a.id - b.id);
 }
 
-interface ComponentComment {
-  type: 'server' | 'webassembly';
-  prerenderId?: string;
-}
+type ComponentComment = ServerComponentComment | WebAssemblyComponentComment | AutoComponentComment;
 
 interface ServerComponentComment {
   type: 'server';
@@ -104,7 +119,13 @@ interface WebAssemblyComponentComment {
   end?: Node;
 }
 
-function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): ComponentComment[] {
+interface AutoComponentComment {
+  type: 'auto';
+  server: ServerComponentComment;
+  webAssembly: WebAssemblyComponentComment;
+}
+
+function resolveComponentComments(node: Node, type: 'webassembly' | 'server' | 'auto'): ComponentComment[] {
   if (!node.hasChildNodes()) {
     return [];
   }
@@ -129,7 +150,7 @@ function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): C
 
 const blazorCommentRegularExpression = new RegExp(/^\s*Blazor:[^{]*(?<descriptor>.*)$/);
 
-function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server'): ComponentComment | undefined {
+function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server' | 'auto'): ComponentComment | undefined {
   const candidateStart = commentNodeIterator.currentElement;
 
   if (!candidateStart || candidateStart.nodeType !== Node.COMMENT_NODE) {
@@ -144,9 +165,11 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
         const componentComment = parseCommentPayload(json);
         switch (type) {
           case 'webassembly':
-            return createWebAssemblyComponentComment(componentComment as WebAssemblyComponentComment, candidateStart, commentNodeIterator);
+            return createWebAssemblyComponentComment(componentComment, candidateStart, commentNodeIterator);
           case 'server':
-            return createServerComponentComment(componentComment as ServerComponentComment, candidateStart, commentNodeIterator);
+            return createServerComponentComment(componentComment, candidateStart, commentNodeIterator);
+          case 'auto':
+            return createAutoComponentComment(componentComment, candidateStart, commentNodeIterator);
         }
       } catch (error) {
         throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
@@ -160,25 +183,56 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
 function parseCommentPayload(json: string): ComponentComment {
   const payload = JSON.parse(json) as ComponentComment;
   const { type } = payload;
-  if (type !== 'server' && type !== 'webassembly') {
+  if (type !== 'server' && type !== 'webassembly' && type !== 'auto') {
     throw new Error(`Invalid component type '${type}'.`);
   }
 
   return payload;
 }
 
-function createServerComponentComment(payload: ServerComponentComment, start: Node, iterator: ComponentCommentIterator): ServerComponentComment | undefined {
-  const { type, descriptor, sequence, prerenderId } = payload;
+function createAutoComponentComment(payload: ComponentComment, start: Node, iterator: ComponentCommentIterator): AutoComponentComment | undefined {
+  const prerenderId = payload.type === 'auto' ? payload.server.prerenderId : payload.prerenderId;
 
-  // Regardless of whether this comment matches the type we're looking for (i.e., 'server'), we still need to move the iterator
+  // Regardless of whether this comment matches the type we're looking for (i.e., 'auto'), we still need to move the iterator
   // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
   // by the end marker.
-  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
+  const end = prerenderId ? getComponentEndComment('server', prerenderId, iterator) : undefined;
   if (prerenderId && !end) {
     throw new Error(`Could not find an end component comment for '${start}'`);
   }
 
-  if (type !== 'server') {
+  if (payload.type !== 'auto') {
+    return undefined;
+  }
+
+  return {
+    type: payload.type,
+    server: { ...payload.server, start, end },
+    webAssembly: {
+      ...payload.webAssembly,
+      start,
+      end,
+      // See comments in createWebAssemblyComponentComment
+      parameterDefinitions: payload.webAssembly.parameterDefinitions && atob(payload.webAssembly.parameterDefinitions),
+      parameterValues: payload.webAssembly.parameterValues && atob(payload.webAssembly.parameterValues),
+    },
+  };
+}
+
+function createServerComponentComment(payload: ComponentComment, start: Node, iterator: ComponentCommentIterator): ServerComponentComment | undefined {
+  const { type, descriptor, sequence, prerenderId } = payload.type === 'auto'
+    ? payload.server
+    : payload as ServerComponentComment;
+
+  // Regardless of whether this comment matches the type we're looking for (i.e., 'server'), we still need to move the iterator
+  // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
+  // by the end marker.
+  const end = prerenderId ? getComponentEndComment('server', prerenderId, iterator) : undefined;
+  if (prerenderId && !end) {
+    throw new Error(`Could not find an end component comment for '${start}'`);
+  }
+
+  if (payload.type !== 'server') {
     return undefined;
   }
 
@@ -204,18 +258,20 @@ function createServerComponentComment(payload: ServerComponentComment, start: No
   };
 }
 
-function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment, start: Node, iterator: ComponentCommentIterator): WebAssemblyComponentComment | undefined {
-  const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId } = payload;
+function createWebAssemblyComponentComment(payload: ComponentComment, start: Node, iterator: ComponentCommentIterator): WebAssemblyComponentComment | undefined {
+  const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId } = payload.type === 'auto'
+    ? payload.webAssembly
+    : payload as WebAssemblyComponentComment;
 
   // Regardless of whether this comment matches the type we're looking for (i.e., 'webassembly'), we still need to move the iterator
   // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
   // by the end marker.
-  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
+  const end = prerenderId ? getComponentEndComment('webassembly', prerenderId, iterator) : undefined;
   if (prerenderId && !end) {
     throw new Error(`Could not find an end component comment for '${start}'`);
   }
 
-  if (type !== 'webassembly') {
+  if (payload.type !== 'webassembly') {
     return undefined;
   }
 
@@ -243,7 +299,7 @@ function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment,
   };
 }
 
-function getComponentEndComment(prerenderedId: string, iterator: ComponentCommentIterator): ChildNode | undefined {
+function getComponentEndComment(type: 'server' | 'webassembly', prerenderedId: string, iterator: ComponentCommentIterator): ChildNode | undefined {
   while (iterator.next() && iterator.currentElement) {
     const node = iterator.currentElement;
     if (node.nodeType !== Node.COMMENT_NODE) {
@@ -259,7 +315,7 @@ function getComponentEndComment(prerenderedId: string, iterator: ComponentCommen
       continue;
     }
 
-    validateEndComponentPayload(json, prerenderedId);
+    validateEndComponentPayload(type, json, prerenderedId);
 
     return node;
   }
@@ -267,12 +323,15 @@ function getComponentEndComment(prerenderedId: string, iterator: ComponentCommen
   return undefined;
 }
 
-function validateEndComponentPayload(json: string, prerenderedId: string): void {
+function validateEndComponentPayload(type: 'server' | 'webassembly', json: string, prerenderedId: string): void {
   const payload = JSON.parse(json) as ComponentComment;
-  if (Object.keys(payload).length !== 1) {
+  const effectivePayload = payload.type === 'auto'
+    ? (type === 'server' ? payload.server : payload.webAssembly)
+    : payload;
+  if (Object.keys(effectivePayload).length !== 1) {
     throw new Error(`Invalid end of component comment: '${json}'`);
   }
-  const prerenderedEndId = payload.prerenderId;
+  const prerenderedEndId = effectivePayload.prerenderId;
   if (!prerenderedEndId) {
     throw new Error(`End of component comment must have a value for the prerendered property: '${json}'`);
   }
@@ -313,6 +372,12 @@ interface ServerComponentMarker {
   type: string;
   sequence: number;
   descriptor: string;
+}
+
+export interface AutoComponentDescriptor {
+  type: 'auto';
+  serverDescriptor: ServerComponentDescriptor;
+  webAssemblyDescriptor: WebAssemblyComponentDescriptor;
 }
 
 export class ServerComponentDescriptor {

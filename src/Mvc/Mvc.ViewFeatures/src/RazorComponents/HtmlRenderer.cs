@@ -313,21 +313,24 @@ internal sealed class HtmlRenderer : Renderer
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
-        public InteractiveComponentMarker(ServerComponentMarker marker)
+        public InteractiveComponentMarker(ServerComponentMarker? serverMarker, WebAssemblyComponentMarker? webAssemblyMarker)
         {
-            _serverMarker = marker;
-        }
-
-        public InteractiveComponentMarker(WebAssemblyComponentMarker marker)
-        {
-            _webAssemblyMarker = marker;
+            _serverMarker = serverMarker;
+            _webAssemblyMarker = webAssemblyMarker;
         }
 
         public void AppendPreamble(ViewBuffer htmlContentBuilder)
         {
             if (_serverMarker.HasValue)
             {
-                ServerComponentSerializer.AppendPreamble(htmlContentBuilder, _serverMarker.Value);
+                if (_webAssemblyMarker.HasValue)
+                {
+                    AutoComponentSerializer.AppendPreamble(htmlContentBuilder, _serverMarker.Value, _webAssemblyMarker.Value);
+                }
+                else
+                {
+                    ServerComponentSerializer.AppendPreamble(htmlContentBuilder, _serverMarker.Value);
+                }
             }
             else
             {
@@ -339,7 +342,14 @@ internal sealed class HtmlRenderer : Renderer
         {
             if (_serverMarker.HasValue)
             {
-                ServerComponentSerializer.AppendEpilogue(htmlContentBuilder, _serverMarker.Value);
+                if (_webAssemblyMarker.HasValue)
+                {
+                    AutoComponentSerializer.AppendEpilogue(htmlContentBuilder, _serverMarker.Value, _webAssemblyMarker.Value);
+                }
+                else
+                {
+                    ServerComponentSerializer.AppendEpilogue(htmlContentBuilder, _serverMarker.Value);
+                }
             }
             else
             {
@@ -369,7 +379,11 @@ internal sealed class HtmlRenderer : Renderer
             ref var componentFrame = ref frames.Array[position];
             var parameters = ParameterView.DangerouslyCaptureUnboundComponentParameters(frames, position);
 
-            if (renderModeNumericValue == WebComponentRenderMode.Server.NumericValue)
+            ServerComponentMarker? serverMarker = null;
+            WebAssemblyComponentMarker? webAssemblyMarker = null;
+
+            if (renderModeNumericValue == WebComponentRenderMode.Server.NumericValue
+                || renderModeNumericValue == WebComponentRenderMode.Auto.NumericValue)
             {
                 if (_serverComponentSerializer is null)
                 {
@@ -378,17 +392,21 @@ internal sealed class HtmlRenderer : Renderer
                     _serverComponentSequence = new();
                 }
 
-                var marker = _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered: true);
-                return new InteractiveComponentMarker(marker);
+                serverMarker = _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered: true);
             }
 
-            if (renderModeNumericValue == WebComponentRenderMode.WebAssembly.NumericValue)
+            if (renderModeNumericValue == WebComponentRenderMode.WebAssembly.NumericValue
+                || renderModeNumericValue == WebComponentRenderMode.Auto.NumericValue)
             {
-                var marker = WebAssemblyComponentSerializer.SerializeInvocation(componentFrame.ComponentType, parameters, prerendered: true);
-                return new InteractiveComponentMarker(marker);
+                webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(componentFrame.ComponentType, parameters, prerendered: true);
             }
 
-            throw new InvalidOperationException($"Component '{componentFrame.ComponentType.Name}' has unsupported render mode {renderModeNumericValue}");
+            if (!serverMarker.HasValue && !webAssemblyMarker.HasValue)
+            {
+                throw new InvalidOperationException($"Component '{componentFrame.ComponentType.Name}' has unsupported render mode {renderModeNumericValue}");
+            }
+
+            return new InteractiveComponentMarker(serverMarker, webAssemblyMarker);
         }
     }
 

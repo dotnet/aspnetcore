@@ -14,11 +14,11 @@ import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_Object, System_String } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
-export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
+export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[]): Promise<void> {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => {}); // See inAuthRedirectIframe for explanation
@@ -90,18 +90,9 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
     Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });
 
-  const candidateOptions = options ?? {};
-
-  // Get the custom environment setting and blazorBootJson loader if defined
-  const environment = candidateOptions.environment;
-
-  // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
-
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
-  const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-  const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
+  const componentAttacher = new WebAssemblyComponentAttacher(components || []);
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
     getId: (index) => componentAttacher.getId(index),
@@ -122,13 +113,9 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
     }
   };
 
-  const bootConfigResult: BootConfigResult = await bootConfigPromise;
-  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
-
-  const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
-    WebAssemblyConfigLoader.initAsync(bootConfigResult),
-  ]);
+  const bootConfigResult: BootConfigResult = await loadBootConfig(options);
+  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, options ?? {});
+  const resourceLoader = await beginLoadingDotNetRuntime(options ?? {}, bootConfigResult);
 
   try {
     await platform.start(resourceLoader);
@@ -141,6 +128,25 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
   // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
   // only end when the app finishes running
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
+}
+
+export async function loadBootConfig(options?: Partial<WebAssemblyStartOptions>) {
+  return BootConfigResult.initAsync(options?.loadBootResource, options?.environment);
+}
+
+export async function beginLoadingDotNetRuntime(options: Partial<WebAssemblyStartOptions>, bootConfigResult: BootConfigResult): Promise<WebAssemblyResourceLoader> {
+  const candidateOptions = options ?? {};
+
+  // Get the custom environment setting and blazorBootJson loader if defined
+  const environment = candidateOptions.environment;
+
+  // Fetch the resources and prepare the Mono runtime
+  const [resourceLoader] = await Promise.all([
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
+    WebAssemblyConfigLoader.initAsync(bootConfigResult),
+  ]);
+
+  return resourceLoader;
 }
 
 // obsolete, legacy, don't use for new code!

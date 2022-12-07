@@ -23,6 +23,12 @@ public sealed class WebComponentRenderMode : ComponentRenderMode
     /// </summary>
     public static readonly WebComponentRenderMode WebAssembly = new WebComponentRenderMode(33);
 
+    /// <summary>
+    /// Indicates that the component should run interactively using WebAssembly if already loaded,
+    /// otherwise on the server.
+    /// </summary>
+    public static readonly WebComponentRenderMode Auto = new WebComponentRenderMode(34);
+
     private WebComponentRenderMode(byte numericValue) : base(numericValue)
     {
     }

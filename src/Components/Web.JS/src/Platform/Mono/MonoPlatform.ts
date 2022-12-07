@@ -224,6 +224,21 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
   return await cjsExport;
 }
 
+export function loadWebAssemblyResources(resourceLoader: WebAssemblyResourceLoader) {
+  const resources = resourceLoader.bootConfig.resources;
+  const dotnetWasmResourceName = 'dotnet.wasm';
+  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
+  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
+  const wasmBeingLoaded = resourceLoader.loadResource(
+    /* name */ dotnetWasmResourceName,
+    /* url */ `_framework/${dotnetWasmResourceName}`,
+    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
+    /* type */ 'dotnetwasm'
+  );
+
+  return { assembliesBeingLoaded, pdbsBeingLoaded, wasmBeingLoaded };
+}
+
 async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<DotnetPublicAPI> {
   let runtimeReadyResolve: (data: DotnetPublicAPI) => void = undefined as any;
   let runtimeReadyReject: (reason?: any) => void = undefined as any;
@@ -233,7 +248,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   });
 
   const dotnetJsBeingLoaded = importDotnetJs(resourceLoader);
-  const resources = resourceLoader.bootConfig.resources;
   const moduleConfig = (window['Module'] || {}) as typeof Module;
   const suppressMessages = ['DEBUGGING ENABLED'];
 
@@ -259,15 +273,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     }
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
-  const dotnetWasmResourceName = 'dotnet.wasm';
-  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
-  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
-  const wasmBeingLoaded = resourceLoader.loadResource(
-    /* name */ dotnetWasmResourceName,
-    /* url */ `_framework/${dotnetWasmResourceName}`,
-    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
-    /* type */ 'dotnetwasm'
-  );
+  const { assembliesBeingLoaded, pdbsBeingLoaded, wasmBeingLoaded } = loadWebAssemblyResources(resourceLoader);
   const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, wasmBeingLoaded);
   totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
@@ -672,7 +678,7 @@ async function compileWasmModule(wasmResource: LoadingResource, imports: any): P
     // Fall back on ArrayBuffer instantiation.
     const arrayBuffer = await wasmResourceResponse.arrayBuffer();
     const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-    return arrayBufferResult.instance;  
+    return arrayBufferResult.instance;
   }
 }
 
