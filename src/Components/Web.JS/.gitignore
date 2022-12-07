@@ -1,4 +1,7 @@
 ﻿node_modules/
 dist/Debug/
-dist/Release/blazor.webassembly.js
-dist/Release/blazor.webview.js
+
+# For the blazor-united prototype, stop tracking the .js files as it makes development inconvenient when moving around branches
+# For the prototype, it doesn't matter whether or not things work in CI
+# Quite soon, we might be able to stop tracking these files in the real `main` branch too.
+dist/Release/blazor.*.js
