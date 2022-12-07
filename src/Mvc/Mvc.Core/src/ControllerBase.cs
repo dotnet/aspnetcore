@@ -2049,9 +2049,9 @@ public abstract class ControllerBase
     [NonAction]
     public virtual CreatedResult Created(Uri? uri, [ActionResultObjectValue] object? value)
     {
-        return new CreatedResult(uri, value);                                                  
+        return new CreatedResult(uri, value);
     }
-   
+
     /// <summary>
     /// Creates a <see cref="CreatedAtActionResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>

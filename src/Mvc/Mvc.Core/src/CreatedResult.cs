@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -23,7 +22,6 @@ public class CreatedResult : ObjectResult
     public CreatedResult()
         : base(null)
     {
-        
     }
 
     /// <summary>
@@ -39,7 +37,7 @@ public class CreatedResult : ObjectResult
         {
             Location = location;
         }
-        
+
         StatusCode = DefaultStatusCode;
     }
 

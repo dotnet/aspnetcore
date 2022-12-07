@@ -3,8 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.IO.Pipelines;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -503,7 +501,7 @@ public class TypedResultsTests
 
     [Fact]
     public void Created_WithNoArgs_ResultHasCorrectValues()
-    {       
+    {
         // Act
         var result = TypedResults.Created();
 
@@ -707,7 +705,7 @@ public class TypedResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-            
+
         // Act
         var result = TypedResults.Json(data, options, contentType, statusCode);
 
