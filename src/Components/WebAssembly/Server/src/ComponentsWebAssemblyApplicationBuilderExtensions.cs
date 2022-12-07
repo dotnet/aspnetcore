@@ -38,7 +38,8 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         var options = CreateStaticFilesOptions(webHostEnvironment.WebRootFileProvider);
 
         builder.MapWhen(ctx => ctx.Request.Path.StartsWithSegments(pathPrefix, out var rest) && rest.StartsWithSegments("/_framework") &&
-        !rest.StartsWithSegments("/_framework/blazor.server.js"),
+        !rest.StartsWithSegments("/_framework/blazor.server.js") &&
+        !rest.StartsWithSegments("/_framework/blazor.united.js"),
         subBuilder =>
         {
             subBuilder.Use(async (context, next) =>

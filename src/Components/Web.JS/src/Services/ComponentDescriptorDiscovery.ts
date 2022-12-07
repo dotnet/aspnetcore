@@ -169,6 +169,15 @@ function parseCommentPayload(json: string): ComponentComment {
 
 function createServerComponentComment(payload: ServerComponentComment, start: Node, iterator: ComponentCommentIterator): ServerComponentComment | undefined {
   const { type, descriptor, sequence, prerenderId } = payload;
+
+  // Regardless of whether this comment matches the type we're looking for (i.e., 'server'), we still need to move the iterator
+  // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
+  // by the end marker.
+  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
+  if (prerenderId && !end) {
+    throw new Error(`Could not find an end component comment for '${start}'`);
+  }
+
   if (type !== 'server') {
     return undefined;
   }
@@ -185,32 +194,27 @@ function createServerComponentComment(payload: ServerComponentComment, start: No
     throw new Error(`Error parsing the sequence '${sequence}' for component '${JSON.stringify(payload)}'`);
   }
 
-  if (!prerenderId) {
-    return {
-      type,
-      sequence: sequence,
-      descriptor,
-      start,
-    };
-  } else {
-    const end = getComponentEndComment(prerenderId, iterator);
-    if (!end) {
-      throw new Error(`Could not find an end component comment for '${start}'`);
-    }
-
-    return {
-      type,
-      sequence,
-      descriptor,
-      start,
-      prerenderId,
-      end,
-    };
-  }
+  return {
+    type,
+    sequence,
+    descriptor,
+    start,
+    prerenderId,
+    end,
+  };
 }
 
 function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment, start: Node, iterator: ComponentCommentIterator): WebAssemblyComponentComment | undefined {
   const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId } = payload;
+
+  // Regardless of whether this comment matches the type we're looking for (i.e., 'webassembly'), we still need to move the iterator
+  // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
+  // by the end marker.
+  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
+  if (prerenderId && !end) {
+    throw new Error(`Could not find an end component comment for '${start}'`);
+  }
+
   if (type !== 'webassembly') {
     return undefined;
   }
@@ -223,37 +227,20 @@ function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment,
     throw new Error('typeName must be defined when using a descriptor.');
   }
 
-  if (!prerenderId) {
-    return {
-      type,
-      assembly,
-      typeName,
-      // Parameter definitions and values come Base64 encoded from the server, since they contain random data and can make the
-      // comment invalid. We could unencode them in .NET Code, but that would be slower to do and we can leverage the fact that
-      // JS provides a native function that will be much faster and that we are doing this work while we are fetching
-      // blazor.boot.json
-      parameterDefinitions: parameterDefinitions && atob(parameterDefinitions),
-      parameterValues: parameterValues && atob(parameterValues),
-      start,
-    };
-  } else {
-    const end = getComponentEndComment(prerenderId, iterator);
-    if (!end) {
-      throw new Error(`Could not find an end component comment for '${start}'`);
-    }
-
-    return {
-      type,
-      assembly,
-      typeName,
-      // Same comment as above.
-      parameterDefinitions: parameterDefinitions && atob(parameterDefinitions),
-      parameterValues: parameterValues && atob(parameterValues),
-      start,
-      prerenderId,
-      end,
-    };
-  }
+  return {
+    type,
+    assembly,
+    typeName,
+    // Parameter definitions and values come Base64 encoded from the server, since they contain random data and can make the
+    // comment invalid. We could unencode them in .NET Code, but that would be slower to do and we can leverage the fact that
+    // JS provides a native function that will be much faster and that we are doing this work while we are fetching
+    // blazor.boot.json
+    parameterDefinitions: parameterDefinitions && atob(parameterDefinitions),
+    parameterValues: parameterValues && atob(parameterValues),
+    start,
+    prerenderId,
+    end,
+  };
 }
 
 function getComponentEndComment(prerenderedId: string, iterator: ComponentCommentIterator): ChildNode | undefined {

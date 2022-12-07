@@ -15,3 +15,4 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
 Microsoft.AspNetCore.Components.Web.WebComponentRenderMode
 static readonly Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Server -> Microsoft.AspNetCore.Components.Web.WebComponentRenderMode!
+static readonly Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.WebAssembly -> Microsoft.AspNetCore.Components.Web.WebComponentRenderMode!

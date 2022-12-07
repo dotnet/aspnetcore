@@ -153,19 +153,20 @@ internal sealed class HtmlRenderer : Renderer
     {
         ref var frame = ref frames.Array[position];
 
-        var marker = (ServerComponentMarker?)null;
-        if (frame.ComponentRenderMode == WebComponentRenderMode.Server.NumericValue)
+        var interactiveMarker = (InteractiveComponentMarker?)null;
+
+        if (frame.ComponentRenderMode != ComponentRenderMode.Unspecified.NumericValue)
         {
-            marker = context.SerializeInvocation(frames, position, prerendered: true);
-            ServerComponentSerializer.AppendPreamble(context.HtmlContentBuilder, marker.Value);
+            interactiveMarker = context.SerializeInvocation(frames, position, frame.ComponentRenderMode);
+            interactiveMarker.Value.AppendPreamble(context.HtmlContentBuilder);
         }
 
         var childFrames = GetCurrentRenderTreeFrames(frame.ComponentId);
         RenderFrames(context, childFrames, 0, childFrames.Count);
 
-        if (marker.HasValue)
+        if (interactiveMarker.HasValue)
         {
-            ServerComponentSerializer.AppendEpilogue(context.HtmlContentBuilder, marker.Value);
+            interactiveMarker.Value.AppendEpilogue(context.HtmlContentBuilder);
         }
 
         return position + frame.ComponentSubtreeLength;
@@ -307,6 +308,46 @@ internal sealed class HtmlRenderer : Renderer
         return viewBuffer;
     }
 
+    private readonly struct InteractiveComponentMarker
+    {
+        private readonly ServerComponentMarker? _serverMarker;
+        private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
+
+        public InteractiveComponentMarker(ServerComponentMarker marker)
+        {
+            _serverMarker = marker;
+        }
+
+        public InteractiveComponentMarker(WebAssemblyComponentMarker marker)
+        {
+            _webAssemblyMarker = marker;
+        }
+
+        public void AppendPreamble(ViewBuffer htmlContentBuilder)
+        {
+            if (_serverMarker.HasValue)
+            {
+                ServerComponentSerializer.AppendPreamble(htmlContentBuilder, _serverMarker.Value);
+            }
+            else
+            {
+                WebAssemblyComponentSerializer.AppendPreamble(htmlContentBuilder, _webAssemblyMarker.Value);
+            }
+        }
+
+        public void AppendEpilogue(ViewBuffer htmlContentBuilder)
+        {
+            if (_serverMarker.HasValue)
+            {
+                ServerComponentSerializer.AppendEpilogue(htmlContentBuilder, _serverMarker.Value);
+            }
+            else
+            {
+                WebAssemblyComponentSerializer.AppendEpilogue(htmlContentBuilder, _webAssemblyMarker.Value);
+            }
+        }
+    }
+
     private sealed class HtmlRenderingContext
     {
         private readonly IServiceProvider _serviceProvider;
@@ -323,18 +364,31 @@ internal sealed class HtmlRenderer : Renderer
 
         public string ClosestSelectValueAsString { get; set; }
 
-        public ServerComponentMarker SerializeInvocation(ArrayRange<RenderTreeFrame> frames, int position, bool prerendered)
+        public InteractiveComponentMarker SerializeInvocation(ArrayRange<RenderTreeFrame> frames, int position, byte renderModeNumericValue)
         {
-            if (_serverComponentSerializer is null)
-            {
-                var dataProtectionProvider = _serviceProvider.GetRequiredService<IDataProtectionProvider>();
-                _serverComponentSerializer = new ServerComponentSerializer(dataProtectionProvider);
-                _serverComponentSequence = new();
-            }
-
             ref var componentFrame = ref frames.Array[position];
             var parameters = ParameterView.DangerouslyCaptureUnboundComponentParameters(frames, position);
-            return _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered);
+
+            if (renderModeNumericValue == WebComponentRenderMode.Server.NumericValue)
+            {
+                if (_serverComponentSerializer is null)
+                {
+                    var dataProtectionProvider = _serviceProvider.GetRequiredService<IDataProtectionProvider>();
+                    _serverComponentSerializer = new ServerComponentSerializer(dataProtectionProvider);
+                    _serverComponentSequence = new();
+                }
+
+                var marker = _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered: true);
+                return new InteractiveComponentMarker(marker);
+            }
+
+            if (renderModeNumericValue == WebComponentRenderMode.WebAssembly.NumericValue)
+            {
+                var marker = WebAssemblyComponentSerializer.SerializeInvocation(componentFrame.ComponentType, parameters, prerendered: true);
+                return new InteractiveComponentMarker(marker);
+            }
+
+            throw new InvalidOperationException($"Component '{componentFrame.ComponentType.Name}' has unsupported render mode {renderModeNumericValue}");
         }
     }
 

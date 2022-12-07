@@ -1,8 +1,7 @@
-using System.Globalization;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using BlazorUnitedApp.Data;
-using BlazorUnitedApp.Pages;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +21,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseBlazorFrameworkFiles(); // Enable WebAssembly
 app.UseStaticFiles();
 
 app.UseRouting();
