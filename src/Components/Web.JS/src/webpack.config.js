@@ -18,6 +18,7 @@ module.exports = (env, args) => ({
         'blazor.server': './Boot.Server.ts',
         'blazor.webassembly': './Boot.WebAssembly.ts',
         'blazor.webview': './Boot.WebView.ts',
+        'blazor.united': './Boot.United.ts',
     },
     output: { path: path.join(__dirname, '/..', '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
     performance: {
