@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Bienvenue dans le programme d'installation de [WixBundleName].</String>
-  <String Id="InstallResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;termes du contrat de licence&lt;/a&gt; et &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;déclaration de confidentialité&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
 </WixLocalization>
