@@ -81,6 +81,7 @@ public class ControllerUnitTestabilityTests
     [Theory]
     [InlineData("/Created_1", "<html>CreatedBody</html>")]
     [InlineData("/Created_2", null)]
+    [InlineData(null, null)]
     public void ControllerCreated_InvokedInUnitTests(string uri, string content)
     {
         // Arrange

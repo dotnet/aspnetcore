@@ -3,8 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.IO.Pipelines;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -502,6 +500,17 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Created_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = TypedResults.Created();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public void Created_WithStringUriAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -562,39 +571,58 @@ public class TypedResultsTests
     }
 
     [Fact]
-    public void Created_WithNullStringUri_ThrowsArgException()
+    public void Created_WithNullStringUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(default(string)));
+        // Act
+        var result = TypedResults.Created(default(string));
+
+        // Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void Created_WithEmptyStringUri_ThrowsArgException()
+    public void Created_WithEmptyStringUri_SetsLocationEmpty()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(string.Empty));
+        var result = TypedResults.Created(string.Empty);
+        Assert.Empty(result.Location);
     }
 
     [Fact]
-    public void Created_WithNullUri_ThrowsArgNullException()
+    public void Created_WithNullUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(Uri)));
+        // Act
+        var result = TypedResults.Created(default(Uri));
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void CreatedOfT_WithNullStringUri_ThrowsArgException()
+    public void CreatedOfT_WithNullStringUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(default(string), default(object)));
+        // Act
+        var result = TypedResults.Created(default(string), default(object));
+
+        // Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void CreatedOfT_WithEmptyStringUri_ThrowsArgException()
+    public void CreatedOfT_WithEmptyStringUri_SetsLocationEmpty()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(string.Empty, default(object)));
+        // Act
+        var result = TypedResults.Created(string.Empty, default(object));
+
+        // Assert
+        Assert.Empty(result.Location);
     }
 
     [Fact]
-    public void CreatedOfT_WithNullUri_ThrowsArgNullException()
+    public void CreatedOfT_WithNullUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(Uri), default(object)));
+        // Act
+        var result = TypedResults.Created(default(Uri), default(object));
+
+        // Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
@@ -677,7 +705,7 @@ public class TypedResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-            
+
         // Act
         var result = TypedResults.Json(data, options, contentType, statusCode);
 
