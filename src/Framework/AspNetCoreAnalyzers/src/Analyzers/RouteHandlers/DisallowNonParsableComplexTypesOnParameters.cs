@@ -21,15 +21,12 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         IInvocationOperation invocation,
         IMethodSymbol methodSymbol)
     {
-        var routePatternArgument = invocation.Arguments[1];
-
-        if (routePatternArgument.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
-            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        if (!TryGetStringToken(invocation, out var routePatternLiteralSyntaxToken))
         {
             return;
         }
 
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(routePatternArgumentLiteralSyntax.Token);
+        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(routePatternLiteralSyntaxToken);
         var parser = RoutePatternParser.TryParse(virtualChars, false);
 
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.Compilation);
@@ -44,6 +41,12 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
 
             var parameterTypeSymbol = ResovleParameterTypeSymbol(handlerDelegateParameter);
+
+            // If this is null it means we aren't working with a named type symbol.
+            if (parameterTypeSymbol == null)
+            {
+                continue;
+            }
 
             // If the parameter is one of the special request delegate types we can skip it.
             if (wellKnownTypes.IsType(parameterTypeSymbol, RouteWellKnownTypes.ParameterSpecialTypes))
@@ -73,7 +76,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 )) { continue; }
 
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
-            if (parser.TryGetRouteParameter(handlerDelegateParameter.Name, out var routeParameter))
+            if (parser != null && parser.TryGetRouteParameter(handlerDelegateParameter.Name, out var routeParameter))
             {
                 var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
                 var bindability = ParsabilityHelper.GetBindability(parameterTypeSymbol, wellKnownTypes);
@@ -92,6 +95,28 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                 continue;
             }
+        }
+
+        static bool TryGetStringToken(IInvocationOperation invocation, out SyntaxToken token)
+        {
+            IArgumentOperation? argumentOperation = null;
+            foreach (var argument in invocation.Arguments)
+            {
+                if (argument.Parameter?.Ordinal == 1)
+                {
+                    argumentOperation = argument;
+                }
+            }
+
+            if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
+                routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+            {
+                token = default;
+                return false;
+            }
+
+            token = routePatternArgumentLiteralSyntax.Token;
+            return true;
         }
 
         static bool HasAttributeImplementingFromMetadataInterfaceType(IParameterSymbol parameter, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes)
@@ -120,22 +145,22 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        static INamedTypeSymbol ResovleParameterTypeSymbol(IParameterSymbol parameterSymbol)
+        static INamedTypeSymbol? ResovleParameterTypeSymbol(IParameterSymbol parameterSymbol)
         {
-            INamedTypeSymbol parameterTypeSymbol = null;
+            INamedTypeSymbol? parameterTypeSymbol = null;
 
             // If it is an array, unwrap it.
             if (parameterSymbol.Type is IArrayTypeSymbol arrayTypeSymbol)
             {
                 parameterTypeSymbol = arrayTypeSymbol.ElementType as INamedTypeSymbol;
             }
-            else
+            else if (parameterSymbol.Type is INamedTypeSymbol namedTypeSymbol)
             {
-                parameterTypeSymbol = parameterSymbol.Type as INamedTypeSymbol;
+                parameterTypeSymbol = namedTypeSymbol;
             }
 
             // If it is nullable, unwrap it.
-            if (parameterTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            if (parameterTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
             {
                 parameterTypeSymbol = parameterTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
             }
