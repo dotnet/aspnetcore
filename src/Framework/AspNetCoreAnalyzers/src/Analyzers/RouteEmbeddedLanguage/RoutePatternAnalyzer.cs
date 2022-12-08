@@ -24,7 +24,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.RoutePatternUnusedParameter
     });
 
-    public void Analyze(SemanticModelAnalysisContext context)
+    private void AnalyzeSemanticModel(SemanticModelAnalysisContext context)
     {
         var semanticModel = context.SemanticModel;
         var syntaxTree = semanticModel.SyntaxTree;
@@ -165,9 +165,10 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
     public override void Initialize(AnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.ReportDiagnostics);
+        // Run on generated code to include routes specified in Razor files.
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
         context.EnableConcurrentExecution();
 
-        context.RegisterSemanticModelAction(Analyze);
+        context.RegisterSemanticModelAction(AnalyzeSemanticModel);
     }
 }
