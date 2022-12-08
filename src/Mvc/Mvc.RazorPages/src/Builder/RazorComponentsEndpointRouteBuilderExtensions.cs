@@ -50,7 +50,7 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
                 endpoints.Map(routeAttribute.Template, httpContext =>
                 {
                     var renderer = httpContext.RequestServices.GetRequiredService<PassiveComponentRenderer>();
-                    return renderer.HandleRequest(httpContext, componentType, parameters: null);
+                    return renderer.HandleRequest(httpContext, ComponentRenderMode.Unspecified, componentType, parameters: null);
                 });
             }
         }

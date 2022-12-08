@@ -14,6 +14,8 @@ Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RazorComponentResult(Mi
 Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RazorComponentResult(Microsoft.AspNetCore.Components.IComponent! component, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters) -> void
 Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RazorComponentResult(System.Type! componentType) -> void
 Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RazorComponentResult(System.Type! componentType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters) -> void
+Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RenderMode.get -> Microsoft.AspNetCore.Components.ComponentRenderMode!
+Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.RenderMode.set -> void
 Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult.WithParameter(string! name, object? value) -> Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult!
 Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult<TComponent>
 Microsoft.AspNetCore.Mvc.RazorPages.RazorComponentResult<TComponent>.RazorComponentResult() -> void

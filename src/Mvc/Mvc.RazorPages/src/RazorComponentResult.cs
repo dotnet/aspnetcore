@@ -20,6 +20,11 @@ public class RazorComponentResult : IResult
     /// <summary>
     /// TODO
     /// </summary>
+    public ComponentRenderMode RenderMode { get; set; } = ComponentRenderMode.Unspecified;
+
+    /// <summary>
+    /// TODO
+    /// </summary>
     public RazorComponentResult(Type componentType)
     {
         _componentType = componentType;
@@ -71,8 +76,8 @@ public class RazorComponentResult : IResult
         var renderer = httpContext.RequestServices.GetRequiredService<PassiveComponentRenderer>();
         var parameters = _modifiedParameters ?? _parameters;
         return _componentInstance is not null
-            ? renderer.HandleRequest(httpContext, _componentInstance, parameters)
-            : renderer.HandleRequest(httpContext, _componentType!, parameters);
+            ? renderer.HandleRequest(httpContext, RenderMode, _componentInstance, parameters)
+            : renderer.HandleRequest(httpContext, RenderMode, _componentType!, parameters);
     }
 }
 

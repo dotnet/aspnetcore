@@ -36,17 +36,17 @@ internal class PassiveComponentRenderer
         _htmlEncoder = htmlEncoder;
     }
 
-    public Task HandleRequest(HttpContext httpContext, IComponent componentInstance, IReadOnlyDictionary<string, object?>? parameters)
+    public Task HandleRequest(HttpContext httpContext, ComponentRenderMode renderMode, IComponent componentInstance, IReadOnlyDictionary<string, object?>? parameters)
     {
-        return HandleRequest(httpContext, componentInstance, componentInstance.GetType(), parameters);
+        return HandleRequest(httpContext, renderMode, componentInstance, componentInstance.GetType(), parameters);
     }
 
-    public Task HandleRequest(HttpContext httpContext, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    public Task HandleRequest(HttpContext httpContext, ComponentRenderMode renderMode, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
     {
-        return HandleRequest(httpContext, null, componentType, parameters);
+        return HandleRequest(httpContext, renderMode, null, componentType, parameters);
     }
 
-    private async Task HandleRequest(HttpContext httpContext, IComponent? componentInstance, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    private async Task HandleRequest(HttpContext httpContext, ComponentRenderMode renderMode, IComponent? componentInstance, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
     {
         using var htmlRenderer = componentInstance is null
             ? new HtmlRenderer(httpContext.RequestServices, _loggerFactory, _viewBufferScope)
@@ -60,6 +60,7 @@ internal class PassiveComponentRenderer
         var rootComponentParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             { nameof(RouteView.RouteData), new Components.RouteData(componentType, combinedParametersDict!) { FormValues = formValues } },
+            { nameof(RouteView.RenderMode), renderMode },
         });
 
         var result = await staticComponentRenderer.PrerenderComponentAsync(

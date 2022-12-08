@@ -40,6 +40,12 @@ public class RouteView : IComponent
     public Type DefaultLayout { get; set; }
 
     /// <summary>
+    /// Gets or sets the render mode.
+    /// </summary>
+    [Parameter]
+    public ComponentRenderMode RenderMode { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="RouteView"/>.
     /// </summary>
     public RouteView()
@@ -89,6 +95,15 @@ public class RouteView : IComponent
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
         builder.OpenComponent(0, RouteData.PageType);
+
+        // To support setting the rendermode to Server/WebAssembly directly on a RazorComponentResult
+        // (so the entire page is interactive), add the attribute here. This is a hack; really it should
+        // be done on the root-level LayoutView but then we'd have to serialize Layout and ChildContent.
+        // I'm not sure we need to do this at all though.
+        if (RenderMode != ComponentRenderMode.Unspecified)
+        {
+            builder.AddAttribute(1, "rendermode", RenderMode);
+        }
 
         foreach (var kvp in RouteData.RouteValues)
         {

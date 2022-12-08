@@ -60,5 +60,14 @@ async function boot(options?: Partial<UnitedStartOptions>): Promise<void> {
 Blazor.start = boot;
 
 if (shouldAutoStart()) {
-  boot();
+  // We want to activate interactive components whenever they get added into the page, e.g., by streaming prerendering.
+  // But that's nontrivial so as a quick hack, just wait until any streaming prerendering is finished before starting interactivity.
+  // Ideally we'd start interactivity immediately and react whenever passive content is updated later.
+  const onReadyStateChange = () => {
+    if (document.readyState === 'complete') {
+      document.removeEventListener('readystatechange', onReadyStateChange);
+      boot();
+    }
+  };
+  document.addEventListener('readystatechange', onReadyStateChange);
 }

@@ -12,6 +12,8 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int seque
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentRenderMode.get -> byte
 Microsoft.AspNetCore.Components.RouteData.FormValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>?
 Microsoft.AspNetCore.Components.RouteData.FormValues.init -> void
+Microsoft.AspNetCore.Components.RouteView.RenderMode.get -> Microsoft.AspNetCore.Components.ComponentRenderMode!
+Microsoft.AspNetCore.Components.RouteView.RenderMode.set -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get -> System.Threading.CancellationToken
