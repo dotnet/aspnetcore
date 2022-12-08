@@ -4,11 +4,11 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax;
 
 internal struct EmbeddedSyntaxToken<TSyntaxKind> where TSyntaxKind : struct
 {

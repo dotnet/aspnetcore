@@ -5,10 +5,10 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
 /// <summary>
 /// Represents the individual characters that raw string token represents (i.e. with escapes collapsed).  

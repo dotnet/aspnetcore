@@ -4,11 +4,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 
 using RoutePatternToken = EmbeddedSyntaxToken<RoutePatternKind>;
 

@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 
 using static RoutePatternHelpers;
 using RoutePatternToken = EmbeddedSyntaxToken<RoutePatternKind>;

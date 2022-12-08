@@ -11,9 +11,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
@@ -23,7 +23,7 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
 using Document = Microsoft.CodeAnalysis.Document;
-using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
+using RoutePatternToken = Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern.RoutePatternKind>;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -148,7 +148,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         if (container.Parent.IsKind(SyntaxKind.Argument))
         {
             // Minimal API
-            var mapMethodParts = RoutePatternUsageDetector.FindMapMethodParts(semanticModel, wellKnownTypes, container, context.CancellationToken);
+            var mapMethodParts = RouteUsageDetector.FindMapMethodParts(semanticModel, wellKnownTypes, container, context.CancellationToken);
             if (mapMethodParts == null)
             {
                 return;
@@ -227,14 +227,14 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
             return;
         }
 
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(routeStringToken);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: false);
-        if (tree == null)
+        var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(routeStringToken, context.CancellationToken);
+        if (routeUsage is null)
         {
             return;
         }
 
-        var routePatternCompletionContext = new EmbeddedCompletionContext(context, tree, wellKnownTypes);
+        var routePatternCompletionContext = new EmbeddedCompletionContext(context, routeUsage.RoutePattern);
 
         var existingParameterNames = GetExistingParameterNames(methodNode);
         foreach (var parameterName in existingParameterNames)
@@ -503,7 +503,6 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         private readonly HashSet<string> _names = new(StringComparer.OrdinalIgnoreCase);
 
         public readonly RoutePatternTree Tree;
-        public readonly WellKnownTypes WellKnownTypes;
         public readonly CancellationToken CancellationToken;
         public readonly int Position;
         public readonly CompletionTrigger Trigger;
@@ -517,12 +516,10 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
         public EmbeddedCompletionContext(
             CompletionContext context,
-            RoutePatternTree tree,
-            WellKnownTypes wellKnownTypes)
+            RoutePatternTree tree)
         {
             _context = context;
             Tree = tree;
-            WellKnownTypes = wellKnownTypes;
             Position = _context.Position;
             Trigger = _context.Trigger;
             CancellationToken = _context.CancellationToken;

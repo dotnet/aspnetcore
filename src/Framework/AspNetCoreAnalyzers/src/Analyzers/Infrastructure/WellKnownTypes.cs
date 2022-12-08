@@ -59,7 +59,7 @@ internal enum WellKnownType
     System_IParsable_T
 }
 
-internal class WellKnownTypes
+internal sealed class WellKnownTypes
 {
     private static readonly BoundedCacheWithFactory<Compilation, WellKnownTypes> LazyWellKnownTypesCache = new();
     private static readonly string[] WellKnownTypeNames = new[]
