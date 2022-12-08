@@ -4,9 +4,9 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.App.Analyzers.Infrastructure;

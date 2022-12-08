@@ -3,9 +3,9 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
-namespace Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
 internal partial struct VirtualCharSequence
 {

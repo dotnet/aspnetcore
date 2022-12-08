@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
 internal abstract partial class AbstractVirtualCharService
 {

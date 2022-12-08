@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
 internal static class Extensions
 {

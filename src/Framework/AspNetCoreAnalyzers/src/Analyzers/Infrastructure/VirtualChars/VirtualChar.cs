@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 
 /// <summary>
 /// <see cref="VirtualChar"/> provides a uniform view of a language's string token characters regardless if they

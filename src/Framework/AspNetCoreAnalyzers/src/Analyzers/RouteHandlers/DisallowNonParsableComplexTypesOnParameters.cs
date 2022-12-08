@@ -4,13 +4,10 @@
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
@@ -18,17 +15,9 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DisallowNonParsableComplexTypesOnParameters(
         in OperationAnalysisContext context,
-        IInvocationOperation invocation,
+        RouteUsageModel routeUsage,
         IMethodSymbol methodSymbol)
     {
-        if (!TryGetStringToken(invocation, out var routePatternLiteralSyntaxToken))
-        {
-            return;
-        }
-
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(routePatternLiteralSyntaxToken);
-        var parser = RoutePatternParser.TryParse(virtualChars, false);
-
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.Compilation);
 
         foreach (var handlerDelegateParameter in methodSymbol.Parameters)
@@ -76,7 +65,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 )) { continue; }
 
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
-            if (parser != null && parser.TryGetRouteParameter(handlerDelegateParameter.Name, out var routeParameter))
+            if (routeUsage.RoutePattern.TryGetRouteParameter(handlerDelegateParameter.Name, out var routeParameter))
             {
                 var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
                 var bindability = ParsabilityHelper.GetBindability(parameterTypeSymbol, wellKnownTypes);
@@ -95,28 +84,6 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                 continue;
             }
-        }
-
-        static bool TryGetStringToken(IInvocationOperation invocation, out SyntaxToken token)
-        {
-            IArgumentOperation? argumentOperation = null;
-            foreach (var argument in invocation.Arguments)
-            {
-                if (argument.Parameter?.Ordinal == 1)
-                {
-                    argumentOperation = argument;
-                }
-            }
-
-            if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
-                routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
-            {
-                token = default;
-                return false;
-            }
-
-            token = routePatternArgumentLiteralSyntax.Token;
-            return true;
         }
 
         static bool HasAttributeImplementingFromMetadataInterfaceType(IParameterSymbol parameter, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes)

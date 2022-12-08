@@ -3,10 +3,10 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax;
 
 /// <summary>
 /// Trivia on an <see cref="EmbeddedSyntaxToken{TSyntaxKind}"/>.
