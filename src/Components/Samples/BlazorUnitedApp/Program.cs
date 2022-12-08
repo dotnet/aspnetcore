@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BlazorUnitedApp.Data;
+using BlazorUnitedApp.Pages;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,5 +30,13 @@ app.UseRouting();
 
 app.MapRazorComponents();
 app.MapBlazorHub();
+
+app.Map("/mycomponent", () =>
+{
+    return new RazorComponentResult
+    (
+        new FetchData { ForDate = DateTime.Now.AddYears(1000) }
+    );
+});
 
 app.Run();

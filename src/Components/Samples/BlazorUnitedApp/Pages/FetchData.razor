@@ -41,8 +41,10 @@ else
 @code {
     WeatherForecast[]? forecasts;
 
+    [Parameter] public DateTime ForDate { get; set; } = DateTime.Now;
+
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        forecasts = await ForecastService.GetForecastAsync(ForDate);
     }
 }

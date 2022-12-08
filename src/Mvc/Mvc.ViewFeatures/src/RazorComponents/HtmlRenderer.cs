@@ -35,6 +35,13 @@ internal sealed class HtmlRenderer : Renderer
         _serviceProvider = serviceProvider;
     }
 
+    public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope, IComponentActivator componentActivator)
+        : base(serviceProvider, loggerFactory, componentActivator)
+    {
+        _viewBufferScope = viewBufferScope;
+        _serviceProvider = serviceProvider;
+    }
+
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
     public ChannelReader<RenderBatch> StreamingRenderBatches { get; private set; }

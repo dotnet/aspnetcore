@@ -36,9 +36,21 @@ internal class PassiveComponentRenderer
         _htmlEncoder = htmlEncoder;
     }
 
-    public async Task HandleRequest(HttpContext httpContext, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    public Task HandleRequest(HttpContext httpContext, IComponent componentInstance, IReadOnlyDictionary<string, object?>? parameters)
     {
-        using var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, _loggerFactory, _viewBufferScope);
+        return HandleRequest(httpContext, componentInstance, componentInstance.GetType(), parameters);
+    }
+
+    public Task HandleRequest(HttpContext httpContext, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    {
+        return HandleRequest(httpContext, null, componentType, parameters);
+    }
+
+    private async Task HandleRequest(HttpContext httpContext, IComponent? componentInstance, Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    {
+        using var htmlRenderer = componentInstance is null
+            ? new HtmlRenderer(httpContext.RequestServices, _loggerFactory, _viewBufferScope)
+            : new HtmlRenderer(httpContext.RequestServices, _loggerFactory, _viewBufferScope, new PassiveComponentInstanceActivator(httpContext.RequestServices, componentInstance));
         var staticComponentRenderer = new StaticComponentRenderer(htmlRenderer);
 
         var routeData = httpContext.GetRouteData();
