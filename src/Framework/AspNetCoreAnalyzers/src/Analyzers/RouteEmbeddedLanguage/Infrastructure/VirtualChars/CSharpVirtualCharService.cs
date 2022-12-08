@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Utilities;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 

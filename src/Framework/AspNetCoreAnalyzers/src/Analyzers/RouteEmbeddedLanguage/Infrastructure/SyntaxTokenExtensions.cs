@@ -10,7 +10,7 @@ internal static class SyntaxTokenExtensions
 {
     public static SyntaxNode? TryFindContainer(this SyntaxToken token)
     {
-        var node = GetRequiredParent(token).WalkUpParentheses();
+        var node = token.GetRequiredParent().WalkUpParentheses();
 
         // if we're inside some collection-like initializer, find the instance actually being created. 
         if (node.Parent.IsAnyInitializerExpression(out var instance))
