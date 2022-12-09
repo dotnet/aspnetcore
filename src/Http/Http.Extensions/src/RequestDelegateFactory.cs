@@ -276,13 +276,6 @@ public static partial class RequestDelegateFactory
         var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
 
-        // TODO: Verify
-        if (jsonSerializerOptions is not null)
-        {
-            jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
-            jsonSerializerOptions.MakeReadOnly();
-        }
-
         var factoryContext = new RequestDelegateFactoryContext
         {
             Handler = handler,
@@ -2341,7 +2334,10 @@ public static partial class RequestDelegateFactory
             return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, (JsonTypeInfo<T>)jsonTypeInfo, default);
         }
 
-        // We cannot use JsonTypeInfo here, waiting for https://github.com/dotnet/runtime/issues/77051
+        // We cannot use JsonTypeInfo here yet, waiting for https://github.com/dotnet/runtime/issues/77051
+        // What should happens if options is null?
+        // var runtimeTypeInfo = options!.GetTypeInfo(runtimeType);
+        // return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, runtimeTypeInfo, default);
 
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -246,6 +247,9 @@ public static class WebHost
             services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
+
+            // Json options
+            services.AddTransient<IConfigureOptions<JsonOptions>, HttpJsonOptionsSetup>();
 
             services.AddRouting();
         })
