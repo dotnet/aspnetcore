@@ -390,7 +390,7 @@ public class WebHostTests : LoggedTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync()).DefaultTimeout();
 
         // Assert
-        Assert.Equal("QUIC doesn't support listening on the configured endpoint type. Expected IPEndPoint but got UnixDomainSocketEndPoint.", ex.Message);
+        Assert.Equal("No registered IMultiplexedConnectionListenerFactory supports endpoint UnixDomainSocketEndPoint: /test-path", ex.Message);
     }
 
     private static HttpClient CreateClient()
