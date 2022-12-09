@@ -106,6 +106,17 @@ internal sealed class HtmlRenderer : Renderer
     protected override void HandleException(Exception exception)
         => ExceptionDispatchInfo.Capture(exception).Throw();
 
+    private string RenderTreeToHtmlString(ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+    {
+        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
+        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
+        RenderFrames(context, frames, position, maxElements);
+
+        using var sw = new StringWriter();
+        viewBuffer.WriteTo(sw, HtmlEncoder.Default);
+        return sw.GetStringBuilder().ToString();
+    }
+
     private int RenderFrames(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
     {
         var nextPosition = position;
@@ -306,7 +317,7 @@ internal sealed class HtmlRenderer : Renderer
     private ViewBuffer GetRenderedHtmlContent(int componentId)
     {
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-        var context = new HtmlRenderingContext(viewBuffer, _serviceProvider);
+        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
 
         var frames = GetCurrentRenderTreeFrames(componentId);
         var newPosition = RenderFrames(context, frames, 0, frames.Count);
@@ -368,12 +379,14 @@ internal sealed class HtmlRenderer : Renderer
     private sealed class HtmlRenderingContext
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly HtmlRenderer _htmlRenderer;
         private ServerComponentSerializer _serverComponentSerializer;
         private ServerComponentInvocationSequence _serverComponentSequence;
 
-        public HtmlRenderingContext(ViewBuffer viewBuffer, IServiceProvider serviceProvider)
+        public HtmlRenderingContext(HtmlRenderer htmlRenderer, ViewBuffer viewBuffer, IServiceProvider serviceProvider)
         {
             HtmlContentBuilder = viewBuffer;
+            _htmlRenderer = htmlRenderer;
             _serviceProvider = serviceProvider;
         }
 
@@ -399,13 +412,13 @@ internal sealed class HtmlRenderer : Renderer
                     _serverComponentSequence = new();
                 }
 
-                serverMarker = _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered: true);
+                serverMarker = _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered: true, PrepareRenderFragment);
             }
 
             if (renderModeNumericValue == WebComponentRenderMode.WebAssembly.NumericValue
                 || renderModeNumericValue == WebComponentRenderMode.Auto.NumericValue)
             {
-                webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(componentFrame.ComponentType, parameters, prerendered: true);
+                webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(componentFrame.ComponentType, parameters, prerendered: true, PrepareRenderFragment);
             }
 
             if (!serverMarker.HasValue && !webAssemblyMarker.HasValue)
@@ -414,6 +427,76 @@ internal sealed class HtmlRenderer : Renderer
             }
 
             return new InteractiveComponentMarker(serverMarker, webAssemblyMarker);
+        }
+
+        private string PrepareRenderFragment(RenderFragment fragment)
+        {
+            // We can't just execute the RenderFragment delegate directly. We have to run it through the
+            // renderer so that the renderer can do all the normal things to activate child components
+            // and run their full lifecycle (disposal, etc.)
+            var rootComponent = new FragmentRenderer { Fragment = fragment };
+            string initialHtml = null;
+            var renderTask = _htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            {
+                // WARNING: THIS IS NOT CORRECT AND CAN CAUSE AN INFINITE LOOP
+                // We should *not* really be creating new root components as a side-effect of
+                // parameter serialization, because that means the child content within this
+                // RenderFragment subtree is recreated on each parameter serialization and may
+                // be repeating work, or worse, keep causing ancestor components to re-render
+                // and hence an infinite loop.
+                // Instead, all this work should be done in a completely different place: the
+                // diffing system. When the diffing system sees that a child component has "interactive"
+                // rendermode, any RenderFragment parameters should be handled by creating something
+                // like a FragmentRenderer instance as a new component and referencing it from the
+                // the parameter's attribute frame. Then on successive diffs, we can reuse the
+                // FragmentRenderer and hence preserve descendant components. Also this means we would
+                // no longer be doing the RenderFragment rendering during parameter serialization: we'd
+                // be doing it during diffing, so it would be integrated into normal the rendering flow.
+                // The parameter serialization would then only need to know that for this special parameter
+                // type, it can find the associated FragmentRenderer that already exists, and serialize
+                // its render frames that already exist. And I think that means we don't have to deal
+                // with asynchrony during the parameter serialization at all.
+                var rootComponentId = _htmlRenderer.AssignRootComponentId(rootComponent);
+                var renderTask = _htmlRenderer.RenderRootComponentAsync(rootComponentId);
+
+                var frames = _htmlRenderer.GetCurrentRenderTreeFrames(rootComponentId);
+                initialHtml = _htmlRenderer.RenderTreeToHtmlString(frames, 0, frames.Count);
+            });
+
+            // TODO: Include renderTask in the set of tasks we'd await if the top-level call
+            // asked us to await quiescence. And if we're not awaiting quiescence, at least
+            // merge it into the overall top-level returned task for error handling. The following
+            // logic is just a cheap stand-in.
+            if (renderTask.IsFaulted)
+            {
+                throw renderTask.Exception;
+            }
+
+            if (!renderTask.IsCompleted)
+            {
+                // Fail fast rather than the infinite loop mentioned above.
+                throw new InvalidOperationException("The current implementation of RenderFragment serialization doesn't support child content that performs async work.");
+            }
+
+            return initialHtml;
+        }
+
+        class FragmentRenderer : IComponent
+        {
+            RenderHandle _renderHandle;
+
+            public RenderFragment Fragment { get; set; }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+                _renderHandle = renderHandle;
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+            {
+                _renderHandle.Render(Fragment);
+                return Task.CompletedTask;
+            }
         }
     }
 

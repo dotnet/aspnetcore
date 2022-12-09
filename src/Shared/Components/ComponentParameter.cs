@@ -13,7 +13,7 @@ internal struct ComponentParameter
     public string? TypeName { get; set; }
     public string? Assembly { get; set; }
 
-    public static (IList<ComponentParameter> parameterDefinitions, IList<object?> parameterValues) FromParameterView(ParameterView parameters)
+    public static (IList<ComponentParameter> parameterDefinitions, IList<object?> parameterValues) FromParameterView(ParameterView parameters, Func<RenderFragment, string>? renderFragmentSerializer)
     {
         var parameterDefinitions = new List<ComponentParameter>();
         var parameterValues = new List<object?>();
@@ -27,7 +27,10 @@ internal struct ComponentParameter
                 Assembly = valueType?.Assembly?.GetName()?.Name
             });
 
-            parameterValues.Add(kvp.Value);
+            var value = kvp.Value is RenderFragment fragment && renderFragmentSerializer is not null
+                ? renderFragmentSerializer(fragment)
+                : kvp.Value;
+            parameterValues.Add(value);
         }
 
         return (parameterDefinitions, parameterValues);

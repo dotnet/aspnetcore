@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal sealed class WebAssemblyComponentSerializer
 {
-    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
+    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered, Func<RenderFragment, string> renderFragmentSerializer)
     {
         var assembly = type.Assembly.GetName().Name;
         var typeFullName = type.FullName;
-        var (definitions, values) = ComponentParameter.FromParameterView(parameters);
+        var (definitions, values) = ComponentParameter.FromParameterView(parameters, renderFragmentSerializer);
 
         // We need to serialize and Base64 encode parameters separately since they can contain arbitrary data that might
         // cause the HTML comment to be invalid (like if you serialize a string that contains two consecutive dashes "--").

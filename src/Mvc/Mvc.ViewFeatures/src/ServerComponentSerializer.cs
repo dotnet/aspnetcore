@@ -20,20 +20,21 @@ internal sealed class ServerComponentSerializer
             .CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
-    public ServerComponentMarker SerializeInvocation(ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters, bool prerendered)
+    public ServerComponentMarker SerializeInvocation(ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters, bool prerendered, Func<RenderFragment, string> renderFragmentSerializer)
     {
-        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters);
+        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, renderFragmentSerializer);
         return prerendered ? ServerComponentMarker.Prerendered(sequence, serverComponent) : ServerComponentMarker.NonPrerendered(sequence, serverComponent);
     }
 
     private (int sequence, string payload) CreateSerializedServerComponent(
         ServerComponentInvocationSequence invocationId,
         Type rootComponent,
-        ParameterView parameters)
+        ParameterView parameters,
+        Func<RenderFragment, string> renderFragmentSerializer)
     {
         var sequence = invocationId.Next();
 
-        var (definitions, values) = ComponentParameter.FromParameterView(parameters);
+        var (definitions, values) = ComponentParameter.FromParameterView(parameters, renderFragmentSerializer);
 
         var serverComponent = new ServerComponent(
             sequence,

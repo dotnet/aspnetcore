@@ -57,6 +57,17 @@ internal sealed partial class ComponentParameterDeserializer
                     Log.InvalidParameterType(_logger, definition.Name, definition.TypeName, definition.Assembly);
                     return false;
                 }
+
+                // As a special case, RenderFragment parameters are prerendered on the server and serialized as HTML
+                // strings. We'll reconstruct a RenderFragment that outputs this HTML as a markup string.
+                if (parameterType == typeof(RenderFragment))
+                {
+                    var value = (JsonElement)parameterValues[i];
+                    parametersDictionary.Add(definition.Name,
+                        CreateRenderFragmentFromPrerenderedMarkup(value.GetString()));
+                    continue;
+                }
+
                 try
                 {
                     // At this point we know the parameter is not null, as we don't serialize the type name or the assembly name
@@ -80,6 +91,9 @@ internal sealed partial class ComponentParameterDeserializer
         parameters = ParameterView.FromDictionary(parametersDictionary);
         return true;
     }
+
+    private static RenderFragment CreateRenderFragmentFromPrerenderedMarkup(string html)
+        => builder => builder.AddContent(0, new MarkupString(html));
 
     private static partial class Log
     {

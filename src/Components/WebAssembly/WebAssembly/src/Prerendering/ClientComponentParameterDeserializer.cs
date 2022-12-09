@@ -56,16 +56,25 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                 try
                 {
                     var value = (JsonElement)parameterValues[i];
-                    var parameterValue = JsonSerializer.Deserialize(
-                        value.GetRawText(),
-                        parameterType,
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                    object parameterValue;
+                    if (parameterType == typeof(RenderFragment))
+                    {
+                        var markup = new MarkupString(value.GetString()!);
+                        parameterValue = (RenderFragment)(builder => builder.AddContent(0, markup));
+                    }
+                    else
+                    {
+                        parameterValue = JsonSerializer.Deserialize(
+                            value.GetRawText(),
+                            parameterType,
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                    }
 
                     parametersDictionary[definition.Name] = parameterValue;
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException("Could not parse the parameter value for parameter '{definition.Name}' of type '{definition.TypeName}' and assembly '{definition.Assembly}'.", e);
+                    throw new InvalidOperationException($"Could not parse the parameter value for parameter '{definition.Name}' of type '{definition.TypeName}' and assembly '{definition.Assembly}'.", e);
                 }
             }
         }

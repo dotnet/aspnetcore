@@ -138,7 +138,8 @@ internal sealed class ComponentRenderer : IComponentRenderer
             invocationId,
             type,
             parametersCollection,
-            prerendered: true);
+            prerendered: true,
+            null);
 
         var result = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
@@ -159,7 +160,8 @@ internal sealed class ComponentRenderer : IComponentRenderer
         var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
             parametersCollection,
-            prerendered: true);
+            prerendered: true,
+            null);
 
         var result = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
@@ -182,7 +184,7 @@ internal sealed class ComponentRenderer : IComponentRenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
+        var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false, null);
 
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ServerComponentSerializer.PreambleBufferSize);
         ServerComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
@@ -191,7 +193,7 @@ internal sealed class ComponentRenderer : IComponentRenderer
 
     private IHtmlContent NonPrerenderedWebAssemblyComponent(HttpContext context, Type type, ParameterView parametersCollection)
     {
-        var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
+        var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false, null);
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ServerComponentSerializer.PreambleBufferSize);
         WebAssemblyComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
         return viewBuffer;
