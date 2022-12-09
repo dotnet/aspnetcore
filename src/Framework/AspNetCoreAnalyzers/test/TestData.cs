@@ -9,6 +9,8 @@ public static class TestData
 {
     public static string GetMicrosoftNETCoreAppRefPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRefVersion");
 
+    public static string GetNugetConfigPath() => GetTestDataValue("NugetConfigPath");
+
     private static string GetTestDataValue(string key)
          => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
 }
