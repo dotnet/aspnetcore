@@ -29,8 +29,8 @@
       <_Parameter2>$(MicrosoftNETCoreAppRefVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.Analyzers.TestData">
-      <_Parameter1>NugetConfigPath</_Parameter1>
-      <_Parameter2>$(RepoRoot)NuGet.config</_Parameter2>
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 </Project>

@@ -50,7 +50,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
                 "Microsoft.NETCore.App.Ref",
                 TestData.GetMicrosoftNETCoreAppRefPackageVersion()),
             Path.Combine("ref", "net8.0"))
-        .WithNuGetConfigFilePath(TestData.GetNugetConfigPath());
+        .WithNuGetConfigFilePath(Path.Combine(TestData.GetRepoRoot(), "NuGet.config"));
 
         return net8Ref.AddAssemblies(ImmutableArray.Create(
             TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
