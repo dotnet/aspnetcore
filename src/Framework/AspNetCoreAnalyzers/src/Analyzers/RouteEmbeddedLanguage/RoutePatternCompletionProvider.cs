@@ -92,7 +92,13 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        var stringToken = await RouteStringSyntaxDetectorDocument.GetTokenAtPositionAsync(context.Document, context.Position, context.CancellationToken).ConfigureAwait(false);
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root == null)
+        {
+            return;
+        }
+
+        var stringToken = root.FindToken(context.Position);
         if (context.Position <= stringToken.SpanStart ||
             context.Position >= stringToken.Span.End)
         {

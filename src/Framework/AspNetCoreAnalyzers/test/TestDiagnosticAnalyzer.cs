@@ -76,9 +76,15 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
             return default;
         }
 
-        var token = await RouteStringSyntaxDetectorDocument.GetTokenAtPositionAsync(document, caretPosition, CancellationToken.None);
+        var root = await document.GetSyntaxRootAsync(CancellationToken.None).ConfigureAwait(false);
+        if (root == null)
+        {
+            return default;
+        }
 
-        return (token: token, model: semanticModel);
+        var stringToken = root.FindToken(caretPosition);
+
+        return (token: stringToken, model: semanticModel);
     }
 
     public async Task<AspNetCoreBraceMatchingResult?> GetBraceMatchesAsync(int caretPosition, params string[] sources)
