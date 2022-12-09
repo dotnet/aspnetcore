@@ -5,7 +5,6 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -41,10 +40,6 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             };
         }
-
-        // TODO: Verify
-        jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
-        jsonSerializerOptions.MakeReadOnly();
 
         return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
     }
@@ -82,6 +77,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
 
         if (declaredType is not null &&
             runtimeType != declaredType &&
+            SerializerOptions.TypeInfoResolver != null &&
             SerializerOptions.GetTypeInfo(declaredType).PolymorphismOptions is not null)
         {
             // Using declared type in this case. The polymorphism is not

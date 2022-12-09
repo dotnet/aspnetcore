@@ -248,9 +248,6 @@ public static class WebHost
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
-            // Json options
-            services.AddTransient<IConfigureOptions<JsonOptions>, HttpJsonOptionsSetup>();
-
             services.AddRouting();
         })
         .UseIIS()

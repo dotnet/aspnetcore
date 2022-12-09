@@ -1054,7 +1054,7 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(typeArg);
+                    var jsonTypeInfo = GetJsonTypeInfo(factoryContext.JsonSerializerOptions, typeArg);
 
                     if (jsonTypeInfo is not null &&
                         (typeArg.IsSealed || typeArg.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
@@ -1096,7 +1096,7 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(typeArg);
+                    var jsonTypeInfo = GetJsonTypeInfo(factoryContext.JsonSerializerOptions, typeArg);
 
                     if (jsonTypeInfo is not null &&
                         (typeArg.IsSealed || typeArg.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
@@ -1141,7 +1141,7 @@ public static partial class RequestDelegateFactory
         }
         else
         {
-            var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetTypeInfo(returnType);
+            var jsonTypeInfo = GetJsonTypeInfo(factoryContext.JsonSerializerOptions, returnType);
 
             if (jsonTypeInfo is not null &&
                 (returnType.IsSealed || returnType.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
@@ -2335,8 +2335,8 @@ public static partial class RequestDelegateFactory
         }
 
         // We cannot use JsonTypeInfo here yet, waiting for https://github.com/dotnet/runtime/issues/77051
-        // What should happens if options is null?
-        // var runtimeTypeInfo = options!.GetTypeInfo(runtimeType);
+        // What should happens if options or type info is null?
+        // var runtimeTypeInfo = GetJsonTypeInfo(options, runtimeType);
         // return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, runtimeTypeInfo, default);
 
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
@@ -2345,6 +2345,20 @@ public static partial class RequestDelegateFactory
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
         return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, runtimeType, options, default);
 
+    }
+    private static JsonTypeInfo? GetJsonTypeInfo(JsonSerializerOptions? jsonSerializerOptions, Type type)
+    {
+        if (jsonSerializerOptions?.TypeInfoResolver != null)
+        {
+            if (!jsonSerializerOptions.IsReadOnly)
+            {
+                jsonSerializerOptions.MakeReadOnly();
+            }
+
+            return jsonSerializerOptions.GetTypeInfo(type);
+        }
+
+        return null;
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
