@@ -2,15 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Threading;
+using System.Composition;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Linq;
-using System.Composition;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.Fixers;
 
@@ -26,14 +26,20 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
 
     public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
-    public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+    public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root == null)
+        {
+            return;
+        }
+
         foreach (var diagnostic in context.Diagnostics)
         {
-            string id = diagnostic.Id;
+            var id = diagnostic.Id;
 
-            string message = string.Empty;
-            string identifierMethod = string.Empty;
+            var message = string.Empty;
+            var identifierMethod = string.Empty;
 
             switch (id)
             {
@@ -53,35 +59,29 @@ public sealed class WebApplicationBuilderFixer : CodeFixProvider
                     break;
             }
 
-            context.Document.TryGetSyntaxRoot(out var root);
-
             if (!CanFixWebApplicationBuilder(diagnostic, SyntaxFactory.IdentifierName(identifierMethod), root, out var invocation))
             {
                 continue;
             }
 
             context.RegisterCodeFix(
-                        CodeAction.Create(
-                            message,
-                            cancellationToken => FixWebApplicationBuilderAsync(diagnostic, context.Document, invocation, cancellationToken),
-                            equivalenceKey:
-                            id),
-                            diagnostic);
+                CodeAction.Create(
+                    message,
+                    cancellationToken => FixWebApplicationBuilderAsync(diagnostic, root, context.Document, invocation),
+                    equivalenceKey:
+                    id),
+                    diagnostic);
         }
-
-        return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixWebApplicationBuilderAsync(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
+    private static Task<Document> FixWebApplicationBuilderAsync(Diagnostic diagnostic, SyntaxNode root, Document document, InvocationExpressionSyntax invocation)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-
         var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
-        return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, invocation));
+        return Task.FromResult(document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, invocation)));
     }
 
-    private static bool CanFixWebApplicationBuilder(Diagnostic diagnostic, IdentifierNameSyntax identifierMethod, SyntaxNode root, out InvocationExpressionSyntax invocationName)
+    private static bool CanFixWebApplicationBuilder(Diagnostic diagnostic, IdentifierNameSyntax identifierMethod, SyntaxNode root, [NotNullWhen(true)] out InvocationExpressionSyntax? invocationName)
     {
         invocationName = null;
 

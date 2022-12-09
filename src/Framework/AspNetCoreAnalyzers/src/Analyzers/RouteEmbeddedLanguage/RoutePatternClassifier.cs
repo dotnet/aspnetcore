@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
-using Microsoft.CodeAnalysis.Classification;
-using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Classification;
+using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using RoutePatternToken = Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern.RoutePatternKind>;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -18,17 +16,15 @@ internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
 {
     public void RegisterClassifications(AspNetCoreEmbeddedLanguageClassificationContext context)
     {
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-        var usageContext = RoutePatternUsageDetector.BuildContext(context.SyntaxToken, context.SemanticModel, wellKnownTypes, context.CancellationToken);
-
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(context.SyntaxToken);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
-
-        if (tree != null)
+        var routeUsageCache = RouteUsageCache.GetOrCreate(context.SemanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(context.SyntaxToken, context.CancellationToken);
+        if (routeUsage is null)
         {
-            var visitor = new Visitor(context);
-            AddClassifications(tree.Root, visitor);
+            return;
         }
+
+        var visitor = new Visitor(context);
+        AddClassifications(routeUsage.RoutePattern.Root, visitor);
     }
 
     private static void AddClassifications(RoutePatternNode node, Visitor visitor)

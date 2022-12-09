@@ -68,8 +68,8 @@ public static partial class RequestDelegateFactory
     private static readonly PropertyInfo FormFilesIndexerProperty = typeof(IFormFileCollection).GetProperty("Item")!;
     private static readonly PropertyInfo FormIndexerProperty = typeof(IFormCollection).GetProperty("Item")!;
 
-    private static readonly MethodInfo JsonResultOfTWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo JsonResultOfTWriteResponseFastAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponseFast), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo JsonResultWriteResponseOfTFastAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponseFast), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo JsonResultWriteResponseOfTAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponseOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -1147,13 +1147,13 @@ public static partial class RequestDelegateFactory
                 (returnType.IsSealed || returnType.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
             {
                 return Expression.Call(
-                    JsonResultOfTWriteResponseFastAsyncMethod.MakeGenericMethod(returnType),
+                    JsonResultWriteResponseOfTFastAsyncMethod.MakeGenericMethod(returnType),
                     HttpResponseExpr,
                     methodCall,
                     Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
             }
 
-            return Expression.Call(JsonResultOfTWriteResponseAsyncMethod.MakeGenericMethod(returnType), HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+            return Expression.Call(JsonResultWriteResponseOfTAsyncMethod.MakeGenericMethod(returnType), HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
         }
     }
 
@@ -2345,6 +2345,11 @@ public static partial class RequestDelegateFactory
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
         return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, runtimeType, options, default);
 
+    // Only for use with structs, use WriteJsonResponse for classes to preserve polymorphism
+    private static Task WriteJsonResponseOfT<T>(HttpResponse response, T value, JsonSerializerOptions? options)
+    {
+        Debug.Assert(typeof(T).IsValueType);
+        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, options, default);
     }
     private static JsonTypeInfo? GetJsonTypeInfo(JsonSerializerOptions? jsonSerializerOptions, Type type)
     {

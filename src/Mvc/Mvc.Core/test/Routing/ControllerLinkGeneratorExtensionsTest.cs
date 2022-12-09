@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
@@ -11,6 +11,34 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class ControllerLinkGeneratorExtensionsTest
 {
+    [Fact]
+    public void GetUriByAction_WhenRequiredAttributeIsNull_Throws()
+    {
+        var endpoint1 = CreateEndpoint(
+           "Home/Index/{id}",
+           defaults: new { controller = "Home", action = "Index", },
+           requiredValues: new { controller = "Home", action = "Index" });
+
+        var linkGenerator = CreateLinkGenerator(endpoint1);
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() =>
+                    linkGenerator.GetUriByAction("Index", "Home", null, null, new("localhost")));
+        Assert.Equal("scheme", exception.ParamName);
+
+        exception = Assert.Throws<ArgumentNullException>(() =>
+                    linkGenerator.GetUriByAction((string)null, "Home", null, null, new("localhost")));
+        Assert.Equal("action", exception.ParamName);
+
+        exception = Assert.Throws<ArgumentNullException>(() =>
+                    linkGenerator.GetUriByAction("Index", null, null, null, new("localhost")));
+        Assert.Equal("controller", exception.ParamName);
+
+        exception = Assert.Throws<ArgumentException>(() =>
+                    linkGenerator.GetUriByAction("Index", "Home", null, "http", default));
+        Assert.Equal("host", exception.ParamName);
+    }
+
     [Fact]
     public void GetPathByAction_WithHttpContext_PromotesAmbientValues()
     {

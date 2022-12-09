@@ -22,7 +22,7 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal Created(string location, TValue? value)
+    internal Created(string? location, TValue? value)
     {
         Value = value;
         Location = location;
@@ -35,23 +35,21 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal Created(Uri locationUri, TValue? value)
+    internal Created(Uri? locationUri, TValue? value)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
-        if (locationUri == null)
+        if (locationUri != null)
         {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
-
-        if (locationUri.IsAbsoluteUri)
-        {
-            Location = locationUri.AbsoluteUri;
-        }
-        else
-        {
-            Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            if (locationUri.IsAbsoluteUri)
+            {
+                Location = locationUri.AbsoluteUri;
+            }
+            else
+            {
+                Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
         }
     }
 

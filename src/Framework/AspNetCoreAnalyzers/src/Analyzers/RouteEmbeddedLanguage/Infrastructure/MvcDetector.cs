@@ -13,8 +13,13 @@ internal static class MvcDetector
 
     // Replicates logic from ControllerFeatureProvider.IsController.
     // https://github.com/dotnet/aspnetcore/blob/785cf9bd845a8d28dce3a079c4fedf4a4c2afe57/src/Mvc/Mvc.Core/src/Controllers/ControllerFeatureProvider.cs#L39
-    public static bool IsController(INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    public static bool IsController(INamedTypeSymbol? typeSymbol, WellKnownTypes wellKnownTypes)
     {
+        if (typeSymbol is null)
+        {
+            return false;
+        }
+
         if (!typeSymbol.IsReferenceType)
         {
             return false;
