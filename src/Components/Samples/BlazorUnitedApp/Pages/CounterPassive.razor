@@ -6,7 +6,7 @@
 
 <p>Current count: @CurrentCount</p>
 
-<form method="post">
+<form method="post" enhance>
     <input name="@nameof(CurrentCount)" type="hidden" value="@CurrentCount" />
 
     <ActionButton Name="inc" OnClick="@(() => ChangeCount(1))" class="btn btn-primary" disabled="@inProgress">

@@ -8,6 +8,7 @@ import { startCircuit } from './Boot.Server.Common';
 import { AutoComponentDescriptor, discoverComponents, ServerComponentDescriptor, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { beginLoadingDotNetRuntime, loadBootConfig, startWebAssembly } from './Boot.WebAssembly.Common';
 import { loadWebAssemblyResources } from './Platform/Mono/MonoPlatform';
+import { enableFormEnhancement } from './FormEnhancement';
 
 let started = false;
 
@@ -71,3 +72,5 @@ if (shouldAutoStart()) {
   };
   document.addEventListener('readystatechange', onReadyStateChange);
 }
+
+enableFormEnhancement();
