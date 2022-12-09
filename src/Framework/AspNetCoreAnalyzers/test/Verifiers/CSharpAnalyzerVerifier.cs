@@ -44,11 +44,12 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 
     internal static ReferenceAssemblies GetReferenceAssemblies()
     {
+        var microsoftNETCoreAppRefPackageVersion = TestData.GetMicrosoftNETCoreAppRefPackageVersion();
         var net8Ref = new ReferenceAssemblies(
             "net8.0",
             new PackageIdentity(
                 "Microsoft.NETCore.App.Ref",
-                "8.0.0"),
+                microsoftNETCoreAppRefPackageVersion),
             Path.Combine("ref", "net8.0"));
 
         return net8Ref.AddAssemblies(ImmutableArray.Create(
