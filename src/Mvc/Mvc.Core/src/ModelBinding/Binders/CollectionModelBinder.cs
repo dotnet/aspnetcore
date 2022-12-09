@@ -140,7 +140,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
                     AddErrorIfBindingRequired(bindingContext);
                 }
 
-                bindingContext.Result = ModelBindingResult.Success(model);
+                bindingContext.Result = model == null ? ModelBindingResult.Failed() : ModelBindingResult.Success(model);
             }
 
             Logger.DoneAttemptingToBindModel(bindingContext);

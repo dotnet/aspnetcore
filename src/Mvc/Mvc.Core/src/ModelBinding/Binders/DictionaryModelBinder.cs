@@ -126,6 +126,11 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         await base.BindModelAsync(bindingContext);
         if (!bindingContext.Result.IsModelSet)
         {
+            if (bindingContext.IsTopLevelObject)
+            {
+                AddErrorIfBindingRequired(bindingContext);
+            }
+
             // No match for the prefix at all.
             return;
         }

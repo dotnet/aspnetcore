@@ -423,6 +423,51 @@ public class DictionaryModelBinderTest
         Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
     }
 
+    private IActionResult ActionWithDefaultValueDictionaryParameter(Dictionary<string, string> parameter = null) => null;
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DictionaryModelBinder_DoesNotCreateEmptyCollection_IfIsTopLevelObjectAndHasDefaultValue(
+        bool allowValidatingTopLevelNodes,
+        bool isBindingRequired)
+    {
+        // Arrange
+        var expectedErrorCount = isBindingRequired ? 1 : 0;
+        var binder = new DictionaryModelBinder<string, string>(
+            new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+            new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+            NullLoggerFactory.Instance,
+            allowValidatingTopLevelNodes);
+
+        var bindingContext = CreateContext();
+        bindingContext.IsTopLevelObject = true;
+
+        // Lack of prefix and non-empty model name both ignored.
+        bindingContext.ModelName = "modelName";
+
+        var metadataProvider = new TestModelMetadataProvider();
+        var parameter = typeof(DictionaryModelBinderTest)
+            .GetMethod(nameof(ActionWithDefaultValueDictionaryParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetParameters()[0];
+        metadataProvider
+            .ForParameter(parameter)
+            .BindingDetails(b => b.IsBindingRequired = isBindingRequired);
+        bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
+
+        bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.Null(bindingContext.Result.Model);
+        Assert.False(bindingContext.Result.IsModelSet);
+        Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
+    }
+
     [Theory]
     [InlineData("", false, false)]
     [InlineData("", true, false)]
