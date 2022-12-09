@@ -69,7 +69,7 @@ public static partial class RequestDelegateFactory
     private static readonly PropertyInfo FormIndexerProperty = typeof(IFormCollection).GetProperty("Item")!;
 
     private static readonly MethodInfo JsonResultWriteResponseOfTFastAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponseFast), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo JsonResultWriteResponseOfTAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponseOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo JsonResultWriteResponseOfTAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteJsonResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -2320,6 +2320,8 @@ public static partial class RequestDelegateFactory
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
     }
 
+    // This method will not check for polymorphism and will
+    // leverage the STJ polymorphism support.
     private static Task WriteJsonResponseFast<T>(HttpResponse response, T value, JsonTypeInfo jsonTypeInfo)
         => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, (JsonTypeInfo<T>)jsonTypeInfo, default);
 
@@ -2344,13 +2346,8 @@ public static partial class RequestDelegateFactory
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
         return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, runtimeType, options, default);
-
-    // Only for use with structs, use WriteJsonResponse for classes to preserve polymorphism
-    private static Task WriteJsonResponseOfT<T>(HttpResponse response, T value, JsonSerializerOptions? options)
-    {
-        Debug.Assert(typeof(T).IsValueType);
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, options, default);
     }
+
     private static JsonTypeInfo? GetJsonTypeInfo(JsonSerializerOptions? jsonSerializerOptions, Type type)
     {
         if (jsonSerializerOptions?.TypeInfoResolver != null)
