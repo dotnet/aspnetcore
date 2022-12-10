@@ -3139,7 +3139,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     [Theory]
     [MemberData(nameof(PolymorphicResult))]
-    public async Task RequestDelegateWritesJsonTypeDistinguisherToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
+    public async Task RequestDelegateWritesJsonTypeDiscriminatorToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
     {
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
@@ -3188,7 +3188,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new() { ServiceProvider = httpContext.RequestServices });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -3200,6 +3200,22 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+    }
+
+    [Fact]
+    public void CreateDelegateThrows_WhenGetJsonTypeInfoFail()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .ConfigureHttpJsonOptions(o => o.SerializerOptions.AddContext<TestJsonContext>())
+            .BuildServiceProvider();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        TodoStruct TestAction() => new TodoStruct(42, "Bob", true);
+        Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = httpContext.RequestServices }));
     }
 
     public static IEnumerable<object[]> CustomResults
