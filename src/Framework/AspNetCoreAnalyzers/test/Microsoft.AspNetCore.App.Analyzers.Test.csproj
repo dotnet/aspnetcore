@@ -24,6 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <HelixCorrelationPayload Include="$(RepoRoot)NuGet.config" />
+
+  <ItemGroup>
     <AssemblyAttribute Include="Microsoft.AspNetCore.Analyzers.TestData">
       <_Parameter1>MicrosoftNETCoreAppRefVersion</_Parameter1>
       <_Parameter2>$(MicrosoftNETCoreAppRefVersion)</_Parameter2>
