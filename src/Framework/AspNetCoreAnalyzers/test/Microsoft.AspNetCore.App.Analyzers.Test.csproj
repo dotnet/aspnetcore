@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <HelixCorrelationPayload Include="$(RepoRoot)NuGet.config" />
+  </ItemGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="Microsoft.AspNetCore.Analyzers.TestData">
