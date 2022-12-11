@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Programa de instalación de [WixBundleName].</String>
-  <String Id="InstallResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Reinicie IIS una vez completada la instalación. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS no está habilitado en esta máquina. Si pretende ejecutar aplicaciones ASP.NET Core con IIS, debe instalar IIS antes de ejecutar este instalador. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Términos de licencia&lt;/a&gt; y &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;declaración de privacidad&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Reinicie IIS una vez completada la instalación. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS no está habilitado en esta máquina. Si pretende ejecutar aplicaciones ASP.NET Core con IIS, debe instalar IIS antes de ejecutar este instalador. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
 </WixLocalization>

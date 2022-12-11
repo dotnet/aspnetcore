@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Vítá vás instalační program produktu [WixBundleName]</String>
-  <String Id="InstallResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
-  <String Id="ModifyResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
 </WixLocalization>
