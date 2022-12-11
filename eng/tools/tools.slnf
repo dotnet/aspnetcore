@@ -1,5 +1,5 @@
 {
-  "solution": {
+  "sln": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
       "eng\\tools\\BaselineGenerator\\BaselineGenerator.csproj",
