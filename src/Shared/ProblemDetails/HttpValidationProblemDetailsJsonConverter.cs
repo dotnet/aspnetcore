@@ -53,6 +53,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
         return problemDetails;
 
         [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "We ensure Dictionary<string, string[]> is preserved.")]
+        [UnconditionalSuppressMessage("Trimmer", "IL3050", Justification = "We ensure Dictionary<string, string[]> is preserved.")]
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties, typeof(Dictionary<string, string[]>))]
         static Dictionary<string, string[]>? DeserializeErrors(ref Utf8JsonReader reader, JsonSerializerOptions options)
             => JsonSerializer.Deserialize<Dictionary<string, string[]>>(ref reader, options);
