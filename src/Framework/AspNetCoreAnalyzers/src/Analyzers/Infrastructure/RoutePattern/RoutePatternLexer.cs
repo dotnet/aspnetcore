@@ -14,13 +14,13 @@ using RoutePatternToken = EmbeddedSyntaxToken<RoutePatternKind>;
 internal struct RoutePatternLexer
 {
     public readonly VirtualCharSequence Text;
-    public readonly bool SupportTokenReplacement;
+    public readonly RoutePatternOptions RoutePatternOptions;
     public int Position;
 
-    public RoutePatternLexer(VirtualCharSequence text, bool supportTokenReplacement) : this()
+    public RoutePatternLexer(VirtualCharSequence text, RoutePatternOptions routePatternOptions) : this()
     {
         Text = text;
-        SupportTokenReplacement = supportTokenReplacement;
+        RoutePatternOptions = routePatternOptions;
     }
 
     public VirtualChar CurrentChar => Position < Text.Length ? Text[Position] : default;
@@ -119,12 +119,12 @@ internal struct RoutePatternLexer
             {
                 questionMarkPosition = Position;
             }
-            else if (ch.Value == '[' && IsUnescapedChar(ref Position, '[') && SupportTokenReplacement)
+            else if (ch.Value == '[' && IsUnescapedChar(ref Position, '[') && RoutePatternOptions.SupportTokenReplacement)
             {
                 // Literal ends at bracket start if token replacement is supported.
                 break;
             }
-            else if (IsUnescapedChar(ref Position, ']') && SupportTokenReplacement)
+            else if (IsUnescapedChar(ref Position, ']') && RoutePatternOptions.SupportTokenReplacement)
             {
                 mismatchBracketPosition = Position;
             }
@@ -168,15 +168,6 @@ internal struct RoutePatternLexer
     private const char CloseBrace = '}';
     private const char QuestionMark = '?';
     private const char Asterisk = '*';
-
-    internal static readonly char[] InvalidParameterNameChars = new char[]
-    {
-        Separator,
-        OpenBrace,
-        CloseBrace,
-        QuestionMark,
-        Asterisk
-    };
 
     internal RoutePatternToken? TryScanParameterName()
     {
