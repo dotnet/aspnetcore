@@ -1288,6 +1288,21 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void Created_WithNullStringParameter_CreatedLocationNull()
+    {
+        // Arrange
+        var controller = new TestableController();
+
+        // Act
+        var result = controller.Created((string)null, null);
+
+        // Assert
+        Assert.IsType<CreatedResult>(result);
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public void Created_WithAbsoluteUriParameter_SetsCreatedLocation()
     {
         // Arrange
@@ -1301,6 +1316,21 @@ public class ControllerBaseTest
         Assert.IsType<CreatedResult>(result);
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
         Assert.Equal(uri.OriginalString, result.Location);
+    }
+
+    [Fact]
+    public void Created_WithNullUriParameter_CreatedLocationNull()
+    {
+        // Arrange
+        var controller = new TestableController();
+
+        // Act
+        var result = controller.Created((Uri)null, null);
+
+        // Assert
+        Assert.IsType<CreatedResult>(result);
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.Location);
     }
 
     [Fact]

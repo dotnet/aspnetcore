@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,17 +23,14 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         SemanticModel semanticModel, SyntaxToken token, int position, CancellationToken cancellationToken)
     {
         var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-
-        var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, wellKnownTypes, cancellationToken);
-
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
-        if (tree == null)
+        var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(token, cancellationToken);
+        if (routeUsage is null)
         {
             return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
         }
 
-        return GetHighlights(tree, semanticModel, wellKnownTypes, position, usageContext.MethodSymbol, cancellationToken);
+        return GetHighlights(routeUsage.RoutePattern, semanticModel, wellKnownTypes, position, routeUsage.UsageContext.MethodSymbol, cancellationToken);
     }
 
     private static ImmutableArray<AspNetCoreDocumentHighlights> GetHighlights(

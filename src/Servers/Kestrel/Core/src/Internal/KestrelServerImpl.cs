@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -89,8 +88,6 @@ internal sealed class KestrelServerImpl : IServer
         Features.Set<IServerAddressesFeature>(_serverAddresses);
 
         _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, ServiceContext);
-
-        HttpCharacters.Initialize();
     }
 
     private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)

@@ -1271,10 +1271,14 @@ public class UnaryServerCallHandlerTests : LoggedTest
             MethodOptions.Create(new[] { serviceOptions }),
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
+        var descriptorRegistry = new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TResponse)).File);
+
         var jsonContext = new JsonContext(
             jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings(),
             jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty,
-            new DescriptorRegistry());
+            descriptorRegistry);
 
         return new UnaryServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse>(
             unaryServerCallInvoker,

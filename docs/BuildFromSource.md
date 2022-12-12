@@ -26,29 +26,31 @@ The experience for building the repo is slightly different based on what environ
 - [VS Code (or other editors) on Windows, Linux, Mac](#visual-studio-code-on-windows-linux-mac)
 - [Codespaces on GitHub](#codespaces-on-github)
 
-## Visual Studio on Windows
-
-1. Setting up the repo on Windows will require executing some scripts in PowerShell. You'll need to update the execution policy on your machine to support this. For more information on execution policies, review [the execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
+3. If you are on Windows, update the Powershell execution policy on your machine. For more information on execution policies, review [the execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy). To do this, open a Powershell prompt and issue the following command:
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-2. In order to install Visual Studio on your machine, you can use the official installer script in the repo.
+> :warning: All Windows commands below assume a Powershell prompt.
 
-> ⚠️ Even if you have the appropriate Visual Studio installed on your machine, we recommend running this installation script so that the correct Visual Studio components are installed.
+## Visual Studio on Windows
+
+1. In order to install Visual Studio on your machine, you can use the official installer script in the repo.
+
+> :warning: Even if you have the appropriate Visual Studio installed on your machine, we recommend running this installation script to make sure that the correct Visual Studio components are installed.
 
 ```powershell
 ./eng/scripts/InstallVisualStudio.ps1
 ```
 
-3. Before opening the project in Visual Studio, run the `restore` script locally to install the required dependencies and setup the repo. The `restore` script is located in the root of the repo.
+2. Before opening the project in Visual Studio, run the `restore` script locally to install the required dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
 ```powershell
 .\restore.cmd
 ```
 
-4. Typically, you'll want to focus on a single project within the repo. You can leverage the `startvs.cmd` command to launch Visual Studio within a particular project area. For example, to launch Visual Studio in the `Components` project.
+3. Typically, you'll want to focus on a single project within the repo. You can leverage the `startvs.cmd` command to launch Visual Studio within a particular project area. For example, to launch Visual Studio in the `Components` project.
 
 ```powershell
 cd src\Components
@@ -71,29 +73,35 @@ These principles guide how we create and manage .slnf files:
 
 5. You can now build, debug, and test using Visual Studio. For more information on using Visual Studio to build and run projects, you can review the [official Visual Studio docs](https://docs.microsoft.com/en-us/visualstudio/get-started/csharp/run-program).
 
-## Visual Studio Code on Windows, Linux, Mac
+## Visual Studio Code or other editor on Windows, Linux, Mac
 
 > :bulb: The instructions below use Visual Studio code as the editor of choice but the same instructions can be used for any other text editor by replacing the `code` command with an invocation to your editor of choice.
 
 1. In order to use Visual Studio Code for development on this repo, you'll need to have [VS Code](https://code.visualstudio.com/) installed and [the `code` command installed](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line) on your machine.
+
 2. The repo contains some JavaScript dependencies, so you will need to install [Node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) on your machine.
+
 3. Prior to opening the code in Visual Studio code, you'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
 ```bash
+# Linux or Mac
 ./restore.sh
 ```
 
 ```powershell
+# Windows
 ./restore.cmd
 ```
 
 4. After the restore script has finished executing, activate the locally installed .NET by running the following command.
 
 ```bash
+# Linux or Mac
 source activate.sh
 ```
 
 ```powershell
+# Windows - note the leading period followed by a space
 . ./activate.ps1
 ```
 
@@ -104,19 +112,36 @@ cd src/Http
 code .
 ```
 
+If you are using a different editor, replace `code` with `vim` or whatever that editor is.
+
 6. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
-> :bulb: The `build.sh` or `build.ps1` script will be local to the directory of the project that you have opened. For example, the script located in the `src/Http` directory.
+> :bulb: The `build.sh` or `build.cmd` script will be local to the directory of the project that you have opened. For example, the script located in the `src/Http` directory.
 
 ```bash
+# Linux or Mac
 ./build.sh
 ./build.sh -test
+```
+
+```powershell
+# Windows
+./build.cmd
+./build.cmd -test
 ```
 
 7. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
 
 ```bash
+# Linux or Mac
 source activate.sh
+dotnet build
+dotnet test --filter "MySpecificUnitTest"
+```
+
+```powershell
+# Windows
+. ./activate.ps1
 dotnet build
 dotnet test --filter "MySpecificUnitTest"
 ```

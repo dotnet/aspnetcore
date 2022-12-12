@@ -342,7 +342,12 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
         var jsonSettings = jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
-        var jsonContext = new JsonContext(jsonSettings, jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty, new DescriptorRegistry());
+
+        var descriptorRegistry = new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TResponse)).File);
+
+        var jsonContext = new JsonContext(jsonSettings, jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty, descriptorRegistry);
 
         return new ServerStreamingServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse>(
             callInvoker,
