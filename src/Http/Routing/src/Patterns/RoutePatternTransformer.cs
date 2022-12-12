@@ -34,6 +34,8 @@ public abstract class RoutePatternTransformer
     /// </remarks>
     [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly." +
         "Consider using a different overload to avoid this issue.")]
+    [RequiresDynamicCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly." +
+        "Consider using a different overload to avoid this issue.")]
     public abstract RoutePattern? SubstituteRequiredValues(RoutePattern original, object requiredValues);
 
     /// <summary>
