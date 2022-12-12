@@ -73,22 +73,4 @@ public class RateLimiterEndpointConventionBuilderExtensionsTests : LoggedTest
         var metadata = endpoint.Metadata.GetMetadata<DisableRateLimitingAttribute>();
         Assert.NotNull(metadata);
     }
-
-    private class TestEndpointBuilder : EndpointBuilder
-    {
-        public override Endpoint Build()
-        {
-            return new Endpoint(RequestDelegate, new EndpointMetadataCollection(Metadata), DisplayName);
-        }
-    }
-
-    private class TestEndpointConventionBuilder : IEndpointConventionBuilder
-    {
-        public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
-
-        public void Add(Action<EndpointBuilder> convention)
-        {
-            Conventions.Add(convention);
-        }
-    }
 }

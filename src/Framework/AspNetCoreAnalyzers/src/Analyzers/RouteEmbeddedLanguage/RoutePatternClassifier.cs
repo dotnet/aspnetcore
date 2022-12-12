@@ -12,7 +12,7 @@ using RoutePatternToken = Microsoft.AspNetCore.Analyzers.Infrastructure.Embedded
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 [ExportAspNetCoreEmbeddedLanguageClassifier(name: "Route", language: LanguageNames.CSharp)]
-internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
+internal sealed class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
 {
     public void RegisterClassifications(AspNetCoreEmbeddedLanguageClassificationContext context)
     {
