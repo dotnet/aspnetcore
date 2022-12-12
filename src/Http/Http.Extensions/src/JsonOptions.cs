@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Http.Json;
 /// </summary>
 public class JsonOptions
 {
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "The default type resolver will be set as DefaultJsonTypeInfoResolver (reflection-based) that has the same runtime behavior when TypeResolver is null.")]
     internal static readonly JsonSerializerOptions DefaultSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
     {
         // Web defaults don't use the relex JSON escaping encoder.
