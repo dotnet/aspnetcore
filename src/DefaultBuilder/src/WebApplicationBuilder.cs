@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -29,18 +30,7 @@ public sealed class WebApplicationBuilder
 
     internal WebApplicationBuilder(WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
     {
-        var configuration = new ConfigurationManager();
-
-        configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
-
-        _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
-        {
-            Args = options.Args,
-            ApplicationName = options.ApplicationName,
-            EnvironmentName = options.EnvironmentName,
-            ContentRootPath = options.ContentRootPath,
-            Configuration = configuration,
-        });
+        _hostApplicationBuilder = MakeHostApplicationBuilder(options);
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -84,6 +74,24 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+    }
+
+    // TODO (acasey): check this
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "All the keys and values passed to HostApplicationBuilder are strings")]
+    private static HostApplicationBuilder MakeHostApplicationBuilder(WebApplicationOptions options)
+    {
+        var configuration = new ConfigurationManager();
+
+        configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
+
+        return new HostApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            Args = options.Args,
+            ApplicationName = options.ApplicationName,
+            EnvironmentName = options.EnvironmentName,
+            ContentRootPath = options.ContentRootPath,
+            Configuration = configuration,
+        });
     }
 
     /// <summary>
