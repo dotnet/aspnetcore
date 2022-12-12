@@ -28,6 +28,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     /// </param>
     /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static string? GetPathByName(
         this LinkGenerator generator,
         HttpContext httpContext,
@@ -127,6 +128,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     /// </param>
     /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static string? GetPathByName(
         this LinkGenerator generator,
         string endpointName,
@@ -215,6 +217,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static string? GetUriByName(
         this LinkGenerator generator,
         HttpContext httpContext,
@@ -350,6 +353,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static string? GetUriByName(
         this LinkGenerator generator,
         string endpointName,
