@@ -126,7 +126,6 @@
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
-      "src\\Testing\\test\\Microsoft.AspNetCore.Testing.Tests.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }
