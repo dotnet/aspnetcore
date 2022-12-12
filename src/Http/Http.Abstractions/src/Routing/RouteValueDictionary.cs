@@ -100,7 +100,8 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     /// property names are keys, and property values are the values, and copied into the dictionary.
     /// Only public instance non-index properties are considered.
     /// </remarks>
-    [RequiresUnreferencedCode("This constructor may perform reflection on the specificed value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")]
+    [RequiresUnreferencedCode("This constructor may perform reflection on the specificed value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")] // PropertyStorage
+    [RequiresDynamicCode("This constructor may perform reflection on the specificed value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")] // PropertyStorage
     public RouteValueDictionary(object? values)
     {
         if (values is RouteValueDictionary dictionary)
@@ -818,12 +819,13 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
+    [RequiresUnreferencedCode("This API is not trim safe - from PropertyHelper")]
+    [RequiresDynamicCode("This API is not AOT safe - from PropertyHelper")]
     internal sealed class PropertyStorage
     {
         public readonly object Value;
         public readonly PropertyHelper[] Properties;
 
-        [RequiresUnreferencedCode("This API is not trim safe.")]
         public PropertyStorage(object value)
         {
             Debug.Assert(value != null);
