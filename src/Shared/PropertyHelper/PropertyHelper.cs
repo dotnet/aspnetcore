@@ -14,7 +14,7 @@ using System.Reflection.Metadata;
 namespace Microsoft.Extensions.Internal;
 
 [RequiresUnreferencedCode("This type reflects over the properties of types (and, notably, the properties of interfaces they implement) and so is trim-incompatible")]
-[RequiresDynamicCode("This type synthesizes delegate types with (possible) value-type parameters and so is AOT-incompatible")] 
+[RequiresDynamicCode("This type synthesizes delegate types with (possible) value-type parameters and so is AOT-incompatible")]
 internal sealed class PropertyHelper
 {
     private const BindingFlags DeclaredOnlyLookup = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
