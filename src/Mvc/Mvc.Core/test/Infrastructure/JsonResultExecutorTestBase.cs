@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -360,6 +361,7 @@ public abstract class JsonResultExecutorTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task ExecuteAsync_AsyncEnumerableConnectionCloses()
     {
         var context = GetActionContext();
@@ -391,6 +393,7 @@ public abstract class JsonResultExecutorTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task ExecuteAsyncWithDifferentContentType_AsyncEnumerableConnectionCloses()
     {
         var context = GetActionContext();
