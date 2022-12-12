@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Testing;
 
 #nullable enable
 
@@ -302,6 +303,7 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_ClosedConnecton()
     {
         // Arrange
@@ -336,6 +338,7 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsync_AsyncEnumerable_ClosedConnecton()
     {
         // Arrange
@@ -370,6 +373,7 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsync_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
@@ -404,7 +408,8 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerableG_UserPassedTokenThrows()
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
+    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
         var body = new MemoryStream();
