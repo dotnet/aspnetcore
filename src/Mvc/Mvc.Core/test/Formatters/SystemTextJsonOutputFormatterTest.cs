@@ -4,7 +4,9 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -158,6 +160,81 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
         }
     }
 
+    [Fact]
+    public async Task WriteResponseBodyAsync_UsesJsonPolymorphismOptions()
+    {
+        // Arrange
+        var jsonOptions = new JsonOptions();
+
+        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
+        var expectedContent = "{\"$type\":\"JsonPersonExtended\",\"age\":99,\"name\":\"Person\",\"child\":null,\"parent\":null}";
+        JsonPerson todo = new JsonPersonExtended()
+        {
+            Name = "Person",
+            Age = 99,
+        };
+
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(JsonPerson),
+            todo)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Equal(expectedContent, actualContent);
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_UsesRuntimeType_WhenTypeResolverIsNull()
+    {
+        // Arrange
+        var jsonOptions = new JsonOptions();
+        jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
+
+        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
+        var expectedContent = "{\"age\":99,\"name\":\"Person\",\"child\":null,\"parent\":null}";
+        JsonPerson todo = new JsonPersonExtended()
+        {
+            Name = "Person",
+            Age = 99,
+        };
+
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(JsonPerson),
+            todo)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Equal(expectedContent, actualContent);
+    }
+
     private class Person
     {
         public string Name { get; set; }
@@ -165,6 +242,16 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
         public Person Child { get; set; }
 
         public Person Parent { get; set; }
+    }
+
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(JsonPersonExtended), nameof(JsonPersonExtended))]
+    private class JsonPerson : Person
+    {}
+
+    private class JsonPersonExtended : JsonPerson
+    {
+        public int Age { get; set; }
     }
 
     [JsonConverter(typeof(ThrowingFormatterPersonConverter))]
