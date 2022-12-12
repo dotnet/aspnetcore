@@ -13,6 +13,8 @@ using System.Reflection.Metadata;
 
 namespace Microsoft.Extensions.Internal;
 
+[RequiresUnreferencedCode("This type reflects over the properties of types (and, notably, the properties of interfaces they implement) and so is trim-incompatible")]
+[RequiresDynamicCode("This type synthesizes delegate types with (possible) value-type parameters and so is AOT-incompatible")] 
 internal sealed class PropertyHelper
 {
     private const BindingFlags DeclaredOnlyLookup = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
@@ -71,7 +73,6 @@ internal sealed class PropertyHelper
     /// </summary>
     public Func<object, object?> ValueGetter
     {
-        [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
             if (_valueGetter == null)
@@ -88,7 +89,6 @@ internal sealed class PropertyHelper
     /// </summary>
     public Action<object, object?> ValueSetter
     {
-        [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
             if (_valueSetter == null)
@@ -105,7 +105,6 @@ internal sealed class PropertyHelper
     /// </summary>
     /// <param name="instance">The object whose property value will be returned.</param>
     /// <returns>The property value.</returns>
-    [RequiresUnreferencedCode("This API is not trim safe.")]
     public object? GetValue(object instance)
     {
         return ValueGetter(instance);
@@ -116,7 +115,6 @@ internal sealed class PropertyHelper
     /// </summary>
     /// <param name="instance">The object whose property value will be set.</param>
     /// <param name="value">The property value.</param>
-    [RequiresUnreferencedCode("This API is not trim safe.")]
     public void SetValue(object instance, object? value)
     {
         ValueSetter(instance, value);
@@ -129,9 +127,7 @@ internal sealed class PropertyHelper
     /// <param name="type">The type to extract property accessors for.</param>
     /// <returns>A cached array of all public properties of the specified type.
     /// </returns>
-    [RequiresUnreferencedCode("This API is not trim safe.")]
-    public static PropertyHelper[] GetProperties(
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type)
+    public static PropertyHelper[] GetProperties(Type type)
     {
         return GetProperties(type, PropertiesCache);
     }
@@ -150,9 +146,7 @@ internal sealed class PropertyHelper
     /// <returns>
     /// A cached array of all public properties of the specified type.
     /// </returns>
-    [RequiresUnreferencedCode("This API is not trim safe.")]
-    public static PropertyHelper[] GetVisibleProperties(
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type)
+    public static PropertyHelper[] GetVisibleProperties(Type type)
     {
         return GetVisibleProperties(type, PropertiesCache, VisiblePropertiesCache);
     }
@@ -166,7 +160,6 @@ internal sealed class PropertyHelper
     /// This method is more memory efficient than a dynamically compiled lambda, and about the
     /// same speed.
     /// </remarks>
-    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     public static Func<object, object?> MakeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -186,7 +179,6 @@ internal sealed class PropertyHelper
     /// This method is more memory efficient than a dynamically compiled lambda, and about the
     /// same speed.
     /// </remarks>
-    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     public static Func<object, object?> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -197,7 +189,6 @@ internal sealed class PropertyHelper
             CallNullSafePropertyGetterByReferenceOpenGenericMethod);
     }
 
-    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         PropertyInfo propertyInfo,
         MethodInfo propertyGetterWrapperMethod,
@@ -241,7 +232,6 @@ internal sealed class PropertyHelper
         }
     }
 
-    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         Type openGenericDelegateType,
         MethodInfo propertyGetMethod,
@@ -270,7 +260,6 @@ internal sealed class PropertyHelper
     /// This method is more memory efficient than a dynamically compiled lambda, and about the
     /// same speed. This only works for reference types.
     /// </remarks>
-    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -312,7 +301,6 @@ internal sealed class PropertyHelper
     /// The implementation of PropertyHelper will cache the property accessors per-type. This is
     /// faster when the same type is used multiple times with ObjectToDictionary.
     /// </remarks>
-    [RequiresUnreferencedCode("Method uses reflection to generate the dictionary.")]
     public static IDictionary<string, object?> ObjectToDictionary(object? value)
     {
         if (value is IDictionary<string, object?> dictionary)
@@ -401,7 +389,6 @@ internal sealed class PropertyHelper
     /// <returns>
     /// A cached array of all public properties of the specified type.
     /// </returns>
-    [RequiresUnreferencedCode("This API is not trim safe.")]
     public static PropertyHelper[] GetVisibleProperties(
         Type type,
         ConcurrentDictionary<Type, PropertyHelper[]>? allPropertiesCache,
@@ -482,7 +469,6 @@ internal sealed class PropertyHelper
     /// <returns>A cached array of all public properties of the specified type.
     /// </returns>
     // There isn't a way to represent trimmability requirements since for type since we unwrap nullable types.
-    [RequiresUnreferencedCode("This API is not trim safe.")]
     public static PropertyHelper[] GetProperties(
         Type type,
         ConcurrentDictionary<Type, PropertyHelper[]>? cache)
@@ -514,7 +500,7 @@ internal sealed class PropertyHelper
 
         static void AddInterestingProperties(
             List<PropertyHelper> propertyHelpers,
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type)
+            Type type)
         {
             foreach (var property in type.GetProperties(Everything))
             {
@@ -557,6 +543,8 @@ internal sealed class PropertyHelper
             property.PropertyType.IsDefined(IsByRefLikeAttribute);
     }
 
+    [RequiresUnreferencedCode("A wrapper over PropertyHelper, which is not time-compatible")]
+    [RequiresDynamicCode("A wrapper over PropertyHelper, which is not AOT-compatible")] 
     internal static class MetadataUpdateHandler
     {
         /// <summary>
