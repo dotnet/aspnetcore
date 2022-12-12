@@ -20,9 +20,26 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
 class JsonHubProtocol implements HubProtocol {
-    private final JsonParser jsonParser = new JsonParser();
-    private final Gson gson = new Gson();
+    private final JsonParser jsonParser;
+    private final Gson gson;
     private static final String RECORD_SEPARATOR = "\u001e";
+
+    public JsonHubProtocol() {
+        this(new Gson(), new JsonParser());
+    }
+
+    public JsonHubProtocol(Gson gson) {
+        this(gson, new JsonParser());
+    }
+
+    public JsonHubProtocol(JsonParser jsonParser) {
+        this(new Gson(), jsonParser);
+    }
+
+    public JsonHubProtocol(Gson gson, JsonParser jsonParser) {
+        this.gson = gson;
+        this.jsonParser = jsonParser;
+    }
 
     @Override
     public String getName() {
