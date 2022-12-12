@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -109,6 +110,7 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
     {
         // Arrange
