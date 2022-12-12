@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -42,6 +43,11 @@ public class JsonOptions
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
         // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
         // .AddContext<TContext>()
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        TypeInfoResolver = CreateDefaultTypeResolver()
     };
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "The default type resolver will be set as DefaultJsonTypeInfoResolver (reflection-based) that has the same runtime behavior when TypeResolver is null.")]
+    private static IJsonTypeInfoResolver? CreateDefaultTypeResolver()
+        => new DefaultJsonTypeInfoResolver();
 }

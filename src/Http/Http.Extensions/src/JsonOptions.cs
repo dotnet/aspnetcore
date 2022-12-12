@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Http.Json;
 /// </summary>
 public class JsonOptions
 {
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
-        Justification = "The default type resolver will be set as DefaultJsonTypeInfoResolver (reflection-based) that has the same runtime behavior when TypeResolver is null.")]
     internal static readonly JsonSerializerOptions DefaultSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
     {
         // Web defaults don't use the relex JSON escaping encoder.
@@ -29,7 +27,7 @@ public class JsonOptions
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
         // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
         // .AddContext<TContext>()
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        TypeInfoResolver = CreateDefaultTypeResolver()
     };
 
     // Use a copy so the defaults are not modified.
@@ -37,4 +35,9 @@ public class JsonOptions
     /// Gets the <see cref="JsonSerializerOptions"/>.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(DefaultSerializerOptions);
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "The default type resolver will be set as DefaultJsonTypeInfoResolver (reflection-based) that has the same runtime behavior when TypeResolver is null.")]
+    private static IJsonTypeInfoResolver? CreateDefaultTypeResolver()
+        => new DefaultJsonTypeInfoResolver();
 }
