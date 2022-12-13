@@ -3,18 +3,22 @@
 
 package com.microsoft.signalr;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
 
 class GsonHubProtocolTest {
-    private GsonHubProtocol hubProtocol = new GsonHubProtocol();
+    private GsonHubProtocol hubProtocol;
+
+    @BeforeEach
+    public void setup() {
+        hubProtocol = new GsonHubProtocol();
+    }
 
     @Test
     public void checkProtocolName() {
