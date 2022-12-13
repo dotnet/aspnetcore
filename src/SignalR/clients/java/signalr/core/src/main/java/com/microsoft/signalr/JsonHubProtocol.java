@@ -25,15 +25,11 @@ class JsonHubProtocol implements HubProtocol {
     private static final String RECORD_SEPARATOR = "\u001e";
 
     public JsonHubProtocol() {
-        this(new Gson(), new JsonParser());
+        this(new Gson());
     }
 
     public JsonHubProtocol(Gson gson) {
         this(gson, new JsonParser());
-    }
-
-    public JsonHubProtocol(JsonParser jsonParser) {
-        this(new Gson(), jsonParser);
     }
 
     public JsonHubProtocol(Gson gson, JsonParser jsonParser) {
