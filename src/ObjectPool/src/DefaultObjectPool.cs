@@ -52,7 +52,7 @@ public class DefaultObjectPool<T> : ObjectPool<T> where T : class
         {
             if (_items.TryDequeue(out item))
             {
-                _ = Interlocked.Decrement(ref _numItems);
+                Interlocked.Decrement(ref _numItems);
                 return item;
             }
 
@@ -66,7 +66,7 @@ public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     /// <inheritdoc />
     public override void Return(T obj)
     {
-        _ = ReturnCore(obj);
+        ReturnCore(obj);
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public class DefaultObjectPool<T> : ObjectPool<T> where T : class
             }
 
             // no room, clean up the count and drop the object on the floor
-            _ = Interlocked.Decrement(ref _numItems);
+            Interlocked.Decrement(ref _numItems);
             return false;
         }
 
