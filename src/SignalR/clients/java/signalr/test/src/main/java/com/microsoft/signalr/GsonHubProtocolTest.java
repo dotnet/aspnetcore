@@ -13,23 +13,23 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-class JsonHubProtocolTest {
-    private JsonHubProtocol jsonHubProtocol = new JsonHubProtocol();
+class GsonHubProtocolTest {
+    private GsonHubProtocol hubProtocol = new GsonHubProtocol();
 
     @Test
     public void checkProtocolName() {
-        assertEquals("json", jsonHubProtocol.getName());
+        assertEquals("json", hubProtocol.getName());
     }
 
     @Test
     public void checkVersionNumber() {
-        assertEquals(1, jsonHubProtocol.getVersion());
+        assertEquals(1, hubProtocol.getVersion());
     }
 
     @Test
     public void verifyWriteMessage() {
         InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] {"42"}, null);
-        String result = TestUtils.byteBufferToString(jsonHubProtocol.writeMessage(invocationMessage));
+        String result = TestUtils.byteBufferToString(hubProtocol.writeMessage(invocationMessage));
         String expectedResult = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"42\"]}\u001E";
         assertEquals(expectedResult, result);
     }
@@ -40,7 +40,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -54,7 +54,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -74,7 +74,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -94,7 +94,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -118,7 +118,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(message, binder));
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> hubProtocol.parseMessages(message, binder));
         assertEquals("The message type STREAM_INVOCATION is not supported yet.", exception.getMessage());
     }
 
@@ -128,7 +128,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, null);
 
-        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(message, binder));
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> hubProtocol.parseMessages(message, binder));
         assertEquals("The message type CANCEL_INVOCATION is not supported yet.", exception.getMessage());
     }
 
@@ -138,7 +138,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(2, messages.size());
@@ -172,7 +172,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -195,7 +195,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { (new TypeReference<ArrayList<HashMap<String, ArrayList<Character>>>>() { }).getType() }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -251,7 +251,7 @@ class JsonHubProtocolTest {
 
         TestBinder binder = new TestBinder(new Type[] { (new TypeReference<PersonPojo<ArrayList<Short>>>() { }).getType() }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -285,7 +285,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -308,7 +308,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, int.class);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -327,7 +327,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -343,7 +343,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -359,7 +359,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -375,7 +375,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -391,7 +391,7 @@ class JsonHubProtocolTest {
         ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
 
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -409,7 +409,7 @@ class JsonHubProtocolTest {
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> jsonHubProtocol.parseMessages(message, binder));
+                () -> hubProtocol.parseMessages(message, binder));
         assertEquals("Message is incomplete.", exception.getMessage());
     }
 }

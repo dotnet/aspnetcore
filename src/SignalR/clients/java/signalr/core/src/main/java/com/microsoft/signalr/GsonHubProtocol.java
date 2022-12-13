@@ -18,20 +18,20 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
-public class JsonHubProtocol implements HubProtocol {
+public class GsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser;
     private final Gson gson;
     private static final String RECORD_SEPARATOR = "\u001e";
 
-    public JsonHubProtocol() {
+    public GsonHubProtocol() {
         this(new Gson());
     }
 
-    public JsonHubProtocol(Gson gson) {
+    public GsonHubProtocol(Gson gson) {
         this(gson, new JsonParser());
     }
 
-    public JsonHubProtocol(Gson gson, JsonParser jsonParser) {
+    public GsonHubProtocol(Gson gson, JsonParser jsonParser) {
         this.gson = gson;
         this.jsonParser = jsonParser;
     }
