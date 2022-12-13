@@ -63,6 +63,7 @@ internal sealed class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsS
         _configureConfiguration?.Invoke(context, builder);
     }
 
+    [RequiresDynamicCode("DefaultServiceProvider is not AOT safe")]
     public IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure)
     {
         return _builder.UseDefaultServiceProvider(configure);

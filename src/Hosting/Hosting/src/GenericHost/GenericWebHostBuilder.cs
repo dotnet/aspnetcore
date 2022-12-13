@@ -203,6 +203,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         return this;
     }
 
+    [RequiresDynamicCode("This API is not AOT safe")] // DefaultServiceProviderFactory
     public IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure)
     {
         _builder.UseServiceProviderFactory(context =>
@@ -267,7 +268,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         return this;
     }
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "We need to call a generic method on IHostBuilder.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Constructing untrimmed generic types and methods with reference types")]
     private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object? instance = null)
     {
         var webHostBuilderContext = GetWebHostBuilderContext(context);
@@ -303,6 +304,8 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             if (configureContainerBuilder.MethodInfo != null)
             {
                 var containerType = configureContainerBuilder.GetContainerType();
+                Debug.Assert(containerType.IsClass);
+
                 // Store the builder in the property bag
                 _builder.Properties[typeof(ConfigureContainerBuilder)] = configureContainerBuilder;
 
