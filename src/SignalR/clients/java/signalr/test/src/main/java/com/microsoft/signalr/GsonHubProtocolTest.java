@@ -5,11 +5,15 @@ package com.microsoft.signalr;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.google.gson.*;
 import org.junit.jupiter.api.*;
 
 class GsonHubProtocolTest {
@@ -415,5 +419,50 @@ class GsonHubProtocolTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> hubProtocol.parseMessages(message, binder));
         assertEquals("Message is incomplete.", exception.getMessage());
+    }
+
+    @Test
+    public void invocationBindingFailureWhenParsingLocalDateTimeWithoutAppropriateTypeAdaptor() {
+        // Create message with LocalDateTime payload
+        String json = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"2022-12-13T09:13:00\"]}\u001E";
+        ByteBuffer bytes = TestUtils.stringToByteBuffer(json);
+        TestBinder binder = new TestBinder(new Type[] { LocalDateTime.class }, null);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(bytes, binder);
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        HubMessage message = messages.get(0);
+        assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, message.getMessageType());
+        InvocationBindingFailureMessage failureMessage = (InvocationBindingFailureMessage) messages.get(0);
+
+        assertEquals("java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 41 path $.arguments[0]", failureMessage.getException().getMessage());
+    }
+
+    @Test
+    public void canParseLocalDatetimeWithAppropriateTypeAdaptor() {
+        LocalDateTime expectedResult = LocalDateTime.parse("2022-12-13T09:13:00");
+
+        // Setup appropriate type adaptor
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, ((JsonDeserializer<LocalDateTime>) (json, type, context)
+                        -> LocalDateTime.parse(json.getAsJsonPrimitive().getAsString())))
+                .create();
+        hubProtocol = new GsonHubProtocol(gson);
+
+        // Create message with LocalDateTime payload
+        String json = "{\"type\":1,\"target\":\"test\",\"arguments\":[\""+expectedResult.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)+"\"]}\u001E";
+        ByteBuffer bytes = TestUtils.stringToByteBuffer(json);
+        TestBinder binder = new TestBinder(new Type[] { LocalDateTime.class }, null);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(bytes, binder);
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        HubMessage message = messages.get(0);
+        assertEquals(HubMessageType.INVOCATION, message.getMessageType());
+        InvocationMessage invocationMessage = (InvocationMessage) message;
+
+        assertEquals(1, invocationMessage.getArguments().length);
+        LocalDateTime messageResult = (LocalDateTime) invocationMessage.getArguments()[0];
+        assertEquals(expectedResult, messageResult);
     }
 }
