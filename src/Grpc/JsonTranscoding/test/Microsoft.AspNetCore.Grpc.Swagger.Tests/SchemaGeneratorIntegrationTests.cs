@@ -38,11 +38,13 @@ public class SchemaGeneratorIntegrationTests
         var enumSchema = repository.Schemas[schema.Properties["enumValue"].Reference.Id];
         Assert.Equal("string", enumSchema.Type);
         Assert.Equal(5, enumSchema.Enum.Count);
-        Assert.Equal("NEG", ((OpenApiString)enumSchema.Enum[0]).Value);
-        Assert.Equal("NESTED_ENUM_UNSPECIFIED", ((OpenApiString)enumSchema.Enum[1]).Value);
-        Assert.Equal("FOO", ((OpenApiString)enumSchema.Enum[2]).Value);
-        Assert.Equal("BAR", ((OpenApiString)enumSchema.Enum[3]).Value);
-        Assert.Equal("BAZ", ((OpenApiString)enumSchema.Enum[4]).Value);
+
+        var enumValues = enumSchema.Enum.Select(e => ((OpenApiString)e).Value).ToList();
+        Assert.Contains("NEG", enumValues);
+        Assert.Contains("NESTED_ENUM_UNSPECIFIED", enumValues);
+        Assert.Contains("FOO", enumValues);
+        Assert.Contains("BAR", enumValues);
+        Assert.Contains("BAZ", enumValues);
     }
 
     [Fact]
