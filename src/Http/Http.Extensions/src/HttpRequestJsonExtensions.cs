@@ -31,6 +31,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
     public static ValueTask<TValue?> ReadFromJsonAsync<TValue>(
         this HttpRequest request,
         CancellationToken cancellationToken = default)
@@ -48,6 +49,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
     public static async ValueTask<TValue?> ReadFromJsonAsync<TValue>(
         this HttpRequest request,
         JsonSerializerOptions? options,
@@ -131,6 +133,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
     public static ValueTask<object?> ReadFromJsonAsync(
         this HttpRequest request,
         Type type,
@@ -149,6 +152,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
     public static async ValueTask<object?> ReadFromJsonAsync(
         this HttpRequest request,
         Type type,
