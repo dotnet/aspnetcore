@@ -87,7 +87,9 @@ internal static class JumpTableBuilder
         // Use the ILEmitTrieJumpTable if the IL is going to be compiled (not interpreted)
         if (RuntimeFeature.IsDynamicCodeCompiled)
         {
+#pragma warning disable IL3050 // See https://github.com/dotnet/linker/issues/2715.
             return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
+#pragma warning restore IL3050 
         }
 
         return fallback;

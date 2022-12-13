@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.JSInterop.Infrastructure;
@@ -23,6 +24,9 @@ internal static class TaskGenericsUtil
     public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
         => CreateResultSetter(taskCompletionSource).ResultType;
 
+    [SuppressMessage("AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "MakeGenericType is AOT safe for reference types.")]
     public static object? GetTaskResult(Task task)
     {
         var getter = _cachedResultGetters.GetOrAdd(task.GetType(), taskInstanceType =>
@@ -101,6 +105,9 @@ internal static class TaskGenericsUtil
         }
     }
 
+    [SuppressMessage("AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "MakeGenericType is AOT safe for reference types.")]
     private static ITcsResultSetter CreateResultSetter(object taskCompletionSource)
     {
         return _cachedResultSetters.GetOrAdd(taskCompletionSource.GetType(), tcsType =>

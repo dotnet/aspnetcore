@@ -151,6 +151,7 @@ internal sealed class PropertyHelper
     /// A cached array of all public properties of the specified type.
     /// </returns>
     [RequiresUnreferencedCode("This API is not trim safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static PropertyHelper[] GetVisibleProperties(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type)
     {
@@ -167,6 +168,7 @@ internal sealed class PropertyHelper
     /// same speed.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static Func<object, object?> MakeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -187,6 +189,7 @@ internal sealed class PropertyHelper
     /// same speed.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static Func<object, object?> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -198,6 +201,7 @@ internal sealed class PropertyHelper
     }
 
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         PropertyInfo propertyInfo,
         MethodInfo propertyGetterWrapperMethod,
@@ -242,6 +246,7 @@ internal sealed class PropertyHelper
     }
 
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         Type openGenericDelegateType,
         MethodInfo propertyGetMethod,
@@ -271,6 +276,7 @@ internal sealed class PropertyHelper
     /// same speed. This only works for reference types.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -313,6 +319,7 @@ internal sealed class PropertyHelper
     /// faster when the same type is used multiple times with ObjectToDictionary.
     /// </remarks>
     [RequiresUnreferencedCode("Method uses reflection to generate the dictionary.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static IDictionary<string, object?> ObjectToDictionary(object? value)
     {
         if (value is IDictionary<string, object?> dictionary)
@@ -402,6 +409,7 @@ internal sealed class PropertyHelper
     /// A cached array of all public properties of the specified type.
     /// </returns>
     [RequiresUnreferencedCode("This API is not trim safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static PropertyHelper[] GetVisibleProperties(
         Type type,
         ConcurrentDictionary<Type, PropertyHelper[]>? allPropertiesCache,
@@ -483,6 +491,7 @@ internal sealed class PropertyHelper
     /// </returns>
     // There isn't a way to represent trimmability requirements since for type since we unwrap nullable types.
     [RequiresUnreferencedCode("This API is not trim safe.")]
+    [RequiresDynamicCode("This API is not trim safe.")]
     public static PropertyHelper[] GetProperties(
         Type type,
         ConcurrentDictionary<Type, PropertyHelper[]>? cache)
