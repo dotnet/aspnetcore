@@ -207,6 +207,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapGet(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -224,6 +225,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapPost(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -241,6 +243,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapPut(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -258,6 +261,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapDelete(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -275,6 +279,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The <see cref="Delegate" /> executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapPatch(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -293,6 +298,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapMethods(
        this IEndpointRouteBuilder endpoints,
        [StringSyntax("Route")] string pattern,
@@ -312,6 +318,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder Map(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -329,6 +336,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder Map(
         this IEndpointRouteBuilder endpoints,
         RoutePattern pattern,
@@ -357,6 +365,7 @@ public static class EndpointRouteBuilderExtensions
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate handler)
     {
         return endpoints.MapFallback("{*path:nonfile}", handler);
@@ -384,6 +393,7 @@ public static class EndpointRouteBuilderExtensions
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapFallback(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -393,6 +403,7 @@ public static class EndpointRouteBuilderExtensions
     }
 
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
+    [RequiresDynamicCode(MapEndpointTrimmerWarning)]
     private static RouteHandlerBuilder Map(
         this IEndpointRouteBuilder endpoints,
         RoutePattern pattern,
@@ -407,6 +418,8 @@ public static class EndpointRouteBuilderExtensions
         return endpoints.GetOrAddRouteEndpointDataSource().AddRouteHandler(pattern, handler, httpMethods, isFallback);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The relevant Map overloads have RequiredUnreferencedCode")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The relevant Map overloads have RequiredDynamicCode")]
     private static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)
     {
         RouteEndpointDataSource? routeEndpointDataSource = null;
