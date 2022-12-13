@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Internal;
 /// FSharp.Core.dll, because non-F# applications wouldn't use it. So all the references
 /// to FSharp types have to be constructed dynamically at runtime.
 /// </remarks>
+[RequiresDynamicCode("Dynamically generates calls to FSharpAsync.StartAsTask")]
 internal static class ObjectMethodExecutorFSharpSupport
 {
     private static readonly object _fsharpValuesCacheLock = new object();
