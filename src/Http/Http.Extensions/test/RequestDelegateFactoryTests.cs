@@ -7075,6 +7075,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                 {
                     var response = await next(context);
                     Assert.IsType<EmptyHttpResult>(response);
+                    Assert.Same(Results.Empty, response);
                     return response;
                 }
             }),
