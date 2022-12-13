@@ -666,7 +666,7 @@ public class SignInManager<TUser> where TUser : class
             }
         }
 
-        var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? auth.Principal.FindFirstValue("sub");
         if (providerKey == null || provider == null)
         {
             return null;

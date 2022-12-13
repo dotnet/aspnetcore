@@ -31,6 +31,7 @@ public class HelloWorldTests : LoggedTest
 
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45378")]
     public async Task HelloWorld(TestVariant variant)
     {
         var testName = $"HelloWorld_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";

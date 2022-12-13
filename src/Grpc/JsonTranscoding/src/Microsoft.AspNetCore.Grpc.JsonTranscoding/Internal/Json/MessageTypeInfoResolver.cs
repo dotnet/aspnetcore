@@ -59,7 +59,7 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
         return typeInfo;
     }
 
-    private static bool IsStandardMessage(Type type, [NotNullWhen(true)] out MessageDescriptor? messageDescriptor)
+    private bool IsStandardMessage(Type type, [NotNullWhen(true)] out MessageDescriptor? messageDescriptor)
     {
         if (!typeof(IMessage).IsAssignableFrom(type))
         {
@@ -67,10 +67,10 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
             return false;
         }
 
-        messageDescriptor = JsonConverterHelper.GetMessageDescriptor(type);
+        messageDescriptor = (MessageDescriptor?) _context.DescriptorRegistry.FindDescriptorByType(type);
         if (messageDescriptor == null)
         {
-            return false;
+            throw new InvalidOperationException("Couldn't resolve descriptor for message type: " + type);
         }
 
         // Wrappers and well known types are handled by converters.

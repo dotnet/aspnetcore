@@ -272,10 +272,12 @@ internal sealed class HeaderCollection : IHeaderDictionary
     {
         if (headerCharacters != null)
         {
-            var invalid = HttpCharacters.IndexOfInvalidFieldValueCharExtended(headerCharacters);
-            if (invalid >= 0)
+            var invalidIndex = HttpCharacters.IndexOfInvalidFieldValueCharExtended(headerCharacters);
+            if (invalidIndex >= 0)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Invalid control character in header: 0x{0:X2}", headerCharacters[invalid]));
+                Throw(headerCharacters, invalidIndex);
+                static void Throw(string headerCharacters, int invalidIndex)
+                    => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Invalid control character in header: 0x{0:X2}", headerCharacters[invalidIndex]));
             }
         }
     }

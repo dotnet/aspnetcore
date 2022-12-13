@@ -148,6 +148,36 @@ public class W3CLoggingMiddlewareTests
     }
 
     [Fact]
+    public async Task LogCookie()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = W3CLoggingFields.Cookie;
+
+        var logger = Helpers.CreateTestW3CLogger(options);
+
+        var middleware = new W3CLoggingMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = 200;
+                return Task.CompletedTask;
+            },
+            options,
+            logger);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Protocol = "HTTP/1.0";
+        httpContext.Request.Headers["Cookie"] = "Snickerdoodle";
+        httpContext.Response.StatusCode = 200;
+
+        var now = DateTime.UtcNow;
+        await middleware.Invoke(httpContext);
+        await logger.Processor.WaitForWrites(4).DefaultTimeout();
+
+        var lines = logger.Processor.Lines;
+        Assert.Equal("Snickerdoodle", lines[3]);
+    }
+
+    [Fact]
     public async Task LogsAdditionalRequestHeaders_WithNoOtherOptions()
     {
         var options = CreateOptionsAccessor();

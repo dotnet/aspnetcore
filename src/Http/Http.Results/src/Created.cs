@@ -20,7 +20,7 @@ public sealed class Created : IResult, IEndpointMetadataProvider, IStatusCodeHtt
     /// provided.
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
-    internal Created(string location)
+    internal Created(string? location)
     {
         Location = location;
     }
@@ -30,20 +30,18 @@ public sealed class Created : IResult, IEndpointMetadataProvider, IStatusCodeHtt
     /// provided.
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
-    internal Created(Uri locationUri)
+    internal Created(Uri? locationUri)
     {
-        if (locationUri == null)
+        if (locationUri != null)
         {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
-
-        if (locationUri.IsAbsoluteUri)
-        {
-            Location = locationUri.AbsoluteUri;
-        }
-        else
-        {
-            Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            if (locationUri.IsAbsoluteUri)
+            {
+                Location = locationUri.AbsoluteUri;
+            }
+            else
+            {
+                Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
         }
     }
 
