@@ -29,6 +29,7 @@ internal readonly struct CoercedAwaitableInfo
         AwaitableInfo = coercedAwaitableInfo;
     }
 
+    [RequiresDynamicCode("Uses expression trees to coerce FSharpAsync to Task")]
     public static bool IsTypeAwaitable(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type,
         out CoercedAwaitableInfo info)
