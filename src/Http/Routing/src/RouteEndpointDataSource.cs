@@ -13,6 +13,8 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
+[RequiresUnreferencedCode("This API is not trimmer safe.")]
+[RequiresDynamicCode("This API is not AOT safe.")]
 internal sealed class RouteEndpointDataSource : EndpointDataSource
 {
     private readonly List<RouteEntry> _routeEntries = new();
@@ -111,8 +113,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         return CreateRouteEndpointBuilder(_routeEntries[0]);
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026",
-        Justification = "We surface a RequireUnreferencedCode in the call to the Map method adding this EndpointDataSource. The trimmer is unable to infer this.")]
     private RouteEndpointBuilder CreateRouteEndpointBuilder(
         RouteEntry entry, RoutePattern? groupPrefix = null, IReadOnlyList<Action<EndpointBuilder>>? groupConventions = null, IReadOnlyList<Action<EndpointBuilder>>? groupFinallyConventions = null)
     {
