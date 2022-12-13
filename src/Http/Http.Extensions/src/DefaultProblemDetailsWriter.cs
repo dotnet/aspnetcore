@@ -45,6 +45,9 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     [UnconditionalSuppressMessage("Trimming", "IL2026",
         Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed and we need to fallback" +
         "to reflection-based. The ProblemDetailsConverter is marked as RequiresUnreferencedCode already.")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050",
+        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed and we need to fallback" +
+        "to reflection-based. The ProblemDetailsConverter is marked as RequiresDynamicCode already.")]
     public ValueTask WriteAsync(ProblemDetailsContext context)
     {
         var httpContext = context.HttpContext;
