@@ -57,6 +57,17 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         private static IOperation? GetParentOperation(IOperation operation)
         {
+            // We want to group routes together with-in a block because we know they're generally getting called together.
+            // There are some circumstances where we still don't want to use the route, either because it is only conditionally
+            // being called, or the IEndpointConventionBuilder returned from the method is being used. We can't accurately
+            // detect what extra endpoint metadata is being added to the routes.
+            //
+            // Don't use route endpoint if:
+            // - It's in a conditional statement.
+            // - It's in a coalesce statement.
+            // - It's an argument to a method call.
+            // - It's has methods called on it.
+            // - It's assigned to a variable.
             var current = operation;
             while (current != null)
             {
@@ -66,7 +77,9 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 }
                 else if (current.Parent is IConditionalOperation ||
                     current.Parent is ICoalesceOperation ||
-                    current.Parent is ICoalesceAssignmentOperation)
+                    current.Parent is IAssignmentOperation ||
+                    current.Parent is IArgumentOperation ||
+                    current.Parent is IInvocationOperation)
                 {
                     return current;
                 }

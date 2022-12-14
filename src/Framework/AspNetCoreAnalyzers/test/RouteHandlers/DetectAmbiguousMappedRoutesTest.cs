@@ -112,8 +112,8 @@ void Hello() { }
         var source = @"
 using Microsoft.AspNetCore.Builder;
 var app = WebApplication.Create();
-app.MapGet({|#0:""/""|}, () => Hello());
-app.MapPost({|#1:""/""|}, () => Hello());
+app.MapGet(""/"", () => Hello());
+app.MapPost(""/"", () => Hello());
 void Hello() { }
 ";
 
@@ -136,6 +136,86 @@ else
 {
     app.MapGet(""/"", () => Hello());
 }
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_UnknownUsageOfEndConventionBuilderExtension_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet(""/"", () => Hello()).DoSomething();
+app.MapGet(""/"", () => Hello());
+void Hello() { }
+
+internal static class Extensions
+{
+    public static void DoSomething(this IEndpointConventionBuilder builder)
+    {
+        builder.WithMetadata(new object());
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_UnknownUsageOfEndConventionBuilder_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+Extensions.DoSomething(app.MapGet(""/"", () => Hello()));
+app.MapGet(""/"", () => Hello());
+void Hello() { }
+
+internal static class Extensions
+{
+    public static void DoSomething(IEndpointConventionBuilder builder)
+    {
+        builder.WithMetadata(new object());
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_AddMethod_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet(""/"", () => Hello()).Add(b => {});
+app.MapGet(""/"", () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_AssignedToVariable_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+_ = app.MapGet(""/"", () => Hello());
+app.MapGet(""/"", () => Hello());
 void Hello() { }
 ";
 
