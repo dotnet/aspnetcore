@@ -303,7 +303,6 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_ClosedConnecton()
     {
         // Arrange
@@ -338,7 +337,6 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsync_AsyncEnumerable_ClosedConnecton()
     {
         // Arrange
@@ -373,7 +371,6 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsync_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
@@ -408,7 +405,6 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange

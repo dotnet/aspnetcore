@@ -361,7 +361,6 @@ public abstract class JsonResultExecutorTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task ExecuteAsync_AsyncEnumerableConnectionCloses()
     {
         var context = GetActionContext();
@@ -393,7 +392,6 @@ public abstract class JsonResultExecutorTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task ExecuteAsyncWithDifferentContentType_AsyncEnumerableConnectionCloses()
     {
         var context = GetActionContext();

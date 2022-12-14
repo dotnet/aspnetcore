@@ -110,7 +110,6 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45557")]
     public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
     {
         // Arrange
