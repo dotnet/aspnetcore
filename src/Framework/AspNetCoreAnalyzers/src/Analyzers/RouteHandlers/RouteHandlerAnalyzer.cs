@@ -196,7 +196,21 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_EndpointRouteBuilderExtensions), targetMethod.ContainingType) &&
             invocation.Arguments.Length == 3 &&
             targetMethod.Parameters.Length == 3 &&
-            SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.System_Delegate), targetMethod.Parameters[DelegateParameterOrdinal].Type);
+            IsCompatibleDelegateType(wellKnownTypes, targetMethod);
+
+        static bool IsCompatibleDelegateType(WellKnownTypes wellKnownTypes, IMethodSymbol targetMethod)
+        {
+            var parmeterType = targetMethod.Parameters[DelegateParameterOrdinal].Type;
+            if (SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.System_Delegate), parmeterType))
+            {
+                return true;
+            }
+            if (SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_RequestDelegate), parmeterType))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
     private record struct MapOperation(IOperation? Builder, IInvocationOperation Operation, RouteUsageModel RouteUsageModel)

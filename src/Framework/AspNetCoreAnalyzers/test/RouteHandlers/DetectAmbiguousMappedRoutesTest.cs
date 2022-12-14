@@ -30,6 +30,29 @@ void Hello() { }
     }
 
     [Fact]
+    public async Task DuplicateRoutes_SameHttpMethod_HasRequestDelegate_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+var app = WebApplication.Create();
+app.MapGet({|#0:""/""|}, () => Hello());
+app.MapGet({|#1:""/""|}, (HttpContext context) => Task.CompletedTask);
+void Hello() { }
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_SameHttpMethod_InMethod_NoDiagnostics()
     {
         // Arrange
@@ -208,7 +231,7 @@ void Hello() { }
     }
 
     [Fact]
-    public async Task DuplicateRoutes_AssignedToVariable_HasDiagnostics()
+    public async Task DuplicateRoutes_AssignedToVariable_NoDiagnostics()
     {
         // Arrange
         var source = @"
@@ -224,7 +247,7 @@ void Hello() { }
     }
 
     [Fact]
-    public async Task DuplicateRoutes_MultipleGroups_HasDiagnostics()
+    public async Task DuplicateRoutes_MultipleGroups_NoDiagnostics()
     {
         // Arrange
         var source = @"
@@ -239,6 +262,30 @@ void Hello() { }
 
         // Act & Assert
         await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_EndpointsOnGroup_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+var group1 = app.MapGroup(""/group1"");
+group1.MapGet({|#0:""/""|}, () => Hello());
+group1.MapGet({|#1:""/""|}, () => Hello());
+var group2 = app.MapGroup(""/group2"");
+group2.MapGet(""/"", () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 }
 
