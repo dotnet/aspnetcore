@@ -139,7 +139,7 @@ internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePat
 
     public int GetHashCode(RoutePatternTree obj)
     {
-        // TODO: Improve hash code calculate. This is rudimentary and will generate a lot of collisions.
+        // TODO: Improve hash code calculation. This is rudimentary and will generate a lot of collisions.
         return obj.Root.ChildCount;
     }
 }

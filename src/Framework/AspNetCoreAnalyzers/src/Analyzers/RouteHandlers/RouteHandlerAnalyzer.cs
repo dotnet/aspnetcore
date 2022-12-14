@@ -39,7 +39,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
             var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
 
-            // Want ConcurrentHashSet here but since that doesn't exist, using ConcurrentDictionary and not caring about the value instead.
+            // We want ConcurrentHashSet here in case RegisterOperationAction runs in parallel.
+            // Since ConcurrentHashSet doesn't exist, use ConcurrentDictionary and ignore the value.
             var concurrentQueue = new ConcurrentQueue<ConcurrentDictionary<MapOperation, byte>>();
             context.RegisterOperationBlockStartAction(context =>
             {
@@ -50,6 +51,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 }
 
                 context.RegisterOperationAction(c => DoOperationAnalysis(c, mapOperations), OperationKind.Invocation);
+
                 context.RegisterOperationBlockEndAction(c =>
                 {
                     DetectAmbiguousRoutes(c, mapOperations);
