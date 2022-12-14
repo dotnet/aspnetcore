@@ -1,0 +1,4 @@
+<Project>
+  <Import Condition="'$(IsBrowser)' == 'true'" Sdk="Microsoft.NET.Sdk.BlazorWebAssembly" Project="Sdk.targets" />
+  <Import Condition="'$(IsBrowser)' != 'true'" Sdk="Microsoft.NET.Sdk.Web" Project="Sdk.targets" />
+</Project>

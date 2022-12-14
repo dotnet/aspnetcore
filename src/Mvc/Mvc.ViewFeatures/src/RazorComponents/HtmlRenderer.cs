@@ -436,7 +436,7 @@ internal sealed class HtmlRenderer : Renderer
             // and run their full lifecycle (disposal, etc.)
             var rootComponent = new FragmentRenderer { Fragment = fragment };
             string initialHtml = null;
-            var renderTask = _htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            var renderTask = _htmlRenderer.Dispatcher.InvokeAsync(() =>
             {
                 // WARNING: THIS IS NOT CORRECT AND CAN CAUSE AN INFINITE LOOP
                 // We should *not* really be creating new root components as a side-effect of

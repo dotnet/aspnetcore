@@ -1,12 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+﻿<Project>
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFrameworks>net8.0;net7.0-browser</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
+    <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <Import Project="UnifiedProject.props" />
+
+  <ItemGroup Condition="'$(IsBrowser)' != 'true'">
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
@@ -15,8 +17,12 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BlazorUnitedApp.WebAssembly\BlazorUnitedApp.WebAssembly.csproj" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(IsBrowser)' == 'true'">
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="System.Net.Http.Json" />
+    <Content Remove="Pages\CounterPassive.razor" />
+    <Content Remove="Shared\ActionButton.razor" />
+	</ItemGroup>
 
+  <Import Project="UnifiedProject.targets" />
 </Project>

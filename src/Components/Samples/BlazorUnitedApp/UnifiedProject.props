@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <TargetPlatformIdentifier>windows</TargetPlatformIdentifier>
+    <IsBrowser Condition="'$(TargetFramework)' == 'net7.0-browser'">true</IsBrowser>
+    <DefineConstants Condition="'$(IsBrowser)' == 'true'">BROWSER</DefineConstants>
+  </PropertyGroup>
+
+  <Import Condition="'$(IsBrowser)' != 'true'" Sdk="Microsoft.NET.Sdk.Web" Project="Sdk.props" />
+  <Import Condition="'$(IsBrowser)' == 'true'" Sdk="Microsoft.NET.Sdk.BlazorWebAssembly" Project="Sdk.props" />
+
+  <ItemGroup Condition="'$(IsBrowser)' != 'true'">
+		<StaticWebAssetDiscoveryPattern Include="$(PackageId)\wwwroot">
+			<Source>$(PackageId)</Source>
+			<BasePath>$(StaticWebAssetBasePath)</BasePath>
+			<ContentRoot>$(OutputPath)..\net7.0-browser\wwwroot</ContentRoot>
+			<Pattern>**</Pattern>
+		</StaticWebAssetDiscoveryPattern>
+
+		<Compile Remove="**\*.WebAssembly.cs" />
+		<None Include="**\*.WebAssembly.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(IsBrowser)' == 'true'">
+		<Compile Remove="Controllers\**" />
+		<Compile Remove="**\*.Server.cs" />
+		<None Include="Controllers\**" />
+		<None Include="**\*.Server.cs" />
+	</ItemGroup>
+</Project>

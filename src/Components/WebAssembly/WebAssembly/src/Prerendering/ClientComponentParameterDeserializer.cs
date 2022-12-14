@@ -67,7 +67,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                         parameterValue = JsonSerializer.Deserialize(
                             value.GetRawText(),
                             parameterType,
-                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
                     }
 
                     parametersDictionary[definition.Name] = parameterValue;
