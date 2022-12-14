@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -16,14 +16,15 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
-    private static void DetectAmbiguousRoutes(in OperationBlockAnalysisContext context, List<MapOperation> blockRouteUsage)
+    private static void DetectAmbiguousRoutes(in OperationBlockAnalysisContext context, ConcurrentDictionary<MapOperation, byte> mapOperations)
     {
-        if (blockRouteUsage.Count == 0)
+        if (mapOperations.IsEmpty)
         {
             return;
         }
 
-        var groupedByParent = blockRouteUsage
+        var groupedByParent = mapOperations
+            .Select(kvp => kvp.Key)
             .Where(u => !u.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
             .GroupBy(u => new MapOperationGroupKey(u.Operation, u.RouteUsageModel.RoutePattern, u.RouteUsageModel.UsageContext.HttpMethods));
 

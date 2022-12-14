@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -40,13 +39,14 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
             var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
 
-            var concurrentQueue = new ConcurrentQueue<List<MapOperation>>();
+            // Want ConcurrentHashSet here but since that doesn't exist, using ConcurrentDictionary and not caring about the value instead.
+            var concurrentQueue = new ConcurrentQueue<ConcurrentDictionary<MapOperation, byte>>();
             context.RegisterOperationBlockStartAction(context =>
             {
                 // Pool and reuse lists for each block.
                 if (!concurrentQueue.TryDequeue(out var mapOperations))
                 {
-                    mapOperations = new List<MapOperation>();
+                    mapOperations = new ConcurrentDictionary<MapOperation, byte>();
                 }
 
                 context.RegisterOperationAction(c => DoOperationAnalysis(c, mapOperations), OperationKind.Invocation);
@@ -60,7 +60,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 });
             });
 
-            void DoOperationAnalysis(OperationAnalysisContext context, List<MapOperation> mapOperations)
+            void DoOperationAnalysis(OperationAnalysisContext context, ConcurrentDictionary<MapOperation, byte> mapOperations)
             {
                 var invocation = (IInvocationOperation)context.Operation;
                 var targetMethod = invocation.TargetMethod;
@@ -95,7 +95,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                mapOperations.Add(new MapOperation(invocation, routeUsage));
+                mapOperations.TryAdd(new MapOperation(invocation, routeUsage), value: default);
 
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {
