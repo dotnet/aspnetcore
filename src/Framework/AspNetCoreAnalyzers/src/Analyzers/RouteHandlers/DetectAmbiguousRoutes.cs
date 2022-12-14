@@ -56,15 +56,21 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         private static IOperation? GetParentOperation(IOperation operation)
         {
-            var parent = operation.Parent;
-            while (parent is not null)
+            var current = operation;
+            while (current != null)
             {
-                if (parent is IBlockOperation)
+                if (current.Parent is IBlockOperation blockOperation)
                 {
-                    return parent;
+                    return blockOperation;
                 }
-
-                parent = parent.Parent;
+                else if (current.Parent is IConditionalOperation ||
+                    current.Parent is ICoalesceOperation ||
+                    current.Parent is ICoalesceAssignmentOperation)
+                {
+                    return current;
+                }
+                
+                current = current.Parent;
             }
 
             return null;

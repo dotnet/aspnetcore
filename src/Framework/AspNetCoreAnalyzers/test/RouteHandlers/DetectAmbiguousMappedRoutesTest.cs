@@ -58,6 +58,54 @@ void Hello() { }
     }
 
     [Fact]
+    public async Task DuplicateRoutes_TernaryStatement_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+_ = (true)
+    ? app.MapGet(""/"", () => Hello())
+    : app.MapGet(""/"", () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_NullCoalescing_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+_ = app.MapGet(""/"", () => Hello()) ?? app.MapGet(""/"", () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_NullCoalescingAssignment_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+var ep = app.MapPost(""/"", () => Hello());
+ep ??= app.MapPost(""/"", () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_DifferentMethods_HasDiagnostics()
     {
         // Arrange

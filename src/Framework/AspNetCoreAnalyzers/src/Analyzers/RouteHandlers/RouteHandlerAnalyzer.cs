@@ -40,20 +40,24 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
             var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
 
-            // Pool and reuse the same list for each block.
             var concurrentQueue = new ConcurrentQueue<List<MapOperation>>();
             context.RegisterOperationBlockStartAction(context =>
             {
+                // Pool and reuse lists for each block.
                 if (!concurrentQueue.TryDequeue(out var mapOperations))
                 {
                     mapOperations = new List<MapOperation>();
                 }
 
                 context.RegisterOperationAction(c => DoOperationAnalysis(c, mapOperations), OperationKind.Invocation);
-                context.RegisterOperationBlockEndAction(c => DetectAmbiguousRoutes(c, mapOperations));
+                context.RegisterOperationBlockEndAction(c =>
+                {
+                    DetectAmbiguousRoutes(c, mapOperations);
 
-                mapOperations.Clear();
-                concurrentQueue.Enqueue(mapOperations);
+                    // Return to the pool.
+                    mapOperations.Clear();
+                    concurrentQueue.Enqueue(mapOperations);
+                });
             });
 
             void DoOperationAnalysis(OperationAnalysisContext context, List<MapOperation> mapOperations)
