@@ -107,7 +107,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 ParentOperation != null &&
                 Equals(ParentOperation, other.ParentOperation) &&
                 Builder != null &&
-                Equals((Builder as ILocalReferenceOperation)?.Local, (other.Builder as ILocalReferenceOperation)?.Local) &&
+                SymbolEqualityComparer.Default.Equals((Builder as ILocalReferenceOperation)?.Local, (other.Builder as ILocalReferenceOperation)?.Local) &&
                 AmbiguousRoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
                 HasMatchingHttpMethods(HttpMethods, other.HttpMethods);
         }
