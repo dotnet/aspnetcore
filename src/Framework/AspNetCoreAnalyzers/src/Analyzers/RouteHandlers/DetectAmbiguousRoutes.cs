@@ -18,6 +18,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DetectAmbiguousRoutes(in OperationBlockAnalysisContext context, List<MapOperation> blockRouteUsage)
     {
+        if (blockRouteUsage.Count == 0)
+        {
+            return;
+        }
+
         var groupedByParent = blockRouteUsage
             .Where(u => !u.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
             .GroupBy(u => new MapOperationGroupKey(u.Operation, u.RouteUsageModel.RoutePattern, u.RouteUsageModel.UsageContext.HttpMethods));

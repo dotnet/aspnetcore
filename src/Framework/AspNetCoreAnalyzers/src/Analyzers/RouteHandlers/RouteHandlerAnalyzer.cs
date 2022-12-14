@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private const int DelegateParameterOrdinal = 2;
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters,
         DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
@@ -37,19 +39,24 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var compilation = context.Compilation;
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
             var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
-            var blockRouteUsage = new List<MapOperation>();
 
+            // Pool and reuse the same list for each block.
+            var concurrentQueue = new ConcurrentQueue<List<MapOperation>>();
             context.RegisterOperationBlockStartAction(context =>
             {
-                context.RegisterOperationAction(DoOperationAnalysis, OperationKind.Invocation);
-                blockRouteUsage.Clear();
-            });
-            context.RegisterOperationBlockAction(context =>
-            {
-                DetectAmbiguousRoutes(in context, blockRouteUsage);
+                if (!concurrentQueue.TryDequeue(out var mapOperations))
+                {
+                    mapOperations = new List<MapOperation>();
+                }
+
+                context.RegisterOperationAction(c => DoOperationAnalysis(c, mapOperations), OperationKind.Invocation);
+                context.RegisterOperationBlockEndAction(c => DetectAmbiguousRoutes(c, mapOperations));
+
+                mapOperations.Clear();
+                concurrentQueue.Enqueue(mapOperations);
             });
 
-            void DoOperationAnalysis(OperationAnalysisContext context)
+            void DoOperationAnalysis(OperationAnalysisContext context, List<MapOperation> mapOperations)
             {
                 var invocation = (IInvocationOperation)context.Operation;
                 var targetMethod = invocation.TargetMethod;
@@ -84,7 +91,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                blockRouteUsage.Add(new MapOperation(invocation, routeUsage));
+                mapOperations.Add(new MapOperation(invocation, routeUsage));
 
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {

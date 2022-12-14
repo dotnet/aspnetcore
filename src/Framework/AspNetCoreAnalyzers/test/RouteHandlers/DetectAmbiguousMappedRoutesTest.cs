@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 public partial class DetectAmbiguousMappedRoutesTest
 {
     [Fact]
-    public async Task DuplicateRoutes_SameMethod_HasDiagnostics()
+    public async Task DuplicateRoutes_SameHttpMethod_HasDiagnostics()
     {
         // Arrange
         var source = @"
@@ -17,6 +17,34 @@ using Microsoft.AspNetCore.Builder;
 var app = WebApplication.Create();
 app.MapGet({|#0:""/""|}, () => Hello());
 app.MapGet({|#1:""/""|}, () => Hello());
+void Hello() { }
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_SameHttpMethod_InMethod_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+var app = WebApplication.Create();
+void RegisterEndpoints(IEndpointRouteBuilder builder)
+{
+    builder.MapGet({|#0:""/""|}, () => Hello());
+    builder.MapGet({|#1:""/""|}, () => Hello());
+}
+
+RegisterEndpoints(app);
+
 void Hello() { }
 ";
 
