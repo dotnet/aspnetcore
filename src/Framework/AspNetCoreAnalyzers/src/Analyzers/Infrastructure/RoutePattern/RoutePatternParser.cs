@@ -427,7 +427,7 @@ internal partial struct RoutePatternParser
 
     private RoutePatternSegmentNode ParseSegment()
     {
-        var result = ImmutableArray.CreateBuilder<RoutePatternNode>();
+        var result = ImmutableArray.CreateBuilder<RoutePatternSegmentPartNode>();
 
         while (_currentToken.Kind != RoutePatternKind.EndOfFile &&
             _currentToken.Kind != RoutePatternKind.SlashToken)

@@ -178,4 +178,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor AmbiguousRouteHandlerRoute = new(
+        "ASP0022",
+        "Route used by multiple route handlers is ambiguous and will fail to match.",
+        "Route '{0}' is ambiguous with other route handler routes. An HTTP request must match a single route handler to succeed. Consider changing the route path, HTTP method, or add parameter constraints to one of the routes to remove route ambiguity.",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

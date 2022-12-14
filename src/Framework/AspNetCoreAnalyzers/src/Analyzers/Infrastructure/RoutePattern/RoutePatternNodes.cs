@@ -43,11 +43,11 @@ internal sealed class RoutePatternCompilationUnit : RoutePatternNode
 
 internal sealed class RoutePatternSegmentNode : RoutePatternRootPartNode
 {
-    public ImmutableArray<RoutePatternNode> Children { get; }
+    public ImmutableArray<RoutePatternSegmentPartNode> Children { get; }
 
     internal override int ChildCount => Children.Length;
 
-    public RoutePatternSegmentNode(ImmutableArray<RoutePatternNode> children)
+    public RoutePatternSegmentNode(ImmutableArray<RoutePatternSegmentPartNode> children)
         : base(RoutePatternKind.Segment)
     {
         Children = children;
