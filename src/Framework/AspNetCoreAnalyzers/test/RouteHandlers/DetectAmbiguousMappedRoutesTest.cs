@@ -222,5 +222,23 @@ void Hello() { }
         // Act & Assert
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task DuplicateRoutes_MultipleGroups_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+var group1 = app.MapGroup(""/group1"");
+var group2 = app.MapGroup(""/group2"");
+group1.MapGet(""/"", () => Hello());
+group2.MapGet(""/"", () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
 }
 

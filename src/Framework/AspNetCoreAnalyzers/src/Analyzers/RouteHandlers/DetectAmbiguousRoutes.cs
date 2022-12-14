@@ -26,7 +26,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         var groupedByParent = mapOperations
             .Select(kvp => kvp.Key)
             .Where(u => !u.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
-            .GroupBy(u => new MapOperationGroupKey(u.Operation, u.RouteUsageModel.RoutePattern, u.RouteUsageModel.UsageContext.HttpMethods));
+            .GroupBy(u => new MapOperationGroupKey(u.Builder, u.Operation, u.RouteUsageModel.RoutePattern, u.RouteUsageModel.UsageContext.HttpMethods));
 
         foreach (var ambigiousGroup in groupedByParent.Where(g => g.Count() >= 2))
         {
@@ -43,21 +43,23 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
     private readonly struct MapOperationGroupKey : IEquatable<MapOperationGroupKey>
     {
         public IOperation? ParentOperation { get; }
+        public IOperation? Builder { get; }
         public RoutePatternTree RoutePattern { get; }
         public ImmutableArray<string> HttpMethods { get; }
 
-        public MapOperationGroupKey(IOperation operation, RoutePatternTree routePattern, ImmutableArray<string> httpMethods)
+        public MapOperationGroupKey(IOperation? builder, IInvocationOperation operation, RoutePatternTree routePattern, ImmutableArray<string> httpMethods)
         {
             Debug.Assert(!httpMethods.IsDefault);
 
             ParentOperation = GetParentOperation(operation);
+            Builder = builder;
             RoutePattern = routePattern;
             HttpMethods = httpMethods;
         }
 
         private static IOperation? GetParentOperation(IOperation operation)
         {
-            // We want to group routes together with-in a block because we know they're generally getting called together.
+            // We want to group routes in a block together because we know they're being used together.
             // There are some circumstances where we still don't want to use the route, either because it is only conditionally
             // being called, or the IEndpointConventionBuilder returned from the method is being used. We can't accurately
             // detect what extra endpoint metadata is being added to the routes.
@@ -102,7 +104,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         public bool Equals(MapOperationGroupKey other)
         {
             return
+                ParentOperation != null &&
                 Equals(ParentOperation, other.ParentOperation) &&
+                Builder != null &&
+                Equals((Builder as ILocalReferenceOperation)?.Local, (other.Builder as ILocalReferenceOperation)?.Local) &&
                 AmbiguousRoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
                 HasMatchingHttpMethods(HttpMethods, other.HttpMethods);
         }

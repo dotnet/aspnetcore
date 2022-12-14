@@ -97,7 +97,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                mapOperations.TryAdd(new MapOperation(invocation, routeUsage), value: default);
+                mapOperations.TryAdd(MapOperation.Create(invocation, routeUsage), value: default);
 
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {
@@ -199,5 +199,29 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.System_Delegate), targetMethod.Parameters[DelegateParameterOrdinal].Type);
     }
 
-    private record struct MapOperation(IInvocationOperation Operation, RouteUsageModel RouteUsageModel);
+    private record struct MapOperation(IOperation? Builder, IInvocationOperation Operation, RouteUsageModel RouteUsageModel)
+    {
+        public static MapOperation Create(IInvocationOperation operation, RouteUsageModel routeUsageModel)
+        {
+            IOperation? builder = null;
+                
+            var builderArgument = operation.Arguments.SingleOrDefault(a => a.Parameter?.Ordinal == 0);
+            if (builderArgument != null)
+            {
+                builder = WalkDownConversion(builderArgument.Value);
+            }
+
+            return new MapOperation(builder, operation, routeUsageModel);
+        }
+
+        private static IOperation WalkDownConversion(IOperation operation)
+        {
+            while (operation is IConversionOperation conversionOperation)
+            {
+                operation = conversionOperation.Operand;
+            }
+
+            return operation;
+        }
+    }
 }
