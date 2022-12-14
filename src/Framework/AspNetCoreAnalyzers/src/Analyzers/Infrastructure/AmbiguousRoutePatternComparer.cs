@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
 
 /// <summary>
-/// This route pattern comparer checks to see if two route patterns match the same URL and create ambiguous match exceptions.
-/// It doesn't check two routes exactly equal each other. For example, "/product/{id}" and "/product/{name}" equal because they match the same URL.
+/// This route pattern comparer checks to see if two route patterns match the same URL and create ambiguous match exceptions at runtime.
+/// It doesn't check two routes exactly equal each other. For example, "/product/{id}" and "/product/{name}" aren't exactly equal but will match the same URL.
 /// </summary>
 internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePatternTree>
 {
@@ -86,7 +86,7 @@ internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePat
             return false;
         }
 
-        // Only parameter policies can be used to differentiate between parameters.
+        // Only parameter policies differentiate between parameters.
         var xParameterPolicies = x.ParameterParts.Where(p => p.Kind == RoutePatternKind.ParameterPolicy).OfType<RoutePatternPolicyParameterPartNode>().ToList();
         var yParameterPolicies = y.ParameterParts.Where(p => p.Kind == RoutePatternKind.ParameterPolicy).OfType<RoutePatternPolicyParameterPartNode>().ToList();
 
