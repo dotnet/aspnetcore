@@ -6,11 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
+namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
 
-internal sealed class RoutePatternComparer : IEqualityComparer<RoutePatternTree>
+/// <summary>
+/// This route pattern comparer checks to see if two route patterns match the same URL and create ambiguous match exceptions.
+/// It doesn't check two routes exactly equal each other. For example, "/product/{id}" and "/product/{name}" equal because they match the same URL.
+/// </summary>
+internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePatternTree>
 {
-    public static RoutePatternComparer Instance { get; } = new();
+    public static AmbiguousRoutePatternComparer Instance { get; } = new();
 
     public bool Equals(RoutePatternTree x, RoutePatternTree y)
     {
@@ -54,16 +58,16 @@ internal sealed class RoutePatternComparer : IEqualityComparer<RoutePatternTree>
 
         for (var i = 0; i < x.Children.Length; i++)
         {
-            var xPart = x.Children[i];
-            var yPart = y.Children[i];
+            var xChild = x.Children[i];
+            var yChild = y.Children[i];
 
-            var equal = xPart switch
+            var equal = xChild switch
             {
-                RoutePatternOptionalSeperatorNode _ => yPart is RoutePatternOptionalSeperatorNode,
-                RoutePatternReplacementNode xReplacement => yPart is RoutePatternReplacementNode yReplacement && Equals(xReplacement.TextToken.Value, yReplacement.TextToken.Value),
-                RoutePatternLiteralNode xLiteral => yPart is RoutePatternLiteralNode yLiteral && Equals(xLiteral.LiteralToken.Value, yLiteral.LiteralToken.Value),
-                RoutePatternParameterNode xParameter => Equals(xParameter, yPart as RoutePatternParameterNode),
-                _ => throw new InvalidOperationException($"Unexpected segment node type '{xPart.Kind}'."),
+                RoutePatternOptionalSeperatorNode _ => yChild is RoutePatternOptionalSeperatorNode,
+                RoutePatternReplacementNode xReplacement => yChild is RoutePatternReplacementNode yReplacement && Equals(xReplacement.TextToken.Value, yReplacement.TextToken.Value),
+                RoutePatternLiteralNode xLiteral => yChild is RoutePatternLiteralNode yLiteral && Equals(xLiteral.LiteralToken.Value, yLiteral.LiteralToken.Value),
+                RoutePatternParameterNode xParameter => Equals(xParameter, yChild as RoutePatternParameterNode),
+                _ => throw new InvalidOperationException($"Unexpected segment node type '{xChild.Kind}'."),
             };
 
             if (!equal)
@@ -93,10 +97,10 @@ internal sealed class RoutePatternComparer : IEqualityComparer<RoutePatternTree>
 
         for (var i = 0; i < xParameterPolicies.Count; i++)
         {
-            var xPart = xParameterPolicies[i];
-            var yPart = yParameterPolicies[i];
+            var xPolicy = xParameterPolicies[i];
+            var yPolicy = yParameterPolicies[i];
 
-            if (!Equals(xPart, yPart))
+            if (!Equals(xPolicy, yPolicy))
             {
                 return false;
             }
@@ -121,7 +125,7 @@ internal sealed class RoutePatternComparer : IEqualityComparer<RoutePatternTree>
             {
                 RoutePatternPolicyFragment xFragment => yPart is RoutePatternPolicyFragment yFragment && Equals(xFragment.ArgumentToken.Value, yFragment.ArgumentToken.Value),
                 RoutePatternPolicyFragmentEscapedNode xFragmentEscaped => yPart is RoutePatternPolicyFragmentEscapedNode yFragmentEscaped && Equals(xFragmentEscaped.ArgumentToken.Value, yFragmentEscaped.ArgumentToken.Value),
-                _ => throw new InvalidOperationException($"Unexpected segment node type '{xPart.Kind}'."),
+                _ => throw new InvalidOperationException($"Unexpected policy node type '{xPart.Kind}'."),
             };
 
             if (!equal)
@@ -135,6 +139,7 @@ internal sealed class RoutePatternComparer : IEqualityComparer<RoutePatternTree>
 
     public int GetHashCode(RoutePatternTree obj)
     {
+        // TODO: Improve hash code calculate. This is rudimentary and will generate a lot of collisions.
         return obj.Root.ChildCount;
     }
 }

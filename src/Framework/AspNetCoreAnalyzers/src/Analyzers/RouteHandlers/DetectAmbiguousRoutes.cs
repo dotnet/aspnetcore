@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -33,8 +33,6 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
         }
     }
-
-    private record struct MapOperation(IInvocationOperation Operation, RouteUsageModel RouteUsageModel);
 
     private readonly struct MapOperationGroupKey : IEquatable<MapOperationGroupKey>
     {
@@ -80,7 +78,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             return
                 Equals(ParentOperation, other.ParentOperation) &&
-                RoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
+                AmbiguousRoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
                 HasMatchingHttpMethods(HttpMethods, other.HttpMethods);
         }
 
@@ -107,7 +105,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         public override int GetHashCode()
         {
-            return (ParentOperation?.GetHashCode() ?? 0) ^ RoutePatternComparer.Instance.GetHashCode(RoutePattern);
+            return (ParentOperation?.GetHashCode() ?? 0) ^ AmbiguousRoutePatternComparer.Instance.GetHashCode(RoutePattern);
         }
     }
 }
