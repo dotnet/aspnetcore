@@ -139,6 +139,50 @@ public static partial class HttpResponseJsonExtensions
         }
     }
 
+    /// <summary>
+    /// Write the specified value as JSON to the response body. The response content-type will be set to
+    /// the specified content-type.
+    /// </summary>
+    /// <param name="response">The response to write JSON to.</param>
+    /// <param name="value">The value to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static Task WriteAsJsonAsync(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        this HttpResponse response,
+        object? value,
+        JsonTypeInfo jsonTypeInfo,
+        string? contentType = default,
+        CancellationToken cancellationToken = default)
+    {
+        if (response == null)
+        {
+            throw new ArgumentNullException(nameof(response));
+        }
+
+        response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+
+        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+        if (!cancellationToken.CanBeCanceled)
+        {
+            return WriteAsJsonAsyncSlow(response, value, jsonTypeInfo);
+        }
+
+        return JsonSerializer.SerializeAsync(response.Body, value, jsonTypeInfo, cancellationToken);
+
+        static async Task WriteAsJsonAsyncSlow(HttpResponse response, object? value, JsonTypeInfo jsonTypeInfo)
+        {
+            try
+            {
+                await JsonSerializer.SerializeAsync(response.Body, value, jsonTypeInfo, response.HttpContext.RequestAborted);
+            }
+            catch (OperationCanceledException) { }
+        }
+    }
+
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow<TValue>(
         Stream body,

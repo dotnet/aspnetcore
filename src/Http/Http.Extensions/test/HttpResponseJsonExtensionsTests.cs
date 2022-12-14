@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 #nullable enable
 
@@ -435,6 +436,50 @@ public class HttpResponseJsonExtensionsTests
                 yield return i;
             }
         }
+    }
+
+    [Fact]
+    public async Task WriteAsJsonAsyncGeneric_WithJsonTypeInfo_JsonResponse()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+
+        // Act
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new IntegerConverter());
+        options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, (JsonTypeInfo<int[]>)options.GetTypeInfo(typeof(int[])));
+
+        // Assert
+        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+
+        var data = Encoding.UTF8.GetString(body.ToArray());
+        Assert.Equal("[false,true,false]", data);
+    }
+
+    [Fact]
+    public async Task WriteAsJsonAsync_WithJsonTypeInfo_JsonResponse()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+
+        // Act
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new IntegerConverter());
+        options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, options.GetTypeInfo(typeof(int[])));
+
+        // Assert
+        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+
+        var data = Encoding.UTF8.GetString(body.ToArray());
+        Assert.Equal("[false,true,false]", data);
     }
 
     public class TestObject
