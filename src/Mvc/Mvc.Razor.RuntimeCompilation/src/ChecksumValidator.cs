@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Razor.Hosting;
