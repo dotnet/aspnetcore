@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -305,23 +306,10 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var configureContainerBuilder = StartupLoader.FindConfigureContainerDelegate(startupType, context.HostingEnvironment.EnvironmentName);
             if (configureContainerBuilder.MethodInfo != null)
             {
-                var containerType = configureContainerBuilder.GetContainerType();
-                Debug.Assert(containerType.IsClass);
-
                 // Store the builder in the property bag
                 _builder.Properties[typeof(ConfigureContainerBuilder)] = configureContainerBuilder;
 
-                var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
-
-                // Get the private ConfigureContainer method on this type then close over the container type
-                var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
-                                                 .MakeGenericMethod(containerType)
-                                                 .CreateDelegate(actionType, this);
-
-                // _builder.ConfigureContainer<T>(ConfigureContainer);
-                typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
-                    .MakeGenericMethod(containerType)
-                    .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
+                InvokeContainer(this, configureContainerBuilder);
             }
 
             // Resolve Configure after calling ConfigureServices and ConfigureContainer
@@ -347,6 +335,30 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
                 }
             };
         });
+
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+            Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
+        static void InvokeContainer(GenericWebHostBuilder genericWebHostBuilder, ConfigureContainerBuilder configureContainerBuilder)
+        {
+            var containerType = configureContainerBuilder.GetContainerType();
+
+            if (containerType.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
+            {
+                throw new InvalidOperationException("ValueType startup container isn't supported with AOT.");
+            }
+
+            var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
+
+            // Get the private ConfigureContainer method on this type then close over the container type
+            var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
+                                             .MakeGenericMethod(containerType)
+                                             .CreateDelegate(actionType, genericWebHostBuilder);
+
+            // _builder.ConfigureContainer<T>(ConfigureContainer);
+            typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
+                .MakeGenericMethod(containerType)
+                .InvokeWithoutWrappingExceptions(genericWebHostBuilder._builder, new object[] { configureCallback });
+        }
     }
 
     private void ConfigureContainerImpl<TContainer>(HostBuilderContext context, TContainer container) where TContainer : notnull
