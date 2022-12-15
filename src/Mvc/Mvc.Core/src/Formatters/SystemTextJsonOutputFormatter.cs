@@ -41,12 +41,6 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             };
         }
 
-        if (!jsonSerializerOptions.IsReadOnly &&
-            jsonSerializerOptions.TypeInfoResolver != null)
-        {
-            jsonSerializerOptions.MakeReadOnly();
-        }
-
         return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
     }
 

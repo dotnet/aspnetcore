@@ -1055,6 +1055,7 @@ public static partial class RequestDelegateFactory
                 else
                 {
                     var jsonTypeInfo = GetJsonTypeInfo(factoryContext.JsonSerializerOptions, typeArg);
+                    var jsonTypeInfoConstant = Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo<>).MakeGenericType(typeArg));
 
                     if (jsonTypeInfo is not null &&
                         (typeArg.IsSealed || typeArg.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
@@ -1063,7 +1064,7 @@ public static partial class RequestDelegateFactory
                             ExecuteTaskOfTFastMethod.MakeGenericMethod(typeArg),
                             methodCall,
                             HttpContextExpr,
-                            Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+                            jsonTypeInfoConstant);
                     }
 
                     return Expression.Call(
@@ -1071,7 +1072,7 @@ public static partial class RequestDelegateFactory
                         methodCall,
                         HttpContextExpr,
                         factoryContext.JsonSerializerOptionsExpression,
-                        Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+                        jsonTypeInfoConstant);
                 }
             }
             else if (returnType.IsGenericType &&
@@ -1097,6 +1098,7 @@ public static partial class RequestDelegateFactory
                 else
                 {
                     var jsonTypeInfo = GetJsonTypeInfo(factoryContext.JsonSerializerOptions, typeArg);
+                    var jsonTypeInfoConstant = Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo<>).MakeGenericType(typeArg));
 
                     if (jsonTypeInfo is not null &&
                         (typeArg.IsSealed || typeArg.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
@@ -1105,7 +1107,7 @@ public static partial class RequestDelegateFactory
                             ExecuteValueTaskOfTFastMethod.MakeGenericMethod(typeArg),
                             methodCall,
                             HttpContextExpr,
-                            Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+                            jsonTypeInfoConstant);
                     }
 
                     return Expression.Call(
@@ -1113,7 +1115,7 @@ public static partial class RequestDelegateFactory
                         methodCall,
                         HttpContextExpr,
                         factoryContext.JsonSerializerOptionsExpression,
-                        Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+                        jsonTypeInfoConstant);
                 }
             }
             else
@@ -1142,6 +1144,7 @@ public static partial class RequestDelegateFactory
         else
         {
             var jsonTypeInfo = GetJsonTypeInfo(factoryContext.JsonSerializerOptions, returnType);
+            var jsonTypeInfoConstant = Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo<>).MakeGenericType(returnType));
 
             if (jsonTypeInfo is not null &&
                 (returnType.IsSealed || returnType.IsValueType || jsonTypeInfo.PolymorphismOptions is not null))
@@ -1150,10 +1153,15 @@ public static partial class RequestDelegateFactory
                     JsonResultWriteResponseOfTFastAsyncMethod.MakeGenericMethod(returnType),
                     HttpResponseExpr,
                     methodCall,
-                    Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+                    jsonTypeInfoConstant);
             }
 
-            return Expression.Call(JsonResultWriteResponseOfTAsyncMethod.MakeGenericMethod(returnType), HttpResponseExpr, methodCall, factoryContext.JsonSerializerOptionsExpression, Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo)));
+            return Expression.Call(
+                JsonResultWriteResponseOfTAsyncMethod.MakeGenericMethod(returnType),
+                HttpResponseExpr,
+                methodCall,
+                factoryContext.JsonSerializerOptionsExpression,
+                jsonTypeInfoConstant);
         }
     }
 
@@ -2139,11 +2147,11 @@ public static partial class RequestDelegateFactory
         }
     }
 
-    private static Task ExecuteTaskOfTFast<T>(Task<T> task, HttpContext httpContext, JsonTypeInfo jsonTypeInfo)
+    private static Task ExecuteTaskOfTFast<T>(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
     {
         EnsureRequestTaskNotNull(task);
 
-        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonTypeInfo jsonTypeInfo)
+        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
             await WriteJsonResponseFast(httpContext.Response, await task, jsonTypeInfo);
         }
@@ -2156,11 +2164,11 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
-    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
+    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo<T>? jsonTypeInfo)
     {
         EnsureRequestTaskNotNull(task);
 
-        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
+        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo<T>? jsonTypeInfo)
         {
             await WriteJsonResponse(httpContext.Response, await task, options, jsonTypeInfo);
         }
@@ -2246,9 +2254,9 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(valueTask);
     }
 
-    private static Task ExecuteValueTaskOfTFast<T>(ValueTask<T> task, HttpContext httpContext, JsonTypeInfo jsonTypeInfo)
+    private static Task ExecuteValueTaskOfTFast<T>(ValueTask<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonTypeInfo jsonTypeInfo)
+        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
             await WriteJsonResponseFast(httpContext.Response, await task, jsonTypeInfo);
         }
@@ -2261,9 +2269,9 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
-    private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
+    private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo<T>? jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
+        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions? options, JsonTypeInfo<T>? jsonTypeInfo)
         {
             await WriteJsonResponse(httpContext.Response, await task, options, jsonTypeInfo);
         }
@@ -2322,10 +2330,10 @@ public static partial class RequestDelegateFactory
 
     // This method will not check for polymorphism and will
     // leverage the STJ polymorphism support.
-    private static Task WriteJsonResponseFast<T>(HttpResponse response, T value, JsonTypeInfo jsonTypeInfo)
-        => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, (JsonTypeInfo<T>)jsonTypeInfo, default);
+    private static Task WriteJsonResponseFast<T>(HttpResponse response, T value, JsonTypeInfo<T> jsonTypeInfo)
+        => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
 
-    private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions? options, JsonTypeInfo? jsonTypeInfo)
+    private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions? options, JsonTypeInfo<T>? jsonTypeInfo)
     {
         var runtimeType = value is null ? typeof(object) : value.GetType();
 
@@ -2333,7 +2341,7 @@ public static partial class RequestDelegateFactory
         {
             // In this case the polymorphism is not
             // relevant for us and will be handled by STJ, if needed.
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, (JsonTypeInfo<T>)jsonTypeInfo, default);
+            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, jsonTypeInfo, default);
         }
 
         // We cannot use JsonTypeInfo here yet, waiting for https://github.com/dotnet/runtime/issues/77051

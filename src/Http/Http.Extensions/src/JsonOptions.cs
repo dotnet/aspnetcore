@@ -27,7 +27,10 @@ public class JsonOptions
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
         // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
         // .AddContext<TContext>()
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code 
         TypeInfoResolver = CreateDefaultTypeResolver()
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+
     };
 
     // Use a copy so the defaults are not modified.
@@ -36,8 +39,7 @@ public class JsonOptions
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(DefaultSerializerOptions);
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
-        Justification = "The default type resolver will be set as DefaultJsonTypeInfoResolver (reflection-based) that has the same runtime behavior when TypeResolver is null.")]
-    private static IJsonTypeInfoResolver? CreateDefaultTypeResolver()
+    [RequiresUnreferencedCode("Calls System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver.DefaultJsonTypeInfoResolver()")]
+    private static IJsonTypeInfoResolver CreateDefaultTypeResolver()
         => new DefaultJsonTypeInfoResolver();
 }
