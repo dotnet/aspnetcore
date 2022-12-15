@@ -47,24 +47,26 @@ public class ComponentStatePersistenceManager
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
+    public Task<bool> PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
     {
         if (_stateIsPersisted)
         {
             throw new InvalidOperationException("State already persisted.");
         }
 
-        _stateIsPersisted = true;
+        // Disabling because, in this prototype, we have to persist twice (once for server, once for WebAssembly)
+        // _stateIsPersisted = true;
 
         return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
 
-        async Task PauseAndPersistState()
+        async Task<bool> PauseAndPersistState()
         {
             State.PersistingState = true;
             await PauseAsync();
             State.PersistingState = false;
 
             await store.PersistStateAsync(_currentState);
+            return _currentState.Count > 0;
         }
     }
 

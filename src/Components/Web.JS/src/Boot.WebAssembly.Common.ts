@@ -102,7 +102,7 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
     getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
   };
 
-  Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
+  Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document, 'webassembly') || '');
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);

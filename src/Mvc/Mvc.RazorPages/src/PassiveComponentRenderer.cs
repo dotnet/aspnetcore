@@ -14,6 +14,9 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -80,6 +83,41 @@ internal class PassiveComponentRenderer
             // TODO: Instead of passing 'result', we should only pass 'batch', and WriteDiffAsync should
             // render that batch to the output instead of the whole page
             await WriteDiffAsync(httpContext, result);
+        }
+
+        // Finally, emit any persisted state
+        var persistenceManager = httpContext.RequestServices.GetService<ComponentStatePersistenceManager>();
+        if (persistenceManager is not null)
+        {
+            // In a real implementation, we need to solve some problems here:
+            // [1] We shouldn't be persisting everything twice (once for server, once for WebAssembly)
+            //     Instead, the persistence mechanism needs to know which components use Server rendermode
+            //     and which ones use WebAssembly rendermode, and only persist states for those ones,
+            //     and store the states in separate collections. It also has to understand the component
+            //     hierarchy so it knows that descendants of interactive components are also interactive
+            //     and take the same rendermode by default.
+            // [2] We have to think through what this means for streaming rendering. Do we serialize out
+            //     the state on every renderbatch? Presumably not! But then how do we know when to serialize
+            //     the state? If the rule is "things only become interactive after the streaming SSR process
+            //     has completed" then it's easy enough; just handle things like below.
+            var store = new PrerenderComponentApplicationStore();
+            var hasState = await persistenceManager.PersistStateAsync(store, htmlRenderer);
+            if (hasState)
+            {
+                await writer.WriteAsync("\n<!--Blazor-Component-State-WebAssembly:");
+                await writer.WriteAsync(store.PersistedState);
+                await writer.WriteAsync("-->");
+            }
+
+            var dataProtection = httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>();
+            var protectedStore = new ProtectedPrerenderComponentApplicationStore(dataProtection);
+            var hasProtectedState = await persistenceManager.PersistStateAsync(protectedStore, htmlRenderer);
+            if (hasProtectedState)
+            {
+                await writer.WriteAsync("\n<!--Blazor-Component-State-Server:");
+                await writer.WriteAsync(protectedStore.PersistedState);
+                await writer.WriteAsync("-->");
+            }
         }
     }
 

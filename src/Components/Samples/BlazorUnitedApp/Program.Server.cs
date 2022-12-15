@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddRazorComponents();
 builder.Services.AddServerSideBlazor();
 
@@ -35,8 +34,10 @@ app.Map("/mycomponent", () =>
 {
     return new RazorComponentResult
     (
-        new FetchData { ForDate = DateTime.Now.AddYears(1000) }
+        new FetchData { InitialDate = DateTime.Now.AddYears(1000) }
     );
 });
+
+FetchData.MapEndpoints(app); // Should be codegenned
 
 app.Run();

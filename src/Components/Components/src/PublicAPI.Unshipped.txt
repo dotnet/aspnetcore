@@ -4,6 +4,7 @@ Microsoft.AspNetCore.Components.ComponentRenderMode.Unspecified = 0 -> Microsoft
 Microsoft.AspNetCore.Components.ComponentRenderModeAttribute
 Microsoft.AspNetCore.Components.ComponentRenderModeAttribute.ComponentRenderModeAttribute(Microsoft.AspNetCore.Components.ComponentRenderMode mode) -> void
 Microsoft.AspNetCore.Components.ComponentRenderModeAttribute.Mode.get -> Microsoft.AspNetCore.Components.ComponentRenderMode
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.set -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChangingAsync(string! uri, string? state, bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>

@@ -47,12 +47,18 @@ function discoverServerComponents(document: Document): ServerComponentDescriptor
   return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
-const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
+const serverStateCommentRegularExpression = /^\s*Blazor-Component-State-Server:(?<state>[a-zA-Z0-9+/=]+)$/;
+const webassemblyStateCommentRegularExpression = /^\s*Blazor-Component-State-WebAssembly:(?<state>[a-zA-Z0-9+/=]+)$/;
 
-export function discoverPersistedState(node: Node): string | null | undefined {
+export function discoverPersistedState(node: Node, stateType: 'server' | 'webassembly'): string | null | undefined {
   if (node.nodeType === Node.COMMENT_NODE) {
     const content = node.textContent || '';
-    const parsedState = blazorStateCommentRegularExpression.exec(content);
+
+    const matchingRegex = stateType === 'server'
+      ? serverStateCommentRegularExpression
+      : webassemblyStateCommentRegularExpression;
+
+    const parsedState = matchingRegex.exec(content);
     const value = parsedState && parsedState.groups && parsedState.groups['state'];
     if (value){
       node.parentNode?.removeChild(node);
@@ -67,7 +73,7 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   const nodes = node.childNodes;
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
-    const result = discoverPersistedState(candidate);
+    const result = discoverPersistedState(candidate, stateType);
     if (result){
       return result;
     }

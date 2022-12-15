@@ -84,9 +84,12 @@ public class PersistComponentStateTagHelper : TagHelper
         if (store != null)
         {
             await manager.PersistStateAsync(store, renderer);
+            var prefix = store is ProtectedPrerenderComponentApplicationStore
+                ? "<!--Blazor-Component-State-Server:"
+                : "<!--Blazor-Component-State-WebAssembly:";
             output.Content.SetHtmlContent(
                 new HtmlContentBuilder()
-                    .AppendHtml("<!--Blazor-Component-State:")
+                    .AppendHtml(prefix)
                     .AppendHtml(new ComponentStateHtmlContent(store))
                     .AppendHtml("-->"));
         }

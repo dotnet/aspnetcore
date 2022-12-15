@@ -48,7 +48,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
-  const appState = discoverPersistedState(document);
+  const appState = discoverPersistedState(document, 'server');
   const circuit = new CircuitDescriptor(components || [], appState || '');
 
   // Configure navigation via SignalR
