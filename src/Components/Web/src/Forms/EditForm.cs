@@ -19,10 +19,7 @@ public class EditForm : ComponentBase
     /// <summary>
     /// Constructs an instance of <see cref="EditForm"/>.
     /// </summary>
-    public EditForm()
-    {
-        _handleSubmitDelegate = HandleSubmitAsync;
-    }
+    public EditForm() => _handleSubmitDelegate = HandleSubmitAsync;
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created <c>form</c> element.
@@ -125,7 +122,8 @@ public class EditForm : ComponentBase
         builder.OpenComponent<CascadingValue<EditContext>>(3);
         builder.AddAttribute(4, "IsFixed", true);
         builder.AddAttribute(5, "Value", _editContext);
-        builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.AddAttribute(6, "Name", "CurrentEditContext");
+        builder.AddAttribute(7, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
         builder.CloseElement();
 

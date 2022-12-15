@@ -28,15 +28,12 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [CascadingParameter] EditContext CurrentEditContext { get; set; } = default!;
+    [CascadingParameter(Name = "CurrentEditContext")] EditContext CurrentEditContext { get; set; } = default!;
 
     /// <summary>`
     /// Constructs an instance of <see cref="ValidationSummary"/>.
     /// </summary>
-    public ValidationSummary()
-    {
-        _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
-    }
+    public ValidationSummary() => _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -21,7 +21,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [CascadingParameter] EditContext CurrentEditContext { get; set; } = default!;
+    [CascadingParameter(Name = "CurrentEditContext")] EditContext CurrentEditContext { get; set; } = default!;
 
     /// <summary>
     /// Specifies the field for which validation messages should be displayed.
@@ -31,10 +31,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <summary>`
     /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
     /// </summary>
-    public ValidationMessage()
-    {
-        _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
-    }
+    public ValidationMessage() => _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
 
     /// <inheritdoc />
     protected override void OnParametersSet()
