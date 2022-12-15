@@ -44,14 +44,14 @@ public class AntiforgeryOptions
     /// If an explicit <see cref="CookieBuilder.Name"/> is not provided, the system will automatically generate a
     /// unique name that begins with <see cref="DefaultCookiePrefix"/>.
     /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Strict"/>.
-    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
-    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>. The cookie used by the antiforgery system
+    /// <list type="bullet">
+    /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Strict"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>. The cookie used by the antiforgery system
     /// is part of a security system that is necessary when using cookie-based authentication. It should be
-    /// considered required for the application to function.
-    /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.None"/>.
-    /// </para>
+    /// considered required for the application to function.</description></item>
+    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.None"/>.</description></item>
+    /// </list>
     /// </remarks>
     public CookieBuilder Cookie
     {

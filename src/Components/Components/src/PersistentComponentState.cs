@@ -68,11 +68,6 @@ public class PersistentComponentState
             throw new ArgumentNullException(nameof(key));
         }
 
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
         if (!PersistingState)
         {
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");

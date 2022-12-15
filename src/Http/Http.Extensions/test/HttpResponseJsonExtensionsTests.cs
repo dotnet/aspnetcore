@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Testing;
 
 #nullable enable
 
@@ -405,7 +406,7 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerableG_UserPassedTokenThrows()
+    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
         var body = new MemoryStream();
