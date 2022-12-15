@@ -34,7 +34,7 @@ public static class ServerRetryHelper
             catch (Exception ex)
             {
                 retryCount++;
-                nextPortAttempt = port + Random.Shared.Next(1000);
+                nextPortAttempt = port + Random.Shared.Next(100);
 
                 if (retryCount >= RetryCount)
                 {
