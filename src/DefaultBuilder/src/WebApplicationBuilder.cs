@@ -29,7 +29,21 @@ public sealed class WebApplicationBuilder
 
     internal WebApplicationBuilder(WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
     {
-        _hostApplicationBuilder = MakeHostApplicationBuilder(options);
+        var configuration = new ConfigurationManager();
+
+        configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
+
+        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+        _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            Args = options.Args,
+            ApplicationName = options.ApplicationName,
+            EnvironmentName = options.EnvironmentName,
+            ContentRootPath = options.ContentRootPath,
+            Configuration = configuration,
+        });
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -73,25 +87,6 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
-    }
-
-    private static HostApplicationBuilder MakeHostApplicationBuilder(WebApplicationOptions options)
-    {
-        var configuration = new ConfigurationManager();
-
-        configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
-
-        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-        return new HostApplicationBuilder(new HostApplicationBuilderSettings
-        {
-            Args = options.Args,
-            ApplicationName = options.ApplicationName,
-            EnvironmentName = options.EnvironmentName,
-            ContentRootPath = options.ContentRootPath,
-            Configuration = configuration,
-        });
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
     }
 
     /// <summary>
