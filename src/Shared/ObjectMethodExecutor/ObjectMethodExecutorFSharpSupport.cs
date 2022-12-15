@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Internal;
 /// FSharp.Core.dll, because non-F# applications wouldn't use it. So all the references
 /// to FSharp types have to be constructed dynamically at runtime.
 /// </remarks>
-[RequiresDynamicCode("Dynamically generates calls to FSharpAsync.StartAsTask")]
+[RequiresDynamicCode("Dynamically generates calls to FSharpAsync.")]
 internal static class ObjectMethodExecutorFSharpSupport
 {
     private static readonly object _fsharpValuesCacheLock = new object();
@@ -31,7 +31,7 @@ internal static class ObjectMethodExecutorFSharpSupport
     private static PropertyInfo _fsharpOptionOfTaskCreationOptionsNoneProperty;
     private static PropertyInfo _fsharpOptionOfCancellationTokenNoneProperty;
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Reflecting over the async FSharpAsync<> contract")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Reflecting over the async FSharpAsync<> contract.")]
     public static bool TryBuildCoercerFromFSharpAsyncToAwaitable(
         Type possibleFSharpAsyncType,
         out Expression coerceToAwaitableExpression,

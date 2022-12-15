@@ -7,19 +7,22 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Http;
 
-// TODO (acasey): identify and flag consumers
-[RequiresUnreferencedCode("This API is not trim safe - from ProblemDetailsJsonConverter and JsonSerializer.")]
-[RequiresDynamicCode("This API is not AOT safe - from ProblemDetailsJsonConverter and JsonSerializer.")]
-internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
+internal sealed partial class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
 {
     private static readonly JsonEncodedText Errors = JsonEncodedText.Encode("errors");
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2046:'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3051:'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
     public override HttpValidationProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var problemDetails = new HttpValidationProblemDetails();
         return ReadProblemDetails(ref reader, options, problemDetails);
     }
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     public static HttpValidationProblemDetails ReadProblemDetails(ref Utf8JsonReader reader, JsonSerializerOptions options, HttpValidationProblemDetails problemDetails)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -31,7 +34,8 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
         {
             if (reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
             {
-                var errors = DeserializeErrors(ref reader, options);
+                var context = new ErrorsJsonContext(options);
+                var errors = JsonSerializer.Deserialize(ref reader, context.DictionaryStringStringArray);
                 if (errors is not null)
                 {
                     foreach (var item in errors)
@@ -52,30 +56,34 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
         }
 
         return problemDetails;
-
-        [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "We ensure Dictionary<string, string[]> is preserved.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "We ensure Dictionary<string, string[]> is preserved and the type arguments are reference types.")]
-        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties, typeof(Dictionary<string, string[]>))]
-        static Dictionary<string, string[]>? DeserializeErrors(ref Utf8JsonReader reader, JsonSerializerOptions options)
-            => JsonSerializer.Deserialize<Dictionary<string, string[]>>(ref reader, options);
     }
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2046:'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3051:'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, HttpValidationProblemDetails value, JsonSerializerOptions options)
     {
         WriteProblemDetails(writer, value, options);
     }
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     public static void WriteProblemDetails(Utf8JsonWriter writer, HttpValidationProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
         ProblemDetailsJsonConverter.WriteProblemDetails(writer, value, options);
 
         writer.WritePropertyName(Errors);
-        SerializeErrors(writer, value.Errors, options);
+
+        var context = new ErrorsJsonContext(options);
+        JsonSerializer.Serialize(writer, value.Errors, context.IDictionaryStringStringArray);
 
         writer.WriteEndObject();
-
-        static void SerializeErrors(Utf8JsonWriter writer, IDictionary<string, string[]> errors, JsonSerializerOptions options)
-            => JsonSerializer.Serialize(writer, errors, options);
     }
+
+    [JsonSerializable(typeof(IDictionary<string, string[]>))]
+    [JsonSerializable(typeof(Dictionary<string, string[]>))]
+    private sealed partial class ErrorsJsonContext : JsonSerializerContext
+    { }
 }

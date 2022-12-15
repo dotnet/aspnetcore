@@ -398,7 +398,7 @@ internal sealed class ParameterBindingMethodCache
         throw new InvalidOperationException($"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
     }
 
-    [RequiresDynamicCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
+    [RequiresDynamicCode("MakeGenericMethod is possible used with ValueTypes and isn't compatible with AOT.")]
     private static MethodInfo? GetIBindableFromHttpContextMethod(Type type)
     {
         // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>

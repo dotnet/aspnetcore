@@ -418,8 +418,6 @@ public static class EndpointRouteBuilderExtensions
         return endpoints.GetOrAddRouteEndpointDataSource().AddRouteHandler(pattern, handler, httpMethods, isFallback);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The relevant Map overloads have RequiredUnreferencedCode")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The relevant Map overloads have RequiredDynamicCode")]
     private static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)
     {
         RouteEndpointDataSource? routeEndpointDataSource = null;
