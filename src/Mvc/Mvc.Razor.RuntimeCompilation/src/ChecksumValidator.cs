@@ -1,8 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 
@@ -64,9 +66,9 @@ internal static class ChecksumValidator
             return true;
         }
 
-        var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
-        if (!string.Equals(sourceDocument.GetChecksumAlgorithm(), primaryChecksum.ChecksumAlgorithm) ||
-            !ChecksumsEqual(primaryChecksum.Checksum, sourceDocument.GetChecksum()))
+        var sourceDocumentChecksum = ComputeChecksum(projectItem, primaryChecksum.ChecksumAlgorithm);
+        if (!string.Equals(sourceDocumentChecksum.algorithm, primaryChecksum.ChecksumAlgorithm) ||
+            !ChecksumsEqual(primaryChecksum.Checksum, sourceDocumentChecksum.checksum))
         {
             // Main file exists, but checksums not equal.
             return false;
@@ -88,9 +90,9 @@ internal static class ChecksumValidator
                 return false;
             }
 
-            sourceDocument = RazorSourceDocument.ReadFrom(importItem);
-            if (!string.Equals(sourceDocument.GetChecksumAlgorithm(), checksum.ChecksumAlgorithm) ||
-                !ChecksumsEqual(checksum.Checksum, sourceDocument.GetChecksum()))
+            sourceDocumentChecksum = ComputeChecksum(importItem, checksum.ChecksumAlgorithm);
+            if (!string.Equals(sourceDocumentChecksum.algorithm, checksum.ChecksumAlgorithm) ||
+                !ChecksumsEqual(checksum.Checksum, sourceDocumentChecksum.checksum))
             {
                 // Import file exists, but checksums not equal.
                 return false;
@@ -98,6 +100,36 @@ internal static class ChecksumValidator
         }
 
         return true;
+    }
+
+    private static (byte[] checksum, string algorithm) ComputeChecksum(RazorProjectItem projectItem, string checksumAlgorithm)
+    {
+        if (projectItem == null)
+        {
+            throw new ArgumentNullException(nameof(projectItem));
+        }
+
+        Func<HashAlgorithm> createHashAlgorithm;
+        string algorithmName;
+
+        //only SHA1 and SHA256 are supported.  Default to SHA1
+        switch (checksumAlgorithm)
+        {
+            case nameof(SHA256):
+                createHashAlgorithm = SHA256.Create;
+                algorithmName = nameof(SHA256);
+                break;
+            default:
+                createHashAlgorithm = SHA1.Create;
+                algorithmName = nameof(SHA1);
+                break;
+        }
+
+        using (var stream = projectItem.Read())
+        using (var hashAlgorithm = createHashAlgorithm())
+        {
+            return (hashAlgorithm.ComputeHash(stream), algorithmName);
+        }
     }
 
     private static bool ChecksumsEqual(string checksum, byte[] bytes)
