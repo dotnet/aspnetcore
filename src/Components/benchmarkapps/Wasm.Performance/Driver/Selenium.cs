@@ -17,7 +17,7 @@ internal sealed class Selenium
 
     private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
     {
-        var uri = new UriBuilder("http", "localhost", port).Uri;
+        var uri = new UriBuilder("http", "localhost", port, "/wd/hub/").Uri;
         var httpClient = new HttpClient
         {
             BaseAddress = uri,

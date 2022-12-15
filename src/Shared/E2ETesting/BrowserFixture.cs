@@ -328,7 +328,7 @@ public class BrowserFixture : IAsyncLifetime
             {
                 // Attempt to create a new browser in SauceLabs.
                 var driver = new RemoteWebDriver(
-                    new Uri("http://localhost:4445"),
+                    new Uri("http://localhost:4445/wd/hub"),
                     capabilities,
                     TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
