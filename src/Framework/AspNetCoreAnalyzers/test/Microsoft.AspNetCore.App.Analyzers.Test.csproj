@@ -23,4 +23,18 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <HelixCorrelationPayload Include="$(RepoRoot)NuGet.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Analyzers.TestData">
+      <_Parameter1>MicrosoftNETCoreAppRefVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETCoreAppRefVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Analyzers.TestData">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

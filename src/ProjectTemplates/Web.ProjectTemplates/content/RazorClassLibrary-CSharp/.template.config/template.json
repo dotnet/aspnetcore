@@ -48,11 +48,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net7.0",
-          "description": "Target net7.0"
+          "choice": "net8.0",
+          "description": "Target net8.0"
         }
       ],
-      "defaultValue": "net7.0"
+      "defaultValue": "net8.0"
     },
     "HostIdentifier": {
       "type": "bind",

@@ -307,22 +307,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     MONO = mono;
     IMPORTS = imports;
 
-    // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-    const instantiateWasm = (wasmImports, successCallback) => {
-      (async () => {
-        let compiledInstance: WebAssembly.Instance;
-        try {
-          const dotnetWasmResource = await wasmBeingLoaded;
-          compiledInstance = await compileWasmModule(dotnetWasmResource, wasmImports);
-        } catch (ex) {
-          printErr((ex as Error).toString());
-          throw ex;
-        }
-        successCallback(compiledInstance);
-      })();
-      return []; // No exports
-    };
-
     const onRuntimeInitialized = () => {
       if (!icuDataResource) {
         // Use invariant culture if the app does not carry icu data.
@@ -520,12 +504,20 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
     const dotnetModuleConfig: DotnetModuleConfig = {
       ...moduleConfig,
+      config: {
+        assets: [
+          {
+            behavior: 'dotnetwasm',
+            name: 'dotnet.wasm',
+            pendingDownload: wasmBeingLoaded,
+          },
+        ],
+      } as any,
       disableDotnet6Compatibility: false,
       preRun: [preRun, ...existingPreRun],
       postRun: [postRun, ...existingPostRun],
       print,
       printErr,
-      instantiateWasm,
       onRuntimeInitialized,
     };
 
@@ -649,31 +641,6 @@ async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
     throw new Error('Error loading ICU asset.');
   }
   Module.removeRunDependency(runDependencyId);
-}
-
-async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
-  const wasmResourceResponse = await wasmResource.response;
-
-  // The instantiateStreaming spec explicitly requires the following exact MIME type (with no trailing parameters, etc.)
-  // https://webassembly.github.io/spec/web-api/#dom-webassembly-instantiatestreaming
-  const hasWasmContentType = wasmResourceResponse.headers?.get('content-type') === 'application/wasm';
-
-  if (hasWasmContentType && typeof WebAssembly.instantiateStreaming === 'function') {
-    // We can use streaming compilation. We know this shouldn't fail due to the content-type header being wrong,
-    // as we already just checked that. So if this fails for some other reason we'll treat it as fatal.
-    const streamingResult = await WebAssembly.instantiateStreaming(wasmResourceResponse, imports);
-    return streamingResult.instance;
-  } else {
-    if (!hasWasmContentType) {
-      // In most cases the developer should fix this. It's unusual enough that we don't mind logging a warning each time.
-      console.warn('WebAssembly resource does not have the expected content type "application/wasm", so falling back to slower ArrayBuffer instantiation.');
-    }
-
-    // Fall back on ArrayBuffer instantiation.
-    const arrayBuffer = await wasmResourceResponse.arrayBuffer();
-    const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-    return arrayBufferResult.instance;  
-  }
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
