@@ -46,16 +46,24 @@ internal sealed class RouteUsageCache
                 return null;
             }
 
+            var semanticModel = _compilation.GetSemanticModel(syntaxToken.SyntaxTree);
+
+            if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, cancellationToken, out var options))
+            {
+                return null;
+            }
+
             var wellKnownTypes = WellKnownTypes.GetOrCreate(_compilation);
             var usageContext = RouteUsageDetector.BuildContext(
+                options,
                 token,
-                _compilation.GetSemanticModel(syntaxToken.SyntaxTree),
+                semanticModel,
                 wellKnownTypes,
                 cancellationToken);
 
             var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
             var isMvc = usageContext.UsageType == RouteUsageType.MvcAction || usageContext.UsageType == RouteUsageType.MvcController;
-            var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: isMvc);
+            var tree = RoutePatternParser.TryParse(virtualChars, usageContext.RoutePatternOptions);
             if (tree == null)
             {
                 return null;

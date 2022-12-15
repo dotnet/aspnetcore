@@ -92,17 +92,20 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        var position = context.Position;
-        var (success, stringToken, semanticModel, options) = await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(
-            context.Document, position, context.CancellationToken).ConfigureAwait(false);
-
-        if (!success ||
-            position <= stringToken.SpanStart ||
-            position >= stringToken.Span.End)
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root == null)
         {
             return;
         }
 
+        var stringToken = root.FindToken(context.Position);
+        if (context.Position <= stringToken.SpanStart ||
+            context.Position >= stringToken.Span.End)
+        {
+            return;
+        }
+
+        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
         {
             return;
@@ -118,8 +121,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         var routePatternCompletionContext = new EmbeddedCompletionContext(
             context,
             routeUsage,
-            stringToken,
-            options);
+            stringToken);
         ProvideCompletions(routePatternCompletionContext);
 
         if (routePatternCompletionContext.Items.Count == 0)
@@ -259,7 +261,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         context.AddIfMissing("long", suffix: null, "Matches any 64-bit integer.", WellKnownTags.Keyword, parentOpt);
 
         // The following constraints are only available for HTTP route matching.
-        if (context.Options == RouteOptions.Http)
+        if (context.RouteUsage.UsageContext.UsageType != RouteUsageType.Component)
         {
             context.AddIfMissing("minlength", suffix: null, "Matches a string with a length greater than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
             context.AddIfMissing("maxlength", suffix: null, "Matches a string with a length less than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
@@ -332,7 +334,6 @@ If there are two arguments then the string length must be greater than, or equal
         public readonly CompletionTrigger Trigger;
         public readonly List<RoutePatternItem> Items = new();
         public readonly CompletionListSpanContainer CompletionListSpan = new();
-        public readonly RouteOptions Options;
 
         internal class CompletionListSpanContainer
         {
@@ -342,13 +343,11 @@ If there are two arguments then the string length must be greater than, or equal
         public EmbeddedCompletionContext(
             CompletionContext context,
             RouteUsageModel routeUsage,
-            SyntaxToken stringToken,
-            RouteOptions options)
+            SyntaxToken stringToken)
         {
             _context = context;
             RouteUsage = routeUsage;
             StringToken = stringToken;
-            Options = options;
             Position = _context.Position;
             Trigger = _context.Trigger;
             CancellationToken = _context.CancellationToken;

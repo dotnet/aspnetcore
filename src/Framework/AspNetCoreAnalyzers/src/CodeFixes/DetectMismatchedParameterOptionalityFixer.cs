@@ -37,8 +37,7 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
     private static async Task<Document> FixMismatchedParameterOptionalityAsync(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-
-        if (root == null)
+        if (root is null)
         {
             return document;
         }
