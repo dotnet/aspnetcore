@@ -204,6 +204,66 @@ public class Customer
     }
 
     [Fact]
+    public async Task Route_Parameter_withNameChanged_viaFromRoute_whenNotParsable_Fails()
+    {
+        // Arrange
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{cust}", ({|#0:[FromRoute(Name = "cust")]Customer customer|}) => {});
+
+public class Customer
+{
+}
+""";
+
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable)
+            .WithArguments("customer", "Customer")
+            .WithLocation(0);
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withNameChanged_viaFromRoute_whenParsable_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{cust}", ({|#0:[FromRoute(Name = "cust")]Customer customer|}) => {});
+
+public class Customer : IParsable<Customer>
+{
+    public static Customer Parse(string s, IFormatProvider provider)
+    {
+        if (TryParse(s, provider, out Customer customer))
+        {
+            return customer;
+        }
+        else
+        {
+            throw new ArgumentException(s);
+        }
+    }
+
+    public static bool TryParse(string s, IFormatProvider provider, out Customer result)
+    {
+        result = new Customer();
+        return true;
+    }
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task Route_Parameter_withBindAsyncMethodThatReturnsTask_of_T_Fails()
     {
         // Arrange
