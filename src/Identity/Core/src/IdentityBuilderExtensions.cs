@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,9 +18,12 @@ public static class IdentityBuilderExtensions
     /// </summary>
     /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because generic type and user type are reference types.")]
     public static IdentityBuilder AddDefaultTokenProviders(this IdentityBuilder builder)
     {
         var userType = builder.UserType;
+        Debug.Assert(userType.IsClass);
+
         var dataProtectionProviderType = typeof(DataProtectorTokenProvider<>).MakeGenericType(userType);
         var phoneNumberProviderType = typeof(PhoneNumberTokenProvider<>).MakeGenericType(userType);
         var emailTokenProviderType = typeof(EmailTokenProvider<>).MakeGenericType(userType);
@@ -30,11 +34,15 @@ public static class IdentityBuilderExtensions
             .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, authenticatorProviderType);
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because generic type and user type are reference types.")]
     private static void AddSignInManagerDeps(this IdentityBuilder builder)
     {
+        var userType = builder.UserType;
+        Debug.Assert(userType.IsClass);
+
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(builder.UserType));
-        builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(builder.UserType));
+        builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(userType));
+        builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(userType));
     }
 
     /// <summary>
@@ -42,10 +50,14 @@ public static class IdentityBuilderExtensions
     /// </summary>
     /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because generic type and user type are reference types.")]
     public static IdentityBuilder AddSignInManager(this IdentityBuilder builder)
     {
+        var userType = builder.UserType;
+        Debug.Assert(userType.IsClass);
+
         builder.AddSignInManagerDeps();
-        var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
+        var managerType = typeof(SignInManager<>).MakeGenericType(userType);
         builder.Services.AddScoped(managerType);
         return builder;
     }
@@ -56,10 +68,14 @@ public static class IdentityBuilderExtensions
     /// <typeparam name="TSignInManager">The type of the sign in manager to add.</typeparam>
     /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because generic type and user type are reference types.")]
     public static IdentityBuilder AddSignInManager<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSignInManager>(this IdentityBuilder builder) where TSignInManager : class
     {
+        var userType = builder.UserType;
+        Debug.Assert(userType.IsClass);
+
         builder.AddSignInManagerDeps();
-        var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
+        var managerType = typeof(SignInManager<>).MakeGenericType(userType);
         var customType = typeof(TSignInManager);
         if (!managerType.IsAssignableFrom(customType))
         {

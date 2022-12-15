@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -76,14 +75,14 @@ public sealed class WebApplicationBuilder
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
     }
 
-    // TODO (acasey): check this
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "All the keys and values passed to HostApplicationBuilder are strings")]
     private static HostApplicationBuilder MakeHostApplicationBuilder(WebApplicationOptions options)
     {
         var configuration = new ConfigurationManager();
 
         configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
 
+        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         return new HostApplicationBuilder(new HostApplicationBuilderSettings
         {
             Args = options.Args,
@@ -92,6 +91,7 @@ public sealed class WebApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
     }
 
     /// <summary>

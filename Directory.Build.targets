@@ -10,7 +10,7 @@
             '$(IsAnalyzersProject)' != 'true' and
             '$(IsProjectTemplateProject)' != 'true'">true</ExcludeFromSourceBuild>
 
-    <EnableAOTAnalyzer>$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</EnableAOTAnalyzer>
+    <EnableAOTAnalyzer Condition=" '$(EnableAOTAnalyzer)' == '' ">$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</EnableAOTAnalyzer>
 
     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
      suppress all targets for TestProjects using ExcludeFromBuild. -->

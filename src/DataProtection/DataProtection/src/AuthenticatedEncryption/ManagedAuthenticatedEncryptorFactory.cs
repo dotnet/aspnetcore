@@ -112,10 +112,9 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
         /// <summary>
         /// Creates a factory that wraps a call to <see cref="Activator.CreateInstance{T}"/>.
         /// </summary>
-        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "implementation is known to be a reference type")] // TODO (acasey): confirm this is sufficient
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe to use because implementation is either a KeyedHashAlgorithm or SymmetricAlgorithm type.")]
         public static Func<T> CreateFactory<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type implementation) where T : class
         {
-            typeof(T).AssertIsAssignableFrom(implementation);
             return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))!).Creator;
         }
 
