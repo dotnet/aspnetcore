@@ -173,7 +173,7 @@ internal sealed class HtmlRenderer : Renderer
 
         var interactiveMarker = (InteractiveComponentMarker?)null;
 
-        if (frame.ComponentRenderMode != ComponentRenderMode.Unspecified.NumericValue)
+        if (frame.ComponentRenderMode != ComponentRenderMode.Unspecified)
         {
             interactiveMarker = context.SerializeInvocation(frames, position, frame.ComponentRenderMode);
             interactiveMarker.Value.AppendPreamble(context.HtmlContentBuilder);
@@ -394,7 +394,7 @@ internal sealed class HtmlRenderer : Renderer
 
         public string ClosestSelectValueAsString { get; set; }
 
-        public InteractiveComponentMarker SerializeInvocation(ArrayRange<RenderTreeFrame> frames, int position, byte renderModeNumericValue)
+        public InteractiveComponentMarker SerializeInvocation(ArrayRange<RenderTreeFrame> frames, int position, ComponentRenderMode renderMode)
         {
             ref var componentFrame = ref frames.Array[position];
             var parameters = ParameterView.DangerouslyCaptureUnboundComponentParameters(frames, position);
@@ -402,8 +402,8 @@ internal sealed class HtmlRenderer : Renderer
             ServerComponentMarker? serverMarker = null;
             WebAssemblyComponentMarker? webAssemblyMarker = null;
 
-            if (renderModeNumericValue == WebComponentRenderMode.Server.NumericValue
-                || renderModeNumericValue == WebComponentRenderMode.Auto.NumericValue)
+            if (renderMode == WebComponentRenderMode.Server
+                || renderMode == WebComponentRenderMode.Auto)
             {
                 if (_serverComponentSerializer is null)
                 {
@@ -415,15 +415,15 @@ internal sealed class HtmlRenderer : Renderer
                 serverMarker = _serverComponentSerializer.SerializeInvocation(_serverComponentSequence, componentFrame.ComponentType, parameters, prerendered: true, PrepareRenderFragment);
             }
 
-            if (renderModeNumericValue == WebComponentRenderMode.WebAssembly.NumericValue
-                || renderModeNumericValue == WebComponentRenderMode.Auto.NumericValue)
+            if (renderMode == WebComponentRenderMode.WebAssembly
+                || renderMode == WebComponentRenderMode.Auto)
             {
                 webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(componentFrame.ComponentType, parameters, prerendered: true, PrepareRenderFragment);
             }
 
             if (!serverMarker.HasValue && !webAssemblyMarker.HasValue)
             {
-                throw new InvalidOperationException($"Component '{componentFrame.ComponentType.Name}' has unsupported render mode {renderModeNumericValue}");
+                throw new InvalidOperationException($"Component '{componentFrame.ComponentType.Name}' has unsupported render mode {renderMode}");
             }
 
             return new InteractiveComponentMarker(serverMarker, webAssemblyMarker);

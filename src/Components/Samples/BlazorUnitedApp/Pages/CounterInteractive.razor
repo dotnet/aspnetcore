@@ -1,7 +1,19 @@
 ﻿@page "/counter-interactive"
+@attribute [ComponentRenderMode(WebComponentRenderMode.Auto)]
 
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
 
-<CounterUI InitialCount="100" rendermode="@WebComponentRenderMode.Auto" />
+<p>Current count: @currentCount</p>
+
+<button @onclick="@IncrementCount" class="btn btn-primary">Increment</button>
+
+@code {
+    int currentCount;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+}

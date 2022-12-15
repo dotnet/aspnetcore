@@ -136,7 +136,7 @@ public struct RenderTreeFrame
     // RenderTreeFrameType.Component
     // --------------------------------------------------------------------------------
 
-    [FieldOffset(6)] internal byte ComponentRenderModeField;
+    [FieldOffset(6)] internal ComponentRenderMode ComponentRenderModeField;
     [FieldOffset(8)] internal int ComponentSubtreeLengthField;
     [FieldOffset(12)] internal int ComponentIdField;
     [FieldOffset(16)]
@@ -147,9 +147,9 @@ public struct RenderTreeFrame
 
     /// <summary>
     /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
-    /// gets the component render mode's numeric value.
+    /// gets the component render mode.
     /// </summary>
-    public byte ComponentRenderMode => ComponentRenderModeField;
+    public ComponentRenderMode ComponentRenderMode => ComponentRenderModeField;
 
     /// <summary>
     /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
@@ -269,7 +269,7 @@ public struct RenderTreeFrame
     }
 
     // Component constructor
-    private RenderTreeFrame(int sequence, int componentSubtreeLength, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, ComponentState componentState, object componentKey, byte componentRenderMode)
+    private RenderTreeFrame(int sequence, int componentSubtreeLength, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, ComponentState componentState, object componentKey, ComponentRenderMode componentRenderMode)
         : this()
     {
         SequenceField = sequence;
@@ -384,7 +384,7 @@ public struct RenderTreeFrame
         => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, componentState, ComponentKeyField, ComponentRenderModeField);
 
     internal RenderTreeFrame WithRenderMode(ComponentRenderMode componentRenderMode)
-        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, ComponentStateField, ComponentKeyField, componentRenderMode.NumericValue);
+        => new RenderTreeFrame(SequenceField, componentSubtreeLength: ComponentSubtreeLengthField, ComponentTypeField, ComponentStateField, ComponentKeyField, componentRenderMode);
 
     internal RenderTreeFrame WithAttributeEventHandlerId(ulong eventHandlerId)
         => new RenderTreeFrame(SequenceField, attributeName: AttributeNameField, AttributeValueField, eventHandlerId, AttributeEventUpdatesAttributeNameField);

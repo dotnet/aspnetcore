@@ -1,4 +1,7 @@
 #nullable enable
+const Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Auto = (Microsoft.AspNetCore.Components.ComponentRenderMode)34 -> Microsoft.AspNetCore.Components.ComponentRenderMode
+const Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Server = (Microsoft.AspNetCore.Components.ComponentRenderMode)32 -> Microsoft.AspNetCore.Components.ComponentRenderMode
+const Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.WebAssembly = (Microsoft.AspNetCore.Components.ComponentRenderMode)33 -> Microsoft.AspNetCore.Components.ComponentRenderMode
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.set -> void
 Microsoft.AspNetCore.Components.Routing.NavigationLock
@@ -14,6 +17,3 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
 Microsoft.AspNetCore.Components.Web.WebComponentRenderMode
-static readonly Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Auto -> Microsoft.AspNetCore.Components.Web.WebComponentRenderMode!
-static readonly Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Server -> Microsoft.AspNetCore.Components.Web.WebComponentRenderMode!
-static readonly Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.WebAssembly -> Microsoft.AspNetCore.Components.Web.WebComponentRenderMode!

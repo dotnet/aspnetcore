@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
@@ -87,8 +89,24 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
             SequenceField = sequence,
             FrameTypeField = RenderTreeFrameType.Component,
             ComponentTypeField = componentType,
+
+            // WARNING: We should NOT do this here in any real implementation. This is very inefficient
+            // considering what a hot code path we're on. Instead, the default mode should be resolved
+            // at compile time by the Razor compiler and be passed as an extra parameter to some new
+            // overload of builder.OpenComponent.
+            ComponentRenderModeField = GetCachedDefaultRenderMode(componentType),
         };
     }
+
+    // WARNING: As explained above, this code should NOT exist in any real implementation.
+    private static readonly ConcurrentDictionary<Type, ComponentRenderMode> _cachedDefaultRenderModes = new();
+    private static ComponentRenderMode GetCachedDefaultRenderMode(Type componentType)
+        => _cachedDefaultRenderModes.GetOrAdd(componentType,
+            type => type.GetCustomAttribute<ComponentRenderModeAttribute>() switch
+            {
+                ComponentRenderModeAttribute attribute => attribute.Mode,
+                _ => ComponentRenderMode.Unspecified,
+            });
 
     public void AppendElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
     {
