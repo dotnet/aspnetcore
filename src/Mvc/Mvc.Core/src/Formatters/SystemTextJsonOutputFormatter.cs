@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -20,6 +22,8 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     public SystemTextJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
     {
         SerializerOptions = jsonSerializerOptions;
+
+        jsonSerializerOptions.MakeReadOnly();
 
         SupportedEncodings.Add(Encoding.UTF8);
         SupportedEncodings.Add(Encoding.Unicode);
@@ -68,29 +72,27 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
 
         var httpContext = context.HttpContext;
 
-        // Maybe we could use the jsontypeinfo overload but we need the untyped,
-        // waiting for https://github.com/dotnet/runtime/issues/77051
-
-        var declaredType = context.ObjectType;
         var runtimeType = context.Object?.GetType();
-        var objectType = runtimeType ?? declaredType ?? typeof(object);
+        JsonTypeInfo? jsonTypeInfo = null;
 
-        if (declaredType is not null &&
-            runtimeType != declaredType &&
-            SerializerOptions.TypeInfoResolver != null &&
-            SerializerOptions.GetTypeInfo(declaredType).PolymorphismOptions is not null)
+        if (context.ObjectType is not null)
         {
-            // Using declared type in this case. The polymorphism is not
-            // relevant for us and will be handled by STJ, if needed.
-            objectType = declaredType;
+            var declaredTypeJsonInfo = SerializerOptions.GetTypeInfo(context.ObjectType);
+
+            if (declaredTypeJsonInfo.IsPolymorphicSafe() || context.Object is null || runtimeType == declaredTypeJsonInfo.Type)
+            {
+                jsonTypeInfo = declaredTypeJsonInfo;
+            }
         }
+
+        jsonTypeInfo ??= SerializerOptions.GetTypeInfo(runtimeType ?? typeof(object));
 
         var responseStream = httpContext.Response.Body;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions, httpContext.RequestAborted);
+                await JsonSerializer.SerializeAsync(responseStream, context.Object, jsonTypeInfo, httpContext.RequestAborted);
                 await responseStream.FlushAsync(httpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
@@ -104,7 +106,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             ExceptionDispatchInfo? exceptionDispatchInfo = null;
             try
             {
-                await JsonSerializer.SerializeAsync(transcodingStream, context.Object, objectType, SerializerOptions);
+                await JsonSerializer.SerializeAsync(transcodingStream, context.Object, jsonTypeInfo);
                 await transcodingStream.FlushAsync();
             }
             catch (Exception ex)
@@ -129,3 +131,26 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         }
     }
 }
+
+internal static class JsonSerializerExtensions
+{
+    public static bool IsPolymorphicSafe(this JsonTypeInfo jsonTypeInfo)
+     => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
+
+    public static bool TryGetTypeInfo(this JsonSerializerOptions options, Type type, [NotNullWhen(true)] out JsonTypeInfo? jsonTypeInfo)
+    {
+        // This shouldn't happen when in AOT and will be controlled
+        // by a future feature switch.
+        if (options.TypeInfoResolver == null)
+        {
+            jsonTypeInfo = null;
+            return false;
+        }
+
+        options.MakeReadOnly();
+
+        jsonTypeInfo = options.GetTypeInfo(type);
+        return true;
+    }
+}
+

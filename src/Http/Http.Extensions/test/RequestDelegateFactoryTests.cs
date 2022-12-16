@@ -3122,7 +3122,34 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate, new() { ServiceProvider = httpContext.RequestServices });
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptionsAndConfiguredJsonOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions { ServiceProvider = httpContext.RequestServices });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -3150,7 +3177,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate, new() { ServiceProvider = httpContext.RequestServices });
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -3188,7 +3215,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate, new() { ServiceProvider = httpContext.RequestServices });
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);

@@ -199,41 +199,13 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
     }
 
     [Fact]
-    public async Task WriteResponseBodyAsync_UsesRuntimeType_WhenTypeResolverIsNull()
+    public async Task WriteResponseBodyAsync_Throws_WhenTypeResolverIsNull()
     {
         // Arrange
         var jsonOptions = new JsonOptions();
         jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
 
-        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
-        var expectedContent = "{\"age\":99,\"name\":\"Person\",\"child\":null,\"parent\":null}";
-        JsonPerson todo = new JsonPersonExtended()
-        {
-            Name = "Person",
-            Age = 99,
-        };
-
-        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
-
-        var body = new MemoryStream();
-        var actionContext = GetActionContext(mediaType, body);
-
-        var outputFormatterContext = new OutputFormatterWriteContext(
-            actionContext.HttpContext,
-            new TestHttpResponseStreamWriterFactory().CreateWriter,
-            typeof(JsonPerson),
-            todo)
-        {
-            ContentType = new StringSegment(mediaType.ToString()),
-        };
-
-        // Act
-        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
-
-        // Assert
-        var actualContent = encoding.GetString(body.ToArray());
-        Assert.Equal(expectedContent, actualContent);
+        Assert.Throws<InvalidOperationException>(() => SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
     }
 
     private class Person
