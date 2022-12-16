@@ -112,9 +112,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     }
 
     [UnconditionalSuppressMessage("Trimmer", "IL2026",
-        Justification = "We surface a RequireUnreferencedCode in the call to the Map method adding this EndpointDataSource. The trimmer is unable to infer this.")]
+        Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
+        "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
     [UnconditionalSuppressMessage("AOT", "IL3050",
-        Justification = "We surface a RequiresDynamicCode in the call to the Map method adding this EndpointDataSource. The trimmer is unable to infer this.")]
+        Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
+        "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
     private RouteEndpointBuilder CreateRouteEndpointBuilder(
         RouteEntry entry, RoutePattern? groupPrefix = null, IReadOnlyList<Action<EndpointBuilder>>? groupConventions = null, IReadOnlyList<Action<EndpointBuilder>>? groupFinallyConventions = null)
     {
