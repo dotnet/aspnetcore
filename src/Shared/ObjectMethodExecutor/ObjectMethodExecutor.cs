@@ -10,8 +10,8 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.Internal;
 
-[RequiresUnreferencedCode("This method performs reflection on arbitrary types.")]
-[RequiresDynamicCode("This method performs reflection on arbitrary types.")]
+[RequiresUnreferencedCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+[RequiresDynamicCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
 internal sealed class ObjectMethodExecutor
 {
     private readonly object?[]? _parameterDefaultValues;
