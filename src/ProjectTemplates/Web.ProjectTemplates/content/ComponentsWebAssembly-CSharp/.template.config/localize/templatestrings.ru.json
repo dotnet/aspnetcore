@@ -3,7 +3,7 @@
   "name": "Приложение WebAssembly Blazor",
   "description": "Шаблон проекта для создания приложения Blazor, которое запускается в WebAssembly и может размещаться в приложении ASP.NET Core. Этот шаблон можно использовать для веб-приложений с расширенными динамическими пользовательскими интерфейсами (UI).",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net8.0/description": "Целевая версия net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/Hosted/displayName": "_Размещение на ASP.NET Core",
   "symbols/Hosted/description": "Если указывается, включает узел ASP.NET Core для приложения Blazor WebAssembly.",

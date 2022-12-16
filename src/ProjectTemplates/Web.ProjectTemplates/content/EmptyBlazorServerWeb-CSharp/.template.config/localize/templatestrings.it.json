@@ -10,7 +10,7 @@
   "symbols/HasHttpProfile/description": "Avere sempre un profilo HTTP.",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"

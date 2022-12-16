@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly 应用",
   "description": "用于创建 Blazor 应用的项目模板，该应用在 WebAssembly 上运行且可选择由 ASP.NET Core 应用托管。此模板可用于具有丰富动态用户界面(UI)的 Web 应用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net8.0/description": "目标 net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/Hosted/displayName": "ASP.NET Core 托管(_H)",
   "symbols/Hosted/description": "如果指定，则包括 Blazor WebAssembly 应用的 ASP.NET Core 主机。",

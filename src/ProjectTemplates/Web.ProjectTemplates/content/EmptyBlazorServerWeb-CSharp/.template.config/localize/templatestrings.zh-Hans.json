@@ -10,7 +10,7 @@
   "symbols/HasHttpProfile/description": "始终具有 HTTP 配置文件。",
   "symbols/NoHttps/description": "是否禁用 HTTPS。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net8.0/description": "目标 net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""

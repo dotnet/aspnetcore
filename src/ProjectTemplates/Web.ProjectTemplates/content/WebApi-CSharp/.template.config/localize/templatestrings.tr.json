@@ -25,7 +25,7 @@
   "symbols/UseLocalDB/description": "SQLite yerine LocalDB'nin kullanılıp kullanılmayacağı. Bu seçenek yalnızca --auth Individual veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/UseMinimalAPIs/description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağı.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/CalledApiUrl/description": "Web uygulamasından çağrılan API URL'si. Bu seçenek yalnızca --auth SingleOrg veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/CallsMicrosoftGraph/description": "Web uygulamasının Microsoft Graph çağırıp çağırmadığını belirtir. Bu seçenek yalnızca --auth SingleOrg belirtilirse geçerlidir.",

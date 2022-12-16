@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly 應用程式",
   "description": "此專案範本可用於建立在 WebAssembly 上執行的 Blazor 應用程式，並可選擇是否要裝載在 ASP.NET Core 應用程式上。此範本可供搭載豐富動態使用者介面 (UI) 的 Web 應用程式使用。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net8.0/description": "目標 net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/Hosted/displayName": "ASP.NET Core 託管(_H)",
   "symbols/Hosted/description": "若指定，會包含 Blazor WebAssembly 應用程式的 ASP.NET Core 主機。",

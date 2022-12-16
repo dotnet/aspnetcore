@@ -3,7 +3,7 @@
   "name": "Usługa gRPC platformy ASP.NET Core",
   "description": "Szablon projektu służący do tworzenia usługi gRPC platformy ASP.NET Core.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net8.0/description": "Docelowe środowisko net8.0",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/kestrelHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP w pliku launchSettings.json.",
