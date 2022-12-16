@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -34,41 +34,37 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(context =>
         {
             var compilation = context.Compilation;
-            if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
-            {
-                Debug.Fail("One or more types could not be found. This usually means you are bad at spelling C# type names.");
-                return;
-            }
+            var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
 
-            INamedTypeSymbol[] configureTypes = { wellKnownTypes.WebHostBuilderExtensions };
-            INamedTypeSymbol[] configureWebHostTypes = { wellKnownTypes.GenericHostWebHostBuilderExtensions };
+            INamedTypeSymbol[] configureTypes = { wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Hosting_WebHostBuilderExtensions) };
+            INamedTypeSymbol[] configureWebHostTypes = { wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Hosting_GenericHostWebHostBuilderExtensions) };
             INamedTypeSymbol[] userStartupTypes =
             {
-                wellKnownTypes.HostingAbstractionsWebHostBuilderExtensions,
-                wellKnownTypes.WebHostBuilderExtensions,
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Hosting_HostingAbstractionsWebHostBuilderExtensions),
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Hosting_WebHostBuilderExtensions),
             };
             INamedTypeSymbol[] configureLoggingTypes =
             {
-                wellKnownTypes.HostingHostBuilderExtensions,
-                wellKnownTypes.WebHostBuilderExtensions
+                wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Hosting_HostingHostBuilderExtensions),
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Hosting_WebHostBuilderExtensions)
             };
             INamedTypeSymbol[] configureServicesTypes =
             {
-                wellKnownTypes.HostingHostBuilderExtensions,
-                wellKnownTypes.ConfigureWebHostBuilder
+                wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Hosting_HostingHostBuilderExtensions),
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder)
             };
             INamedTypeSymbol[] configureAppTypes =
             {
-                wellKnownTypes.ConfigureHostBuilder,
-                wellKnownTypes.ConfigureWebHostBuilder,
-                wellKnownTypes.WebHostBuilderExtensions,
-                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder),
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder),
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Hosting_WebHostBuilderExtensions),
+                wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Hosting_HostingHostBuilderExtensions),
             };
-            INamedTypeSymbol[] configureHostTypes = { wellKnownTypes.ConfigureHostBuilder };
+            INamedTypeSymbol[] configureHostTypes = { wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder) };
             INamedTypeSymbol[] useEndpointTypes =
             {
-                wellKnownTypes.EndpointRoutingApplicationBuilderExtensions,
-                wellKnownTypes.WebApplicationBuilder
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_EndpointRoutingApplicationBuilderExtensions),
+                wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_WebApplication)
             };
 
             context.RegisterOperationAction(context =>
@@ -82,7 +78,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder),
                         "ConfigureWebHost",
                         configureWebHostTypes))
                 {
@@ -98,7 +94,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureWebHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder),
                         "Configure",
                         configureTypes))
                 {
@@ -114,7 +110,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureWebHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder),
                         "UseStartup",
                         userStartupTypes))
                 {
@@ -130,7 +126,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder),
                         "ConfigureLogging",
                         configureLoggingTypes))
                 {
@@ -146,7 +142,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureWebHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder),
                         "ConfigureLogging",
                         configureLoggingTypes))
                 {
@@ -155,14 +151,14 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseHostConfigureLogging,
                             invocation));
                 }
-                
+
                 // var builder = WebApplication.CreateBuilder(args);
                 // builder.Host.ConfigureServices(x => {});
                 if (IsDisallowedMethod(
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder),
                         "ConfigureServices",
                         configureServicesTypes))
                 {
@@ -178,7 +174,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureWebHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder),
                         "ConfigureServices",
                         configureServicesTypes))
                 {
@@ -187,14 +183,14 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseHostConfigureServices,
                             invocation));
                 }
-                
+
                 // var builder = WebApplication.CreateBuilder();
                 // builder.WebHost.ConfigureAppConfiguration(builder => {});
                 if (IsDisallowedMethod(
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureWebHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureWebHostBuilder),
                         "ConfigureAppConfiguration",
                         configureAppTypes))
                 {
@@ -210,7 +206,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder),
                         "ConfigureAppConfiguration",
                         configureAppTypes))
                 {
@@ -226,7 +222,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.ConfigureHostBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_ConfigureHostBuilder),
                         "ConfigureHostConfiguration",
                         configureHostTypes))
                 {
@@ -244,7 +240,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         context,
                         invocation,
                         targetMethod,
-                        wellKnownTypes.WebApplicationBuilder,
+                        wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_WebApplication),
                         "UseEndpoints",
                         useEndpointTypes))
                 {
@@ -337,7 +333,7 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
             string disallowedMethodName,
             INamedTypeSymbol[] disallowedMethodTypes)
         {
-            if (!string.Equals(methodSymbol?.Name, disallowedMethodName, StringComparison.Ordinal))
+            if (!string.Equals(methodSymbol.Name, disallowedMethodName, StringComparison.Ordinal))
             {
                 return false;
             }

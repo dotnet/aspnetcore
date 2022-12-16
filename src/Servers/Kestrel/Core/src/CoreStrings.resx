@@ -719,4 +719,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="ConnectResponseCanNotHaveBody" xml:space="preserve">
     <value>Responses to 'CONNECT' requests with the success status code '{StatusCode}' cannot have a response body. Use the 'IHttpExtendedConnectFeature' to accept and write to the 'CONNECT' stream.</value>
   </data>
+  <data name="FailedToBindToIPv6Any" xml:space="preserve">
+    <value>Failed to bind to http://[::]:{port} (IPv6Any).</value>
+  </data>
 </root>

@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 internal static class RouteStringSyntaxDetector
 {
     private static readonly EmbeddedLanguageCommentDetector _commentDetector = new(ImmutableArray.Create("Route"));
-    
+
     public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken, out RouteOptions options)
     {
         options = default;
-        
+
         if (!IsAnyStringLiteral(token.RawKind))
         {
             return false;
@@ -57,11 +57,11 @@ internal static class RouteStringSyntaxDetector
         SyntaxToken token,
         SemanticModel semanticModel,
         CancellationToken cancellationToken,
-        [NotNullWhen(true)] out string identifier,
-        [NotNullWhen(true)] out IEnumerable<string>? options)
+        [NotNullWhen(true)] out string? identifier,
+        out IEnumerable<string>? options)
     {
         options = null;
-        
+
         if (token.Parent is not LiteralExpressionSyntax)
         {
             identifier = null;
@@ -351,15 +351,15 @@ internal static class RouteStringSyntaxDetector
         return true;
     }
 
-    private static ISymbol FindFieldOrPropertyForAttributeArgument(SemanticModel semanticModel, SyntaxNode argument, CancellationToken cancellationToken)
+    private static ISymbol? FindFieldOrPropertyForAttributeArgument(SemanticModel semanticModel, SyntaxNode argument, CancellationToken cancellationToken)
         => argument is AttributeArgumentSyntax { NameEquals.Name: var name }
             ? semanticModel.GetSymbolInfo(name, cancellationToken).GetAnySymbol()
             : null;
 
-    private static IParameterSymbol FindParameterForArgument(SemanticModel semanticModel, SyntaxNode argument, bool allowUncertainCandidates, CancellationToken cancellationToken)
+    private static IParameterSymbol? FindParameterForArgument(SemanticModel semanticModel, SyntaxNode argument, bool allowUncertainCandidates, CancellationToken cancellationToken)
         => ((ArgumentSyntax)argument).DetermineParameter(semanticModel, allowUncertainCandidates, allowParams: false, cancellationToken);
 
-    private static IParameterSymbol FindParameterForAttributeArgument(SemanticModel semanticModel, SyntaxNode argument, bool allowUncertainCandidates, CancellationToken cancellationToken)
+    private static IParameterSymbol? FindParameterForAttributeArgument(SemanticModel semanticModel, SyntaxNode argument, bool allowUncertainCandidates, CancellationToken cancellationToken)
         => ((AttributeArgumentSyntax)argument).DetermineParameter(semanticModel, allowUncertainCandidates, allowParams: false, cancellationToken);
 
     /// <summary>

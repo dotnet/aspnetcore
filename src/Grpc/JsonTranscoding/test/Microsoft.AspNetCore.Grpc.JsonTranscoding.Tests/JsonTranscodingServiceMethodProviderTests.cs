@@ -247,9 +247,9 @@ public class JsonTranscodingServiceMethodProviderTests
         {
             configureLogging?.Invoke(log);
         });
-        serviceCollection.AddGrpc();
+        var builder = serviceCollection.AddGrpc();
         serviceCollection.RemoveAll(typeof(IServiceMethodProvider<>));
-        serviceCollection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.AddJsonTranscoding();
 
         IEndpointRouteBuilder endpointRouteBuilder = new TestEndpointRouteBuilder(serviceCollection.BuildServiceProvider());
 

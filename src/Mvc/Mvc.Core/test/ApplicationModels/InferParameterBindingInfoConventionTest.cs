@@ -544,6 +544,21 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
+    public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfSimpleTypes()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.IEnumerableOfSimpleTypes);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        var convention = GetConvention();
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.Same(BindingSource.Body, result);
+    }
+
+    [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForCollectionOfComplexTypes()
     {
         // Arrange
@@ -559,10 +574,43 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
+    public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfComplexTypes()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.IEnumerableOfComplexTypes);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        var convention = GetConvention();
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.Same(BindingSource.Body, result);
+    }
+
+    [Fact]
     public void InferBindingSourceForParameter_ReturnsServicesForComplexTypesRegisteredInDI()
     {
         // Arrange
         var actionName = nameof(ParameterBindingController.ServiceParameter);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        // Using any built-in type defined in the Test action
+        var serviceProvider = Mock.Of<IServiceProviderIsService>(s => s.IsService(typeof(IApplicationModelProvider)) == true);
+        var convention = GetConvention(serviceProviderIsService: serviceProvider);
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.True(convention.IsInferForServiceParametersEnabled);
+        Assert.Same(BindingSource.Services, result);
+    }
+
+    [Fact]
+    public void InferBindingSourceForParameter_ReturnsServicesForIEnumerableOfComplexTypesRegisteredInDI()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.IEnumerableServiceParameter);
         var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
         // Using any built-in type defined in the Test action
         var serviceProvider = Mock.Of<IServiceProviderIsService>(s => s.IsService(typeof(IApplicationModelProvider)) == true);
@@ -982,9 +1030,15 @@ Environment.NewLine + "int b";
 
         public IActionResult CollectionOfSimpleTypes(IList<int> parameter) => null;
 
+        public IActionResult IEnumerableOfSimpleTypes(IEnumerable<int> parameter) => null;
+
         public IActionResult CollectionOfComplexTypes(IList<TestModel> parameter) => null;
 
+        public IActionResult IEnumerableOfComplexTypes(IEnumerable<TestModel> parameter) => null;
+
         public IActionResult ServiceParameter(IApplicationModelProvider parameter) => null;
+
+        public IActionResult IEnumerableServiceParameter(IEnumerable<IApplicationModelProvider> parameter) => null;
     }
 
     [ApiController]

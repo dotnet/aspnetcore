@@ -4,8 +4,10 @@
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -27,6 +29,8 @@ public static class GrpcJsonTranscodingServiceExtensions
         }
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
+        builder.Services.TryAddSingleton<DescriptorRegistry>();
 
         return builder;
     }
@@ -45,6 +49,27 @@ public static class GrpcJsonTranscodingServiceExtensions
         }
 
         builder.Services.Configure(configureOptions);
+
         return builder.AddJsonTranscoding();
+    }
+
+    private sealed class GrpcJsonTranscodingOptionsSetup : IConfigureOptions<GrpcJsonTranscodingOptions>
+    {
+        private readonly DescriptorRegistry _descriptorRegistry;
+
+        public GrpcJsonTranscodingOptionsSetup(DescriptorRegistry descriptorRegistry)
+        {
+            _descriptorRegistry = descriptorRegistry;
+        }
+
+        public void Configure(GrpcJsonTranscodingOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            options.DescriptorRegistry = _descriptorRegistry;
+        }
     }
 }

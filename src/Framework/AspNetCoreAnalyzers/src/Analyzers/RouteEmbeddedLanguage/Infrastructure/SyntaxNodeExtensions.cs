@@ -109,7 +109,7 @@ internal static class SyntaxNodeExtensions
         bool includeDirectives = false,
         bool includeDocumentationComments = false)
     {
-        return (position < root.FullSpan.End || !(root is ICompilationUnitSyntax))
+        return position < root.FullSpan.End || !(root is ICompilationUnitSyntax)
             ? root.FindToken(position, includeSkipped || includeDirectives || includeDocumentationComments)
             : root.GetLastToken(includeZeroWidth: true, includeSkipped: true, includeDirectives: true, includeDocumentationComments: true)
                   .GetPreviousToken(includeZeroWidth: false, includeSkipped: includeSkipped, includeDirectives: includeDirectives, includeDocumentationComments: includeDocumentationComments);

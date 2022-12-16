@@ -47,10 +47,10 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         foreach ($projPath in $proj) {
             $projContent = Get-Content -Path $projPath -Raw
             if ($isBlazorWasmHosted) {
-                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net7.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net8.0/TestTemplates"
             }
             else {
-                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net7.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net8.0/TestTemplates"
             }
             $projContent = $projContent -replace ('(?:<Project Sdk="Microsoft.NET.(?<SdkSuffix>Sdk\.\w+)">)', ('<Project Sdk="Microsoft.NET.${SdkSuffix}">
                 <Import Project="' + $importPath + '/Directory.Build.props" />
@@ -68,7 +68,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
             dotnet.exe ef migrations add Initial
         }
         dotnet.exe publish --configuration Release
-        Set-Location .\bin\Release\net7.0\publish
+        Set-Location .\bin\Release\net8.0\publish
         if ($isBlazorWasm -eq $false) {
             Invoke-Expression "./$templateName.exe"
         }
