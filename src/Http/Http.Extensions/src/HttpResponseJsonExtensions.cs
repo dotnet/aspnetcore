@@ -18,6 +18,8 @@ public static partial class HttpResponseJsonExtensions
 {
     private const string RequiresUnreferencedCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed. " +
         "Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.";
+    private const string RequiresDynamicCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. " +
+        "Use the overload that takes a JsonTypeInfo or JsonSerializerContext for native AOT applications.";
 
     /// <summary>
     /// Write the specified value as JSON to the response body. The response content-type will be set to
@@ -29,7 +31,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync<TValue>(
         this HttpResponse response,
         TValue value,
@@ -49,7 +51,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync<TValue>(
         this HttpResponse response,
         TValue value,
@@ -71,7 +73,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync<TValue>(
         this HttpResponse response,
         TValue value,
@@ -143,7 +145,7 @@ public static partial class HttpResponseJsonExtensions
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow<TValue>(
         Stream body,
         TValue value,
@@ -167,7 +169,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync(
         this HttpResponse response,
         object? value,
@@ -188,7 +190,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync(
         this HttpResponse response,
         object? value,
@@ -211,7 +213,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync(
         this HttpResponse response,
         object? value,
@@ -243,7 +245,7 @@ public static partial class HttpResponseJsonExtensions
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow(
         Stream body,
         object? value,
