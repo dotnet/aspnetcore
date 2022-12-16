@@ -272,7 +272,6 @@ public class Http3TlsTests : LoggedTest
             });
 
             using var host = builder.Build();
-            using var client = HttpHelpers.CreateClient();
 
             var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
                 host.StartAsync().DefaultTimeout());
