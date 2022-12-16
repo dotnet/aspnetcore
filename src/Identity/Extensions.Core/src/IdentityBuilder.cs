@@ -22,9 +22,9 @@ public class IdentityBuilder
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
     public IdentityBuilder(Type user, IServiceCollection services)
     {
-        if (!user.IsClass)
+        if (user.IsValueType)
         {
-            throw new ArgumentException("User type must be a class.", nameof(user));
+            throw new ArgumentException("User type can't be a value type.", nameof(user));
         }
 
         UserType = user;
@@ -39,9 +39,9 @@ public class IdentityBuilder
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
     public IdentityBuilder(Type user, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type role, IServiceCollection services) : this(user, services)
     {
-        if (!role.IsClass)
+        if (role.IsValueType)
         {
-            throw new ArgumentException("Role type must be a class.", nameof(role));
+            throw new ArgumentException("Role type can't be a value type.", nameof(role));
         }
 
         RoleType = role;
