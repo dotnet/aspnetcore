@@ -115,7 +115,6 @@ public static class RoutePatternFactory
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
     {
         if (pattern == null)

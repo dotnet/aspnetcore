@@ -10,6 +10,8 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.Internal;
 
+[RequiresUnreferencedCode("This method performs reflection on arbitrary types.")]
+[RequiresDynamicCode("This method performs reflection on arbitrary types.")]
 internal sealed class ObjectMethodExecutor
 {
     private readonly object?[]? _parameterDefaultValues;
@@ -26,8 +28,6 @@ internal sealed class ObjectMethodExecutor
             typeof(Action<object, Action>)  // unsafeOnCompletedMethod
     })!;
 
-    [RequiresUnreferencedCode("This method performs reflection on arbitrary types.")]
-    [RequiresDynamicCode("This method performs reflection on arbitrary types.")]
     private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[]? parameterDefaultValues)
     {
         if (methodInfo == null)
@@ -77,15 +77,11 @@ internal sealed class ObjectMethodExecutor
 
     public bool IsMethodAsync { get; }
 
-    [RequiresUnreferencedCode("This method performs reflection on arbitrary types.")]
-    [RequiresDynamicCode("This method performs reflection on arbitrary types.")]
     public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo)
     {
         return new ObjectMethodExecutor(methodInfo, targetTypeInfo, null);
     }
 
-    [RequiresUnreferencedCode("This method performs reflection on arbitrary types.")]
-    [RequiresDynamicCode("This method performs reflection on arbitrary types.")]
     public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[] parameterDefaultValues)
     {
         if (parameterDefaultValues == null)
