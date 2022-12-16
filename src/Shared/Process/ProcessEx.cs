@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Internal;
 
-internal class ProcessEx : IDisposable
+internal sealed class ProcessEx : IDisposable
 {
     private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(15);
     private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
@@ -167,10 +167,7 @@ internal class ProcessEx : IDisposable
             }
         }
 
-        if (_stdoutLines != null)
-        {
-            _stdoutLines.Add(e.Data);
-        }
+        _stdoutLines?.Add(e.Data);
     }
 
     private void OnProcessExited(object sender, EventArgs e)

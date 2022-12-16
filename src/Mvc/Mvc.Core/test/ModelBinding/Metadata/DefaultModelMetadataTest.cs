@@ -391,6 +391,27 @@ public class DefaultModelMetadataTest
 
     [Theory]
     [InlineData(typeof(string))]
+    [InlineData(typeof(int))]
+    public void IsParseableType_ReturnsFalse_ForByRefTypes(Type modelType)
+    {
+        // Arrange
+        var provider = new EmptyModelMetadataProvider();
+        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+        var key = ModelMetadataIdentity.ForType(modelType.MakeByRefType());
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
+
+        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+        // Act
+        var isParseableType = metadata.IsParseableType;
+
+        // Assert
+        Assert.False(isParseableType);
+    }
+
+    [Theory]
+    [InlineData(typeof(string))]
     [InlineData(typeof(IDisposable))]
     [InlineData(typeof(Nullable<int>))]
     public void IsRequired_ReturnsFalse_ForNullableTypes(Type modelType)

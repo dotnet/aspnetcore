@@ -40,7 +40,7 @@ public class WrappingLoggerFactory : ILoggerFactory
         _innerLoggerFactory.AddProvider(provider);
     }
 
-    private class DummyProvider : ILoggerProvider, ISupportExternalScope
+    private sealed class DummyProvider : ILoggerProvider, ISupportExternalScope
     {
         public IExternalScopeProvider ScopeProvider { get; private set; }
 
@@ -59,7 +59,7 @@ public class WrappingLoggerFactory : ILoggerFactory
         }
     }
 
-    private class WrappingLogger : ILogger
+    private sealed class WrappingLogger : ILogger
     {
         private readonly DummyProvider _provider;
         private readonly ILogger _logger;

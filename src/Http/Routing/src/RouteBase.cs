@@ -32,7 +32,7 @@ public abstract partial class RouteBase : IRouter, INamedRouter
     /// <param name="constraints">The constraints for the route.</param>
     /// <param name="dataTokens">The data tokens for the route.</param>
     public RouteBase(
-        string? template,
+        [StringSyntax("Route")] string? template,
         string? name,
         IInlineConstraintResolver constraintResolver,
         RouteValueDictionary? defaults,

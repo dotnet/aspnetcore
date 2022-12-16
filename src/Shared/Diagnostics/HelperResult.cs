@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views;
 /// <summary>
 /// Represents a deferred write operation in a <see cref="BaseView"/>.
 /// </summary>
-internal class HelperResult
+internal sealed class HelperResult
 {
     /// <summary>
     /// Creates a new instance of <see cref="HelperResult"/>.

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 
 // This is a bridge that allows us to execute IActionConstraint instance when
 // used with Matcher.
-internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
+internal sealed class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
 {
     // We need to be able to run IActionConstraints on Endpoints that aren't associated
     // with an action. This is a sentinel value we use when the endpoint isn't from MVC.

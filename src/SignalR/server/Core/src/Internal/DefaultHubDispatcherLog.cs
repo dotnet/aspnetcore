@@ -27,7 +27,7 @@ internal static partial class DefaultHubDispatcherLog
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+            var resultType = objectMethodExecutor.AsyncResultType ?? objectMethodExecutor.MethodReturnType;
             StreamingResult(logger, invocationId, resultType.FullName);
         }
     }
@@ -39,7 +39,7 @@ internal static partial class DefaultHubDispatcherLog
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+            var resultType = objectMethodExecutor.AsyncResultType ?? objectMethodExecutor.MethodReturnType;
             SendingResult(logger, invocationId, resultType.FullName);
         }
     }
@@ -105,4 +105,7 @@ internal static partial class DefaultHubDispatcherLog
 
     [LoggerMessage(24, LogLevel.Debug, "CompletionMessage for invocation ID '{InvocationId}' received unexpectedly.", EventName = "UnexpectedCompletion")]
     public static partial void UnexpectedCompletion(ILogger logger, string invocationId);
+
+    [LoggerMessage(25, LogLevel.Error, "Invocation ID {InvocationId}: Failed while sending stream items from hub method {HubMethod}.", EventName = "FailedStreaming")]
+    public static partial void FailedStreaming(ILogger logger, string invocationId, string hubMethod, Exception exception);
 }

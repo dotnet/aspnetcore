@@ -262,12 +262,6 @@ public class DistributedSession : ISession
     /// <inheritdoc />
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsAvailable)
-        {
-            _logger.SessionNotAvailable();
-            return;
-        }
-
         using (var timeout = new CancellationTokenSource(_ioTimeout))
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);

@@ -13,6 +13,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
+# Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
+unset ASPNETCORE_ENVIRONMENT
+
 export PATH="$PATH:$DIR:$DIR/node/bin"
 
 # Set playwright stuff

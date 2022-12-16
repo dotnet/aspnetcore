@@ -1,15 +1,15 @@
 #nullable enable
-~Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>
-~Microsoft.AspNetCore.Authentication.BaseContext<TOptions>
-~Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>
-~Microsoft.AspNetCore.Authentication.PrincipalContext<TOptions>
-~Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions>
-~Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>
-~Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>
-~Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>
-~Microsoft.AspNetCore.Authentication.ResultContext<TOptions>
-~Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>
-~Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.BaseContext<TOptions>
+Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>
+Microsoft.AspNetCore.Authentication.PrincipalContext<TOptions>
+Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions>
+Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>
+Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>
+Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.ResultContext<TOptions>
+Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>
 abstract Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.HandleAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
 abstract Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult!>!
 abstract Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.HandleSignInAsync(System.Security.Claims.ClaimsPrincipal! user, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!

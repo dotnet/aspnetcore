@@ -10,7 +10,7 @@ internal sealed class Http3ControlStream<TContext> : Http3ControlStream, IHostCo
 {
     private readonly IHttpApplication<TContext> _application;
 
-    public Http3ControlStream(IHttpApplication<TContext> application, Http3StreamContext context) : base(context)
+    public Http3ControlStream(IHttpApplication<TContext> application, Http3StreamContext context, long? headerType) : base(context, headerType)
     {
         _application = application;
     }

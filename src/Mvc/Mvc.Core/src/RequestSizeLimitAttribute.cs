@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Sets the request body size limit to the specified size.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class RequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilter
+public class RequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilter, IRequestSizeLimitMetadata
 {
     private readonly long _bytes;
 
@@ -51,4 +52,7 @@ public class RequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilt
         filter.Bytes = _bytes;
         return filter;
     }
+
+    /// <inheritdoc />
+    long? IRequestSizeLimitMetadata.MaxRequestBodySize => _bytes;
 }

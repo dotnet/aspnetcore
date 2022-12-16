@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor Server アプリが空です",
+  "description": "ASP.NET Core アプリ内のサーバー側で実行され、SignalR 接続を介してユーザー操作を処理する Blazor Server アプリを作成するための空のプロジェクト テンプレート。このテンプレートは、その中にコンテンツがありません。",
+  "symbols/ExcludeLaunchSettings/description": "生成されたテンプレートから launchSettings.json を除外するかどうか。",
+  "symbols/kestrelHttpPort/description": "launchSettings.json の HTTP エンドポイントに使用するポート番号。",
+  "symbols/kestrelHttpsPort/description": "launchSettings.json の HTTPS エンドポイントに使用するポート番号。このオプションは、パラメーター no-https を使用しない場合にのみ適用されます。",
+  "symbols/iisHttpPort/description": "launchSettings.json の IIS Express HTTP エンドポイントに使用するポート番号。",
+  "symbols/iisHttpsPort/description": "launchSettings.json の IIS Express HTTPS エンドポイントに使用するポート番号。このオプションは、パラメーター no-https を使用しない場合にのみ適用されます。",
+  "symbols/HasHttpProfile/description": "HTTP プロファイルが常にあります。",
+  "symbols/NoHttps/description": "HTTPS をオフにするかどうか。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
+  "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
+  "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
+}

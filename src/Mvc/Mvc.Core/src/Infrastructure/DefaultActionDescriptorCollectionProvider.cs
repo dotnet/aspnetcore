@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal partial class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
+internal sealed partial class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
 {
     private readonly IActionDescriptorProvider[] _actionDescriptorProviders;
     private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;

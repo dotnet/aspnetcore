@@ -10,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class RoutePatternMatcher
+internal sealed class RoutePatternMatcher
 {
     // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
     private readonly bool[] _hasDefaultValue;
@@ -364,15 +364,16 @@ internal class RoutePatternMatcher
                 lastLiteral = part;
 
                 var startIndex = lastIndex;
+                // We are at the beginning of the segment and we still need to match a literal
+                if (startIndex == 0)
+                {
+                    return false;
+                }
+
                 // If we have a pending parameter subsegment, we must leave at least one character for that
                 if (parameterNeedsValue != null)
                 {
                     startIndex--;
-                }
-
-                if (startIndex == 0)
-                {
-                    return false;
                 }
 
                 int indexOfLiteral;

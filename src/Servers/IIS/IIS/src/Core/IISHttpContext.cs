@@ -143,19 +143,105 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             KnownMethod = VerbId;
             StatusCode = 200;
 
-            var originalPath = GetOriginalPath();
+            var originalPath = GetOriginalPath() ?? string.Empty;
+            var pathBase = _server.VirtualPath ?? string.Empty;
+            if (pathBase.Length > 1 && pathBase[^1] == '/')
+            {
+                pathBase = pathBase[..^1];
+            }
 
             if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
+            else if (string.IsNullOrEmpty(pathBase) || pathBase == "/")
+            {
+                PathBase = string.Empty;
+                Path = originalPath;
+            }
+            else if (originalPath.Equals(pathBase, StringComparison.Ordinal))
+            {
+                // Exact match, no need to preserve the casing
+                PathBase = pathBase;
+                Path = string.Empty;
+            }
+            else if (originalPath.Equals(pathBase, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve the user input casing
+                PathBase = originalPath;
+                Path = string.Empty;
+            }
+            else if (originalPath.Length == pathBase.Length + 1
+                && originalPath[^1] == '/'
+                && originalPath.StartsWith(pathBase, StringComparison.Ordinal))
+            {
+                // Exact match, no need to preserve the casing
+                PathBase = pathBase;
+                Path = "/";
+            }
+            else if (originalPath.Length == pathBase.Length + 1
+                && originalPath[^1] == '/'
+                && originalPath.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve the user input casing
+                PathBase = originalPath[..pathBase.Length];
+                Path = "/";
+            }
             else
             {
-                // Path and pathbase are unescaped by RequestUriBuilder
-                // The UsePathBase middleware will modify the pathbase and path correctly
-                PathBase = string.Empty;
-                Path = originalPath ?? string.Empty;
+                // Http.Sys path base matching is based on the cooked url which applies some non-standard normalizations that we don't use
+                // like collapsing duplicate slashes "//", converting '\' to '/', and un-escaping "%2F" to '/'. Find the right split and
+                // ignore the normalizations.
+                var originalOffset = 0;
+                var baseOffset = 0;
+                while (originalOffset < originalPath.Length && baseOffset < pathBase.Length)
+                {
+                    var baseValue = pathBase[baseOffset];
+                    var offsetValue = originalPath[originalOffset];
+                    if (baseValue == offsetValue
+                        || char.ToUpperInvariant(baseValue) == char.ToUpperInvariant(offsetValue))
+                    {
+                        // case-insensitive match, continue
+                        originalOffset++;
+                        baseOffset++;
+                    }
+                    else if (baseValue == '/' && offsetValue == '\\')
+                    {
+                        // Http.Sys considers these equivalent
+                        originalOffset++;
+                        baseOffset++;
+                    }
+                    else if (baseValue == '/' && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Http.Sys un-escapes this
+                        originalOffset += 3;
+                        baseOffset++;
+                    }
+                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                        && (offsetValue == '/' || offsetValue == '\\'))
+                    {
+                        // Duplicate slash, skip
+                        originalOffset++;
+                    }
+                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                        && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Duplicate slash equivalent, skip
+                        originalOffset += 3;
+                    }
+                    else
+                    {
+                        // Mismatch, fall back
+                        // The failing test case here is "/base/call//../bat//path1//path2", reduced to "/base/call/bat//path1//path2",
+                        // where http.sys collapses "//" before "../", but we do "../" first. We've lost the context that there were dot segments,
+                        // or duplicate slashes, how do we figure out that "call/" can be eliminated?
+                        originalOffset = 0;
+                        break;
+                    }
+                }
+                PathBase = originalPath[..originalOffset];
+                Path = originalPath[originalOffset..];
             }
 
             var cookedUrl = GetCookedUrl();
@@ -259,8 +345,26 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
         // Transfer-Encoding takes priority over Content-Length.
         string transferEncoding = RequestHeaders.TransferEncoding.ToString();
-        if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (transferEncoding != null && string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
         {
+            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // A sender MUST NOT send a Content-Length header field in any message
+            // that contains a Transfer-Encoding header field.
+            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // If a message is received with both a Transfer-Encoding and a
+            // Content-Length header field, the Transfer-Encoding overrides the
+            // Content-Length.  Such a message might indicate an attempt to
+            // perform request smuggling (Section 9.5) or response splitting
+            // (Section 9.4) and ought to be handled as an error.  A sender MUST
+            // remove the received Content-Length field prior to forwarding such
+            // a message downstream.
+            // We should remove the Content-Length request header in this case, for compatibility
+            // reasons, include X-Content-Length so that the original Content-Length is still available.
+            if (RequestHeaders.ContentLength.HasValue)
+            {
+                RequestHeaders.Add("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                RequestHeaders.ContentLength = null;
+            }
             return true;
         }
 

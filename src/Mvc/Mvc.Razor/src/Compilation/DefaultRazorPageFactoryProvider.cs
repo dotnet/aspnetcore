@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation;
 /// Represents a <see cref="IRazorPageFactoryProvider"/> that creates <see cref="RazorPage"/> instances
 /// from razor files in the file system.
 /// </summary>
-internal class DefaultRazorPageFactoryProvider : IRazorPageFactoryProvider
+internal sealed class DefaultRazorPageFactoryProvider : IRazorPageFactoryProvider
 {
     private readonly IViewCompilerProvider _viewCompilerProvider;
 

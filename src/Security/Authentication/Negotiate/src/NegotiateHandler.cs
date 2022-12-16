@@ -416,7 +416,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
     }
 
     // This allows us to have one disposal registration per connection and limits churn on the Items collection.
-    private class AuthPersistence : IDisposable
+    private sealed class AuthPersistence : IDisposable
     {
         internal INegotiateState? State { get; set; }
 

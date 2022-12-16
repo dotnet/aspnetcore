@@ -20,6 +20,14 @@ public class ApplicationBuilderTests
     }
 
     [Fact]
+    public void ServerFeaturesEmptyWhenNotSpecified()
+    {
+        var builder = new ApplicationBuilder(null);
+
+        Assert.Empty(builder.ServerFeatures);
+    }
+
+    [Fact]
     public async Task BuildImplicitlyThrowsForMatchedEndpointAsLastStep()
     {
         var builder = new ApplicationBuilder(null);

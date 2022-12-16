@@ -1,11 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
 
 <AuthorizeView Context="authenticationState">
     <Authorized>
         <a href="authentication/profile">Hello, @authenticationState.User.Identity.Name!</a>
-        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
+        <a href="authentication/login" @onclick="LoginWithOtherUser">Log in with another user</a>
+        <button class="nav-link btn btn-link" @onclick="SignOut">Log out</button>
     </Authorized>
     <NotAuthorized>
         <a href="authentication/register">Register</a>
@@ -13,10 +13,17 @@
     </NotAuthorized>
 </AuthorizeView>
 
-@code{
-    public async Task BeginSignOut()
+@code {
+    public void LoginWithOtherUser()
     {
-        await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
+        var request = new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = Navigation.Uri };
+        request.TryAddAdditionalParameter("prompt", "login");
+
+        Navigation.NavigateToLogin("authentication/login", request);
+    }
+
+    public void SignOut()
+    {
+        Navigation.NavigateToLogout("authentication/logout");
     }
 }

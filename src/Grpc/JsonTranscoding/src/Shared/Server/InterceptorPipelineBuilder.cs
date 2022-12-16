@@ -24,7 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Grpc.Shared.Server;
 
-internal class InterceptorPipelineBuilder<TRequest, TResponse>
+internal sealed class InterceptorPipelineBuilder<TRequest, TResponse>
     where TRequest : class
     where TResponse : class
 {
@@ -160,7 +160,7 @@ internal class InterceptorPipelineBuilder<TRequest, TResponse>
         return interceptorHandle;
     }
 
-    private class InterceptorActivatorHandle
+    private sealed class InterceptorActivatorHandle
     {
         public InterceptorRegistration Registration { get; }
 

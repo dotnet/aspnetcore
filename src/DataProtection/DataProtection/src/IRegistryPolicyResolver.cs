@@ -10,6 +10,5 @@ namespace Microsoft.AspNetCore.DataProtection;
 // even if it was not registered causing problems crossplat
 internal interface IRegistryPolicyResolver
 {
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     RegistryPolicy? ResolvePolicy();
 }

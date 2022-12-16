@@ -15,14 +15,16 @@ public class SessionOptions
 
     /// <summary>
     /// Determines the settings used to create the cookie.
-    /// <para>
-    /// <see cref="CookieBuilder.Name"/> defaults to <see cref="SessionDefaults.CookieName"/>.
-    /// <see cref="CookieBuilder.Path"/> defaults to <see cref="SessionDefaults.CookiePath"/>.
-    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
-    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>
-    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>
-    /// </para>
     /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item><description><see cref="CookieBuilder.Name"/> defaults to <see cref="SessionDefaults.CookieName"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.Path"/> defaults to <see cref="SessionDefaults.CookiePath"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>.</description></item>
+    /// </list>
+    /// </remarks>
     public CookieBuilder Cookie
     {
         get => _cookieBuilder;
@@ -41,7 +43,7 @@ public class SessionOptions
     /// </summary>
     public TimeSpan IOTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
-    private class SessionCookieBuilder : CookieBuilder
+    private sealed class SessionCookieBuilder : CookieBuilder
     {
         public SessionCookieBuilder()
         {

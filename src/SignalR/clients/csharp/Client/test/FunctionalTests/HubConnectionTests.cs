@@ -1,25 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
@@ -1738,6 +1734,129 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
+    public async Task WebSocketsCanConnectOverHttp2()
+    {
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
+                o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, options =>
+                {
+                    options.HttpMessageHandlerFactory = h =>
+                    {
+                        ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                        return h;
+                    };
+                    options.WebSocketConfiguration = o =>
+                    {
+                        o.HttpVersion = HttpVersion.Version20;
+                        o.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                    };
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var echoResponse = await hubConnection.InvokeAsync<string>(nameof(TestHub.Echo), "Foo").DefaultTimeout();
+                Assert.Equal("Foo", echoResponse);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        // Triple check that the WebSocket ran over HTTP/2, also verify the negotiate was HTTP/2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 CONNECT"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 CONNECT"));
+    }
+
+    [ConditionalFact]
+    [WebSocketsSupportedCondition]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
+    public async Task WebSocketsWithAccessTokenOverHttp2()
+    {
+        var accessTokenCallCount = 0;
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
+                o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, options =>
+                {
+                    options.HttpMessageHandlerFactory = h =>
+                    {
+                        ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                        return h;
+                    };
+                    options.WebSocketConfiguration = o =>
+                    {
+                        o.HttpVersion = HttpVersion.Version20;
+                        o.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                    };
+                    options.AccessTokenProvider = () =>
+                    {
+                        accessTokenCallCount++;
+                        return Task.FromResult("test");
+                    };
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var headerResponse = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new string[] { "Authorization" }).DefaultTimeout();
+                Assert.Single(headerResponse);
+                Assert.Equal("Bearer test", headerResponse[0]);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        Assert.Equal(1, accessTokenCallCount);
+
+        // Triple check that the WebSocket ran over HTTP/2, also verify the negotiate was HTTP/2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 CONNECT"));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 CONNECT"));
+    }
+
+    [ConditionalFact]
+    [WebSocketsSupportedCondition]
     public async Task CookiesFromNegotiateAreAppliedToWebSockets()
     {
         await using (var server = await StartServer<Startup>())
@@ -2124,6 +2243,199 @@ public class HubConnectionTests : FunctionalTestBase
         finally
         {
             SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
+    public async Task LongPollingUsesHttp2ByDefault()
+    {
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, o => o.HttpMessageHandlerFactory = h =>
+                {
+                    ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                    return h;
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var httpProtocol = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetHttpProtocol)).DefaultTimeout();
+
+                Assert.Equal("HTTP/2", httpProtocol);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        // negotiate is HTTP2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST") && context.Message.Contains("/negotiate?"));
+
+        // LongPolling polls and sends are HTTP2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST") && context.Message.Contains("?id="));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 GET") && context.Message.Contains("?id="));
+
+        // LongPolling delete is HTTP2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 DELETE") && context.Message.Contains("?id="));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
+    public async Task LongPollingWorksWithHttp2OnlyEndpoint()
+    {
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
+                o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, o => o.HttpMessageHandlerFactory = h =>
+                {
+                    ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                    return h;
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var httpProtocol = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetHttpProtocol)).DefaultTimeout();
+
+                Assert.Equal("HTTP/2", httpProtocol);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
+    public async Task ServerSentEventsUsesHttp2ByDefault()
+    {
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.ServerSentEvents, o => o.HttpMessageHandlerFactory = h =>
+                {
+                    ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                    return h;
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var httpProtocol = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetHttpProtocol)).DefaultTimeout();
+
+                Assert.Equal("HTTP/2", httpProtocol);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        // negotiate is HTTP2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST") && context.Message.Contains("/negotiate?"));
+
+        // ServerSentEvents eventsource and sendsos are HTTP2
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request starting HTTP/2 POST") && context.Message.Contains("?id="));
+        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 GET") && context.Message.Contains("?id="));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
+    public async Task ServerSentEventsWorksWithHttp2OnlyEndpoint()
+    {
+        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+        {
+            o.ConfigureEndpointDefaults(o2 =>
+            {
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http2;
+                o2.UseHttps();
+            });
+            o.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+            });
+        }))
+        {
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.ServerSentEvents, o => o.HttpMessageHandlerFactory = h =>
+                {
+                    ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                    return h;
+                })
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                var httpProtocol = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetHttpProtocol)).DefaultTimeout();
+
+                Assert.Equal("HTTP/2", httpProtocol);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
         }
     }
 

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class WebSocketsAsyncIOEngine
 {
-    internal class WebSocketReadOperation : AsyncIOOperation
+    internal sealed class WebSocketReadOperation : AsyncIOOperation
     {
         [UnmanagedCallersOnly]
         public static NativeMethods.REQUEST_NOTIFICATION_STATUS ReadCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)

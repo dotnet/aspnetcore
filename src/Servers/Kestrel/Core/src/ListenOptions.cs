@@ -16,10 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 {
-    internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
+    internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2AndHttp3;
 
-    internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
-    internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
+    private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+    private readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
+    private HttpProtocols _protocols = DefaultHttpProtocols;
 
     internal ListenOptions(EndPoint endPoint)
     {
@@ -77,8 +78,22 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     /// <summary>
     /// The protocols enabled on this endpoint.
     /// </summary>
-    /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
-    public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
+    /// <remarks>Defaults to HTTP/1.x, HTTP/2, and HTTP/3.</remarks>
+    public HttpProtocols Protocols
+    {
+        get => _protocols;
+        set
+        {
+            _protocols = value;
+            ProtocolsSetExplicitly = true;
+        }
+    }
+
+    /// <summary>
+    /// Tracks whether <see cref="Protocols"/> has been set explicitly so that we can determine whether
+    /// or not the value reflects the user's intention.
+    /// </summary>
+    internal bool ProtocolsSetExplicitly { get; private set; }
 
     /// <summary>
     /// Gets or sets a value that controls whether the "Alt-Svc" header is included with response headers.
@@ -109,6 +124,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 
     internal bool IsTls { get; set; }
     internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
+    internal TlsHandshakeCallbackOptions? HttpsCallbackOptions { get; set; }
 
     /// <summary>
     /// Gets the name of this endpoint to display on command-line when the web server starts.
@@ -188,5 +204,30 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
         await AddressBinder.BindEndpointAsync(this, context, cancellationToken).ConfigureAwait(false);
         context.Addresses.Add(GetDisplayName());
+    }
+
+    /// <summary>
+    /// used for cloning to two IPEndpoints
+    /// </summary>
+    /// <remarks>
+    /// Internal for testing
+    /// </remarks>
+    protected internal ListenOptions Clone(IPAddress address)
+    {
+        var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
+        {
+            KestrelServerOptions = KestrelServerOptions,
+            _protocols = _protocols, // Avoid side-effects from setting Protocols
+            ProtocolsSetExplicitly = ProtocolsSetExplicitly,
+            DisableAltSvcHeader = DisableAltSvcHeader,
+            IsTls = IsTls,
+            HttpsOptions = HttpsOptions,
+            HttpsCallbackOptions = HttpsCallbackOptions,
+            EndpointConfig = EndpointConfig
+        };
+
+        options._middleware.AddRange(_middleware);
+        options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
+        return options;
     }
 }

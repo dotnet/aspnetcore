@@ -29,7 +29,7 @@ public class JSComponentInterop
     {
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += () => ParameterTypeCaches.Clear();
+            HotReloadManager.Default.OnDeltaApplied += ParameterTypeCaches.Clear;
         }
     }
 
@@ -65,7 +65,7 @@ public class JSComponentInterop
     /// </summary>
     protected internal virtual int AddRootComponent(string identifier, string domElementSelector)
     {
-        if (!Configuration.JSComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
+        if (!Configuration.TryGetComponentType(identifier, out var componentType))
         {
             throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
         }
@@ -178,6 +178,7 @@ public class JSComponentInterop
         return new(null, callback);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "EventCallback and EventCallback<TValue> constructors are referenced statically and will be preserved.")]
     private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference? jsObjectReference)
     {
         var callback = jsObjectReference is null ? null : new Func<object, Task>(
@@ -195,6 +196,7 @@ public class JSComponentInterop
     {
         public readonly Dictionary<string, ParameterInfo> ParameterInfoByName;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "OpenComponent already has the right set of attributes")]
         public ParameterTypeCache(Type componentType)
         {
             ParameterInfoByName = new(StringComparer.OrdinalIgnoreCase);

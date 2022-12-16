@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// <summary>
 /// Validates based on the given <see cref="ValidationAttribute"/>.
 /// </summary>
-internal class DataAnnotationsModelValidator : IModelValidator
+internal sealed class DataAnnotationsModelValidator : IModelValidator
 {
     private static readonly object _emptyValidationContextInstance = new object();
     private readonly IStringLocalizer? _stringLocalizer;

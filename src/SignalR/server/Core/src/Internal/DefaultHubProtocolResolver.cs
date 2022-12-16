@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal partial class DefaultHubProtocolResolver : IHubProtocolResolver
+internal sealed partial class DefaultHubProtocolResolver : IHubProtocolResolver
 {
     private readonly ILogger<DefaultHubProtocolResolver> _logger;
     private readonly List<IHubProtocol> _hubProtocols;
@@ -29,7 +29,7 @@ internal partial class DefaultHubProtocolResolver : IHubProtocolResolver
         _hubProtocols = _availableProtocols.Values.ToList();
     }
 
-    public virtual IHubProtocol? GetProtocol(string protocolName, IReadOnlyList<string>? supportedProtocols)
+    public IHubProtocol? GetProtocol(string protocolName, IReadOnlyList<string>? supportedProtocols)
     {
         protocolName = protocolName ?? throw new ArgumentNullException(nameof(protocolName));
 

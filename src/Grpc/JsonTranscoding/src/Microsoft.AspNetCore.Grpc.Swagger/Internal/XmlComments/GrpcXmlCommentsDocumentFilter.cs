@@ -11,7 +11,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Internal.XmlComments;
 
-internal class GrpcXmlCommentsDocumentFilter : IDocumentFilter
+internal sealed class GrpcXmlCommentsDocumentFilter : IDocumentFilter
 {
     private const string MemberXPath = "/doc/members/member[@name='{0}']";
     private const string SummaryTag = "summary";

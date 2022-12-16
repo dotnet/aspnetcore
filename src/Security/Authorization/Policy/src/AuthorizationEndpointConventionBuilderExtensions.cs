@@ -168,5 +168,4 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             }
         });
     }
-
 }

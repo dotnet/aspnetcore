@@ -33,4 +33,29 @@ public class FileContentResultTests : FileContentResultTestBase
 
         return result.ExecuteAsync(httpContext);
     }
+
+    [Fact]
+    public void FileContentResult_Implements_IFileHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new FileContentHttpResult(Array.Empty<byte>(), contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(downloadName, result.FileDownloadName);
+    }
+
+    [Fact]
+    public void FileContentResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new FileContentHttpResult(Array.Empty<byte>(), contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+    }
 }

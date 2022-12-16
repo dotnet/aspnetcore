@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// An <see cref="IActionFilter"/> which sets the appropriate headers related to response caching.
 /// </summary>
-internal partial class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
+internal sealed partial class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
 {
     private readonly ResponseCacheFilterExecutor _executor;
     private readonly ILogger _logger;

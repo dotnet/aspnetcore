@@ -31,41 +31,44 @@ internal sealed partial class EndpointMiddleware
     public Task Invoke(HttpContext httpContext)
     {
         var endpoint = httpContext.GetEndpoint();
-        if (endpoint?.RequestDelegate != null)
+        if (endpoint is not null)
         {
             if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
             {
-                if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
+                if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null &&
                     !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
                 {
                     ThrowMissingAuthMiddlewareException(endpoint);
                 }
 
-                if (endpoint.Metadata.GetMetadata<ICorsMetadata>() != null &&
+                if (endpoint.Metadata.GetMetadata<ICorsMetadata>() is not null &&
                     !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
                 {
                     ThrowMissingCorsMiddlewareException(endpoint);
                 }
             }
 
-            Log.ExecutingEndpoint(_logger, endpoint);
-
-            try
+            if (endpoint.RequestDelegate is not null)
             {
-                var requestTask = endpoint.RequestDelegate(httpContext);
-                if (!requestTask.IsCompletedSuccessfully)
+                Log.ExecutingEndpoint(_logger, endpoint);
+
+                try
                 {
-                    return AwaitRequestTask(endpoint, requestTask, _logger);
+                    var requestTask = endpoint.RequestDelegate(httpContext);
+                    if (!requestTask.IsCompletedSuccessfully)
+                    {
+                        return AwaitRequestTask(endpoint, requestTask, _logger);
+                    }
                 }
-            }
-            catch (Exception exception)
-            {
-                Log.ExecutedEndpoint(_logger, endpoint);
-                return Task.FromException(exception);
-            }
+                catch
+                {
+                    Log.ExecutedEndpoint(_logger, endpoint);
+                    throw;
+                }
 
-            Log.ExecutedEndpoint(_logger, endpoint);
-            return Task.CompletedTask;
+                Log.ExecutedEndpoint(_logger, endpoint);
+                return Task.CompletedTask;
+            }
         }
 
         return _next(httpContext);

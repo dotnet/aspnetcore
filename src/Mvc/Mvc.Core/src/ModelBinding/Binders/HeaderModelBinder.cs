@@ -195,7 +195,7 @@ public class HeaderModelBinder : IModelBinder
         return collection;
     }
 
-    private class HeaderValueProvider : IValueProvider
+    private sealed class HeaderValueProvider : IValueProvider
     {
         private readonly string[] _values;
 

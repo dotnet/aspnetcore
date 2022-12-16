@@ -65,7 +65,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
         return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
     }
 
-    public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());
+    public static bool OnHelix() => HelixHelper.OnHelix();
 
-    public static string GetTargetHelixQueue() => Environment.GetEnvironmentVariable("helix");
+    public static string GetTargetHelixQueue() => HelixHelper.GetTargetHelixQueue();
 }

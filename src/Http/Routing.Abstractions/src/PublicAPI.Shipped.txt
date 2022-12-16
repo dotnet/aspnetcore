@@ -65,6 +65,7 @@ Microsoft.AspNetCore.Routing.RouteData.RouteData() -> void
 Microsoft.AspNetCore.Routing.RouteData.RouteData(Microsoft.AspNetCore.Routing.RouteData! other) -> void
 Microsoft.AspNetCore.Routing.RouteData.RouteData(Microsoft.AspNetCore.Routing.RouteValueDictionary! values) -> void
 Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot
+Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot.RouteDataSnapshot() -> void
 Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot.Restore() -> void
 Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot.RouteDataSnapshot(Microsoft.AspNetCore.Routing.RouteData! routeData, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens, System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter!>? routers, Microsoft.AspNetCore.Routing.RouteValueDictionary? values) -> void
 Microsoft.AspNetCore.Routing.RouteData.Routers.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter!>!

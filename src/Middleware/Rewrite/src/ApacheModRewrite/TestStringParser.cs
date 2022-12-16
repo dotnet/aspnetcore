@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 /// <summary>
 /// Parses the TestString segment of the mod_rewrite condition.
 /// </summary>
-internal class TestStringParser
+internal sealed class TestStringParser
 {
     private const char Percent = '%';
     private const char Dollar = '$';

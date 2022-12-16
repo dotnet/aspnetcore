@@ -12,6 +12,8 @@ public class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+        builder.Logging.SetMinimumLevel(LogLevel.Trace);
+
         builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
             .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 

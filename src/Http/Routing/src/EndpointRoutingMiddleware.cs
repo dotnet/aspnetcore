@@ -26,6 +26,7 @@ internal sealed partial class EndpointRoutingMiddleware
         MatcherFactory matcherFactory,
         ILogger<EndpointRoutingMiddleware> logger,
         IEndpointRouteBuilder endpointRouteBuilder,
+        EndpointDataSource rootCompositeEndpointDataSource,
         DiagnosticListener diagnosticListener,
         RequestDelegate next)
     {
@@ -39,6 +40,9 @@ internal sealed partial class EndpointRoutingMiddleware
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
+        // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
+        // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
+        _ = rootCompositeEndpointDataSource;
         _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
     }
 

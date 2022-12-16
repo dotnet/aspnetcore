@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 /// <summary>
 /// Default implementation of <see cref="ITagHelperActivator"/>.
 /// </summary>
-internal class DefaultTagHelperActivator : ITagHelperActivator
+internal sealed class DefaultTagHelperActivator : ITagHelperActivator
 {
     /// <inheritdoc />
     public TTagHelper Create<TTagHelper>(ViewContext context)

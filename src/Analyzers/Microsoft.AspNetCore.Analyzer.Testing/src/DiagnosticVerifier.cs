@@ -185,7 +185,7 @@ public abstract class DiagnosticVerifier
     }
 
     // Required to resolve compilation assemblies inside unit tests
-    private class AppLocalResolver : ICompilationAssemblyResolver
+    private sealed class AppLocalResolver : ICompilationAssemblyResolver
     {
         public bool TryResolveAssemblyPaths(CompilationLibrary library, List<string> assemblies)
         {

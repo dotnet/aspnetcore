@@ -57,7 +57,7 @@ public static class GrpcSwaggerServiceExtensions
     }
 
     // Dummy type that is only used if MVC is not registered in the app
-    private class EmptyActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
+    private sealed class EmptyActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
     {
         public ActionDescriptorCollection ActionDescriptors { get; } = new ActionDescriptorCollection(new List<ActionDescriptor>(), 1);
     }

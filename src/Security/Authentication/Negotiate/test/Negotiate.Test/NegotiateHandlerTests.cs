@@ -255,7 +255,7 @@ public class NegotiateHandlerTests
     {
         var builder = new HostBuilder()
             .ConfigureServices(services => services
-                .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddAuthentication()
                 .AddNegotiate(options =>
                 {
                     options.StateFactory = new TestNegotiateStateFactory();
@@ -382,7 +382,7 @@ public class NegotiateHandlerTests
         var builder = new HostBuilder()
             .ConfigureServices(services => services
                 .AddRouting()
-                .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddAuthentication()
                 .AddNegotiate(options =>
                 {
                     options.StateFactory = new TestNegotiateStateFactory();

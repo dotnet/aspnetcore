@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class SegmentWriteStream : Stream
+internal sealed class SegmentWriteStream : Stream
 {
     private readonly List<byte[]> _segments = new List<byte[]>();
     private readonly MemoryStream _bufferStream = new MemoryStream();
@@ -122,22 +122,7 @@ internal class SegmentWriteStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-        if (offset < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Non-negative number required.");
-        }
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), count, "Non-negative number required.");
-        }
-        if (count > buffer.Length - offset)
-        {
-            throw new ArgumentException("Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.");
-        }
+        ValidateBufferArguments(buffer, offset, count);
         if (!CanWrite)
         {
             throw new ObjectDisposedException("The stream has been closed for writing.");

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class RegexMatch : UrlMatch
+internal sealed class RegexMatch : UrlMatch
 {
     private readonly Regex _match;
 

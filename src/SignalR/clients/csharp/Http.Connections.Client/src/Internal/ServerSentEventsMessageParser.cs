@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal class ServerSentEventsMessageParser
+internal sealed class ServerSentEventsMessageParser
 {
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';

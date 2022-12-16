@@ -12,7 +12,7 @@
     <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
 
     <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" />
-    
+
     <Reference Include="CommandLineParser" />
     <Reference Include="Google.Protobuf" />
     <Reference Include="Grpc.Auth" />

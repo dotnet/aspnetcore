@@ -19,7 +19,6 @@ public static class DataProtectionAdvancedExtensions
     /// <param name="plaintext">The plaintext data to protect.</param>
     /// <param name="lifetime">The amount of time after which the payload should no longer be unprotectable.</param>
     /// <returns>The protected form of the plaintext data.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static byte[] Protect(this ITimeLimitedDataProtector protector, byte[] plaintext, TimeSpan lifetime)
     {
         if (protector == null)
@@ -43,7 +42,6 @@ public static class DataProtectionAdvancedExtensions
     /// <param name="plaintext">The plaintext data to protect.</param>
     /// <param name="expiration">The time when this payload should expire.</param>
     /// <returns>The protected form of the plaintext data.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static string Protect(this ITimeLimitedDataProtector protector, string plaintext, DateTimeOffset expiration)
     {
         if (protector == null)
@@ -68,7 +66,6 @@ public static class DataProtectionAdvancedExtensions
     /// <param name="plaintext">The plaintext data to protect.</param>
     /// <param name="lifetime">The amount of time after which the payload should no longer be unprotectable.</param>
     /// <returns>The protected form of the plaintext data.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static string Protect(this ITimeLimitedDataProtector protector, string plaintext, TimeSpan lifetime)
     {
         if (protector == null)
@@ -111,7 +108,6 @@ public static class DataProtectionAdvancedExtensions
     /// <exception cref="System.Security.Cryptography.CryptographicException">
     /// Thrown if <paramref name="protectedData"/> is invalid, malformed, or expired.
     /// </exception>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static string Unprotect(this ITimeLimitedDataProtector protector, string protectedData, out DateTimeOffset expiration)
     {
         if (protector == null)
@@ -150,7 +146,6 @@ public static class DataProtectionAdvancedExtensions
             throw new NotImplementedException();
         }
 
-        [RequiresUnreferencedCode(TrimmerWarning.Message)]
         public byte[] Protect(byte[] plaintext)
         {
             if (plaintext == null)
@@ -161,7 +156,6 @@ public static class DataProtectionAdvancedExtensions
             return _innerProtector.Protect(plaintext, Expiration);
         }
 
-        [RequiresUnreferencedCode(TrimmerWarning.Message)]
         public byte[] Unprotect(byte[] protectedData)
         {
             if (protectedData == null)

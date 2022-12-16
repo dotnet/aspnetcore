@@ -75,8 +75,8 @@ public class DirectoryBrowserMiddleware
     /// <returns></returns>
     public Task Invoke(HttpContext context)
     {
-        // Check if the URL matches any expected paths, skip if an endpoint was selected
-        if (context.GetEndpoint() == null
+        // Check if the URL matches any expected paths, skip if an endpoint with a request delegate was selected
+        if (context.GetEndpoint()?.RequestDelegate is null
             && Helpers.IsGetOrHeadMethod(context.Request.Method)
             && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath)
             && TryGetDirectoryInfo(subpath, out var contents))

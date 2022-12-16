@@ -293,6 +293,13 @@
             "Client/Shared/NavMenu.NoGraphOrApi.razor",
             "Client/Shared/NavMenu.CallsMicrosoftGraph.razor"
           ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Client/Properties/launchSettings.json",
+            "Server/Properties/launchSettings.json"
+          ]
         }
       ]
     }
@@ -304,12 +311,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net7.0",
-          "description": "Target net7.0"
+          "choice": "net8.0",
+          "description": "Target net8.0"
         }
       ],
-      "replaces": "net7.0",
-      "defaultValue": "net7.0"
+      "replaces": "net8.0",
+      "defaultValue": "net8.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -559,7 +566,15 @@
     },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
+      "value": "(OrganizationalAuth || IndividualAuth)"
+    },
+    "HasHttpProfile": {
+      "type": "computed",
+      "value": "(!RequiresHttps)"
+    },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(RequiresHttps || !NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",
@@ -616,7 +631,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "displayName": "Do not use top-level statements",
+      "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     }
   },

@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
-internal class RedisSubscriptionManager
+internal sealed class RedisSubscriptionManager
 {
     private readonly ConcurrentDictionary<string, HubConnectionStore> _subscriptions = new ConcurrentDictionary<string, HubConnectionStore>(StringComparer.Ordinal);
     private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
@@ -16,6 +16,13 @@ internal class RedisSubscriptionManager
 
         try
         {
+            // Avoid adding subscription if connection is closing/closed
+            // We're in a lock and ConnectionAborted is triggered before OnDisconnectedAsync is called so this is guaranteed to be safe when adding while connection is closing and removing items
+            if (connection.ConnectionAborted.IsCancellationRequested)
+            {
+                return;
+            }
+
             var subscription = _subscriptions.GetOrAdd(id, _ => new HubConnectionStore());
 
             subscription.Add(connection);
@@ -32,7 +39,7 @@ internal class RedisSubscriptionManager
         }
     }
 
-    public async Task RemoveSubscriptionAsync(string id, HubConnectionContext connection, Func<string, Task> unsubscribeMethod)
+    public async Task RemoveSubscriptionAsync(string id, HubConnectionContext connection, object state, Func<object, string, Task> unsubscribeMethod)
     {
         await _lock.WaitAsync();
 
@@ -48,7 +55,7 @@ internal class RedisSubscriptionManager
             if (subscription.Count == 0)
             {
                 _subscriptions.TryRemove(id, out _);
-                await unsubscribeMethod(id);
+                await unsubscribeMethod(state, id);
             }
         }
         finally

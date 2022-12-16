@@ -32,4 +32,13 @@ public interface IInvocationBinder
     /// <param name="streamId">The ID of the stream the stream item is a part of.</param>
     /// <returns>The <see cref="Type"/> of the item the stream contains.</returns>
     Type GetStreamItemType(string streamId);
+
+#if NETCOREAPP
+    /// <summary>
+    /// Gets the <see cref="string"/> representation for the target from bytes.
+    /// </summary>
+    /// <param name="utf8Bytes">The target name as a utf8 sequence.</param>
+    /// <returns>A string that represents the target or null if the target string couldn't be determined.</returns>
+    string? GetTarget(ReadOnlySpan<byte> utf8Bytes) => null;
+#endif
 }

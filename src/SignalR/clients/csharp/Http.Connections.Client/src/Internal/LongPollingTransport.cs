@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class LongPollingTransport : ITransport
+internal sealed partial class LongPollingTransport : ITransport
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
@@ -50,7 +50,12 @@ internal partial class LongPollingTransport : ITransport
 
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+            Version = HttpVersion.Version20,
+#endif
+        };
         using (var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
         {
             response.EnsureSuccessStatusCode();
@@ -148,7 +153,12 @@ internal partial class LongPollingTransport : ITransport
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
+                var request = new HttpRequestMessage(HttpMethod.Get, pollUrl)
+                {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                    Version = HttpVersion.Version20,
+#endif
+                };
 
                 HttpResponseMessage response;
 
@@ -227,7 +237,13 @@ internal partial class LongPollingTransport : ITransport
         try
         {
             Log.SendingDeleteRequest(_logger, url);
-            var response = await _httpClient.DeleteAsync(url).ConfigureAwait(false);
+            var request = new HttpRequestMessage(HttpMethod.Delete, url)
+            {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                Version = HttpVersion.Version20,
+#endif
+            };
+            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {

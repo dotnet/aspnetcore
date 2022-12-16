@@ -16,6 +16,5 @@ public interface IAuthenticatedEncryptorDescriptorDeserializer
     /// </summary>
     /// <param name="element">The element to deserialize.</param>
     /// <returns>The <see cref="IAuthenticatedEncryptorDescriptor"/> represented by <paramref name="element"/>.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element);
 }

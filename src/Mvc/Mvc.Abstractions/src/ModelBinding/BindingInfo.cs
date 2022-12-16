@@ -261,7 +261,7 @@ public class BindingInfo
         return isBindingInfoPresent;
     }
 
-    private class CompositePropertyFilterProvider : IPropertyFilterProvider
+    private sealed class CompositePropertyFilterProvider : IPropertyFilterProvider
     {
         private readonly IEnumerable<IPropertyFilterProvider> _providers;
 

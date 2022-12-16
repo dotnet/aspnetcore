@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
+internal sealed class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
 {
     private readonly HubDispatcher<THub> _dispatcher;
     private readonly HubConnectionContext _connection;
@@ -27,11 +27,17 @@ internal class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
         {
             return type;
         }
+        // If the id isn't found then it's possible the server canceled the request for a result but the client still sent the result.
         throw new InvalidOperationException($"Unknown invocation ID '{invocationId}'.");
     }
 
     public Type GetStreamItemType(string streamId)
     {
         return _connection.StreamTracker.GetStreamItemType(streamId);
+    }
+
+    public string? GetTarget(ReadOnlySpan<byte> targetUtf8Bytes)
+    {
+        return _dispatcher.GetTargetName(targetUtf8Bytes);
     }
 }

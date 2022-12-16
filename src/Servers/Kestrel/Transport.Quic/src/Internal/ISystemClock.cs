@@ -14,7 +14,7 @@ internal interface ISystemClock
     DateTimeOffset UtcNow { get; }
 }
 
-internal class SystemClock : ISystemClock
+internal sealed class SystemClock : ISystemClock
 {
     public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 }

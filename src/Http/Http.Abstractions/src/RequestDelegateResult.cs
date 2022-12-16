@@ -23,7 +23,8 @@ public sealed class RequestDelegateResult
     public RequestDelegate RequestDelegate { get; }
 
     /// <summary>
-    /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />
+    /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />. If a non-null
+    /// RequestDelegateFactoryOptions.EndpointMetadata list was passed in, this will be the same instance.
     /// </summary>
     public IReadOnlyList<object> EndpointMetadata { get; }
 }

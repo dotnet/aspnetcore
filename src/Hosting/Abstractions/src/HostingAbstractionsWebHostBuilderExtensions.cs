@@ -137,7 +137,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="urls">The urls the hosted application will listen on.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHostBuilder UseUrls(this IWebHostBuilder hostBuilder, params string[] urls)
+    public static IWebHostBuilder UseUrls(this IWebHostBuilder hostBuilder, [StringSyntax(StringSyntaxAttribute.Uri)] params string[] urls)
     {
         if (urls == null)
         {
@@ -187,7 +187,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to start.</param>
     /// <param name="urls">The urls the hosted application will listen on.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHost Start(this IWebHostBuilder hostBuilder, params string[] urls)
+    public static IWebHost Start(this IWebHostBuilder hostBuilder, [StringSyntax(StringSyntaxAttribute.Uri)] params string[] urls)
     {
         var host = hostBuilder.UseUrls(urls).Build();
         host.StartAsync(CancellationToken.None).GetAwaiter().GetResult();

@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor Server 应用空",
+  "description": "用于创建 Blazor 服务器应用的空项目模板，该应用在 ASP.NET Core 应用内运行服务器端，并通过 SignalR 连接处理用户交互。此模板中没有任何内容。",
+  "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",
+  "symbols/kestrelHttpPort/description": "要用于 launchSettings.json 中 HTTP 终结点的端口号。",
+  "symbols/kestrelHttpsPort/description": "要用于 launchSettings.json 中 HTTPS 终结点的端口号。仅当不使用参数 no-https 时，此选项才适用。",
+  "symbols/iisHttpPort/description": "要用于 launchSettings.json 中 IIS Express HTTP 终结点的端口号。",
+  "symbols/iisHttpsPort/description": "要用于 launchSettings.json 中 IIS Express HTTPS 终结点的端口号。仅当不使用参数 no-https 时，此选项才适用。",
+  "symbols/HasHttpProfile/description": "始终具有 HTTP 配置文件。",
+  "symbols/NoHttps/description": "是否禁用 HTTPS。",
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/Framework/choices/net8.0/description": "目标 net8.0",
+  "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
+}

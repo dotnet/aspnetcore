@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">[BundleNameFull] 安裝程式</String>
   <String Id="Title">[BundleNameShort]</String>
@@ -8,8 +8,8 @@
   <String Id="InstallVersion">版本 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">您確定要取消嗎?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">前一版</String>
-  <String Id="HelpHeader">安裝程式說明</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - 在目錄中安裝、修復、解除安裝或
+  <String Id="HelpHeader">安裝說明</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]目錄[\]] - 在目錄中安裝、修復、解除安裝或
    建立搭售方案的完整本機複本。預設為安裝。
 
 /passive | /quiet -  顯示最少 UI 且不含提示，或者不顯示 UI，也
@@ -38,16 +38,16 @@
   <String Id="ModifyCloseButton">關閉(&amp;C)</String>
   <String Id="SuccessRepairHeader">修復已成功完成</String>
   <String Id="SuccessUninstallHeader">解除安裝已成功完成</String>
-  <String Id="SuccessInstallHeader">安裝已成功完成</String> 
-  <String Id="SuccessHeader">設定成功</String>	
+  <String Id="SuccessInstallHeader">安裝已成功完成</String>
+  <String Id="SuccessHeader">設定成功</String>
   <String Id="SuccessLaunchButton">啟動(&amp;L)</String>
   <String Id="SuccessRestartText">必須重新啟動電腦，才能使用此軟體。</String>
   <String Id="SuccessRestartButton">重新啟動(&amp;R)</String>
   <String Id="SuccessCloseButton">關閉(&amp;C)</String>
-  <String Id="FailureHeader">設定失敗</String>
-  <String Id="FailureInstallHeader">安裝程式失敗</String>
+  <String Id="FailureHeader">安裝失敗</String>
+  <String Id="FailureInstallHeader">設定失敗</String>
   <String Id="FailureUninstallHeader">解除安裝失敗</String>
-  <String Id="FailureRepairHeader">修復失敗</String> 
+  <String Id="FailureRepairHeader">修復失敗</String>
   <String Id="FailureHyperlinkLogText">有一個或多個問題導致安裝程式失敗。請解決問題，然後重試一次安裝。如需詳細資訊，請參閱&lt;a href="#"&gt;記錄檔&lt;/a&gt;。</String>
   <String Id="FailureRestartText">必須重新啟動電腦，才能完成軟體的復原。</String>
   <String Id="FailureRestartButton">重新啟動(&amp;R)</String>

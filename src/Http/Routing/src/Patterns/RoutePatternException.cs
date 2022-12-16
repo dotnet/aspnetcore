@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
@@ -22,7 +23,7 @@ public sealed class RoutePatternException : Exception
     /// </summary>
     /// <param name="pattern">The route pattern as raw text.</param>
     /// <param name="message">The exception message.</param>
-    public RoutePatternException(string pattern, string message)
+    public RoutePatternException([StringSyntax("Route")] string pattern, string message)
         : base(message)
     {
         if (pattern == null)

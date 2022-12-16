@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// A filter that sets the <see cref="IHttpMaxRequestBodySizeFeature.MaxRequestBodySize"/>
 /// to the specified <see cref="Bytes"/>.
 /// </summary>
-internal partial class RequestSizeLimitFilter : IAuthorizationFilter, IRequestSizePolicy
+internal sealed partial class RequestSizeLimitFilter : IAuthorizationFilter, IRequestSizePolicy
 {
     private readonly ILogger _logger;
 

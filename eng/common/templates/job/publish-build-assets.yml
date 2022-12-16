@@ -34,15 +34,15 @@ jobs:
 - job: Asset_Registry_Publish
 
   dependsOn: ${{ parameters.dependsOn }}
+  timeoutInMinutes: 150
 
   ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
     displayName: Publish Assets
   ${{ else }}:
     displayName: Publish to Build Asset Registry
 
-  pool: ${{ parameters.pool }}
-
   variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: Publish-Build-Assets
     - group: AzureDevOps-Artifact-Feeds-Pats
@@ -50,6 +50,16 @@ jobs:
       value: false
     - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
       - template: /eng/common/templates/post-build/common-variables.yml
+
+  pool:
+    # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+    ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+      name: VSEngSS-MicroBuild2022-1ES
+      demands: Cmd
+    # If it's not devdiv, it's dnceng
+    ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+      name: $(DncEngInternalBuildPool)
+      demands: ImageOverride -equals windows.vs2019.amd64
 
   steps:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -63,12 +73,6 @@ jobs:
       continueOnError: ${{ parameters.continueOnError }}
     
     - task: NuGetAuthenticate@0
-
-    - task: PowerShell@2 
-      displayName: Enable cross-org NuGet feed authentication 
-      inputs: 
-        filePath: $(Build.SourcesDirectory)/eng/common/enable-cross-org-publishing.ps1 
-        arguments: -token $(dn-bot-all-orgs-artifact-feeds-rw) 
 
     - task: PowerShell@2
       displayName: Publish Build Assets

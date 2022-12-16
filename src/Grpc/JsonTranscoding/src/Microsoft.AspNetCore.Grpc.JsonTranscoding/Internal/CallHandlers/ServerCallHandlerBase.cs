@@ -36,6 +36,11 @@ internal abstract class ServerCallHandlerBase<TService, TRequest, TResponse>
 
     public Task HandleCallAsync(HttpContext httpContext)
     {
+        foreach (var rewriteAction in DescriptorInfo.RouteAdapter.RewriteVariableActions)
+        {
+            rewriteAction(httpContext);
+        }
+
         var serverCallContext = new JsonTranscodingServerCallContext(httpContext, MethodInvoker.Options, MethodInvoker.Method, DescriptorInfo, Logger);
         httpContext.Features.Set<IServerCallContextFeature>(serverCallContext);
 

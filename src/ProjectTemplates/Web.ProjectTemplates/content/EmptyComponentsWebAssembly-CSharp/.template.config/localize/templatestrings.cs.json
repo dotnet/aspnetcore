@@ -1,0 +1,23 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Aplikace Blazor WebAssembly je prázdná.",
+  "description": "Prázdná šablona projektu pro vytvoření aplikace Blazor, která běží na WebAssembly a je volitelně hostovaná aplikací ASP.NET Core. Tato šablona neobsahuje žádný obsah.",
+  "symbols/Framework/description": "Cílová architektura pro projekt",
+  "symbols/Framework/choices/net8.0/description": "Cílový net8.0",
+  "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
+  "symbols/Hosted/displayName": "_Hostováno pomocí ASP.NET Core",
+  "symbols/Hosted/description": "Pokud je tato možnost zadaná, zahrnuje hostitele ASP.NET Core pro aplikaci Blazor WebAssembly.",
+  "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",
+  "symbols/kestrelHttpPort/description": "Číslo portu, který se má použít pro koncový bod HTTP v souboru launchSettings.json.",
+  "symbols/kestrelHttpsPort/description": "Číslo portu, který se má použít pro koncový bod HTTPS v souboru launchSettings.json. Tato možnost se dá použít jenom v případě, že se nepoužívá parametr no-https.",
+  "symbols/iisHttpPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTP v souboru launchSettings.json.",
+  "symbols/iisHttpsPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTPS v souboru launchSettings.json. Tato možnost se dá použít jenom v případě, že se nepoužívá parametr no-https.",
+  "symbols/PWA/displayName": "_Progresivní webová aplikace",
+  "symbols/PWA/description": "Pokud je tato možnost zadaná, vytvoří progresivní webovou aplikaci (PWA), která podporuje instalaci a offline použití.",
+  "symbols/HasHttpProfile/description": "Vždy mějte profil protokolu HTTP.",
+  "symbols/NoHttps/description": "Určuje, jestli se má vypnout protokol HTTPS.",
+  "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore",
+  "postActions/restoreClient/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restoreClient/manualInstructions/default/text": "Spustit „dotnet restore“"
+}

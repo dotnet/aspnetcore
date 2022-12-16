@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.Authentication.Certificate.CertificateValidationCache.CertificateValidationCache(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.Certificate.CertificateValidationCacheOptions!>! options) -> void
-Microsoft.AspNetCore.Authentication.Certificate.CertificateValidationCache.CertificateValidationCache(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.Certificate.CertificateValidationCacheOptions!>! options) -> void

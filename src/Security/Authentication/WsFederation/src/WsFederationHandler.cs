@@ -161,7 +161,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
                 return HandleRequestResult.SkipHandler();
             }
 
-            return HandleRequestResult.Fail("No message.");
+            return HandleRequestResults.NoMessage;
         }
 
         try
@@ -175,7 +175,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             {
                 if (!Options.AllowUnsolicitedLogins)
                 {
-                    return HandleRequestResult.Fail("Unsolicited logins are not allowed.");
+                    return HandleRequestResults.UnsolicitedLoginsNotAllowed;
                 }
             }
             else
@@ -418,7 +418,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             return uri;
         }
 
-        if (!uri.StartsWith("/", StringComparison.Ordinal))
+        if (!uri.StartsWith('/'))
         {
             return uri;
         }

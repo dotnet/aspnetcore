@@ -600,7 +600,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         var url = host.MakeUrl(scheme);
         using var client = CreateClient();
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url)).DefaultTimeout();
-        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
+        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.Message);
         await host.StopAsync().DefaultTimeout();
     }
 
@@ -629,7 +629,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         response.EnsureSuccessStatusCode();
         receivedHeaders.SetResult();
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync()).DefaultTimeout();
-        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
+        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.Message);
         await host.StopAsync().DefaultTimeout();
     }
 
@@ -742,7 +742,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await serverReset.Task.DefaultTimeout();
         var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
         Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-        await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+        await Assert.ThrowsAsync<HttpProtocolException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
         await host.StopAsync().DefaultTimeout();
@@ -801,7 +801,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await serverReset.Task.DefaultTimeout();
         var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
         Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-        await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+        await Assert.ThrowsAsync<HttpProtocolException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
         await host.StopAsync().DefaultTimeout();
@@ -1369,10 +1369,10 @@ public class HttpClientHttp2InteropTests : LoggedTest
         {
             request.Headers.Add("header" + i, oneKbString + i);
         }
-        // Kestrel closes the connection rather than sending the recommended 431 response. https://github.com/dotnet/aspnetcore/issues/17861
-        await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request)).DefaultTimeout();
-
+        var response = await client.SendAsync(request).DefaultTimeout();
         await host.StopAsync().DefaultTimeout();
+
+        Assert.Equal(HttpStatusCode.RequestHeaderFieldsTooLarge, response.StatusCode);
     }
 
     [Theory]

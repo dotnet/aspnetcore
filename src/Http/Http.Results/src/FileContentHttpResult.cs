@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Represents an <see cref="IResult"/> that when executed will
 /// write a file from the content to the response.
 /// </summary>
-public sealed partial class FileContentHttpResult : IResult
+public sealed partial class FileContentHttpResult : IResult, IFileHttpResult, IContentTypeHttpResult
 {
     /// <summary>
     /// Creates a new <see cref="FileContentHttpResult"/> instance with

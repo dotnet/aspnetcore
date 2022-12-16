@@ -82,7 +82,7 @@ public class EnableAuthenticatorModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where TUser : class
+internal sealed class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<EnableAuthenticatorModel> _logger;

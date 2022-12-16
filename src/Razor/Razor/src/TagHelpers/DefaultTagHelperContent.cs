@@ -313,7 +313,7 @@ public class DefaultTagHelperContent : TagHelperContent
     }
 
     // Overrides Write(string) to find if the content written is empty/whitespace.
-    private class EmptyOrWhiteSpaceWriter : TextWriter
+    private sealed class EmptyOrWhiteSpaceWriter : TextWriter
     {
         public override Encoding Encoding
         {

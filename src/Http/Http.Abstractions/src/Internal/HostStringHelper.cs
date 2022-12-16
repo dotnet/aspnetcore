@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class HostStringHelper
+internal sealed class HostStringHelper
 {
     // Allowed Characters:
     // A-Z, a-z, 0-9, .,

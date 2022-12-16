@@ -105,6 +105,27 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void PointerEnterAndPointerLeave_CanTrigger()
+    {
+        Browser.MountTestComponent<MouseEventComponent>();
+
+        var input = Browser.Exists(By.Id("pointerenter_input"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Pointer enter the button and then pointer leave
+        Browser.ExecuteJavaScript($@"
+            var pointerEnterElement = document.getElementById('pointerenter_input');
+            var pointerEnterEvent = new PointerEvent('pointerenter');
+            var pointerLeaveEvent = new PointerEvent('pointerleave');
+            pointerEnterElement.dispatchEvent(pointerEnterEvent);
+            pointerEnterElement.dispatchEvent(pointerLeaveEvent);");
+
+        Browser.Equal("pointerenter,pointerleave,", () => output.Text);
+    }
+
+    [Fact]
     public void MouseMove_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();
@@ -198,10 +219,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("dragstart,", () => output.Text);
     }
 
-    // Skipped because it will never pass because Selenium doesn't support this kind of event
-    // The linked issue tracks the desire to find a way of testing this
-    // There's no point quarantining it - we know it will always fail
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32373")]
+    [Fact]
     public void TouchEvent_CanTrigger()
     {
         Browser.MountTestComponent<TouchEventComponent>();
@@ -211,9 +229,13 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var actions = new TouchActions(Browser).SingleTap(input);
+        var touchPointer = new PointerInputDevice(PointerKind.Touch);
+        var singleTap = new ActionBuilder()
+            .AddAction(touchPointer.CreatePointerMove(input, 0, 0, TimeSpan.Zero))
+            .AddAction(touchPointer.CreatePointerDown(MouseButton.Touch))
+            .AddAction(touchPointer.CreatePointerUp(MouseButton.Touch));
+        ((IActionExecutor)Browser).PerformActions(singleTap.ToActionSequenceList());
 
-        actions.Perform();
         Browser.Equal("touchstart,touchend,", () => output.Text);
     }
 

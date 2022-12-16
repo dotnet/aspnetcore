@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// A <see cref="ITagHelperActivator"/> that retrieves tag helpers as services from the request's
 /// <see cref="IServiceProvider"/>.
 /// </summary>
-internal class ServiceBasedTagHelperActivator : ITagHelperActivator
+internal sealed class ServiceBasedTagHelperActivator : ITagHelperActivator
 {
     /// <inheritdoc />
     public TTagHelper Create<TTagHelper>(ViewContext context) where TTagHelper : ITagHelper

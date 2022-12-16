@@ -416,7 +416,7 @@ internal static class ILEmitTrieFactory
         }
 #endif
 
-    private class Locals
+    private sealed class Locals
     {
         public Locals(ILGenerator il, bool vectorize)
         {
@@ -464,7 +464,7 @@ internal static class ILEmitTrieFactory
         public LocalBuilder Span { get; }
     }
 
-    private class Labels
+    private sealed class Labels
     {
         /// <summary>
         /// Label to goto that will return the default destination (not a match).

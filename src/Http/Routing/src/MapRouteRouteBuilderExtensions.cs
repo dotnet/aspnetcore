@@ -26,7 +26,7 @@ public static class MapRouteRouteBuilderExtensions
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template)
+        [StringSyntax("Route")] string? template)
     {
         MapRoute(routeBuilder, name, template, defaults: null);
         return routeBuilder;
@@ -47,7 +47,7 @@ public static class MapRouteRouteBuilderExtensions
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults)
     {
         return MapRoute(routeBuilder, name, template, defaults, constraints: null);
@@ -73,7 +73,7 @@ public static class MapRouteRouteBuilderExtensions
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults,
         object? constraints)
     {
@@ -104,7 +104,7 @@ public static class MapRouteRouteBuilderExtensions
     public static IRouteBuilder MapRoute(
         this IRouteBuilder routeBuilder,
         string? name,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults,
         object? constraints,
         object? dataTokens)
@@ -139,7 +139,7 @@ public static class MapRouteRouteBuilderExtensions
         return new BackCompatInlineConstraintResolver(inlineConstraintResolver, parameterPolicyFactory);
     }
 
-    private class BackCompatInlineConstraintResolver : IInlineConstraintResolver
+    private sealed class BackCompatInlineConstraintResolver : IInlineConstraintResolver
     {
         private readonly IInlineConstraintResolver _inner;
         private readonly ParameterPolicyFactory _parameterPolicyFactory;

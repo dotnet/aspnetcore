@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
-internal class RedisChannels
+internal sealed class RedisChannels
 {
     private readonly string _prefix;
 
@@ -23,12 +23,18 @@ internal class RedisChannels
     /// </summary>
     public string GroupManagement { get; }
 
-    public RedisChannels(string prefix)
+    /// <summary>
+    /// Gets the name of the internal channel for receiving client results.
+    /// </summary>
+    public string ReturnResults { get; }
+
+    public RedisChannels(string prefix, string serverName)
     {
         _prefix = prefix;
 
         All = prefix + ":all";
         GroupManagement = prefix + ":internal:groups";
+        ReturnResults = _prefix + ":internal:return:" + serverName;
     }
 
     /// <summary>
@@ -70,16 +76,5 @@ internal class RedisChannels
     public string Ack(string serverName)
     {
         return _prefix + ":internal:ack:" + serverName;
-    }
-
-    /// <summary>
-    /// Gets the name of the client return results channel for the specified server.
-    /// </summary>
-    /// <param name="serverName">The name of the server to get the client return results channel for.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string ReturnResults(string serverName)
-    {
-        return _prefix + ":internal:return:" + serverName;
     }
 }

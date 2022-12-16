@@ -286,7 +286,11 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
             .Enrich.FromLogContext()
             .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
             .MinimumLevel.Verbose()
-            .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+            .WriteTo.File(fileName,
+                outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}",
+                flushToDiskInterval: TimeSpan.FromSeconds(1),
+                shared: true,
+                formatProvider: CultureInfo.InvariantCulture)
             .CreateLogger();
 
         return new SerilogLoggerProvider(serilogger, dispose: true);
@@ -316,7 +320,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
         }
     }
 
-    private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
+    private sealed class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
     {
         private readonly DateTimeOffset? _logStart;
 
@@ -334,7 +338,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
                         : DateTimeOffset.UtcNow.ToString("s", CultureInfo.InvariantCulture)));
     }
 
-    private class Disposable : IDisposable
+    private sealed class Disposable : IDisposable
     {
         private readonly Action _action;
 

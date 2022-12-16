@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Provides a collection of <see cref="Endpoint"/> instances.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplayString,nq}")]
 public sealed class DefaultEndpointDataSource : EndpointDataSource
 {
     private readonly IReadOnlyList<Endpoint> _endpoints;
@@ -53,4 +55,6 @@ public sealed class DefaultEndpointDataSource : EndpointDataSource
     /// Returns a read-only collection of <see cref="Endpoint"/> instances.
     /// </summary>
     public override IReadOnlyList<Endpoint> Endpoints => _endpoints;
+
+    private string DebuggerDisplayString => GetDebuggerDisplayStringForEndpoints(_endpoints);
 }

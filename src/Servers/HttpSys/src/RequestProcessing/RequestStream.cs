@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 #pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'. Fixing this is too gnarly.
-internal partial class RequestStream : Stream
+internal sealed partial class RequestStream : Stream
 #pragma warning restore CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'
 {
     private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
@@ -94,22 +94,6 @@ internal partial class RequestStream : Stream
         _requestContext.Abort();
     }
 
-    private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
-    {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-        if ((uint)offset > (uint)buffer.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-        }
-        if ((uint)size > (uint)(buffer.Length - offset))
-        {
-            throw new ArgumentOutOfRangeException(nameof(size), size, string.Empty);
-        }
-    }
-
     public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
     {
         if (!RequestContext.AllowSynchronousIO)
@@ -117,7 +101,7 @@ internal partial class RequestStream : Stream
             throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
         }
 
-        ValidateReadBuffer(buffer, offset, size);
+        ValidateBufferArguments(buffer, offset, size);
         CheckSizeLimit();
         if (_closed)
         {
@@ -203,7 +187,7 @@ internal partial class RequestStream : Stream
 
     public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
     {
-        ValidateReadBuffer(buffer, offset, size);
+        ValidateBufferArguments(buffer, offset, size);
         CheckSizeLimit();
         if (_closed)
         {

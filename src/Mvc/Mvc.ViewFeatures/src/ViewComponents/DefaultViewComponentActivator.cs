@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 /// <see cref="ViewComponentContext"/> to a public property of a view component marked
 /// with <see cref="ViewComponentContextAttribute"/>.
 /// </remarks>
-internal class DefaultViewComponentActivator : IViewComponentActivator
+internal sealed class DefaultViewComponentActivator : IViewComponentActivator
 {
     private readonly ITypeActivatorCache _typeActivatorCache;
 

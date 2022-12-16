@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
@@ -126,7 +126,7 @@ public class WebHostFunctionalTests : LoggedTest
 
                 logger.Log(LogLevel.Information, 0, "Message", null, (s, e) =>
                 {
-                    Assert.True(false);
+                    Assert.True(false, "Information log when log level set to warning in config");
                     return string.Empty;
                 });
 
@@ -153,7 +153,7 @@ public class WebHostFunctionalTests : LoggedTest
         var applicationName = "CreateDefaultBuilderApp";
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
         {
-            TargetFramework = "net7.0",
+            TargetFramework = "net8.0",
             HostingModel = HostingModel.InProcess
         };
 
@@ -208,7 +208,7 @@ public class WebHostFunctionalTests : LoggedTest
     {
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitectures.Current)
         {
-            TargetFramework = "net7.0",
+            TargetFramework = "net8.0",
         };
 
         if (setTestEnvVars)

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.ResponseCompression;
 /// This is a placeholder for the CompressionProviderCollection that allows creating the given type via
 /// an <see cref="IServiceProvider" />.
 /// </summary>
-internal class CompressionProviderFactory : ICompressionProvider
+internal sealed class CompressionProviderFactory : ICompressionProvider
 {
     public CompressionProviderFactory([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type providerType)
     {

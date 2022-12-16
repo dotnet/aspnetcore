@@ -34,8 +34,8 @@ internal sealed partial class HttpConnectionManager
         _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout).TotalMilliseconds;
 
         // Register these last as the callbacks could run immediately
-        appLifetime.ApplicationStarted.Register(() => Start());
-        appLifetime.ApplicationStopping.Register(() => CloseConnections());
+        appLifetime.ApplicationStarted.Register(Start);
+        appLifetime.ApplicationStopping.Register(CloseConnections);
     }
 
     public void Start()

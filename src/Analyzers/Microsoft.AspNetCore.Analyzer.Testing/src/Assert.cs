@@ -38,7 +38,7 @@ public class AnalyzerAssert
         }
     }
 
-    private class DiagnosticLocationAssertException : EqualException
+    private sealed class DiagnosticLocationAssertException : EqualException
     {
         public DiagnosticLocationAssertException(
             DiagnosticLocation expected,

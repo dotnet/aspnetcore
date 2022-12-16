@@ -12,7 +12,7 @@ using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Internal;
 
-internal class GrpcDataContractResolver : ISerializerDataContractResolver
+internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
 {
     private readonly ISerializerDataContractResolver _innerContractResolver;
     private readonly Dictionary<Type, MessageDescriptor> _messageTypeMapping;
@@ -52,7 +52,6 @@ internal class GrpcDataContractResolver : ISerializerDataContractResolver
         {
             if (_enumTypeMapping.TryGetValue(type, out var enumDescriptor))
             {
-                var values = enumDescriptor.Values.Select(v => v.Name).ToList();
                 return DataContract.ForPrimitive(type, DataType.String, dataFormat: null, value =>
                 {
                     var match = enumDescriptor.Values.SingleOrDefault(v => v.Number == (int)value);

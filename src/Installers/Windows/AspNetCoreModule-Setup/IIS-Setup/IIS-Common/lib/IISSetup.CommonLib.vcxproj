@@ -34,8 +34,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Lib</RootNamespace>
     <ProjectName>CommonLib</ProjectName>
-    <PlatformToolsetVersion Condition=" '$(VisualStudioVersion)' == '17.0' ">v143</PlatformToolsetVersion>
-    <PlatformToolsetVersion Condition=" '$(PlatformToolsetVersion)' == '' ">v142</PlatformToolsetVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
@@ -65,17 +63,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="acache.cxx" />
-    <ClCompile Include="ahutil.cpp" />
-    <ClCompile Include="base64.cxx" />
-    <ClCompile Include="datetime.cxx" />
-    <ClCompile Include="multisz.cxx" />
-    <ClCompile Include="multisza.cxx" />
-    <ClCompile Include="normalize.cxx" />
-    <ClCompile Include="stringa.cpp" />
-    <ClCompile Include="stringu.cpp" />
-    <ClCompile Include="ulparse.cxx" />
-    <ClCompile Include="util.cxx" />
+    <ClCompile Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\ahutil.cpp" />
+    <ClCompile Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\stringa.cpp" />
+    <ClCompile Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\stringu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />

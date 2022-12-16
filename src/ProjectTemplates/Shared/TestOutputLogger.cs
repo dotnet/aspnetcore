@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers;
 
-internal class TestOutputLogger : ITestOutputHelper
+internal sealed class TestOutputLogger : ITestOutputHelper
 {
     private readonly ILogger _logger;
 

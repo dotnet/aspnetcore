@@ -12,7 +12,7 @@ using BenchmarkDotNet.Validators;
 
 namespace BenchmarkDotNet.Attributes;
 
-internal class DefaultCoreProfileConfig : ManualConfig
+internal sealed class DefaultCoreProfileConfig : ManualConfig
 {
     public DefaultCoreProfileConfig()
     {

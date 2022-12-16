@@ -20,7 +20,7 @@ public static class WebHostBuilderQuicExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
-        if (QuicImplementationProviders.Default.IsSupported)
+        if (QuicListener.IsSupported)
         {
             return hostBuilder.ConfigureServices(services =>
             {

@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

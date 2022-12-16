@@ -10,7 +10,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Internal.XmlComments;
 
-internal class GrpcXmlCommentsOperationFilter : IOperationFilter
+internal sealed class GrpcXmlCommentsOperationFilter : IOperationFilter
 {
     private readonly XPathNavigator _xmlNavigator;
 
@@ -100,9 +100,10 @@ internal class GrpcXmlCommentsOperationFilter : IOperationFilter
         while (responseNodes.MoveNext())
         {
             var code = responseNodes.Current!.GetAttribute("code", "");
-            var response = operation.Responses.ContainsKey(code)
-                ? operation.Responses[code]
-                : operation.Responses[code] = new OpenApiResponse();
+            if (!operation.Responses.TryGetValue(code, out var response))
+            {
+                operation.Responses[code] = response = new OpenApiResponse();
+            }
 
             response.Description = XmlCommentsTextHelper.Humanize(responseNodes.Current.InnerXml);
         }

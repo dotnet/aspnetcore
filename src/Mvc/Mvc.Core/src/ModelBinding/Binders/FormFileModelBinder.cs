@@ -173,7 +173,7 @@ public partial class FormFileModelBinder : IModelBinder
         }
     }
 
-    private class FileCollection : ReadOnlyCollection<IFormFile>, IFormFileCollection
+    private sealed class FileCollection : ReadOnlyCollection<IFormFile>, IFormFileCollection
     {
         public FileCollection(List<IFormFile> list)
             : base(list)

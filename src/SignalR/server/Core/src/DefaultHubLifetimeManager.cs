@@ -51,6 +51,11 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         _groups.Add(connection, groupName);
+        // Connection disconnected while adding to group, remove it in case the Add was called after OnDisconnectedAsync removed items from the group
+        if (connection.ConnectionAborted.IsCancellationRequested)
+        {
+            _groups.Remove(connection.ConnectionId, groupName);
+        }
 
         return Task.CompletedTask;
     }
@@ -321,7 +326,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     }
 
     /// <inheritdoc/>
-    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         if (connectionId == null)
         {
@@ -336,6 +341,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
+
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection.ConnectionAborted, out var linkedToken);
         var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);

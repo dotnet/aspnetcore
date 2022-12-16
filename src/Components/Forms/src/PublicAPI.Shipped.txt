@@ -31,6 +31,7 @@ Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs
 Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs.FieldChangedEventArgs(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
 Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
 Microsoft.AspNetCore.Components.Forms.FieldIdentifier
+Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldIdentifier() -> void
 Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Equals(Microsoft.AspNetCore.Components.Forms.FieldIdentifier otherIdentifier) -> bool
 Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldIdentifier(object! model, string! fieldName) -> void
 Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldName.get -> string!

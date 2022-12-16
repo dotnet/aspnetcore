@@ -74,6 +74,7 @@ Microsoft.AspNetCore.Components.DynamicComponent.Type.set -> void
 Microsoft.AspNetCore.Components.EditorRequiredAttribute
 Microsoft.AspNetCore.Components.EditorRequiredAttribute.EditorRequiredAttribute() -> void
 Microsoft.AspNetCore.Components.ElementReference
+Microsoft.AspNetCore.Components.ElementReference.ElementReference() -> void
 Microsoft.AspNetCore.Components.ElementReference.Context.get -> Microsoft.AspNetCore.Components.ElementReferenceContext?
 Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id) -> void
 Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id, Microsoft.AspNetCore.Components.ElementReferenceContext? context) -> void
@@ -91,11 +92,13 @@ Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.get -> int
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.Recover() -> void
 Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.EventCallback.EventCallback() -> void
 Microsoft.AspNetCore.Components.EventCallback.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
 Microsoft.AspNetCore.Components.EventCallback.HasDelegate.get -> bool
 Microsoft.AspNetCore.Components.EventCallback.InvokeAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventCallback.InvokeAsync(object? arg) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventCallback<TValue>
+Microsoft.AspNetCore.Components.EventCallback<TValue>.EventCallback() -> void
 Microsoft.AspNetCore.Components.EventCallback<TValue>.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
 Microsoft.AspNetCore.Components.EventCallback<TValue>.HasDelegate.get -> bool
 Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync() -> System.Threading.Tasks.Task!
@@ -118,6 +121,7 @@ Microsoft.AspNetCore.Components.EventCallbackFactory.EventCallbackFactory() -> v
 Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions
 Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions
 Microsoft.AspNetCore.Components.EventCallbackWorkItem
+Microsoft.AspNetCore.Components.EventCallbackWorkItem.EventCallbackWorkItem() -> void
 Microsoft.AspNetCore.Components.EventCallbackWorkItem.EventCallbackWorkItem(System.MulticastDelegate? delegate) -> void
 Microsoft.AspNetCore.Components.EventCallbackWorkItem.InvokeAsync(object? arg) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventHandlerAttribute
@@ -164,6 +168,7 @@ Microsoft.AspNetCore.Components.LayoutView.SetParametersAsync(Microsoft.AspNetCo
 Microsoft.AspNetCore.Components.LocationChangeException
 Microsoft.AspNetCore.Components.LocationChangeException.LocationChangeException(string! message, System.Exception! innerException) -> void
 Microsoft.AspNetCore.Components.MarkupString
+Microsoft.AspNetCore.Components.MarkupString.MarkupString() -> void
 Microsoft.AspNetCore.Components.MarkupString.MarkupString(string! value) -> void
 Microsoft.AspNetCore.Components.MarkupString.Value.get -> string!
 Microsoft.AspNetCore.Components.NavigationException
@@ -202,11 +207,14 @@ Microsoft.AspNetCore.Components.ParameterAttribute.CaptureUnmatchedValues.get ->
 Microsoft.AspNetCore.Components.ParameterAttribute.CaptureUnmatchedValues.set -> void
 Microsoft.AspNetCore.Components.ParameterAttribute.ParameterAttribute() -> void
 Microsoft.AspNetCore.Components.ParameterValue
+Microsoft.AspNetCore.Components.ParameterValue.ParameterValue() -> void
 Microsoft.AspNetCore.Components.ParameterValue.Cascading.get -> bool
 Microsoft.AspNetCore.Components.ParameterValue.Name.get -> string!
 Microsoft.AspNetCore.Components.ParameterValue.Value.get -> object!
 Microsoft.AspNetCore.Components.ParameterView
 Microsoft.AspNetCore.Components.ParameterView.Enumerator
+Microsoft.AspNetCore.Components.ParameterView.Enumerator.Enumerator() -> void
+Microsoft.AspNetCore.Components.ParameterView.ParameterView() -> void
 Microsoft.AspNetCore.Components.ParameterView.Enumerator.Current.get -> Microsoft.AspNetCore.Components.ParameterValue
 Microsoft.AspNetCore.Components.ParameterView.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Components.ParameterView.GetEnumerator() -> Microsoft.AspNetCore.Components.ParameterView.Enumerator
@@ -220,10 +228,12 @@ Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson<TValue>(s
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
+Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.PersistingComponentStateSubscription() -> void
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.Dispose() -> void
 Microsoft.AspNetCore.Components.RenderFragment
 Microsoft.AspNetCore.Components.RenderFragment<TValue>
 Microsoft.AspNetCore.Components.RenderHandle
+Microsoft.AspNetCore.Components.RenderHandle.RenderHandle() -> void
 Microsoft.AspNetCore.Components.RenderHandle.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.RenderHandle.IsInitialized.get -> bool
 Microsoft.AspNetCore.Components.RenderHandle.IsRenderingOnMetadataUpdate.get -> bool
@@ -260,11 +270,13 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.RenderTreeBuilder() 
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetKey(object? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string! updatesAttributeName) -> void
 Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>
+Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.ArrayBuilderSegment() -> void
 Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.Array.get -> T[]!
 Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.Count.get -> int
 Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.Offset.get -> int
 Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<T>.this[int index].get -> T
 Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>
+Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.ArrayRange() -> void
 Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.ArrayRange(T[]! array, int count) -> void
 Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>.Clone() -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T>
 Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo
@@ -274,6 +286,7 @@ Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.EventFieldInfo() -> vo
 Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.FieldValue.get -> object!
 Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo.FieldValue.set -> void
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.RenderBatch() -> void
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.DisposedComponentIDs.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<int>
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.DisposedEventHandlerIDs.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<ulong>
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.ReferenceFrames.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>
@@ -294,7 +307,9 @@ Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int
 Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.UnhandledSynchronizationException -> System.UnhandledExceptionEventHandler!
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff.RenderTreeDiff() -> void
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RenderTreeEdit() -> void
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.PermutationListEnd = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.PermutationListEntry = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
@@ -307,6 +322,7 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.StepOut = 7 -> Mic
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.UpdateMarkup = 8 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType.UpdateText = 5 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.RenderTreeFrame() -> void
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.AttributeEventHandlerId.get -> ulong
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentId.get -> int
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentReferenceCaptureParentFrameIndex.get -> int

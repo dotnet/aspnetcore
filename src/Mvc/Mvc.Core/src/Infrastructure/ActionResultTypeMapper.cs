@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ActionResultTypeMapper : IActionResultTypeMapper
+internal sealed class ActionResultTypeMapper : IActionResultTypeMapper
 {
     public Type GetResultDataType(Type returnType)
     {

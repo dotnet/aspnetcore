@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor Server 應用程式空白",
+  "description": "建立 Blazor Server 應用程式的空白專案範本，該應用程式會在 ASP.NET Core 應用程式內執行伺服器端，並透過 SignalR 連線處理使用者互動。此範本沒有任何內容。",
+  "symbols/ExcludeLaunchSettings/description": "是否要從產生的範本排除 launchSettings.json。",
+  "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",
+  "symbols/kestrelHttpsPort/description": "launchSettings.json 中用於 HTTPS 端點的連接埠號碼。只有在未使用 no-https 參數時，才適用此選項。",
+  "symbols/iisHttpPort/description": "launchSettings.json 中 IIS Express HTTP 端點要使用的連接埠號碼。",
+  "symbols/iisHttpsPort/description": "launchSettings.json 中用於 IIS Express HTTPS 端點的連接埠號碼。只有在未使用 no-https 參數時，才適用此選項。",
+  "symbols/HasHttpProfile/description": "永遠有 HTTP 設定檔。",
+  "symbols/NoHttps/description": "是否要關閉 HTTPS。",
+  "symbols/Framework/description": "專案的目標 Framework。",
+  "symbols/Framework/choices/net8.0/description": "目標 net8.0",
+  "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
+  "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
+  "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
+}

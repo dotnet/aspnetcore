@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class ControllerActionDescriptorProvider : IActionDescriptorProvider
+internal sealed class ControllerActionDescriptorProvider : IActionDescriptorProvider
 {
     private readonly ApplicationPartManager _partManager;
     private readonly ApplicationModelFactory _applicationModelFactory;

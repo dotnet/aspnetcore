@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
-internal class ManifestDirectoryContents : IDirectoryContents
+internal sealed class ManifestDirectoryContents : IDirectoryContents
 {
     private readonly DateTimeOffset _lastModified;
     private IFileInfo[]? _entries;

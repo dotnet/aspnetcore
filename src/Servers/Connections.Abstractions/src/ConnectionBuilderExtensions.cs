@@ -24,7 +24,7 @@ public static class ConnectionBuilderExtensions
         var handler = ActivatorUtilities.GetServiceOrCreateInstance<TConnectionHandler>(connectionBuilder.ApplicationServices);
 
         // This is a terminal middleware, so there's no need to use the 'next' parameter
-        return connectionBuilder.Run(connection => handler.OnConnectedAsync(connection));
+        return connectionBuilder.Run(handler.OnConnectedAsync);
     }
 
     /// <summary>

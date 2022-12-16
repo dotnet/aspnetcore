@@ -35,6 +35,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     internal ISystemDateTime SystemDateTime { get; set; } = new SystemDateTime();
 
     private readonly object _pathLock = new object();
+    private ISet<string> _additionalHeaders;
 
     public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
     {
@@ -61,6 +62,8 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
         _flushInterval = loggerOptions.FlushInterval;
         _fields = loggerOptions.LoggingFields;
+        _additionalHeaders = W3CLoggerOptions.FilterRequestHeaders(loggerOptions);
+
         _options.OnChange(options =>
         {
             lock (_pathLock)
@@ -69,7 +72,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                 loggerOptions = options;
 
                 // Move to a new file if the fields have changed
-                if (_fields != loggerOptions.LoggingFields)
+                if (_fields != loggerOptions.LoggingFields || !_additionalHeaders.SetEquals(loggerOptions.AdditionalRequestHeaders))
                 {
                     _fileNumber++;
                     if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
@@ -78,6 +81,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                         Log.MaxFilesReached(_logger);
                     }
                     _fields = loggerOptions.LoggingFields;
+                    _additionalHeaders = W3CLoggerOptions.FilterRequestHeaders(loggerOptions);
                 }
 
                 if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))

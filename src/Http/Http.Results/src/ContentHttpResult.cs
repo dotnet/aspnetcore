@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="ContentHttpResult"/> that when executed
 /// will produce a response with content.
 /// </summary>
-public sealed partial class ContentHttpResult : IResult
+public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values.

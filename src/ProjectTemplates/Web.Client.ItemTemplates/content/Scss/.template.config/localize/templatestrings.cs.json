@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "SCSS Style Sheet (SASS)",
-  "description": "SCSS is a language that compiles into CSS",
-  "postActions/openInEditor/description": "Opens styleSheet1.scss in the editor"
+  "name": "Šablona stylů SCSS (SASS)",
+  "description": "SCSS je jazyk kompilovaný do šablon stylů CSS.",
+  "postActions/openInEditor/description": "Otevře soubor styleSheet1.scss v editoru."
 }

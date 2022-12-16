@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,24 +13,28 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
+public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IContentTypeHttpResult, IValueHttpResult, IValueHttpResult<HttpValidationProblemDetails>
 {
     internal ValidationProblem(HttpValidationProblemDetails problemDetails)
     {
-        ArgumentNullException.ThrowIfNull(problemDetails, nameof(problemDetails));
+        ArgumentNullException.ThrowIfNull(problemDetails);
         if (problemDetails is { Status: not null and not StatusCodes.Status400BadRequest })
         {
             throw new ArgumentException($"{nameof(ValidationProblem)} only supports a 400 Bad Request response status code.", nameof(problemDetails));
         }
 
         ProblemDetails = problemDetails;
-        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: StatusCodes.Status400BadRequest);
+        ProblemDetailsDefaults.Apply(ProblemDetails, statusCode: StatusCodes.Status400BadRequest);
     }
 
     /// <summary>
     /// Gets the <see cref="HttpValidationProblemDetails"/> instance.
     /// </summary>
     public HttpValidationProblemDetails ProblemDetails { get; }
+
+    object? IValueHttpResult.Value => ProblemDetails;
+
+    HttpValidationProblemDetails? IValueHttpResult<HttpValidationProblemDetails>.Value => ProblemDetails;
 
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>.
@@ -39,6 +45,8 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status400BadRequest"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
@@ -59,10 +67,11 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"));
     }
 }

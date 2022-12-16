@@ -433,7 +433,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
     }
 
     // This exists just so that we can use ActivatorUtilities.CreateInstance on the Startup class
-    private class HostServiceProvider : IServiceProvider
+    private sealed class HostServiceProvider : IServiceProvider
     {
         private readonly WebHostBuilderContext _context;
 

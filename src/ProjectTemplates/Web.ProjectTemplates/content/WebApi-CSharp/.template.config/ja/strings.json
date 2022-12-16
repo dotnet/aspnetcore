@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core Web API",
+    "description": "RESTful HTTP サービスのサンプル コントローラーで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。このテンプレートは ASP.NET Core MVC のビューとコントローラーでも使用できます。",
+    "parameter.DisableOpenAPI.name": "OpenAPI サポートを有効にする(_O)",
+    "parameter.DisableOpenAPI.description": "OpenAPI (Swagger) サポートを有効にする",
+    "parameter.UseMinimalAPIs.name": "コントローラーを使用する (最小限の API を使用する場合はオフにします)",
+    "parameter.UseMinimalAPIs.description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。"
+  }
+}

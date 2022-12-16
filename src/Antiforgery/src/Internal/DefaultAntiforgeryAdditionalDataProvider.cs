@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// <summary>
 /// A default <see cref="IAntiforgeryAdditionalDataProvider"/> implementation.
 /// </summary>
-internal class DefaultAntiforgeryAdditionalDataProvider : IAntiforgeryAdditionalDataProvider
+internal sealed class DefaultAntiforgeryAdditionalDataProvider : IAntiforgeryAdditionalDataProvider
 {
     /// <inheritdoc />
     public string GetAdditionalData(HttpContext context)

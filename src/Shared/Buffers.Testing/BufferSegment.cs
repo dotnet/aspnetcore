@@ -3,7 +3,7 @@
 
 namespace System.Buffers;
 
-internal class BufferSegment : ReadOnlySequenceSegment<byte>
+internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
 {
     public BufferSegment(Memory<byte> memory)
     {

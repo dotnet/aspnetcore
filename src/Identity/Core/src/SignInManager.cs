@@ -652,26 +652,21 @@ public class SignInManager<TUser> where TUser : class
     {
         var auth = await Context.AuthenticateAsync(IdentityConstants.ExternalScheme);
         var items = auth?.Properties?.Items;
-        if (auth?.Principal == null || items == null || !items.ContainsKey(LoginProviderKey))
+        if (auth?.Principal == null || items == null || !items.TryGetValue(LoginProviderKey, out var provider))
         {
             return null;
         }
 
         if (expectedXsrf != null)
         {
-            if (!items.ContainsKey(XsrfKey))
-            {
-                return null;
-            }
-            var userId = items[XsrfKey] as string;
-            if (userId != expectedXsrf)
+            if (!items.TryGetValue(XsrfKey, out var userId) ||
+                userId != expectedXsrf)
             {
                 return null;
             }
         }
 
-        var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        var provider = items[LoginProviderKey] as string;
+        var providerKey = auth.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? auth.Principal.FindFirstValue("sub");
         if (providerKey == null || provider == null)
         {
             return null;
@@ -726,7 +721,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="redirectUrl">The external login URL users should be redirected to during the login flow.</param>
     /// <param name="userId">The current user's identifier, which will be used to provide CSRF protection.</param>
     /// <returns>A configured <see cref="AuthenticationProperties"/>.</returns>
-    public virtual AuthenticationProperties ConfigureExternalAuthenticationProperties(string? provider, string? redirectUrl, string? userId = null)
+    public virtual AuthenticationProperties ConfigureExternalAuthenticationProperties(string? provider, [StringSyntax(StringSyntaxAttribute.Uri)] string? redirectUrl, string? userId = null)
     {
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
         properties.Items[LoginProviderKey] = provider;

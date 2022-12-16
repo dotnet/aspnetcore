@@ -209,21 +209,36 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     else
                                     {
                                         // If we have an invocation id already we can parse the end result
-                                        var returnType = binder.GetReturnType(invocationId);
-
-                                        if (!JsonUtils.ReadForType(reader, returnType))
+                                        var returnType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                                        if (returnType is null)
                                         {
-                                            throw new JsonReaderException("Unexpected end when reading JSON");
-                                        }
-
-                                        if (returnType == typeof(RawResult))
-                                        {
-                                            var token = JToken.Load(reader);
-                                            result = GetRawResult(token);
+                                            reader.Skip();
+                                            result = null;
                                         }
                                         else
                                         {
-                                            result = PayloadSerializer.Deserialize(reader, returnType);
+                                            if (!JsonUtils.ReadForType(reader, returnType))
+                                            {
+                                                throw new JsonReaderException("Unexpected end when reading JSON");
+                                            }
+
+                                            if (returnType == typeof(RawResult))
+                                            {
+                                                var token = JToken.Load(reader);
+                                                result = GetRawResult(token);
+                                            }
+                                            else
+                                            {
+                                                try
+                                                {
+                                                    result = PayloadSerializer.Deserialize(reader, returnType);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    error = $"Error trying to deserialize result to {returnType.Name}. {ex.Message}";
+                                                    hasResult = false;
+                                                }
+                                            }
                                         }
                                     }
                                     break;
@@ -397,14 +412,29 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                     if (resultToken != null)
                     {
-                        var returnType = binder.GetReturnType(invocationId);
-                        if (returnType == typeof(RawResult))
+                        var returnType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                        if (returnType is null)
                         {
-                            result = GetRawResult(resultToken);
+                            result = null;
                         }
                         else
                         {
-                            result = resultToken.ToObject(returnType, PayloadSerializer);
+                            if (returnType == typeof(RawResult))
+                            {
+                                result = GetRawResult(resultToken);
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    result = resultToken.ToObject(returnType, PayloadSerializer);
+                                }
+                                catch (Exception ex)
+                                {
+                                    error = $"Error trying to deserialize result to {returnType.Name}. {ex.Message}";
+                                    hasResult = false;
+                                }
+                            }
                         }
                     }
 

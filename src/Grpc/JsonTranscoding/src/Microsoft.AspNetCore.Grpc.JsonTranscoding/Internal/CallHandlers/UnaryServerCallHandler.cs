@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Google.Api;
 using Grpc.Core;
 using Grpc.Shared.Server;
 using Microsoft.AspNetCore.Http;
@@ -42,8 +43,15 @@ internal sealed class UnaryServerCallHandler<TService, TRequest, TResponse> : Se
             throw new RpcException(new Status(StatusCode.Cancelled, "No message returned from method."));
         }
 
-        serverCallContext.EnsureResponseHeaders();
-
-        await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response);
+        if (response is HttpBody httpBody)
+        {
+            serverCallContext.EnsureResponseHeaders(httpBody.ContentType);
+            await serverCallContext.HttpContext.Response.Body.WriteAsync(httpBody.Data.Memory);
+        }
+        else
+        {
+            serverCallContext.EnsureResponseHeaders();
+            await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response, CancellationToken.None);
+        }
     }
 }

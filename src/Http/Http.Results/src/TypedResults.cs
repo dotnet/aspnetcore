@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
@@ -132,6 +133,18 @@ public static class TypedResults
         => Text(content, contentType, contentEncoding, null);
 
     /// <summary>
+    /// Writes the <paramref name="utf8Content"/> UTF8 text content to the HTTP response.
+    /// </summary>
+    /// <param name="utf8Content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="Utf8ContentHttpResult"/> object for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+    public static Utf8ContentHttpResult Text(ReadOnlySpan<byte> utf8Content, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => new Utf8ContentHttpResult(utf8Content, contentType, statusCode);
+
+    /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
     /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
@@ -146,7 +159,9 @@ public static class TypedResults
     /// <param name="contentEncoding">The content encoding.</param>
     /// <param name="statusCode">The status code to return.</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static ContentHttpResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         MediaTypeHeaderValue? mediaTypeHeaderValue = null;
         if (contentType is not null)
@@ -529,9 +544,9 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified <paramref name="url"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
     /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
     /// </list>
     /// </summary>
@@ -539,7 +554,7 @@ public static class TypedResults
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
-    public static RedirectHttpResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
+    public static RedirectHttpResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -552,9 +567,9 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified <paramref name="localUrl"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
     /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
     /// </list>
     /// </summary>
@@ -562,7 +577,7 @@ public static class TypedResults
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
-    public static RedirectHttpResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
+    public static RedirectHttpResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -575,10 +590,10 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified route.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
-    /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
+    /// <item><description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description></item>
     /// </list>
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
@@ -777,16 +792,20 @@ public static class TypedResults
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>   
+    /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
+    public static Created Created()
+    {
+        return new(default(string));
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
-    public static Created Created(string uri)
+    public static Created Created(string? uri)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
-        }
-
         return new(uri);
     }
 
@@ -797,13 +816,8 @@ public static class TypedResults
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
-    public static Created<TValue> Created<TValue>(string uri, TValue? value)
+    public static Created<TValue> Created<TValue>(string? uri, TValue? value)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
-        }
-
         return new(uri, value);
     }
 
@@ -812,10 +826,8 @@ public static class TypedResults
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
-    public static Created Created(Uri uri)
+    public static Created Created(Uri? uri)
     {
-        ArgumentNullException.ThrowIfNull(uri);
-
         return new(uri);
     }
 
@@ -826,10 +838,8 @@ public static class TypedResults
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
-    public static Created<TValue> Created<TValue>(Uri uri, TValue? value)
+    public static Created<TValue> Created<TValue>(Uri? uri, TValue? value)
     {
-        ArgumentNullException.ThrowIfNull(uri);
-
         return new(uri, value);
     }
 

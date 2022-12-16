@@ -39,7 +39,6 @@ public interface ITimeLimitedDataProtector : IDataProtector
     /// <param name="plaintext">The plaintext data to protect.</param>
     /// <param name="expiration">The time when this payload should expire.</param>
     /// <returns>The protected form of the plaintext data.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] Protect(byte[] plaintext, DateTimeOffset expiration);
 
     /// <summary>
@@ -52,6 +51,5 @@ public interface ITimeLimitedDataProtector : IDataProtector
     /// <exception cref="System.Security.Cryptography.CryptographicException">
     /// Thrown if <paramref name="protectedData"/> is invalid, malformed, or expired.
     /// </exception>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration);
 }

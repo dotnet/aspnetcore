@@ -27,11 +27,12 @@ internal class SimpleActivator : IActivator
         _services = services;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
-    public virtual object CreateInstance(Type expectedBaseType, string implementationTypeName)
+    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Unknown type names are rarely used by apps. Handle trimmed types by providing a useful error message.")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "Unknown type names are rarely used by apps. Handle trimmed types by providing a useful error message.")]
+    public virtual object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type expectedBaseType, string implementationTypeName)
     {
         // Would the assignment even work?
-        var implementationType = Type.GetType(implementationTypeName, throwOnError: true)!;
+        var implementationType = TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(implementationTypeName);
         expectedBaseType.AssertIsAssignableFrom(implementationType);
 
         // If no IServiceProvider was specified, prefer .ctor() [if it exists]

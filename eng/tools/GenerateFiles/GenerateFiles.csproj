@@ -18,7 +18,7 @@
         AspNetCorePatchVersion=$(AspNetCorePatchVersion);
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
         DotnetDumpVersion=$(DotnetDumpVersion);
-        dotnetefVersion=$(dotnetefVersion);
+        DotnetEfVersion=$(DotnetEfVersion);
         DotnetServeVersion=$(DotnetServeVersion);
         MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);

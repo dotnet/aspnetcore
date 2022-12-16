@@ -11,19 +11,19 @@ import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 /** @private */
 export class ServerSentEventsTransport implements ITransport {
     private readonly _httpClient: HttpClient;
-    private readonly _accessTokenFactory: (() => string | Promise<string>) | undefined;
+    private readonly _accessToken: string | undefined;
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     private _eventSource?: EventSource;
     private _url?: string;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
-    public onclose: ((error?: Error) => void) | null;
+    public onclose: ((error?: Error | unknown) => void) | null;
 
-    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
+    constructor(httpClient: HttpClient, accessToken: string | undefined, logger: ILogger,
                 options: IHttpConnectionOptions) {
         this._httpClient = httpClient;
-        this._accessTokenFactory = accessTokenFactory;
+        this._accessToken = accessToken;
         this._logger = logger;
         this._options = options;
 
@@ -38,14 +38,11 @@ export class ServerSentEventsTransport implements ITransport {
 
         this._logger.log(LogLevel.Trace, "(SSE transport) Connecting.");
 
-        // set url before accessTokenFactory because this.url is only for send and we set the auth header instead of the query string for send
+        // set url before accessTokenFactory because this._url is only for send and we set the auth header instead of the query string for send
         this._url = url;
 
-        if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
-            }
+        if (this._accessToken) {
+            url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(this._accessToken)}`;
         }
 
         return new Promise<void>((resolve, reject) => {
@@ -111,7 +108,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this._eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "SSE", this._httpClient, this._url!, this._accessTokenFactory, data, this._options);
+        return sendMessage(this._logger, "SSE", this._httpClient, this._url!, data, this._options);
     }
 
     public stop(): Promise<void> {
@@ -119,7 +116,7 @@ export class ServerSentEventsTransport implements ITransport {
         return Promise.resolve();
     }
 
-    private _close(e?: Error) {
+    private _close(e?: Error | unknown) {
         if (this._eventSource) {
             this._eventSource.close();
             this._eventSource = undefined;

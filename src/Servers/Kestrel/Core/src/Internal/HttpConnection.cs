@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class HttpConnection : ITimeoutHandler
+internal sealed class HttpConnection : ITimeoutHandler
 {
     // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     private static ReadOnlySpan<byte> Http2Id => "h2"u8;
@@ -127,13 +127,6 @@ internal class HttpConnection : ITimeoutHandler
         {
             previousState = _protocolSelectionState;
             Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
-
-            switch (_protocolSelectionState)
-            {
-                case ProtocolSelectionState.Selected:
-                case ProtocolSelectionState.Aborted:
-                    break;
-            }
         }
 
         switch (previousState)
@@ -153,13 +146,6 @@ internal class HttpConnection : ITimeoutHandler
         {
             previousState = _protocolSelectionState;
             Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
-
-            switch (_protocolSelectionState)
-            {
-                case ProtocolSelectionState.Selected:
-                case ProtocolSelectionState.Aborted:
-                    break;
-            }
         }
 
         switch (previousState)

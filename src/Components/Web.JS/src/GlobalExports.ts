@@ -8,6 +8,7 @@ import { PageTitle } from './PageTitle';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
 import { HubConnection } from '@microsoft/signalr';
 import { InputFile } from './InputFile';
+import { NavigationLock } from './NavigationLock';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
@@ -34,6 +35,7 @@ interface IBlazor {
     PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
+    NavigationLock: typeof NavigationLock,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
     endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
@@ -79,6 +81,7 @@ export const Blazor: IBlazor = {
     Virtualize,
     PageTitle,
     InputFile,
+    NavigationLock,
     getJSDataStreamChunk: getNextChunk,
     receiveDotNetDataStream: receiveDotNetDataStream,
     attachWebRendererInterop,

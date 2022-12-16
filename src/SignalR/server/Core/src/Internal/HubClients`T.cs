@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubClients<THub, T> : IHubClients<T> where THub : Hub
+internal sealed class HubClients<THub, T> : IHubClients<T> where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
 
@@ -20,7 +20,7 @@ internal class HubClients<THub, T> : IHubClients<T> where THub : Hub
         return TypedClientBuilder<T>.Build(new AllClientsExceptProxy<THub>(_lifetimeManager, excludedConnectionIds));
     }
 
-    public virtual T Client(string connectionId)
+    public T Client(string connectionId)
     {
         return TypedClientBuilder<T>.Build(new SingleClientProxy<THub>(_lifetimeManager, connectionId));
     }
@@ -30,7 +30,7 @@ internal class HubClients<THub, T> : IHubClients<T> where THub : Hub
         return TypedClientBuilder<T>.Build(new MultipleClientProxy<THub>(_lifetimeManager, connectionIds));
     }
 
-    public virtual T Group(string groupName)
+    public T Group(string groupName)
     {
         return TypedClientBuilder<T>.Build(new GroupProxy<THub>(_lifetimeManager, groupName));
     }
@@ -45,12 +45,12 @@ internal class HubClients<THub, T> : IHubClients<T> where THub : Hub
         return TypedClientBuilder<T>.Build(new MultipleGroupProxy<THub>(_lifetimeManager, groupNames));
     }
 
-    public virtual T User(string userId)
+    public T User(string userId)
     {
         return TypedClientBuilder<T>.Build(new UserProxy<THub>(_lifetimeManager, userId));
     }
 
-    public virtual T Users(IReadOnlyList<string> userIds)
+    public T Users(IReadOnlyList<string> userIds)
     {
         return TypedClientBuilder<T>.Build(new MultipleUserProxy<THub>(_lifetimeManager, userIds));
     }

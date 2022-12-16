@@ -7,7 +7,7 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
-internal class WebViewJSRuntime : JSRuntime
+internal sealed class WebViewJSRuntime : JSRuntime
 {
     private IpcSender _ipcSender;
 

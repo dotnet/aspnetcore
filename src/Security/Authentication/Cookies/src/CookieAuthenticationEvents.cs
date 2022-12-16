@@ -113,7 +113,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     /// <param name="context">The <see cref="CookieValidatePrincipalContext"/>.</param>
     public virtual Task ValidatePrincipal(CookieValidatePrincipalContext context) => OnValidatePrincipal(context);
-    
+
     /// <summary>
     /// Invoked to check if the cookie should be renewed.
     /// </summary>

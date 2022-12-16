@@ -116,7 +116,7 @@ public class TagHelperScopeManager
         return parentExecutionContext;
     }
 
-    private class ExecutionContextPool
+    private sealed class ExecutionContextPool
     {
         private readonly Action<HtmlEncoder> _startTagHelperWritingScope;
         private readonly Func<TagHelperContent> _endTagHelperWritingScope;

@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor Server Uygulaması Boş",
+  "description": "Boş bir ASP.NET Core uygulaması içinde sunucu tarafında çalışan ve bir SignalR bağlantısı üzerinden kullanıcı etkileşimlerini işleyen bir Blazor Server uygulaması oluşturmaya yönelik proje şablonu. Bu şablonda içerik yok.",
+  "symbols/ExcludeLaunchSettings/description": "launchSettings.json öğesinin oluşturulan şablondan dışlanıp dışlanmayacağı.",
+  "symbols/kestrelHttpPort/description": "launchSettings.json içinde HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
+  "symbols/kestrelHttpsPort/description": "launchSettings.json içindeki HTTPS uç noktası için bağlantı noktası numarası. Bu seçenek yalnızca no-https parametresi kullanılmazsa uygulanabilir.",
+  "symbols/iisHttpPort/description": "launchSettings.json içinde IIS Express HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
+  "symbols/iisHttpsPort/description": "launchSettings.json içindeki IIS Express HTTPS uç noktası için bağlantı noktası numarası. Bu seçenek yalnızca no-https parametresi kullanılmazsa uygulanabilir.",
+  "symbols/HasHttpProfile/description": "Her zaman HTTP profili vardır.",
+  "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı.",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
+  "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
+}

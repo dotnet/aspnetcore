@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// <summary>
 /// Result of view location cache lookup.
 /// </summary>
-internal class ViewLocationCacheResult
+internal sealed class ViewLocationCacheResult
 {
     /// <summary>
     /// Initializes a new instance of <see cref="ViewLocationCacheResult"/>

@@ -3,8 +3,11 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
+    <!-- Only verify assembly versions in non-dev builds. Dev builds always produce assembly version `42.42.42.42` -->
+    <VerifyPackageAssemblyVersions Condition="'$(OfficialBuild)' == 'true' or '$(DotNetUseShippingVersions)' == 'true'">true</VerifyPackageAssemblyVersions>
     <TestDependsOnAspNetAppPackages>true</TestDependsOnAspNetAppPackages>
     <SkipHelixArm>true</SkipHelixArm>
+    <PackagesLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Packages.Layout', '$(Configuration)'))</PackagesLayoutRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,8 +54,16 @@
       <_Parameter2>@(_ExpectedSharedFrameworkBinaries)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>PackageLayoutRoot</_Parameter1>
+      <_Parameter2>$(PackagesLayoutRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
       <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>VerifyPackageAssemblyVersions</_Parameter1>
+      <_Parameter2>$(VerifyPackageAssemblyVersions)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>PackagesFolder</_Parameter1>

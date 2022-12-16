@@ -6,7 +6,9 @@ using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Shared;
@@ -18,17 +20,33 @@ internal static class JsonConverterHelper
 {
     internal const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
 
+    internal static readonly Dictionary<string, Type> WellKnownTypeNames = new Dictionary<string, Type>
+    {
+        [Any.Descriptor.FullName] = typeof(AnyConverter<>),
+        [Duration.Descriptor.FullName] = typeof(DurationConverter<>),
+        [Timestamp.Descriptor.FullName] = typeof(TimestampConverter<>),
+        [FieldMask.Descriptor.FullName] = typeof(FieldMaskConverter<>),
+        [Struct.Descriptor.FullName] = typeof(StructConverter<>),
+        [ListValue.Descriptor.FullName] = typeof(ListValueConverter<>),
+        [Value.Descriptor.FullName] = typeof(ValueConverter<>),
+    };
+
     internal static JsonSerializerOptions CreateSerializerOptions(JsonContext context, bool isStreamingOptions = false)
     {
         // Streaming is line delimited between messages. That means JSON can't be indented as it adds new lines.
         // For streaming to work, indenting must be disabled when streaming.
         var writeIndented = !isStreamingOptions ? context.Settings.WriteIndented : false;
 
+        var typeInfoResolver = JsonTypeInfoResolver.Combine(
+            new MessageTypeInfoResolver(context),
+            new DefaultJsonTypeInfoResolver());
+
         var options = new JsonSerializerOptions
         {
             WriteIndented = writeIndented,
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            TypeInfoResolver = typeInfoResolver
         };
         options.Converters.Add(new NullValueConverter());
         options.Converters.Add(new ByteStringConverter());
@@ -38,12 +56,33 @@ internal static class JsonConverterHelper
         options.Converters.Add(new JsonConverterFactoryForEnum(context));
         options.Converters.Add(new JsonConverterFactoryForWrappers(context));
         options.Converters.Add(new JsonConverterFactoryForWellKnownTypes(context));
-        options.Converters.Add(new JsonConverterFactoryForMessage(context));
 
         return options;
     }
 
     internal static Type GetFieldType(FieldDescriptor descriptor)
+    {
+        if (descriptor.IsMap)
+        {
+            var mapFields = descriptor.MessageType.Fields.InFieldNumberOrder();
+            var keyField = mapFields[0];
+            var valueField = mapFields[1];
+
+            return typeof(MapField<,>).MakeGenericType(GetFieldTypeCore(keyField), GetFieldTypeCore(valueField));
+        }
+        else if (descriptor.IsRepeated)
+        {
+            var itemType = GetFieldTypeCore(descriptor);
+
+            return typeof(RepeatedField<>).MakeGenericType(itemType);
+        }
+        else
+        {
+            return GetFieldTypeCore(descriptor);
+        }   
+    }
+
+    private static Type GetFieldTypeCore(FieldDescriptor descriptor)
     {
         switch (descriptor.FieldType)
         {
@@ -85,21 +124,11 @@ internal static class JsonConverterHelper
 
                     return t;
                 }
+
                 return descriptor.MessageType.ClrType;
             default:
                 throw new ArgumentException("Invalid field type");
         }
-    }
-
-    internal static MessageDescriptor? GetMessageDescriptor(Type typeToConvert)
-    {
-        var property = typeToConvert.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public, binder: null, typeof(MessageDescriptor), Type.EmptyTypes, modifiers: null);
-        if (property == null)
-        {
-            return null;
-        }
-
-        return property.GetValue(null, null) as MessageDescriptor;
     }
 
     public static void PopulateMap(ref Utf8JsonReader reader, JsonSerializerOptions options, IMessage message, FieldDescriptor fieldDescriptor)
@@ -124,13 +153,77 @@ internal static class JsonConverterHelper
     public static void PopulateList(ref Utf8JsonReader reader, JsonSerializerOptions options, IMessage message, FieldDescriptor fieldDescriptor)
     {
         var fieldType = GetFieldType(fieldDescriptor);
-        var repeatedFieldType = typeof(List<>).MakeGenericType(fieldType);
+        var itemType = fieldType.GetGenericArguments()[0];
+        var repeatedFieldType = typeof(List<>).MakeGenericType(itemType);
         var newValues = (IList)JsonSerializer.Deserialize(ref reader, repeatedFieldType, options)!;
 
         var existingValue = (IList)fieldDescriptor.Accessor.GetValue(message);
         foreach (var item in newValues)
         {
             existingValue.Add(item);
+        }
+    }
+
+    /// <summary>
+    /// Determines whether or not a field value should be serialized according to the field,
+    /// its value in the message, and the settings of this formatter.
+    /// </summary>
+    public static bool ShouldFormatFieldValue(IMessage message, FieldDescriptor field, object? value, bool formatDefaultValues) =>
+        field.HasPresence
+        // Fields that support presence *just* use that
+        ? field.Accessor.HasValue(message)
+        // Otherwise, format if either we've been asked to format default values, or if it's
+        // not a default value anyway.
+        : formatDefaultValues || !IsDefaultValue(field, value);
+
+    private static bool IsDefaultValue(FieldDescriptor descriptor, object? value)
+    {
+        if (value == null)
+        {
+            return true;
+        }
+        if (descriptor.IsMap)
+        {
+            var dictionary = (IDictionary)value;
+            return dictionary.Count == 0;
+        }
+        if (descriptor.IsRepeated)
+        {
+            var list = (IList)value;
+            return list.Count == 0;
+        }
+        switch (descriptor.FieldType)
+        {
+            case FieldType.Bool:
+                return (bool)value == false;
+            case FieldType.Bytes:
+                return (ByteString)value == ByteString.Empty;
+            case FieldType.String:
+                return (string)value == string.Empty;
+            case FieldType.Double:
+                return (double)value == 0.0;
+            case FieldType.SInt32:
+            case FieldType.Int32:
+            case FieldType.SFixed32:
+            case FieldType.Enum:
+                return (int)value == 0;
+            case FieldType.Fixed32:
+            case FieldType.UInt32:
+                return (uint)value == 0;
+            case FieldType.Fixed64:
+            case FieldType.UInt64:
+                return (ulong)value == 0;
+            case FieldType.SFixed64:
+            case FieldType.Int64:
+            case FieldType.SInt64:
+                return (long)value == 0;
+            case FieldType.Float:
+                return (float)value == 0f;
+            case FieldType.Message:
+            case FieldType.Group: // Never expect to get this, but...
+                return value == null;
+            default:
+                throw new ArgumentException("Invalid field type");
         }
     }
 }

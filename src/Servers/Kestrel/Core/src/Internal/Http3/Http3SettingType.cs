@@ -13,5 +13,18 @@ internal enum Http3SettingType : long
     /// </summary>
     MaxFieldSectionSize = 0x6,
     // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-5
-    QPackBlockedStreams = 0x7
+    QPackBlockedStreams = 0x7,
+
+    /// <summary>
+    /// SETTINGS_ENABLE_WEBTRANSPORT, default is 0 (off)
+    /// https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-01.html#name-http-3-settings-parameter-r
+    /// </summary>
+    EnableWebTransport = 0x2b603742,
+
+    /// <summary>
+    /// H3_DATAGRAM, default is 0 (off)
+    /// indicates that the server suppprts sending individual datagrams over Http/3
+    /// rather than just streams.
+    /// </summary>
+    H3Datagram = 0xffd277
 }

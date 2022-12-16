@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class PageSaveTempDataPropertyFilterFactory : IFilterFactory
+internal sealed class PageSaveTempDataPropertyFilterFactory : IFilterFactory
 {
     public PageSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {

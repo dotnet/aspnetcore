@@ -391,11 +391,11 @@ public class ViewDataDictionary : IDictionary<string, object?>
     public string? Eval(string? expression, string? format)
     {
         var value = Eval(expression);
-        return FormatValue(value, format);
+        return FormatValue(value, format, CultureInfo.CurrentCulture);
     }
 
     /// <summary>
-    /// Formats the given <paramref name="value"/> using given <paramref name="format"/>.
+    /// Formats the given <paramref name="value"/> using the given <paramref name="format"/>.
     /// </summary>
     /// <param name="value">The value to format.</param>
     /// <param name="format">
@@ -403,6 +403,9 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// </param>
     /// <returns>The formatted <see cref="string"/>.</returns>
     public static string? FormatValue(object? value, string? format)
+        => FormatValue(value, format, CultureInfo.CurrentCulture);
+
+    internal static string? FormatValue(object? value, string? format, IFormatProvider formatProvider)
     {
         if (value == null)
         {
@@ -411,11 +414,11 @@ public class ViewDataDictionary : IDictionary<string, object?>
 
         if (string.IsNullOrEmpty(format))
         {
-            return Convert.ToString(value, CultureInfo.CurrentCulture);
+            return Convert.ToString(value, formatProvider);
         }
         else
         {
-            return string.Format(CultureInfo.CurrentCulture, format, value);
+            return string.Format(formatProvider, format, value);
         }
     }
 

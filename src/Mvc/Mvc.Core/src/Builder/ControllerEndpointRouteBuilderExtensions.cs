@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -85,7 +86,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     public static ControllerActionEndpointConventionBuilder MapControllerRoute(
         this IEndpointRouteBuilder endpoints,
         string name,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         object? defaults = null,
         object? constraints = null,
         object? dataTokens = null)
@@ -134,7 +135,7 @@ public static class ControllerEndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         string name,
         string areaName,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         object? defaults = null,
         object? constraints = null,
         object? dataTokens = null)
@@ -263,7 +264,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToController(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         string action,
         string controller)
     {
@@ -414,7 +415,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToAreaController(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         string action,
         string controller,
         string area)
@@ -475,7 +476,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
     /// </para>
     /// </remarks>
-    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
+    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern)
         where TTransformer : DynamicRouteValueTransformer
     {
         if (endpoints == null)
@@ -505,7 +506,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// is required when using <paramref name="state" />.
     /// </para>
     /// </remarks>
-    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object? state)
+    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object? state)
         where TTransformer : DynamicRouteValueTransformer
     {
         if (endpoints == null)
@@ -543,7 +544,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// is required when using <paramref name="state" />.
     /// </para>
     /// </remarks>
-    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state, int order)
+    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object state, int order)
         where TTransformer : DynamicRouteValueTransformer
     {
         if (endpoints == null)

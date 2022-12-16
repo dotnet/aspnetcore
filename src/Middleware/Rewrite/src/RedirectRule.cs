@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite;
 
-internal class RedirectRule : IRule
+internal sealed class RedirectRule : IRule
 {
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
     public Regex InitialMatch { get; }
@@ -31,7 +31,7 @@ internal class RedirectRule : IRule
         StatusCode = statusCode;
     }
 
-    public virtual void ApplyRule(RewriteContext context)
+    public void ApplyRule(RewriteContext context)
     {
         var request = context.HttpContext.Request;
         var path = request.Path;
@@ -65,8 +65,10 @@ internal class RedirectRule : IRule
             {
                 var host = default(HostString);
                 var schemeSplit = newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+                string scheme = request.Scheme;
                 if (schemeSplit >= 0)
                 {
+                    scheme = newPath.Substring(0, schemeSplit);
                     schemeSplit += Uri.SchemeDelimiter.Length;
                     var pathSplit = newPath.IndexOf('/', schemeSplit);
 
@@ -97,7 +99,7 @@ internal class RedirectRule : IRule
                 }
 
                 encodedPath = host.HasValue
-                    ? UriHelper.BuildAbsolute(request.Scheme, host, pathBase, resolvedPath, resolvedQuery, default)
+                    ? UriHelper.BuildAbsolute(scheme, host, pathBase, resolvedPath, resolvedQuery, default)
                     : UriHelper.BuildRelative(pathBase, resolvedPath, resolvedQuery, default);
             }
 

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors;
 
-internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
+internal sealed class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
 {
     private readonly string OriginHeader = "Origin";
     private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";

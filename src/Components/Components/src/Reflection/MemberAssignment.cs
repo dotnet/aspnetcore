@@ -8,7 +8,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection;
 
-internal class MemberAssignment
+internal sealed class MemberAssignment
 {
     public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
         [DynamicallyAccessedMembers(Component)] Type type,

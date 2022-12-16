@@ -100,6 +100,35 @@ public class DfaMatcherTest
         Assert.Null(httpContext.GetEndpoint());
     }
 
+    [Theory]
+    [InlineData("{a}.{b}.{c}/{d}", "/.git/index")]
+    [InlineData("{a}-{b}-{c}/c.aspx", "/-hello/c.aspx")]
+    [InlineData("-{b}-{c}", "/-hello")]
+    [InlineData("--{b}-{c}", "/-hello")]
+    [InlineData("-{b}--{c}", "/-hello")]
+    [InlineData("{b}-{c}", "/-hello")]
+    [InlineData("-{b}--{c}", "/--hello")]
+    [InlineData(".{b}-{c}", "/-hello")]
+    public async Task MatchAsync_ComplexSegmentEndpointAndPathStartingWithLiteral_NoEndpointMatched(string endpoint, string path)
+    {
+        // Arrange
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint(endpoint, 0)
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = path;
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        Assert.Null(httpContext.GetEndpoint());
+    }
+
     [Fact]
     public async Task MatchAsync_RequireValuesAndDefaultValues_EndpointMatched()
     {

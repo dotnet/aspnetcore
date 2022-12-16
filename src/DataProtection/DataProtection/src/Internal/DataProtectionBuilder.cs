@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal;
 /// <summary>
 /// Default implementation of <see cref="IDataProtectionBuilder"/>.
 /// </summary>
-internal class DataProtectionBuilder : IDataProtectionBuilder
+internal sealed class DataProtectionBuilder : IDataProtectionBuilder
 {
     /// <summary>
     /// Creates a new configuration object linked to a <see cref="IServiceCollection"/>.

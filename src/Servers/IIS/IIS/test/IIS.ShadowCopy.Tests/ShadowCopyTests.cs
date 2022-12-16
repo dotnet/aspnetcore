@@ -168,7 +168,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40619")]
     public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
     {
         using var directory = TempDirectory.Create();
@@ -253,7 +252,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40059")]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
     {
         using var directory = TempDirectory.Create();

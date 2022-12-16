@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 
 // Handles comunication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
 // and the underlying transport channel
-internal class IpcSender
+internal sealed class IpcSender
 {
     private readonly Dispatcher _dispatcher;
     private readonly Action<string> _messageDispatcher;
@@ -57,6 +57,16 @@ internal class IpcSender
     public void SendByteArray(int id, byte[] data)
     {
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.SendByteArrayToJS, id, data));
+    }
+
+    public void SetHasLocationChangingListeners(bool hasListeners)
+    {
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.SetHasLocationChangingListeners, hasListeners));
+    }
+
+    public void EndLocationChanging(int callId, bool shouldContinueNavigation)
+    {
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.EndLocationChanging, callId, shouldContinueNavigation));
     }
 
     public void NotifyUnhandledException(Exception exception)

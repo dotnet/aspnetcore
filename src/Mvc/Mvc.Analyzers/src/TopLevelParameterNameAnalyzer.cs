@@ -20,23 +20,23 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-        context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            if (!SymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var typeCache))
+            if (!SymbolCache.TryCreate(context.Compilation, out var typeCache))
             {
                 // No-op if we can't find types we care about.
                 return;
             }
 
-            InitializeWorker(compilationStartAnalysisContext, typeCache);
+            InitializeWorker(context, typeCache);
         });
     }
 
-    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, SymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext context, SymbolCache symbolCache)
     {
-        compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
+        context.RegisterSymbolAction(context =>
         {
-            var method = (IMethodSymbol)symbolAnalysisContext.Symbol;
+            var method = (IMethodSymbol)context.Symbol;
             if (method.MethodKind != MethodKind.Ordinary)
             {
                 return;
@@ -69,7 +69,7 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
                         parameter.Locations[0] :
                         Location.None;
 
-                    symbolAnalysisContext.ReportDiagnostic(
+                    context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.MVC1004_ParameterNameCollidesWithTopLevelProperty,
                             location,

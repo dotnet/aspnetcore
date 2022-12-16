@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authentication;
@@ -151,6 +153,50 @@ public class AuthenticationMiddlewareTests
         Assert.Same(context.User, newTicket.Principal);
     }
 
+    [Fact]
+    public async Task WebApplicationBuilder_RegistersAuthenticationAndAuthorizationMiddlewares()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Configuration.AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "SomeIssuer"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "https://localhost:5001")
+        });
+        builder.Services.AddAuthorization();
+        builder.Services.AddAuthentication().AddJwtBearer();
+        await using var app = builder.Build();
+
+        // Authentication middleware isn't registered until application
+        // is built on startup
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+
+        await app.StartAsync();
+
+        Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+
+        var options = app.Services.GetService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal(new[] { "SomeIssuer" }, options.TokenValidationParameters.ValidIssuers);
+        Assert.Equal(new[] { "https://localhost:5001" }, options.TokenValidationParameters.ValidAudiences);
+    }
+
+    [Fact]
+    public async Task WebApplicationBuilder_OnlyRegistersMiddlewareWithSupportedServices()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddAuthentication().AddJwtBearer();
+        await using var app = builder.Build();
+
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+
+        await app.StartAsync();
+
+        Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+    }
+
     private HttpContext GetHttpContext(
         Action<IServiceCollection> registerServices = null,
         IAuthenticationService authenticationService = null)
@@ -164,6 +210,7 @@ public class AuthenticationMiddlewareTests
         serviceCollection.AddOptions();
         serviceCollection.AddLogging();
         serviceCollection.AddAuthentication();
+        serviceCollection.AddSingleton<IConfiguration>(new ConfigurationManager());
         registerServices?.Invoke(serviceCollection);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();

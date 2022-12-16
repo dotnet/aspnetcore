@@ -12,11 +12,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// A wrapper for the response Set-Cookie header.
 /// </summary>
-internal partial class ResponseCookies : IResponseCookies
+internal sealed partial class ResponseCookies : IResponseCookies
 {
-    internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
-    internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
-
     private readonly IFeatureCollection _features;
     private ILogger? _logger;
 
@@ -34,9 +31,7 @@ internal partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(string key, string value)
     {
-        var setCookieHeaderValue = new SetCookieHeaderValue(
-            _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value))
+        var setCookieHeaderValue = new SetCookieHeaderValue(key, Uri.EscapeDataString(value))
         {
             Path = "/"
         };
@@ -68,22 +63,8 @@ internal partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var setCookieHeaderValue = new SetCookieHeaderValue(
-            _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value))
-        {
-            Domain = options.Domain,
-            Path = options.Path,
-            Expires = options.Expires,
-            MaxAge = options.MaxAge,
-            Secure = options.Secure,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly
-        };
-
-        var cookieValue = setCookieHeaderValue.ToString();
-
-        Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
+        var cookie = options.CreateCookieHeader(key, Uri.EscapeDataString(value)).ToString();
+        Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookie);
     }
 
     /// <inheritdoc />
@@ -112,25 +93,13 @@ internal partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var setCookieHeaderValue = new SetCookieHeaderValue(string.Empty)
-        {
-            Domain = options.Domain,
-            Path = options.Path,
-            Expires = options.Expires,
-            MaxAge = options.MaxAge,
-            Secure = options.Secure,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly
-        };
-
-        var cookierHeaderValue = setCookieHeaderValue.ToString()[1..];
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString()[1..];
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
         foreach (var keyValuePair in keyValuePairs)
         {
-            var key = _enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key;
-            cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
+            cookies[position] = string.Concat(keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
             position++;
         }
 
@@ -153,7 +122,7 @@ internal partial class ResponseCookies : IResponseCookies
             throw new ArgumentNullException(nameof(options));
         }
 
-        var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
+        var encodedKeyPlusEquals = key + "=";
         var domainHasValue = !string.IsNullOrEmpty(options.Domain);
         var pathHasValue = !string.IsNullOrEmpty(options.Path);
 
@@ -200,14 +169,9 @@ internal partial class ResponseCookies : IResponseCookies
             Headers.SetCookie = new StringValues(newValues.ToArray());
         }
 
-        Append(key, string.Empty, new CookieOptions
+        Append(key, string.Empty, new CookieOptions(options)
         {
-            Path = options.Path,
-            Domain = options.Domain,
             Expires = DateTimeOffset.UnixEpoch,
-            Secure = options.Secure,
-            HttpOnly = options.HttpOnly,
-            SameSite = options.SameSite
         });
     }
 

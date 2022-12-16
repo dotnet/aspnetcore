@@ -54,6 +54,16 @@ public class MouseEventArgs : EventArgs
     public double PageY { get; set; }
 
     /// <summary>
+    /// The X coordinate of the mouse pointer relative to the position of the last mousemove event.
+    /// </summary>
+    public double MovementX { get; set; }
+
+    /// <summary>
+    /// The Y coordinate of the mouse pointer relative to the position of the last mousemove event.
+    /// </summary>
+    public double MovementY { get; set; }
+
+    /// <summary>
     /// The button number that was pressed when the mouse event was fired:
     /// Left button=0,
     /// middle button=1 (if present),

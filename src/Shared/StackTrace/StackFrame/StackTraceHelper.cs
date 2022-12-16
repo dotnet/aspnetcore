@@ -15,7 +15,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.StackTrace.Sources;
 
-internal class StackTraceHelper
+internal sealed class StackTraceHelper
 {
     [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "MethodInfo for a stack frame might be incomplete or removed. GetFrames does the best it can to provide frame details.")]
     public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,14 +13,14 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with status code Created (201) and Location header.
 /// </summary>
-public sealed class Created : IResult, IEndpointMetadataProvider
+public sealed class Created : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Created"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
-    internal Created(string location)
+    internal Created(string? location)
     {
         Location = location;
     }
@@ -28,20 +30,18 @@ public sealed class Created : IResult, IEndpointMetadataProvider
     /// provided.
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
-    internal Created(Uri locationUri)
+    internal Created(Uri? locationUri)
     {
-        if (locationUri == null)
+        if (locationUri != null)
         {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
-
-        if (locationUri.IsAbsoluteUri)
-        {
-            Location = locationUri.AbsoluteUri;
-        }
-        else
-        {
-            Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            if (locationUri.IsAbsoluteUri)
+            {
+                Location = locationUri.AbsoluteUri;
+            }
+            else
+            {
+                Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
         }
     }
 
@@ -49,6 +49,8 @@ public sealed class Created : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public string? Location { get; }
@@ -74,10 +76,11 @@ public sealed class Created : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created));
     }
 }

@@ -36,8 +36,7 @@ internal sealed class DefaultKeyStorageDirectories : IDefaultKeyStorageDirectori
         // Environment.GetFolderPath returns null if the user profile isn't loaded.
         var localAppDataFromSystemPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var localAppDataFromEnvPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
-        var userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-        var homePath = Environment.GetEnvironmentVariable("HOME");
+        var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !string.IsNullOrEmpty(localAppDataFromSystemPath))
         {
@@ -49,15 +48,17 @@ internal sealed class DefaultKeyStorageDirectories : IDefaultKeyStorageDirectori
         {
             retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromEnvPath);
         }
-        else if (userProfilePath != null)
-        {
-            retVal = GetKeyStorageDirectoryFromBaseAppDataPath(Path.Combine(userProfilePath, "AppData", "Local"));
-        }
         else if (homePath != null)
         {
-            // If LOCALAPPDATA and USERPROFILE are not present but HOME is,
-            // it's a good guess that this is a *NIX machine.  Use *NIX conventions for a folder name.
-            retVal = new DirectoryInfo(Path.Combine(homePath, ".aspnet", DataProtectionKeysFolderName));
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(Path.Combine(homePath, "AppData", "Local"));
+            }
+            else
+            {
+                // Use*NIX conventions for a folder name.
+                retVal = new DirectoryInfo(Path.Combine(homePath, ".aspnet", DataProtectionKeysFolderName));
+            }
         }
         else if (!string.IsNullOrEmpty(localAppDataFromSystemPath))
         {
@@ -92,7 +93,7 @@ internal sealed class DefaultKeyStorageDirectories : IDefaultKeyStorageDirectori
         if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID")))
         {
             var homeEnvVar = Environment.GetEnvironmentVariable("HOME");
-            if (!String.IsNullOrEmpty(homeEnvVar))
+            if (!string.IsNullOrEmpty(homeEnvVar))
             {
                 return GetKeyStorageDirectoryFromBaseAppDataPath(homeEnvVar);
             }

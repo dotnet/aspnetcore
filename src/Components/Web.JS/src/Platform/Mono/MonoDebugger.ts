@@ -7,9 +7,9 @@ const navigatorUA = navigator as MonoNavigatorUserAgent;
 const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const currentBrowserIsChromeOrEdge = brands
-  ? brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge')
+  ? brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge' || b.brand === 'Chromium')
   : (window as any).chrome;
-const platform = navigatorUA.userAgentData ? navigatorUA.userAgentData.platform : navigator.platform;
+const platform = navigatorUA.userAgentData?.platform ?? navigator.platform;
 
 let hasReferencedPdbs = false;
 let debugBuild = false;
@@ -34,7 +34,7 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
       if (!debugBuild && !hasReferencedPdbs) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
       } else if (!currentBrowserIsChromeOrEdge) {
-        console.error('Currently, only Microsoft Edge (80+), or Google Chrome, are supported for debugging.');
+        console.error('Currently, only Microsoft Edge (80+), Google Chrome, or Chromium, are supported for debugging.');
       } else {
         launchDebugger();
       }

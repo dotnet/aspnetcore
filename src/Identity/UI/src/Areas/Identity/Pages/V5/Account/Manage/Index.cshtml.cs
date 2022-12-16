@@ -62,7 +62,7 @@ public abstract class IndexModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class IndexModel<TUser> : IndexModel where TUser : class
+internal sealed class IndexModel<TUser> : IndexModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;

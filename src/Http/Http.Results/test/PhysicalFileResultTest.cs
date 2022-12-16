@@ -35,4 +35,29 @@ public class PhysicalFileResultTest : PhysicalFileResultTestBase
 
         return fileResult.ExecuteAsync(httpContext);
     }
+
+    [Fact]
+    public void PhysicalFileResult_Implements_IFileHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new PhysicalFileHttpResult("file.zip", contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(downloadName, result.FileDownloadName);
+    }
+
+    [Fact]
+    public void PhysicalFileResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new PhysicalFileHttpResult("file.zip", contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+    }
 }

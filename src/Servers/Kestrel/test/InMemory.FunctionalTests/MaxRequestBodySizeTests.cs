@@ -212,7 +212,7 @@ public class MaxRequestBodySizeTests : LoggedTest
             var buffer = new byte[1];
 
             Assert.Equal(1, await context.Request.Body.ReadAsync(buffer, 0, 1));
-            Assert.Equal(buffer[0], (byte)'A');
+            Assert.Equal((byte)'A', buffer[0]);
             Assert.Equal(0, await context.Request.Body.ReadAsync(buffer, 0, 1));
 
             context.Response.ContentLength = 1;

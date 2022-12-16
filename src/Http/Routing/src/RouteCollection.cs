@@ -176,7 +176,7 @@ public class RouteCollection : IRouteCollection
                 queryString = queryString.ToLowerInvariant();
             }
 
-            if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
+            if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith('/'))
             {
                 urlWithoutQueryString += "/";
             }

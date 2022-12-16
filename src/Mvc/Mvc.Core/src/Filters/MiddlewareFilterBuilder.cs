@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// Builds a middleware pipeline after receiving the pipeline from a pipeline provider
 /// </summary>
-internal class MiddlewareFilterBuilder
+internal sealed class MiddlewareFilterBuilder
 {
     // 'GetOrAdd' call on the dictionary is not thread safe and we might end up creating the pipeline more than
     // once. To prevent this Lazy<> is used. In the worst case multiple Lazy<> objects are created for multiple
