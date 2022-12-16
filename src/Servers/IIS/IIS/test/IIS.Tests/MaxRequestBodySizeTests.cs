@@ -37,7 +37,7 @@ public class MaxRequestBodySizeTests : LoggedTest
                 catch (BadHttpRequestException ex)
                 {
                     exception = ex;
-                    throw ex;
+                    throw;
                 }
             }, LoggerFactory))
         {
@@ -80,7 +80,7 @@ public class MaxRequestBodySizeTests : LoggedTest
                 catch (BadHttpRequestException ex)
                 {
                     exception = ex;
-                    throw ex;
+                    throw;
                 }
             }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = maxRequestSize }))
         {
@@ -286,7 +286,7 @@ public class MaxRequestBodySizeTests : LoggedTest
                 catch (BadHttpRequestException ex)
                 {
                     exception = ex;
-                    throw ex;
+                    throw;
                 }
             }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = maxRequestSize }))
         {
