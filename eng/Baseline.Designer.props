@@ -384,15 +384,15 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
@@ -684,7 +684,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="MessagePack" Version="[2.1.90, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaProxy-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaProxy' ">
@@ -774,17 +774,17 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[6.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.2.4, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.86, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
