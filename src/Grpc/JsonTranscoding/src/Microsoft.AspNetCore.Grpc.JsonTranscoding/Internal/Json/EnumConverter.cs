@@ -20,7 +20,7 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
         switch (reader.TokenType)
         {
             case JsonTokenType.String:
-                var enumDescriptor = ResolveEnumDescriptor(typeToConvert);
+                var enumDescriptor = (EnumDescriptor?)Context.DescriptorRegistry.FindDescriptorByType(typeToConvert);
                 if (enumDescriptor == null)
                 {
                     throw new InvalidOperationException($"Unable to resolve descriptor for {typeToConvert}.");
@@ -35,28 +35,6 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
             default:
                 throw new InvalidOperationException($"Unexpected JSON token: {reader.TokenType}.");
         }
-    }
-
-    private static EnumDescriptor? ResolveEnumDescriptor(Type typeToConvert)
-    {
-        var containingType = typeToConvert?.DeclaringType?.DeclaringType;
-
-        if (containingType != null)
-        {
-            var messageDescriptor = JsonConverterHelper.GetMessageDescriptor(containingType);
-            if (messageDescriptor != null)
-            {
-                for (var i = 0; i < messageDescriptor.EnumTypes.Count; i++)
-                {
-                    if (messageDescriptor.EnumTypes[i].ClrType == typeToConvert)
-                    {
-                        return messageDescriptor.EnumTypes[i];
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)

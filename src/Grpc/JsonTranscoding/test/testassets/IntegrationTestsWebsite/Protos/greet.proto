@@ -25,6 +25,12 @@ service Greeter {
       get: "/v1/greeter/{name=from/*}"
     };
   }
+  rpc SayHelloPostEnum (EnumHelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter_enum",
+      body: "*"
+    };
+  }
   rpc SayHelloComplexCatchAll1 (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
       get: "/{name=v1/greeter/**/b}/c/d/one"
@@ -53,6 +59,17 @@ message ComplextHelloRequest {
     string first_name = 1;
     string last_name = 2;
   }
+}
+
+message EnumHelloRequest {
+  NameOptions name = 1;
+}
+
+enum NameOptions {
+    JAMES = 0;
+    JOHN = 1;
+    JANE = 2;
+    JESS = 3;
 }
 
 // The response message containing the greetings.

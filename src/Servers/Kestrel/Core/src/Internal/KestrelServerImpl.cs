@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -89,8 +88,6 @@ internal sealed class KestrelServerImpl : IServer
         Features.Set<IServerAddressesFeature>(_serverAddresses);
 
         _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, ServiceContext);
-
-        HttpCharacters.Initialize();
     }
 
     private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)
@@ -166,6 +163,18 @@ internal sealed class KestrelServerImpl : IServer
                     // Http/1 without TLS, no-op HTTP/2 and 3.
                     if (hasHttp1)
                     {
+                        if (options.ProtocolsSetExplicitly)
+                        {
+                            if (hasHttp2)
+                            {
+                                Trace.Http2DisabledWithHttp1AndNoTls(options.EndPoint);
+                            }
+                            if (hasHttp3)
+                            {
+                                Trace.Http3DisabledWithHttp1AndNoTls(options.EndPoint);
+                            }
+                        }
+
                         hasHttp2 = false;
                         hasHttp3 = false;
                     }

@@ -13,11 +13,13 @@ namespace Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 internal enum WellKnownType
 {
     Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder,
+    Microsoft_AspNetCore_Http_IHeaderDictionary,
     Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata,
     Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata,
     Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata,
     Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata,
     Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata,
+    Microsoft_AspNetCore_Http_HeaderDictionaryExtensions,
     Microsoft_AspNetCore_Routing_IEndpointRouteBuilder,
     Microsoft_AspNetCore_Mvc_ControllerAttribute,
     Microsoft_AspNetCore_Mvc_NonControllerAttribute,
@@ -51,19 +53,25 @@ internal enum WellKnownType
     Microsoft_AspNetCore_Mvc_Infrastructure_IConvertToActionResult,
     Microsoft_AspNetCore_Http_RequestDelegate,
     System_Threading_Tasks_Task_T,
+    System_Threading_Tasks_ValueTask_T,
+    System_Reflection_ParameterInfo,
+    Microsoft_AspNetCore_Http_IBindableFromHttpContext_T,
+    System_IParsable_T
 }
 
-internal class WellKnownTypes
+internal sealed class WellKnownTypes
 {
     private static readonly BoundedCacheWithFactory<Compilation, WellKnownTypes> LazyWellKnownTypesCache = new();
     private static readonly string[] WellKnownTypeNames = new[]
     {
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
+        "Microsoft.AspNetCore.Http.IHeaderDictionary",
         "Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata",
+        "Microsoft.AspNetCore.Http.HeaderDictionaryExtensions",
         "Microsoft.AspNetCore.Routing.IEndpointRouteBuilder",
         "Microsoft.AspNetCore.Mvc.ControllerAttribute",
         "Microsoft.AspNetCore.Mvc.NonControllerAttribute",
@@ -97,11 +105,15 @@ internal class WellKnownTypes
         "Microsoft.AspNetCore.Mvc.Infrastructure.IConvertToActionResult",
         "Microsoft.AspNetCore.Http.RequestDelegate",
         "System.Threading.Tasks.Task`1",
+        "System.Threading.Tasks.ValueTask`1",
+        "System.Reflection.ParameterInfo",
+        "Microsoft.AspNetCore.Http.IBindableFromHttpContext`1",
+        "System.IParsable`1"
     };
-    
+
     public static WellKnownTypes GetOrCreate(Compilation compilation) =>
         LazyWellKnownTypesCache.GetOrCreateValue(compilation, static c => new WellKnownTypes(c));
-    
+
     private readonly INamedTypeSymbol?[] _lazyWellKnownTypes;
     private readonly Compilation _compilation;
 
@@ -109,7 +121,7 @@ internal class WellKnownTypes
     {
         AssertEnumAndTableInSync();
     }
-    
+
     [Conditional("DEBUG")]
     private static void AssertEnumAndTableInSync()
     {

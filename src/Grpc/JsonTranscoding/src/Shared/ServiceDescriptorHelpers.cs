@@ -49,7 +49,7 @@ internal static class ServiceDescriptorHelpers
     internal static bool IsWellKnownType(MessageDescriptor messageDescriptor) => messageDescriptor.File.Package == "google.protobuf" &&
         WellKnownTypeNames.Contains(messageDescriptor.File.Name);
 
-    internal static bool IsWrapperType(MessageDescriptor m) =>
+    internal static bool IsWrapperType(DescriptorBase m) =>
         m.File.Package == "google.protobuf" && m.File.Name == "google/protobuf/wrappers.proto";
 
     public static ServiceDescriptor? GetServiceDescriptor(Type serviceReflectionType)

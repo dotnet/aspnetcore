@@ -30,7 +30,7 @@ public class HeaderDictionaryIndexerFixer : CodeFixProvider
                 var title = $"Access header '{headerName}' with {resolvedPropertyName} property";
                 context.RegisterCodeFix(
                     CodeAction.Create(title,
-                        cancellationToken => FixHeaderDictionaryIndexer(diagnostic, context.Document, resolvedPropertyName, cancellationToken),
+                        cancellationToken => FixHeaderDictionaryIndexer(diagnostic, context.Document, resolvedPropertyName!, cancellationToken),
                         equivalenceKey: title),
                     diagnostic);
             }

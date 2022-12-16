@@ -3,8 +3,10 @@
 
 using System.Collections.Immutable;
 using System.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -21,18 +23,30 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
 
     public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
-    public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+    public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root == null)
+        {
+            return;
+        }
+
+        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        if (semanticModel == null)
+        {
+            return;
+        }
+
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
+
         foreach (var diagnostic in context.Diagnostics)
         {
-            context.Document.TryGetSyntaxRoot(out var root);
-
             if (CanReplaceWithAppend(diagnostic, root, out var invocation))
             {
                 var appendTitle = "Use 'IHeaderDictionary.Append'";
                 context.RegisterCodeFix(
                     CodeAction.Create(appendTitle,
-                        cancellationToken => ReplaceWithAppend(diagnostic, context.Document, invocation, cancellationToken),
+                        cancellationToken => ReplaceWithAppend(diagnostic, wellKnownTypes, root, context.Document, invocation),
                         equivalenceKey: appendTitle),
                     diagnostic);
             }
@@ -42,30 +56,24 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
                 var indexerTitle = "Use indexer";
                 context.RegisterCodeFix(
                     CodeAction.Create(indexerTitle,
-                        cancellationToken => ReplaceWithIndexer(diagnostic, context.Document, assignment, cancellationToken),
+                        cancellationToken => ReplaceWithIndexer(diagnostic, root, context.Document, assignment),
                         equivalenceKey: indexerTitle),
                     diagnostic);
             }
         }
-
-        return Task.CompletedTask;
     }
 
-    private static async Task<Document> ReplaceWithAppend(Diagnostic diagnostic, Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
+    private static Task<Document> ReplaceWithAppend(Diagnostic diagnostic, WellKnownTypes wellKnownTypes, SyntaxNode root, Document document, InvocationExpressionSyntax invocation)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-
         var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
-        var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-        var headerDictionaryExtensionsSymbol = model.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HeaderDictionaryExtensions");
-        var annotation = new SyntaxAnnotation("SymbolId", DocumentationCommentId.CreateReferenceId(headerDictionaryExtensionsSymbol));
+        var annotation = new SyntaxAnnotation("SymbolId", DocumentationCommentId.CreateReferenceId(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HeaderDictionaryExtensions)));
 
-        return document.WithSyntaxRoot(
-            root.ReplaceNode(diagnosticTarget, invocation.WithAdditionalAnnotations(Simplifier.AddImportsAnnotation, annotation)));
+        return Task.FromResult(document.WithSyntaxRoot(
+            root.ReplaceNode(diagnosticTarget, invocation.WithAdditionalAnnotations(Simplifier.AddImportsAnnotation, annotation))));
     }
 
-    private static bool CanReplaceWithAppend(Diagnostic diagnostic, SyntaxNode root, out InvocationExpressionSyntax invocation)
+    private static bool CanReplaceWithAppend(Diagnostic diagnostic, SyntaxNode root, [NotNullWhen(true)] out InvocationExpressionSyntax? invocation)
     {
         invocation = null;
 
@@ -86,16 +94,14 @@ public sealed class HeaderDictionaryAddFixer : CodeFixProvider
         return false;
     }
 
-    private static async Task<Document> ReplaceWithIndexer(Diagnostic diagnostic, Document document, AssignmentExpressionSyntax assignment, CancellationToken cancellationToken)
+    private static Task<Document> ReplaceWithIndexer(Diagnostic diagnostic, SyntaxNode root, Document document, AssignmentExpressionSyntax assignment)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-
         var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
-        return document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, assignment));
+        return Task.FromResult(document.WithSyntaxRoot(root.ReplaceNode(diagnosticTarget, assignment)));
     }
 
-    private static bool CanReplaceWithIndexer(Diagnostic diagnostic, SyntaxNode root, out AssignmentExpressionSyntax assignment)
+    private static bool CanReplaceWithIndexer(Diagnostic diagnostic, SyntaxNode root, [NotNullWhen(true)] out AssignmentExpressionSyntax? assignment)
     {
         assignment = null;
 

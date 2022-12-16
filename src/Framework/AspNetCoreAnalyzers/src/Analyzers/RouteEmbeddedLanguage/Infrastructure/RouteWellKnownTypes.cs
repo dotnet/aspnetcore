@@ -21,6 +21,7 @@ internal static class RouteWellKnownTypes
         WellKnownType.System_IO_Stream,
         WellKnownType.System_IO_Pipelines_PipeReader,
     };
+
     public static readonly WellKnownType[] NonRouteMetadataTypes = new[]
     {
         WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata,

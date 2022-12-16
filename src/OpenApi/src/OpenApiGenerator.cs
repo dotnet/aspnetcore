@@ -77,7 +77,7 @@ internal sealed class OpenApiGenerator
             Summary = metadata.GetMetadata<IEndpointSummaryMetadata>()?.Summary,
             Description = metadata.GetMetadata<IEndpointDescriptionMetadata>()?.Description,
             Tags = GetOperationTags(methodInfo, metadata),
-            Parameters = GetOpenApiParameters(methodInfo, metadata, pattern, disableInferredBody),
+            Parameters = GetOpenApiParameters(methodInfo, pattern, disableInferredBody),
             RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
@@ -259,7 +259,7 @@ internal sealed class OpenApiGenerator
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         foreach (var parameter in parameters)
         {
-            var (bodyOrFormParameter, _) = GetOpenApiParameterLocation(parameter, pattern, false);
+            var (bodyOrFormParameter, _, _) = GetOpenApiParameterLocation(parameter, pattern, false);
             hasFormOrBodyParameter |= bodyOrFormParameter;
             if (hasFormOrBodyParameter)
             {
@@ -356,7 +356,7 @@ internal sealed class OpenApiGenerator
         return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
+    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         var openApiParameters = new List<OpenApiParameter>();
@@ -368,7 +368,7 @@ internal sealed class OpenApiGenerator
                 throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
             }
 
-            var (_, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
+            var (_, parameterLocation, attributeName) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
 
             // if the parameter doesn't have a valid location
             // then we should ignore it
@@ -379,12 +379,11 @@ internal sealed class OpenApiGenerator
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
-            var name = pattern.GetParameter(parameter.Name) is { } routeParameter ? routeParameter.Name : parameter.Name;
+            var name = attributeName ?? (pattern.GetParameter(parameter.Name) is { } routeParameter ? routeParameter.Name : parameter.Name);
             var openApiParameter = new OpenApiParameter()
             {
                 Name = name,
                 In = parameterLocation,
-                Content = GetOpenApiParameterContent(metadata),
                 Required = !isOptional
 
             };
@@ -394,44 +393,29 @@ internal sealed class OpenApiGenerator
         return openApiParameters;
     }
 
-    private static Dictionary<string, OpenApiMediaType> GetOpenApiParameterContent(EndpointMetadataCollection metadata)
-    {
-        var openApiParameterContent = new Dictionary<string, OpenApiMediaType>();
-        var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
-        if (acceptsMetadata is not null)
-        {
-            foreach (var contentType in acceptsMetadata.ContentTypes)
-            {
-                openApiParameterContent.Add(contentType, new OpenApiMediaType());
-            }
-        }
-
-        return openApiParameterContent;
-    }
-
-    private (bool isBodyOrForm, ParameterLocation? locatedIn) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
+    private (bool isBodyOrForm, ParameterLocation? locatedIn, string? name) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
         var attributes = parameter.GetCustomAttributes();
 
         if (attributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
-            return (false, ParameterLocation.Path);
+            return (false, ParameterLocation.Path, routeAttribute.Name);
         }
         else if (attributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
         {
-            return (false, ParameterLocation.Query);
+            return (false, ParameterLocation.Query, queryAttribute.Name);
         }
         else if (attributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
         {
-            return (false, ParameterLocation.Header);
+            return (false, ParameterLocation.Header, headerAttribute.Name);
         }
         else if (attributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } fromBodyAttribute)
         {
-            return (true, null);
+            return (true, null, null);
         }
         else if (attributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } fromFormAttribute)
         {
-            return (true, null);
+            return (true, null, null);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                 parameter.ParameterType == typeof(HttpContext) ||
@@ -442,34 +426,34 @@ internal sealed class OpenApiGenerator
                 ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                 _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
         {
-            return (false, null);
+            return (false, null, null);
         }
         else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
             // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
             if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
             {
-                return (false, ParameterLocation.Path);
+                return (false, ParameterLocation.Path, null);
             }
             else
             {
-                return (false, ParameterLocation.Query);
+                return (false, ParameterLocation.Query, null);
             }
         }
         else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
         {
-            return (true, null);
+            return (true, null, null);
         }
         else if (disableInferredBody && (
                  (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
                  parameter.ParameterType == typeof(StringValues)))
         {
-            return (false, ParameterLocation.Query);
+            return (false, ParameterLocation.Query, null);
         }
         else
         {
-            return (true, null);
+            return (true, null, null);
         }
     }
 }
