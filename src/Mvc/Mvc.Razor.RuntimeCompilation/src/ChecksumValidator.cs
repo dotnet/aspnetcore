@@ -108,26 +108,25 @@ internal static class ChecksumValidator
             throw new ArgumentNullException(nameof(projectItem));
         }
 
-        Func<HashAlgorithm> createHashAlgorithm;
+        Func<Stream, byte[]> hashData;
         string algorithmName;
 
         //only SHA1 and SHA256 are supported.  Default to SHA1
         switch (checksumAlgorithm)
         {
             case nameof(SHA256):
-                createHashAlgorithm = SHA256.Create;
+                hashData = SHA256.HashData;
                 algorithmName = nameof(SHA256);
                 break;
             default:
-                createHashAlgorithm = SHA1.Create;
+                hashData = SHA1.HashData;
                 algorithmName = nameof(SHA1);
                 break;
         }
 
         using (var stream = projectItem.Read())
-        using (var hashAlgorithm = createHashAlgorithm())
         {
-            return (hashAlgorithm.ComputeHash(stream), algorithmName);
+            return (hashData(stream), algorithmName);
         }
     }
 
