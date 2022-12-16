@@ -22,7 +22,11 @@ public class IdentityBuilder
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
     public IdentityBuilder(Type user, IServiceCollection services)
     {
-        Debug.Assert(user.IsClass);
+        if (!user.IsClass)
+        {
+            throw new ArgumentException("User type must be a class.", nameof(user));
+        }
+
         UserType = user;
         Services = services;
     }
@@ -34,7 +38,14 @@ public class IdentityBuilder
     /// <param name="role">The <see cref="Type"/> to use for the roles.</param>
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
     public IdentityBuilder(Type user, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type role, IServiceCollection services) : this(user, services)
-        => RoleType = role;
+    {
+        if (!role.IsClass)
+        {
+            throw new ArgumentException("Role type must be a class.", nameof(role));
+        }
+
+        RoleType = role;
+    }
 
     /// <summary>
     /// Gets the <see cref="Type"/> used for users.
