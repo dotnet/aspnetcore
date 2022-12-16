@@ -201,26 +201,9 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
     document.head.appendChild(scriptElem);
   }
 
-  // GOTCHA: remove this once runtime switched to ES6
-  // this is capturing the export via callback we have in CJS version of the runtime
-  let cjsExportResolve: (data: CreateDotnetRuntimeType) => void = undefined as any;
-  const cjsExport = new Promise<CreateDotnetRuntimeType>((resolve) => {
-    cjsExportResolve = resolve;
-  });
-  globalThis.__onDotnetRuntimeLoaded = (createDotnetRuntime) => {
-    delete globalThis.__onDotnetRuntimeLoaded;
-    cjsExportResolve(createDotnetRuntime);
-  };
-
   const absoluteSrc = (new URL(src, document.baseURI)).toString();
   const { default: createDotnetRuntime } = await import(/* webpackIgnore: true */ absoluteSrc);
-  if (createDotnetRuntime) {
-    // this runs when loaded module was ES6
-    delete globalThis.__onDotnetRuntimeLoaded;
-    return createDotnetRuntime;
-  }
-
-  return await cjsExport;
+  return await createDotnetRuntime;
 }
 
 async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<RuntimeAPI> {
