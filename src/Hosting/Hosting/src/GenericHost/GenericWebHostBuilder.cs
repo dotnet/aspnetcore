@@ -271,7 +271,6 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         return this;
     }
 
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Constructing untrimmed generic types and methods with reference types")]
     private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object? instance = null)
     {
         var webHostBuilderContext = GetWebHostBuilderContext(context);
