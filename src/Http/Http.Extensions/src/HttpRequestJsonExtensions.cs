@@ -21,6 +21,8 @@ public static class HttpRequestJsonExtensions
 {
     private const string RequiresUnreferencedCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed. " +
         "Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.";
+    private const string RequiresDynamicCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. " +
+        "Use the overload that takes a JsonTypeInfo or JsonSerializerContext for native AOT applications.";
 
     /// <summary>
     /// Read JSON from the request and deserialize to the specified type.
@@ -31,7 +33,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static ValueTask<TValue?> ReadFromJsonAsync<TValue>(
         this HttpRequest request,
         CancellationToken cancellationToken = default)
@@ -49,7 +51,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static async ValueTask<TValue?> ReadFromJsonAsync<TValue>(
         this HttpRequest request,
         JsonSerializerOptions? options,
@@ -133,7 +135,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static ValueTask<object?> ReadFromJsonAsync(
         this HttpRequest request,
         Type type,
@@ -152,7 +154,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static async ValueTask<object?> ReadFromJsonAsync(
         this HttpRequest request,
         Type type,
