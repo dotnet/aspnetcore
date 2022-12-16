@@ -55,7 +55,6 @@ public static class RoutePatternFactory
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies)
     {
         if (pattern == null)
@@ -208,7 +207,6 @@ public static class RoutePatternFactory
     /// <param name="segments">The collection of segments.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static RoutePattern Pattern(
         object? defaults,
         object? parameterPolicies,
@@ -271,7 +269,6 @@ public static class RoutePatternFactory
     /// <param name="segments">The collection of segments.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static RoutePattern Pattern(
         string? rawText,
         object? defaults,
@@ -367,7 +364,6 @@ public static class RoutePatternFactory
     /// <param name="segments">The collection of segments.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static RoutePattern Pattern(
         object? defaults,
         object? parameterPolicies,
@@ -430,7 +426,6 @@ public static class RoutePatternFactory
     /// <param name="segments">The collection of segments.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     public static RoutePattern Pattern(
         string? rawText,
         object? defaults,
@@ -1215,7 +1210,6 @@ public static class RoutePatternFactory
     }
 
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    [RequiresDynamicCode(RouteValueDictionaryTrimmerWarning.Warning)] // RouteValueDictionary
     private static RouteValueDictionary? Wrap(object? values)
     {
         return values is null ? null : new RouteValueDictionary(values);

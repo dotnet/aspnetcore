@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 // a fallback jump table for two reasons:
 // 1. We compute the IL lazily to avoid taking up significant time when processing a request
 // 2. The generated IL only supports ASCII in the URL path
-[RequiresDynamicCode("This API is not AOT safe because it uses refemit")]
+[RequiresDynamicCode("This API is not AOT safe because it uses System.Reflection.Emit.")]
 internal sealed class ILEmitTrieJumpTable : JumpTable
 {
     private readonly int _defaultDestination;

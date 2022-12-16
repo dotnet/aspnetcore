@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
-[RequiresDynamicCode("This API is not AOT safe because it uses refemit")]
+[RequiresDynamicCode("This API is not AOT safe because it uses System.Reflection.Emit.")]
 internal static class ILEmitTrieFactory
 {
     // The algorthm we use only works for ASCII text. If we find non-ASCII text in the input
@@ -479,7 +479,7 @@ internal static class ILEmitTrieFactory
         public Label ReturnNotAscii { get; set; }
     }
 
-    [RequiresDynamicCode("This API is not AOT safe because it uses refemit")]
+    [RequiresDynamicCode("This API is not AOT safe because it uses System.Reflection.Emit.")]
     private sealed class Methods
     {
         // Caching because the methods won't change, if we're being called once we're likely to

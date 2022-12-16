@@ -23,8 +23,6 @@ internal sealed class DefaultRoutePatternTransformer : RoutePatternTransformer
 
     [RequiresUnreferencedCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly." +
         "Consider using a different overload to avoid this issue.")]
-    [RequiresDynamicCode("This API may perform reflection on supplied parameter which may be trimmed if not referenced directly." +
-        "Consider using a different overload to avoid this issue.")] // RouteValueDictionary
     public override RoutePattern SubstituteRequiredValues(RoutePattern original, object requiredValues)
     {
         if (original == null)
