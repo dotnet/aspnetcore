@@ -52,7 +52,6 @@ internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
         {
             if (_enumTypeMapping.TryGetValue(type, out var enumDescriptor))
             {
-                var values = enumDescriptor.Values.Select(v => v.Name).ToList();
                 return DataContract.ForPrimitive(type, DataType.String, dataFormat: null, value =>
                 {
                     var match = enumDescriptor.Values.SingleOrDefault(v => v.Number == (int)value);
