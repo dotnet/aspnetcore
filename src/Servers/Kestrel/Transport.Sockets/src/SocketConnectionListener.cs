@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
@@ -10,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
-internal sealed class SocketConnectionListener : IConnectionListener, IConcurrentConnectionListener
+internal sealed class SocketConnectionListener : IConnectionListener //, IConcurrentConnectionListener
 {
     private readonly SocketConnectionContextFactory _factory;
     private readonly ILogger _logger;
@@ -18,7 +20,7 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
     private readonly SocketTransportOptions _options;
 
     public EndPoint EndPoint { get; private set; }
-    int IConcurrentConnectionListener.MaxAccepts => int.MaxValue; // not restricted
+    // int IConcurrentConnectionListener.MaxAccepts => int.MaxValue; // not restricted
 
     internal SocketConnectionListener(
         EndPoint endpoint,
@@ -57,15 +59,31 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
         _listenSocket = listenSocket;
     }
 
-    public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
+    private readonly SocketAccepter _accepter = new(PipeScheduler.Inline);
+
+    public ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
+        => default; // nope
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+    public async ValueTask<ConnectionContext?> AcceptAsync2(CancellationToken cancellationToken = default)
     {
+        var firstChunk = ArrayPool<byte>.Shared.Rent(2048);
+        if (firstChunk is not null)
+        {
+            throw new InvalidOperationException("huh");
+        }
         while (true)
         {
             try
             {
                 Debug.Assert(_listenSocket != null, "Bind must be called first.");
 
-                var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
+                var result = await _accepter.AcceptAsync(_listenSocket, firstChunk);
+                if (result.HasError) // the same as a thrown SocketException
+                {
+                    throw result.SocketError; // use existing exception handling
+                }
+                var acceptSocket = _accepter.AcceptSocket!;
 
                 // Only apply no delay to Tcp based endpoints
                 if (acceptSocket.LocalEndPoint is IPEndPoint)
@@ -73,7 +91,16 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
                     acceptSocket.NoDelay = _options.NoDelay;
                 }
 
-                return _factory.Create(acceptSocket);
+                var connection = _factory.CreateUnstartedSocketConnection(acceptSocket);
+                var received = result.BytesTransferred;
+                Console.WriteLine($"got {received} bytes in accept");
+                if (received != 0)
+                {
+                    new ReadOnlyMemory<byte>(firstChunk, 0, received).CopyTo(connection.Input.GetMemory(received));
+                    connection.Input.Advance(received);
+                }
+                connection.Start(flushImmediately: received != 0);
+                return connection;
             }
             catch (ObjectDisposedException)
             {
@@ -90,6 +117,10 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
                 // The connection got reset while it was in the backlog, so we try again.
                 SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
             }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(firstChunk!);
+            }
         }
     }
 
@@ -102,7 +133,7 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
     public ValueTask DisposeAsync()
     {
         _listenSocket?.Dispose();
-
+        _accepter?.Dispose();
         _factory.Dispose();
 
         return default;

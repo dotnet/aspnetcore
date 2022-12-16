@@ -88,6 +88,13 @@ public sealed class SocketConnectionContextFactory : IDisposable
     /// <returns></returns>
     public ConnectionContext Create(Socket socket)
     {
+        var connection = CreateUnstartedSocketConnection(socket);
+        connection.Start();
+        return connection;
+    }
+
+    internal SocketConnection CreateUnstartedSocketConnection(Socket socket)
+    {
         var setting = _settings[Interlocked.Increment(ref _settingsIndex) % _settingsCount];
 
         var connection = new SocketConnection(socket,
@@ -99,7 +106,6 @@ public sealed class SocketConnectionContextFactory : IDisposable
             setting.OutputOptions,
             waitForData: _options.WaitForDataBeforeAllocatingBuffer);
 
-        connection.Start();
         return connection;
     }
 

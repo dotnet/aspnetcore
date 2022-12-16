@@ -72,12 +72,12 @@ internal sealed partial class SocketConnection : TransportConnection
 
     public override MemoryPool<byte> MemoryPool { get; }
 
-    public void Start()
+    public void Start(bool flushImmediately = false)
     {
         try
         {
             // Spawn send and receive logic
-            _receivingTask = DoReceive();
+            _receivingTask = DoReceive(flushImmediately);
             _sendingTask = DoSend();
         }
         catch (Exception ex)
@@ -127,7 +127,7 @@ internal sealed partial class SocketConnection : TransportConnection
         _connectionClosedTokenSource.Dispose();
     }
 
-    private async Task DoReceive()
+    private async Task DoReceive(bool flush)
     {
         Exception? error = null;
 
@@ -135,6 +135,30 @@ internal sealed partial class SocketConnection : TransportConnection
         {
             while (true)
             {
+                if (flush) // we *sometimes* want to flush immediately (if we received data in accept)
+                { // and we *always* want to flush after receive, so: we do this first
+                    var flushTask = Input.FlushAsync();
+
+                    var paused = !flushTask.IsCompleted;
+
+                    if (paused)
+                    {
+                        SocketsLog.ConnectionPause(_logger, this);
+                    }
+
+                    var result = await flushTask;
+
+                    if (paused)
+                    {
+                        SocketsLog.ConnectionResume(_logger, this);
+                    }
+
+                    if (result.IsCompleted || result.IsCanceled)
+                    {
+                        // Pipe consumer is shut down, do we stop writing
+                        break;
+                    }
+                }
                 if (_waitForData)
                 {
                     // Wait for data before allocating a buffer.
@@ -166,28 +190,8 @@ internal sealed partial class SocketConnection : TransportConnection
                 }
 
                 Input.Advance(bytesReceived);
-
-                var flushTask = Input.FlushAsync();
-
-                var paused = !flushTask.IsCompleted;
-
-                if (paused)
-                {
-                    SocketsLog.ConnectionPause(_logger, this);
-                }
-
-                var result = await flushTask;
-
-                if (paused)
-                {
-                    SocketsLog.ConnectionResume(_logger, this);
-                }
-
-                if (result.IsCompleted || result.IsCanceled)
-                {
-                    // Pipe consumer is shut down, do we stop writing
-                    break;
-                }
+                flush = true;
+                // back to start of loop
 
                 bool IsNormalCompletion(SocketOperationResult result)
                 {
