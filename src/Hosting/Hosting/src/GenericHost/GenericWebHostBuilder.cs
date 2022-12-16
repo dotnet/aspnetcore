@@ -344,7 +344,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
 
             if (containerType.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
             {
-                throw new InvalidOperationException("ValueType startup container isn't supported with AOT.");
+                throw new InvalidOperationException("A ValueType TContainerBuilder isn't supported with AOT.");
             }
 
             var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);

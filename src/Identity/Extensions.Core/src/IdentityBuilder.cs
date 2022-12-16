@@ -83,7 +83,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TValidator">The user validator type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because generic type and user type are reference types.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddUserValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidator>() where TValidator : class
         => AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
