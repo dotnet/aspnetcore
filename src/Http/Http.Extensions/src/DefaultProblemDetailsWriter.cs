@@ -71,6 +71,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
                         contentType: "application/problem+json"));
     }
 
+    // Additional values are specified on JsonContext to support some values for extensions.
     [JsonSerializable(typeof(ProblemDetails))]
     [JsonSerializable(typeof(Dictionary<string, object>))]
     [JsonSerializable(typeof(JsonNode))]

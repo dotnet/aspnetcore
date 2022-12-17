@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
@@ -174,26 +173,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
         if (_problemDetailsService != null)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
-                Detail = errorContext.Exception.Message,
-                Status = httpContext.Response.StatusCode
-            };
-
-            var headersNode = JsonSerializer.SerializeToNode(httpContext.Request.Headers, ExtensionsExceptionJsonContext.Default.IHeaderDictionary);
-            var routeValuesNode = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues is { } routeValues
-                ? JsonSerializer.SerializeToNode(routeValues, ExtensionsExceptionJsonContext.Default.RouteValueDictionary)
-                : null;
-
-            problemDetails.Extensions["exception"] = new Dictionary<string, object?>
-            {
-                ["Details"] = errorContext.Exception.ToString(),
-                ["Headers"] = headersNode,
-                ["Path"] = httpContext.Request.Path.ToString(),
-                ["Endpoint"] = httpContext.GetEndpoint()?.ToString(),
-                ["RouteValues"] = routeValuesNode,
-            };
+            var problemDetails = CreateProblemDetails(errorContext, httpContext);
 
             await _problemDetailsService.WriteAsync(new()
             {
@@ -219,9 +199,33 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
             await httpContext.Response.WriteAsync(sb.ToString());
         }
+    }
 
-        static string ResolvePropertyName(string propertyName, JsonNamingPolicy? namingPolicy) =>
-            propertyName;
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
+    private static ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
+            Detail = errorContext.Exception.Message,
+            Status = httpContext.Response.StatusCode
+        };
+
+        var headersNode = JsonSerializer.SerializeToNode(httpContext.Request.Headers, ExtensionsExceptionJsonContext.Default.IHeaderDictionary);
+        var routeValuesNode = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues is { } routeValues
+            ? JsonSerializer.SerializeToNode(routeValues, ExtensionsExceptionJsonContext.Default.RouteValueDictionary)
+            : null;
+
+        problemDetails.Extensions["exception"] = new Dictionary<string, object?>
+        {
+            ["Details"] = errorContext.Exception.ToString(),
+            ["Headers"] = headersNode,
+            ["Path"] = httpContext.Request.Path.ToString(),
+            ["Endpoint"] = httpContext.GetEndpoint()?.ToString(),
+            ["RouteValues"] = routeValuesNode,
+        };
+        return problemDetails;
     }
 
     private Task DisplayCompilationException(

@@ -131,6 +131,7 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         foreach (var kvp in value.Extensions)
         {
             writer.WritePropertyName(kvp.Key);
+            // When AOT is enabled, Serialize will only work with values specified on the JsonContext.
             JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
         }
     }
