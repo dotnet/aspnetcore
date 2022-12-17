@@ -3,6 +3,7 @@
 
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -75,9 +76,25 @@ internal sealed partial class RateLimitingMiddleware
         return InvokeInternal(context, enableRateLimitingAttribute);
     }
 
+    private void AddRateLimiterHttpContextFeature(HttpContext context, LeaseContext lease)
+    {
+        var rlContext = new RateLimiterContext()
+        {
+            EndpointLimiter = _endpointLimiter,
+            GlobalLimiter = _globalLimiter,
+            HttpContext = context,
+            Lease = lease.Lease
+        };
+
+        context.Features.Set<IRateLimiterContextFeature>(new RateLimiterContextFeature(rlContext));
+    }
+
     private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         using var leaseContext = await TryAcquireAsync(context);
+
+        AddRateLimiterHttpContextFeature(context, leaseContext);
+
         if (leaseContext.Lease?.IsAcquired == true)
         {
             await _next(context);

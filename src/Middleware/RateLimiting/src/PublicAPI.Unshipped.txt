@@ -6,6 +6,17 @@ Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute.DisableRateLimiti
 Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute
 Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute.EnableRateLimitingAttribute(string! policyName) -> void
 Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute.PolicyName.get -> string?
+Microsoft.AspNetCore.RateLimiting.Features.IRateLimiterContextFeature
+Microsoft.AspNetCore.RateLimiting.Features.IRateLimiterContextFeature.Context.get -> Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext!
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext.EndpointLimiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>!
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext.GlobalLimiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>?
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext.HttpContext.set -> void
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext.Lease.get -> System.Threading.RateLimiting.RateLimitLease!
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContextFeature
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContextFeature.Context.get -> Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext!
+Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContextFeature.RateLimiterContextFeature(Microsoft.AspNetCore.RateLimiting.Features.RateLimiterContext! context) -> void
 Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>
 Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>.GetPartition(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.RateLimiting.RateLimitPartition<TPartitionKey>
 Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>.OnRejected.get -> System.Func<Microsoft.AspNetCore.RateLimiting.OnRejectedContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?

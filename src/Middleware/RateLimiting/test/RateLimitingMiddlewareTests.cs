@@ -4,6 +4,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -604,6 +605,112 @@ public class RateLimitingMiddlewareTests
         // Assert
         Assert.False(globalOnRejectedInvoked);
         Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RateLimiterContextFeature_PropertiesInitialized()
+    {
+        // Arrange
+        const string policy = "test_policy";
+        var options = CreateOptionsAccessor();
+
+        options.Value.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        {
+            return RateLimitPartition.GetConcurrencyLimiter<string>("globalLimiter", key => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = 10,
+                QueueProcessingOrder = QueueProcessingOrder.NewestFirst,
+                QueueLimit = 5
+            });
+        });
+        options.Value.AddConcurrencyLimiter(policy, configure =>
+        {
+            configure.QueueLimit = 10;
+            configure.PermitLimit = 10;
+        });
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+        var context = new DefaultHttpContext();
+        var endpoint = CreateEndpointWithRateLimitPolicy(policy);
+        context.SetEndpoint(endpoint);
+
+        //Act
+        await middleware.Invoke(context).DefaultTimeout();
+
+        // Assert
+        var rlContext = context.Features.Get<IRateLimiterContextFeature>();
+
+        Assert.NotNull(rlContext);
+        Assert.NotNull(rlContext.Context);
+        Assert.NotNull(rlContext.Context.GlobalLimiter);
+        Assert.NotNull(rlContext.Context.EndpointLimiter);
+        Assert.NotNull(rlContext.Context.HttpContext);
+    }
+
+    [Fact]
+    public async Task RateLimiterContextFeature_GetsCorrectGlobalRateLimiterInfo_WithSingleRequest()
+    {
+        // Arrange
+        var options = CreateOptionsAccessor();
+
+        options.Value.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        {
+            return RateLimitPartition.GetConcurrencyLimiter<string>("globalLimiter", key => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = 10,
+                QueueProcessingOrder = QueueProcessingOrder.NewestFirst,
+                QueueLimit = 5
+            });
+        });
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+        var context = new DefaultHttpContext();
+
+        //Act
+        await middleware.Invoke(context).DefaultTimeout();
+
+        // Assert
+        var rlContext = context.Features.Get<IRateLimiterContextFeature>();
+        var statistics = rlContext.Context.GlobalLimiter.GetStatistics(context);
+
+        Assert.NotNull(statistics);
+        Assert.True(rlContext.Context.Lease.IsAcquired);
+        Assert.Equal(1, statistics.TotalSuccessfulLeases);
+        Assert.Equal(0, statistics.TotalFailedLeases);
+        Assert.Equal(10, statistics.CurrentAvailablePermits);
+    }
+
+    [Fact]
+    public async Task GetsCorrectEndpointRateLimiterInfo_With3Requests()
+    {
+        // Arrange
+        const string policy = "test_policy";
+        var options = CreateOptionsAccessor();
+
+        options.Value.AddConcurrencyLimiter(policy, configure =>
+        {
+            configure.QueueLimit = 10;
+            configure.PermitLimit = 10;
+        });
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+
+        var context = new DefaultHttpContext();
+        var endpoint = CreateEndpointWithRateLimitPolicy(policy);
+        context.SetEndpoint(endpoint);
+
+        // Act
+        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.Invoke(context).DefaultTimeout();
+
+        // Assert
+        var rlContext = context.Features.Get<IRateLimiterContextFeature>();
+        var statistics = rlContext.Context.EndpointLimiter.GetStatistics(context);
+
+        Assert.NotNull(statistics);
+        Assert.True(rlContext.Context.Lease.IsAcquired);
+        Assert.True(statistics.TotalSuccessfulLeases == 3);
     }
 
     private Endpoint CreateEndpointWithRateLimitPolicy<TPartitionKey>(IRateLimiterPolicy<TPartitionKey> policy)
