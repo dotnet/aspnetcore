@@ -25,7 +25,7 @@
   "symbols/UseLocalDB/description": "Se deve usar LocalDB em vez de SQLite. Esta opção só se aplica se --auth Individual ou --auth IndividualB2C for especificado.",
   "symbols/UseMinimalAPIs/description": "Se deve usar APIs mínimas em vez de controladores.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "symbols/Framework/choices/net8.0/description": ".NET 8.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/CalledApiUrl/description": "URL da API para chamar do aplicativo Web. Essa opção se aplica somente se --auth SingleOrg ou --auth IndividualB2C for especificado.",
   "symbols/CallsMicrosoftGraph/description": "Especifica se o aplicativo Web chama o Microsoft Graph. Esta opção só se aplica se --auth SingleOrg for especificado.",

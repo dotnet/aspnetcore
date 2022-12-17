@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly Uygulaması Boş",
   "description": "WebAssembly üzerinde çalışan ve isteğe bağlı olarak bir ASP.NET Core uygulaması tarafından barındırılan bir Blazor uygulaması oluşturmaya yönelik boş bir proje şablonu. Bu şablonda içerik yok.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/Hosted/displayName": "ASP.NET Core tarafından _Barındırılan",
   "symbols/Hosted/description": "Belirtilmişse Blazor WebAssembly uygulaması için ASP.NET Core konağı içerir.",

@@ -25,7 +25,7 @@
   "symbols/UseLocalDB/description": "SQLite の代わりに LocalDB を使用するかどうか。このオプションは、--auth Individual または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/UseMinimalAPIs/description": "コントローラーの代わりに最小限の API を使用するかどうか。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
-  "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/CalledApiUrl/description": "Web アプリから呼び出す API の URL。このオプションは、--auth SingleOrg または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/CallsMicrosoftGraph/description": "Web アプリが Microsoft Graph を呼び出すかどうかを指定します。このオプションは、--auth SingleOrg が指定されている場合にのみ適用されます。",
