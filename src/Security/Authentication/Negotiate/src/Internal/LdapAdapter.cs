@@ -6,6 +6,7 @@ using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
 internal static class LdapAdapter
 {
+    private static Regex DistinguishedNameSeparator = new Regex(@"(?<!\\),");
+    
     public static async Task RetrieveClaimsAsync(LdapSettings settings, ClaimsIdentity identity, ILogger logger)
     {
         var user = identity.Name!;
@@ -62,7 +65,7 @@ internal static class LdapAdapter
             {
                 // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
                 var groupDN = $"{Encoding.UTF8.GetString((byte[])group)}";
-                var groupCN = groupDN.Split(',')[0].Substring("CN=".Length);
+                var groupCN = DistinguishedNameSeparator.Split(groupDN)[0].Substring("CN=".Length);
 
                 if (!settings.IgnoreNestedGroups)
                 {
@@ -120,7 +123,7 @@ internal static class LdapAdapter
                 foreach (var member in memberof)
                 {
                     var nestedGroupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
-                    var nestedGroupCN = nestedGroupDN.Split(',')[0].Substring("CN=".Length);
+                    var nestedGroupCN = DistinguishedNameSeparator.Split(nestedGroupDN)[0].Substring("CN=".Length);
 
                     if (processedGroups.Contains(nestedGroupDN))
                     {
