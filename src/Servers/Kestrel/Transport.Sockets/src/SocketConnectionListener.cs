@@ -61,11 +61,7 @@ internal sealed class SocketConnectionListener : IConnectionListener //, IConcur
 
     private readonly SocketAccepter _accepter = new(PipeScheduler.Inline);
 
-    public ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
-        => default; // nope
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-    public async ValueTask<ConnectionContext?> AcceptAsync2(CancellationToken cancellationToken = default)
+    public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
         var firstChunk = ArrayPool<byte>.Shared.Rent(2048);
         if (firstChunk is not null)
@@ -93,9 +89,9 @@ internal sealed class SocketConnectionListener : IConnectionListener //, IConcur
 
                 var connection = _factory.CreateUnstartedSocketConnection(acceptSocket);
                 var received = result.BytesTransferred;
-                Console.WriteLine($"got {received} bytes in accept");
                 if (received != 0)
                 {
+                    Console.WriteLine($"got {received} bytes in accept");
                     new ReadOnlyMemory<byte>(firstChunk, 0, received).CopyTo(connection.Input.GetMemory(received));
                     connection.Input.Advance(received);
                 }
