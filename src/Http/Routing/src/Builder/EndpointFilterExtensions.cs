@@ -13,12 +13,15 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public static class EndpointFilterExtensions
 {
+    internal const string FilterRequiresDynamicCodeWarning = "Filter factories generate dynamic code and aren't compatible with native AOT applications.";
+
     /// <summary>
     /// Registers a filter onto the route handler.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filter">The <see cref="IEndpointFilter"/> to register.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresDynamicCode(FilterRequiresDynamicCodeWarning)]
     public static TBuilder AddEndpointFilter<TBuilder>(this TBuilder builder, IEndpointFilter filter) where TBuilder : IEndpointConventionBuilder =>
         builder.AddEndpointFilterFactory((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
 
@@ -29,6 +32,7 @@ public static class EndpointFilterExtensions
     /// <typeparam name="TFilterType">The type of the <see cref="IEndpointFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresDynamicCode(FilterRequiresDynamicCodeWarning)]
     public static TBuilder AddEndpointFilter<TBuilder, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
         where TFilterType : IEndpointFilter
@@ -63,6 +67,7 @@ public static class EndpointFilterExtensions
     /// <typeparam name="TFilterType">The type of the <see cref="IEndpointFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresDynamicCode(FilterRequiresDynamicCodeWarning)]
     public static RouteHandlerBuilder AddEndpointFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder)
         where TFilterType : IEndpointFilter
     {
@@ -76,6 +81,7 @@ public static class EndpointFilterExtensions
     /// <typeparam name="TFilterType">The type of the <see cref="IEndpointFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresDynamicCode(FilterRequiresDynamicCodeWarning)]
     public static RouteGroupBuilder AddEndpointFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteGroupBuilder builder)
         where TFilterType : IEndpointFilter
     {
@@ -89,6 +95,7 @@ public static class EndpointFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="routeHandlerFilter">A method representing the core logic of the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresDynamicCode(FilterRequiresDynamicCodeWarning)]
     public static TBuilder AddEndpointFilter<TBuilder>(this TBuilder builder, Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> routeHandlerFilter)
         where TBuilder : IEndpointConventionBuilder
     {
@@ -101,6 +108,7 @@ public static class EndpointFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filterFactory">A method representing the logic for constructing the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresDynamicCode(FilterRequiresDynamicCodeWarning)]
     public static TBuilder AddEndpointFilterFactory<TBuilder>(this TBuilder builder, Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> filterFactory)
         where TBuilder : IEndpointConventionBuilder
     {

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -15,7 +16,14 @@ public abstract class EndpointBuilder
     /// <summary>
     /// Gets the list of filters that apply to this endpoint.
     /// </summary>
-    public IList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>> FilterFactories => _filterFactories ??= new();
+    public IList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>> FilterFactories
+    {
+        [RequiresDynamicCode("Filter factories generate dynamic code and aren't compatible with native AOT applications.")]
+        get
+        {
+            return _filterFactories ??= new();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the delegate used to process requests for the endpoint.

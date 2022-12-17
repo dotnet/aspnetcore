@@ -202,7 +202,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
         if (isRouteHandler)
         {
-            rdfOptions = CreateRDFOptions(entry, pattern, builder);
+            rdfOptions = CreateRdfOptions(entry, pattern, builder);
             rdfMetadataResult = RequestDelegateFactory.InferMetadata(entry.RouteHandler.Method, rdfOptions);
         }
 
@@ -227,7 +227,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
         if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
-            rdfOptions ??= CreateRDFOptions(entry, pattern, builder);
+            rdfOptions ??= CreateRdfOptions(entry, pattern, builder);
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
             // We always set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
@@ -259,7 +259,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         return builder;
     }
 
-    private RequestDelegateFactoryOptions CreateRDFOptions(RouteEntry entry, RoutePattern pattern, RouteEndpointBuilder builder)
+    private RequestDelegateFactoryOptions CreateRdfOptions(RouteEntry entry, RoutePattern pattern, RouteEndpointBuilder builder)
     {
         var routeParamNames = new List<string>(pattern.Parameters.Count);
         foreach (var parameter in pattern.Parameters)
