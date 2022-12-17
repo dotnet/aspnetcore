@@ -5,11 +5,14 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
@@ -78,7 +81,6 @@ internal class DeveloperExceptionPageMiddlewareImpl
         _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
         _exceptionHandler = DisplayException;
         _problemDetailsService = problemDetailsService;
-
         foreach (var filter in filters.Reverse())
         {
             var nextFilter = _exceptionHandler;
@@ -179,13 +181,18 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 Status = httpContext.Response.StatusCode
             };
 
-            problemDetails.Extensions["exception"] = new
+            var headersNode = JsonSerializer.SerializeToNode(httpContext.Request.Headers, ExtensionsExceptionJsonContext.Default.IHeaderDictionary);
+            var routeValuesNode = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues is { } routeValues
+                ? JsonSerializer.SerializeToNode(routeValues, ExtensionsExceptionJsonContext.Default.RouteValueDictionary)
+                : null;
+
+            problemDetails.Extensions["exception"] = new Dictionary<string, object?>
             {
-                Details = errorContext.Exception.ToString(),
-                Headers = httpContext.Request.Headers,
-                Path = httpContext.Request.Path.ToString(),
-                Endpoint = httpContext.GetEndpoint()?.ToString(),
-                RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
+                ["Details"] = errorContext.Exception.ToString(),
+                ["Headers"] = headersNode,
+                ["Path"] = httpContext.Request.Path.ToString(),
+                ["Endpoint"] = httpContext.GetEndpoint()?.ToString(),
+                ["RouteValues"] = routeValuesNode,
             };
 
             await _problemDetailsService.WriteAsync(new()
@@ -212,6 +219,9 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
             await httpContext.Response.WriteAsync(sb.ToString());
         }
+
+        static string ResolvePropertyName(string propertyName, JsonNamingPolicy? namingPolicy) =>
+            propertyName;
     }
 
     private Task DisplayCompilationException(
@@ -327,4 +337,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
         var errorPage = new ErrorPage(model);
         return errorPage.ExecuteAsync(context);
     }
+}
+
+[JsonSerializable(typeof(IHeaderDictionary))]
+[JsonSerializable(typeof(RouteValueDictionary))]
+[JsonSerializable(typeof(string))]
+internal sealed partial class ExtensionsExceptionJsonContext : JsonSerializerContext
+{
 }

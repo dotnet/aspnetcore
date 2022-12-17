@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,10 +17,6 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
     private static readonly JsonEncodedText Detail = JsonEncodedText.Encode("detail");
     private static readonly JsonEncodedText Instance = JsonEncodedText.Encode("instance");
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2046:'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3051:'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
     public override ProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var problemDetails = new ProblemDetails();
@@ -42,10 +39,6 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         return problemDetails;
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2046:'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3051:'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -53,8 +46,8 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         writer.WriteEndObject();
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
     internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonSerializerOptions options)
     {
         if (TryReadStringProperty(ref reader, Type, out var propertyValue))
@@ -106,8 +99,8 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         return true;
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
     internal static void WriteProblemDetails(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         if (value.Type != null)
