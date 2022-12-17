@@ -94,6 +94,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
     private static ExtensionsExceptionJsonContext CreateSerializationContext(JsonOptions? jsonOptions)
     {
+        // Create context from configured options to get settings such as PropertyNamePolicy and DictionaryKeyPolicy.
         jsonOptions ??= new JsonOptions();
         return new ExtensionsExceptionJsonContext(new JsonSerializerOptions(jsonOptions.SerializerOptions));
     }
@@ -214,7 +215,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
-    private static ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
+    private ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
     {
         var problemDetails = new ProblemDetails
         {
