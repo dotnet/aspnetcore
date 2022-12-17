@@ -32,44 +32,31 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
         return _acceptLoopTcs.Task;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "Delegate used deliberately for lifetime/allocation reasons")]
     private void StartAcceptingConnectionsCore(IConnectionListener<T> listener)
     {
-        int concurrency = 1, exited = 0;
-        if (listener is IConcurrentConnectionListener concurrent)
-        {
-            concurrency = Math.Clamp(_maxAccepts, 1, concurrent.MaxAccepts);
-        }
-
+        int concurrency = Math.Clamp(_maxAccepts, 1, listener.MaxAccepts), exited = 0;
+        Console.WriteLine($"concurrency: {concurrency}; listener: {listener.GetType().FullName}");
         for (var i = 0; i < concurrency; i++)
         {
-            _ = AcceptConnectionsAsync();
+            _ = AcceptConcurrentConnectionsAsync();
+            // _ = AcceptSimpleConnectionsAsync();
         }
 
-        async Task AcceptConnectionsAsync()
+        async Task AcceptConcurrentConnectionsAsync()
         {
             try
             {
-                while (true)
+                Action<object> acceptAddAndStart = token =>
                 {
-                    var connection = await listener.AcceptAsync();
-
-                    if (connection == null)
-                    {
-                        // We're done listening
-                        break;
-                    }
-
-                    // Add the connection to the connection manager before we queue it for execution
-                    var id = _transportConnectionManager.GetNewConnectionId();
-                    var kestrelConnection = new KestrelConnection<T>(
-                        id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log);
-
-                    _transportConnectionManager.AddConnection(id, kestrelConnection);
-
-                    Log.ConnectionAccepted(connection.ConnectionId);
-                    KestrelEventSource.Log.ConnectionQueuedStart(connection);
-
-                    ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
+                    var connection = listener.Accept(token);
+                    _ = AddAndStartConnection(connection);
+                };
+                await foreach (var token in listener.AcceptManyAsync())
+                {
+                    // push everything (including final setup steps, connection id, connection-mananger, etc) to the pool,
+                    // so we can get back to listening
+                    ThreadPool.UnsafeQueueUserWorkItem(acceptAddAndStart, token, preferLocal: false);
                 }
             }
             catch (Exception ex)
@@ -88,5 +75,52 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
                 }
             }
         }
+
+        //async Task AcceptSimpleConnectionsAsync()
+        //{
+        //    try
+        //    {
+        //        Action<T> addAndStart = connection => _ = AddAndStartConnection(connection);
+
+        //        while (true)
+        //        {
+        //            var connection = await listener.AcceptAsync();
+
+        //            if (connection == null)
+        //            {
+        //                // We're done listening
+        //                break;
+        //            }
+
+        //            // push everything (including connection id, connection-mananger, etc) to the pool,
+        //            // so we can get back to listening
+        //            ThreadPool.UnsafeQueueUserWorkItem(addAndStart, connection, preferLocal: false);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
+        //        Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
+        //    }
+        //    finally
+        //    {
+        //        // listener has exited
+        //        _acceptLoopTcs.TrySetResult();
+        //    }
+        //}
+    }
+
+    private Task AddAndStartConnection(T connection)
+    {
+        // Add the connection to the connection manager before we queue it for execution
+        var id = _transportConnectionManager.GetNewConnectionId();
+        var kestrelConnection = new KestrelConnection<T>(
+            id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log);
+
+        _transportConnectionManager.AddConnection(id, kestrelConnection);
+
+        Log.ConnectionAccepted(connection.ConnectionId);
+        KestrelEventSource.Log.ConnectionQueuedStart(connection);
+        return kestrelConnection.ExecuteAsync();
     }
 }

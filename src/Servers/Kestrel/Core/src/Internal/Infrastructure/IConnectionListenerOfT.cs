@@ -17,4 +17,14 @@ internal interface IConnectionListener<T> : IConnectionListenerBase where T : Ba
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ValueTask{T}"/> that completes when a connection is accepted, yielding the <see cref="BaseConnectionContext" /> representing the connection.</returns>
     ValueTask<T?> AcceptAsync(CancellationToken cancellationToken = default);
+
+    /// <summary><see cref="IConcurrentConnectionListener.AcceptManyAsync"/></summary>
+    IAsyncEnumerable<object> AcceptManyAsync();
+
+    /// <summary><see cref="IConcurrentConnectionListener.MaxAccepts"/></summary>
+    int MaxAccepts { get; }
+
+    /// <summary><see cref="IConcurrentConnectionListener.Accept(object)"/></summary>
+    /// <returns>yields the <see cref="BaseConnectionContext" /> representing the connection.</returns>
+    T Accept(object token);
 }

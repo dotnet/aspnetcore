@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -255,10 +256,12 @@ internal sealed class TransportManager
     private sealed class GenericConnectionListener : IConnectionListener<ConnectionContext>
     {
         private readonly IConnectionListener _connectionListener;
+        private readonly IConcurrentConnectionListener? _concurrentListener;
 
         public GenericConnectionListener(IConnectionListener connectionListener)
         {
             _connectionListener = connectionListener;
+            _concurrentListener = connectionListener as IConcurrentConnectionListener;
         }
 
         public EndPoint EndPoint => _connectionListener.EndPoint;
@@ -266,11 +269,32 @@ internal sealed class TransportManager
         public ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
              => _connectionListener.AcceptAsync(cancellationToken);
 
+        public int MaxAccepts => _concurrentListener?.MaxAccepts ?? 1;
+
         public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
             => _connectionListener.UnbindAsync(cancellationToken);
 
         public ValueTask DisposeAsync()
             => _connectionListener.DisposeAsync();
+
+        public IAsyncEnumerable<object> AcceptManyAsync()
+            => _concurrentListener is null ? FallbackAcceptManyAsync(CancellationToken.None) : _concurrentListener.AcceptManyAsync();
+
+        public ConnectionContext Accept(object token)
+            => _concurrentListener is null ? (ConnectionContext)token : _concurrentListener.Accept(token);
+
+        private async IAsyncEnumerable<object> FallbackAcceptManyAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var connection = await _connectionListener.AcceptAsync(cancellationToken);
+                if (connection is null)
+                {
+                    break;
+                }
+                yield return connection;
+            }
+        }
     }
 
     private sealed class GenericMultiplexedConnectionListener : IConnectionListener<MultiplexedConnectionContext>
@@ -284,6 +308,8 @@ internal sealed class TransportManager
 
         public EndPoint EndPoint => _multiplexedConnectionListener.EndPoint;
 
+        public int MaxAccepts => 1;
+
         public ValueTask<MultiplexedConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
              => _multiplexedConnectionListener.AcceptAsync(features: null, cancellationToken);
 
@@ -292,5 +318,22 @@ internal sealed class TransportManager
 
         public ValueTask DisposeAsync()
             => _multiplexedConnectionListener.DisposeAsync();
+
+        public IAsyncEnumerable<object> AcceptManyAsync() => FallbackAcceptManyAsync(CancellationToken.None);
+
+        private async IAsyncEnumerable<object> FallbackAcceptManyAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var connection = await _multiplexedConnectionListener.AcceptAsync(features: null, cancellationToken);
+                if (connection is null)
+                {
+                    break;
+                }
+                yield return connection;
+            }
+        }
+
+        public MultiplexedConnectionContext Accept(object token) => (MultiplexedConnectionContext)token;
     }
 }
