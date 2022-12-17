@@ -122,7 +122,7 @@ public class EditForm : ComponentBase
         builder.OpenComponent<CascadingValue<EditContext>>(3);
         builder.AddAttribute(4, "IsFixed", true);
         builder.AddAttribute(5, "Value", _editContext);
-        builder.AddAttribute(6, "Name", "CurrentEditContext");
+        builder.AddAttribute(6, "Name", RenderTree.RenderTreeNamedParameter.EditContext);
         builder.AddAttribute(7, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
         builder.CloseElement();

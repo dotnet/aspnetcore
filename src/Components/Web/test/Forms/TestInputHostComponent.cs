@@ -23,7 +23,8 @@ internal class TestInputHostComponent<TValue, TComponent> : AutoRenderComponent 
     {
         builder.OpenComponent<CascadingValue<EditContext>>(0);
         builder.AddAttribute(1, "Value", EditContext);
-        builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
+        builder.AddAttribute(2, "Name", RenderTree.RenderTreeNamedParameter.EditContext);
+        builder.AddAttribute(3, "ChildContent", new RenderFragment(childBuilder =>
         {
             childBuilder.OpenComponent<TComponent>(0);
             childBuilder.AddAttribute(0, "Value", Value);

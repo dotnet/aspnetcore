@@ -21,7 +21,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [CascadingParameter(Name = "CurrentEditContext")] EditContext CurrentEditContext { get; set; } = default!;
+    [CascadingParameter(Name = RenderTree.RenderTreeNamedParameter.EditContext)] EditContext CurrentEditContext { get; set; } = default!;
 
     /// <summary>
     /// Specifies the field for which validation messages should be displayed.

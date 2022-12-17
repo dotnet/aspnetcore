@@ -11,7 +11,7 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
     private IDisposable? _subscriptions;
     private EditContext? _originalEditContext;
 
-    [CascadingParameter(Name = "CurrentEditContext")] EditContext? CurrentEditContext { get; set; }
+    [CascadingParameter(Name = RenderTree.RenderTreeNamedParameter.EditContext)] EditContext? CurrentEditContext { get; set; }
 
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 

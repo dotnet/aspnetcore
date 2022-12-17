@@ -28,7 +28,7 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-    [CascadingParameter(Name = "CurrentEditContext")] EditContext CurrentEditContext { get; set; } = default!;
+    [CascadingParameter(Name = RenderTree.RenderTreeNamedParameter.EditContext)] EditContext CurrentEditContext { get; set; } = default!;
 
     /// <summary>`
     /// Constructs an instance of <see cref="ValidationSummary"/>.

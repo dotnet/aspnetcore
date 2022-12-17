@@ -20,7 +20,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
 
-    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+    [CascadingParameter(Name = RenderTree.RenderTreeNamedParameter.EditContext)] private EditContext? CascadedEditContext { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
@@ -133,10 +133,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <summary>
     /// Constructs an instance of <see cref="InputBase{TValue}"/>.
     /// </summary>
-    protected InputBase()
-    {
-        _validationStateChangedHandler = OnValidateStateChanged;
-    }
+    protected InputBase() => _validationStateChangedHandler = OnValidateStateChanged;
 
     /// <summary>
     /// Formats the value as a string. Derived classes can override this to determine the formating used for <see cref="CurrentValueAsString"/>.
