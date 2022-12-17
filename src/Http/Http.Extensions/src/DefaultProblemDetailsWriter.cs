@@ -71,7 +71,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
                         contentType: "application/problem+json"));
     }
 
-    // Additional values are specified on JsonContext to support some values for extensions.
+    // Additional values are specified on JsonSerializerContext to support some values for extensions.
     [JsonSerializable(typeof(ProblemDetails))]
     [JsonSerializable(typeof(Dictionary<string, object>))]
     [JsonSerializable(typeof(JsonNode))]
@@ -85,6 +85,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     [JsonSerializable(typeof(int))]
     [JsonSerializable(typeof(long))]
     [JsonSerializable(typeof(Guid))]
+    [JsonSerializable(typeof(Uri))]
     [JsonSerializable(typeof(TimeSpan))]
     [JsonSerializable(typeof(DateTime))]
     [JsonSerializable(typeof(DateTimeOffset))]
