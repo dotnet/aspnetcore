@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.Extensions.Internal.PropertyHelper.MetadataUpdateHandler))]
 
@@ -72,15 +73,9 @@ internal sealed class PropertyHelper
     public Func<object, object?> ValueGetter
     {
         [RequiresUnreferencedCode("This API is not trim safe.")]
-        [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
         get
         {
-            if (_valueGetter == null)
-            {
-                _valueGetter = MakeFastPropertyGetter(Property);
-            }
-
-            return _valueGetter;
+            return _valueGetter ??= MakeFastPropertyGetter(Property);
         }
     }
 
@@ -90,15 +85,9 @@ internal sealed class PropertyHelper
     public Action<object, object?> ValueSetter
     {
         [RequiresUnreferencedCode("This API is not trim safe.")]
-        [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
         get
         {
-            if (_valueSetter == null)
-            {
-                _valueSetter = MakeFastPropertySetter(Property);
-            }
-
-            return _valueSetter;
+            return _valueSetter ??= MakeFastPropertySetter(Property);
         }
     }
 
@@ -108,7 +97,6 @@ internal sealed class PropertyHelper
     /// <param name="instance">The object whose property value will be returned.</param>
     /// <returns>The property value.</returns>
     [RequiresUnreferencedCode("This API is not trim safe.")]
-    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     public object? GetValue(object instance)
     {
         return ValueGetter(instance);
@@ -120,7 +108,6 @@ internal sealed class PropertyHelper
     /// <param name="instance">The object whose property value will be set.</param>
     /// <param name="value">The property value.</param>
     [RequiresUnreferencedCode("This API is not trim safe.")]
-    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     public void SetValue(object instance, object? value)
     {
         ValueSetter(instance, value);
@@ -171,7 +158,6 @@ internal sealed class PropertyHelper
     /// same speed.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
-    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     public static Func<object, object?> MakeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -192,7 +178,6 @@ internal sealed class PropertyHelper
     /// same speed.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
-    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     public static Func<object, object?> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -204,7 +189,6 @@ internal sealed class PropertyHelper
     }
 
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
-    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         PropertyInfo propertyInfo,
         MethodInfo propertyGetterWrapperMethod,
@@ -227,24 +211,34 @@ internal sealed class PropertyHelper
         Debug.Assert(!getMethod.IsStatic);
         Debug.Assert(getMethod.GetParameters().Length == 0);
 
-        // Instance methods in the CLR can be turned into static methods where the first parameter
-        // is open over "target". This parameter is always passed by reference, so we have a code
-        // path for value types and a code path for reference types.
-        if (getMethod.DeclaringType!.IsValueType)
+        if (RuntimeFeature.IsDynamicCodeSupported)
         {
-            // Create a delegate (ref TDeclaringType) -> TValue
-            return MakeFastPropertyGetter(
-                typeof(ByRefFunc<,>),
-                getMethod,
-                propertyGetterByRefWrapperMethod);
+            // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+            // Instance methods in the CLR can be turned into static methods where the first parameter
+            // is open over "target". This parameter is always passed by reference, so we have a code
+            // path for value types and a code path for reference types.
+            if (getMethod.DeclaringType!.IsValueType)
+            {
+                // Create a delegate (ref TDeclaringType) -> TValue
+                return MakeFastPropertyGetter(
+                    typeof(ByRefFunc<,>),
+                    getMethod,
+                    propertyGetterByRefWrapperMethod);
+            }
+            else
+            {
+                // Create a delegate TDeclaringType -> TValue
+                return MakeFastPropertyGetter(
+                    typeof(Func<,>),
+                    getMethod,
+                    propertyGetterWrapperMethod);
+            }
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         }
         else
         {
-            // Create a delegate TDeclaringType -> TValue
-            return MakeFastPropertyGetter(
-                typeof(Func<,>),
-                getMethod,
-                propertyGetterWrapperMethod);
+            return propertyInfo.GetValue;
         }
     }
 
@@ -279,7 +273,6 @@ internal sealed class PropertyHelper
     /// same speed. This only works for reference types.
     /// </remarks>
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
-    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -292,22 +285,32 @@ internal sealed class PropertyHelper
         var parameters = setMethod.GetParameters();
         Debug.Assert(parameters.Length == 1);
 
-        // Instance methods in the CLR can be turned into static methods where the first parameter
-        // is open over "target". This parameter is always passed by reference, so we have a code
-        // path for value types and a code path for reference types.
-        var typeInput = setMethod.DeclaringType!;
-        var parameterType = parameters[0].ParameterType;
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+            // Instance methods in the CLR can be turned into static methods where the first parameter
+            // is open over "target". This parameter is always passed by reference, so we have a code
+            // path for value types and a code path for reference types.
+            var typeInput = setMethod.DeclaringType!;
+            var parameterType = parameters[0].ParameterType;
 
-        // Create a delegate TDeclaringType -> { TDeclaringType.Property = TValue; }
-        var propertySetterAsAction =
-            setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(typeInput, parameterType));
-        var callPropertySetterClosedGenericMethod =
-            CallPropertySetterOpenGenericMethod.MakeGenericMethod(typeInput, parameterType);
-        var callPropertySetterDelegate =
-            callPropertySetterClosedGenericMethod.CreateDelegate(
-                typeof(Action<object, object?>), propertySetterAsAction);
+            // Create a delegate TDeclaringType -> { TDeclaringType.Property = TValue; }
+            var propertySetterAsAction =
+                setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(typeInput, parameterType));
+            var callPropertySetterClosedGenericMethod =
+                CallPropertySetterOpenGenericMethod.MakeGenericMethod(typeInput, parameterType);
+            var callPropertySetterDelegate =
+                callPropertySetterClosedGenericMethod.CreateDelegate(
+                    typeof(Action<object, object?>), propertySetterAsAction);
 
-        return (Action<object, object?>)callPropertySetterDelegate;
+            return (Action<object, object?>)callPropertySetterDelegate;
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+        }
+        else
+        {
+            return propertyInfo.SetValue;
+        }
     }
 
     /// <summary>
@@ -322,7 +325,6 @@ internal sealed class PropertyHelper
     /// faster when the same type is used multiple times with ObjectToDictionary.
     /// </remarks>
     [RequiresUnreferencedCode("Method uses reflection to generate the dictionary.")]
-    [RequiresDynamicCode("Method uses reflection to generate the dictionary.")]
     public static IDictionary<string, object?> ObjectToDictionary(object? value)
     {
         if (value is IDictionary<string, object?> dictionary)
