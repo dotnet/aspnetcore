@@ -147,9 +147,7 @@ context.Request.Headers.Append(""Accept"", ""text/html"");"
         };
     }
 
-    [ConditionalTheory]
-    [OSSkipCondition(OperatingSystems.Linux)]
-    [OSSkipCondition(OperatingSystems.MacOSX)]
+    [Theory]
     [MemberData(nameof(FixedWithAppendAddsUsingDirectiveTestData))]
     public async Task IHeaderDictionary_WithAdd_FixedWithAppend_AddsUsingDirective(string source, string fixedSource)
     {
