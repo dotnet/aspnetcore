@@ -262,7 +262,7 @@ public static partial class RequestDelegateFactory
         }
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
-        var endpointBuilder = options?.EndpointBuilder ?? new RDFEndpointBuilder(serviceProvider);
+        var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
 
         var factoryContext = new RequestDelegateFactoryContext
@@ -2525,9 +2525,9 @@ public static partial class RequestDelegateFactory
         }
     }
 
-    private sealed class RDFEndpointBuilder : EndpointBuilder
+    private sealed class RdfEndpointBuilder : EndpointBuilder
     {
-        public RDFEndpointBuilder(IServiceProvider applicationServices)
+        public RdfEndpointBuilder(IServiceProvider applicationServices)
         {
             ApplicationServices = applicationServices;
         }
