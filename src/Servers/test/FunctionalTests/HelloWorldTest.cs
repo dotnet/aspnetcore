@@ -160,7 +160,7 @@ public class HelloWorldTests : LoggedTest
             }
             // Output should contain the ApplicationException and the 500 status code
             Assert.Contains("System.ApplicationException: Application exception", output);
-            Assert.Contains("/throwexception - - - 500", output);
+            Assert.Contains("/throwexception - 500", output);
         }
     }
 }
