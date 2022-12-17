@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
 internal static class LdapAdapter
 {
-    private static Regex DistinguishedNameSeparator = new Regex(@"(?<!\\),");
+    private static readonly Regex DistinguishedNameSeparator = new Regex(@"(?<!\\),");
     
     public static async Task RetrieveClaimsAsync(LdapSettings settings, ClaimsIdentity identity, ILogger logger)
     {
