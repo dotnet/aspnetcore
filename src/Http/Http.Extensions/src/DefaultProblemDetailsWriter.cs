@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -72,12 +73,9 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     }
 
     // Additional values are specified on JsonSerializerContext to support some values for extensions.
+    // For example, the DeveloperExceptionMiddleware serializes its complex type to JsonElement, which problem details then needs to serialize.
     [JsonSerializable(typeof(ProblemDetails))]
-    [JsonSerializable(typeof(Dictionary<string, object>))]
-    [JsonSerializable(typeof(JsonNode))]
-    [JsonSerializable(typeof(JsonObject))]
-    [JsonSerializable(typeof(JsonArray))]
-    [JsonSerializable(typeof(JsonValue))]
+    [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(decimal))]
     [JsonSerializable(typeof(float))]
