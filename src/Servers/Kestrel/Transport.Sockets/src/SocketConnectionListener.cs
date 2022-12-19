@@ -184,4 +184,37 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
         var connection = _factory.Create(acceptSocket);
         return connection;
     }
+
+    public void AcceptMany(Action<ConnectionContext> connectionHandler)
+    {
+        Console.WriteLine(nameof(AcceptMany));
+        Action<Socket> perItem = socket => connectionHandler(_factory.Create(socket));
+        while (true)
+        {
+            Socket acceptSocket;
+            try
+            {
+                Debug.Assert(_listenSocket != null, "Bind must be called first.");
+                acceptSocket = _listenSocket.Accept();
+
+            }
+            catch (ObjectDisposedException)
+            {
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                break;
+            }
+            catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
+            {
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                break;
+            }
+            catch (SocketException)
+            {
+                // The connection got reset while it was in the backlog, so we try again.
+                SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
+                continue;
+            }
+            ThreadPool.QueueUserWorkItem(perItem, acceptSocket, preferLocal: false);
+        }
+    }
 }

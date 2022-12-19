@@ -29,4 +29,9 @@ public interface IConcurrentConnectionListener
     /// Finishes accepting a connection with a token provided by <see cref="AcceptManyAsync"/>
     /// </summary>
     ConnectionContext Accept(object token);
+
+    /// <summary>
+    /// Accepts incoming connections, invoking a callback for each.
+    /// </summary>
+    void AcceptMany(Action<ConnectionContext> connectionHandler);
 }

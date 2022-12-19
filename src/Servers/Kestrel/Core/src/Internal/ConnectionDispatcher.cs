@@ -37,10 +37,25 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
     {
         int concurrency = Math.Clamp(_maxAccepts, 1, listener.MaxAccepts), exited = 0;
         Console.WriteLine($"concurrency: {concurrency}; listener: {listener.GetType().FullName}");
-        for (var i = 0; i < concurrency; i++)
+        if (listener.SupportAcceptMany)
         {
-            _ = AcceptConcurrentConnectionsAsync();
-            // _ = AcceptSimpleConnectionsAsync();
+            ThreadStart start = () =>  listener.AcceptMany(AddAndStartConnection);
+            for (var i = 0; i < concurrency; i++)
+            {
+                new Thread(start)
+                {
+                    IsBackground = true,
+                    Name = "Listener",
+                }.Start();
+            }
+        }
+        else
+        {
+            for (var i = 0; i < concurrency; i++)
+            {
+                _ = AcceptConcurrentConnectionsAsync();
+                // _ = AcceptSimpleConnectionsAsync();
+            }
         }
 
         async Task AcceptConcurrentConnectionsAsync()
@@ -50,7 +65,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
                 Action<object> acceptAddAndStart = token =>
                 {
                     var connection = listener.Accept(token);
-                    _ = AddAndStartConnection(connection);
+                    AddAndStartConnection(connection);
                 };
                 await foreach (var token in listener.AcceptManyAsync())
                 {
@@ -110,7 +125,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
         //}
     }
 
-    private Task AddAndStartConnection(T connection)
+    private void AddAndStartConnection(T connection)
     {
         // Add the connection to the connection manager before we queue it for execution
         var id = _transportConnectionManager.GetNewConnectionId();
@@ -121,6 +136,6 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
         Log.ConnectionAccepted(connection.ConnectionId);
         KestrelEventSource.Log.ConnectionQueuedStart(connection);
-        return kestrelConnection.ExecuteAsync();
+        _ = kestrelConnection.ExecuteAsync();
     }
 }

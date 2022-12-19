@@ -295,6 +295,16 @@ internal sealed class TransportManager
                 yield return connection;
             }
         }
+
+        public bool SupportAcceptMany => false; // _concurrentListener is not null;
+        public void AcceptMany(Action<ConnectionContext> callback)
+        {
+            if (_concurrentListener is null)
+            {
+                throw new NotSupportedException();
+            }
+            _concurrentListener.AcceptMany(callback);
+        }
     }
 
     private sealed class GenericMultiplexedConnectionListener : IConnectionListener<MultiplexedConnectionContext>
@@ -333,6 +343,9 @@ internal sealed class TransportManager
                 yield return connection;
             }
         }
+
+        public bool SupportAcceptMany => false;
+        public void AcceptMany(Action<MultiplexedConnectionContext> callback) => throw new NotSupportedException();
 
         public MultiplexedConnectionContext Accept(object token) => (MultiplexedConnectionContext)token;
     }

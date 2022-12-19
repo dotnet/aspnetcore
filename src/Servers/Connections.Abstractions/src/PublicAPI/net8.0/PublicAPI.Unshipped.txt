@@ -4,6 +4,7 @@ Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature.OnClosed(System.A
 Microsoft.AspNetCore.Connections.IConcurrentConnectionListener
 Microsoft.AspNetCore.Connections.IConcurrentConnectionListener.MaxAccepts.get -> int
 Microsoft.AspNetCore.Connections.IConcurrentConnectionListener.Accept(object! token) -> Microsoft.AspNetCore.Connections.ConnectionContext!
+Microsoft.AspNetCore.Connections.IConcurrentConnectionListener.AcceptMany(System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!>! connectionHandler) -> void
 Microsoft.AspNetCore.Connections.IConcurrentConnectionListener.AcceptManyAsync() -> System.Collections.Generic.IAsyncEnumerable<object!>!
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool

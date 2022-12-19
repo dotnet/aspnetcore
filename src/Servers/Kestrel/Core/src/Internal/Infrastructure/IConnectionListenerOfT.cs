@@ -21,6 +21,9 @@ internal interface IConnectionListener<T> : IConnectionListenerBase where T : Ba
     /// <summary><see cref="IConcurrentConnectionListener.AcceptManyAsync"/></summary>
     IAsyncEnumerable<object> AcceptManyAsync();
 
+    void AcceptMany(Action<T> callback);
+    bool SupportAcceptMany { get; }
+
     /// <summary><see cref="IConcurrentConnectionListener.MaxAccepts"/></summary>
     int MaxAccepts { get; }
 
