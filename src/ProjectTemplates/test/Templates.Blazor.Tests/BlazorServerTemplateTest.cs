@@ -77,11 +77,8 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         }
     }
 
-    public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
-            BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
-
+    [InlineData(BrowserKind.Chromium)]
     [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
-    [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind)
     {
@@ -180,7 +177,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
     }
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
+    [Theory]
     [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]
