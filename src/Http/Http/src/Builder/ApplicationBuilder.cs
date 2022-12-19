@@ -132,7 +132,10 @@ public class ApplicationBuilder : IApplicationBuilder
                 throw new InvalidOperationException(message);
             }
 
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
             return Task.CompletedTask;
         };
 
