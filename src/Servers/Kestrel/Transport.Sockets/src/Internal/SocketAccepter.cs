@@ -12,10 +12,10 @@ internal sealed class SocketAccepter : SocketAwaitableEventArgs
     {
     }
 
-    public ValueTask<SocketOperationResult> AcceptAsync(Socket socket, Memory<byte> buffer = default)
+    public ValueTask<SocketOperationResult> AcceptAsync(Socket socket) //, Memory<byte> buffer = default)
     {
         AcceptSocket = null; // we don't currently allow reuse
-        SetBuffer(buffer);
+        //SetBuffer(buffer);
 
         if (socket.AcceptAsync(this))
         {

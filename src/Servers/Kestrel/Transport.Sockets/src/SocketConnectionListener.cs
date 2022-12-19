@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
+// using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
@@ -103,14 +103,14 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
     public async IAsyncEnumerable<object> AcceptManyAsync()
     {
         using var accepter = new SocketAccepter(PipeScheduler.Inline);
-        var firstChunk = ArrayPool<byte>.Shared.Rent(1024); // allow payload in accept
+        // var firstChunk = ArrayPool<byte>.Shared.Rent(1024); // allow payload in accept
         while (true)
         {
             SocketOperationResult result;
             try
             {
                 Debug.Assert(_listenSocket != null, "Bind must be called first.");
-                result = await accepter.AcceptAsync(_listenSocket, firstChunk);
+                result = await accepter.AcceptAsync(_listenSocket); //, firstChunk);
 
                 if (result.HasError) // the same as a thrown SocketException
                 {
@@ -134,53 +134,54 @@ internal sealed class SocketConnectionListener : IConnectionListener, IConcurren
                 continue;
             }
 
-            if (result.BytesTransferred == 0)
-            {
+            //if (result.BytesTransferred == 0)
+            //{
                 yield return accepter.AcceptSocket!;
-            }
-            else
-            {
-                var payload = new ArraySegment<byte>(firstChunk, 0, result.BytesTransferred);
-                yield return Tuple.Create(accepter.AcceptSocket!, payload); // no point just boxing a VT
-                firstChunk = ArrayPool<byte>.Shared.Rent(1024); // rent a new chunk (Accept will release the old)
-            }
+            //}
+            //else
+            //{
+            //    var payload = new ArraySegment<byte>(firstChunk, 0, result.BytesTransferred);
+            //    yield return Tuple.Create(accepter.AcceptSocket!, payload); // no point just boxing a VT
+            //    firstChunk = ArrayPool<byte>.Shared.Rent(1024); // rent a new chunk (Accept will release the old)
+            //}
         }
-        ArrayPool<byte>.Shared.Return(firstChunk);
+        //ArrayPool<byte>.Shared.Return(firstChunk);
     }
 
     public ConnectionContext Accept(object token)
     {
-        ArraySegment<byte> payload;
-        Socket acceptSocket;
+        //ArraySegment<byte> payload;
+        //Socket acceptSocket;
 
-        switch (token)
-        {
-            case Socket socket:
-                acceptSocket = socket;
-                payload = default;
-                break;
-            case Tuple<Socket, ArraySegment<byte>> tuple:
-                acceptSocket = tuple.Item1;
-                payload = tuple.Item2;
-                break;
-            default:
-                return null!; // nope
-        }
-
+        //switch (token)
+        //{
+        //    case Socket socket:
+        //        acceptSocket = socket;
+        //        payload = default;
+        //        break;
+        //    case Tuple<Socket, ArraySegment<byte>> tuple:
+        //        acceptSocket = tuple.Item1;
+        //        payload = tuple.Item2;
+        //        break;
+        //    default:
+        //        return null!; // nope
+        //}
+        var acceptSocket = (Socket)token;
         // Only apply no delay to Tcp based endpoints
         if (acceptSocket.LocalEndPoint is IPEndPoint)
         {
             acceptSocket.NoDelay = _options.NoDelay;
         }
 
-        var connection = _factory.CreateUnstartedSocketConnection(acceptSocket);
-        var received = payload.Count;
-        if (received != 0)
-        {
-            connection.Input.Write(payload.AsSpan());
-            ArrayPool<byte>.Shared.Return(payload.Array!);
-        }
-        connection.Start(flushImmediately: received != 0);
+        //var connection = _factory.CreateUnstartedSocketConnection(acceptSocket);
+        //var received = payload.Count;
+        //if (received != 0)
+        //{
+        //    connection.Input.Write(payload.AsSpan());
+        //    ArrayPool<byte>.Shared.Return(payload.Array!);
+        //}
+        //connection.Start(flushImmediately: received != 0);
+        var connection = _factory.Create(acceptSocket);
         return connection;
     }
 }
