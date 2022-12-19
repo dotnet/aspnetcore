@@ -71,6 +71,15 @@ Then, use one of:
 previous step, it is NOT advised that you install templates created on your local machine using just
 `dotnet new -i [nupkgPath]`.
 
+#### Running Playwright tests
+
+1. From the root of the repo, build the templates: `.\eng\build.cmd -all -pack`
+2. `cd .\src\ProjectTemplates\test\Templates.Blazor.Tests`
+3. Install Playwright browsers: `.\bin\Debug\[TFM]\playwright.ps1 install`
+    - Note, replace `[TFM]` with the current target TFM (ex. `net8.0`).
+4. `yarn install`
+5. `dotnet test .\Templates.Blazor.Tests.csproj` with optional `--filter` arg to run a specific test.
+
 #### Conditional tests & skipping test platforms
 
 Individual test methods can be decorated with attributes to configure them to not run ("skip running") on certain platforms. The `[ConditionalFact]` and `[ConditionalTheory]` attributes must be used on tests using the skip attributes in order for them to actually be skipped:
