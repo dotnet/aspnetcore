@@ -248,10 +248,15 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   };
 
   // it would not `loadResource` on types for which there is no typesMap mapping
-  const downloadResource = (request: ResourceRequest): LoadingResource | undefined => {
-    const type = monoToBlazorAssetTypeMap[request.behavior];
+  const downloadResource = (asset: AssetEntry): LoadingResource | undefined => {
+    // this whole condition could be removed after the resourceLoader could cache in-flight requests
+    if (asset.behavior === 'dotnetwasm') {
+      return runtimeAssetsBeingLoaded
+        .filter(request => request.name === asset.name)[0];
+    }
+    const type = monoToBlazorAssetTypeMap[asset.behavior];
     if (type !== undefined) {
-      return resourceLoader.loadResource(request.name, request.resolvedUrl!, request.hash!, type);
+      return resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
     }
     return undefined;
   };
@@ -268,16 +273,12 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   // blazor could start downloading bit earlier than the runtime would
   const runtimeAssetsBeingLoaded = assets
     .filter(asset => asset.behavior === 'dotnetwasm')
-    .map(asset => {
-      asset.pendingDownload = downloadResource(asset);
-      return asset.pendingDownload!;
-    });
+    .map(asset => resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, 'dotnetwasm'));
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
   const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
   const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, runtimeAssetsBeingLoaded);
-  totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
@@ -306,6 +307,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     icuDataResource.response.then(_ => setProgress());
   }
 
+  totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
