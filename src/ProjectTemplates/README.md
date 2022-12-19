@@ -77,8 +77,7 @@ previous step, it is NOT advised that you install templates created on your loca
 2. `cd .\src\ProjectTemplates\test\Templates.Blazor.Tests`
 3. Install Playwright browsers: `.\bin\Debug\[TFM]\playwright.ps1 install`
     - Note, replace `[TFM]` with the current target TFM (ex. `net8.0`).
-4. `yarn install`
-5. `dotnet test .\Templates.Blazor.Tests.csproj` with optional `--filter` arg to run a specific test.
+4. `dotnet test .\Templates.Blazor.Tests.csproj` with optional `--filter` arg to run a specific test.
 
 #### Conditional tests & skipping test platforms
 
