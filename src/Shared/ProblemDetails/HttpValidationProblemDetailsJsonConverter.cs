@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
+internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
 {
     private static readonly JsonEncodedText Errors = JsonEncodedText.Encode("errors");
 
