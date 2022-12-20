@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
-    private static void DetectAmbiguousRoutes(in OperationBlockAnalysisContext context, ConcurrentDictionary<MapOperation, byte> mapOperations)
+    private static void DetectAmbiguousRoutes(in OperationBlockAnalysisContext context, WellKnownTypes wellKnownTypes, ConcurrentDictionary<MapOperation, byte> mapOperations)
     {
         if (mapOperations.IsEmpty)
         {
@@ -24,20 +25,128 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         }
 
         var groupedByParent = mapOperations
-            .Select(kvp => kvp.Key)
-            .Where(u => !u.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
-            .GroupBy(u => new MapOperationGroupKey(u.Builder, u.Operation, u.RouteUsageModel.RoutePattern, u.RouteUsageModel.UsageContext.HttpMethods));
+            .Select(kvp => new { MapOperation = kvp.Key, ResolvedOperation = ResolveOperation(kvp.Key.Operation, wellKnownTypes) })
+            .Where(u => u.ResolvedOperation != null && !u.MapOperation.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
+            .GroupBy(u => new MapOperationGroupKey(u.MapOperation.Builder, u.ResolvedOperation!, u.MapOperation.RouteUsageModel.RoutePattern, u.MapOperation.RouteUsageModel.UsageContext.HttpMethods));
 
         foreach (var ambigiousGroup in groupedByParent.Where(g => g.Count() >= 2))
         {
             foreach (var ambigiousMapOperation in ambigiousGroup)
             {
+                var model = ambigiousMapOperation.MapOperation.RouteUsageModel;
+
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.AmbiguousRouteHandlerRoute,
-                    ambigiousMapOperation.RouteUsageModel.UsageContext.RouteToken.GetLocation(),
-                    ambigiousMapOperation.RouteUsageModel.RoutePattern.Root.ToString()));
+                    model.UsageContext.RouteToken.GetLocation(),
+                    model.RoutePattern.Root.ToString()));
             }
         }
+    }
+
+    private static IOperation? ResolveOperation(IOperation operation, WellKnownTypes wellKnownTypes)
+    {
+        // We want to group routes in a block together because we know they're being used together.
+        // There are some circumstances where we still don't want to use the route, either because it is only conditionally
+        // being called, or the IEndpointConventionBuilder returned from the method is being used. We can't accurately
+        // detect what extra endpoint metadata is being added to the routes.
+        //
+        // Don't use route endpoint if:
+        // - It's in a conditional statement.
+        // - It's in a coalesce statement.
+        // - It's has methods called on it.
+        // - It's assigned to a variable.
+        // - It's an argument to a method call, unless in a known safe method.
+        var current = operation;
+        if (current.Parent is IArgumentOperation argumentOperation &&
+            argumentOperation.Parent is IInvocationOperation invocationOperation &&
+            IsAllowedEndpointBuilderMethod(invocationOperation, wellKnownTypes))
+        {
+            return ResolveOperation(invocationOperation, wellKnownTypes);
+        }
+
+        while (current != null)
+        {
+            if (current.Parent is IBlockOperation blockOperation)
+            {
+                return blockOperation;
+            }
+            else if (current.Parent is IConditionalOperation ||
+                current.Parent is ICoalesceOperation ||
+                current.Parent is IAssignmentOperation ||
+                current.Parent is IArgumentOperation ||
+                current.Parent is IInvocationOperation)
+            {
+                return current;
+            }
+
+            current = current.Parent;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Test the invocation operation. Safe methods are those that we know don't add metadata that impacts metadata.
+    /// </summary>
+    private static bool IsAllowedEndpointBuilderMethod(IInvocationOperation invocationOperation, WellKnownTypes wellKnownTypes)
+    {
+        var method = invocationOperation.TargetMethod;
+
+        if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_RoutingEndpointConventionBuilderExtensions)))
+        {
+            return method.Name switch
+            {
+                "RequireHost" => false, // Adds IHostMetadata
+                "WithDisplayName" => true,
+                "WithMetadata" => false, // Can add anything
+                "WithName" => true,
+                "WithGroupName" => true,
+                _ => false
+            };
+        }
+        else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_AuthorizationEndpointConventionBuilderExtensions)))
+        {
+            return method.Name switch
+            {
+                "RequireAuthorization" => true,
+                "AllowAnonymous" => true,
+                _ => false
+            };
+        }
+        else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_OpenApiRouteHandlerBuilderExtensions)))
+        {
+            return method.Name switch
+            {
+                "Accepts" => false, // Adds IAcceptsMetadata
+                "ExcludeFromDescription" => true,
+                "Produces" => true,
+                "ProducesProblem" => true,
+                "ProducesValidationProblem" => true,
+                "WithDescription" => true,
+                "WithSummary" => true,
+                "WithTags" => true,
+                _ => false
+            };
+        }
+        else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_CorsEndpointConventionBuilderExtensions)))
+        {
+            return method.Name == "RequireCors";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_OutputCacheConventionBuilderExtensions)))
+        {
+            return method.Name == "CacheOutput";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_RateLimiterEndpointConventionBuilderExtensions)))
+        {
+            return method.Name switch
+            {
+                "RequireRateLimiting" => true,
+                "DisableRateLimiting" => true,
+                _ => false
+            };
+        }
+
+        return false;
     }
 
     private readonly struct MapOperationGroupKey : IEquatable<MapOperationGroupKey>
@@ -47,49 +156,14 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         public RoutePatternTree RoutePattern { get; }
         public ImmutableArray<string> HttpMethods { get; }
 
-        public MapOperationGroupKey(IOperation? builder, IInvocationOperation operation, RoutePatternTree routePattern, ImmutableArray<string> httpMethods)
+        public MapOperationGroupKey(IOperation? builder, IOperation parentOperation, RoutePatternTree routePattern, ImmutableArray<string> httpMethods)
         {
             Debug.Assert(!httpMethods.IsDefault);
 
-            ParentOperation = GetParentOperation(operation);
+            ParentOperation = parentOperation;
             Builder = builder;
             RoutePattern = routePattern;
             HttpMethods = httpMethods;
-        }
-
-        private static IOperation? GetParentOperation(IOperation operation)
-        {
-            // We want to group routes in a block together because we know they're being used together.
-            // There are some circumstances where we still don't want to use the route, either because it is only conditionally
-            // being called, or the IEndpointConventionBuilder returned from the method is being used. We can't accurately
-            // detect what extra endpoint metadata is being added to the routes.
-            //
-            // Don't use route endpoint if:
-            // - It's in a conditional statement.
-            // - It's in a coalesce statement.
-            // - It's an argument to a method call.
-            // - It's has methods called on it.
-            // - It's assigned to a variable.
-            var current = operation;
-            while (current != null)
-            {
-                if (current.Parent is IBlockOperation blockOperation)
-                {
-                    return blockOperation;
-                }
-                else if (current.Parent is IConditionalOperation ||
-                    current.Parent is ICoalesceOperation ||
-                    current.Parent is IAssignmentOperation ||
-                    current.Parent is IArgumentOperation ||
-                    current.Parent is IInvocationOperation)
-                {
-                    return current;
-                }
-                
-                current = current.Parent;
-            }
-
-            return null;
         }
 
         public override bool Equals(object obj)

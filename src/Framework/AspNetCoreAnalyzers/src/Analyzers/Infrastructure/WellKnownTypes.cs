@@ -56,7 +56,13 @@ internal enum WellKnownType
     System_Threading_Tasks_ValueTask_T,
     System_Reflection_ParameterInfo,
     Microsoft_AspNetCore_Http_IBindableFromHttpContext_T,
-    System_IParsable_T
+    System_IParsable_T,
+    Microsoft_AspNetCore_Builder_AuthorizationEndpointConventionBuilderExtensions,
+    Microsoft_AspNetCore_Http_OpenApiRouteHandlerBuilderExtensions,
+    Microsoft_AspNetCore_Builder_CorsEndpointConventionBuilderExtensions,
+    Microsoft_Extensions_DependencyInjection_OutputCacheConventionBuilderExtensions,
+    Microsoft_AspNetCore_Builder_RateLimiterEndpointConventionBuilderExtensions,
+    Microsoft_AspNetCore_Builder_RoutingEndpointConventionBuilderExtensions,
 }
 
 internal sealed class WellKnownTypes
@@ -108,7 +114,13 @@ internal sealed class WellKnownTypes
         "System.Threading.Tasks.ValueTask`1",
         "System.Reflection.ParameterInfo",
         "Microsoft.AspNetCore.Http.IBindableFromHttpContext`1",
-        "System.IParsable`1"
+        "System.IParsable`1",
+        "Microsoft.AspNetCore.Builder.AuthorizationEndpointConventionBuilderExtensions",
+        "Microsoft.AspNetCore.Http.OpenApiRouteHandlerBuilderExtensions",
+        "Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions",
+        "Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions",
+        "Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions",
+        "Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions",
     };
 
     public static WellKnownTypes GetOrCreate(Compilation compilation) =>

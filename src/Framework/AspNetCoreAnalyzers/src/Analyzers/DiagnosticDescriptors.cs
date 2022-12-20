@@ -181,7 +181,7 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor AmbiguousRouteHandlerRoute = new(
         "ASP0022",
-        "Route used by multiple route handlers is ambiguous and will fail to match.",
+        "Route conflict detected between route handlers",
         "Route '{0}' conflicts with another handler route. An HTTP request that matches multiple routes results in an ambiguous match error. Fix the conflict by changing the route's path, HTTP method, or route constraints.",
         "Usage",
         DiagnosticSeverity.Warning,

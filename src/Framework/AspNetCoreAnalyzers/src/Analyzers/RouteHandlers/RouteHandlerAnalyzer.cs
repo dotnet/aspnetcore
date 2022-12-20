@@ -54,7 +54,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                 context.RegisterOperationBlockEndAction(c =>
                 {
-                    DetectAmbiguousRoutes(c, mapOperations);
+                    DetectAmbiguousRoutes(c, wellKnownTypes, mapOperations);
 
                     // Return to the pool.
                     mapOperations.Clear();

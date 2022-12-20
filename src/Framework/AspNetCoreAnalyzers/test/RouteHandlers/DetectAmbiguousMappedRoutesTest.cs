@@ -53,7 +53,7 @@ void Hello() { }
     }
 
     [Fact]
-    public async Task DuplicateRoutes_SameHttpMethod_InMethod_NoDiagnostics()
+    public async Task DuplicateRoutes_SameHttpMethod_InMethod_HasDiagnostics()
     {
         // Arrange
         var source = @"
@@ -286,6 +286,61 @@ void Hello() { }
         };
 
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Theory]
+    [InlineData(@"RequireAuthorization()")]
+    [InlineData(@"AllowAnonymous()")]
+    [InlineData(@"Produces(statusCode:420)")]
+    [InlineData(@"WithDisplayName(""test!"")")]
+    [InlineData(@"WithName(""test!"")")]
+    [InlineData(@"RequireCors(""test!"")")]
+    [InlineData(@"CacheOutput(""test!"")")]
+    [InlineData(@"DisableRateLimiting()")]
+    [InlineData(@"RequireAuthorization().DisableRateLimiting()")]
+    public async Task DuplicateRoutes_AllowedBuilderExtensionMethods_HasDiagnostics(string method)
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+var app = WebApplication.Create();
+app.MapGet({|#0:""/""|}, () => Hello())." + method + @";
+app.MapGet({|#1:""/""|}, () => Hello());
+void Hello() { }
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Theory]
+    [InlineData(@"RequireHost(""test!"")")]
+    [InlineData(@"RequireHost(""test!"").DisableRateLimiting()")]
+    [InlineData(@"RequireAuthorization().RequireHost(""test!"")")]
+    public async Task DuplicateRoutes_UnknownBuilderExtensionMethods_NoDiagnostics(string method)
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+var app = WebApplication.Create();
+app.MapGet({|#0:""/""|}, () => Hello())." + method + @";
+app.MapGet({|#1:""/""|}, () => Hello());
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
     }
 }
 
