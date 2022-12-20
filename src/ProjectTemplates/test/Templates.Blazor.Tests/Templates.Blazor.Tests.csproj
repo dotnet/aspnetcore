@@ -1,5 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!--
+      Skip building and running the Template tests in CI unless explicitly configured otherwise via
+      EXECUTE_COMPONENTS_TEMPLATE_TESTS. At least build the Components Template tests locally unless SkipTestBuild is set.
+    -->
+    <_BuildAndTest>false</_BuildAndTest>
+    <_BuildAndTest
+        Condition=" '$(ContinuousIntegrationBuild)' == 'true' AND '$(EXECUTE_COMPONENTS_TEMPLATE_TESTS)' == 'true' ">true</_BuildAndTest>
+    <_BuildAndTest
+        Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
+    <ExcludeFromBuild Condition=" !$(_BuildAndTest) ">true</ExcludeFromBuild>
+    <SkipTests Condition=" !$(_BuildAndTest) ">true</SkipTests>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>ProjectTemplates.Blazor.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
