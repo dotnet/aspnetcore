@@ -335,7 +335,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             };
         });
 
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
             Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
         static void InvokeContainer(GenericWebHostBuilder genericWebHostBuilder, ConfigureContainerBuilder configureContainerBuilder)
         {
