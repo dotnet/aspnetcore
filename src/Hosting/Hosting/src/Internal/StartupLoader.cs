@@ -64,7 +64,7 @@ internal sealed class StartupLoader
         return new StartupMethods(instance, configureMethod.Build(instance), builder.Build());
 
         [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
             Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
         static Type CreateConfigureServicesDelegateBuilder(Type type)
         {
