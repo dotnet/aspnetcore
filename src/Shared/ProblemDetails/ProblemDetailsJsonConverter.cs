@@ -45,8 +45,6 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         writer.WriteEndObject();
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
     internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonSerializerOptions options)
     {
         if (TryReadStringProperty(ref reader, Type, out var propertyValue))
@@ -81,7 +79,14 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         {
             var key = reader.GetString()!;
             reader.Read();
-            value.Extensions[key] = JsonSerializer.Deserialize(ref reader, typeof(object), options);
+            ReadExtension(value, key, ref reader, options);
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        static void ReadExtension(ProblemDetails problemDetails, string key, ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            problemDetails.Extensions[key] = JsonSerializer.Deserialize(ref reader, typeof(object), options);
         }
     }
 
@@ -98,8 +103,6 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
         return true;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
     internal static void WriteProblemDetails(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         if (value.Type != null)
@@ -127,11 +130,18 @@ internal sealed partial class ProblemDetailsJsonConverter : JsonConverter<Proble
             writer.WriteString(Instance, value.Instance);
         }
 
-        foreach (var kvp in value.Extensions)
+        WriteExtensions(value, writer, options);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        static void WriteExtensions(ProblemDetails problemDetails, Utf8JsonWriter writer, JsonSerializerOptions options)
         {
-            writer.WritePropertyName(kvp.Key);
-            // When AOT is enabled, Serialize will only work with values specified on the JsonContext.
-            JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
+            foreach (var kvp in problemDetails.Extensions)
+            {
+                writer.WritePropertyName(kvp.Key);
+                // When AOT is enabled, Serialize will only work with values specified on the JsonContext.
+                JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
+            }
         }
     }
 }
