@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -158,16 +157,16 @@ internal static class RouteUsageDetector
             switch (mapMethodSymbol.Name)
             {
                 case "MapGet":
-                    httpMethodsBuilder.Add(HttpMethod.Get.Method);
+                    httpMethodsBuilder.Add("GET");
                     break;
                 case "MapPost":
-                    httpMethodsBuilder.Add(HttpMethod.Post.Method);
+                    httpMethodsBuilder.Add("POST");
                     break;
                 case "MapPut":
-                    httpMethodsBuilder.Add(HttpMethod.Put.Method);
+                    httpMethodsBuilder.Add("PUT");
                     break;
                 case "MapDelete":
-                    httpMethodsBuilder.Add(HttpMethod.Delete.Method);
+                    httpMethodsBuilder.Add("DELETE");
                     break;
                 case "MapPatch":
                     httpMethodsBuilder.Add("PATCH");
