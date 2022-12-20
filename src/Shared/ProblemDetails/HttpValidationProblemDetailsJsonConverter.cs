@@ -1,28 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
+internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
 {
     private static readonly JsonEncodedText Errors = JsonEncodedText.Encode("errors");
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2046:'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3051:'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
     public override HttpValidationProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var problemDetails = new HttpValidationProblemDetails();
         return ReadProblemDetails(ref reader, options, problemDetails);
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     public static HttpValidationProblemDetails ReadProblemDetails(ref Utf8JsonReader reader, JsonSerializerOptions options, HttpValidationProblemDetails problemDetails)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -34,15 +27,7 @@ internal sealed partial class HttpValidationProblemDetailsJsonConverter : JsonCo
         {
             if (reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
             {
-                var context = new ErrorsJsonContext(options);
-                var errors = JsonSerializer.Deserialize(ref reader, context.DictionaryStringStringArray);
-                if (errors is not null)
-                {
-                    foreach (var item in errors)
-                    {
-                        problemDetails.Errors[item.Key] = item.Value;
-                    }
-                }
+                ReadErrors(ref reader, problemDetails.Errors);
             }
             else
             {
@@ -56,34 +41,88 @@ internal sealed partial class HttpValidationProblemDetailsJsonConverter : JsonCo
         }
 
         return problemDetails;
+
+        static void ReadErrors(ref Utf8JsonReader reader, IDictionary<string, string[]> errors)
+        {
+            if (!reader.Read())
+            {
+                throw new JsonException("Unexpected end when reading JSON.");
+            }
+
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.StartObject:
+                    while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+                    {
+                        var name = reader.GetString()!;
+
+                        if (!reader.Read())
+                        {
+                            throw new JsonException("Unexpected end when reading JSON.");
+                        }
+
+                        if (reader.TokenType == JsonTokenType.Null)
+                        {
+                            errors[name] = null!;
+                        }
+                        else
+                        {
+                            var values = new List<string>();
+                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                            {
+                                values.Add(reader.GetString()!);
+                            }
+                            errors[name] = values.ToArray();
+                        }
+                    }
+                    break;
+                case JsonTokenType.Null:
+                    return;
+                default:
+                    throw new JsonException($"Unexpected token when reading errors: {reader.TokenType}");
+            }
+        }
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2046:'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3051:'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, HttpValidationProblemDetails value, JsonSerializerOptions options)
     {
         WriteProblemDetails(writer, value, options);
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     public static void WriteProblemDetails(Utf8JsonWriter writer, HttpValidationProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
         ProblemDetailsJsonConverter.WriteProblemDetails(writer, value, options);
 
         writer.WritePropertyName(Errors);
-
-        var context = new ErrorsJsonContext(options);
-        JsonSerializer.Serialize(writer, value.Errors, context.IDictionaryStringStringArray);
+        WriteErrors(writer, value, options);
 
         writer.WriteEndObject();
-    }
 
-    [JsonSerializable(typeof(IDictionary<string, string[]>))]
-    [JsonSerializable(typeof(Dictionary<string, string[]>))]
-    private sealed partial class ErrorsJsonContext : JsonSerializerContext
-    { }
+        static void WriteErrors(Utf8JsonWriter writer, HttpValidationProblemDetails value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            foreach (var kvp in value.Errors)
+            {
+                var name = kvp.Key;
+                var errors = kvp.Value;
+
+                writer.WritePropertyName(options.DictionaryKeyPolicy?.ConvertName(name) ?? name);
+                if (errors is null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    writer.WriteStartArray();
+                    foreach (var error in errors)
+                    {
+                        writer.WriteStringValue(error);
+                    }
+                    writer.WriteEndArray();
+                }
+            }
+            writer.WriteEndObject();
+        }
+    }
 }
