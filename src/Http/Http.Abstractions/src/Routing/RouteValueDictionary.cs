@@ -793,9 +793,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         [UnconditionalSuppressMessage("Trimming", "IL2026",
             Justification = "The constructor that would result in _propertyStorage being non-null is annotated with RequiresUnreferencedCodeAttribute. " +
             "We do not need to additionally produce an error in this method since it is shared by trimmer friendly code paths.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050",
-            Justification = "The constructor that would result in _propertyStorage being non-null is annotated with RequiresDynamicCodeAttribute. " +
-            "We do not need to additionally produce an error in this method since it is shared by AOT friendly code paths.")]
         private bool MoveNextRare()
         {
             var dictionary = _dictionary;
