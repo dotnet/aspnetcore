@@ -190,6 +190,16 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         RequestDelegateFactoryOptions? rdfOptions = null;
         RequestDelegateMetadataResult? rdfMetadataResult = null;
 
+        // Any metadata inferred directly inferred by RDF or indirectly inferred via IEndpoint(Parameter)MetadataProviders are
+        // considered less specific than method-level attributes and conventions but more specific than group conventions
+        // so inferred metadata gets added in between these. If group conventions need to override inferred metadata,
+        // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
+        if (isRouteHandler)
+        {
+            rdfOptions = CreateRdfOptions(entry, pattern, builder);
+            rdfMetadataResult = InferHandlerMetadata(entry.RouteHandler.Method, rdfOptions);
+        }
+
         // Add delegate attributes as metadata before entry-specific conventions but after group conventions.
         var attributes = handler.Method.GetCustomAttributes();
         if (attributes is not null)
@@ -208,16 +218,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
         // If no convention has modified builder.RequestDelegate, we can use the RequestDelegate returned by the RequestDelegateFactory directly.
         var conventionOverriddenRequestDelegate = ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate) ? null : builder.RequestDelegate;
-
-        // Any metadata inferred directly inferred by RDF or indirectly inferred via IEndpoint(Parameter)MetadataProviders are
-        // considered less specific than method-level attributes and conventions but more specific than group conventions
-        // so inferred metadata gets added in between these. If group conventions need to override inferred metadata,
-        // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
-        if (isRouteHandler)
-        {
-            rdfOptions = CreateRdfOptions(entry, pattern, builder);
-            rdfMetadataResult = InferHandlerMetadata(entry.RouteHandler.Method, rdfOptions);
-        }
 
         if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
