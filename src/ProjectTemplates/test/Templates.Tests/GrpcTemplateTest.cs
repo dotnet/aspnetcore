@@ -35,7 +35,7 @@ public class GrpcTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [SkipOnHelix("Not supported queues", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [SkipOnHelix("Not supported queues", Queues = "All.OSX;windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
     [InlineData(true)]
     [InlineData(false)]
