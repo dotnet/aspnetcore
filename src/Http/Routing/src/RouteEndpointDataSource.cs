@@ -111,12 +111,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         return CreateRouteEndpointBuilder(_routeEntries[0]);
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026",
-        Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
-        "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050",
-        Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
-        "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
     private RouteEndpointBuilder CreateRouteEndpointBuilder(
         RouteEntry entry, RoutePattern? groupPrefix = null, IReadOnlyList<Action<EndpointBuilder>>? groupConventions = null, IReadOnlyList<Action<EndpointBuilder>>? groupFinallyConventions = null)
     {
@@ -196,16 +190,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         RequestDelegateFactoryOptions? rdfOptions = null;
         RequestDelegateMetadataResult? rdfMetadataResult = null;
 
-        // Any metadata inferred directly inferred by RDF or indirectly inferred via IEndpoint(Parameter)MetadataProviders are
-        // considered less specific than method-level attributes and conventions but more specific than group conventions
-        // so inferred metadata gets added in between these. If group conventions need to override inferred metadata,
-        // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
-        if (isRouteHandler)
-        {
-            rdfOptions = CreateRdfOptions(entry, pattern, builder);
-            rdfMetadataResult = RequestDelegateFactory.InferMetadata(entry.RouteHandler.Method, rdfOptions);
-        }
-
         // Add delegate attributes as metadata before entry-specific conventions but after group conventions.
         var attributes = handler.Method.GetCustomAttributes();
         if (attributes is not null)
@@ -225,13 +209,23 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // If no convention has modified builder.RequestDelegate, we can use the RequestDelegate returned by the RequestDelegateFactory directly.
         var conventionOverriddenRequestDelegate = ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate) ? null : builder.RequestDelegate;
 
+        // Any metadata inferred directly inferred by RDF or indirectly inferred via IEndpoint(Parameter)MetadataProviders are
+        // considered less specific than method-level attributes and conventions but more specific than group conventions
+        // so inferred metadata gets added in between these. If group conventions need to override inferred metadata,
+        // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
+        if (isRouteHandler)
+        {
+            rdfOptions = CreateRdfOptions(entry, pattern, builder);
+            rdfMetadataResult = InferHandlerMetadata(entry.RouteHandler.Method, rdfOptions);
+        }
+
         if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
             rdfOptions ??= CreateRdfOptions(entry, pattern, builder);
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
             // We always set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
-            factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, rdfOptions, rdfMetadataResult).RequestDelegate;
+            factoryCreatedRequestDelegate = CreateHandlerRequestDelegate(entry.RouteHandler, rdfOptions, rdfMetadataResult);
         }
 
         Debug.Assert(factoryCreatedRequestDelegate is not null);
@@ -257,6 +251,28 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         }
 
         return builder;
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2026",
+            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050",
+            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
+        static RequestDelegateMetadataResult InferHandlerMetadata(MethodInfo methodInfo, RequestDelegateFactoryOptions? options = null)
+        {
+            return RequestDelegateFactory.InferMetadata(methodInfo, options);
+        }
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2026",
+            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050",
+            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
+        static RequestDelegate CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
+        {
+            return RequestDelegateFactory.Create(handler, options, metadataResult).RequestDelegate;
+        }
     }
 
     private RequestDelegateFactoryOptions CreateRdfOptions(RouteEntry entry, RoutePattern pattern, RouteEndpointBuilder builder)
