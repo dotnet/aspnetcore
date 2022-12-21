@@ -22,7 +22,6 @@ internal sealed class DotNetObjectReferenceJsonConverterFactory : JsonConverterF
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2055", Justification = "We expect that types used with DotNetObjectReference are retained.")]
-    [SuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "MakeGenericType is AOT safe for reference types.")]
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions jsonSerializerOptions)
     {
         // System.Text.Json handles caching the converters per type on our behalf. No caching is required here.
