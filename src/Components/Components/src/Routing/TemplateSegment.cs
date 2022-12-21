@@ -13,13 +13,20 @@ internal sealed class TemplateSegment
 
         if (IsCatchAll)
         {
-            // Only one '*' currently allowed
-            Value = segment[1..];
+            // Only '*' and '**' allowed at the beginning
+            if (segment.Length > 1 && segment[1] == '*')
+            {
+                Value = segment[2..];
+            }
+            else
+            {
+                Value = segment[1..];
+            }
 
             var invalidCharacterIndex = Value.IndexOf('*');
             if (invalidCharacterIndex != -1)
             {
-                throw new InvalidOperationException($"Invalid template '{template}'. A catch-all parameter may only have one '*' at the beginning of the segment.");
+                throw new InvalidOperationException($"Invalid template '{template}'. A catch-all parameter may only have '*' or '**' at the beginning of the segment.");
             }
         }
         else
