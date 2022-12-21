@@ -273,7 +273,10 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   // blazor could start downloading bit earlier than the runtime would
   const runtimeAssetsBeingLoaded = assets
     .filter(asset => asset.behavior === 'dotnetwasm')
-    .map(asset => resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, 'dotnetwasm'));
+    .map(asset => {
+      asset.pendingDownload = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, 'dotnetwasm');
+      return asset.pendingDownload;
+    });
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
