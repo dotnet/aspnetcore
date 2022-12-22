@@ -160,6 +160,28 @@ class Program
     }
 
     [Fact]
+    public async Task InParameterName_ExtensionMethod_MatchingDelegate_RouteMetadataWithoutName_HighlightParameter()
+    {
+        // Arrange & Act & Assert
+        await TestHighlightingAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+
+class Program
+{
+    static void Main()
+    {
+        IEndpointRouteBuilder builder = null;
+        builder.MapGet(@""{$$[|id|]}"", ([FromRoute]string [|id|]) => $""{[|id|]}"");
+    }
+}
+");
+    }
+
+    [Fact]
     public async Task InParameterName_ExtensionMethod_MatchingDelegate_RouteMetadataWithName_HighlightParameter()
     {
         // Arrange & Act & Assert
