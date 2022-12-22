@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
@@ -136,19 +137,34 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         var framesReceived = 0;
         var framesSent = 0;
 
-        void FrameReceived(object sender, IWebSocketFrame frame) { framesReceived++; }
-        void FrameSent(object sender, IWebSocketFrame frame) { framesSent++; }
+        // We wait for the first two frames
+        // Receive render batch
+        // JS interop call to intercept navigation
+        var twoFramesReceived = new TaskCompletionSource();
+        var twoFramesSent = new TaskCompletionSource();
+
+        void FrameReceived(object sender, IWebSocketFrame frame)
+        {
+            framesReceived++;
+            if (framesReceived == 2)
+            {
+                twoFramesReceived.SetResult();
+            }
+        }
+        void FrameSent(object sender, IWebSocketFrame frame)
+        {
+            framesSent++;
+            if (framesSent == 2)
+            {
+                twoFramesSent.SetResult();
+            }
+        }
 
         socket.FrameReceived += FrameReceived;
         socket.FrameSent += FrameSent;
 
-        // Receive render batch
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 1 });
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 1 });
-
-        // JS interop call to intercept navigation
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 2 });
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 2 });
+        await twoFramesReceived.Task;
+        await twoFramesSent.Task;
 
         socket.FrameReceived -= FrameReceived;
         socket.FrameSent -= FrameSent;
