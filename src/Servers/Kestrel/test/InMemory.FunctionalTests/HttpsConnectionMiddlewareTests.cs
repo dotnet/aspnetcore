@@ -784,6 +784,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalFact]
     // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
     // then the connection is aborted.
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [TlsAlpnSupported]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
