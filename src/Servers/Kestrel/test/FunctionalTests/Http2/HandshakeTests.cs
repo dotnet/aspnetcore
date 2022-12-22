@@ -62,6 +62,7 @@ public class HandshakeTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
     {
@@ -89,6 +90,7 @@ public class HandshakeTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task TlsAlpnHandshakeSelectsHttp2()
     {

@@ -142,6 +142,7 @@ public class EventSourceTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task Http2_EmitsStartAndStopEventsWithActivityIds()
     {

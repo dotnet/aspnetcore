@@ -529,6 +529,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalTheory]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure turning on Http/2 doesn't regress HTTP/1
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificate(HttpProtocols httpProtocols)
     {
@@ -610,6 +612,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForTlsCallbackOptions()
     {
@@ -656,6 +660,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificateOnHttp1CanReturnNoCert()
     {
@@ -778,6 +784,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalFact]
     // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
     // then the connection is aborted.
+    [TlsAlpnSupported]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
     {
@@ -820,6 +827,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
+    [TlsAlpnSupported]
     public async Task ServerOptionsSelectionCallback_SetsALPN()
     {
         static void ConfigureListenOptions(ListenOptions listenOptions)
@@ -847,6 +855,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
+    [TlsAlpnSupported]
     public async Task TlsHandshakeCallbackOptionsOverload_SetsALPN()
     {
         static void ConfigureListenOptions(ListenOptions listenOptions)
@@ -878,6 +887,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     public async Task TlsHandshakeCallbackOptionsOverload_EmptyAlpnList_DisablesAlpn()
     {
         static void ConfigureListenOptions(ListenOptions listenOptions)
@@ -910,6 +920,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificateOnPostIfDrained()
     {
@@ -955,6 +967,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task RenegotationFailureCausesConnectionClose()
     {
@@ -1256,6 +1269,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     [InlineData(HttpProtocols.Http1AndHttp2)]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
     {

@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2;
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2;
 #endif
 
+[TlsAlpnSupported]
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
 public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
 {

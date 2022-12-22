@@ -225,6 +225,7 @@ public class WebHostTests : LoggedTest
     }
 
     [ConditionalTheory]
+    [TlsAlpnSupported]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ListenNamedPipeEndpoint_Tls_ClientSuccess(HttpProtocols protocols)
