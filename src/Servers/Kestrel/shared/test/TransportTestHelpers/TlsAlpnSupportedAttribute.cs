@@ -7,5 +7,5 @@ namespace Microsoft.AspNetCore.Testing;
 public class TlsAlpnSupportedAttribute : Attribute, ITestCondition
 {
     public bool IsMet => true; // Replace with https://github.com/dotnet/runtime/issues/79687
-    public string SkipReason => "QUIC is not supported on the current test machine";
+    public string SkipReason => "TLS ALPN is not supported on the current test machine";
 }
