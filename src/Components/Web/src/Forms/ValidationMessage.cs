@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Components.Forms
             foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
             {
                 builder.OpenElement(0, "div");
-                builder.AddMultipleAttributes(1, AdditionalAttributes);
-                builder.AddAttribute(2, "class", "validation-message");
+                builder.AddAttribute(1, "class", "validation-message");
+                builder.AddMultipleAttributes(2, AdditionalAttributes);
                 builder.AddContent(3, message);
                 builder.CloseElement();
             }
