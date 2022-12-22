@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                     first = false;
 
                     builder.OpenElement(0, "ul");
-                    builder.AddAttribute(1, "class", "validation-errors")
+                    builder.AddAttribute(1, "class", "validation-errors");
                     builder.AddMultipleAttributes(2, AdditionalAttributes);
                 }
 
