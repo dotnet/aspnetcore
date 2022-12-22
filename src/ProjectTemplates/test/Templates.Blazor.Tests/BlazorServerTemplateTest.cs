@@ -26,7 +26,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver";
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30761")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
     {
@@ -79,7 +79,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     }
 
     [InlineData(BrowserKind.Chromium)]
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
+    [Theory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind)
     {
@@ -132,44 +132,9 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     private async Task TestBasicNavigation(IPage page)
     {
-        var socket = await page.WaitForWebSocketAsync();
+        // Wait for the page to load, and the connection to idle for >500ms
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = 60_000 });
 
-        var framesReceived = 0;
-        var framesSent = 0;
-
-        // We wait for the first two frames
-        // Receive render batch
-        // JS interop call to intercept navigation
-        var twoFramesReceived = new TaskCompletionSource();
-        var twoFramesSent = new TaskCompletionSource();
-
-        void FrameReceived(object sender, IWebSocketFrame frame)
-        {
-            framesReceived++;
-            if (framesReceived == 2)
-            {
-                twoFramesReceived.SetResult();
-            }
-        }
-        void FrameSent(object sender, IWebSocketFrame frame)
-        {
-            framesSent++;
-            if (framesSent == 2)
-            {
-                twoFramesSent.SetResult();
-            }
-        }
-
-        socket.FrameReceived += FrameReceived;
-        socket.FrameSent += FrameSent;
-
-        await twoFramesReceived.Task;
-        await twoFramesSent.Task;
-
-        socket.FrameReceived -= FrameReceived;
-        socket.FrameSent -= FrameSent;
-
-        await page.WaitForSelectorAsync("nav");
         // <title> element gets project ID injected into it during template execution
         Assert.Equal("Index", (await page.TitleAsync()).Trim());
 
@@ -181,10 +146,13 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         await page.WaitForSelectorAsync("h1+p >> text=Current count: 0");
 
         // Clicking the counter button works
-        await page.ClickAsync("p+button >> text=Click me");
-        await page.WaitForSelectorAsync("h1+p >> text=Current count: 1");
+        for (var i = 1; i <= 3; i++)
+        {
+            await page.ClickAsync("p+button >> text=Click me");
+            await page.WaitForSelectorAsync($"h1+p >> text=Current count: {i}");
+        }
 
-        // Can navigate to the 'fetch data' page
+        // Can navigate to the 'Fetch Data' page
         await page.ClickAsync("a[href=fetchdata] >> text=Fetch data");
         await page.WaitForSelectorAsync("h1 >> text=Weather forecast");
 
