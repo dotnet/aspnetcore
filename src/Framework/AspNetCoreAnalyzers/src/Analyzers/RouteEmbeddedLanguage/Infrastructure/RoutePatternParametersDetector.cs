@@ -31,10 +31,32 @@ internal static class RoutePatternParametersDetector
                 }
                 else
                 {
-                    resolvedParameterSymbols.Add(new ParameterSymbol(child, topLevelSymbol));
+                    var routeParameterName = ResolveRouteParameterName(child, wellKnownTypes);
+                    resolvedParameterSymbols.Add(new ParameterSymbol(routeParameterName, child, topLevelSymbol));
                 }
             }
             return resolvedParameterSymbols.ToImmutable();
+        }
+
+        static string ResolveRouteParameterName(ISymbol parameterSymbol, WellKnownTypes wellKnownTypes)
+        {
+            var fromRouteMetadata = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
+            if (!parameterSymbol.HasAttributeImplementingInterface(fromRouteMetadata, out var attributeData))
+            {
+                return parameterSymbol.Name; // No route metadata attribute!
+            }
+
+            foreach (var namedArgument in attributeData.NamedArguments)
+            {
+                if (namedArgument.Key == "Name")
+                {
+                    var routeParameterNameConstant = namedArgument.Value;
+                    var routeParameterName = (string)routeParameterNameConstant.Value!;
+                    return routeParameterName; // Have attribute & name is specified.
+                }
+            }
+
+            return parameterSymbol.Name; // We have the attribute, but name isn't specified!
         }
     }
 

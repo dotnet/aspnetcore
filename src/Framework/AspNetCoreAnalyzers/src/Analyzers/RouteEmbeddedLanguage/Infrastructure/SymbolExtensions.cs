@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -20,6 +21,26 @@ internal static class SymbolExtensions
             }
         }
 
+        return false;
+    }
+
+    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
+    {
+        return HasAttributeImplementingInterface(symbol, interfaceType, out var _);
+    }
+
+    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in symbol.GetAttributes())
+        {
+            if (attributeData.AttributeClass is not null && Implements(attributeData.AttributeClass, interfaceType))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
         return false;
     }
 
