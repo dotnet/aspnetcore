@@ -967,6 +967,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [TlsAlpnSupported]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
     public async Task RenegotationFailureCausesConnectionClose()
