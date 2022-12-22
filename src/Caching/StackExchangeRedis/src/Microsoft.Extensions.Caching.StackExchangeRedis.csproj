@@ -17,4 +17,8 @@
     <Reference Include="StackExchange.Redis" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
+      <Reference Include="System.ValueTuple" />
+  </ItemGroup>
+
 </Project>

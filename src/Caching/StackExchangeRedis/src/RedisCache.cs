@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -19,56 +20,57 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// </summary>
 public partial class RedisCache : IDistributedCache, IDisposable
 {
-    // -- Explanation of why two kinds of SetScript are used --
-    // * Redis 2.0 had HSET key field value for setting individual hash fields,
-    // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key).
-    // * Redis 4.0 added HSET key field value [field value ...] and deprecated HMSET.
+    // * Key timeouts are used in the following way:
     //
-    // On Redis versions that don't have the newer HSET variant, we use SetScriptPreExtendedSetCommand
-    // which uses the (now deprecated) HMSET.
+    // * If an entry has no absolute expiration time or sliding window, then
+    //   the key in Redis has no timeout value.
+    //
+    // * If an entry has only an absolute expiration time, then the key in Redis
+    //   has a corresponding timeout.
+    //
+    // * If an entry has a sliding window, then the key in Redis has a timeout value
+    //   corresponding to the sliding window. Every fetch of that entry resets the
+    //   key's timeout to (now + sliding window). This is potentially limited by an
+    //   absolute expiration time, which sets an upper bound.
 
-    // KEYS[1] = = key
-    // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
-    // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
-    // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
-    // ARGV[4] = data - byte[]
-    // this order should not change LUA script depends on it
-    private const string SetScript = (@"
-                redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
-                if ARGV[3] ~= '-1' then
-                  redis.call('EXPIRE', KEYS[1], ARGV[3])
-                end
-                return 1");
-    private const string SetScriptPreExtendedSetCommand = (@"
-                redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
-                if ARGV[3] ~= '-1' then
-                  redis.call('EXPIRE', KEYS[1], ARGV[3])
-                end
-                return 1");
+    private readonly Func<string, string> _expandKey;
+    private readonly RedisCacheOptions _options;
+    private readonly ILogger _logger;
+    private readonly ISystemClock _clock;
 
-    private const string AbsoluteExpirationKey = "absexp";
-    private const string SlidingExpirationKey = "sldexp";
-    private const string DataKey = "data";
-    private const long NotPresent = -1;
-    private static readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
+    // Field names
+    private const string DataValueLabel = "dv";
+    private const string SlidingWindowLabel = "swv";
+    private const string AbsoluteExpirationValueLabel = "aev";
+
+    // Expiration delay under which we don't try to update or refresh a key
+    private static readonly TimeSpan _gracePeriod = TimeSpan.FromSeconds(1);
+
+    private static readonly RedisValue[] _getLabels = new[]
+    {
+        new RedisValue(DataValueLabel),
+        new RedisValue(SlidingWindowLabel),
+        new RedisValue(AbsoluteExpirationValueLabel)
+    };
+
+    private static readonly RedisValue[] _refreshLabels = new[]
+    {
+        new RedisValue(SlidingWindowLabel),
+        new RedisValue(AbsoluteExpirationValueLabel)
+    };
 
     private volatile IConnectionMultiplexer? _connection;
     private IDatabase? _cache;
     private bool _disposed;
-    private string _setScript = SetScript;
 
-    private readonly RedisCacheOptions _options;
-    private readonly string _instance;
-    private readonly ILogger _logger;
-
-    private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+    private readonly SemaphoreSlim _connectionLock = new(initialCount: 1, maxCount: 1);
 
     /// <summary>
     /// Initializes a new instance of <see cref="RedisCache"/>.
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
-        : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>())
+        : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>(), new SystemClock())
     {
     }
 
@@ -77,7 +79,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     /// <param name="logger">The logger.</param>
-    internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger)
+    /// <param name="clock">The system clock.</param>
+    internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger, ISystemClock clock)
     {
         if (optionsAccessor == null)
         {
@@ -89,11 +92,24 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw new ArgumentNullException(nameof(logger));
         }
 
+        if (clock == null)
+        {
+            throw new ArgumentNullException(nameof(clock));
+        }
+
         _options = optionsAccessor.Value;
         _logger = logger;
+        _clock = clock;
 
         // This allows partitioning a single backend cache for use with multiple apps/services.
-        _instance = _options.InstanceName ?? string.Empty;
+        if (string.IsNullOrEmpty(_options.InstanceName))
+        {
+            _expandKey = key => key;
+        }
+        else
+        {
+            _expandKey = key => _options.InstanceName + key;
+        }
     }
 
     /// <inheritdoc />
@@ -104,7 +120,20 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw new ArgumentNullException(nameof(key));
         }
 
-        return GetAndRefresh(key, getData: true);
+        var expandedKey = _expandKey(key);
+
+        Connect();
+
+        var value = _cache.HashGet(expandedKey, _getLabels);
+
+        var (data, absoluteExpiration, slidingWindow) = RedisEntry.Get(value);
+
+        if (data != null)
+        {
+            RefreshExpiration(expandedKey, absoluteExpiration, slidingWindow);
+        }
+
+        return data;
     }
 
     /// <inheritdoc />
@@ -117,7 +146,25 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         token.ThrowIfCancellationRequested();
 
-        return await GetAndRefreshAsync(key, getData: true, token: token).ConfigureAwait(false);
+        var expandedKey = _expandKey(key);
+
+        await ConnectAsync(token).ConfigureAwait(false);
+        Debug.Assert(_cache != null);
+
+        var value = await _cache.HashGetAsync(expandedKey, _getLabels)
+#if NET6_0_OR_GREATER
+        .WaitAsync(token)
+#endif
+        .ConfigureAwait(false);
+
+        var (data, absoluteExpiration, slidingWindow) = RedisEntry.Get(value);
+
+        if (data != null)
+        {
+            await RefreshExpirationAsync(expandedKey, absoluteExpiration, slidingWindow, token).ConfigureAwait(false);
+        }
+
+        return data;
     }
 
     /// <inheritdoc />
@@ -138,20 +185,10 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw new ArgumentNullException(nameof(options));
         }
 
-        Connect();
+        // Create an
+        var tx = MakeSetTransaction(key, value, options);
 
-        var creationTime = DateTimeOffset.UtcNow;
-
-        var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
-
-        _cache.ScriptEvaluate(_setScript, new RedisKey[] { _instance + key },
-            new RedisValue[]
-            {
-                        absoluteExpiration?.Ticks ?? NotPresent,
-                        options.SlidingExpiration?.Ticks ?? NotPresent,
-                        GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
-                        value
-            });
+        _ = tx.Execute();
     }
 
     /// <inheritdoc />
@@ -174,21 +211,14 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         token.ThrowIfCancellationRequested();
 
-        await ConnectAsync(token).ConfigureAwait(false);
-        Debug.Assert(_cache is not null);
+        var transaction = MakeSetTransaction(key, value, options);
 
-        var creationTime = DateTimeOffset.UtcNow;
-
-        var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
-
-        await _cache.ScriptEvaluateAsync(_setScript, new RedisKey[] { _instance + key },
-            new RedisValue[]
-            {
-                absoluteExpiration?.Ticks ?? NotPresent,
-                options.SlidingExpiration?.Ticks ?? NotPresent,
-                GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
-                value
-            }).ConfigureAwait(false);
+        _ = await transaction
+            .ExecuteAsync()
+#if NET6_0_OR_GREATER
+        .WaitAsync(token)
+#endif
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -199,7 +229,21 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw new ArgumentNullException(nameof(key));
         }
 
-        GetAndRefresh(key, getData: false);
+        var expandedKey = _expandKey(key);
+
+        Connect();
+
+        var value = _cache.HashGet(expandedKey, _refreshLabels);
+
+        var (_, absoluteExpiration, slidingWindow) = RedisEntry.Refresh(value);
+
+        if (slidingWindow == null)
+        {
+            // key not found
+            return;
+        }
+
+        RefreshExpiration(expandedKey, absoluteExpiration, slidingWindow);
     }
 
     /// <inheritdoc />
@@ -212,7 +256,127 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         token.ThrowIfCancellationRequested();
 
-        await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
+        var expandedKey = _expandKey(key);
+
+        await ConnectAsync(token).ConfigureAwait(false);
+        Debug.Assert(_cache != null);
+
+        var value = await _cache.HashGetAsync(expandedKey, _refreshLabels)
+#if NET6_0_OR_GREATER
+        .WaitAsync(token)
+#endif
+        .ConfigureAwait(false);
+
+        var (_, absoluteExpiration, slidingWindow) = RedisEntry.Refresh(value);
+
+        if (slidingWindow == null)
+        {
+            // key not found
+            return;
+        }
+
+        await RefreshExpirationAsync(expandedKey, absoluteExpiration, slidingWindow, token).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a Redis transaction containing DEL, HSET and EXPIRE commands.
+    /// </summary>
+    private ITransaction MakeSetTransaction(string key, RedisValue value, DistributedCacheEntryOptions options)
+    {
+        // All the commands in a transaction are serialized and executed sequentially.
+        // A request sent by another client will never be served in the middle of the execution
+        // of a Redis Transaction. This guarantees that the commands are executed as a single
+        // isolated operation.
+
+        var currentTime = _clock.UtcNow;
+        var (absExpiration, slidingWindow) = CalcExpirationValues(currentTime, options);
+        var keyTimeout = CalcKeyTimeout(currentTime, absExpiration, slidingWindow);
+        var expandedKey = _expandKey(key);
+
+        Connect();
+
+        // The ITransaction class exposes async methods because the result of
+        // each operation will not be known until after `Execute` (or `ExecuteAsync`)
+        // has completed.
+        // Results for these operations are discarded because we do not care about
+        // their individual outcome.
+
+        var tx = _cache.CreateTransaction();
+        _ = tx.KeyDeleteAsync(expandedKey);
+
+        if (keyTimeout == TimeSpan.Zero || keyTimeout >= _gracePeriod)
+        {
+            if (slidingWindow != null)
+            {
+                if (absExpiration != null)
+                {
+                    var hashes = new[]
+                    {
+                        new HashEntry(DataValueLabel, value),
+                        new HashEntry(SlidingWindowLabel, slidingWindow.Value.Ticks),
+                        new HashEntry(AbsoluteExpirationValueLabel,  absExpiration.Value.Ticks)
+                    };
+                    _ = tx.HashSetAsync(expandedKey, hashes);
+                }
+                else
+                {
+                    var hashes = new[]
+                    {
+                        new HashEntry(DataValueLabel, value),
+                        new HashEntry(SlidingWindowLabel, slidingWindow.Value.Ticks),
+                    };
+                    _ = tx.HashSetAsync(expandedKey, hashes);
+                }
+            }
+            else
+            {
+                _ = tx.HashSetAsync(expandedKey, DataValueLabel, value);
+            }
+
+            if (keyTimeout != TimeSpan.Zero)
+            {
+                _ = tx.KeyExpireAsync(expandedKey, keyTimeout);
+            }
+        }
+
+        return tx;
+    }
+
+    // Generate the two optional expiration values to inject into Redis
+    private static (DateTimeOffset? absExpiration, TimeSpan? slidingWindow) CalcExpirationValues(DateTimeOffset currentTime, DistributedCacheEntryOptions options)
+    {
+        var absExpiration = options.AbsoluteExpiration;
+        if (options.AbsoluteExpirationRelativeToNow != null)
+        {
+            absExpiration = currentTime + options.AbsoluteExpirationRelativeToNow.Value;
+        }
+
+        return (absExpiration, options.SlidingExpiration);
+    }
+
+    // Given the calculated expiration values, figure out the timeout value that should be applied to a Redis key
+    private static TimeSpan CalcKeyTimeout(DateTimeOffset currentTime, DateTimeOffset? absExpiration, TimeSpan? slidingWindow)
+    {
+        if (slidingWindow != null)
+        {
+            if (absExpiration != null)
+            {
+                var absWindow = absExpiration.Value - currentTime;
+                if (absWindow < slidingWindow.Value)
+                {
+                    return absWindow;
+                }
+            }
+
+            return slidingWindow.Value;
+        }
+
+        if (absExpiration != null)
+        {
+            return absExpiration.Value - currentTime;
+        }
+
+        return TimeSpan.Zero;
     }
 
     [MemberNotNull(nameof(_cache), nameof(_connection))]
@@ -269,9 +433,10 @@ public partial class RedisCache : IDistributedCache, IDisposable
             return;
         }
 
-        await _connectionLock.WaitAsync(token).ConfigureAwait(false);
         try
         {
+            await _connectionLock.WaitAsync(token).ConfigureAwait(false);
+
             if (_cache == null)
             {
                 if (_options.ConnectionMultiplexerFactory is null)
@@ -298,37 +463,13 @@ public partial class RedisCache : IDistributedCache, IDisposable
         {
             _connectionLock.Release();
         }
+
+        Debug.Assert(_connection != null);
     }
 
     private void PrepareConnection()
     {
-        ValidateServerFeatures();
         TryRegisterProfiler();
-    }
-
-    private void ValidateServerFeatures()
-    {
-        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
-
-        try
-        {
-            foreach (var endPoint in _connection.GetEndPoints())
-            {
-                if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
-                {
-                    _setScript = SetScriptPreExtendedSetCommand;
-                    return;
-                }
-            }
-        }
-        catch (NotSupportedException ex)
-        {
-            Log.CouldNotDetermineServerVersion(_logger, ex);
-
-            // The GetServer call may not be supported with some configurations, in which
-            // case let's also fall back to using the older command.
-            _setScript = SetScriptPreExtendedSetCommand;
-        }
     }
 
     private void TryRegisterProfiler()
@@ -341,81 +482,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
     }
 
-    private byte[]? GetAndRefresh(string key, bool getData)
-    {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        Connect();
-
-        // This also resets the LRU status as desired.
-        // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
-        RedisValue[] results;
-        if (getData)
-        {
-            results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
-        }
-        else
-        {
-            results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
-        }
-
-        // TODO: Error handling
-        if (results.Length >= 2)
-        {
-            MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            Refresh(_cache, key, absExpr, sldExpr);
-        }
-
-        if (results.Length >= 3 && results[2].HasValue)
-        {
-            return results[2];
-        }
-
-        return null;
-    }
-
-    private async Task<byte[]?> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default(CancellationToken))
-    {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        token.ThrowIfCancellationRequested();
-
-        await ConnectAsync(token).ConfigureAwait(false);
-        Debug.Assert(_cache is not null);
-
-        // This also resets the LRU status as desired.
-        // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
-        RedisValue[] results;
-        if (getData)
-        {
-            results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
-        }
-        else
-        {
-            results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
-        }
-
-        // TODO: Error handling
-        if (results.Length >= 2)
-        {
-            MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            await RefreshAsync(_cache, key, absExpr, sldExpr, token).ConfigureAwait(false);
-        }
-
-        if (results.Length >= 3 && results[2].HasValue)
-        {
-            return results[2];
-        }
-
-        return null;
-    }
-
     /// <inheritdoc />
     public void Remove(string key)
     {
@@ -426,8 +492,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         Connect();
 
-        _cache.KeyDelete(_instance + key);
-        // TODO: Error handling
+        _ = _cache.KeyDelete(_expandKey(key));
     }
 
     /// <inheritdoc />
@@ -441,113 +506,47 @@ public partial class RedisCache : IDistributedCache, IDisposable
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache is not null);
 
-        await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
-        // TODO: Error handling
+        await _cache.KeyDeleteAsync(_expandKey(key))
+#if NET6_0_OR_GREATER
+        .WaitAsync(token)
+#endif
+        .ConfigureAwait(false);
     }
 
-    private static void MapMetadata(RedisValue[] results, out DateTimeOffset? absoluteExpiration, out TimeSpan? slidingExpiration)
+    private void RefreshExpiration(string expandedKey, DateTimeOffset? absExpiration, TimeSpan? slidingWindow)
     {
-        absoluteExpiration = null;
-        slidingExpiration = null;
-        var absoluteExpirationTicks = (long?)results[0];
-        if (absoluteExpirationTicks.HasValue && absoluteExpirationTicks.Value != NotPresent)
+        if (slidingWindow != null)
         {
-            absoluteExpiration = new DateTimeOffset(absoluteExpirationTicks.Value, TimeSpan.Zero);
-        }
-        var slidingExpirationTicks = (long?)results[1];
-        if (slidingExpirationTicks.HasValue && slidingExpirationTicks.Value != NotPresent)
-        {
-            slidingExpiration = new TimeSpan(slidingExpirationTicks.Value);
-        }
-    }
+            var timeout = CalcKeyTimeout(_clock.UtcNow, absExpiration, slidingWindow);
 
-    private void Refresh(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
-    {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        // Note Refresh has no effect if there is just an absolute expiration (or neither).
-        if (sldExpr.HasValue)
-        {
-            TimeSpan? expr;
-            if (absExpr.HasValue)
+            if (timeout >= _gracePeriod)
             {
-                var relExpr = absExpr.Value - DateTimeOffset.Now;
-                expr = relExpr <= sldExpr.Value ? relExpr : sldExpr;
+                Connect();
+
+                _ = _cache.KeyExpire(expandedKey, timeout, CommandFlags.FireAndForget);
             }
-            else
-            {
-                expr = sldExpr;
-            }
-            cache.KeyExpire(_instance + key, expr);
-            // TODO: Error handling
         }
     }
 
-    private async Task RefreshAsync(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr, CancellationToken token = default(CancellationToken))
+    private Task RefreshExpirationAsync(string expandedKey, DateTimeOffset? absExpiration, TimeSpan? slidingWindow, CancellationToken token)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        Debug.Assert(_cache != null);
 
-        token.ThrowIfCancellationRequested();
-
-        // Note Refresh has no effect if there is just an absolute expiration (or neither).
-        if (sldExpr.HasValue)
+        if (slidingWindow != null)
         {
-            TimeSpan? expr;
-            if (absExpr.HasValue)
+            var timeout = CalcKeyTimeout(_clock.UtcNow, absExpiration, slidingWindow);
+
+            if (timeout >= _gracePeriod)
             {
-                var relExpr = absExpr.Value - DateTimeOffset.Now;
-                expr = relExpr <= sldExpr.Value ? relExpr : sldExpr;
+                return _cache.KeyExpireAsync(expandedKey, timeout, CommandFlags.FireAndForget)
+#if NET6_0_OR_GREATER
+                    .WaitAsync(token)
+#endif
+                    ;
             }
-            else
-            {
-                expr = sldExpr;
-            }
-            await cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
-            // TODO: Error handling
-        }
-    }
-
-    private static long? GetExpirationInSeconds(DateTimeOffset creationTime, DateTimeOffset? absoluteExpiration, DistributedCacheEntryOptions options)
-    {
-        if (absoluteExpiration.HasValue && options.SlidingExpiration.HasValue)
-        {
-            return (long)Math.Min(
-                (absoluteExpiration.Value - creationTime).TotalSeconds,
-                options.SlidingExpiration.Value.TotalSeconds);
-        }
-        else if (absoluteExpiration.HasValue)
-        {
-            return (long)(absoluteExpiration.Value - creationTime).TotalSeconds;
-        }
-        else if (options.SlidingExpiration.HasValue)
-        {
-            return (long)options.SlidingExpiration.Value.TotalSeconds;
-        }
-        return null;
-    }
-
-    private static DateTimeOffset? GetAbsoluteExpiration(DateTimeOffset creationTime, DistributedCacheEntryOptions options)
-    {
-        if (options.AbsoluteExpiration.HasValue && options.AbsoluteExpiration <= creationTime)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(DistributedCacheEntryOptions.AbsoluteExpiration),
-                options.AbsoluteExpiration.Value,
-                "The absolute expiration value must be in the future.");
         }
 
-        if (options.AbsoluteExpirationRelativeToNow.HasValue)
-        {
-            return creationTime + options.AbsoluteExpirationRelativeToNow;
-        }
-
-        return options.AbsoluteExpiration;
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -560,6 +559,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         _disposed = true;
         _connection?.Close();
+        GC.SuppressFinalize(this);
     }
 
     private void CheckDisposed()

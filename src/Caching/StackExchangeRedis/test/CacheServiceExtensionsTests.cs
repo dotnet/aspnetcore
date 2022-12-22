@@ -4,6 +4,7 @@
 using System.Linq;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -108,6 +109,7 @@ public class CacheServiceExtensionsTests
 
         // Act
         services.AddLogging();
+        services.AddSingleton<ISystemClock, SystemClock>();
         services.AddStackExchangeRedisCache(options => { });
 
         // Assert
