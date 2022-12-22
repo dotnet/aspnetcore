@@ -10,6 +10,7 @@ internal static class Utilities
     internal static bool CurrentPlatformSupportsHTTP2OverTls()
     {
         return // "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support" or missing compatible ciphers (Win8.1)
-            new MinimumOSVersionAttribute(OperatingSystems.Windows, WindowsVersions.Win10).IsMet;
+            new MinimumOSVersionAttribute(OperatingSystems.Windows, WindowsVersions.Win10).IsMet
+            && new TlsAlpnSupportedAttribute().IsMet;
     }
 }

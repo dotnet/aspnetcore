@@ -549,7 +549,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
   </data>
   <data name="Http2NoTlsAlpn" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on this platform due to missing ALPN support.</value>
+    <value>HTTP/2 over TLS is not supported due to missing ALPN support.</value>
   </data>
   <data name="Http2StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
