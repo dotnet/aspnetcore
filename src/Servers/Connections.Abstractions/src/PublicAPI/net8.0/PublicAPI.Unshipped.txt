@@ -1,8 +1,18 @@
 #nullable enable
+Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.get -> System.IO.Pipes.NamedPipeServerStream!
 Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature
 Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature.OnClosed(System.Action<object?>! callback, object? state) -> void
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName) -> void
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName, string! serverName) -> void
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.PipeName.get -> string!
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.ServerName.get -> string!
+override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.GetHashCode() -> int
+override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.ToString() -> string!
 Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext
 Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.ClientHelloInfo.get -> System.Net.Security.SslClientHelloInfo
 Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.ClientHelloInfo.set -> void

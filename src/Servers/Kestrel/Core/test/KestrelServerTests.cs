@@ -714,7 +714,7 @@ public class KestrelServerTests
             DebuggerWrapper.Singleton,
             testContext.Log);
 
-        using (var server = new KestrelServerImpl(new MockTransportFactory(), testContext))
+        using (var server = new KestrelServerImpl(new[] { new MockTransportFactory() }, Array.Empty<IMultiplexedConnectionListenerFactory>(), testContext))
         {
             Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 
