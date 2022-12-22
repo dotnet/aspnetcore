@@ -225,7 +225,6 @@ public class WebHostTests : LoggedTest
     }
 
     [ConditionalTheory]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ListenNamedPipeEndpoint_Tls_ClientSuccess(HttpProtocols protocols)
