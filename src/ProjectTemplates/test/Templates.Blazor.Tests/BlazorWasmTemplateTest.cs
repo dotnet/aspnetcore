@@ -107,7 +107,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/45736")]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
@@ -142,7 +142,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/45736")]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
     {
@@ -212,7 +212,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
     }
 
-    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
+    [ConditionalTheory]
     [InlineData(BrowserKind.Chromium)]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
