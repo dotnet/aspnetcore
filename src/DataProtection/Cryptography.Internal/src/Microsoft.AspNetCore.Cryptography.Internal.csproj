@@ -10,4 +10,13 @@
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Cryptography.Internal.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.DataProtection" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.DataProtection.Extensions.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
+  </ItemGroup>
 </Project>

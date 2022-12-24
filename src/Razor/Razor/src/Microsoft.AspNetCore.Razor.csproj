@@ -22,4 +22,8 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Razor.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Razor.Runtime.Test" />
+  </ItemGroup>
 </Project>

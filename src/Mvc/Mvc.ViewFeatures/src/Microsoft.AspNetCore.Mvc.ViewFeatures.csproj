@@ -42,4 +42,18 @@
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Views.TestCommon" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

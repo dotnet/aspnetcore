@@ -32,4 +32,8 @@
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

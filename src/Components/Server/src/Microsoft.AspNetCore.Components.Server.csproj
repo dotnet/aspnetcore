@@ -118,4 +118,10 @@
       <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/$(BlazorServerJSFilename).map" Condition="Exists('$(BlazorServerJSFile).map')" />
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Blazor.DevServer" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

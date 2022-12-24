@@ -17,4 +17,7 @@
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests" />
+  </ItemGroup>
 </Project>

@@ -23,4 +23,7 @@
     <Reference Include="Microsoft.Extensions.WebEncoders" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.StaticFiles.Tests" />
+  </ItemGroup>
 </Project>

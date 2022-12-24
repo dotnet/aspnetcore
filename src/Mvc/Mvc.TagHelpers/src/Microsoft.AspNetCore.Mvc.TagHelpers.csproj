@@ -23,4 +23,9 @@
     <Reference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

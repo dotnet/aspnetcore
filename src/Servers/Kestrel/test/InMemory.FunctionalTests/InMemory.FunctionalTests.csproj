@@ -5,7 +5,7 @@
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);IS_TESTS</DefineConstants>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
@@ -34,5 +34,9 @@
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

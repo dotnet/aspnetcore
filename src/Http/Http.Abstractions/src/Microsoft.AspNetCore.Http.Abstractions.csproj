@@ -55,4 +55,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Tests" />
+  </ItemGroup>
 </Project>

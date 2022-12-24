@@ -41,4 +41,11 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Routing.Microbenchmarks" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Routing.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer.Test" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

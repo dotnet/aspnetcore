@@ -58,4 +58,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
+    <InternalVisibleTo Include="Sockets.FunctionalTests" />
+    <InternalVisibleTo Include="Quic.FunctionalTests" />
+    <InternalVisibleTo Include="InMemory.FunctionalTests" />
+    <InternalVisibleTo Include="Sockets.BindTests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Core.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

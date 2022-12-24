@@ -20,4 +20,7 @@
     <None Include="buildTransitive/netstandard2.0/*" Pack="true" PackagePath="buildTransitive/netstandard2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Analyzers.Tests" />
+  </ItemGroup>
 </Project>

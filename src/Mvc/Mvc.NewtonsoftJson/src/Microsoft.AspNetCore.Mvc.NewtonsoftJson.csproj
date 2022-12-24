@@ -25,4 +25,10 @@
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="..\..\Mvc.Core\src\Infrastructure\AsyncEnumerableReader.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
+  </ItemGroup>
 </Project>

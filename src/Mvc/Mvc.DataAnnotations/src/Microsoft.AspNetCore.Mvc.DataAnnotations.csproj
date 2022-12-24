@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC metadata and validation system using System.ComponentModel.DataAnnotations.</Description>
+
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -13,5 +14,16 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.Extensions.Localization" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.DataAnnotations.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.TestCommon" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
   </ItemGroup>
 </Project>

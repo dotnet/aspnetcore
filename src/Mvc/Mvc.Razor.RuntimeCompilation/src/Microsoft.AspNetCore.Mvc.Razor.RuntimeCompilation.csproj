@@ -26,4 +26,8 @@
     <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
     <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

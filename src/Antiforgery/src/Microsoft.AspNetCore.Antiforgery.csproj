@@ -18,4 +18,8 @@
     <Reference Include="Microsoft.Extensions.ObjectPool" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Antiforgery.Test" />
+  </ItemGroup>
 </Project>

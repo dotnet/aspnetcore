@@ -21,4 +21,9 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests" />
+    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

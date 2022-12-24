@@ -22,4 +22,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+  </ItemGroup>
 </Project>

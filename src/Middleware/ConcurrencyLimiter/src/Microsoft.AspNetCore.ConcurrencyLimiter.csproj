@@ -17,4 +17,7 @@
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.ConcurrencyLimiter.Tests" />
+  </ItemGroup>
 </Project>

@@ -72,4 +72,9 @@
       <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(InProcessComponents.DllLocation)')" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.IISIntegration.Tests" />
+    <InternalVisibleTo Include="IIS.Tests" />
+  </ItemGroup>
 </Project>
