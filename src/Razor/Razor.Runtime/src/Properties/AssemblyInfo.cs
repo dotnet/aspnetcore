@@ -4,7 +4,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-
 [assembly: TypeForwardedTo(typeof(DefaultTagHelperContent))]
 [assembly: TypeForwardedTo(typeof(HtmlAttributeNameAttribute))]
 [assembly: TypeForwardedTo(typeof(HtmlAttributeNotBoundAttribute))]
