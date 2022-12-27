@@ -279,7 +279,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     }
 
     /// <summary>
-    /// Create a Redis transaction containing DEL, HSET and EXPIRE commands.
+    /// Create a Redis transaction containing HSET and EXPIRE commands.
     /// </summary>
     private ITransaction MakeSetTransaction(string key, RedisValue value, DistributedCacheEntryOptions options)
     {
@@ -302,7 +302,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
         // their individual outcome.
 
         var tx = _cache.CreateTransaction();
-        _ = tx.KeyDeleteAsync(expandedKey);
 
         if (keyTimeout == TimeSpan.Zero || keyTimeout >= _gracePeriod)
         {
