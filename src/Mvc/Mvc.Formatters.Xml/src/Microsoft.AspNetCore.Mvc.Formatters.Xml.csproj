@@ -14,6 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Formatters.Xml.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Formatters.Xml.Test" />
   </ItemGroup>
 </Project>

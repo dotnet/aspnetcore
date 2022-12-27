@@ -17,13 +17,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.DataAnnotations.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.TestCommon" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.DataAnnotations.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.TestCommon" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
   </ItemGroup>
 </Project>

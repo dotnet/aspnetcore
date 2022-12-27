@@ -26,6 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Mvc.Analyzers.Test" />
+    <InternalsVisibleTo Include="Mvc.Analyzers.Test" />
   </ItemGroup>
 </Project>

@@ -74,7 +74,7 @@
   </Target>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.IISIntegration.Tests" />
-    <InternalVisibleTo Include="IIS.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.IISIntegration.Tests" />
+    <InternalsVisibleTo Include="IIS.Tests" />
   </ItemGroup>
 </Project>

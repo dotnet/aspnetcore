@@ -22,6 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.ResponseCompression.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.ResponseCompression.Tests" />
   </ItemGroup>
 </Project>

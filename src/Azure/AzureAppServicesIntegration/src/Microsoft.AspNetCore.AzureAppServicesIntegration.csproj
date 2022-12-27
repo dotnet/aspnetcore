@@ -15,6 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests" />
   </ItemGroup>
 </Project>

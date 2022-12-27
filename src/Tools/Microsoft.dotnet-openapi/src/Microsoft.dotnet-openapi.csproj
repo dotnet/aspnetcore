@@ -34,6 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.DotNet.Open.Api.Tools.Tests" />
+    <InternalsVisibleTo Include="Microsoft.DotNet.Open.Api.Tools.Tests" />
   </ItemGroup>
 </Project>

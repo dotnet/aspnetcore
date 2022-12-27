@@ -19,10 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Identity.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Identity.InMemory.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.InMemory.Test" />
   </ItemGroup>
 </Project>

@@ -40,6 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Tests" />
   </ItemGroup>
 </Project>

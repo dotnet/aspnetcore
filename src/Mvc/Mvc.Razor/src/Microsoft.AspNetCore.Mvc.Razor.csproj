@@ -18,14 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
-    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

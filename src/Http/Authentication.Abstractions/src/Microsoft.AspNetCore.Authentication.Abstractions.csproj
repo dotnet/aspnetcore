@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Authentication.Core" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Authentication.Core.Test" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Core" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Core.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
   </ItemGroup>
 </Project>

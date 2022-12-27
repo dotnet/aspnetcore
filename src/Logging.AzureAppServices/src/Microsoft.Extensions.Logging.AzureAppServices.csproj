@@ -26,6 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

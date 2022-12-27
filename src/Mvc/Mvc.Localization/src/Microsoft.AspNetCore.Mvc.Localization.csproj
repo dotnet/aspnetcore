@@ -21,6 +21,6 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.Localization.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Localization.Test" />
   </ItemGroup>
 </Project>

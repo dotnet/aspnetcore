@@ -21,6 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests" />
   </ItemGroup>
 </Project>

@@ -19,6 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.Net.Http.Headers.Tests" />
+    <InternalsVisibleTo Include="Microsoft.Net.Http.Headers.Tests" />
   </ItemGroup>
 </Project>

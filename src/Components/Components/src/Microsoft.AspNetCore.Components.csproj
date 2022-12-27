@@ -67,16 +67,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Blazor.Build.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Authorization.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Performance" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests" />
-    <InternalVisibleTo Include="Components.TestServer" />
-    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Build.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Authorization.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Performance" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests" />
+    <InternalsVisibleTo Include="Components.TestServer" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

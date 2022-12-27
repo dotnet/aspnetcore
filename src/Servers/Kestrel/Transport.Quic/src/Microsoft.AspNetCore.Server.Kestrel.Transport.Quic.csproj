@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Quic.FunctionalTests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests" />
+    <InternalsVisibleTo Include="Quic.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests" />
   </ItemGroup>
 </Project>

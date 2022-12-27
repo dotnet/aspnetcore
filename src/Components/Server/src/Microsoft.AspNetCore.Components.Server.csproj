@@ -120,8 +120,8 @@
   </Target>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Blazor.DevServer" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
-    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.DevServer" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

@@ -23,6 +23,6 @@ Microsoft.AspNetCore.Cors.EnableCorsAttribute</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Cors.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Cors.Test" />
   </ItemGroup>
 </Project>

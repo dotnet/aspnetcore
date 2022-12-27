@@ -15,6 +15,6 @@ Microsoft.AspNetCore.Html.IHtmlContent</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Html.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Html.Abstractions.Tests" />
   </ItemGroup>
 </Project>

@@ -21,6 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Components.Analyzers.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Analyzers.Tests" />
   </ItemGroup>
 </Project>

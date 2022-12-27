@@ -42,10 +42,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Routing.Microbenchmarks" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Routing.Tests" />
-    <InternalVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer.Test" />
-    <InternalVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Routing.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Routing.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

@@ -21,6 +21,6 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
   </ItemGroup>
 </Project>

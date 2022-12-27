@@ -24,6 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.AspNetCore.StaticFiles.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.StaticFiles.Tests" />
   </ItemGroup>
 </Project>

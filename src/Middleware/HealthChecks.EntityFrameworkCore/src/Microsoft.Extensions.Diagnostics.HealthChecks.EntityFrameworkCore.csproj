@@ -18,6 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests" />
   </ItemGroup>
 </Project>
