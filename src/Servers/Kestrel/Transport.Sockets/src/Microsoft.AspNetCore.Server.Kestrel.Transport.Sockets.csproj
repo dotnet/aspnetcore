@@ -37,7 +37,6 @@
     <InternalVisibleTo Include="Sockets.BindTests" />
     <InternalVisibleTo Include="http2cat" />
     <InternalVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.FunctionalTests" />
-    <InternalVisibleTo Include="http2cat" />
     <InternalVisibleTo Include="IIS.NewShim.FunctionalTests" />
     <InternalVisibleTo Include="IIS.NewHandler.FunctionalTests" />
     <InternalVisibleTo Include="IISExpress.FunctionalTests" />
