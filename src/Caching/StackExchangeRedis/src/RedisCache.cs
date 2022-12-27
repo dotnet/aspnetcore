@@ -151,11 +151,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache != null);
 
-        var value = await _cache.HashGetAsync(expandedKey, _getLabels)
-#if NET6_0_OR_GREATER
-        .WaitAsync(token)
-#endif
-        .ConfigureAwait(false);
+        var value = await _cache.HashGetAsync(expandedKey, _getLabels).ConfigureAwait(false);
 
         var (data, absoluteExpiration, slidingWindow) = RedisEntry.Get(value);
 
@@ -213,12 +209,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         var transaction = MakeSetTransaction(key, value, options);
 
-        _ = await transaction
-            .ExecuteAsync()
-#if NET6_0_OR_GREATER
-        .WaitAsync(token)
-#endif
-            .ConfigureAwait(false);
+        _ = await transaction.ExecuteAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -261,11 +252,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache != null);
 
-        var value = await _cache.HashGetAsync(expandedKey, _refreshLabels)
-#if NET6_0_OR_GREATER
-        .WaitAsync(token)
-#endif
-        .ConfigureAwait(false);
+        var value = await _cache.HashGetAsync(expandedKey, _refreshLabels).ConfigureAwait(false);
 
         var (_, absoluteExpiration, slidingWindow) = RedisEntry.Refresh(value);
 
@@ -505,11 +492,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache is not null);
 
-        await _cache.KeyDeleteAsync(_expandKey(key))
-#if NET6_0_OR_GREATER
-        .WaitAsync(token)
-#endif
-        .ConfigureAwait(false);
+        await _cache.KeyDeleteAsync(_expandKey(key)).ConfigureAwait(false);
     }
 
     private void RefreshExpiration(string expandedKey, DateTimeOffset? absExpiration, TimeSpan? slidingWindow)
@@ -527,7 +510,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
     }
 
-    private Task RefreshExpirationAsync(string expandedKey, DateTimeOffset? absExpiration, TimeSpan? slidingWindow, CancellationToken token)
+    private Task RefreshExpirationAsync(string expandedKey, DateTimeOffset? absExpiration, TimeSpan? slidingWindow, CancellationToken token = default(CancellationToken))
     {
         Debug.Assert(_cache != null);
 
@@ -537,11 +520,9 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
             if (timeout >= _gracePeriod)
             {
-                return _cache.KeyExpireAsync(expandedKey, timeout, CommandFlags.FireAndForget)
-#if NET6_0_OR_GREATER
-                    .WaitAsync(token)
-#endif
-                    ;
+                token.ThrowIfCancellationRequested();
+
+                return _cache.KeyExpireAsync(expandedKey, timeout, CommandFlags.FireAndForget);
             }
         }
 
