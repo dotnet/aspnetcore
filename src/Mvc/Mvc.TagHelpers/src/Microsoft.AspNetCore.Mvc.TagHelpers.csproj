@@ -26,6 +26,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>

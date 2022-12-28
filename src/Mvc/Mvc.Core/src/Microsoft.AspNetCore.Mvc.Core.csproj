@@ -89,6 +89,6 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Views.TestCommon" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>
