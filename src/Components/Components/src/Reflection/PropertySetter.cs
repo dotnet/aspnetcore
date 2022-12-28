@@ -17,10 +17,6 @@ internal sealed class PropertySetter
         "ReflectionAnalysis",
         "IL2060:MakeGenericMethod",
         Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-    [SuppressMessage(
-        "AOT",
-        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
-        Justification = "The referenced methods are AOT safe with reference types.")]
     public PropertySetter(Type targetType, PropertyInfo property)
     {
         if (property.SetMethod == null)
