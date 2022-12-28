@@ -18,4 +18,8 @@
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+  </ItemGroup>
 </Project>
