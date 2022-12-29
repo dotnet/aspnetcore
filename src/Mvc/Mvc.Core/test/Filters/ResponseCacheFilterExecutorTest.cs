@@ -137,6 +137,16 @@ public class ResponseCacheFilterExecutorTest
                             NoStore = false,
                             VaryByHeader = null
                         },
+                        "no-cache,max-age=10"
+                    },
+                    {
+                        new CacheProfile
+                        {
+                            Duration = null,
+                            Location = ResponseCacheLocation.None,
+                            NoStore = false,
+                            VaryByHeader = null
+                        },
                         "no-cache"
                     },
                     {

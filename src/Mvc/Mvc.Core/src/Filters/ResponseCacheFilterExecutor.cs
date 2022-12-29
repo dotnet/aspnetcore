@@ -107,7 +107,7 @@ internal sealed class ResponseCacheFilterExecutor
         {
             string? cacheControlValue;
 
-            if (Location == ResponseCacheLocation.None)
+            if (Location == ResponseCacheLocation.None && Duration == null)
             {
                 cacheControlValue = "no-cache";
                 headers.Pragma = "no-cache";
@@ -118,6 +118,7 @@ internal sealed class ResponseCacheFilterExecutor
                 {
                     ResponseCacheLocation.Any => "public",
                     ResponseCacheLocation.Client => "private",
+                    ResponseCacheLocation.None => "no-cache",
                     _ => null
                 };
                 cacheControlValue = $"{cacheControlValue},max-age={Duration}";
