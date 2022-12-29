@@ -8,10 +8,10 @@
         "dotnet-serve"
       ]
     },
-    "playwright-sharp-tool": {
-      "version": "0.170.2",
+    "Microsoft.Playwright.CLI": {
+      "version": "1.2.3",
       "commands": [
-        "playwright-sharp"
+        "playwright"
       ]
     }
   }

@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 using System.Threading.Tasks;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Microsoft.AspNetCore.BrowserTesting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadSingleSmallFile(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadSingleLargeFile(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadMultipleFiles(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanUploadAndConvertImageFile(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task ThrowsWhenTooManyFilesAreSelected(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task ThrowsWhenOversizedFileIsSelected(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }

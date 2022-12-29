@@ -11,7 +11,7 @@
 
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
-    
+
     <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 
@@ -24,8 +24,8 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Ignitor" />
-    <Reference Include="PlaywrightSharp" Condition="'$(TargetOsName)' != 'linux-musl'" />
-    <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
+    <Reference Include="Microsoft.Playwright" Condition="'$(TargetOsName)' != 'linux-musl'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
   </ItemGroup>
 
   <ItemGroup>

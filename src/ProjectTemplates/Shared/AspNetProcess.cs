@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Testing;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanBindTextbox_InitiallyBlank(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }

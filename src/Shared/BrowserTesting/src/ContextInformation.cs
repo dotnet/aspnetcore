@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 
 namespace Microsoft.AspNetCore.BrowserTesting
 {

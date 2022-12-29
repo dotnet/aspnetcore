@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task CanSendAndReceiveBytes(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }

@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 
 namespace Microsoft.AspNetCore.BrowserTesting
 {
@@ -50,11 +50,11 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
                 if (!string.IsNullOrEmpty(driverPath))
                 {
-                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
+                    Playwright = await Microsoft.Playwright.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
                 }
                 else
                 {
-                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
+                    Playwright = await Microsoft.Playwright.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
                 }
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Testing;
 using Moq;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(serverFixture, output)
-        {            
+        {
         }
 
         protected override Type TestComponent { get; } = typeof(TestRouter);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // NOTE: BrowserKind argument must be first
         public async Task DownloadFileFromAnchor(BrowserKind browserKind)
         {
-            if (ShouldSkip(browserKind)) 
+            if (ShouldSkip(browserKind))
             {
                 return;
             }
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Assert URL should still be same as before click
             Assert.Equal(initialUrl, TestPage.Url);
 
-            // Assert that the resource was downloaded            
+            // Assert that the resource was downloaded
             var download = downloadTask.Result.Download;
             Assert.Equal($"{_serverFixture.RootUri}subdir/images/blazor_logo_1000x.png", download.Url);
             Assert.Equal("blazor_logo_1000x.png", download.SuggestedFilename);
