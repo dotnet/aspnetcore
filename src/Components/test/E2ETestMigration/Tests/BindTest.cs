@@ -14,10 +14,10 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+    public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<BasicTestApp.Program>>
     {
         public BindTest(
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            ToggleExecutionModeServerFixture<BasicTestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(serverFixture, output)
         {
@@ -43,22 +43,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var target = await TestPage.QuerySelectorAsync("#textbox-initially-blank");
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank"));
-            Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal(string.Empty, await TestPage.InnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank-mirror"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             await target.TypeAsync("Changed value");
             // Doesn't update until change event
-            Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal(string.Empty, await TestPage.InnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank-mirror"));
             await target.PressAsync("Tab");
-            Assert.Equal("Changed value", await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal("Changed value", await TestPage.InnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal("Changed value", await GetInputValue("#textbox-initially-blank-mirror"));
 
             // Remove the value altogether
             await TestPage.ClickAsync("#textbox-initially-blank-setnull");
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank"));
-            Assert.Equal(string.Empty, await TestPage.GetInnerTextAsync("#textbox-initially-blank-value"));
+            Assert.Equal(string.Empty, await TestPage.InnerTextAsync("#textbox-initially-blank-value"));
             Assert.Equal(string.Empty, await GetInputValue("#textbox-initially-blank-mirror"));
         }
 

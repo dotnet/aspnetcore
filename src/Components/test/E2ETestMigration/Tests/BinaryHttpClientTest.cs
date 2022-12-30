@@ -55,9 +55,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await TestPage.TypeAsync("#request-uri", targetUri.AbsoluteUri);
             await TestPage.ClickAsync("#send-request");
 
-            var status = await TestPage.GetTextContentAsync("#response-status");
-            var statusText = await TestPage.GetTextContentAsync("#response-status-text");
-            var testOutcome = await TestPage.GetTextContentAsync("#test-outcome");
+            var status = await TestPage.TextContentAsync("#response-status");
+            var statusText = await TestPage.TextContentAsync("#response-status-text");
+            var testOutcome = await TestPage.TextContentAsync("#test-outcome");
 
             Assert.Equal("OK", status);
             Assert.Equal("OK", statusText);

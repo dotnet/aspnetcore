@@ -20,12 +20,12 @@ using Microsoft.AspNetCore.BrowserTesting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+    public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<BasicTestApp.Program>>
     {
         private string _tempDirectory;
 
         public InputFileTest(
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            ToggleExecutionModeServerFixture<BasicTestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(serverFixture, output)
         {
@@ -60,11 +60,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(fileContentElement);
 
             // Validate that the file was uploaded correctly and all fields are present
-            Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.GetTextContentAsync()));
-            Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.GetTextContentAsync(), CultureInfo.InvariantCulture));
-            Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.GetTextContentAsync());
-            Assert.Equal("application/octet-stream", await fileContentTypeElement.GetTextContentAsync());
-            Assert.Equal(file.Text, await fileContentElement.GetTextContentAsync());
+            Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.TextContentAsync()));
+            Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.TextContentAsync(), CultureInfo.InvariantCulture));
+            Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.TextContentAsync());
+            Assert.Equal("application/octet-stream", await fileContentTypeElement.TextContentAsync());
+            Assert.Equal(file.Text, await fileContentElement.TextContentAsync());
         }
 
         private async Task VerifyFiles(IEnumerable<TempFile> files)
@@ -92,11 +92,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 Assert.NotNull(fileContentElement);
 
                 // Validate that the file was uploaded correctly and all fields are present
-                Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.GetTextContentAsync()));
-                Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.GetTextContentAsync(), CultureInfo.InvariantCulture));
-                Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.GetTextContentAsync());
-                Assert.Equal("application/octet-stream", await fileContentTypeElement.GetTextContentAsync());
-                Assert.Equal(file.Text, await fileContentElement.GetTextContentAsync());
+                Assert.False(string.IsNullOrWhiteSpace(await fileNameElement.TextContentAsync()));
+                Assert.NotEqual(default, DateTimeOffset.Parse(await fileLastModifiedElement.TextContentAsync(), CultureInfo.InvariantCulture));
+                Assert.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), await fileSizeElement.TextContentAsync());
+                Assert.Equal("application/octet-stream", await fileContentTypeElement.TextContentAsync());
+                Assert.Equal(file.Text, await fileContentElement.TextContentAsync());
             }
         }
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Validate that the image was converted without error and is the correct size
             var uploadedImage = await TestPage.WaitForSelectorAsync("#image-uploaded");
             Assert.NotNull(uploadedImage);
-            var box = await uploadedImage.GetBoundingBoxAsync();
+            var box = await uploadedImage.BoundingBoxAsync();
             Assert.Equal(480, Math.Round(box.Height));
             Assert.Equal(480, Math.Round(box.Width));
         }
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validate that the proper exception is thrown
             var exceptionMessage = await TestPage.QuerySelectorAsync("#exception-message");
-            Assert.Equal("The maximum number of files accepted is 1, but 2 were supplied.", await exceptionMessage.GetTextContentAsync());
+            Assert.Equal("The maximum number of files accepted is 1, but 2 were supplied.", await exceptionMessage.TextContentAsync());
         }
 
         [QuarantinedTest("New experimental test that need bake time.")]
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validate that the proper exception is thrown
             var exceptionMessage = await TestPage.QuerySelectorAsync("#exception-message");
-            Assert.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", await exceptionMessage.GetTextContentAsync());
+            Assert.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", await exceptionMessage.TextContentAsync());
         }
 
         public override void Dispose()

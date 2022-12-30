@@ -17,10 +17,10 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class DownloadAnchorTest
-        : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+        : ServerTestBase<ToggleExecutionModeServerFixture<BasicTestApp.Program>>
     {
         public DownloadAnchorTest(
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            ToggleExecutionModeServerFixture<BasicTestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(serverFixture, output)
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Arrange
             var initialUrl = TestPage.Url;
-            var downloadTask = TestPage.WaitForEventAsync(PageEvent.Download);
+            var downloadTask = TestPage.WaitForDownloadAsync();
 
             // Act
             await Task.WhenAll(
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(initialUrl, TestPage.Url);
 
             // Assert that the resource was downloaded
-            var download = downloadTask.Result.Download;
+            var download = downloadTask.Result;
             Assert.Equal($"{_serverFixture.RootUri}subdir/images/blazor_logo_1000x.png", download.Url);
             Assert.Equal("blazor_logo_1000x.png", download.SuggestedFilename);
         }

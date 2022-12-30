@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             Output.WriteLine("Selecting test: " + componentTypeName);
 
             var selected = await page.SelectOptionAsync("#test-selector > select", componentTypeName);
-            Assert.True(selected.Length == 1);
+            Assert.True(selected.Count == 1);
             Assert.Equal(componentTypeName, selected.First());
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
             TestBrowser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
             TestPage = await TestBrowser.NewPageAsync();
-            var response = await TestPage.GoToAsync(MountUri);
+            var response = await TestPage.GotoAsync(MountUri);
 
             Assert.True(response.Ok, $"Got: {response.StatusText} from: {MountUri}");
             Output.WriteLine($"Loaded MountUri: {MountUri}");
