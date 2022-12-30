@@ -64,7 +64,7 @@ namespace Templates.Test
         private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
         {
             var page = await browser.NewPageAsync();
-            await page.GoToAsync(listeningUri, LifecycleEvent.Networkidle);
+            await page.GotoAsync(listeningUri, LifecycleEvent.Networkidle);
             return page;
         }
 
