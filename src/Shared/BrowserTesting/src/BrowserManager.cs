@@ -47,20 +47,12 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
             async Task InitializeCore()
             {
-                var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-                if (!string.IsNullOrEmpty(driverPath))
-                {
-                    Playwright = await Microsoft.Playwright.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
-                }
-                else
-                {
-                    Playwright = await Microsoft.Playwright.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
-                }
+                Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {
                     if (!_launchBrowsers.ContainsKey(browserName))
                     {
-                        var effectiveLaunchOptions = _browserManagerConfiguration.GetLaunchOptions(options.BrowserLaunchOptions);
+                        var effectiveLaunchOptions = _browserManagerConfiguration.GetBrowserTypeLaunchOptions(options.BrowserLaunchOptions);
 
                         var browser = options.BrowserKind switch
                         {
@@ -108,10 +100,10 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 contextInfo);
         }
 
-        public Task<IBrowserContext> GetBrowserInstance(BrowserKind browserInstance, string contextName, BrowserContextOptions options, ContextInformation contextInfo) =>
+        public Task<IBrowserContext> GetBrowserInstance(BrowserKind browserInstance, string contextName, BrowserNewContextOptions options, ContextInformation contextInfo) =>
             GetBrowserInstance(browserInstance.ToString(), contextName, options, contextInfo);
 
-        public Task<IBrowserContext> GetBrowserInstance(string browserInstance, string contextName, BrowserContextOptions options, ContextInformation contextInfo)
+        public Task<IBrowserContext> GetBrowserInstance(string browserInstance, string contextName, BrowserNewContextOptions options, ContextInformation contextInfo)
         {
             if (_launchBrowsers.TryGetValue(browserInstance, out var browser))
             {
@@ -126,9 +118,10 @@ namespace Microsoft.AspNetCore.BrowserTesting
         private async Task<IBrowserContext> AttachContextInfo(Task<IBrowserContext> browserContextTask, ContextInformation contextInfo)
         {
             var context = await browserContextTask;
-            context.DefaultTimeout = HasFailedTests ?
-                _browserManagerConfiguration.TimeoutAfterFirstFailureInMilliseconds:
+            var defaultTimeout = HasFailedTests ?
+                _browserManagerConfiguration.TimeoutAfterFirstFailureInMilliseconds :
                 _browserManagerConfiguration.TimeoutInMilliseconds;
+            context.SetDefaultTimeout(defaultTimeout);
 
             contextInfo.Attach(context);
             return context;
@@ -155,7 +148,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
         public bool IsExplicitlyDisabled(BrowserKind browserKind) =>
             _browserManagerConfiguration.IsDisabled || _browserManagerConfiguration.DisabledBrowsers.Contains(browserKind.ToString());
 
-        public static IEnumerable<object []> WithBrowsers<T>(IEnumerable<BrowserKind> browsers, IEnumerable<T []> data)
+        public static IEnumerable<object[]> WithBrowsers<T>(IEnumerable<BrowserKind> browsers, IEnumerable<T[]> data)
         {
             var result = new List<object[]>();
             foreach (var browser in browsers)
@@ -169,7 +162,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
             return result;
         }
 
-        public static IEnumerable<object[]> WithBrowsers(IEnumerable<BrowserKind> browsers, params object [] data)
+        public static IEnumerable<object[]> WithBrowsers(IEnumerable<BrowserKind> browsers, params object[] data)
         {
             var result = new List<object[]>();
             foreach (var browser in browsers)
