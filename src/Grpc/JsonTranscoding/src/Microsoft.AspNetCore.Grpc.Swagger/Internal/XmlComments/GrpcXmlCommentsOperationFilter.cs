@@ -100,9 +100,10 @@ internal sealed class GrpcXmlCommentsOperationFilter : IOperationFilter
         while (responseNodes.MoveNext())
         {
             var code = responseNodes.Current!.GetAttribute("code", "");
-            var response = operation.Responses.ContainsKey(code)
-                ? operation.Responses[code]
-                : operation.Responses[code] = new OpenApiResponse();
+            if (!operation.Responses.TryGetValue(code, out var response))
+            {
+                operation.Responses[code] = response = new OpenApiResponse();
+            }
 
             response.Description = XmlCommentsTextHelper.Humanize(responseNodes.Current.InnerXml);
         }

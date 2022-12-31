@@ -12,41 +12,45 @@ namespace Microsoft.AspNetCore.Authorization.Policy;
 public class AuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 {
     /// <inheritdoc />
-    public async Task HandleAsync(RequestDelegate next, HttpContext context, AuthorizationPolicy policy, PolicyAuthorizationResult authorizeResult)
+    public Task HandleAsync(RequestDelegate next, HttpContext context, AuthorizationPolicy policy, PolicyAuthorizationResult authorizeResult)
     {
-        if (authorizeResult.Challenged)
+        if (authorizeResult.Succeeded)
         {
-            if (policy.AuthenticationSchemes.Count > 0)
-            {
-                foreach (var scheme in policy.AuthenticationSchemes)
-                {
-                    await context.ChallengeAsync(scheme);
-                }
-            }
-            else
-            {
-                await context.ChallengeAsync();
-            }
-
-            return;
-        }
-        else if (authorizeResult.Forbidden)
-        {
-            if (policy.AuthenticationSchemes.Count > 0)
-            {
-                foreach (var scheme in policy.AuthenticationSchemes)
-                {
-                    await context.ForbidAsync(scheme);
-                }
-            }
-            else
-            {
-                await context.ForbidAsync();
-            }
-
-            return;
+            return next(context);
         }
 
-        await next(context);
+        return Handle();
+
+        async Task Handle()
+        {
+            if (authorizeResult.Challenged)
+            {
+                if (policy.AuthenticationSchemes.Count > 0)
+                {
+                    foreach (var scheme in policy.AuthenticationSchemes)
+                    {
+                        await context.ChallengeAsync(scheme);
+                    }
+                }
+                else
+                {
+                    await context.ChallengeAsync();
+                }
+            }
+            else if (authorizeResult.Forbidden)
+            {
+                if (policy.AuthenticationSchemes.Count > 0)
+                {
+                    foreach (var scheme in policy.AuthenticationSchemes)
+                    {
+                        await context.ForbidAsync(scheme);
+                    }
+                }
+                else
+                {
+                    await context.ForbidAsync();
+                }
+            }
+        }
     }
 }

@@ -6,8 +6,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TieredCompilation>false</TieredCompilation>
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
-    <!-- Suppress warnings about lowercase variable names in generated code -->
-    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

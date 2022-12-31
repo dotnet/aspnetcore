@@ -184,6 +184,9 @@ dotnet_diagnostic.CA1847.severity = warning
 # CA1852: Seal internal types
 dotnet_diagnostic.CA1852.severity = warning
 
+# CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
+dotnet_diagnostic.CA1854.severity = warning
+
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = warning
 
@@ -229,12 +232,27 @@ dotnet_diagnostic.IDE0005.severity = warning
 # IDE0011: Curly braces to surround blocks of code
 dotnet_diagnostic.IDE0011.severity = warning
 
+# IDE0020: Use pattern matching to avoid is check followed by a cast (with variable)
+dotnet_diagnostic.IDE0020.severity = warning
+
+# IDE0029: Use coalesce expression (non-nullable types)
+dotnet_diagnostic.IDE0029.severity = warning
+
+# IDE0030: Use coalesce expression (nullable types)
+dotnet_diagnostic.IDE0030.severity = warning
+
+# IDE0031: Use null propagation
+dotnet_diagnostic.IDE0031.severity = warning
+
 # IDE0035: Remove unreachable code
 dotnet_diagnostic.IDE0035.severity = warning
 
 # IDE0036: Order modifiers
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 dotnet_diagnostic.IDE0036.severity = warning
+
+# IDE0038: Use pattern matching to avoid is check followed by a cast (without variable)
+dotnet_diagnostic.IDE0038.severity = warning
 
 # IDE0043: Format string contains invalid placeholder
 dotnet_diagnostic.IDE0043.severity = warning
@@ -265,11 +283,14 @@ file_header_template = Licensed to the .NET Foundation under one or more agreeme
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = warning
 
+# IDE0200: Lambda expression can be removed
+dotnet_diagnostic.IDE0200.severity = warning
+
 # IDE2000: Disallow multiple blank lines
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
-[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf,scripts}/**.cs}]
+[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf,scripts,stress}/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
 # CA1507: Use nameof to express symbol names
@@ -310,6 +331,8 @@ dotnet_diagnostic.CA1846.severity = suggestion
 dotnet_diagnostic.CA1847.severity = suggestion
 # CA1852: Seal internal types
 dotnet_diagnostic.CA1852.severity = suggestion
+# CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
+dotnet_diagnostic.CA1854.severity = suggestion
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = suggestion
 # CA2008: Do not create tasks without passing a TaskScheduler
@@ -320,6 +343,16 @@ dotnet_diagnostic.CA2012.severity = suggestion
 dotnet_diagnostic.CA2249.severity = suggestion
 # IDE0005: Remove unnecessary usings
 dotnet_diagnostic.IDE0005.severity = suggestion
+# IDE0020: Use pattern matching to avoid is check followed by a cast (with variable)
+dotnet_diagnostic.IDE0020.severity = suggestion
+# IDE0029: Use coalesce expression (non-nullable types)
+dotnet_diagnostic.IDE0029.severity = suggestion
+# IDE0030: Use coalesce expression (nullable types)
+dotnet_diagnostic.IDE0030.severity = suggestion
+# IDE0031: Use null propagation
+dotnet_diagnostic.IDE0031.severity = suggestion
+# IDE0038: Use pattern matching to avoid is check followed by a cast (without variable)
+dotnet_diagnostic.IDE0038.severity = suggestion
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = suggestion
 # IDE0051: Remove unused private members
@@ -330,6 +363,8 @@ dotnet_diagnostic.IDE0059.severity = suggestion
 dotnet_diagnostic.IDE0060.severity = suggestion
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = suggestion
+# IDE0200: Lambda expression can be removed
+dotnet_diagnostic.IDE0200.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion

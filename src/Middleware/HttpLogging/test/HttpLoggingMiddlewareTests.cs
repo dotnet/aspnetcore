@@ -511,7 +511,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middleware.Invoke(httpContext);
 
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains(expected));
-        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for request body."));
     }
 
     [Fact]
@@ -836,7 +836,38 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
         await middleware.Invoke(httpContext);
 
-        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for response body."));
+    }
+
+    [Fact]
+    public async Task NoMediaType()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                c.Request.ContentType = null;
+                var arr = new byte[4096];
+                while (true)
+                {
+                    var res = await c.Request.Body.ReadAsync(arr);
+                    if (res == 0)
+                    {
+                        break;
+                    }
+                }
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var httpContext = new DefaultHttpContext();
+
+        httpContext.Request.Headers["foo"] = "bar";
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("No Content-Type header for request body."));
     }
 
     [Fact]

@@ -21,10 +21,8 @@ public class ApplicationBuilder : IApplicationBuilder
     /// Initializes a new instance of <see cref="ApplicationBuilder"/>.
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> for application services.</param>
-    public ApplicationBuilder(IServiceProvider serviceProvider)
+    public ApplicationBuilder(IServiceProvider serviceProvider) : this(serviceProvider, new FeatureCollection())
     {
-        Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
-        ApplicationServices = serviceProvider;
     }
 
     /// <summary>
@@ -33,8 +31,10 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> for application services.</param>
     /// <param name="server">The server instance that hosts the application.</param>
     public ApplicationBuilder(IServiceProvider serviceProvider, object server)
-        : this(serviceProvider)
     {
+        Properties = new Dictionary<string, object?>(StringComparer.Ordinal);
+        ApplicationServices = serviceProvider;
+
         SetProperty(ServerFeaturesKey, server);
     }
 
@@ -61,6 +61,9 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <summary>
     /// Gets the <see cref="IFeatureCollection"/> for server features.
     /// </summary>
+    /// <remarks>
+    /// An empty collection is returned if a server wasn't specified for the application builder.
+    /// </remarks>
     public IFeatureCollection ServerFeatures
     {
         get
@@ -129,7 +132,13 @@ public class ApplicationBuilder : IApplicationBuilder
                 throw new InvalidOperationException(message);
             }
 
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            // Flushing the response and calling through to the next middleware in the pipeline is
+            // a user error, but don't attempt to set the status code if this happens. It leads to a confusing
+            // behavior where the client response looks fine, but the server side logic results in an exception.
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
             return Task.CompletedTask;
         };
 

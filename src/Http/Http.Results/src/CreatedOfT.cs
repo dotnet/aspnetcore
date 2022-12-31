@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,7 +22,7 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal Created(string location, TValue? value)
+    internal Created(string? location, TValue? value)
     {
         Value = value;
         Location = location;
@@ -33,23 +35,21 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal Created(Uri locationUri, TValue? value)
+    internal Created(Uri? locationUri, TValue? value)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
-        if (locationUri == null)
+        if (locationUri != null)
         {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
-
-        if (locationUri.IsAbsoluteUri)
-        {
-            Location = locationUri.AbsoluteUri;
-        }
-        else
-        {
-            Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            if (locationUri.IsAbsoluteUri)
+            {
+                Location = locationUri.AbsoluteUri;
+            }
+            else
+            {
+                Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
         }
     }
 
@@ -94,10 +94,11 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status201Created, "application/json"));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status201Created, "application/json"));
     }
 }

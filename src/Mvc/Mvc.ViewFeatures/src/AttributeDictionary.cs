@@ -154,10 +154,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public void Clear()
     {
-        if (_items != null)
-        {
-            _items.Clear();
-        }
+        _items?.Clear();
     }
 
     /// <inheritdoc />

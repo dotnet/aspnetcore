@@ -40,8 +40,10 @@ public interface IHttpRequestFeature
     /// <summary>
     /// Gets or sets the portion of the request path that identifies the requested resource.
     /// <para>
-    /// The value is un-escaped. The value may be <see cref="string.Empty"/> if <see cref="PathBase"/> contains the
-    /// full path.
+    /// The value may be <see cref="string.Empty"/> if <see cref="PathBase"/> contains the full path,
+    /// or for 'OPTIONS *' requests.
+    /// The path is fully decoded by the server except for '%2F', which would decode to '/' and
+    /// change the meaning of the path segments. '%2F' can only be replaced after splitting the path into segments.
     /// </para>
     /// </summary>
     string Path { get; set; }
@@ -71,8 +73,8 @@ public interface IHttpRequestFeature
     /// <para>
     /// The values are not split or merged across header lines. E.g. The following headers:
     /// <list type="bullet">
-    /// <item>HeaderA: value1, value2</item>
-    /// <item>HeaderA: value3</item>
+    /// <item><description>HeaderA: value1, value2</description></item>
+    /// <item><description>HeaderA: value3</description></item>
     /// </list>
     /// Result in Headers["HeaderA"] = { "value1, value2", "value3" }
     /// </para>

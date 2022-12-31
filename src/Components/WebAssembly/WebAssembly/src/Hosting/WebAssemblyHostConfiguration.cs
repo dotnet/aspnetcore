@@ -158,7 +158,7 @@ public class WebAssemblyHostConfiguration : IConfiguration, IConfigurationRoot, 
         // provider has reloaded data. This will invoke the RaiseChanged
         // method which maps changes in individual providers to the change
         // token on the WebAssemblyHostConfiguration object.
-        _changeTokenRegistrations.Add(ChangeToken.OnChange(() => provider.GetReloadToken(), () => RaiseChanged()));
+        _changeTokenRegistrations.Add(ChangeToken.OnChange(provider.GetReloadToken, RaiseChanged));
 
         // We keep a list of providers in this class so that we can map
         // set and get methods on this class to the set and get methods

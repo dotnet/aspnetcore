@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -13,10 +13,6 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public sealed class RouteEndpointBuilder : EndpointBuilder
 {
-    // TODO: Make this public as a gettable IReadOnlyList<Func<RouteHandlerContext, EndpointFilterDelegate, EndpointFilterDelegate>>.
-    // AddEndpointFilter will still be the only way to mutate this list.
-    internal List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>? EndpointFilterFactories { get; set; }
-
     /// <summary>
     /// Gets or sets the <see cref="RoutePattern"/> associated with this endpoint.
     /// </summary>
@@ -34,18 +30,18 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
     /// <param name="routePattern">The <see cref="RoutePattern"/> to use in URL matching.</param>
     /// <param name="order">The order assigned to the endpoint.</param>
     public RouteEndpointBuilder(
-       RequestDelegate requestDelegate,
+       RequestDelegate? requestDelegate,
        RoutePattern routePattern,
        int order)
     {
+        ArgumentNullException.ThrowIfNull(routePattern);
+
         RequestDelegate = requestDelegate;
         RoutePattern = routePattern;
         Order = order;
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimmer", "IL2026",
-        Justification = "We surface a RequireUnreferencedCode in AddEndpointFilter which is required to call unreferenced code here. The trimmer is unable to infer this.")]
     public override Endpoint Build()
     {
         if (RequestDelegate is null)
@@ -53,35 +49,52 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
             throw new InvalidOperationException($"{nameof(RequestDelegate)} must be specified to construct a {nameof(RouteEndpoint)}.");
         }
 
-        var requestDelegate = RequestDelegate;
-
-        // Only replace the RequestDelegate if filters have been applied to this builder and they were not already handled by RouteEndpointDataSource.
-        // This affects other data sources like DefaultEndpointDataSource (this is people manually newing up a data source with a list of Endpoints),
-        // ModelEndpointDataSource (Map(RoutePattern, RequestDelegate) and by extension MapHub, MapHealthChecks, etc...),
-        // ActionEndpointDataSourceBase (MapControllers, MapRazorPages, etc...) and people with custom data sources or otherwise manually building endpoints
-        // using this type. At the moment this class is sealed, so at the moment we do not need to concern ourselves with what derived types may be doing.
-        if (EndpointFilterFactories is { Count: > 0 })
-        {
-            // Even with filters applied, RDF.Create() will return back the exact same RequestDelegate instance we pass in if filters decide not to modify the
-            // invocation pipeline. We're just passing in a RequestDelegate so none of the fancy options pertaining to how the Delegate parameters are handled
-            // do not matter.
-            RequestDelegateFactoryOptions rdfOptions = new()
-            {
-                EndpointFilterFactories = EndpointFilterFactories,
-                EndpointMetadata = Metadata,
-            };
-
-            // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
-            requestDelegate = RequestDelegateFactory.Create(requestDelegate, rdfOptions).RequestDelegate;
-        }
-
-        var routeEndpoint = new RouteEndpoint(
-            requestDelegate,
+        return new RouteEndpoint(
+            RequestDelegate,
             RoutePattern,
             Order,
-            new EndpointMetadataCollection(Metadata),
+            CreateMetadataCollection(Metadata),
             DisplayName);
+    }
 
-        return routeEndpoint;
+    private static EndpointMetadataCollection CreateMetadataCollection(IList<object> metadata)
+    {
+        if (metadata.Count > 0)
+        {
+            var hasCorsMetadata = false;
+            IHttpMethodMetadata? httpMethodMetadata = null;
+
+            // Before create the final collection we
+            // need to update the IHttpMethodMetadata if
+            // a CORS metadata is present
+            for (var i = 0; i < metadata.Count; i++)
+            {
+                // Not using else if since a metadata could have both
+                // interfaces.
+
+                if (metadata[i] is IHttpMethodMetadata methodMetadata)
+                {
+                    // Storing only the last entry
+                    // since the last metadata is the most significant.
+                    httpMethodMetadata = methodMetadata;
+                }
+
+                if (!hasCorsMetadata && metadata[i] is ICorsMetadata)
+                {
+                    // IEnableCorsAttribute, IDisableCorsAttribute and ICorsPolicyMetadata
+                    // are ICorsMetadata
+                    hasCorsMetadata = true;
+                }
+            }
+
+            if (hasCorsMetadata && httpMethodMetadata is not null && !httpMethodMetadata.AcceptCorsPreflight)
+            {
+                // Since we found a CORS metadata we will update it
+                // to make sure the acceptCorsPreflight is set to true.
+                httpMethodMetadata.AcceptCorsPreflight = true;
+            }
+        }
+
+        return new EndpointMetadataCollection(metadata);
     }
 }

@@ -18,8 +18,7 @@ internal sealed class KeyCommand
             var schemeOption = cmd.Option(
                 "--scheme",
                 Resources.KeyCommand_SchemeOption_Description,
-                CommandOptionType.SingleValue
-            );
+                CommandOptionType.SingleValue);
 
             var issuerOption = cmd.Option(
                 "--issuer",
@@ -50,7 +49,7 @@ internal sealed class KeyCommand
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string schemeName, string issuer, bool reset, bool force)
+    private static int Execute(IReporter reporter, string projectPath, string scheme, string issuer, bool reset, bool force)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -70,15 +69,12 @@ internal sealed class KeyCommand
                 }
             }
 
-            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, schemeName, issuer, reset: true);
+            var key = SigningKeysHandler.CreateSigningKeyMaterial(userSecretsId, scheme, issuer, reset: true);
             reporter.Output(Resources.FormatKeyCommand_KeyCreated(Convert.ToBase64String(key)));
             return 0;
         }
 
-        var projectConfiguration = new ConfigurationBuilder()
-            .AddUserSecrets(userSecretsId)
-            .Build();
-        var signingKeyMaterial = projectConfiguration[DevJwtCliHelpers.GetSigningKeyPropertyName(schemeName, issuer)];
+        var signingKeyMaterial = SigningKeysHandler.GetSigningKeyMaterial(userSecretsId, scheme, issuer);
 
         if (signingKeyMaterial is null)
         {
@@ -86,7 +82,7 @@ internal sealed class KeyCommand
             return 0;
         }
 
-        reporter.Output(Resources.FormatKeyCommand_Confirmed(signingKeyMaterial));
+        reporter.Output(Resources.FormatKeyCommand_Confirmed(Convert.ToBase64String(signingKeyMaterial)));
         return 0;
     }
 }

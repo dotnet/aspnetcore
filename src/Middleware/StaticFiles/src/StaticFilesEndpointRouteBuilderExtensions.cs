@@ -13,6 +13,12 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class StaticFilesEndpointRouteBuilderExtensions
 {
+    // By explicitly stating the supported HTTP methods for static files,
+    // we limit the types of situations where the fallback to file is matched
+    // after an endpoint is discarded, for example, due to a mismatched content type.
+    // See: https://github.com/dotnet/aspnetcore/issues/41060
+    private static readonly string[] _supportedHttpMethods = new[] { HttpMethods.Get, HttpMethods.Head };
+
     /// <summary>
     /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
     /// requests for non-filenames with the lowest possible priority. The request will be routed to a
@@ -42,17 +48,12 @@ public static class StaticFilesEndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         string filePath)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(filePath);
 
-        if (filePath == null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
-
-        return endpoints.MapFallback(CreateRequestDelegate(endpoints, filePath));
+        return endpoints
+            .MapFallback(CreateRequestDelegate(endpoints, filePath))
+            .WithMetadata(new HttpMethodMetadata(_supportedHttpMethods));
     }
 
     /// <summary>
@@ -83,17 +84,12 @@ public static class StaticFilesEndpointRouteBuilderExtensions
         string filePath,
         StaticFileOptions options)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(filePath);
 
-        if (filePath == null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
-
-        return endpoints.MapFallback(CreateRequestDelegate(endpoints, filePath, options));
+        return endpoints
+            .MapFallback(CreateRequestDelegate(endpoints, filePath, options))
+            .WithMetadata(new HttpMethodMetadata(_supportedHttpMethods));
     }
 
     /// <summary>
@@ -130,22 +126,13 @@ public static class StaticFilesEndpointRouteBuilderExtensions
         [StringSyntax("Route")] string pattern,
         string filePath)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(filePath);
 
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
-
-        if (filePath == null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
-
-        return endpoints.MapFallback(pattern, CreateRequestDelegate(endpoints, filePath));
+        return endpoints
+            .MapFallback(pattern, CreateRequestDelegate(endpoints, filePath))
+            .WithMetadata(new HttpMethodMetadata(_supportedHttpMethods));
     }
 
     /// <summary>
@@ -181,22 +168,13 @@ public static class StaticFilesEndpointRouteBuilderExtensions
         string filePath,
         StaticFileOptions options)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(filePath);
 
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
-
-        if (filePath == null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
-
-        return endpoints.MapFallback(pattern, CreateRequestDelegate(endpoints, filePath, options));
+        return endpoints
+            .MapFallback(pattern, CreateRequestDelegate(endpoints, filePath, options))
+            .WithMetadata(new HttpMethodMetadata(_supportedHttpMethods));
     }
 
     private static RequestDelegate CreateRequestDelegate(

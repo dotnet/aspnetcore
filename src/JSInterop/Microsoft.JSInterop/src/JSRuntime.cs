@@ -154,7 +154,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
     /// <param name="identifier">The identifier for the function to invoke.</param>
     /// <param name="argsJson">A JSON representation of the arguments.</param>
-    protected virtual void BeginInvokeJS(long taskId, string identifier, string? argsJson)
+    protected virtual void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson)
         => BeginInvokeJS(taskId, identifier, argsJson, JSCallResultType.Default, 0);
 
     /// <summary>
@@ -165,7 +165,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     /// <param name="resultType">The type of result expected from the invocation.</param>
     /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
-    protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId);
+    protected abstract void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId);
 
     /// <summary>
     /// Completes an async JS interop call from JavaScript to .NET

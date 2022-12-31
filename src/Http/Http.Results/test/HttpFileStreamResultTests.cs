@@ -107,7 +107,7 @@ public class HttpFileStreamResultTests : FileStreamResultTestBase
     {
         // Arrange
         var contentType = "application/x-zip";
-        var downloadName = "sample.zip";;
+        var downloadName = "sample.zip";
 
         // Act & Assert
         var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new FileStreamHttpResult(new MemoryStream(), contentType) { FileDownloadName = downloadName });

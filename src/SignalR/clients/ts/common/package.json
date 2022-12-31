@@ -13,7 +13,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
-    "@types/webpack": "^4.41.26",
+    "@types/webpack": "^5.28.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
     "eslint": "^8.16.0",
@@ -22,7 +22,7 @@
     "jest": "^26.6.3",
     "jest-junit": "^13.0.0",
     "rimraf": "^3.0.2",
-    "terser": "^5.13.1",
+    "terser": "^5.14.2",
     "terser-webpack-plugin": "^5.3.1",
     "ts-jest": "^26.5.2",
     "ts-loader": "^8.0.17",

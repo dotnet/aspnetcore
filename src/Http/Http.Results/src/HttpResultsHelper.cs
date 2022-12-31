@@ -3,7 +3,6 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,11 +28,10 @@ internal static partial class HttpResultsHelper
         }
 
         var declaredType = typeof(T);
-
-        Log.WritingResultAsJson(logger, declaredType.Name);
-
         if (declaredType.IsValueType)
         {
+            Log.WritingResultAsJson(logger, declaredType.Name);
+
             // In this case the polymorphism is not
             // relevant and we don't need to box.
             return httpContext.Response.WriteAsJsonAsync(
@@ -42,8 +40,17 @@ internal static partial class HttpResultsHelper
                         contentType: contentType);
         }
 
-        return httpContext.Response.WriteAsJsonAsync<object?>(
+        var runtimeType = value.GetType();
+
+        Log.WritingResultAsJson(logger, runtimeType.Name);
+
+        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
+        // and avoid source generators issues.
+        // https://github.com/dotnet/aspnetcore/issues/43894
+        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        return httpContext.Response.WriteAsJsonAsync(
             value,
+            runtimeType,
             options: jsonSerializerOptions,
             contentType: contentType);
     }
@@ -131,33 +138,7 @@ internal static partial class HttpResultsHelper
     {
         if (value is ProblemDetails problemDetails)
         {
-            ApplyProblemDetailsDefaults(problemDetails, statusCode);
-        }
-    }
-
-    public static void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int? statusCode)
-    {
-        // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
-        // This lets users write <c>return Conflict(new Problem("some description"))</c>
-        // or <c>return Problem("some-problem", 422)</c> and have the response have consistent fields.
-        if (problemDetails.Status is null)
-        {
-            if (statusCode is not null)
-            {
-                problemDetails.Status = statusCode;
-            }
-            else
-            {
-                problemDetails.Status = problemDetails is HttpValidationProblemDetails ?
-                    StatusCodes.Status400BadRequest :
-                    StatusCodes.Status500InternalServerError;
-            }
-        }
-
-        if (ProblemDetailsDefaults.Defaults.TryGetValue(problemDetails.Status.Value, out var defaults))
-        {
-            problemDetails.Title ??= defaults.Title;
-            problemDetails.Type ??= defaults.Type;
+            ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
     }
 

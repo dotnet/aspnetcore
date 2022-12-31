@@ -87,7 +87,7 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
                 if (string.IsNullOrEmpty(options.MetadataAddress) && !string.IsNullOrEmpty(options.Authority))
                 {
                     options.MetadataAddress = options.Authority;
-                    if (!options.MetadataAddress.EndsWith("/", StringComparison.Ordinal))
+                    if (!options.MetadataAddress.EndsWith('/'))
                     {
                         options.MetadataAddress += "/";
                     }

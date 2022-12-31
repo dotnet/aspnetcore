@@ -21,8 +21,8 @@ public class HttpRequestJsonExtensionsTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.Request.ReadFromJsonAsync<int>());
 
         // Assert
-        var exceptedMessage = $"Unable to read the request as JSON because the request content type 'text/json' is not a known JSON content type.";
-        Assert.Equal(exceptedMessage, ex.Message);
+        var expectedMessage = $"Unable to read the request as JSON because the request content type 'text/json' is not a known JSON content type.";
+        Assert.Equal(expectedMessage, ex.Message);
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public class HttpRequestJsonExtensionsTests
         var ex = await Assert.ThrowsAsync<JsonException>(async () => await context.Request.ReadFromJsonAsync<int>());
 
         // Assert
-        var exceptedMessage = $"The input does not contain any JSON tokens. Expected the input to start with a valid JSON token, when isFinalBlock is true. Path: $ | LineNumber: 0 | BytePositionInLine: 0.";
-        Assert.Equal(exceptedMessage, ex.Message);
+        var expectedMessage = $"The input does not contain any JSON tokens. Expected the input to start with a valid JSON token, when isFinalBlock is true. Path: $ | LineNumber: 0 | BytePositionInLine: 0.";
+        Assert.Equal(expectedMessage, ex.Message);
     }
 
     [Fact]
@@ -70,6 +70,7 @@ public class HttpRequestJsonExtensionsTests
         var result = await context.Request.ReadFromJsonAsync<List<int>>(options);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
@@ -87,6 +88,7 @@ public class HttpRequestJsonExtensionsTests
         var result = await context.Request.ReadFromJsonAsync<List<int>>();
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
@@ -200,6 +202,7 @@ public class HttpRequestJsonExtensionsTests
         var result = (List<int>?)await context.Request.ReadFromJsonAsync(typeof(List<int>), options);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));

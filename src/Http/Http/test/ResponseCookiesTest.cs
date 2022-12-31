@@ -269,23 +269,4 @@ public class ResponseCookiesTest
 
         Assert.Throws<ArgumentException>(() => cookies.Append(key, "1"));
     }
-
-    [Theory]
-    [InlineData("key", "value", "key=value")]
-    [InlineData("key,", "!value", "key%2C=%21value")]
-    [InlineData("ke#y,", "val^ue", "ke%23y%2C=val%5Eue")]
-    [InlineData("base64", "QUI+REU/Rw==", "base64=QUI%2BREU%2FRw%3D%3D")]
-    public void AppContextSwitchEscapesKeysAndValuesBeforeSettingCookie(string key, string value, string expected)
-    {
-        var headers = (IHeaderDictionary)new HeaderDictionary();
-        var features = MakeFeatures(headers);
-        var cookies = new ResponseCookies(features);
-        cookies._enableCookieNameEncoding = true;
-
-        cookies.Append(key, value);
-
-        var cookieHeaderValues = headers.SetCookie;
-        Assert.Single(cookieHeaderValues);
-        Assert.StartsWith(expected, cookieHeaderValues[0]);
-    }
 }

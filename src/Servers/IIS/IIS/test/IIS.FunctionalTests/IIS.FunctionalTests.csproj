@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,14 +7,13 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <!-- Required because 8.0.0 SDK no longer considers net7.0 the current TFM. -->
+    <GenerateRequiresPreviewFeaturesAttribute>true</GenerateRequiresPreviewFeaturesAttribute>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
-
-  <ItemGroup>
-    <!-- Required for QUIC & HTTP/3 in .NET 6 - https://github.com/dotnet/runtime/pull/55332 -->
-    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support" Value="true" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
@@ -34,7 +33,7 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
-    <Compile Include="$(SharedSourceRoot)PseudoHeaderNames.cs" Link="Shared\" />
+    <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Link="Shared\" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="Shared\" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
   </ItemGroup>

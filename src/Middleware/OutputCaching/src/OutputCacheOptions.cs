@@ -63,10 +63,19 @@ public class OutputCacheOptions
     /// Defines a <see cref="IOutputCachePolicy"/> which can be referenced by name.
     /// </summary>
     /// <param name="name">The name of the policy.</param>
-    /// <param name="build">an action on <see cref="OutputCachePolicyBuilder"/>.</param>
-    public void AddPolicy(string name, Action<OutputCachePolicyBuilder> build)
+    /// <param name="build">An action on <see cref="OutputCachePolicyBuilder"/>.</param>
+    /// <remarks>The built policy will be based on the default policy.</remarks>
+    public void AddPolicy(string name, Action<OutputCachePolicyBuilder> build) => AddPolicy(name, build, false);
+
+    /// <summary>
+    /// Defines a <see cref="IOutputCachePolicy"/> which can be referenced by name.
+    /// </summary>
+    /// <param name="name">The name of the policy.</param>
+    /// <param name="build">An action on <see cref="OutputCachePolicyBuilder"/>.</param>
+    /// <param name="excludeDefaultPolicy">Whether to exclude the default policy or not.</param>
+    public void AddPolicy(string name, Action<OutputCachePolicyBuilder> build, bool excludeDefaultPolicy)
     {
-        var builder = new OutputCachePolicyBuilder();
+        var builder = new OutputCachePolicyBuilder(excludeDefaultPolicy);
         build(builder);
         NamedPolicies ??= new Dictionary<string, IOutputCachePolicy>(StringComparer.OrdinalIgnoreCase);
         NamedPolicies[name] = builder.Build();
@@ -85,10 +94,18 @@ public class OutputCacheOptions
     /// <summary>
     /// Builds and adds an <see cref="IOutputCachePolicy"/> instance to base policies.
     /// </summary>
-    /// <param name="build">an action on <see cref="OutputCachePolicyBuilder"/>.</param>
-    public void AddBasePolicy(Action<OutputCachePolicyBuilder> build)
+    /// <param name="build">An action on <see cref="OutputCachePolicyBuilder"/>.</param>
+    /// <remarks>The built policy will be based on the default policy.</remarks>
+    public void AddBasePolicy(Action<OutputCachePolicyBuilder> build) => AddBasePolicy(build, false);
+
+    /// <summary>
+    /// Builds and adds an <see cref="IOutputCachePolicy"/> instance to base policies.
+    /// </summary>
+    /// <param name="build">An action on <see cref="OutputCachePolicyBuilder"/>.</param>
+    /// <param name="excludeDefaultPolicy">Whether to exclude the default policy or not.</param>
+    public void AddBasePolicy(Action<OutputCachePolicyBuilder> build, bool excludeDefaultPolicy)
     {
-        var builder = new OutputCachePolicyBuilder();
+        var builder = new OutputCachePolicyBuilder(excludeDefaultPolicy);
         build(builder);
         BasePolicies ??= new();
         BasePolicies.Add(builder.Build());

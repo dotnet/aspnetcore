@@ -78,7 +78,7 @@ public class EnvironmentVariableSkipConditionAttribute : Attribute, ITestConditi
     {
         get
         {
-            var value = _currentValue == null ? "(null)" : _currentValue;
+            var value = _currentValue ?? "(null)";
             return $"Test skipped on environment variable with name '{_variableName}' and value '{value}' " +
                 $"for the '{nameof(RunOnMatch)}' value of '{RunOnMatch}'.";
         }

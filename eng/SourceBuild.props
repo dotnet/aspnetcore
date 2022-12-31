@@ -3,7 +3,6 @@
   <PropertyGroup>
     <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
-    <CloneSubmodulesToInnerSourceBuildRepo>false</CloneSubmodulesToInnerSourceBuildRepo>
   </PropertyGroup>
 
   <Target Name="PrepareGlobalJsonForSourceBuild"
@@ -12,19 +11,6 @@
     <Exec
       Command="./eng/scripts/prepare-sourcebuild-globaljson.sh"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
-  </Target>
-
-  <!--
-    Init submodules - temporarary workaround for https://github.com/dotnet/sourcelink/pull/653
-  -->
-  <Target Name="InitSubmodules"
-          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
-          BeforeTargets="RunInnerSourceBuildCommand">
-
-    <Exec
-      Command="git submodule update --init --recursive"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
-      EnvironmentVariables="@(InnerBuildEnv)" />
   </Target>
 
   <!--
@@ -69,6 +55,7 @@
 
     <PropertyGroup>
       <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 
@@ -82,7 +69,7 @@
       <!--
         Add the internal installers artifacts required by dotnet/installer.
       -->
-      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-internal-*.tar.gz" />
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.tar.gz" />
       <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore_base_runtime.version" />
     </ItemGroup>
   </Target>

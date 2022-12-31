@@ -20,12 +20,17 @@ public class RequestLocalizationOptions
     public RequestLocalizationOptions()
     {
         RequestCultureProviders = new List<IRequestCultureProvider>
-            {
-                new QueryStringRequestCultureProvider { Options = this },
-                new CookieRequestCultureProvider { Options = this },
-                new AcceptLanguageHeaderRequestCultureProvider { Options = this }
-            };
+        {
+            new QueryStringRequestCultureProvider { Options = this },
+            new CookieRequestCultureProvider { Options = this },
+            new AcceptLanguageHeaderRequestCultureProvider { Options = this }
+        };
     }
+
+    /// <summary>
+    /// Configures <see cref="CultureInfo.UseUserOverride "/>. Defaults to <c>true</c>.
+    /// </summary>
+    public bool CultureInfoUseUserOverride { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the default culture to use for requests when a supported culture could not be determined by
@@ -124,10 +129,11 @@ public class RequestLocalizationOptions
 
         foreach (var culture in cultures)
         {
-            supportedCultures.Add(new CultureInfo(culture));
+            supportedCultures.Add(new CultureInfo(culture, useUserOverride: CultureInfoUseUserOverride));
         }
 
         SupportedCultures = supportedCultures;
+
         return this;
     }
 
@@ -141,10 +147,11 @@ public class RequestLocalizationOptions
         var supportedUICultures = new List<CultureInfo>(uiCultures.Length);
         foreach (var culture in uiCultures)
         {
-            supportedUICultures.Add(new CultureInfo(culture));
+            supportedUICultures.Add(new CultureInfo(culture, useUserOverride: CultureInfoUseUserOverride));
         }
 
         SupportedUICultures = supportedUICultures;
+
         return this;
     }
 
@@ -156,7 +163,8 @@ public class RequestLocalizationOptions
     /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
     public RequestLocalizationOptions SetDefaultCulture(string defaultCulture)
     {
-        DefaultRequestCulture = new RequestCulture(defaultCulture);
+        DefaultRequestCulture = new RequestCulture(new CultureInfo(defaultCulture, useUserOverride: CultureInfoUseUserOverride));
+
         return this;
     }
 }

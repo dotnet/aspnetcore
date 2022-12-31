@@ -21,7 +21,7 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     internal ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
-        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
+        ProblemDetailsDefaults.Apply(ProblemDetails, statusCode: null);
     }
 
     /// <summary>

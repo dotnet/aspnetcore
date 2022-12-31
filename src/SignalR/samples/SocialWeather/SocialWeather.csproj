@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
-    <!-- Suppress warnings about lowercase variable names in generated code -->
-    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

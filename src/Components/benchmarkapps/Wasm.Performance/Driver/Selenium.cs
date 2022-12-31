@@ -68,6 +68,10 @@ internal sealed class Selenium
             options.AddArgument("--enable-precise-memory-info");
         }
 
+        // Chrome fails to load site resources if it fills up the /dev/shm partition,
+        // so we add this argument to force using a temporary directory for shared memory files.
+        options.AddArgument("--disable-dev-shm-usage");
+
         options.SetLoggingPreference(LogType.Browser, OpenQA.Selenium.LogLevel.All);
 
         var attempt = 0;
@@ -80,7 +84,7 @@ internal sealed class Selenium
                 // Under heavy load, this can cause issues
                 // To prevent this we let the client attempt several times to connect to the server, increasing
                 // the max allowed timeout for a command on each attempt linearly.
-                var driver = new RemoteWebDriver(
+                var driver = new CustomRemoteWebDriver(
                     uri,
                     options.ToCapabilities(),
                     TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
@@ -118,5 +122,14 @@ internal sealed class Selenium
         } while (attempt < MaxAttempts);
 
         throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+    }
+
+    // The WebDriver must implement ISupportsLogs to enable reading browser console logs.
+    private sealed class CustomRemoteWebDriver : RemoteWebDriver, ISupportsLogs
+    {
+        public CustomRemoteWebDriver(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
+            : base(remoteAddress, desiredCapabilities, commandTimeout)
+        {
+        }
     }
 }

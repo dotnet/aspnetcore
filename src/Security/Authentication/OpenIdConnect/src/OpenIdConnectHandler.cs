@@ -522,8 +522,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     // Not for us?
                     return HandleRequestResult.SkipHandler();
                 }
-                return HandleRequestResult.Fail("An OpenID Connect response cannot contain an " +
-                        "identity token or an access token when using response_mode=query");
+                return HandleRequestResults.UnexpectedParams;
             }
         }
         // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
@@ -548,7 +547,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 // Not for us?
                 return HandleRequestResult.SkipHandler();
             }
-            return HandleRequestResult.Fail("No message.");
+            return HandleRequestResults.NoMessage;
         }
 
         AuthenticationProperties? properties = null;
@@ -1291,7 +1290,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             return uri;
         }
 
-        if (!uri.StartsWith("/", StringComparison.Ordinal))
+        if (!uri.StartsWith('/'))
         {
             return uri;
         }

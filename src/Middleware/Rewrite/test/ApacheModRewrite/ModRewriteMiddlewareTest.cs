@@ -349,7 +349,7 @@ public class ModRewriteMiddlewareTest
 
         var response = await server.CreateClient().GetAsync(input);
 
-        Assert.Equal(response.StatusCode, (HttpStatusCode)301);
+        Assert.Equal((HttpStatusCode)301, response.StatusCode);
         Assert.Equal(@"https://www.example.com/foo/", response.Headers.Location.AbsoluteUri);
     }
 

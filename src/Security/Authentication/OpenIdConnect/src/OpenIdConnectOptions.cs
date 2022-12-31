@@ -70,7 +70,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
             Name = OpenIdConnectDefaults.CookieNoncePrefix,
             HttpOnly = true,
             SameSite = SameSiteMode.None,
-            SecurePolicy = CookieSecurePolicy.SameAsRequest,
+            SecurePolicy = CookieSecurePolicy.Always,
             IsEssential = true,
         };
     }
@@ -288,7 +288,15 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// cookie gets added to the response.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.None"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.</description></item>
+    /// </list>
     /// </remarks>
     public CookieBuilder NonceCookie
     {

@@ -32,11 +32,11 @@ public static class EncoderServiceCollectionExtensions
         // Register the default encoders
         // We want to call the 'Default' property getters lazily since they perform static caching
         services.TryAddSingleton(
-            CreateFactory(() => HtmlEncoder.Default, settings => HtmlEncoder.Create(settings)));
+            CreateFactory(() => HtmlEncoder.Default, HtmlEncoder.Create));
         services.TryAddSingleton(
-            CreateFactory(() => JavaScriptEncoder.Default, settings => JavaScriptEncoder.Create(settings)));
+            CreateFactory(() => JavaScriptEncoder.Default, JavaScriptEncoder.Create));
         services.TryAddSingleton(
-            CreateFactory(() => UrlEncoder.Default, settings => UrlEncoder.Create(settings)));
+            CreateFactory(() => UrlEncoder.Default, UrlEncoder.Create));
 
         return services;
     }

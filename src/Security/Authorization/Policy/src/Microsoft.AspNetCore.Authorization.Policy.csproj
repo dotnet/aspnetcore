@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="..\..\..\..\Http\Routing\src\DataSourceDependentCache.cs" Link="DataSourceDependentCache.cs" />
   </ItemGroup>
 
   <ItemGroup>

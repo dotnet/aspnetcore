@@ -64,7 +64,7 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
         var builder = new StringBuilder();
         for (int i = 0; i < hash.Length; i++)
         {
-            builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
+            builder.Append(CultureInfo.InvariantCulture, $"{hash[i]:x2}");
         }
         return builder.ToString();
     }

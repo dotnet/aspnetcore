@@ -402,6 +402,172 @@ public partial class ParameterViewTest
             p => AssertParameter("attribute 3", attribute3Value, expectedIsCascading: false));
     }
 
+    [Fact]
+    public void HasRemovedDirectParameters_BothEmpty()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.False(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_OldEmpty_NewNonEmpty()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.False(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_OldNonEmpty_NewEmpty()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParameterRemoved()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 3", "value 3"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParameterReplaced()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 2", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute replaced", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParameterReplacedAndAdded()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(5),
+            RenderTreeFrame.Attribute(1, "attribute 2", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute replaced", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+            RenderTreeFrame.Attribute(4, "attribute 4", "value 3"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParametersSwapped()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 3", "value 3"),
+            RenderTreeFrame.Attribute(3, "attribute 2", "value 2"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.False(hasRemovedDirectParameters);
+    }
+
     private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
     {
         return parameter =>

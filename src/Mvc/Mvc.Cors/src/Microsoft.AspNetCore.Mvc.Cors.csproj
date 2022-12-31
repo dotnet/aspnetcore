@@ -16,4 +16,9 @@
     <Reference Include="Microsoft.AspNetCore.Cors" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Cors.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+  </ItemGroup>
 </Project>

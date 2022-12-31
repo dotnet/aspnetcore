@@ -31,7 +31,7 @@ internal sealed class DefaultPageFactoryProvider : IPageFactoryProvider
         _modelMetadataProvider = metadataProvider;
         _propertyAccessors = new RazorPagePropertyActivator.PropertyValueAccessors
         {
-            UrlHelperAccessor = context => urlHelperFactory.GetUrlHelper(context),
+            UrlHelperAccessor = urlHelperFactory.GetUrlHelper,
             JsonHelperAccessor = context => jsonHelper,
             DiagnosticSourceAccessor = context => diagnosticListener,
             HtmlEncoderAccessor = context => htmlEncoder,

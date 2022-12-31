@@ -62,7 +62,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
         {
             _additionalFields = value ?? string.Empty;
             _additionalFieldsSplit = SplitAndTrimPropertyNames(value)
-                .Select(field => FormatPropertyForClientValidation(field))
+                .Select(FormatPropertyForClientValidation)
                 .ToArray();
         }
     }

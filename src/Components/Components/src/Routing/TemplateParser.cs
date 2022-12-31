@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+
 namespace Microsoft.AspNetCore.Components.Routing;
 
 // This implementation is temporary, in the future we'll want to have
@@ -18,8 +20,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 // * Catch-all parameters (Like /blog/{*slug})
 internal sealed class TemplateParser
 {
-    public static readonly char[] InvalidParameterNameCharacters =
-        new char[] { '{', '}', '=', '.' };
+    private static readonly IndexOfAnyValues<char> _invalidParameterNameCharacters = IndexOfAnyValues.Create("{}=.");
 
     internal static RouteTemplate ParseTemplate(string template)
     {
@@ -70,9 +71,10 @@ internal sealed class TemplateParser
                         $"Invalid template '{template}'. Empty parameter name in segment '{segment}' is not allowed.");
                 }
 
-                var invalidCharacter = segment.IndexOfAny(InvalidParameterNameCharacters, 1, segment.Length - 2);
-                if (invalidCharacter != -1)
+                var invalidCharacter = segment.AsSpan(1, segment.Length - 2).IndexOfAny(_invalidParameterNameCharacters);
+                if (invalidCharacter >= 0)
                 {
+                    invalidCharacter++;     // accommodate the slice above
                     throw new InvalidOperationException(
                         $"Invalid template '{template}'. The character '{segment[invalidCharacter]}' in parameter segment '{segment}' is not allowed.");
                 }

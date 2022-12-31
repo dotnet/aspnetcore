@@ -425,19 +425,23 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// <returns>A <see cref="IdentityResult"/> representing whether validation was successful.</returns>
     protected virtual async Task<IdentityResult> ValidateRoleAsync(TRole role)
     {
-        var errors = new List<IdentityError>();
+        List<IdentityError>? errors = null;
         foreach (var v in RoleValidators)
         {
             var result = await v.ValidateAsync(this, role).ConfigureAwait(false);
             if (!result.Succeeded)
             {
+                errors ??= new List<IdentityError>();
                 errors.AddRange(result.Errors);
             }
         }
-        if (errors.Count > 0)
+        if (errors?.Count > 0)
         {
-            Logger.LogWarning(LoggerEventIds.RoleValidationFailed, "Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role).ConfigureAwait(false), string.Join(";", errors.Select(e => e.Code)));
-            return IdentityResult.Failed(errors.ToArray());
+            if (Logger.IsEnabled(LogLevel.Warning))
+            {
+                Logger.LogWarning(LoggerEventIds.RoleValidationFailed, "Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role).ConfigureAwait(false), string.Join(";", errors.Select(e => e.Code)));
+            }
+            return IdentityResult.Failed(errors);
         }
         return IdentityResult.Success;
     }

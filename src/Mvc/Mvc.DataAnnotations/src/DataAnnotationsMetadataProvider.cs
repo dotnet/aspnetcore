@@ -124,7 +124,7 @@ internal sealed class DataAnnotationsMetadataProvider :
             }
             else
             {
-                displayMetadata.Description = () => displayAttribute.GetDescription();
+                displayMetadata.Description = displayAttribute.GetDescription;
             }
         }
 
@@ -146,7 +146,7 @@ internal sealed class DataAnnotationsMetadataProvider :
             }
             else
             {
-                displayMetadata.DisplayName = () => displayAttribute.GetName();
+                displayMetadata.DisplayName = displayAttribute.GetName;
             }
         }
         else if (displayNameAttribute != null)
@@ -274,7 +274,7 @@ internal sealed class DataAnnotationsMetadataProvider :
             }
             else
             {
-                displayMetadata.Placeholder = () => displayAttribute.GetPrompt();
+                displayMetadata.Placeholder = displayAttribute.GetPrompt;
             }
         }
 

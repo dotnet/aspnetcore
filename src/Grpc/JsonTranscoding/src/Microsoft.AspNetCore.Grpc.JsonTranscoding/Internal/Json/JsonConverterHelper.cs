@@ -131,17 +131,6 @@ internal static class JsonConverterHelper
         }
     }
 
-    internal static MessageDescriptor? GetMessageDescriptor(Type typeToConvert)
-    {
-        var property = typeToConvert.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public, binder: null, typeof(MessageDescriptor), Type.EmptyTypes, modifiers: null);
-        if (property == null)
-        {
-            return null;
-        }
-
-        return property.GetValue(null, null) as MessageDescriptor;
-    }
-
     public static void PopulateMap(ref Utf8JsonReader reader, JsonSerializerOptions options, IMessage message, FieldDescriptor fieldDescriptor)
     {
         var mapFields = fieldDescriptor.MessageType.Fields.InFieldNumberOrder();

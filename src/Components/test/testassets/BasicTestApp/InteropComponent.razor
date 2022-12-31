@@ -401,6 +401,7 @@
 
         // we should be able to downcast a IJSInProcessObjectReference as a IJSUnmarshalledObjectReference
         var unmarshalledCast = (IJSUnmarshalledObjectReference)jsInProcObjectReference;
+#pragma warning disable CS0618 // Type or member is obsolete
         ReturnValues["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = unmarshalledCast.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
         {
             Message = "Sent from .NET",
@@ -418,6 +419,7 @@
 
 
         var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
+#pragma warning restore CS0618 // Type or member is obsolete
         using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
         await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
     }

@@ -22,10 +22,7 @@ public static class WebHostBuilderIISExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseIIS(this IWebHostBuilder hostBuilder)
     {
-        if (hostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
 
         // Check if in process
         if (OperatingSystem.IsWindows() && NativeMethods.IsAspNetCoreModuleLoaded())
@@ -40,7 +37,7 @@ public static class WebHostBuilderIISExtensions
                     services.AddSingleton(new IISNativeApplication(new NativeSafeHandle(iisConfigData.pNativeApplication)));
                     services.AddSingleton<IServer, IISHttpServer>();
                     services.AddTransient<IISServerAuthenticationHandlerInternal>();
-                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
+                    services.AddSingleton<IStartupFilter, IISServerSetupFilter>();
                     services.AddAuthenticationCore();
                     services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
                     {

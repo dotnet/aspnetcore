@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -10,6 +11,41 @@ namespace Microsoft.AspNetCore.Identity;
 internal static class Base32
 {
     private const string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+#if NET6_0_OR_GREATER
+    public static string GenerateBase32()
+    {
+        const int length = 20;
+        // base32 takes 5 bytes and converts them into 8 characters, which would be (byte length / 5) * 8
+        // except that it also pads ('=') for the last processed chunk if it's less than 5 bytes.
+        // So in order to handle the padding we add 1 less than the chunk size to our byte length
+        // which will either be removed due to integer division truncation if the length was already a multiple of 5
+        // or it will increase the divided length by 1 meaning that a 1-4 byte length chunk will be 1 instead of 0
+        // so the padding is now included in our string length calculation
+        return string.Create(((length + 4) / 5) * 8, 0, static (buffer, _) =>
+        {
+            Span<byte> bytes = stackalloc byte[length];
+            RandomNumberGenerator.Fill(bytes);
+
+            var index = 0;
+            for (int offset = 0; offset < bytes.Length;)
+            {
+                byte a, b, c, d, e, f, g, h;
+                int numCharsToOutput = GetNextGroup(bytes, ref offset, out a, out b, out c, out d, out e, out f, out g, out h);
+
+                buffer[index + 7] = ((numCharsToOutput >= 8) ? _base32Chars[h] : '=');
+                buffer[index + 6] = ((numCharsToOutput >= 7) ? _base32Chars[g] : '=');
+                buffer[index + 5] = ((numCharsToOutput >= 6) ? _base32Chars[f] : '=');
+                buffer[index + 4] = ((numCharsToOutput >= 5) ? _base32Chars[e] : '=');
+                buffer[index + 3] = ((numCharsToOutput >= 4) ? _base32Chars[d] : '=');
+                buffer[index + 2] = (numCharsToOutput >= 3) ? _base32Chars[c] : '=';
+                buffer[index + 1] = (numCharsToOutput >= 2) ? _base32Chars[b] : '=';
+                buffer[index] = (numCharsToOutput >= 1) ? _base32Chars[a] : '=';
+                index += 8;
+            }
+        });
+    }
+#endif
 
     public static string ToBase32(byte[] input)
     {
@@ -84,7 +120,7 @@ internal static class Base32
     }
 
     // returns the number of bytes that were output
-    private static int GetNextGroup(byte[] input, ref int offset, out byte a, out byte b, out byte c, out byte d, out byte e, out byte f, out byte g, out byte h)
+    private static int GetNextGroup(Span<byte> input, ref int offset, out byte a, out byte b, out byte c, out byte d, out byte e, out byte f, out byte g, out byte h)
     {
         uint b1, b2, b3, b4, b5;
 

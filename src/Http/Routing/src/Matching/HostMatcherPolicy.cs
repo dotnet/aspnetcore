@@ -210,7 +210,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         for (var i = 0; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
-            var hosts = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(h => CreateEdgeKey(h)).ToArray();
+            var hosts = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(CreateEdgeKey).ToArray();
             if (hosts == null || hosts.Length == 0)
             {
                 hosts = new[] { EdgeKey.WildcardEdgeKey };
@@ -232,7 +232,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         {
             var endpoint = endpoints[i];
 
-            var endpointKeys = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(h => CreateEdgeKey(h)).ToArray() ?? Array.Empty<EdgeKey>();
+            var endpointKeys = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(CreateEdgeKey).ToArray() ?? Array.Empty<EdgeKey>();
             if (endpointKeys.Length == 0)
             {
                 // OK this means that this endpoint matches *all* hosts.

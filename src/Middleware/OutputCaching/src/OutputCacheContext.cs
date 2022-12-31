@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -11,12 +10,8 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public sealed class OutputCacheContext
 {
-    internal OutputCacheContext(HttpContext httpContext, IOutputCacheStore store, OutputCacheOptions options, ILogger logger)
+    public OutputCacheContext()
     {
-        HttpContext = httpContext;
-        Logger = logger;
-        Store = store;
-        Options = options;
     }
 
     /// <summary>
@@ -42,17 +37,17 @@ public sealed class OutputCacheContext
     /// <summary>
     /// Gets the <see cref="HttpContext"/>.
     /// </summary>
-    public HttpContext HttpContext { get; }
+    public required HttpContext HttpContext { get; init; }
 
     /// <summary>
-    /// Gets the response time.
+    /// Gets or sets the response time.
     /// </summary>
-    public DateTimeOffset? ResponseTime { get; internal set; }
+    public DateTimeOffset? ResponseTime { get; set; }
 
     /// <summary>
     /// Gets the <see cref="CacheVaryByRules"/> instance.
     /// </summary>
-    public CacheVaryByRules CacheVaryByRules { get; set; } = new();
+    public CacheVaryByRules CacheVaryByRules { get; } = new();
 
     /// <summary>
     /// Gets the tags of the cached response.
@@ -79,7 +74,4 @@ public sealed class OutputCacheContext
     internal Stream OriginalResponseStream { get; set; } = default!;
 
     internal OutputCacheStream OutputCacheStream { get; set; } = default!;
-    internal ILogger Logger { get; }
-    internal OutputCacheOptions Options { get; }
-    internal IOutputCacheStore Store { get; }
 }

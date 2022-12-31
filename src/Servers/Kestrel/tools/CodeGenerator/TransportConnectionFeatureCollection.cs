@@ -12,27 +12,28 @@ public class TransportConnectionFeatureCollection
 
         var allFeatures = new[]
         {
-                "IConnectionIdFeature",
-                "IConnectionTransportFeature",
-                "IConnectionItemsFeature",
-                "IPersistentStateFeature",
-                "IMemoryPoolFeature",
-                "IConnectionLifetimeFeature",
-                "IConnectionSocketFeature",
-                "IProtocolErrorCodeFeature",
-                "IStreamDirectionFeature",
-                "IStreamIdFeature",
-                "IStreamAbortFeature"
-            };
+            "IConnectionIdFeature",
+            "IConnectionTransportFeature",
+            "IConnectionItemsFeature",
+            "IPersistentStateFeature",
+            "IMemoryPoolFeature",
+            "IConnectionLifetimeFeature",
+            "IConnectionSocketFeature",
+            "IProtocolErrorCodeFeature",
+            "IStreamDirectionFeature",
+            "IStreamIdFeature",
+            "IStreamAbortFeature",
+            "IStreamClosedFeature"
+        };
 
         var implementedFeatures = new[]
         {
-                "IConnectionIdFeature",
-                "IConnectionTransportFeature",
-                "IConnectionItemsFeature",
-                "IMemoryPoolFeature",
-                "IConnectionLifetimeFeature"
-            };
+            "IConnectionIdFeature",
+            "IConnectionTransportFeature",
+            "IConnectionItemsFeature",
+            "IMemoryPoolFeature",
+            "IConnectionLifetimeFeature"
+        };
 
         var usings = $@"
 using Microsoft.AspNetCore.Connections.Features;

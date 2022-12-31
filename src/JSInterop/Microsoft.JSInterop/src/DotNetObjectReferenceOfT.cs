@@ -88,18 +88,12 @@ public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(JSInvokabl
         {
             Disposed = true;
 
-            if (_jsRuntime != null)
-            {
-                _jsRuntime.ReleaseObjectReference(_objectId);
-            }
+            _jsRuntime?.ReleaseObjectReference(_objectId);
         }
     }
 
     internal void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(Disposed, this);
     }
 }

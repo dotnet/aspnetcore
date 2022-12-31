@@ -147,7 +147,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
                         if (privateKey != null)
                         {
                             var useOAEP = encryptedKey.EncryptionMethod?.KeyAlgorithm == XmlEncRSAOAEPUrl;
-                            return DecryptKey(encryptedKey.CipherData.CipherValue, privateKey, useOAEP);
+                            return DecryptKey(encryptedKey.CipherData.CipherValue!, privateKey, useOAEP);
                         }
                     }
                 }

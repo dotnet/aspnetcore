@@ -18,7 +18,7 @@
   "tags": [
     {
       "type": "projectType",
-      "add": [ "Cloud", "Web" ],
+      "add": [ "Blazor", "Cloud", "Web" ],
       "remove": [ "*" ]
     },
     {

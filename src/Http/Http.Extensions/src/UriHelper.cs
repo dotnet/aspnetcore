@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -105,7 +106,7 @@ public static class UriHelper
     /// <param name="query">The query, if any.</param>
     /// <param name="fragment">The fragment, if any.</param>
     public static void FromAbsolute(
-        string uri,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri,
         out string scheme,
         out HostString host,
         out PathString path,

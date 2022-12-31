@@ -62,6 +62,8 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return connection.send('OnLocationChanged', uri, state, intercepted);
+  }, (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+    return connection.send('OnLocationChanging', callId, uri, state, intercepted);
   });
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
@@ -129,6 +131,8 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
     renderQueue.processBatch(batchId, batchData, newConnection);
   });
+
+  newConnection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
 
   newConnection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
   newConnection.on('JS.Error', error => {

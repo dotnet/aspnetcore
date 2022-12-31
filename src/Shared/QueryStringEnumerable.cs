@@ -30,11 +30,7 @@ internal
     /// Constructs an instance of <see cref="QueryStringEnumerable"/>.
     /// </summary>
     /// <param name="queryString">The query string.</param>
-#if DISABLE_NULLABLE
-    public QueryStringEnumerable(string queryString)
-#else
     public QueryStringEnumerable(string? queryString)
-#endif
         : this(queryString.AsMemory())
     {
     }

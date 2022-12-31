@@ -299,6 +299,48 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsFromRouteParameterAsPathWithSpecialPrimitiveType()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription, Type expectedTYpe)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedTYpe, param.Type);
+            Assert.Equal(expectedTYpe, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((DateTime foo) => { }, "/{foo}"), typeof(DateTime));
+        AssertPathParameter(GetApiDescription((DateTimeOffset foo) => { }, "/{foo}"), typeof(DateTimeOffset));
+        AssertPathParameter(GetApiDescription((DateOnly foo) => { }, "/{foo}"), typeof(DateOnly));
+        AssertPathParameter(GetApiDescription((TimeOnly foo) => { }, "/{foo}"), typeof(TimeOnly));
+        AssertPathParameter(GetApiDescription((TimeSpan foo) => { }, "/{foo}"), typeof(TimeSpan));
+        AssertPathParameter(GetApiDescription((decimal foo) => { }, "/{foo}"), typeof(decimal));
+        AssertPathParameter(GetApiDescription((Guid foo) => { }, "/{foo}"), typeof(Guid));
+        AssertPathParameter(GetApiDescription((Uri foo) => { }, "/{foo}"), typeof(Uri));
+    }
+
+    [Fact]
+    public void AddsFromRouteParameterAsPathWithNullableSpecialPrimitiveType()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription, Type expectedTYpe)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedTYpe, param.Type);
+            Assert.Equal(expectedTYpe, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((DateTime? foo) => { }, "/{foo}"), typeof(DateTime?));
+        AssertPathParameter(GetApiDescription((DateTimeOffset? foo) => { }, "/{foo}"), typeof(DateTimeOffset?));
+        AssertPathParameter(GetApiDescription((DateOnly? foo) => { }, "/{foo}"), typeof(DateOnly?));
+        AssertPathParameter(GetApiDescription((TimeOnly? foo) => { }, "/{foo}"), typeof(TimeOnly?));
+        AssertPathParameter(GetApiDescription((TimeSpan? foo) => { }, "/{foo}"), typeof(TimeSpan?));
+        AssertPathParameter(GetApiDescription((decimal? foo) => { }, "/{foo}"), typeof(decimal?));
+        AssertPathParameter(GetApiDescription((Guid? foo) => { }, "/{foo}"), typeof(Guid?));
+        AssertPathParameter(GetApiDescription((Uri? foo) => { }, "/{foo}"), typeof(Uri));
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
     {
         static void AssertPathParameter(ApiDescription apiDescription)
@@ -1137,8 +1179,9 @@ public class EndpointMetadataApiDescriptionProviderTest
             {
                 Assert.Equal("name", parameter.Name);
                 Assert.NotNull(parameter.RouteInfo);
-                Assert.Empty(parameter.RouteInfo!.Constraints);
-                Assert.True(parameter.RouteInfo!.IsOptional);
+                Assert.NotNull(parameter.RouteInfo.Constraints);
+                Assert.Empty(parameter.RouteInfo.Constraints);
+                Assert.True(parameter.RouteInfo.IsOptional);
                 Assert.Equal("default", parameter.RouteInfo!.DefaultValue);
             });
     }
@@ -1164,7 +1207,8 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = Assert.Single(context.Results);
         var parameter = Assert.Single(apiDescription.ParameterDescriptions);
         Assert.NotNull(parameter.RouteInfo);
-        Assert.Collection(parameter.RouteInfo!.Constraints,
+        Assert.NotNull(parameter.RouteInfo.Constraints);
+        Assert.Collection(parameter.RouteInfo.Constraints,
             constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
             constraint => Assert.IsType<GuidRouteConstraint>(constraint),
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
@@ -1333,7 +1377,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     private class HostEnvironment : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = null!;
-        public string? ApplicationName { get; set; }
+        public required string ApplicationName { get; set; }
         public string ContentRootPath { get; set; } = null!;
         public IFileProvider ContentRootFileProvider { get; set; } = null!;
     }

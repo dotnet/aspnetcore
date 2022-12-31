@@ -39,7 +39,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private readonly AckHandler _ackHandler;
     private int _internalAckId;
-    private ulong _lastInvocationId;
 
     /// <summary>
     /// Constructs the <see cref="RedisHubLifetimeManager{THub}"/> with types from Dependency Injection.
@@ -72,7 +71,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         _logger = logger;
         _options = options.Value;
         _ackHandler = new AckHandler();
-        _channels = new RedisChannels(typeof(THub).FullName!);
+        _channels = new RedisChannels(typeof(THub).FullName!, _serverName);
         if (globalHubOptions != null && hubOptions != null)
         {
             _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, globalHubOptions.Value.SupportedProtocols, hubOptions.Value.SupportedProtocols));
@@ -406,7 +405,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc/>
-    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         // send thing
         if (connectionId == null)
@@ -416,8 +415,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         var connection = _connections[connectionId];
 
-        // Needs to be unique across servers, easiest way to do that is prefix with connection ID.
-        var invocationId = $"{connectionId}{Interlocked.Increment(ref _lastInvocationId)}";
+        // ID needs to be unique for each invocation and across servers, we generate a GUID every time, that should provide enough uniqueness guarantees.
+        var invocationId = GenerateInvocationId();
 
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection?.ConnectionAborted ?? default, out var linkedToken);
@@ -428,8 +427,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             if (connection == null)
             {
                 // TODO: Need to handle other server going away while waiting for connection result
-                var m = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults(_serverName));
-                var received = await PublishAsync(_channels.Connection(connectionId), m);
+                var messageBytes = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults);
+                var received = await PublishAsync(_channels.Connection(connectionId), messageBytes);
                 if (received < 1)
                 {
                     throw new IOException($"Connection '{connectionId}' does not exist.");
@@ -674,7 +673,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private async Task SubscribeToReturnResultsAsync()
     {
-        var channel = await _bus!.SubscribeAsync(_channels.ReturnResults(_serverName));
+        var channel = await _bus!.SubscribeAsync(_channels.ReturnResults);
         channel.OnMessage((channelMessage) =>
         {
             var completion = RedisProtocol.ReadCompletion(channelMessage.Message);
@@ -696,12 +695,71 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             }
 
             var ros = completion.CompletionMessage;
-            var parseSuccess = protocol.TryParseMessage(ref ros, _clientResultsManager, out var hubMessage);
-            Debug.Assert(parseSuccess);
+            HubMessage? hubMessage = null;
+            bool retryForError = false;
+            try
+            {
+                var parseSuccess = protocol.TryParseMessage(ref ros, _clientResultsManager, out hubMessage);
+                retryForError = !parseSuccess;
+            }
+            catch
+            {
+                // Client returned wrong type? Or just an error from the HubProtocol, let's try with RawResult as the type and see if that works
+                retryForError = true;
+            }
+
+            if (retryForError)
+            {
+                try
+                {
+                    ros = completion.CompletionMessage;
+                    // if this works then we know there was an error with the type the client returned, we'll replace the CompletionMessage below and provide an error to the application code
+                    if (!protocol.TryParseMessage(ref ros, FakeInvocationBinder.Instance, out hubMessage))
+                    {
+                        RedisLog.ErrorParsingResult(_logger, completion.ProtocolName, null);
+                        return;
+                    }
+                }
+                // Exceptions here would mean the HubProtocol implementation very likely has a bug, the other server has already deserialized the message (with RawResult) so it should be deserializable
+                // We don't know the InvocationId, we should let the application developer know and potentially surface the issue to the HubProtocol implementor
+                catch (Exception ex)
+                {
+                    RedisLog.ErrorParsingResult(_logger, completion.ProtocolName, ex);
+                    return;
+                }
+            }
 
             var invocationInfo = _clientResultsManager.RemoveInvocation(((CompletionMessage)hubMessage!).InvocationId!);
+
+            if (retryForError && invocationInfo is not null)
+            {
+                hubMessage = CompletionMessage.WithError(((CompletionMessage)hubMessage!).InvocationId!, $"Client result wasn't deserializable to {invocationInfo?.Type.Name}.");
+            }
+
             invocationInfo?.Completion(invocationInfo?.Tcs!, (CompletionMessage)hubMessage!);
         });
+    }
+
+    private class FakeInvocationBinder : IInvocationBinder
+    {
+        public static readonly FakeInvocationBinder Instance = new FakeInvocationBinder();
+
+        private FakeInvocationBinder() { }
+
+        public IReadOnlyList<Type> GetParameterTypes(string methodName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Type GetReturnType(string invocationId)
+        {
+            return typeof(RawResult);
+        }
+
+        public Type GetStreamItemType(string streamId)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private async Task EnsureRedisServerConnection()
@@ -782,6 +840,21 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         // Use the machine name for convenient diagnostics, but add a guid to make it unique.
         // Example: MyServerName_02db60e5fab243b890a847fa5c4dcb29
         return $"{Environment.MachineName}_{Guid.NewGuid():N}";
+    }
+
+    private static string GenerateInvocationId()
+    {
+        Span<byte> buffer = stackalloc byte[16];
+        var success = Guid.NewGuid().TryWriteBytes(buffer);
+        Debug.Assert(success);
+        // 16 * 4/3 = 21.333 which means base64 encoding will use 22 characters of actual data and 2 characters of padding ('=')
+        Span<char> base64 = stackalloc char[24];
+        success = Convert.TryToBase64Chars(buffer, base64, out var written);
+        Debug.Assert(success);
+        Debug.Assert(written == 24);
+        // Trim the two '=='
+        Debug.Assert(base64.EndsWith("=="));
+        return new string(base64[..^2]);
     }
 
     private sealed class LoggerTextWriter : TextWriter

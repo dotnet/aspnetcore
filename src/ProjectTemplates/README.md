@@ -6,14 +6,14 @@ These are project templates which are used in .NET Core for creating ASP.NET Cor
 
 The following contains a description of each sub-directory in the `ProjectTemplates` directory.
 
-- `BlazorTemplates.Tests`: Contains the source files for the Blazor template tests, these are currently split out due to not being Helix ready yet.
 - `Shared`: Contains a collection of shared constants and helper methods/classes including the infrastructure for managing dotnet processes to create, build, run template tests.
 - `Web.Client.ItemTemplates`: Contains the Web Client-Side File templates, includes things like less, scss, and typescript
 - `Web.ItemTemplates`: Contains the Web File templates, includes things like: protobuf, razor component, razor page, view import and start pages
 - `Web.ProjectTemplates`: Contains the ASP.NET Core Web Template pack, including Blazor Server, WASM, Empty, Grpc, Razor Class Library, RazorPages, MVC, WebApi.
 - `migrations`: Contains migration related scripts.
 - `scripts`: Contains a collection of scripts that help running tests locally that avoid having to install the templates to the machine.
-- `test`: Contains the end to end template tests.
+- `test`: Contains the template tests.
+  - `Templates.Blazor.Tests`: Contains the Blazor template tests. These are currently split out due to not being Helix ready yet.
 - `testassets`: Contains assets used by the tests, like a dotnet tools installer
 
 ## Submitting pull requests
@@ -108,7 +108,7 @@ When queuing test jobs to the Helix infrastructure, a timeout value is passed th
 This value is printed by the Helix runner at the beginning of the console log, formatted in seconds, e.g.:
 
 ```log
-Console log: 'ProjectTemplates.Tests--net7.0' from job b2f6fbe0-4dbe-45fa-a123-9a8c876d5923 (ubuntu.1804.armarch.open) using docker image mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652 on ddvsotx2l137
+Console log: 'ProjectTemplates.Tests--net8.0' from job b2f6fbe0-4dbe-45fa-a123-9a8c876d5923 (ubuntu.1804.armarch.open) using docker image mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652 on ddvsotx2l137
 running $HELIX_CORRELATION_PAYLOAD/scripts/71557bd7f20e49fbbaa81cc79bd57fd6/execute.sh in /home/helixbot/work/C08609D9/w/B3D709E1/e max 2700 seconds
 ```
 

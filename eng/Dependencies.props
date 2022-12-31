@@ -21,6 +21,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
@@ -72,6 +73,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
+    <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
@@ -105,6 +107,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(PortableBuild)' == 'false' " />
 
     <!-- Crossgen2 compiler -->
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
@@ -120,6 +123,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(PortableBuild)' == 'false' " />
   </ItemGroup>
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
@@ -131,6 +135,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
@@ -154,7 +160,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Web.Administration" />
     <LatestPackageReference Include="Microsoft.Web.Xdt" />
     <LatestPackageReference Include="NETStandard.Library" />
-    <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.Net.Experimental.MsQuic" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" />

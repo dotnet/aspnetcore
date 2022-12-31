@@ -26,7 +26,10 @@ public static class WebAssemblyHotReload
 
     internal static async Task InitializeAsync()
     {
+        // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
+#pragma warning disable IDE0200 // Remove unnecessary lambda expression
         _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
+#pragma warning restore IDE0200 // Remove unnecessary lambda expression
 
         if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true")
         {
@@ -35,7 +38,9 @@ public static class WebAssemblyHotReload
             // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
 
             var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
+#pragma warning disable CS0618 // Type or member is obsolete
             await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 

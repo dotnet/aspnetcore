@@ -159,8 +159,8 @@ public class AuthenticationMiddlewareTests
         var builder = WebApplication.CreateBuilder();
         builder.Configuration.AddInMemoryCollection(new[]
         {
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ClaimsIssuer", "SomeIssuer"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:Audiences:0", "https://localhost:5001")
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "SomeIssuer"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "https://localhost:5001")
         });
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication().AddJwtBearer();

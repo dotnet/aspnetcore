@@ -12,6 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -53,10 +54,7 @@ internal sealed class HttpsConnectionMiddleware
 
     public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
         {
@@ -103,7 +101,7 @@ internal sealed class HttpsConnectionMiddleware
 
             // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
             // made to the server
-            _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
+            _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: options.ServerCertificateChain);
         }
 
         var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
@@ -140,7 +138,7 @@ internal sealed class HttpsConnectionMiddleware
             context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
         var sslStream = sslDuplexPipe.Stream;
 
-        var feature = new Core.Internal.TlsConnectionFeature(sslStream);
+        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context);
         // Set the mode if options were used. If the callback is used it will set the mode later.
         feature.AllowDelayedClientCertificateNegotation =
             _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
@@ -468,9 +466,9 @@ internal sealed class HttpsConnectionMiddleware
         // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
         if (httpProtocols == HttpProtocols.Http2)
         {
-            if (OperatingSystem.IsMacOS())
+            if (!TlsAlpn.IsSupported)
             {
-                throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
+                throw new NotSupportedException(CoreStrings.Http2NoTlsAlpn);
             }
             else if (_isWindowsVersionIncompatibleWithHttp2)
             {
@@ -557,7 +555,7 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
     [LoggerMessage(2, LogLevel.Debug, "Authentication of the HTTPS connection timed out.", EventName = "AuthenticationTimedOut")]
     public static partial void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger);
 
-    [LoggerMessage(3, LogLevel.Debug, "Connection {connectionId} established using the following protocol: {protocol}", EventName = "HttpsConnectionEstablished")]
+    [LoggerMessage(3, LogLevel.Debug, "Connection {ConnectionId} established using the following protocol: {Protocol}", EventName = "HttpsConnectionEstablished")]
     public static partial void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols protocol);
 
     [LoggerMessage(4, LogLevel.Information, "HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.",

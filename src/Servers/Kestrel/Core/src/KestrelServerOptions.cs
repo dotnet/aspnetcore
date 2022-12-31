@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Certificates.Generation;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -25,6 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class KestrelServerOptions
 {
+    internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
@@ -176,6 +179,24 @@ public class KestrelServerOptions
     }
 
     /// <summary>
+    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// </summary>
+    private bool? _disableHttp1LineFeedTerminators;
+    internal bool DisableHttp1LineFeedTerminators
+    {
+        get
+        {
+            if (!_disableHttp1LineFeedTerminators.HasValue)
+            {
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch(DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled;
+            }
+
+            return _disableHttp1LineFeedTerminators.Value;
+        }
+        set => _disableHttp1LineFeedTerminators = value;
+    }
+
+    /// <summary>
     /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
     /// the prior action.
     /// </summary>
@@ -232,9 +253,6 @@ public class KestrelServerOptions
         writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
         writer.WriteBooleanValue(AllowResponseHeaderCompression);
 
-        writer.WritePropertyName(nameof(EnableAltSvc));
-        writer.WriteBooleanValue(EnableAltSvc);
-
         writer.WritePropertyName(nameof(IsDevCertLoaded));
         writer.WriteBooleanValue(IsDevCertLoaded);
 
@@ -270,7 +288,7 @@ public class KestrelServerOptions
             var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
             try
             {
-                DefaultCertificate = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true)
+                DefaultCertificate = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
                     .FirstOrDefault();
 
                 if (DefaultCertificate != null)
@@ -285,16 +303,13 @@ public class KestrelServerOptions
                         Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
                         logger.DeveloperCertificateFirstRun(status.FailureMessage);
 
-                        // Now that we've displayed a warning in the logs so that the user gets a notification that a prompt might appear, try
-                        // and access the certificate key, which might trigger a prompt.
-                        status = CertificateManager.Instance.CheckCertificateState(DefaultCertificate, interactive: true);
-                        if (!status.Success)
-                        {
-                            logger.BadDeveloperCertificateState();
-                        }
+                        // Prevent binding to HTTPS if the certificate is not valid (avoid the prompt)
+                        DefaultCertificate = null;
                     }
-
-                    logger.LocatedDevelopmentCertificate(DefaultCertificate);
+                    else if (!CertificateManager.Instance.IsTrusted(DefaultCertificate))
+                    {
+                        logger.DeveloperCertificateNotTrusted();
+                    }
                 }
                 else
                 {
@@ -350,7 +365,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// </summary>
     public void Listen(IPAddress address, int port)
     {
@@ -358,15 +373,12 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// The callback configures endpoint-specific settings.
     /// </summary>
     public void Listen(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         Listen(new IPEndPoint(address, port), configure);
     }
@@ -389,7 +401,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// The callback configures endpoint-specific settings.
     /// </summary>
     public void Listen(IPEndPoint endPoint, Action<ListenOptions> configure)
@@ -403,14 +415,8 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(endPoint);
         ApplyEndpointDefaults(listenOptions);
@@ -430,10 +436,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenLocalhost(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new LocalhostListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -451,10 +454,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenAnyIP(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new AnyIPListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -463,7 +463,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given Unix domain socket path.
+    /// Bind to the given Unix domain socket path.
     /// </summary>
     public void ListenUnixSocket(string socketPath)
     {
@@ -471,24 +471,18 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given Unix domain socket path.
+    /// Bind to the given Unix domain socket path.
     /// Specify callback to configure endpoint-specific settings.
     /// </summary>
     public void ListenUnixSocket(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
 
         if (!Path.IsPathRooted(socketPath))
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(socketPath);
         ApplyEndpointDefaults(listenOptions);
@@ -510,12 +504,32 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenHandle(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(handle);
+        ApplyEndpointDefaults(listenOptions);
+        configure(listenOptions);
+        CodeBackedListenOptions.Add(listenOptions);
+    }
+
+    /// <summary>
+    /// Bind to the given named pipe.
+    /// </summary>
+    public void ListenNamedPipe(string pipeName)
+    {
+        ListenNamedPipe(pipeName, _ => { });
+    }
+
+    /// <summary>
+    /// Bind to the given named pipe.
+    /// Specify callback to configure endpoint-specific settings.
+    /// </summary>
+    public void ListenNamedPipe(string pipeName, Action<ListenOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(pipeName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var listenOptions = new ListenOptions(new NamedPipeEndPoint(pipeName));
         ApplyEndpointDefaults(listenOptions);
         configure(listenOptions);
         CodeBackedListenOptions.Add(listenOptions);

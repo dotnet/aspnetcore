@@ -4,11 +4,16 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <!-- Required because 8.0.0 SDK no longer considers net7.0 the current TFM. -->
+    <GenerateRequiresPreviewFeaturesAttribute>true</GenerateRequiresPreviewFeaturesAttribute>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" Link="shared\HttpEventSourceListener.cs" />
+    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" Link="shared\TestResources.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" Link="shared\KestrelTestLoggerProvider.cs" />
@@ -17,11 +22,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" Link="shared\TransportTestHelpers\IHostPortExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" Link="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Required for QUIC & HTTP/3 in .NET 6 - https://github.com/dotnet/runtime/pull/55332 -->
-    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support" Value="true" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\ServerRetryHelper.cs" LinkBase="shared" />
   </ItemGroup>
 
   <ItemGroup>

@@ -26,6 +26,9 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\HttpValidationProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
+    <Compile Include="$(SharedSourceRoot)Reroute.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,4 +55,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Tests" />
+  </ItemGroup>
 </Project>

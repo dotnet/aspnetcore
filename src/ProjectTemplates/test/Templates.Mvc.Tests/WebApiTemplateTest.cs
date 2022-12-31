@@ -165,11 +165,9 @@ public class WebApiTemplateTest : LoggedTest
             : useMinimalApis
                 ? new[] { ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi }
                 : new[] { ArgConstants.NoOpenApi };
-        var createResult = await project.RunDotNetNewAsync("webapi", args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("webapi", args: args);
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         using var aspNetProcess = project.StartBuiltProjectAsync();
         Assert.False(
@@ -196,8 +194,7 @@ public class WebApiTemplateTest : LoggedTest
             : useMinimalApis
                 ? new[] { ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi, ArgConstants.NoHttps }
                 : new[] { ArgConstants.NoOpenApi, ArgConstants.NoHttps };
-        var createResult = await project.RunDotNetNewAsync("webapi", args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("webapi", args: args);
 
         var noHttps = args.Contains(ArgConstants.NoHttps);
         var expectedLaunchProfileNames = noHttps
@@ -205,8 +202,7 @@ public class WebApiTemplateTest : LoggedTest
             : new[] { "http", "https", "IIS Express" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         using var aspNetProcess = project.StartBuiltProjectAsync();
         Assert.False(
@@ -220,8 +216,7 @@ public class WebApiTemplateTest : LoggedTest
     {
         var project = await FactoryFixture.CreateProject(Output);
 
-        var createResult = await project.RunDotNetNewAsync("webapi", language: languageOverride, auth: auth, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("webapi", language: languageOverride, auth: auth, args: args);
 
         // External auth mechanisms require https to work and thus don't honor the --no-https flag
         var requiresHttps = string.Equals(auth, "IndividualB2C", StringComparison.OrdinalIgnoreCase)
@@ -240,15 +235,13 @@ public class WebApiTemplateTest : LoggedTest
             return project;
         }
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         return project;
     }

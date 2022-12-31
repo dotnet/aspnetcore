@@ -7,11 +7,22 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsPackable>false</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
+
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.InMemory.Test" />
+  </ItemGroup>
 </Project>

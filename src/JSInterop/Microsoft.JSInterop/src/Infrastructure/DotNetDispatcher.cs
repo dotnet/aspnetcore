@@ -42,7 +42,7 @@ public static class DotNetDispatcher
     /// <param name="argsJson">A JSON representation of the parameters.</param>
     /// <returns>A JSON representation of the return value, or null.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
-    public static string? Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson)
+    public static string? Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         // This method doesn't need [JSInvokable] because the platform is responsible for having
         // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -72,7 +72,7 @@ public static class DotNetDispatcher
     /// <param name="argsJson">A JSON representation of the parameters.</param>
     /// <returns>A JSON representation of the return value, or null.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
-    public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, string argsJson)
+    public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         // This method doesn't need [JSInvokable] because the platform is responsible for having
         // some way to dispatch calls here. The logic inside here is the thing that checks whether

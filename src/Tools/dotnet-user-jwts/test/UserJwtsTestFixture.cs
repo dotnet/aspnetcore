@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 public class UserJwtsTestFixture : IDisposable
 {
     private Stack<Action> _disposables = new Stack<Action>();
-    internal string TestSecretsId = Guid.NewGuid().ToString();
+    internal string TestSecretsId;
 
     private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -66,6 +66,7 @@ public class UserJwtsTestFixture : IDisposable
     {
         var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         Directory.CreateDirectory(Path.Combine(projectPath.FullName, "Properties"));
+        TestSecretsId = Guid.NewGuid().ToString("N");
         var prop = hasSecret ? $"<UserSecretsId>{TestSecretsId}</UserSecretsId>" : string.Empty;
         if (hasSecret)
         {

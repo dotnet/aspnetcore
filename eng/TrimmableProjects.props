@@ -31,12 +31,16 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
     <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Identity" />
+    <TrimmableProject Include="Microsoft.Extensions.Identity.Core" />
+    <TrimmableProject Include="Microsoft.Extensions.Identity.Stores" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />
@@ -88,6 +92,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Web" />
+    <TrimmableProject Include="Microsoft.Extensions.Localization.Abstractions" />
     <TrimmableProject Include="Microsoft.Extensions.ObjectPool" />
     <TrimmableProject Include="Microsoft.JSInterop" />
     <TrimmableProject Include="Microsoft.Extensions.WebEncoders" />

@@ -34,7 +34,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private readonly GrpcServiceOptions _globalOptions;
     private readonly GrpcServiceOptions<TService> _serviceOptions;
     private readonly IGrpcServiceActivator<TService> _serviceActivator;
-    private readonly GrpcJsonTranscodingOptions _JsonTranscodingOptions;
+    private readonly GrpcJsonTranscodingOptions _jsonTranscodingOptions;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
@@ -46,7 +46,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         GrpcServiceOptions<TService> serviceOptions,
         ILoggerFactory loggerFactory,
         IGrpcServiceActivator<TService> serviceActivator,
-        GrpcJsonTranscodingOptions JsonTranscodingOptions)
+        GrpcJsonTranscodingOptions jsonTranscodingOptions)
     {
         _context = context;
         _invokerResolver = invokerResolver;
@@ -54,7 +54,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _globalOptions = globalOptions;
         _serviceOptions = serviceOptions;
         _serviceActivator = serviceActivator;
-        _JsonTranscodingOptions = JsonTranscodingOptions;
+        _jsonTranscodingOptions = jsonTranscodingOptions;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
@@ -168,7 +168,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.UnarySerializerOptions);
+            _jsonTranscodingOptions.UnarySerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -195,7 +195,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.ServerStreamingSerializerOptions);
+            _jsonTranscodingOptions.ServerStreamingSerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -237,13 +237,17 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
 
     private static CallHandlerDescriptorInfo CreateDescriptorInfo(string body, string responseBody, MethodDescriptor methodDescriptor, JsonTranscodingRouteAdapter routeAdapter)
     {
-        var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeAdapter.HttpRoutePattern.Variables.Select(v => v.FieldPath).ToList(), methodDescriptor.InputType);
+        var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeAdapter.HttpRoutePattern.Variables, methodDescriptor.InputType);
 
         var bodyDescriptor = ServiceDescriptorHelpers.ResolveBodyDescriptor(body, typeof(TService), methodDescriptor);
 
         FieldDescriptor? responseBodyDescriptor = null;
         if (!string.IsNullOrEmpty(responseBody))
         {
+            if (responseBody.Contains('.', StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
+            }
             responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
             if (responseBodyDescriptor == null)
             {
@@ -255,7 +259,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             responseBodyDescriptor,
             bodyDescriptor?.Descriptor,
             bodyDescriptor?.IsDescriptorRepeated ?? false,
-            bodyDescriptor?.FieldDescriptors,
+            bodyDescriptor?.FieldDescriptor,
             routeParameterDescriptors,
             routeAdapter);
         return descriptorInfo;

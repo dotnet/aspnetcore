@@ -33,7 +33,7 @@ internal sealed partial class SocketConnection : TransportConnection
 
     internal SocketConnection(Socket socket,
                               MemoryPool<byte> memoryPool,
-                              PipeScheduler transportScheduler,
+                              PipeScheduler socketScheduler,
                               ILogger logger,
                               SocketSenderPool socketSenderPool,
                               PipeOptions inputOptions,
@@ -55,12 +55,7 @@ internal sealed partial class SocketConnection : TransportConnection
 
         ConnectionClosed = _connectionClosedTokenSource.Token;
 
-        // On *nix platforms, Sockets already dispatches to the ThreadPool.
-        // Yes, the IOQueues are still used for the PipeSchedulers. This is intentional.
-        // https://github.com/aspnet/KestrelHttpServer/issues/2573
-        var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
-
-        _receiver = new SocketReceiver(awaiterScheduler);
+        _receiver = new SocketReceiver(socketScheduler);
 
         var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 

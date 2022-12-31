@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class DefaultAuthorizationHandlerProvider : IAuthorizationHandlerProvider
 {
-    private readonly IEnumerable<IAuthorizationHandler> _handlers;
+    private readonly Task<IEnumerable<IAuthorizationHandler>> _handlersTask;
 
     /// <summary>
     /// Creates a new instance of <see cref="DefaultAuthorizationHandlerProvider"/>.
@@ -26,10 +26,10 @@ public class DefaultAuthorizationHandlerProvider : IAuthorizationHandlerProvider
             throw new ArgumentNullException(nameof(handlers));
         }
 
-        _handlers = handlers;
+        _handlersTask = Task.FromResult(handlers);
     }
 
     /// <inheritdoc />
     public Task<IEnumerable<IAuthorizationHandler>> GetHandlersAsync(AuthorizationHandlerContext context)
-        => Task.FromResult(_handlers);
+        => _handlersTask;
 }

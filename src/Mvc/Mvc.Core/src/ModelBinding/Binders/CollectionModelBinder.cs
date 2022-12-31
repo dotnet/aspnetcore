@@ -127,10 +127,10 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
             Logger.FoundNoValueInRequest(bindingContext);
 
             // If we failed to find data for a top-level model, then generate a
-            // default 'empty' model (or use existing Model) and return it.
+            // default 'empty' model (or use existing Model when not null or a default value is available) and return it.
             if (bindingContext.IsTopLevelObject)
             {
-                if (model == null)
+                if (model == null && !bindingContext.ModelMetadata.HasDefaultValue)
                 {
                     model = CreateEmptyCollection(bindingContext.ModelType);
                 }
@@ -273,16 +273,10 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         var boundCollection = new List<TElement?>();
 
         var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
+        var valueProvider = bindingContext.ValueProvider;
 
         foreach (var value in values)
         {
-            bindingContext.ValueProvider = new CompositeValueProvider
-                {
-                    // our temporary provider goes at the front of the list
-                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
-                    bindingContext.ValueProvider
-                };
-
             // Enter new scope to change ModelMetadata and isolate element binding operations.
             using (bindingContext.EnterNestedScope(
                 elementMetadata,
@@ -290,6 +284,13 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
                 modelName: bindingContext.ModelName,
                 model: null))
             {
+                bindingContext.ValueProvider = new CompositeValueProvider
+                {
+                    // our temporary provider goes at the front of the list
+                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
+                    valueProvider
+                };
+
                 await ElementBinder.BindModelAsync(bindingContext);
 
                 if (bindingContext.Result.IsModelSet)

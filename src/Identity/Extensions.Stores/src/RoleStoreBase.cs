@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
 /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
 /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
-public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
+public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserRole, TRoleClaim> :
     IQueryableRoleStore<TRole>,
     IRoleClaimStore<TRole>
     where TRole : IdentityRole<TKey>
@@ -130,6 +130,8 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// </summary>
     /// <param name="id">The id to convert.</param>
     /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "TKey is annoated with RequiresUnreferencedCodeAttribute.All.")]
     public virtual TKey? ConvertIdFromString(string? id)
     {
         if (id == null)

@@ -13,7 +13,7 @@ public class RateLimitingOptionsTests
     public void AddPolicy_ThrowsOnNullPolicyName()
     {
         var options = new RateLimiterOptions();
-        Assert.Throws<ArgumentNullException>(() => options.AddPolicy<string>(null, context => RateLimitPartition.CreateNoLimiter<string>("myKey")));
+        Assert.Throws<ArgumentNullException>(() => options.AddPolicy<string>(null, context => RateLimitPartition.GetNoLimiter<string>("myKey")));
     }
 
     [Fact]
@@ -34,15 +34,15 @@ public class RateLimitingOptionsTests
     public void AddPolicy_ThrowsOnDuplicateName()
     {
         var options = new RateLimiterOptions();
-        options.AddPolicy<string>("myKey", context => RateLimitPartition.CreateNoLimiter<string>("myKey"));
-        Assert.Throws<ArgumentException>(() => options.AddPolicy<string>("myKey", context => RateLimitPartition.CreateNoLimiter<string>("yourKey")));
+        options.AddPolicy<string>("myKey", context => RateLimitPartition.GetNoLimiter<string>("myKey"));
+        Assert.Throws<ArgumentException>(() => options.AddPolicy<string>("myKey", context => RateLimitPartition.GetNoLimiter<string>("yourKey")));
     }
 
     [Fact]
     public void AddPolicy_Generic_ThrowsOnDuplicateName()
     {
         var options = new RateLimiterOptions();
-        options.AddPolicy<string>("myKey", context => RateLimitPartition.CreateNoLimiter<string>("myKey"));
+        options.AddPolicy<string>("myKey", context => RateLimitPartition.GetNoLimiter<string>("myKey"));
         Assert.Throws<ArgumentException>(() => options.AddPolicy<string, TestRateLimiterPolicy>("myKey"));
     }
 }

@@ -10,24 +10,32 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 
 /// <summary>
 /// Routes on HTTP rule are similar to ASP.NET Core routes but add and remove some features.
-/// - Constraints aren't supported.
-/// - Optional parameters aren't supported.
-/// - Parameters spanning multiple segments are supported.
+/// <list type="bullet">
+/// <item><description>Constraints aren't supported.</description></item>
+/// <item><description>Optional parameters aren't supported.</description></item>
+/// <item><description>Parameters spanning multiple segments are supported.</description></item>
+/// </list>
 ///
 /// The purpose of this type is to add support for parameters spanning multiple segments and
 /// anonymous any or catch-all segments. This type transforms an HTTP route into an ASP.NET Core
 /// route by rewritting it to a compatible format and providing actions to reconstruct parameters
 /// that span multiple segments.
 ///
+/// <para>
 /// For example, consider a multi-segment parameter route:
-/// - Before: /v1/{book.name=shelves/*/books/*}
-/// - After: /v1/shelves/{__Complex_book.name_2}/books/{__Complex_book.name_4}
+/// <list type="bullet">
+/// <item><description>Before: /v1/{book.name=shelves/*/books/*}</description></item>
+/// <item><description>After: /v1/shelves/{__Complex_book.name_2}/books/{__Complex_book.name_4}</description></item>
+/// </list>
+/// </para>
 /// 
 /// It is rewritten so that any * or ** segments become ASP.NET Core route parameters. These parameter
 /// names are never used by the user, and instead they're reconstructed into the final value by the
 /// adapter and then added to the HttpRequest.RouteValues collection.
-/// - Request URL: /v1/shelves/example-shelf/books/example-book
-/// - Route parameter: book.name = shelves/example-self/books/example-book
+/// <list type="bullet">
+/// <item><description>Request URL: /v1/shelves/example-shelf/books/example-book</description></item>
+/// <item><description>Route parameter: book.name = shelves/example-self/books/example-book</description></item>
+/// </list>
 /// </summary>
 internal sealed class JsonTranscodingRouteAdapter
 {
@@ -178,7 +186,7 @@ internal sealed class JsonTranscodingRouteAdapter
         {
             return SegmentType.CatchAll;
         }
-        else if (segment.StartsWith("*", StringComparison.Ordinal))
+        else if (segment.StartsWith('*'))
         {
             return SegmentType.Any;
         }

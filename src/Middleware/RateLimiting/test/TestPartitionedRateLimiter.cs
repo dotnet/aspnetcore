@@ -26,12 +26,12 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         limiters.Add(limiter);
     }
 
-    public override int GetAvailablePermits(TResource resourceID)
+    public override RateLimiterStatistics GetStatistics(TResource resourceID)
     {
         throw new NotImplementedException();
     }
 
-    protected override RateLimitLease AcquireCore(TResource resourceID, int permitCount)
+    protected override RateLimitLease AttemptAcquireCore(TResource resourceID, int permitCount)
     {
         if (permitCount != 1)
         {
@@ -40,7 +40,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         var leases = new List<RateLimitLease>();
         foreach (var limiter in limiters)
         {
-            var lease = limiter.Acquire();
+            var lease = limiter.AttemptAcquire();
             if (lease.IsAcquired)
             {
                 leases.Add(lease);
@@ -57,7 +57,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         return new TestRateLimitLease(true, leases);
     }
 
-    protected override async ValueTask<RateLimitLease> WaitAsyncCore(TResource resourceID, int permitCount, CancellationToken cancellationToken)
+    protected override async ValueTask<RateLimitLease> AcquireAsyncCore(TResource resourceID, int permitCount, CancellationToken cancellationToken)
     {
         if (permitCount != 1)
         {
@@ -66,7 +66,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         var leases = new List<RateLimitLease>();
         foreach (var limiter in limiters)
         {
-            leases.Add(await limiter.WaitAsync());
+            leases.Add(await limiter.AcquireAsync());
         }
         foreach (var lease in leases)
         {

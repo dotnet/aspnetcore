@@ -52,9 +52,9 @@ public class ApiParameterDescription
     /// <remarks>
     /// A parameter is considered required if
     /// <list type="bullet">
-    /// <item>it's bound from the request body (<see cref="BindingSource.Body"/>).</item>
-    /// <item>it's a required route value.</item>
-    /// <item>it has annotations (e.g. BindRequiredAttribute) that indicate it's required.</item>
+    /// <item><description>it's bound from the request body (<see cref="BindingSource.Body"/>).</description></item>
+    /// <item><description>it's a required route value.</description></item>
+    /// <item><description>it has annotations (e.g. BindRequiredAttribute) that indicate it's required.</description></item>
     /// </list>
     /// </remarks>
     public bool IsRequired { get; set; }

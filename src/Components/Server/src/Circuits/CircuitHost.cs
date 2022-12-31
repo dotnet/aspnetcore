@@ -19,6 +19,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
     private readonly CircuitHandler[] _circuitHandlers;
+    private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
     private bool _initialized;
     private bool _disposed;
@@ -39,6 +40,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteRenderer renderer,
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
+        RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
         ILogger logger)
     {
@@ -55,6 +57,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -68,6 +71,8 @@ internal partial class CircuitHost : IAsyncDisposable
         Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
 
         JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
+
+        _navigationManager.UnhandledException += ReportAndInvoke_UnhandledException;
     }
 
     public CircuitHandle Handle { get; }
@@ -503,8 +508,7 @@ internal partial class CircuitHost : IAsyncDisposable
             await Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.LocationChange(_logger, uri, CircuitId);
-                var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                navigationManager.NotifyLocationChanged(uri, state, intercepted);
+                _navigationManager.NotifyLocationChanged(uri, state, intercepted);
                 Log.LocationChangeSucceeded(_logger, uri, CircuitId);
             });
         }
@@ -536,6 +540,31 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    public async Task OnLocationChangingAsync(int callId, string uri, string? state, bool intercepted)
+    {
+        AssertInitialized();
+        AssertNotDisposed();
+
+        try
+        {
+            var shouldContinueNavigation = await Renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                Log.LocationChanging(_logger, uri, CircuitId);
+                return await _navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
+            });
+
+            await Client.SendAsync("JS.EndLocationChanging", callId, shouldContinueNavigation);
+        }
+        catch (Exception ex)
+        {
+            // An exception caught at this point was probably thrown inside the NavigationManager. Treat
+            // this like bad data.
+            Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location change to '{uri}' failed."));
+            UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+        }
+    }
+
     public void SetCircuitUser(ClaimsPrincipal user)
     {
         // This can be called before the circuit is initialized.
@@ -557,7 +586,7 @@ internal partial class CircuitHost : IAsyncDisposable
         // Dispatch any buffered renders we accumulated during a disconnect.
         // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
         // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-        _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+        _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
     }
 
     private void AssertInitialized()
@@ -729,6 +758,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
         public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(211, LogLevel.Debug, "Location is about to change to {URI} in ciruit '{CircuitId}'.", EventName = "LocationChanging")]
+        public static partial void LocationChanging(ILogger logger, string uri, CircuitId circuitId);
 
         [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]
         public static partial void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e);

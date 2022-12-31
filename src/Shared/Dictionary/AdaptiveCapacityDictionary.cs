@@ -244,10 +244,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
     /// <inheritdoc />
     public void Clear()
     {
-        if (_dictionaryStorage != null)
-        {
-            _dictionaryStorage.Clear();
-        }
+        _dictionaryStorage?.Clear();
 
         if (_count == 0)
         {
