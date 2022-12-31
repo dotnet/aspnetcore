@@ -107,7 +107,7 @@ internal sealed class ResponseCacheFilterExecutor
         {
             string? cacheControlValue;
 
-            if (Location == ResponseCacheLocation.None && Duration == null)
+            if (Location == ResponseCacheLocation.None && _cacheProfile.Duration == null && _cacheDuration == null)
             {
                 cacheControlValue = "no-cache";
                 headers.Pragma = "no-cache";
