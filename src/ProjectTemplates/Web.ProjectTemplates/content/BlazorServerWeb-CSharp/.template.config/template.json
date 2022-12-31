@@ -153,16 +153,16 @@
         },
         {
           "condition": "(!GenerateApi)",
-            "exclude": [
-              "Pages/CallWebApi.razor"
-            ]
+          "exclude": [
+            "Pages/CallWebApi.razor"
+          ]
         },
         {
           "condition": "(!GenerateGraph)",
           "exclude": [
             "Shared/NavMenu.CallsMicrosoftGraph.razor",
             "Pages/ShowProfile.razor"
-            ]
+          ]
         },
         {
           "condition": "(!GenerateApiOrGraph)",
@@ -245,11 +245,11 @@
       "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
     },
     "SignedOutCallbackPath": {
-        "type": "parameter",
-        "datatype": "string",
-        "defaultValue": "/signout/B2C_1_susi",
-        "replaces": "/signout/MySignUpSignInPolicyId",
-        "description": "The global signout callback (use with IndividualB2C auth)."
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "/signout/B2C_1_susi",
+      "replaces": "/signout/MySignUpSignInPolicyId",
+      "description": "The global signout callback (use with IndividualB2C auth)."
     },
     "ResetPasswordPolicyId": {
       "type": "parameter",
@@ -478,35 +478,35 @@
       }
     },
     "CalledApiUrl": {
-        "type": "parameter",
-        "datatype": "string",
-        "replaces": "[WebApiUrl]",
-        "defaultValue" : "https://graph.microsoft.com/beta",
-        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "[WebApiUrl]",
+      "defaultValue": "https://graph.microsoft.com/beta",
+      "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
     },
     "CallsMicrosoftGraph": {
-        "type": "parameter",
-        "datatype": "bool",
-        "defaultValue": "false",
-        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
     },
     "CalledApiScopes": {
       "type": "parameter",
       "datatype": "string",
-      "replaces" :  "user.read",
+      "replaces": "user.read",
       "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
     },
     "GenerateApi": {
-        "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/beta\" || CalledApiScopes != \"user.read\"))"
+      "type": "computed",
+      "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/beta\" || CalledApiScopes != \"user.read\"))"
     },
     "GenerateGraph": {
-        "type": "computed",
-        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+      "type": "computed",
+      "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
     },
     "GenerateApiOrGraph": {
-        "type": "computed",
-        "value": "(GenerateApi || GenerateGraph)"
+      "type": "computed",
+      "value": "(GenerateApi || GenerateGraph)"
     },
     "skipRestore": {
       "type": "parameter",
