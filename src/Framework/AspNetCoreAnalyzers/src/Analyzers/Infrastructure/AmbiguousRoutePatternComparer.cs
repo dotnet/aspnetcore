@@ -30,7 +30,7 @@ internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePat
 
             var equal = xPart switch
             {
-                RoutePatternSegmentSeperatorNode _ => yPart is RoutePatternSegmentSeperatorNode,
+                RoutePatternSegmentSeparatorNode _ => yPart is RoutePatternSegmentSeparatorNode,
                 RoutePatternSegmentNode xSegment => Equals(xSegment, yPart as RoutePatternSegmentNode),
                 _ => throw new InvalidOperationException($"Unexpected part type '{xPart.Kind}'."),
             };
@@ -63,7 +63,7 @@ internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePat
 
             var equal = xChild switch
             {
-                RoutePatternOptionalSeperatorNode _ => yChild is RoutePatternOptionalSeperatorNode,
+                RoutePatternOptionalSeparatorNode _ => yChild is RoutePatternOptionalSeparatorNode,
                 RoutePatternReplacementNode xReplacement => yChild is RoutePatternReplacementNode yReplacement && Equals(xReplacement.TextToken.Value, yReplacement.TextToken.Value),
                 RoutePatternLiteralNode xLiteral => yChild is RoutePatternLiteralNode yLiteral && Equals(xLiteral.LiteralToken.Value, yLiteral.LiteralToken.Value),
                 RoutePatternParameterNode xParameter => Equals(xParameter, yChild as RoutePatternParameterNode),

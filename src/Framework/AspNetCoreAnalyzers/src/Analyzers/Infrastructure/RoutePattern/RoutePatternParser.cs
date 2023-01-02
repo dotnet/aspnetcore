@@ -171,7 +171,7 @@ internal partial struct RoutePatternParser
                     // No problem if tilde is followed by slash.
                     if (root.ChildCount > 2 &&
                         root.ChildAt(1).Node is var secondNode &&
-                        secondNode?.Kind == RoutePatternKind.Seperator)
+                        secondNode?.Kind == RoutePatternKind.Separator)
                     {
                         return;
                     }
@@ -351,18 +351,18 @@ internal partial struct RoutePatternParser
 
     private static void ValidateNoConsecutiveSeparators(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
     {
-        RoutePatternSegmentSeperatorNode? previousNode = null;
+        RoutePatternSegmentSeparatorNode? previousNode = null;
         foreach (var part in root)
         {
-            if (part.TryGetNode(RoutePatternKind.Seperator, out var seperatorNode))
+            if (part.TryGetNode(RoutePatternKind.Separator, out var separatorNode))
             {
-                var currentNode = (RoutePatternSegmentSeperatorNode)seperatorNode;
+                var currentNode = (RoutePatternSegmentSeparatorNode)separatorNode;
                 if (previousNode != null)
                 {
                     diagnostics.Add(
                         new EmbeddedDiagnostic(
                             Resources.TemplateRoute_CannotHaveConsecutiveSeparators,
-                            EmbeddedSyntaxHelpers.GetSpan(previousNode.SeperatorToken, currentNode.SeperatorToken)));
+                            EmbeddedSyntaxHelpers.GetSpan(previousNode.SeparatorToken, currentNode.SeparatorToken)));
                 }
                 previousNode = currentNode;
             }
@@ -421,7 +421,7 @@ internal partial struct RoutePatternParser
     private RoutePatternRootPartNode ParseRootPart()
         => _currentToken.Kind switch
         {
-            RoutePatternKind.SlashToken => ParseSegmentSeperator(),
+            RoutePatternKind.SlashToken => ParseSegmentSeparator(),
             _ => ParseSegment(),
         };
 
@@ -686,7 +686,7 @@ internal partial struct RoutePatternParser
         return new(colonToken, fragments.ToImmutable());
     }
 
-    private RoutePatternSegmentSeperatorNode ParseSegmentSeperator()
+    private RoutePatternSegmentSeparatorNode ParseSegmentSeparator()
         => new(ConsumeCurrentToken());
 
     private TextSpan GetTokenStartPositionSpan(RoutePatternToken token)
