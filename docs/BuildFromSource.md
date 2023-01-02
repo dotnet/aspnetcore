@@ -18,7 +18,7 @@ To get started, fork this repo and then clone it locally. This workflow assumes 
     git submodule update --init --recursive
     ```
 
-> :bulb: All other steps below will be against your fork of the aspnetcore repo (e.g. `YOUR_USERNAME/aspnetcore`), not the official `dotnet/aspnetcore` repo.
+    > :bulb: All other steps below will be against your fork of the aspnetcore repo (e.g. `YOUR_USERNAME/aspnetcore`), not the official `dotnet/aspnetcore` repo.
 
 1. If you're on Windows, update the PowerShell execution policy on your machine. For more information on execution policies, review [the execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy). To do this, open a PowerShell prompt and issue the following command:
 
@@ -78,7 +78,7 @@ The steps you follow next depend on your preferred development environment:
 
 ## Visual Studio Code or other editor on Windows, Linux, Mac
 
-> :bulb: These steps apply editors other than Visual Studio Code. If you use a different editor, replace `code` in the steps below with your editor's equivalent command.
+> :bulb: These steps also apply to editors other than Visual Studio Code. If you use a different editor, replace `code` in the steps below with your editor's equivalent command.
 
 1. To use Visual Studio Code for developing in this repo, you need [Visual Studio Code installed](https://code.visualstudio.com/) and the ability to [launch `code` from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 
@@ -153,9 +153,11 @@ The steps you follow next depend on your preferred development environment:
 
 If you have [Codespaces enabled on your GitHub user account](https://github.com/codespaces), you can use Codespaces to make code changes in the repo by using a cloud-based editor environment.
 
-1. Navigate to the fork and branch you would like to make code changes in. Note: if you have not created a new branch yet, do so using the GitHub UI or locally checking out and pushing a new branch.
+1. Navigate to your fork of the repo and select the branch in which you'd like to make your code changes.
 
-1. Open a Codespace for your branch by navigating to the **Code** button > selecting the **Codespaces** tab > clicking the **New codespace** button.
+    If you haven't yet created a working branch, do so by using the GitHub UI or locally by first checking out and then pushing the new branch.
+
+1. Open a Codespace for your branch by selecting the **Code** button > **Codespaces** tab > **Create codespace**.
 
     ![How to open a project in Codespaces](https://user-images.githubusercontent.com/1857993/136060792-6b4c6158-0a2c-4dd6-8639-08d83da6d2d1.png)
 
@@ -163,7 +165,7 @@ If you have [Codespaces enabled on your GitHub user account](https://github.com/
 
 1. You can use the `dotnet build` and `dotnet test` commands to build and test the repo.
 
-    You don't need to activate the locally installed .NET SDK or run the `restore` script because it's done during initialization process.
+    You don't need to activate the locally installed .NET SDK or run the `restore` script because it's done during the Codespace initialization process.
 
 ---
 
