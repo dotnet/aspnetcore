@@ -227,6 +227,31 @@ public class Customer
     }
 
     [Fact]
+    public async Task Route_Parameter_withTwoReceivingHandlerParameters_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{cust}", ([FromRoute(Name = "cust")]Customer customer, [FromRoute(Name = "cust")]string customerKey) => {});
+
+public class Customer
+{
+        public static bool TryParse(string s, IFormatProvider provider, out Customer result)
+        {
+            result = new Customer();
+            return true;
+        }
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task Route_Parameter_withNameChanged_viaFromRoute_whenParsable_Works()
     {
         // Arrange
@@ -549,7 +574,7 @@ public class Customer
     }
 
     [Fact]
-    public async Task Handler_Parameter_withWellknownTypes_Works()
+    public async Task Handler_Parameter_withWellKnownTypes_Works()
     {
         // Arrange
         var source = $$"""
