@@ -57,8 +57,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         // - It's assigned to a variable.
         // - It's an argument to a method call, unless in a known safe method.
         var current = operation;
-        if (current.Parent is IArgumentOperation argumentOperation &&
-            argumentOperation.Parent is IInvocationOperation invocationOperation &&
+        if (current.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } &&
             IsAllowedEndpointBuilderMethod(invocationOperation, wellKnownTypes))
         {
             return ResolveOperation(invocationOperation, wellKnownTypes);
@@ -70,11 +69,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             {
                 return blockOperation;
             }
-            else if (current.Parent is IConditionalOperation ||
-                current.Parent is ICoalesceOperation ||
-                current.Parent is IAssignmentOperation ||
-                current.Parent is IArgumentOperation ||
-                current.Parent is IInvocationOperation)
+            else if (current.Parent is IConditionalOperation or
+                ICoalesceOperation or
+                IAssignmentOperation or
+                IArgumentOperation or
+                IInvocationOperation)
             {
                 return current;
             }
@@ -106,12 +105,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         }
         else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_AuthorizationEndpointConventionBuilderExtensions)))
         {
-            return method.Name switch
-            {
-                "RequireAuthorization" => true,
-                "AllowAnonymous" => true,
-                _ => false
-            };
+            return method.Name is "RequireAuthorization" or "AllowAnonymous";
         }
         else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_OpenApiRouteHandlerBuilderExtensions)))
         {
@@ -138,12 +132,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         }
         else if (SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_RateLimiterEndpointConventionBuilderExtensions)))
         {
-            return method.Name switch
-            {
-                "RequireRateLimiting" => true,
-                "DisableRateLimiting" => true,
-                _ => false
-            };
+            return method.Name is "RequireRateLimiting" or "DisableRateLimiting";
         }
 
         return false;
