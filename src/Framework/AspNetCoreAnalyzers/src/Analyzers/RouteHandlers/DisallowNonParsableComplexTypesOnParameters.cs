@@ -64,12 +64,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 location
                 )) { continue; }
 
-
-            var parameterSymbol = routeUsage.UsageContext.ResolvedParameters.FirstOrDefault(p => p.Symbol.Name == handlerDelegateParameter.Name);
-            var routeParameterName = parameterSymbol.RouteParameterName ?? handlerDelegateParameter.Name;
-
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
-            if (routeUsage.RoutePattern.TryGetRouteParameter(routeParameterName, out var routeParameter))
+            if (routeUsage.UsageContext.ResolvedParameters.Any(p => p.Symbol.Name == handlerDelegateParameter.Name))
             {
                 var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
                 var bindability = ParsabilityHelper.GetBindability(parameterTypeSymbol, wellKnownTypes);
