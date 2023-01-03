@@ -466,9 +466,9 @@ internal sealed class HttpsConnectionMiddleware
         // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
         if (httpProtocols == HttpProtocols.Http2)
         {
-            if (OperatingSystem.IsMacOS())
+            if (!TlsAlpn.IsSupported)
             {
-                throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
+                throw new NotSupportedException(CoreStrings.Http2NoTlsAlpn);
             }
             else if (_isWindowsVersionIncompatibleWithHttp2)
             {

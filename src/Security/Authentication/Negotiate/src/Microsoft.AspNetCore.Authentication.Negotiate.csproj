@@ -17,4 +17,7 @@
     <Reference Include="System.DirectoryServices.Protocols" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Negotiate.Test" />
+  </ItemGroup>
 </Project>

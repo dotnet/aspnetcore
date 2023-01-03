@@ -66,4 +66,17 @@
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Build.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Authorization.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Performance" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests" />
+    <InternalsVisibleTo Include="Components.TestServer" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

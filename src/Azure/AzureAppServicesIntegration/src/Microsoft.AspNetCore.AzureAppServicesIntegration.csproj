@@ -14,4 +14,7 @@
     <Reference Include="Microsoft.Extensions.Logging.AzureAppServices" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests" />
+  </ItemGroup>
 </Project>

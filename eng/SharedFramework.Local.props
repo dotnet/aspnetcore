@@ -60,6 +60,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" />

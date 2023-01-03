@@ -23,4 +23,8 @@
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.WebUtilities.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.WebUtilities.Microbenchmarks" />
+  </ItemGroup>
 </Project>

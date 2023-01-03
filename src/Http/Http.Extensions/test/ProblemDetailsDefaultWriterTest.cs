@@ -169,6 +169,7 @@ public class DefaultProblemDetailsWriterTest
     }
 
     [Theory]
+    [InlineData("")]
     [InlineData("*/*")]
     [InlineData("application/*")]
     [InlineData("application/json")]
@@ -214,7 +215,12 @@ public class DefaultProblemDetailsWriterTest
             Response = { Body = body, StatusCode = statusCode },
             RequestServices = CreateServices()
         };
-        context.Request.Headers.Accept = contentType;
+
+        if (!string.IsNullOrEmpty(contentType))
+        {
+            context.Request.Headers.Accept = contentType;
+        }
+
         return context;
     }
 

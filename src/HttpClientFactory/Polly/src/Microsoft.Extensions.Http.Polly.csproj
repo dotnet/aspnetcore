@@ -29,4 +29,7 @@
     <Reference Include="Polly" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

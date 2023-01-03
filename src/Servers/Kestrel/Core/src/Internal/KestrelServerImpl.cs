@@ -60,12 +60,7 @@ internal sealed class KestrelServerImpl : IServer
     }
 
     // For testing
-    internal KestrelServerImpl(IConnectionListenerFactory transportFactory, ServiceContext serviceContext)
-        : this(new[] { transportFactory }, Array.Empty<IMultiplexedConnectionListenerFactory>(), serviceContext)
-    {
-    }
 
-    // For testing
     internal KestrelServerImpl(
         IEnumerable<IConnectionListenerFactory> transportFactories,
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,

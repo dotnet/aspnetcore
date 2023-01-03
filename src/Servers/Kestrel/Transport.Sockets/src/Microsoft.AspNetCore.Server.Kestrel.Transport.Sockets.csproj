@@ -32,4 +32,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sockets.FunctionalTests" />
+    <InternalsVisibleTo Include="Sockets.BindTests" />
+    <InternalsVisibleTo Include="http2cat" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.FunctionalTests" />
+    <InternalsVisibleTo Include="IIS.NewShim.FunctionalTests" />
+    <InternalsVisibleTo Include="IIS.NewHandler.FunctionalTests" />
+    <InternalsVisibleTo Include="IISExpress.FunctionalTests" />
+    <InternalsVisibleTo Include="IIS.FunctionalTests" />
+    <InternalsVisibleTo Include="IIS.Http.FunctionalTests" />
+    <InternalsVisibleTo Include="IIS.LongTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
+  </ItemGroup>
 </Project>

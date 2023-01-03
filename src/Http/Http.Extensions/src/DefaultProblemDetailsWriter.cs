@@ -25,17 +25,22 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         var httpContext = context.HttpContext;
         var acceptHeader = httpContext.Request.Headers.Accept.GetList<MediaTypeHeaderValue>();
 
-        if (acceptHeader is { Count: > 0 })
+        // Based on https://www.rfc-editor.org/rfc/rfc7231#section-5.3.2 a request
+        // without the Accept header implies that the user agent
+        // will accept any media type in response
+        if (acceptHeader.Count == 0)
         {
-            for (var i = 0; i < acceptHeader.Count; i++)
-            {
-                var acceptHeaderValue = acceptHeader[i];
+            return true;
+        }
 
-                if (_jsonMediaType.IsSubsetOf(acceptHeaderValue) ||
-                    _problemDetailsJsonMediaType.IsSubsetOf(acceptHeaderValue))
-                {
-                    return true;
-                }
+        for (var i = 0; i < acceptHeader.Count; i++)
+        {
+            var acceptHeaderValue = acceptHeader[i];
+
+            if (_jsonMediaType.IsSubsetOf(acceptHeaderValue) ||
+                _problemDetailsJsonMediaType.IsSubsetOf(acceptHeaderValue))
+            {
+                return true;
             }
         }
 

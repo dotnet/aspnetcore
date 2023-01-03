@@ -22,4 +22,8 @@
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.HttpLogging.Tests" />
+  </ItemGroup>
 </Project>

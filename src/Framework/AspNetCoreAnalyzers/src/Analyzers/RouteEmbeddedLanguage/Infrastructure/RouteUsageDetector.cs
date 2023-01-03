@@ -22,7 +22,8 @@ internal enum RouteUsageType
     Component
 }
 
-internal record struct ParameterSymbol(ISymbol Symbol, ISymbol? TopLevelSymbol = null)
+// RouteParameterName can be different from parameter name using FromRouteAttribute. e.g. [FromRoute(Name = "custom_name")]
+internal record struct ParameterSymbol(string RouteParameterName, ISymbol Symbol, ISymbol? TopLevelSymbol = null)
 {
     public bool IsNested => TopLevelSymbol != null;
 }
