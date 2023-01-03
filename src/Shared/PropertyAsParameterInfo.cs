@@ -189,7 +189,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
         NullabilityState.Nullable => true,
         // In an oblivious context, the required modifier makes
         // members non-optional
-        NullabilityState.Unknown => !GetCustomAttributes(true).OfType<RequiredMemberAttribute>().Any(),
+        NullabilityState.Unknown => !_underlyingProperty.GetCustomAttributes().OfType<RequiredMemberAttribute>().Any(),
         // Non-nullable types are only optional if they have a default
         // value
         NullabilityState.NotNull => HasDefaultValue,

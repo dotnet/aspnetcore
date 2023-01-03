@@ -7075,8 +7075,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // Act
         await requestDelegate(httpContext);
 
-        // Assert that the required modifier disables optionality
-        // on members when they are not nullable.
+        // Assert that the required modifier on members that
+        // are not nullable treats them as required.
         Assert.Equal(400, httpContext.Response.StatusCode);
 
         var logs = TestSink.Writes.ToArray();
