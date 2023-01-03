@@ -199,7 +199,7 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
     }
 
     [Fact]
-    public async Task WriteResponseBodyAsync_Throws_WhenTypeResolverIsNull()
+    public void WriteResponseBodyAsync_Throws_WhenTypeResolverIsNull()
     {
         // Arrange
         var jsonOptions = new JsonOptions();

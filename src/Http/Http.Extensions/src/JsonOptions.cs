@@ -27,9 +27,9 @@ public class JsonOptions
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
         // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
         // .AddContext<TContext>()
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code 
+#pragma warning disable IL2026 // Suppressed in ILLink.Suppressions.LibraryBuild.xml 
         TypeInfoResolver = CreateDefaultTypeResolver()
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning restore IL2026 // Suppressed in ILLink.Suppressions.LibraryBuild.xml
 
     };
 
