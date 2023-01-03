@@ -65,7 +65,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 )) { continue; }
 
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
-            if (routeUsage.UsageContext.ResolvedParameters.Any(p => p.Symbol.Name == handlerDelegateParameter.Name))
+            if (routeUsage.UsageContext.ResolvedParameters.Any(p => SymbolEqualityComparer.Default.Equals(p.Symbol, handlerDelegateParameter)))
             {
                 var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
                 var bindability = ParsabilityHelper.GetBindability(parameterTypeSymbol, wellKnownTypes);
