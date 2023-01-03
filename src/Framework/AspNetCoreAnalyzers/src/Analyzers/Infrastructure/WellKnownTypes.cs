@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.App.Analyzers.Infrastructure;

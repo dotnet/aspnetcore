@@ -64,7 +64,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 location
                 )) { continue; }
 
-            var routeParameterName = ResolveRouteParameterName(handlerDelegateParameter, wellKnownTypes);
+            var routeParameterName = RouteParameterHelper.ResolveRouteParameterName(handlerDelegateParameter, wellKnownTypes);
 
             // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
             if (routeUsage.RoutePattern.TryGetRouteParameter(routeParameterName, out var routeParameter))
@@ -88,42 +88,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        static string ResolveRouteParameterName(IParameterSymbol parameterSymbol, WellKnownTypes wellKnownTypes)
-        {
-            if (!TryGetFromMetadataInterfaceTypeAttributeData(parameterSymbol, WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata, wellKnownTypes, out var attributeData))
-            {
-                return parameterSymbol.Name; // No route metadata attribute!
-            }
-
-            foreach (var namedArgument in attributeData.NamedArguments)
-            {
-                if (namedArgument.Key == "Name")
-                {
-                    var routeParameterNameConstant = namedArgument.Value;
-                    var routeParameterName = (string)routeParameterNameConstant.Value!;
-                    return routeParameterName; // Have attribute & name is specified.
-                }
-            }
-
-            return parameterSymbol.Name; // We have the attribute, but name isn't specified!
-        }
-
-        static bool TryGetFromMetadataInterfaceTypeAttributeData(IParameterSymbol parameterSymbol, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellknowTypes, out AttributeData attributeData)
-        {
-            var fromMetadataInterfaceTypeSymbol = wellknowTypes.Get(fromMetadataInterfaceType);
-            attributeData = parameterSymbol.GetAttributes().SingleOrDefault(ad => ad.AttributeClass.Implements(fromMetadataInterfaceTypeSymbol))!;
-            return attributeData != null;
-        }
-
-        static bool HasAttributeImplementingFromMetadataInterfaceType(IParameterSymbol parameterSymbol, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes)
-        {
-            return TryGetFromMetadataInterfaceTypeAttributeData(parameterSymbol, fromMetadataInterfaceType, wellKnownTypes, out var _);
-        }
-
         static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location)
         {
+            var fromMetadataInterfaceTypeSymbol = wellKnownTypes.Get(fromMetadataInterfaceType);
             var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
-            if (HasAttributeImplementingFromMetadataInterfaceType(parameter, fromMetadataInterfaceType, wellKnownTypes) && parsability != Parsability.Parsable)
+            if (parameter.HasAttributeImplementingInterface(fromMetadataInterfaceTypeSymbol) && parsability != Parsability.Parsable)
             {
                 var descriptor = SelectDescriptor(parsability, Bindability.NotBindable);
 
