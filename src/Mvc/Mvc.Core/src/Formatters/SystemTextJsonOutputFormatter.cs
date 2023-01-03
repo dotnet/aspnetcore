@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -131,26 +131,3 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         }
     }
 }
-
-internal static class JsonSerializerExtensions
-{
-    public static bool IsPolymorphicSafe(this JsonTypeInfo jsonTypeInfo)
-     => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
-
-    public static bool TryGetTypeInfo(this JsonSerializerOptions options, Type type, [NotNullWhen(true)] out JsonTypeInfo? jsonTypeInfo)
-    {
-        // This shouldn't happen when in AOT and will be controlled
-        // by a future feature switch.
-        if (options.TypeInfoResolver == null)
-        {
-            jsonTypeInfo = null;
-            return false;
-        }
-
-        options.MakeReadOnly();
-
-        jsonTypeInfo = options.GetTypeInfo(type);
-        return true;
-    }
-}
-
