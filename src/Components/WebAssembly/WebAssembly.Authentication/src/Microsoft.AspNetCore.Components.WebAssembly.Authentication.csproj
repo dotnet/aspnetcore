@@ -88,4 +88,7 @@
 
   <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Tests" />
+  </ItemGroup>
 </Project>

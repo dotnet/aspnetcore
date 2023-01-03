@@ -1734,7 +1734,6 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task WebSocketsCanConnectOverHttp2()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -1791,7 +1790,6 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task WebSocketsWithAccessTokenOverHttp2()
     {
         var accessTokenCallCount = 0;
@@ -2247,7 +2245,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task LongPollingUsesHttp2ByDefault()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -2301,7 +2298,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task LongPollingWorksWithHttp2OnlyEndpoint()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -2345,7 +2341,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task ServerSentEventsUsesHttp2ByDefault()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -2396,7 +2391,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/2 over TLS is not supported on macOS due to missing ALPN support.")]
     public async Task ServerSentEventsWorksWithHttp2OnlyEndpoint()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>

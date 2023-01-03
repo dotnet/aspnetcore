@@ -132,6 +132,9 @@ public class ApplicationBuilder : IApplicationBuilder
                 throw new InvalidOperationException(message);
             }
 
+            // Flushing the response and calling through to the next middleware in the pipeline is
+            // a user error, but don't attempt to set the status code if this happens. It leads to a confusing
+            // behavior where the client response looks fine, but the server side logic results in an exception.
             if (!context.Response.HasStarted)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;

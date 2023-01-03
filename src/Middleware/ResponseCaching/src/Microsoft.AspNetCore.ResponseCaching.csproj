@@ -23,4 +23,7 @@
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.ResponseCaching.Tests" />
+  </ItemGroup>
 </Project>

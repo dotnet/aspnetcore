@@ -15,4 +15,7 @@
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests" />
+  </ItemGroup>
 </Project>

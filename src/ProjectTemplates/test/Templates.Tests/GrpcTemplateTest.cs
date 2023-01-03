@@ -60,16 +60,8 @@ public class GrpcTemplateTest : LoggedTest
 
         using (var serverProcess = project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: Logger))
         {
-            // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
-            // https://github.com/dotnet/aspnetcore/issues/11061
-            if (isOsx)
-            {
-                serverProcess.Process.WaitForExit(assertSuccess: false);
-                Assert.True(serverProcess.Process.HasExited, "built");
-                Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", project, serverProcess.Process));
-            }
-            else if (isWindowsOld)
+            // These templates are HTTPS + HTTP/2 only which is not supported on some platforms.
+            if (isWindowsOld)
             {
                 serverProcess.Process.WaitForExit(assertSuccess: false);
                 Assert.True(serverProcess.Process.HasExited, "built");
@@ -86,16 +78,8 @@ public class GrpcTemplateTest : LoggedTest
 
         using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !unsupported))
         {
-            // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
-            // https://github.com/dotnet/aspnetcore/issues/11061
-            if (isOsx)
-            {
-                aspNetProcess.Process.WaitForExit(assertSuccess: false);
-                Assert.True(aspNetProcess.Process.HasExited, "published");
-                Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", project, aspNetProcess.Process));
-            }
-            else if (isWindowsOld)
+            // These templates are HTTPS + HTTP/2 only which is not supported on some platforms.
+            if (isWindowsOld)
             {
                 aspNetProcess.Process.WaitForExit(assertSuccess: false);
                 Assert.True(aspNetProcess.Process.HasExited, "published");
