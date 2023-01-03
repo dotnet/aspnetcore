@@ -1846,7 +1846,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).DefaultTimeout();
 
                 await secondClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupA").DefaultTimeout();
-                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout(); ;
+                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout();
 
                 var groupNames = new List<string> { "GroupA", "GroupB" };
                 await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleGroups), "test", groupNames).DefaultTimeout();
@@ -4750,6 +4750,27 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task ServiceResolvedForIEnumerableParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.IEnumerableOfServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal(1L, res.Result);
+        }
+    }
+
+    [Fact]
     public async Task ServiceResolvedWithoutAttribute_WithHubSpecificSettingEnabled()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
@@ -4836,6 +4857,26 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
             var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
             Assert.Equal("Failed to invoke 'ServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceNotResolvedForIEnumerableParameterIfNotInDI()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.IEnumerableOfServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'IEnumerableOfServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
         }
     }
 

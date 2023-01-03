@@ -30,12 +30,13 @@ internal sealed class PrintCommand
                     cmd.Reporter,
                     cmd.ProjectOption.Value(),
                     idArgument.Value,
-                    showAllOption.HasValue());
+                    showAllOption.HasValue(),
+                    cmd.OutputOption.Value());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string id, bool showAll)
+    private static int Execute(IReporter reporter, string projectPath, string id, bool showAll, string outputFormat)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -49,9 +50,8 @@ internal sealed class PrintCommand
             return 1;
         }
 
-        reporter.Output(Resources.FormatPrintCommand_Confirmed(id));
         JwtSecurityToken fullToken = JwtIssuer.Extract(jwt.Token);
-        DevJwtCliHelpers.PrintJwt(reporter, jwt, showAll, fullToken);
+        DevJwtCliHelpers.PrintJwt(reporter, jwt, showAll, outputFormat, fullToken);
 
         return 0;
     }

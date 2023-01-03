@@ -80,7 +80,7 @@ internal sealed class HubMethodDescriptor
                 return false;
             }
             else if (p.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
-                serviceProviderIsService?.IsService(p.ParameterType) == true)
+                serviceProviderIsService?.IsService(GetServiceType(p.ParameterType)) == true)
             {
                 if (index >= 64)
                 {
@@ -159,5 +159,19 @@ internal sealed class HubMethodDescriptor
         var methodCall = Expression.Call(null, genericMethodInfo, methodArguments);
         var lambda = Expression.Lambda<Func<object, CancellationToken, IAsyncEnumerator<object>>>(methodCall, parameters);
         return lambda.Compile();
+    }
+
+    private static Type GetServiceType(Type type)
+    {
+        // IServiceProviderIsService will special case IEnumerable<> and always return true
+        // so, in this case checking the element type instead
+        if (type.IsConstructedGenericType &&
+            type.GetGenericTypeDefinition() is Type genericDefinition &&
+            genericDefinition == typeof(IEnumerable<>))
+        {
+            return type.GenericTypeArguments[0];
+        }
+
+        return type;
     }
 }

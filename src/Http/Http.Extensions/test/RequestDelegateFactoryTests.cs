@@ -2988,6 +2988,28 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
+    [Fact]
+    public async Task RequestDelegateWritesComplexStructReturnValueAsJsonResponseBody()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(() => new TodoStruct(42, "Bob", true));
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.Equal(42, deserializedResponseBody.Id);
+        Assert.Equal("Bob", deserializedResponseBody.Name);
+        Assert.True(deserializedResponseBody.IsComplete);
+    }
+
     public static IEnumerable<object[]> ChildResult
     {
         get
@@ -3363,6 +3385,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             Task<Todo?> TaskTestTodoAction() => Task.FromResult<Todo?>(null);
             ValueTask<Todo?> ValueTaskTestTodoAction() => ValueTask.FromResult<Todo?>(null);
 
+            TodoStruct? TodoStructAction() => null;
+
             return new List<object[]>
                 {
                     new object[] { (Func<bool?>)TestBoolAction },
@@ -3374,6 +3398,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Func<Todo?>)TestTodoAction },
                     new object[] { (Func<Task<Todo?>>)TaskTestTodoAction },
                     new object[] { (Func<ValueTask<Todo?>>)ValueTaskTestTodoAction },
+                    new object[] { (Func<TodoStruct?>)TodoStructAction },
                 };
         }
     }
@@ -5671,6 +5696,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         };
 
         var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
 
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
@@ -5690,6 +5717,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // Assert
         Assert.False(invoked);
         Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Equal(0, responseBodyStream.Position);
     }
 
     [Fact]

@@ -126,10 +126,10 @@ internal sealed class W3CLoggingMiddleware
             }
         }
 
+        var request = context.Request;
+
         if ((W3CLoggingFields.Request & options.LoggingFields) != W3CLoggingFields.None)
         {
-            var request = context.Request;
-
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
             {
                 shouldLog |= AddToList(elements, _protocolVersionIndex, request.Protocol);
@@ -175,14 +175,14 @@ internal sealed class W3CLoggingMiddleware
                         shouldLog |= AddToList(elements, _userAgentIndex, agent.ToString());
                     }
                 }
+            }
+        }
 
-                if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
-                {
-                    if (request.Headers.TryGetValue(HeaderNames.Cookie, out var cookie))
-                    {
-                        shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
-                    }
-                }
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
+        {
+            if (request.Headers.TryGetValue(HeaderNames.Cookie, out var cookie))
+            {
+                shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
             }
         }
 
@@ -192,7 +192,7 @@ internal sealed class W3CLoggingMiddleware
 
             for (var i = 0; i < additionalRequestHeaders.Count; i++)
             {
-                if (context.Request.Headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
+                if (request.Headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
                 {
                     shouldLog |= AddToList(additionalHeaderElements, i, headerValue.ToString());
                 }

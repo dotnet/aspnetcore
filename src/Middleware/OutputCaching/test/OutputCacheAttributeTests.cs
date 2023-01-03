@@ -48,13 +48,27 @@ public class OutputCacheAttributeTests
         var options = new OutputCacheOptions();
         options.AddPolicy("MyPolicy", b => b.Expire(TimeSpan.FromSeconds(42)));
 
-        var context = TestUtils.CreateTestContext(options: options);
+        var context = TestUtils.CreateUninitializedContext(options: options);
 
         var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.PolicyName));
         await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
 
         Assert.True(context.EnableOutputCaching);
         Assert.Equal(42, context.ResponseExpirationTimeSpan?.TotalSeconds);
+    }
+
+    [Fact]
+    public async Task Attribute_NamedPolicyDoesNotInjectDefaultPolicy()
+    {
+        var options = new OutputCacheOptions();
+        options.AddPolicy("MyPolicy", b => b.With(x => false).Cache());
+
+        var context = TestUtils.CreateUninitializedContext(options: options);
+
+        var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.PolicyName));
+        await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
+
+        Assert.False(context.EnableOutputCaching);
     }
 
     [Fact]

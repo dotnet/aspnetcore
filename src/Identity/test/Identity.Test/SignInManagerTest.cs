@@ -942,6 +942,37 @@ public class SignInManagerTest
     }
 
     [Fact]
+    public async Task GetExternalLoginInfoAsyncWithOidcSubClaim()
+    {
+        // Arrange
+        var user = new PocoUser { Id = "foo", UserName = "Foo" };
+        var userManager = SetupUserManager(user);
+        var context = new DefaultHttpContext();
+        var identity = new ClaimsIdentity();
+        identity.AddClaim(new Claim("sub", "bar"));
+        var principal = new ClaimsPrincipal(identity);
+        var properties = new AuthenticationProperties();
+        properties.Items["LoginProvider"] = "blah";
+        var authResult = AuthenticateResult.Success(new AuthenticationTicket(principal, properties, "blah"));
+        var auth = MockAuth(context);
+        auth.Setup(s => s.AuthenticateAsync(context, IdentityConstants.ExternalScheme)).ReturnsAsync(authResult);
+        var schemeProvider = new Mock<IAuthenticationSchemeProvider>();
+        var handler = new Mock<IAuthenticationHandler>();
+        schemeProvider.Setup(s => s.GetAllSchemesAsync())
+            .ReturnsAsync(new[]
+            {
+                new AuthenticationScheme("blah", "Blah blah", handler.Object.GetType())
+            });
+        var signInManager = SetupSignInManager(userManager.Object, context, schemeProvider: schemeProvider.Object);
+
+        // Act
+        var externalLoginInfo = await signInManager.GetExternalLoginInfoAsync();
+
+        // Assert
+        Assert.Equal("bar", externalLoginInfo.ProviderKey);
+    }
+
+    [Fact]
     public async Task ExternalLoginInfoAsyncReturnsAuthenticationPropertiesWithCustomValue()
     {
         // Arrange

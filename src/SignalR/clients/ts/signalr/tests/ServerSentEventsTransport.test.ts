@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { MessageHeaders } from "../src/IHubProtocol";
 import { TransferFormat } from "../src/ITransport";
 
-import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient";
+import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { ILogger } from "../src/ILogger";
 import { ServerSentEventsTransport } from "../src/ServerSentEventsTransport";
 import { getUserAgentHeader } from "../src/Utils";
@@ -186,7 +185,7 @@ describe("ServerSentEventsTransport", () => {
             const sse = await createAndStartSSE(logger);
 
             let closeCalled: boolean = false;
-            let error: Error | undefined;
+            let error: Error | unknown;
             sse.onclose = (e) => {
                 closeCalled = true;
                 error = e;
@@ -222,7 +221,7 @@ describe("ServerSentEventsTransport", () => {
             };
 
             let closeCalled: boolean = false;
-            let error: Error | undefined;
+            let error: Error | unknown;
             sse.onclose = (e) => {
                 closeCalled = true;
                 error = e;

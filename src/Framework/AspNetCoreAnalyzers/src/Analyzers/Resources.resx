@@ -201,4 +201,10 @@
   <data name="Analyzer_UnusedParameter_Title" xml:space="preserve">
     <value>Unused route parameter</value>
   </data>
+  <data name="Analyzer_HeaderDictionaryAdd_Message" xml:space="preserve">
+    <value>Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key.</value>
+  </data>
+  <data name="Analyzer_HeaderDictionaryAdd_Title" xml:space="preserve">
+    <value>Suggest using IHeaderDictionary.Append or the indexer</value>
+  </data>
 </root>

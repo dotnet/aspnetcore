@@ -29,4 +29,29 @@ public class RequestCookiesCollectionTests
 
         Assert.Equal(12, cookies.Count);
     }
+
+    [Theory]
+    [InlineData(",", null)]
+    [InlineData(";", null)]
+    [InlineData("er=dd,cc,bb", new[] { "dd" })]
+    [InlineData("er=dd,err=cc,errr=bb", new[] { "dd", "cc", "bb" })]
+    [InlineData("errorcookie=dd,:(\"sa;", new[] { "dd" })]
+    [InlineData("s;", null)]
+    public void ParseInvalidCookies(string cookieToParse, string[] expectedCookieValues)
+    {
+        var cookies = RequestCookieCollection.Parse(new StringValues(new[] { cookieToParse }));
+
+        if(expectedCookieValues == null)
+        {
+            Assert.Equal(0, cookies.Count);
+            return;
+        }
+
+        Assert.Equal(expectedCookieValues.Length, cookies.Count);
+        for (int i = 0; i < expectedCookieValues.Length; i++)
+        {
+            var value = expectedCookieValues[i];
+            Assert.Equal(value, cookies.ElementAt(i).Value);
+        }
+    }
 }

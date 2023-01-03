@@ -163,6 +163,11 @@ declare type MonoConfigError = {
     message: string;
     error: any;
 };
+interface LoadingResource {
+    name: string;
+    url: string;
+    response: Promise<Response>;
+}
 declare type AllAssetEntryTypes = AssetEntry | AssemblyEntry | SatelliteAssemblyEntry | VfsEntry | IcuData;
 declare type AssetEntry = {
     name: string;
@@ -172,6 +177,7 @@ declare type AssetEntry = {
     load_remote?: boolean;
     is_optional?: boolean;
     buffer?: ArrayBuffer;
+    pendingDownload?: LoadingResource;
 };
 interface AssemblyEntry extends AssetEntry {
     name: "assembly";
@@ -188,13 +194,7 @@ interface IcuData extends AssetEntry {
     name: "icu";
     load_remote: boolean;
 }
-declare const enum AssetBehaviours {
-    Resource = "resource",
-    Assembly = "assembly",
-    Heap = "heap",
-    ICU = "icu",
-    VFS = "vfs"
-}
+type AssetBehaviours = "resource" | "assembly" | "pdb" | "heap" | "icu" | "vfs" | "dotnetwasm" | "js-module-threads";
 declare const enum GlobalizationMode {
     ICU = "icu",
     INVARIANT = "invariant",

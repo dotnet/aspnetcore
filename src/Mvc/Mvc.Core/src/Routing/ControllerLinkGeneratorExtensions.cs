@@ -214,7 +214,7 @@ public static class ControllerLinkGeneratorExtensions
         string action,
         string controller,
         object? values,
-        string? scheme,
+        string scheme,
         HostString host,
         PathString pathBase = default,
         FragmentString fragment = default,

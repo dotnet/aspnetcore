@@ -2021,18 +2021,23 @@ public abstract class ControllerBase
 
     /// <summary>
     /// Creates a <see cref="CreatedResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>   
+    /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
+    [NonAction]
+    public virtual CreatedResult Created()
+    {
+        return new CreatedResult();
+    }
+
+    /// <summary>
+    /// Creates a <see cref="CreatedResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The content value to format in the entity body.</param>
     /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
     [NonAction]
-    public virtual CreatedResult Created(string uri, [ActionResultObjectValue] object? value)
+    public virtual CreatedResult Created(string? uri, [ActionResultObjectValue] object? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
         return new CreatedResult(uri, value);
     }
 
@@ -2043,13 +2048,8 @@ public abstract class ControllerBase
     /// <param name="value">The content value to format in the entity body.</param>
     /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
     [NonAction]
-    public virtual CreatedResult Created(Uri uri, [ActionResultObjectValue] object? value)
+    public virtual CreatedResult Created(Uri? uri, [ActionResultObjectValue] object? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
         return new CreatedResult(uri, value);
     }
 

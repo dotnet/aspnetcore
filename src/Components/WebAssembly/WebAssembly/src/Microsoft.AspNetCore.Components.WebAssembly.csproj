@@ -63,4 +63,8 @@
   <Target Name="_CheckBlazorServerJSPath" BeforeTargets="GenerateNuspec" DependsOnTargets="ResolveProjectReferences" Condition=" '$(IsPackable)' == 'true' ">
     <Error Text="'$(BlazorWebAssemblyJSFile)' does not exist. Enable NodeJS to pack this project." Condition=" !EXISTS('$(BlazorWebAssemblyJSFile)') " />
   </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

@@ -152,7 +152,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     public override string? GetUriByAddress<TAddress>(
         TAddress address,
         RouteValueDictionary values,
-        string? scheme,
+        string scheme,
         HostString host,
         PathString pathBase = default,
         FragmentString fragment = default,

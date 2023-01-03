@@ -146,6 +146,64 @@ public class KestrelServerTests
     }
 
     [Theory]
+    [InlineData(null)] // Uses the default
+    [InlineData(HttpProtocols.Http1)]
+    [InlineData(HttpProtocols.Http2)]
+    public void NoTlsLogging_None(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Empty(warnings);
+        Assert.Empty(infos);
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1 | HttpProtocols.Http3)]
+    public void NoTlsLogging_Info(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Empty(warnings);
+        Assert.Equal(2, infos.Count()); // ipv4 and ipv6
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1AndHttp2)]
+    public void NoTlsLogging_Warn(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Equal(2, warnings.Count()); // ipv4 and ipv6
+        Assert.Empty(infos);
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
+    public void NoTlsLogging_WarnAndInfo(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Equal(2, warnings.Count()); // ipv4 and ipv6
+        Assert.Equal(2, infos.Count()); // ipv4 and ipv6
+    }
+
+    private static (IEnumerable<TestApplicationErrorLogger.LogMessage> warnings, IEnumerable<TestApplicationErrorLogger.LogMessage> infos) GetNoTlsLogging(HttpProtocols? protocols)
+    {
+        var testLogger = new TestApplicationErrorLogger();
+        var kestrelOptions = new KestrelServerOptions();
+
+        if (protocols.HasValue)
+        {
+            kestrelOptions.ConfigureEndpointDefaults(opt =>
+            {
+                opt.Protocols = protocols.Value;
+            });
+        }
+
+        using (var server = CreateServer(kestrelOptions, testLogger))
+        {
+            StartDummyApplication(server);
+            return (testLogger.Messages.Where(log => log.EventId == 64), testLogger.Messages.Where(log => log.EventId == 65));
+        }
+    }
+
+    [Theory]
     [InlineData(1, 2)]
     [InlineData(int.MaxValue - 1, int.MaxValue)]
     public void StartWithMaxRequestBufferSizeLessThanMaxRequestLineSizeThrows(long maxRequestBufferSize, int maxRequestLineSize)
@@ -656,7 +714,7 @@ public class KestrelServerTests
             DebuggerWrapper.Singleton,
             testContext.Log);
 
-        using (var server = new KestrelServerImpl(new MockTransportFactory(), testContext))
+        using (var server = new KestrelServerImpl(new[] { new MockTransportFactory() }, Array.Empty<IMultiplexedConnectionListenerFactory>(), testContext))
         {
             Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 

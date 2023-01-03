@@ -7,7 +7,6 @@
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFrameworks>netcoreapp2.1;$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
-    <Nullable>disable</Nullable>
     <NoWarn>$(NoWarn);nullable</NoWarn>
   </PropertyGroup>
 

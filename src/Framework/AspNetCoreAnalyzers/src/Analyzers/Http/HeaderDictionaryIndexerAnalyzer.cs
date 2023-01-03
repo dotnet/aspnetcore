@@ -168,7 +168,7 @@ public partial class HeaderDictionaryIndexerAnalyzer : DiagnosticAnalyzer
 
     private static void AddDiagnosticWarning(OperationAnalysisContext context, Location location, string headerName, string propertyName)
     {
-        var propertiesBuilder = ImmutableDictionary.CreateBuilder<string, string>();
+        var propertiesBuilder = ImmutableDictionary.CreateBuilder<string, string?>();
         propertiesBuilder.Add("HeaderName", headerName);
         propertiesBuilder.Add("ResolvedPropertyName", propertyName);
 

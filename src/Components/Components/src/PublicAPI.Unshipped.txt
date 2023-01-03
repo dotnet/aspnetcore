@@ -56,3 +56,5 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.Crea
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> setter, T existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 virtual Microsoft.AspNetCore.Components.NavigationManager.HandleLocationChangingHandlerException(System.Exception! ex, Microsoft.AspNetCore.Components.Routing.LocationChangingContext! context) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.SetNavigationLockState(bool value) -> void
+*REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
