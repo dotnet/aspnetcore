@@ -1342,6 +1342,7 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45811")]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
         {
             var oneKbString = new string('a', 1024);
