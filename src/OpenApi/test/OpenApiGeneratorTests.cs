@@ -928,6 +928,46 @@ public class OpenApiOperationGeneratorTests
         ValidateParameter(GetOpenApiOperation(([FromHeader(Name = "headerName")] string param) => ""), "headerName");
     }
 
+#nullable enable
+    public class AsParametersWithRequiredMembers
+    {
+        public required string RequiredStringMember { get; set; }
+        public required string? RequiredNullableStringMember { get; set; }
+        public string NonNullableStringMember { get; set; } = string.Empty;
+        public string? NullableStringMember { get; set; }
+    }
+
+    [Fact]
+    public void SupportsRequiredMembersInAsParametersAttribute()
+    {
+        var operation = GetOpenApiOperation(([AsParameters] AsParametersWithRequiredMembers foo) => { });
+        Assert.Equal(4, operation.Parameters.Count);
+
+        Assert.Collection(operation.Parameters,
+            param => Assert.True(param.Required),
+            param => Assert.False(param.Required),
+            param => Assert.True(param.Required),
+            param => Assert.False(param.Required));
+    }
+#nullable disable
+
+    public class AsParametersWithRequiredMembersObliviousContext
+    {
+        public required string RequiredStringMember { get; set; }
+        public string OptionalStringMember { get; set; }
+    }
+
+    [Fact]
+    public void SupportsRequiredMembersInAsParametersObliviousContextAttribute()
+    {
+        var operation = GetOpenApiOperation(([AsParameters] AsParametersWithRequiredMembersObliviousContext foo) => { });
+        Assert.Equal(2, operation.Parameters.Count);
+
+        Assert.Collection(operation.Parameters,
+            param => Assert.True(param.Required),
+            param => Assert.False(param.Required));
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,

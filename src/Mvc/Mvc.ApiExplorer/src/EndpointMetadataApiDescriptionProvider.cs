@@ -182,7 +182,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
         var nullabilityContext = new NullabilityInfoContext();
         var nullability = nullabilityContext.Create(parameter);
-        var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
+        var isOptional = parameter is PropertyAsParameterInfo argument
+            ? argument.IsOptional || allowEmpty
+            : parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
         var parameterDescriptor = CreateParameterDescriptor(parameter, pattern);
         var routeInfo = CreateParameterRouteInfo(pattern, parameter, isOptional);
 
