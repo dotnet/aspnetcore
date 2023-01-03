@@ -125,7 +125,11 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
 
         await base.BindModelAsync(bindingContext);
         if (!bindingContext.Result.IsModelSet)
-        {
+        {            
+            // By default, an empty Dictionary is created, however, when a parameter has a default value
+            // the model is not set and we should check if binding is required.
+            // It will not be required by default, since we have the default value but it could be explicitly specified
+            // Eg.: Get([BindRequired] Dictionary<string, string> test = null).
             if (bindingContext.IsTopLevelObject)
             {
                 AddErrorIfBindingRequired(bindingContext);
