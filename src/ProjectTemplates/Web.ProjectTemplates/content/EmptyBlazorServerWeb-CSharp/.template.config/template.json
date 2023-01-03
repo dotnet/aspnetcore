@@ -13,7 +13,7 @@
   "precedence": "9000",
   "identity": "Microsoft.Web.Blazor.Server.Empty.CSharp.7.0",
   "shortName": "blazorserver-empty",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/7.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
