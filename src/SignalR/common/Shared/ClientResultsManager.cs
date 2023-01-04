@@ -23,7 +23,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
             var tcs = (TaskCompletionSourceWithCancellation<T>)state;
             if (completionMessage.HasResult)
             {
-                tcs.SetResult((T)completionMessage.Result);
+                tcs.SetResult((T)completionMessage.Result!);
             }
             else
             {
