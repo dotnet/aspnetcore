@@ -21,4 +21,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Extensions.Tests" />
+  </ItemGroup>
 </Project>

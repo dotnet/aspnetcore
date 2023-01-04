@@ -4,4 +4,8 @@
     <DiagnosticId>PKV004</DiagnosticId>
     <Target>net7.0</Target>
   </Suppression>
+  <Suppression>
+    <DiagnosticId>PKV004</DiagnosticId>
+    <Target>net8.0</Target>
+  </Suppression>
 </Suppressions>

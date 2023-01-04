@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core data protection abstractions.
@@ -20,4 +20,7 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
       Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
+  </ItemGroup>
 </Project>

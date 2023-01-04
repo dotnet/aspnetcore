@@ -20,7 +20,7 @@ There are two ways you can provide a minimal repro project. The first and simple
   Note: that this step is important and we won't be able to open zip attachments in your issues.
   Zip files are potential attack vectors that we try to avoid at all cost.
   
-  ## Important consideratoins
-  - **Never** include any sensitive information in your reproduction project.
-  - **Never** include any code that is not intended to be public in a repro.
-  - **Do not** reference any external services or data sources.
+## Important considerations
+- **Never** include any sensitive information in your reproduction project.
+- **Never** include any code that is not intended to be public in a repro.
+- **Do not** reference any external services or data sources.

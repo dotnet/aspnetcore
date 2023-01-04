@@ -3,12 +3,15 @@
 
 #nullable disable
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Routing.Matching;
 
 // Uses generated IL to implement the JumpTable contract. This approach requires
 // a fallback jump table for two reasons:
 // 1. We compute the IL lazily to avoid taking up significant time when processing a request
 // 2. The generated IL only supports ASCII in the URL path
+[RequiresDynamicCode("ILEmitTrieJumpTable uses runtime IL generation.")]
 internal sealed class ILEmitTrieJumpTable : JumpTable
 {
     private readonly int _defaultDestination;

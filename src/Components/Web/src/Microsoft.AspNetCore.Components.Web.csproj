@@ -8,6 +8,7 @@
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,4 +19,8 @@
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+  </ItemGroup>
 </Project>
