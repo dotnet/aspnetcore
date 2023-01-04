@@ -92,8 +92,13 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
-    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(EmptyHttpResult) })!, Expression.Property(null, typeof(EmptyHttpResult), nameof(EmptyHttpResult.Instance)));
-
+    // Due to https://github.com/dotnet/aspnetcore/issues/41330 we cannot reference the EmptyHttpResult type
+    // but users still need to assert on it as in https://github.com/dotnet/aspnetcore/issues/45063
+    // so we temporarily work around this here by using reflection to get the actual type.
+    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Type.GetType("Microsoft.AspNetCore.Http.Results, Microsoft.AspNetCore.Http.Results") is {} resultsType
+        ? Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Property(null, resultsType.GetProperty("Empty")!))
+        : Expression.New(typeof(ValueTask<object>));
+    private static readonly object? EmptyHttpResultInstance = Type.GetType("Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult, Microsoft.AspNetCore.Http.Results")?.GetProperty("Instance")?.GetValue(null, null);
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
@@ -2154,15 +2159,16 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteTaskWithEmptyResult(Task task)
     {
+        Debug.Assert(EmptyHttpResultInstance is not null);
         static async ValueTask<object?> ExecuteAwaited(Task task)
         {
             await task;
-            return EmptyHttpResult.Instance;
+            return EmptyHttpResultInstance;
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return new ValueTask<object?>(EmptyHttpResult.Instance);
+            return new ValueTask<object?>(EmptyHttpResultInstance);
         }
 
         return ExecuteAwaited(task);
@@ -2170,16 +2176,17 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteValueTaskWithEmptyResult(ValueTask valueTask)
     {
+        Debug.Assert(EmptyHttpResultInstance is not null);
         static async ValueTask<object?> ExecuteAwaited(ValueTask task)
         {
             await task;
-            return EmptyHttpResult.Instance;
+            return EmptyHttpResultInstance;
         }
 
         if (valueTask.IsCompletedSuccessfully)
         {
             valueTask.GetAwaiter().GetResult();
-            return new ValueTask<object?>(EmptyHttpResult.Instance);
+            return new ValueTask<object?>(EmptyHttpResultInstance);
         }
 
         return ExecuteAwaited(valueTask);
@@ -2504,24 +2511,6 @@ public static partial class RequestDelegateFactory
         foreach (var kv in factoryContext.TrackedParameters)
         {
             errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
-        }
-    }
-
-    // Due to cyclic references between Http.Extensions and
-    // Http.Results, we define our own instance of the `EmptyHttpResult`
-    // type here.
-    private sealed class EmptyHttpResult : IResult
-    {
-        private EmptyHttpResult()
-        {
-        }
-
-        public static EmptyHttpResult Instance { get; } = new();
-
-        /// <inheritdoc/>
-        public Task ExecuteAsync(HttpContext httpContext)
-        {
-            return Task.CompletedTask;
         }
     }
 
