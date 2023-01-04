@@ -228,11 +228,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
         // Serialize payload to a JsonElement here. Problem details serialization can write JsonElement in extensions dictionary.
         problemDetails.Extensions["exception"] = JsonSerializer.SerializeToElement(new ExceptionExtensionData
         (
-            Details: errorContext.Exception.ToString(),
-            Headers: httpContext.Request.Headers,
-            Path: httpContext.Request.Path.ToString(),
-            Endpoint: httpContext.GetEndpoint()?.ToString(),
-            RouteValues: httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues
+            details: errorContext.Exception.ToString(),
+            headers: httpContext.Request.Headers,
+            path: httpContext.Request.Path.ToString(),
+            endpoint: httpContext.GetEndpoint()?.ToString(),
+            routeValues: httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues
         ), _serializationContext.ExceptionExtensionData);
 
         return problemDetails;
@@ -353,7 +353,23 @@ internal class DeveloperExceptionPageMiddlewareImpl
     }
 }
 
-internal record ExceptionExtensionData(string Details, IHeaderDictionary Headers, string Path, string? Endpoint, RouteValueDictionary? RouteValues);
+internal class ExceptionExtensionData
+{
+    public ExceptionExtensionData(string details, IHeaderDictionary headers, string path, string? endpoint, RouteValueDictionary? routeValues)
+    {
+        Details = details;
+        Headers = headers;
+        Path = path;
+        Endpoint = endpoint;
+        RouteValues = routeValues;
+    }
+
+    public string Details { get; }
+    public IHeaderDictionary Headers { get; }
+    public string Path { get; }
+    public string? Endpoint { get; }
+    public RouteValueDictionary? RouteValues { get; }
+}
 
 [JsonSerializable(typeof(ExceptionExtensionData))]
 internal sealed partial class ExtensionsExceptionJsonContext : JsonSerializerContext
