@@ -12,7 +12,7 @@
   <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - instala, repara, desinstala o
    crea una copia local completa del paquete en el directorio. Install es la opción predeterminada.
 
-/passive | /quiet -  muestra una IU mínima sin peticiones, o bien no muestra la IU 
+/passive | /quiet -  muestra una IU mínima sin peticiones, o bien no muestra la IU
   ni las peticiones. De forma predeterminada, se muestran la IU y todas las peticiones.
 
 /norestart   - suprime los intentos de reiniciar. De forma predeterminada, la IU preguntará antes de reiniciar.
@@ -38,8 +38,8 @@
   <String Id="ModifyCloseButton">&amp;Cerrar</String>
   <String Id="SuccessRepairHeader">La reparación se completó correctamente</String>
   <String Id="SuccessUninstallHeader">La desinstalación se completó correctamente</String>
-  <String Id="SuccessInstallHeader">La instalación se completó correctamente</String> 
-  <String Id="SuccessHeader">La instalación o desinstalación se realizó correctamente</String>	
+  <String Id="SuccessInstallHeader">La instalación se completó correctamente</String>
+  <String Id="SuccessHeader">La instalación o desinstalación se realizó correctamente</String>
   <String Id="SuccessLaunchButton">&amp;Iniciar</String>
   <String Id="SuccessRestartText">Debe reiniciar el equipo para poder usar el software.</String>
   <String Id="SuccessRestartButton">&amp;Reiniciar</String>
@@ -47,7 +47,7 @@
   <String Id="FailureHeader">Error de instalación</String>
   <String Id="FailureInstallHeader">No se pudo instalar</String>
   <String Id="FailureUninstallHeader">No se pudo desinstalar</String>
-  <String Id="FailureRepairHeader">No se pudo reparar</String> 
+  <String Id="FailureRepairHeader">No se pudo reparar</String>
   <String Id="FailureHyperlinkLogText">Error de instalación debido a uno o varios problemas. Corrija los problemas e intente de nuevo la instalación. Para obtener más información, consulte el &lt;a href="#"&gt;archivo de registro&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Debe reiniciar el equipo para completar la reversión del software.</String>
   <String Id="FailureRestartButton">&amp;Reiniciar</String>
@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Programa de instalación de [WixBundleName].</String>
-  <String Id="InstallResetIIS">Reinicie IIS una vez completada la instalación. Puede encontrar información adicional &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;aquí&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS no está habilitado en esta máquina. Si tiene previsto ejecutar aplicaciones ASP.NET Core con IIS, debe instalar IIS antes de ejecutar este instalador. Puede encontrar información adicional &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;aquí&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Reinicie IIS una vez completada la instalación. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;aquí&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS no está habilitado en esta máquina. Si tiene previsto ejecutar aplicaciones ASP.NET Core con IIS, debe instalar IIS antes de ejecutar este instalador. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;aquí&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Términos de licencia&lt;/a&gt; y &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;declaración de privacidad&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">Reinicie IIS una vez completada la instalación. Puede encontrar información adicional &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;aquí&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS no está habilitado en esta máquina. Si tiene previsto ejecutar aplicaciones ASP.NET Core con IIS, debe instalar IIS antes de ejecutar este instalador. Puede encontrar información adicional &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;aquí&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Reinicie IIS una vez completada la instalación. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;aquí&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS no está habilitado en esta máquina. Si tiene previsto ejecutar aplicaciones ASP.NET Core con IIS, debe instalar IIS antes de ejecutar este instalador. Puede encontrar información adicional &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;aquí&lt;/a&gt;.</String>
 </WixLocalization>

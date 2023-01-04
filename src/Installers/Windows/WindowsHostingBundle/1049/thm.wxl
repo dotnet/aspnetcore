@@ -38,8 +38,8 @@
   <String Id="ModifyCloseButton">&amp;Закрыть</String>
   <String Id="SuccessRepairHeader">Восстановление успешно завершено</String>
   <String Id="SuccessUninstallHeader">Удаление успешно завершено</String>
-  <String Id="SuccessInstallHeader">Установка успешно завершена</String> 
-  <String Id="SuccessHeader">Установка успешно завершена</String>	
+  <String Id="SuccessInstallHeader">Установка успешно завершена</String>
+  <String Id="SuccessHeader">Установка успешно завершена</String>
   <String Id="SuccessLaunchButton">&amp;Запустить</String>
   <String Id="SuccessRestartText">Перед использованием программного обеспечения необходимо перезапустить компьютер.</String>
   <String Id="SuccessRestartButton">&amp;Перезапустить</String>
@@ -47,7 +47,7 @@
   <String Id="FailureHeader">Настройка не завершена</String>
   <String Id="FailureInstallHeader">Сбой установки</String>
   <String Id="FailureUninstallHeader">Сбой удаления</String>
-  <String Id="FailureRepairHeader">Сбой восстановления</String> 
+  <String Id="FailureRepairHeader">Сбой восстановления</String>
   <String Id="FailureHyperlinkLogText">Одна или несколько проблем вызывали сбой программы установки. Исправьте эти проблемы и попробуйте повторить установку. Дополнительные сведения см. в &lt;a href="#"&gt;файле журнала&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Необходимо перезагрузить компьютер, чтобы завершить откат программного обеспечения.</String>
   <String Id="FailureRestartButton">&amp;Перезапустить</String>
@@ -61,9 +61,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Вас приветствует мастер установки [WixBundleName].</String>
-  <String Id="InstallResetIIS">Перезапустите службы IIS после завершения установки. Дополнительные сведения см. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;здесь&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">Службы IIS не включены на этом компьютере. Если вы планируете запускать приложения ASP.NET Core с IIS, перед запуском этого установщика необходимо установить службы IIS. Дополнительные сведения см. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;здесь&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Перезапустите службы IIS после завершения установки. Дополнительные сведения см. &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;здесь&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">Службы IIS не включены на этом компьютере. Если вы планируете запускать приложения ASP.NET Core с IIS, перед запуском этого установщика необходимо установить службы IIS. Дополнительные сведения см. &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;здесь&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;условия лицензии&lt;/a&gt; и &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;заявление о конфиденциальности&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">Перезапустите службы IIS после завершения установки. Дополнительные сведения см. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;здесь&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">Службы IIS не включены на этом компьютере. Если вы планируете запускать приложения ASP.NET Core с IIS, перед запуском этого установщика необходимо установить службы IIS. Дополнительные сведения см. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;здесь&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Перезапустите службы IIS после завершения установки. Дополнительные сведения см. &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;здесь&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">Службы IIS не включены на этом компьютере. Если вы планируете запускать приложения ASP.NET Core с IIS, перед запуском этого установщика необходимо установить службы IIS. Дополнительные сведения см. &lt;a href="https://aka.ms/aspnet/6.0/host-and-deploy-with-iis"&gt;здесь&lt;/a&gt;.</String>
 </WixLocalization>
