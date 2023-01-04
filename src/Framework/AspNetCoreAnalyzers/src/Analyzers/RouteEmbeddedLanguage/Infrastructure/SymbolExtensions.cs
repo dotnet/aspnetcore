@@ -26,14 +26,14 @@ internal static class SymbolExtensions
 
     public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
     {
-        return HasAttributeImplementingInterface(symbol, interfaceType, out var _);
+        return symbol.HasAttributeImplementingInterface(interfaceType, out var _);
     }
 
     public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in symbol.GetAttributes())
         {
-            if (attributeData.AttributeClass is not null && Implements(attributeData.AttributeClass, interfaceType))
+            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceType))
             {
                 matchedAttribute = attributeData;
                 return true;
