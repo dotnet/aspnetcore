@@ -64,8 +64,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 location
                 )) { continue; }
 
-            // Match handler parameter against route parameters. If it is a route parameter it needs to be parsable/bindable in some fashion.
-            if (routeUsage.UsageContext.ResolvedParameters.Any(p => SymbolEqualityComparer.Default.Equals(p.Symbol, handlerDelegateParameter)))
+            if (IsRouteParameter(routeUsage, handlerDelegateParameter))
             {
                 var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
                 var bindability = ParsabilityHelper.GetBindability(parameterTypeSymbol, wellKnownTypes);
@@ -84,6 +83,17 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                 continue;
             }
+        }
+
+        static bool IsRouteParameter(RouteUsageModel routeUsage, IParameterSymbol handlerDelegateParameter)
+        {
+            // This gets the ParameterSymbol (concept from RouteEmbeddedLanguage) regardless of whether it is in
+            // the route pattern or not. If it is and it has a custom [FromRoute(Name = "blah")] attribute then
+            // RouteParameterName and we'll be able to find it by looking it up in the route pattern (thus confirming
+            // that it is a route parameter).
+            var resolvedParameter = routeUsage.UsageContext.ResolvedParameters.FirstOrDefault(rp => rp.Symbol.Name == handlerDelegateParameter.Name);
+            var isRouteParameter = routeUsage.RoutePattern.TryGetRouteParameter(resolvedParameter.RouteParameterName, out var _);
+            return isRouteParameter;
         }
 
         static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location)

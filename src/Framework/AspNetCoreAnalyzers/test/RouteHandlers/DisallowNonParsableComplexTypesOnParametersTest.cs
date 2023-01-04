@@ -629,5 +629,29 @@ public class MyService
         // Act
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
+
+    [Fact]
+    public async Task Handler_Parameter_withServiceInterface_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+
+var webApp = WebApplication.Create();
+webApp.MapGet("/weatherforecast", (HttpContext context, IDownstreamWebApi downstreamWebApi) => {});
+
+// This type doesn't need to be parsable because it should be assumed to be a service type.
+public interface IDownstreamWebApi
+{
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+
 }
 
