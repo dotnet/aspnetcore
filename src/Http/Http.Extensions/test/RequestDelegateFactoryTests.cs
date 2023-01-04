@@ -6949,7 +6949,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
 
         // Assert
-        Assert.NotNull(metadataResult.CachedContext);
+        Assert.NotNull(metadataResult.CachedFactoryContext);
     }
 
     [Fact]
