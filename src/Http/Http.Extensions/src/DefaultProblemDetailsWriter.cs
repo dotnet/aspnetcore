@@ -50,9 +50,9 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026",
-        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed. The property is annotated with a warning")]
+        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed. The property is annotated with RequiresUnreferencedCode.")]
     [UnconditionalSuppressMessage("Trimming", "IL3050",
-        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed. The property is annotated with a warning")]
+        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed. The property is annotated with RequiresDynamicCode.")]
     public ValueTask WriteAsync(ProblemDetailsContext context)
     {
         var httpContext = context.HttpContext;
