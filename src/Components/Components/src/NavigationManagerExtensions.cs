@@ -111,10 +111,10 @@ public static class NavigationManagerExtensions
 
         private readonly string _hash;
 
-        public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryString, int additionalCapacity = 0, string hash = "")
+        public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryStringAndHash, int additionalCapacity = 0, string hash = "")
         {
-            _builder = new(uriWithoutQueryString.Length + additionalCapacity);
-            _builder.Append(uriWithoutQueryString);
+            _builder = new(uriWithoutQueryStringAndHash.Length + additionalCapacity);
+            _builder.Append(uriWithoutQueryStringAndHash);
 
             _hash = hash;
 
@@ -744,8 +744,8 @@ public static class NavigationManagerExtensions
 
         existingQueryStringEnumerable = new(query);
 
-        var uriWithoutQueryString = uri.AsSpan(0, queryStartIndex);
-        newQueryStringBuilder = new(uriWithoutQueryString, query.Length, hash);
+        var uriWithoutQueryStringAndHash = uri.AsSpan(0, queryStartIndex);
+        newQueryStringBuilder = new(uriWithoutQueryStringAndHash, query.Length, hash);
 
         return true;
     }
