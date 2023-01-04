@@ -29,9 +29,12 @@ internal static class CookieHeaderParserShared
                 if (TryParseValue(value, ref index, supportsMultipleValues, out var parsedName, out var parsedValue))
                 {
                     // The entry may not contain an actual value, like " , "
-                    var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value!) : parsedName.Value.Value!;
-                    store[name] = Uri.UnescapeDataString(parsedValue.Value.Value!);
-                    hasFoundValue = true;
+                    if (parsedName != null && parsedValue != null)
+                    {
+                        var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value!) : parsedName.Value.Value!;
+                        store[name] = Uri.UnescapeDataString(parsedValue.Value.Value!);
+                        hasFoundValue = true;
+                    }
                 }
                 else
                 {

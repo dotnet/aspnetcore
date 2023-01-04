@@ -5246,6 +5246,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         };
 
         var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
 
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
@@ -5265,6 +5267,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // Assert
         Assert.False(invoked);
         Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Equal(0, responseBodyStream.Position);
     }
 
     [Fact]
