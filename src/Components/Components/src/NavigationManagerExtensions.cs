@@ -140,8 +140,7 @@ public static class NavigationManagerExtensions
 
         public string GetUriWithQueryString()
         {
-            _builder.Append(_hash);
-            return _builder.ToString();
+            return _builder.ToString() + _hash;
         }
     }
 
