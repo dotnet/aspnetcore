@@ -133,6 +133,7 @@ public static partial class RequestDelegateFactory
         return new RequestDelegateMetadataResult
         {
             EndpointMetadata = AsReadOnlyList(factoryContext.EndpointBuilder.Metadata),
+            CachedFactoryContext = factoryContext,
         };
     }
 
