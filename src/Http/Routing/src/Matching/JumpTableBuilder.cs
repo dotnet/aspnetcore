@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
@@ -85,13 +86,15 @@ internal static class JumpTableBuilder
         }
 
         // Use the ILEmitTrieJumpTable if the IL is going to be compiled (not interpreted)
-        if (RuntimeFeature.IsDynamicCodeCompiled)
-        {
-#pragma warning disable IL3050 // See https://github.com/dotnet/linker/issues/2715.
-            return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
-#pragma warning restore IL3050 
-        }
+        return MakeILEmitTrieJumpTableIfSupported(defaultDestination, exitDestination, pathEntries, fallback);
 
-        return fallback;
+        // TODO: This suppression can be removed when https://github.com/dotnet/linker/issues/2715 is complete.
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Guarded by IsDynamicCodeCompiled")]
+        static JumpTable MakeILEmitTrieJumpTableIfSupported(int defaultDestination, int exitDestination, (string text, int destination)[] pathEntries, JumpTable fallback)
+        {
+            return RuntimeFeature.IsDynamicCodeCompiled
+                ? new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback)
+                : fallback;
+        }
     }
 }
