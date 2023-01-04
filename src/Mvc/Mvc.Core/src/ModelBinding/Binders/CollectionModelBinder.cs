@@ -161,6 +161,13 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         }
 
         var boundCollection = result.Model;
+        if (bindingContext.ModelMetadata.HasDefaultValue && !boundCollection.Any())
+        {
+            bindingContext.Result = ModelBindingResult.Failed();
+            Logger.DoneAttemptingToBindModel(bindingContext);
+            return;
+        }
+
         if (model == null)
         {
             model = ConvertToCollectionType(bindingContext.ModelType, boundCollection);

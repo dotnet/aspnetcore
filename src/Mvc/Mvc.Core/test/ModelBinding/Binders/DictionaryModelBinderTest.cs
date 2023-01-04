@@ -154,6 +154,40 @@ public class DictionaryModelBinderTest
         Assert.Equal(dictionary, resultDictionary);
     }
 
+    [Theory]
+    [MemberData(nameof(StringToStringData))]
+    public async Task BindModel_FallsBackToBindingValues_WhenParameterHasDefaultValue(
+        string modelName,
+        string keyFormat,
+        IDictionary<string, string> dictionary)
+    {
+        // Arrange
+        var binder = new DictionaryModelBinder<string, string>(
+            new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+            new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+            NullLoggerFactory.Instance);
+
+        var bindingContext = CreateContext();
+        bindingContext.ModelName = modelName;
+        bindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
+        bindingContext.FieldName = modelName;
+
+        var metadataProvider = new TestModelMetadataProvider();
+        var parameter = typeof(DictionaryModelBinderTest)
+            .GetMethod(nameof(ActionWithDefaultValueDictionaryParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetParameters()[0];
+        bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+
+        var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
+        Assert.Equal(dictionary, resultDictionary);
+    }
+
     // Similar to one BindModel_FallsBackToBindingValues case but without an IEnumerableValueProvider.
     [Fact]
     public async Task BindModel_DoesNotFallBack_WithoutEnumerableValueProvider()
@@ -189,6 +223,42 @@ public class DictionaryModelBinderTest
 
         var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
         Assert.Empty(resultDictionary);
+    }
+
+    // Similar to one BindModel_FallsBackToBindingValues case but without an IEnumerableValueProvider.
+    [Fact]
+    public async Task BindModel_DoesNotFallBack_WithoutEnumerableValueProvider_WhenParameterHasDefaultValue()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { "one", "one" },
+                { "two", "two" },
+                { "three", "three" },
+            };
+
+        var binder = new DictionaryModelBinder<string, string>(
+            new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+            new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+            NullLoggerFactory.Instance);
+
+        var bindingContext = CreateContext();
+        bindingContext.ModelName = "prefix";
+        bindingContext.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
+        bindingContext.FieldName = bindingContext.ModelName;
+
+        var metadataProvider = new TestModelMetadataProvider();
+        var parameter = typeof(DictionaryModelBinderTest)
+            .GetMethod(nameof(ActionWithDefaultValueDictionaryParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetParameters()[0];
+        bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.False(bindingContext.Result.IsModelSet);
+        Assert.Null(bindingContext.Result.Model);
     }
 
     public static TheoryData<IDictionary<long, int>> LongToIntData
