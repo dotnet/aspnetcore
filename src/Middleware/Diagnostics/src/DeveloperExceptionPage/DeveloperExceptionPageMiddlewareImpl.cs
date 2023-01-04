@@ -353,7 +353,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
     }
 }
 
-internal class ExceptionExtensionData
+internal sealed class ExceptionExtensionData
 {
     public ExceptionExtensionData(string details, IHeaderDictionary headers, string path, string? endpoint, RouteValueDictionary? routeValues)
     {
