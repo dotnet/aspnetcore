@@ -139,7 +139,7 @@ public static class NavigationManagerExtensions
         }
 
         public string GetUriWithQueryString()
-        {
+        {   
             return _builder.ToString() + _hash;
         }
     }
@@ -745,7 +745,7 @@ public static class NavigationManagerExtensions
         existingQueryStringEnumerable = new(query);
 
         var uriWithoutQueryString = uri.AsSpan(0, queryStartIndex);
-        newQueryStringBuilder = new(uriWithoutQueryString, query.Length + hash.Length, hash);
+        newQueryStringBuilder = new(uriWithoutQueryString, query.Length, hash);
 
         return true;
     }
