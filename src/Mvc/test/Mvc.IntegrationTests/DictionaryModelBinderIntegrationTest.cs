@@ -452,10 +452,8 @@ public class DictionaryModelBinderIntegrationTest
         var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
         // Assert
-        Assert.True(modelBindingResult.IsModelSet);
-
-        var model = Assert.IsType<Dictionary<string, int>>(modelBindingResult.Model);
-        Assert.Empty(model);
+        Assert.False(modelBindingResult.IsModelSet);
+        Assert.Null(modelBindingResult.Model);
 
         Assert.Empty(modelState);
         Assert.Equal(0, modelState.ErrorCount);
