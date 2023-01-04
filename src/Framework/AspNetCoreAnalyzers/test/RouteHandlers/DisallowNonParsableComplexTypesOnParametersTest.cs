@@ -652,6 +652,84 @@ public interface IDownstreamWebApi
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
+    [Fact]
+    public async Task Route_Parameter_withAbstractBaseType_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
 
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => "Hello World!");
+app.MapGet("/{customer}", (BaseCustomer customer) => { });
+app.Run();
+
+public abstract class BaseCustomer : IParsable<BaseCustomer>
+{
+    public static BaseCustomer Parse(string s, IFormatProvider? provider)
+    {
+        return new CommercialCustomer();
+    }
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out BaseCustomer result)
+    {
+        result = new CommercialCustomer();
+        return true;
+    }
+}
+
+public class CommercialCustomer : BaseCustomer
+{
+
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withInterfaceType_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => "Hello World!");
+app.MapGet("/{customer}", (ICustomer customer) => { });
+app.Run();
+
+public interface ICustomer
+{
+    public static ICustomer Parse(string s, IFormatProvider? provider)
+    {
+        return new CommercialCustomer();
+    }
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out ICustomer result)
+    {
+        result = new CommercialCustomer();
+        return true;
+    }
+}
+
+public class CommercialCustomer : ICustomer
+{
+
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
 }
 
