@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
 using System.Globalization;
 using System.Linq;
@@ -108,12 +109,14 @@ public static class NavigationManagerExtensions
 
         private bool _hasNewParameters;
 
-        public string UriWithQueryString => _builder.ToString();
+        private readonly string _hash;
 
-        public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryString, int additionalCapacity = 0)
+        public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryString, int additionalCapacity = 0, string hash = "")
         {
             _builder = new(uriWithoutQueryString.Length + additionalCapacity);
             _builder.Append(uriWithoutQueryString);
+
+            _hash = hash;
 
             _hasNewParameters = false;
         }
@@ -133,6 +136,12 @@ public static class NavigationManagerExtensions
             _builder.Append(encodedName);
             _builder.Append('=');
             _builder.Append(encodedValue);
+        }
+
+        public string GetUriWithQueryString()
+        {
+            _builder.Append(_hash);
+            return _builder.ToString();
         }
     }
 
@@ -593,7 +602,7 @@ public static class NavigationManagerExtensions
             }
         }
 
-        return newQueryStringBuilder.UriWithQueryString;
+        return newQueryStringBuilder.GetUriWithQueryString();
     }
 
     private static string GetUriWithUpdatedQueryParameter(string uri, string name, string value)
@@ -603,8 +612,8 @@ public static class NavigationManagerExtensions
 
         if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
         {
-            // There was no existing query, so we can generate the new URI immediately.
-            return $"{uri}?{encodedName}={encodedValue}";
+            // There was no existing query, so we can generate the new URI.
+            return GetUriWithAppendedQueryParameter(uri, encodedName, encodedValue);
         }
 
         var didReplace = false;
@@ -627,7 +636,7 @@ public static class NavigationManagerExtensions
             newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
         }
 
-        return newQueryStringBuilder.UriWithQueryString;
+        return newQueryStringBuilder.GetUriWithQueryString();
     }
 
     private static string GetUriWithRemovedQueryParameter(string uri, string name)
@@ -649,14 +658,25 @@ public static class NavigationManagerExtensions
             }
         }
 
-        return newQueryStringBuilder.UriWithQueryString;
+        return newQueryStringBuilder.GetUriWithQueryString();
     }
 
     private static string GetUriWithAppendedQueryParameters(
         string uriWithoutQueryString,
         IReadOnlyDictionary<string, object?> parameters)
     {
-        var builder = new QueryStringBuilder(uriWithoutQueryString);
+        var uriWithoutQueryStringAndHash = uriWithoutQueryString;
+        var hash = "";
+
+        var hashStartIndex = uriWithoutQueryString.IndexOf('#');
+
+        if (hashStartIndex > 0)
+        {
+            uriWithoutQueryStringAndHash = uriWithoutQueryString.Substring(0, hashStartIndex);
+            hash = uriWithoutQueryString[hashStartIndex..];
+        }
+
+        var builder = new QueryStringBuilder(uriWithoutQueryStringAndHash, hash: hash);
 
         foreach (var (name, value) in parameters)
         {
@@ -667,7 +687,7 @@ public static class NavigationManagerExtensions
             }
         }
 
-        return builder.UriWithQueryString;
+        return builder.GetUriWithQueryString();
     }
 
     private static Dictionary<ReadOnlyMemory<char>, QueryParameterSource> CreateParameterSourceDictionary(
@@ -711,12 +731,39 @@ public static class NavigationManagerExtensions
             return false;
         }
 
-        var query = uri.AsMemory(queryStartIndex);
+        var queryLength = uri.Length - queryStartIndex;
+        var hash = "";
+        var hashStartIndex = uri.IndexOf('#');
+
+        if (hashStartIndex > 0)
+        {
+            queryLength = hashStartIndex - queryStartIndex;
+            hash = uri[hashStartIndex..];
+        }
+
+        var query = uri.AsMemory(queryStartIndex, queryLength);
+
         existingQueryStringEnumerable = new(query);
 
         var uriWithoutQueryString = uri.AsSpan(0, queryStartIndex);
-        newQueryStringBuilder = new(uriWithoutQueryString, query.Length);
+        newQueryStringBuilder = new(uriWithoutQueryString, query.Length + hash.Length, hash);
 
         return true;
+    }
+
+    private static string GetUriWithAppendedQueryParameter(string uri, string encodedName, string encodedValue)
+    {
+        var uriWithoutHash = uri;
+        var hash = "";
+
+        var hashStartIndex = uri.IndexOf('#');
+
+        if (hashStartIndex > 0)
+        {
+            uriWithoutHash = uri.Substring(0, hashStartIndex);
+            hash = uri[hashStartIndex..];
+        }
+
+        return $"{uriWithoutHash}?{encodedName}={encodedValue}{hash}";
     }
 }
