@@ -1,3 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName) -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.PipeName.get -> string?
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateChain.get -> System.Security.Cryptography.X509Certificates.X509Certificate2Collection?
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateChain.set -> void

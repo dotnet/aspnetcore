@@ -60,10 +60,10 @@ internal sealed partial class EndpointMiddleware
                         return AwaitRequestTask(endpoint, requestTask, _logger);
                     }
                 }
-                catch (Exception exception)
+                catch
                 {
                     Log.ExecutedEndpoint(_logger, endpoint);
-                    return Task.FromException(exception);
+                    throw;
                 }
 
                 Log.ExecutedEndpoint(_logger, endpoint);

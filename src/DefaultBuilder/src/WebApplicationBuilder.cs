@@ -33,6 +33,8 @@ public sealed class WebApplicationBuilder
 
         configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
 
+        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
         {
             Args = options.Args,
@@ -41,6 +43,7 @@ public sealed class WebApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)

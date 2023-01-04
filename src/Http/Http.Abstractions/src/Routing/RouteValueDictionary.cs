@@ -818,12 +818,12 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
+    [RequiresUnreferencedCode("This API is not trim safe - from PropertyHelper")]
     internal sealed class PropertyStorage
     {
         public readonly object Value;
         public readonly PropertyHelper[] Properties;
 
-        [RequiresUnreferencedCode("This API is not trim safe.")]
         public PropertyStorage(object value)
         {
             Debug.Assert(value != null);

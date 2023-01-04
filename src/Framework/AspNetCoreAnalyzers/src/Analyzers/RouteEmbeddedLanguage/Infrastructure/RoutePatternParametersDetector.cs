@@ -3,14 +3,10 @@
 
 using System;
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-
-internal record struct ParameterSymbol(ISymbol Symbol, ISymbol? TopLevelSymbol = null)
-{
-    public bool IsNested => TopLevelSymbol != null;
-}
 
 internal static class RoutePatternParametersDetector
 {
@@ -25,20 +21,42 @@ internal static class RoutePatternParametersDetector
 
             foreach (var child in childSymbols)
             {
-                if (HasSpecialType(child, wellKnownTypes.ParameterSpecialTypes) || HasExplicitNonRouteAttribute(child, wellKnownTypes.NonRouteMetadataTypes))
+                if (HasSpecialType(child, wellKnownTypes, RouteWellKnownTypes.ParameterSpecialTypes) || HasExplicitNonRouteAttribute(child, wellKnownTypes, RouteWellKnownTypes.NonRouteMetadataTypes))
                 {
                     continue;
                 }
-                else if (child.HasAttribute(wellKnownTypes.AsParametersAttribute))
+                else if (child.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
                 {
                     resolvedParameterSymbols.AddRange(ResolvedParametersCore(child.GetParameterType(), child, wellKnownTypes));
                 }
                 else
                 {
-                    resolvedParameterSymbols.Add(new ParameterSymbol(child, topLevelSymbol));
+                    var routeParameterName = ResolveRouteParameterName(child, wellKnownTypes);
+                    resolvedParameterSymbols.Add(new ParameterSymbol(routeParameterName, child, topLevelSymbol));
                 }
             }
             return resolvedParameterSymbols.ToImmutable();
+        }
+
+        static string ResolveRouteParameterName(ISymbol parameterSymbol, WellKnownTypes wellKnownTypes)
+        {
+            var fromRouteMetadata = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
+            if (!parameterSymbol.HasAttributeImplementingInterface(fromRouteMetadata, out var attributeData))
+            {
+                return parameterSymbol.Name; // No route metadata attribute!
+            }
+
+            foreach (var namedArgument in attributeData.NamedArguments)
+            {
+                if (namedArgument.Key == "Name")
+                {
+                    var routeParameterNameConstant = namedArgument.Value;
+                    var routeParameterName = (string)routeParameterNameConstant.Value!;
+                    return routeParameterName; // Have attribute & name is specified.
+                }
+            }
+
+            return parameterSymbol.Name; // We have the attribute, but name isn't specified!
         }
     }
 
@@ -52,34 +70,25 @@ internal static class RoutePatternParametersDetector
         };
     }
 
-    private static bool HasSpecialType(ISymbol child, INamedTypeSymbol[] specialTypes)
+    private static bool HasSpecialType(ISymbol child, WellKnownTypes wellKnownTypes, WellKnownType[] specialTypes)
     {
         if (child.GetParameterType() is not INamedTypeSymbol type)
         {
             return false;
         }
 
-        foreach (var specialType in specialTypes)
-        {
-            if (type.IsType(specialType))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return wellKnownTypes.IsType(type, specialTypes);
     }
 
-    private static bool HasExplicitNonRouteAttribute(ISymbol child, INamedTypeSymbol[] allNoneRouteMetadataTypes)
+    private static bool HasExplicitNonRouteAttribute(ISymbol child, WellKnownTypes wellKnownTypes, WellKnownType[] allNoneRouteMetadataTypes)
     {
         foreach (var attributeData in child.GetAttributes())
         {
-            foreach (var nonRouteMetadata in allNoneRouteMetadataTypes)
+            var attributeClass = attributeData.AttributeClass;
+
+            if (attributeClass != null && wellKnownTypes.Implements(attributeClass, allNoneRouteMetadataTypes))
             {
-                if (attributeData.AttributeClass.Implements(nonRouteMetadata))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 

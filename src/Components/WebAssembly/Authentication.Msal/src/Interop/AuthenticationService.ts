@@ -251,7 +251,9 @@ class MsalAuthorizeService implements AuthorizeService {
                 return this.success(state);
             }
         } catch (e) {
-            return this.error((e as Error).message);
+            const message = (e as Error).message;
+            this.debug(`Sign in error '${message}'`);
+            return this.error(message);
         }
     }
 

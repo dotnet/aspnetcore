@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -12,8 +13,13 @@ internal static class MvcDetector
 
     // Replicates logic from ControllerFeatureProvider.IsController.
     // https://github.com/dotnet/aspnetcore/blob/785cf9bd845a8d28dce3a079c4fedf4a4c2afe57/src/Mvc/Mvc.Core/src/Controllers/ControllerFeatureProvider.cs#L39
-    public static bool IsController(INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    public static bool IsController(INamedTypeSymbol? typeSymbol, WellKnownTypes wellKnownTypes)
     {
+        if (typeSymbol is null)
+        {
+            return false;
+        }
+
         if (!typeSymbol.IsReferenceType)
         {
             return false;
@@ -42,12 +48,12 @@ internal static class MvcDetector
 
         // Check name before attribute's for performance.
         if (!typeSymbol.Name.EndsWith(ControllerTypeNameSuffix, StringComparison.OrdinalIgnoreCase) &&
-            !typeSymbol.HasAttribute(wellKnownTypes.ControllerAttribute))
+            !typeSymbol.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_ControllerAttribute)))
         {
             return false;
         }
 
-        if (typeSymbol.HasAttribute(wellKnownTypes.NonControllerAttribute))
+        if (typeSymbol.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_NonControllerAttribute)))
         {
             return false;
         }
@@ -97,7 +103,7 @@ internal static class MvcDetector
             return false;
         }
 
-        if (methodSymbol.HasAttribute(wellKnownTypes.NonActionAttribute))
+        if (methodSymbol.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_NonControllerAttribute)))
         {
             return false;
         }

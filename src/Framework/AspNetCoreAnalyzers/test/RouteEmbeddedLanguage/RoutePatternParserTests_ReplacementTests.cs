@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 // These tests are mirrored from routing's AttributeRouteModelTests.cs
@@ -23,7 +25,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -39,7 +41,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -60,7 +62,7 @@ public partial class RoutePatternParserTests
     <Diagnostic Message=""A replacement token is not closed."" Span=""[20..20)"" Text="""" />
   </Diagnostics>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -81,7 +83,7 @@ public partial class RoutePatternParserTests
     <Diagnostic Message=""An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape."" Span=""[10..25)"" Text=""cont[controller"" />
   </Diagnostics>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -102,7 +104,7 @@ public partial class RoutePatternParserTests
     <Diagnostic Message=""An empty replacement token ('[]') is not allowed."" Span=""[10..11)"" Text=""]"" />
   </Diagnostics>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -121,7 +123,7 @@ public partial class RoutePatternParserTests
     <Diagnostic Message=""Token delimiters ('[', ']') are imbalanced."" Span=""[9..10)"" Text=""]"" />
   </Diagnostics>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -144,7 +146,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -172,7 +174,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -193,7 +195,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -214,7 +216,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
     [Fact]
@@ -238,7 +240,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -266,7 +268,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -308,7 +310,7 @@ public partial class RoutePatternParserTests
   <Parameters>
     <Parameter Name=""id"" IsCatchAll=""false"" IsOptional=""false"" EncodeSlashes=""true"" />
   </Parameters>
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -350,7 +352,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -392,7 +394,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -434,7 +436,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -476,7 +478,7 @@ public partial class RoutePatternParserTests
     <EndOfFile />
   </CompilationUnit>
   <Parameters />
-</Tree>", runReplaceTokens: true, allowDiagnosticsMismatch: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
     [Fact]
@@ -495,6 +497,6 @@ public partial class RoutePatternParserTests
     <Diagnostic Message=""Token delimiters ('[', ']') are imbalanced."" Span=""[9..20)"" Text=""controller]"" />
   </Diagnostics>
   <Parameters />
-</Tree>", runReplaceTokens: true);
+</Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 }

@@ -31,4 +31,9 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.MicroBenchmarks" />
+  </ItemGroup>
 </Project>

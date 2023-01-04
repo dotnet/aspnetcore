@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Certificates.Generation;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -364,7 +365,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// </summary>
     public void Listen(IPAddress address, int port)
     {
@@ -372,7 +373,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// The callback configures endpoint-specific settings.
     /// </summary>
     public void Listen(IPAddress address, int port, Action<ListenOptions> configure)
@@ -400,7 +401,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// The callback configures endpoint-specific settings.
     /// </summary>
     public void Listen(IPEndPoint endPoint, Action<ListenOptions> configure)
@@ -462,7 +463,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given Unix domain socket path.
+    /// Bind to the given Unix domain socket path.
     /// </summary>
     public void ListenUnixSocket(string socketPath)
     {
@@ -470,7 +471,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given Unix domain socket path.
+    /// Bind to the given Unix domain socket path.
     /// Specify callback to configure endpoint-specific settings.
     /// </summary>
     public void ListenUnixSocket(string socketPath, Action<ListenOptions> configure)
@@ -506,6 +507,29 @@ public class KestrelServerOptions
         ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(handle);
+        ApplyEndpointDefaults(listenOptions);
+        configure(listenOptions);
+        CodeBackedListenOptions.Add(listenOptions);
+    }
+
+    /// <summary>
+    /// Bind to the given named pipe.
+    /// </summary>
+    public void ListenNamedPipe(string pipeName)
+    {
+        ListenNamedPipe(pipeName, _ => { });
+    }
+
+    /// <summary>
+    /// Bind to the given named pipe.
+    /// Specify callback to configure endpoint-specific settings.
+    /// </summary>
+    public void ListenNamedPipe(string pipeName, Action<ListenOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(pipeName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var listenOptions = new ListenOptions(new NamedPipeEndPoint(pipeName));
         ApplyEndpointDefaults(listenOptions);
         configure(listenOptions);
         CodeBackedListenOptions.Add(listenOptions);

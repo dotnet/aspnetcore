@@ -25,7 +25,7 @@ internal sealed class JsonConverterFactoryForWellKnownTypes : JsonConverterFacto
             return false;
         }
 
-        var descriptor = JsonConverterHelper.GetMessageDescriptor(typeToConvert);
+        var descriptor = _context.DescriptorRegistry.FindDescriptorByType(typeToConvert);
         if (descriptor == null)
         {
             return false;
@@ -37,7 +37,7 @@ internal sealed class JsonConverterFactoryForWellKnownTypes : JsonConverterFacto
     public override JsonConverter CreateConverter(
         Type typeToConvert, JsonSerializerOptions options)
     {
-        var descriptor = JsonConverterHelper.GetMessageDescriptor(typeToConvert)!;
+        var descriptor = _context.DescriptorRegistry.FindDescriptorByType(typeToConvert)!;
         var converterType = JsonConverterHelper.WellKnownTypeNames[descriptor.FullName];
 
         var converter = (JsonConverter)Activator.CreateInstance(

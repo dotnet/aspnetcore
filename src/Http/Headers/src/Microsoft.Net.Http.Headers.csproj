@@ -18,4 +18,7 @@
     <Compile Include="..\..\Shared\HttpParseResult.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Net.Http.Headers.Tests" />
+  </ItemGroup>
 </Project>

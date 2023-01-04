@@ -137,7 +137,7 @@ public static class AuthenticationHttpContextExtensions
 
     /// <summary>
     /// Sign in a principal for the default authentication scheme.
-    /// The default scheme for signing in can be configured using <see cref="AuthenticationOptions.DefaultForbidScheme"/>.
+    /// The default scheme for signing in can be configured using <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> context.</param>
     /// <param name="principal">The user.</param>

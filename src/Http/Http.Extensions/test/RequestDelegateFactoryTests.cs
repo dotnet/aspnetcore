@@ -3000,6 +3000,28 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
+    [Fact]
+    public async Task RequestDelegateWritesComplexStructReturnValueAsJsonResponseBody()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(() => new TodoStruct(42, "Bob", true));
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.Equal(42, deserializedResponseBody.Id);
+        Assert.Equal("Bob", deserializedResponseBody.Name);
+        Assert.True(deserializedResponseBody.IsComplete);
+    }
+
     public static IEnumerable<object[]> ChildResult
     {
         get
@@ -3375,6 +3397,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             Task<Todo?> TaskTestTodoAction() => Task.FromResult<Todo?>(null);
             ValueTask<Todo?> ValueTaskTestTodoAction() => ValueTask.FromResult<Todo?>(null);
 
+            TodoStruct? TodoStructAction() => null;
+
             return new List<object[]>
                 {
                     new object[] { (Func<bool?>)TestBoolAction },
@@ -3386,6 +3410,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Func<Todo?>)TestTodoAction },
                     new object[] { (Func<Task<Todo?>>)TaskTestTodoAction },
                     new object[] { (Func<ValueTask<Todo?>>)ValueTaskTestTodoAction },
+                    new object[] { (Func<TodoStruct?>)TodoStructAction },
                 };
         }
     }
@@ -7089,6 +7114,158 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         await result.RequestDelegate(httpContext);
     }
+
+    private class ParameterListRequiredStringFromDifferentSources
+    {
+        public HttpContext? HttpContext { get; set; }
+
+        [FromRoute]
+        public required string RequiredRouteParam { get; set; }
+
+        [FromQuery]
+        public required string RequiredQueryParam { get; set; }
+
+        [FromHeader]
+        public required string RequiredHeaderParam { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember()
+    {
+        // Arrange
+        static void TestAction([AsParameters] ParameterListRequiredStringFromDifferentSources args) { }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert that the required modifier on members that
+        // are not nullable treats them as required.
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+
+        Assert.Equal(3, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredRouteParam"" was not provided from route.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredQueryParam"" was not provided from query string.", logs[1].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
+    }
+
+    private class ParameterListRequiredNullableStringFromDifferentSources
+    {
+        public HttpContext? HttpContext { get; set; }
+
+        [FromRoute]
+        public required StringValues? RequiredRouteParam { get; set; }
+
+        [FromQuery]
+        public required StringValues? RequiredQueryParam { get; set; }
+
+        [FromHeader]
+        public required StringValues? RequiredHeaderParam { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsNullableRequiredMember()
+    {
+        // Arrange
+        static void TestAction([AsParameters] ParameterListRequiredNullableStringFromDifferentSources args)
+        {
+            args.HttpContext!.Items.Add("RequiredRouteParam", args.RequiredRouteParam);
+            args.HttpContext!.Items.Add("RequiredQueryParam", args.RequiredQueryParam);
+            args.HttpContext!.Items.Add("RequiredHeaderParam", args.RequiredHeaderParam);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert that when properties are required but nullable
+        // we evaluate them as optional because required members
+        // must be initialized but they can be initialized to null
+        // when an NRT is required.
+        Assert.Equal(200, httpContext.Response.StatusCode);
+
+        Assert.Null(httpContext.Items["RequiredRouteParam"]);
+        Assert.Null(httpContext.Items["RequiredQueryParam"]);
+        Assert.Null(httpContext.Items["RequiredHeaderParam"]);
+    }
+
+#nullable disable
+    private class ParameterListMixedRequiredStringsFromDifferentSources
+    {
+        public HttpContext HttpContext { get; set; }
+
+        [FromRoute]
+        public required string RequiredRouteParam { get; set; }
+
+        [FromRoute]
+        public string OptionalRouteParam { get; set; }
+
+        [FromQuery]
+        public required string RequiredQueryParam { get; set; }
+
+        [FromQuery]
+        public string OptionalQueryParam { get; set; }
+
+        [FromHeader]
+        public required string RequiredHeaderParam { get; set; }
+
+        [FromHeader]
+        public string OptionalHeaderParam { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember_NullabilityDisabled()
+    {
+        // Arange
+        static void TestAction([AsParameters] ParameterListMixedRequiredStringsFromDifferentSources args) { }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert that we only execute required parameter
+        // checks for members that have the required modifier
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+        Assert.Equal(3, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredRouteParam"" was not provided from route.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredQueryParam"" was not provided from query string.", logs[1].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
+    }
+#nullable enable
 
     private DefaultHttpContext CreateHttpContext()
     {
