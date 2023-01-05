@@ -48,8 +48,6 @@ public class JsonOptions
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
     };
 
-    [RequiresUnreferencedCode("System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver might require types that cannot be statically analyzed and might need runtime code generation.")]
-    [RequiresDynamicCode("System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver might require types that cannot be statically analyzed and might need runtime code generation. Enable EnsureJsonTrimmability feature switch for native AOT applications.")]
     private static IJsonTypeInfoResolver CreateDefaultTypeResolver()
         => new DefaultJsonTypeInfoResolver();
 }

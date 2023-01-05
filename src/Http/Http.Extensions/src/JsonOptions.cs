@@ -39,8 +39,6 @@ public class JsonOptions
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(DefaultSerializerOptions);
 
-    [RequiresUnreferencedCode("System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver might require types that cannot be statically analyzed and might need runtime code generation.")]
-    [RequiresDynamicCode("System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver might require types that cannot be statically analyzed and might need runtime code generation. Enable EnsureJsonTrimmability feature switch for native AOT applications.")]
     private static IJsonTypeInfoResolver CreateDefaultTypeResolver()
         => new DefaultJsonTypeInfoResolver();
 }
