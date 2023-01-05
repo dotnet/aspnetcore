@@ -468,10 +468,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' != 'win'">$(Crossgen2Args) --perfmap --perfmap-format-version:1 --perfmap-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
     </PropertyGroup>
 
+    <Message Text="Running crossgen with $(CrossgenToolPath)"
+        Importance="High" />
     <!-- All metadata in batched task comes from current @(IntermediateCrossgenAssembly) item. -->
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
+    <Message Text="Finished crossgen"
+        Importance="High" />
   </Target>
 
   <Target Name="_GenerateComposites"
