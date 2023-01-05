@@ -132,6 +132,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
             b.Property(u => u.NormalizedUserName).HasMaxLength(256);
             b.Property(u => u.Email).HasMaxLength(256);
             b.Property(u => u.NormalizedEmail).HasMaxLength(256);
+            b.Property(u => u.PhoneNumber).HasMaxLength(50);
 
             if (encryptPersonalData)
             {
