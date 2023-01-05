@@ -449,7 +449,6 @@ public class HttpResponseJsonExtensionsTests
 
         // Act
         var options = new JsonSerializerOptions();
-        options.Converters.Add(new IntegerConverter());
         options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
 
         await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, (JsonTypeInfo<int[]>)options.GetTypeInfo(typeof(int[])));
@@ -458,11 +457,11 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
-        Assert.Equal("[false,true,false]", data);
+        Assert.Equal("[1,2,3]", data);
     }
 
     [Fact]
-    public async Task WriteAsJsonAsync_WithJsonTypeInfo_JsonResponse()
+    public async Task WriteAsJsonAsync_NullValue_WithJsonTypeInfo_JsonResponse()
     {
         // Arrange
         var body = new MemoryStream();
@@ -471,16 +470,15 @@ public class HttpResponseJsonExtensionsTests
 
         // Act
         var options = new JsonSerializerOptions();
-        options.Converters.Add(new IntegerConverter());
         options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
 
-        await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, options.GetTypeInfo(typeof(int[])));
+        await context.Response.WriteAsJsonAsync(value : null, options.GetTypeInfo(typeof(Uri)));
 
         // Assert
         Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
 
         var data = Encoding.UTF8.GetString(body.ToArray());
-        Assert.Equal("[false,true,false]", data);
+        Assert.Equal("null", data);
     }
 
     public class TestObject
