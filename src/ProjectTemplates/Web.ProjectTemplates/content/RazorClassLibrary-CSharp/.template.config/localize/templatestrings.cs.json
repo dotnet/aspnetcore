@@ -6,7 +6,7 @@
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/SupportPagesAndViews/displayName": "Stránky podpory a zobrazení",
-  "symbols/SupportPagesAndViews/description": "Určuje, jestli se kromě komponent má podporovat přidávání dalších stránek a zobrazení Razor do této knihovny.",
+  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views to this library.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore",
   "postActions/openInEditor/description": "Otevře soubor areas/MyFeature/Pages/Page1.cshtml v editoru."

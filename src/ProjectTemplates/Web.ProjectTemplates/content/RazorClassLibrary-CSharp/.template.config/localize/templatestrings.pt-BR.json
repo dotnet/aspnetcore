@@ -6,7 +6,7 @@
   "symbols/Framework/choices/net8.0/description": ".NET 8.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/SupportPagesAndViews/displayName": "Páginas e visualizações de suporte",
-  "symbols/SupportPagesAndViews/description": "Se deve dar suporte à adição de páginas e exibições tradicionais do Razor, além de componentes, a esta biblioteca.",
+  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views to this library.",
   "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
   "postActions/restore/manualInstructions/default/text": "Executar 'dotnet restore'",
   "postActions/openInEditor/description": "Abre Areas/MyFeature/Pages/Page1.cshtml no editor"
