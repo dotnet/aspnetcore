@@ -1,22 +1,4 @@
 #nullable enable
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext.HealthCheckContext() -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext.Registration.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration!
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext.Registration.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Factory.get -> System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>!
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Factory.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.FailureStatus.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.FailureStatus.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck! instance, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout) -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Name.get -> string!
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Name.set -> void
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Tags.get -> System.Collections.Generic.ISet<string!>!
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Timeout.get -> System.TimeSpan
-Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Timeout.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.HealthCheckResult() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Data.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
@@ -44,8 +26,6 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded = 1 -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy = 2 -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy = 0 -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
-Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
-Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck.CheckHealthAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult>!
 Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheckPublisher
 Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheckPublisher.PublishAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport! report, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 static Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Degraded(string? description = null, System.Exception? exception = null, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data = null) -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult
