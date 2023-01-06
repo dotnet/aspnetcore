@@ -424,10 +424,34 @@ public static partial class RequestDelegateFactory
         //  When the `handler` returns a void or a void-returning Task, then we return an EmptyHttpResult
         //  to as a ValueTask<object?>
         // }
+
+        var argTypes = factoryContext.ArgumentTypes;
+        var contextArgAccess = new Expression[argTypes.Length];
+
+        for (int i = 0; i < argTypes.Length; i++)
+        {
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                // Register expressions containing the boxed and unboxed variants
+                // of the route handler's arguments for use in EndpointFilterInvocationContext
+                // construction and route handler invocation.
+                // context.GetArgument<string>(0)
+                // (string, name_local), (int, int_local)
+                contextArgAccess[i] = Expression.Call(FilterContextExpr, EndpointFilterInvocationContextGetArgument.MakeGenericMethod(argTypes[i]), Expression.Constant(i));
+            }
+            else
+            {
+                // We box if dynamic code isn't supported
+                contextArgAccess[i] = Expression.Convert(
+                    Expression.Property(FilterContextArgumentsExpr, ListIndexer, Expression.Constant(i)),
+                argTypes[i]);
+            }
+        }
+
         var handlerReturnMapping = MapHandlerReturnTypeToValueTask(
                         targetExpression is null
-                            ? Expression.Call(methodInfo, factoryContext.ContextArgAccess)
-                            : Expression.Call(targetExpression, methodInfo, factoryContext.ContextArgAccess),
+                            ? Expression.Call(methodInfo, contextArgAccess)
+                            : Expression.Call(targetExpression, methodInfo, contextArgAccess),
                         methodInfo.ReturnType);
         var handlerInvocation = Expression.Block(
                     new[] { TargetExpr },
@@ -600,32 +624,9 @@ public static partial class RequestDelegateFactory
         factoryContext.BoxedArgs = new Expression[parameters.Length];
         factoryContext.Parameters = new List<ParameterInfo>(parameters);
 
-        var hasFilters = factoryContext.EndpointBuilder.FilterFactories.Count > 0;
-
         for (var i = 0; i < parameters.Length; i++)
         {
             args[i] = CreateArgument(parameters[i], factoryContext);
-
-            // Only populate the context args if there are filters for this handler
-            if (hasFilters)
-            {
-                if (RuntimeFeature.IsDynamicCodeSupported)
-                {
-                    // Register expressions containing the boxed and unboxed variants
-                    // of the route handler's arguments for use in EndpointFilterInvocationContext
-                    // construction and route handler invocation.
-                    // context.GetArgument<string>(0)
-                    // (string, name_local), (int, int_local)
-                    factoryContext.ContextArgAccess.Add(Expression.Call(FilterContextExpr, EndpointFilterInvocationContextGetArgument.MakeGenericMethod(parameters[i].ParameterType), Expression.Constant(i)));
-                }
-                else
-                {
-                    // We box if dynamic code isn't supported
-                    factoryContext.ContextArgAccess.Add(Expression.Convert(
-                        Expression.Property(FilterContextArgumentsExpr, ListIndexer, Expression.Constant(i)),
-                    parameters[i].ParameterType));
-                }
-            }
 
             factoryContext.ArgumentTypes[i] = parameters[i].ParameterType;
             factoryContext.BoxedArgs[i] = Expression.Convert(args[i], typeof(object));
