@@ -212,12 +212,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
                 return false;
             }
 
-            // Check if HC is enabled
-            if (r.Parameters != null && !r.Parameters.IsEnabled)
-            {
-                return false;
-            }
-
             if (_healthCheckPublisherOptions?.Value.Predicate == null)
             {
                 return true;

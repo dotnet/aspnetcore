@@ -315,27 +315,32 @@ public class HealthCheckPublisherHostedServiceTest
             {
                 return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
             },
-            parameters: new(delay: TimeSpan.FromSeconds(2), period: TimeSpan.FromSeconds(18)));
+            parameters: new()
+            {
+                Delay = TimeSpan.FromSeconds(2),
+                Period = TimeSpan.FromSeconds(18)
+            });
 
             b.AddAsyncCheck("CheckDelay7Period11", _ =>
             {
                 return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
             },
-            parameters: new(delay: TimeSpan.FromSeconds(7), period: TimeSpan.FromSeconds(11)));
+            parameters: new()
+            {
+                Delay = TimeSpan.FromSeconds(7),
+                Period = TimeSpan.FromSeconds(11)
+            });
 
             b.AddAsyncCheck("CheckDelay9Period5", _ =>
             {
                 unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
                 return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
             },
-            parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5)));
-
-            b.AddAsyncCheck("DisabledCheck", _ =>
+            parameters: new()
             {
-                unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-            },
-            parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
+                Delay = TimeSpan.FromSeconds(9),
+                Period = TimeSpan.FromSeconds(5)
+            });
         });
 
         try
@@ -551,27 +556,32 @@ public class HealthCheckPublisherHostedServiceTest
                 {
                     return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
                 },
-                parameters: new(delay: TimeSpan.FromSeconds(2), period: TimeSpan.FromSeconds(18)));
+                parameters: new()
+                {
+                    Delay = TimeSpan.FromSeconds(2),
+                    Period = TimeSpan.FromSeconds(18)
+                });
 
                 b.AddAsyncCheck("CheckDelay7Period11", _ =>
                 {
                     return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
                 },
-                parameters: new(delay: TimeSpan.FromSeconds(7), period: TimeSpan.FromSeconds(11)));
+                parameters: new()
+                {
+                    Delay = TimeSpan.FromSeconds(7),
+                    Period = TimeSpan.FromSeconds(11)
+                });
 
                 b.AddAsyncCheck("CheckDelay9Period5", _ =>
                 {
                     unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
                     return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
                 },
-                parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5)));
-
-                b.AddAsyncCheck("DisabledCheck", _ =>
+                parameters: new()
                 {
-                    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-                },
-                parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
+                    Delay = TimeSpan.FromSeconds(9),
+                    Period = TimeSpan.FromSeconds(5)
+                });
             });
 
         try

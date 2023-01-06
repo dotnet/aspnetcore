@@ -60,7 +60,7 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck(
@@ -69,7 +69,7 @@ public static class HealthChecksBuilderDelegateExtensions
         Func<HealthCheckResult> check,
         IEnumerable<string>? tags = default,
         TimeSpan? timeout = default,
-        HealthCheckRegistrationParameters? parameters = default)
+        HealthCheckPublisherOptions? parameters = default)
     {
         if (builder == null)
         {
@@ -135,7 +135,7 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck(
@@ -144,7 +144,7 @@ public static class HealthChecksBuilderDelegateExtensions
         Func<CancellationToken, HealthCheckResult> check,
         IEnumerable<string>? tags = default,
         TimeSpan? timeout = default,
-        HealthCheckRegistrationParameters? parameters = default)
+        HealthCheckPublisherOptions? parameters = default)
     {
         if (builder == null)
         {
@@ -210,7 +210,7 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddAsyncCheck(
@@ -219,7 +219,7 @@ public static class HealthChecksBuilderDelegateExtensions
         Func<ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags = default,
         TimeSpan? timeout = default,
-        HealthCheckRegistrationParameters? parameters = default)
+        HealthCheckPublisherOptions? parameters = default)
     {
         if (builder == null)
         {
@@ -285,7 +285,7 @@ public static class HealthChecksBuilderDelegateExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="check">A delegate that provides the health check implementation.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddAsyncCheck(
@@ -294,7 +294,7 @@ public static class HealthChecksBuilderDelegateExtensions
         Func<CancellationToken, ValueTask<HealthCheckResult>> check,
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default,
-        HealthCheckRegistrationParameters? parameters = default)
+        HealthCheckPublisherOptions? parameters = default)
     {
         if (builder == null)
         {

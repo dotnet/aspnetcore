@@ -69,7 +69,7 @@ public sealed class HealthCheckRegistration
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
     /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check parameters.</param>
-    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, HealthCheckRegistrationParameters? parameters)
+    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, HealthCheckPublisherOptions? parameters)
     {
         if (name == null)
         {
@@ -152,7 +152,7 @@ public sealed class HealthCheckRegistration
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout,
-        HealthCheckRegistrationParameters? parameters)
+        HealthCheckPublisherOptions? parameters)
     {
         if (name == null)
         {
@@ -219,7 +219,7 @@ public sealed class HealthCheckRegistration
     /// <summary>
     /// Gets the individual parameters associated with a health check.
     /// </summary>
-    public HealthCheckRegistrationParameters? Parameters { get; }
+    public HealthCheckPublisherOptions? Parameters { get; }
 
     /// <summary>
     /// Gets or sets the health check name.
