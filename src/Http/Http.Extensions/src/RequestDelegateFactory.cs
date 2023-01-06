@@ -428,7 +428,7 @@ public static partial class RequestDelegateFactory
         var argTypes = factoryContext.ArgumentTypes;
         var contextArgAccess = new Expression[argTypes.Length];
 
-        for (int i = 0; i < argTypes.Length; i++)
+        for (var i = 0; i < argTypes.Length; i++)
         {
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
