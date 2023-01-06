@@ -25,10 +25,6 @@ public class RequestDelegateGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var isGeneratorEnabled = context.AnalyzerConfigOptionsProvider.Select((provider, _) =>
-            provider.GlobalOptions.TryGetValue("build_property.EnableRequestDelegateGenerator", out var enableRequestDelegateGenerator)
-            && enableRequestDelegateGenerator == "true");
-
         var mapActionOperations = context.SyntaxProvider.CreateSyntaxProvider(
             predicate: (node, _) => node is InvocationExpressionSyntax
             {
@@ -43,13 +39,7 @@ public class RequestDelegateGenerator : IIncrementalGenerator
             } && _knownMethods.Contains(method),
             transform: (context, token) => context.SemanticModel.GetOperation(context.Node, token) as IInvocationOperation);
 
-        // Filter out any map actions if the generator is not enabled
-        // via config
-        var conditionalMapActionOperations  = mapActionOperations.Combine(isGeneratorEnabled)
-            .Where(pair => pair.Right)
-            .Select((pair, _) => pair.Left);
-
-        var endpoints = conditionalMapActionOperations
+        var endpoints = mapActionOperations
             .Select((operation, _) => StaticRouteHandlerModelParser.GetEndpointFromOperation(operation))
             .WithTrackingName("EndpointModel");
 
@@ -135,12 +125,9 @@ builder.Metadata.Add(new SourceKey{StaticRouteHandlerModelEmitter.EmitSourceKey(
             context.AddSource("GeneratedRouteBuilderExtensions.Endpoints.g.cs", code);
         });
 
-        context.RegisterSourceOutput(isGeneratorEnabled, (context, isGeneratorEnabled) =>
+        context.RegisterSourceOutput(endpoints.Collect(), (context, isGeneratorEnabled) =>
         {
-            if (isGeneratorEnabled)
-            {
-                context.AddSource("GeneratedRouteBuilderExtensions.Helpers.g.cs", RequestDelegateGeneratorSources.GeneratedRouteBuilderExtensionsSource);
-            }
+            context.AddSource("GeneratedRouteBuilderExtensions.Helpers.g.cs", RequestDelegateGeneratorSources.GeneratedRouteBuilderExtensionsSource);
         });
     }
 }

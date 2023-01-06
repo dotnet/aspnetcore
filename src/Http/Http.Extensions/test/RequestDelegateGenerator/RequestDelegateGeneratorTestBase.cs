@@ -2,18 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.AspNetCore.Http.SourceGeneration;
-using Microsoft.AspNetCore.Http.SourceGeneration.StaticRouteHandlerModel;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,13 +25,10 @@ public class RequestDelegateGeneratorTestBase
         var generator = new RequestDelegateGenerator().AsSourceGenerator();
 
         // Enable the source generator in tests
-        var optionsProvider = new TestAnalyzerConfigOptionsProvider();
-        optionsProvider.TestGlobalOptions["build_property.EnableRequestDelegateGenerator"] = "true";
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
             {
                 generator
             },
-            optionsProvider: optionsProvider,
             driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
 
         // Run the source generator
@@ -51,10 +43,10 @@ public class RequestDelegateGeneratorTestBase
 
     internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(ImmutableArray<GeneratorRunResult> results, string stepName)
     {
-        var StaticEndpointStep = results[0].TrackedSteps[stepName].Single();
-        var StaticEndpointOutput = StaticEndpointStep.Outputs.Single();
-        var (StaticEndpoint, _) = StaticEndpointOutput;
-        var endpoint = Assert.IsType<StaticRouteHandlerModel.Endpoint>(StaticEndpoint);
+        var staticEndpointStep = results[0].TrackedSteps[stepName].Single();
+        var staticEndpointOutput = staticEndpointStep.Outputs.Single();
+        var (staticEndpoint, _) = staticEndpointOutput;
+        var endpoint = Assert.IsType<StaticRouteHandlerModel.Endpoint>(staticEndpoint);
         return endpoint;
     }
 
@@ -97,7 +89,7 @@ public class RequestDelegateGeneratorTestBase
         pdb.Position = 0;
 
         var assembly = AssemblyLoadContext.Default.LoadFromStream(output, pdb);
-        var handler = assembly?.GetType("TestMapActions")
+        var handler = assembly.GetType("TestMapActions")
             ?.GetMethod("MapTestEndpoints", BindingFlags.Public | BindingFlags.Static)
             ?.CreateDelegate<Func<IEndpointRouteBuilder, IEndpointRouteBuilder>>();
         var sourceKeyType = assembly.GetType("Microsoft.AspNetCore.Builder.SourceKey");
@@ -203,8 +195,6 @@ public static class TestMapActions
     {
         public IServiceProvider ServiceProvider => this;
 
-        public RouteHandlerOptions RouteHandlerOptions { get; set; } = new RouteHandlerOptions();
-
         public IServiceScope CreateScope()
         {
             return this;
@@ -226,62 +216,12 @@ public static class TestMapActions
             DataSources = new List<EndpointDataSource>();
         }
 
-        public IApplicationBuilder ApplicationBuilder { get; }
+        private IApplicationBuilder ApplicationBuilder { get; }
 
         public IApplicationBuilder CreateApplicationBuilder() => ApplicationBuilder.New();
 
         public ICollection<EndpointDataSource> DataSources { get; }
 
         public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
-    }
-
-    private class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        public override AnalyzerConfigOptions GlobalOptions => TestGlobalOptions;
-
-        public TestAnalyzerConfigOptions TestGlobalOptions { get; } = new TestAnalyzerConfigOptions();
-
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotImplementedException();
-
-        public Dictionary<string, TestAnalyzerConfigOptions> AdditionalTextOptions { get; } = new();
-
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)
-        {
-            return AdditionalTextOptions.TryGetValue(textFile.Path, out var options) ? options : new TestAnalyzerConfigOptions();
-        }
-
-        public TestAnalyzerConfigOptionsProvider Clone()
-        {
-            var provider = new TestAnalyzerConfigOptionsProvider();
-            foreach (var option in this.TestGlobalOptions.Options)
-            {
-                provider.TestGlobalOptions[option.Key] = option.Value;
-            }
-            foreach (var option in this.AdditionalTextOptions)
-            {
-                var newOptions = new TestAnalyzerConfigOptions();
-                foreach (var subOption in option.Value.Options)
-                {
-                    newOptions[subOption.Key] = subOption.Value;
-                }
-                provider.AdditionalTextOptions[option.Key] = newOptions;
-
-            }
-            return provider;
-        }
-    }
-
-    private class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        public Dictionary<string, string> Options { get; } = new();
-
-        public string this[string name]
-        {
-            get => Options[name];
-            set => Options[name] = value;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-            => Options.TryGetValue(key, out value);
     }
 }
