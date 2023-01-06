@@ -29,6 +29,10 @@ export const RootComponentsFunctions = {
     await component.setParameters(initialParameters);
     return component;
   },
+
+  async _internal_activatePrerenderedComponents() {
+    await getRequiredManager().invokeMethodAsync('ActivatePrerenderedComponentsAsync');
+  }
 };
 
 export function getAndRemovePendingRootComponentContainer(containerIdentifier: string): Element | undefined {

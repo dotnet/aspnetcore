@@ -4,6 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
+import { disableNavigationEnhancement } from '../NavigationEnhancement';
 
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
@@ -46,6 +47,11 @@ function listenForNavigationEvents(
 }
 
 function enableNavigationInterception(): void {
+  // This isn't correct. We'd need navigation enhancement and client-side routing to work side-by side. Maybe:
+  // - only for links clicked within a <Router>'s subtree, we do client-side routing
+  // - or maybe it's determined based on whether there's a client-side Router that matches the clicked link's URL
+  disableNavigationEnhancement();
+
   hasEnabledNavigationInterception = true;
 }
 

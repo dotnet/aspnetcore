@@ -192,6 +192,11 @@ public class JSComponentInterop
         return cacheForComponent.ParameterInfoByName.TryGetValue(parameterName, out parameterInfo);
     }
 
+    internal async Task ActivatePrerenderedComponentsAsync()
+    {
+        await Renderer.ActivatePrerenderedComponentsAsync();
+    }
+
     internal readonly struct ParameterTypeCache
     {
         public readonly Dictionary<string, ParameterInfo> ParameterInfoByName;

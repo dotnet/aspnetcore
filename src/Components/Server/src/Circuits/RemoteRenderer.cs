@@ -341,6 +341,11 @@ internal partial class RemoteRenderer : WebRenderer
         }
     }
 
+    protected override Task ActivatePrerenderedComponentsAsync()
+    {
+        throw new NotImplementedException();
+    }
+
     private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]

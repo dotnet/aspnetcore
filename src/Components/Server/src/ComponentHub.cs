@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -187,6 +188,31 @@ internal sealed partial class ComponentHub : Hub
         // If we get here the circuit does not exist anymore. This is something that's valid for a client to
         // recover from, and the client is not holding any resources right now other than the connection.
         return false;
+    }
+
+    public async ValueTask ActivatePrerenderedComponents(string serializedComponentRecords)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
+        {
+            throw new InvalidOperationException("The list of component records is not valid.");
+        }
+
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var tasks = new List<Task>();
+            foreach (var component in components)
+            {
+                tasks.Add(circuitHost.Renderer.AddComponentAsync(component.ComponentType, component.Parameters, component.Sequence.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            await Task.WhenAll(tasks);
+        });
     }
 
     public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)

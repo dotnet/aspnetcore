@@ -86,6 +86,8 @@ public abstract class WebRenderer : Renderer
         base.Dispose(disposing);
     }
 
+    protected internal abstract Task ActivatePrerenderedComponentsAsync();
+
     /// <summary>
     /// A collection of JS invokable methods that the JS-side code can use when it needs to
     /// make calls in the context of a particular renderer. This object is never exposed to
@@ -126,5 +128,9 @@ public abstract class WebRenderer : Renderer
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
         public void RemoveRootComponent(int componentId)
             => _jsComponentInterop.RemoveRootComponent(componentId);
+
+        [JSInvokable]
+        public Task ActivatePrerenderedComponentsAsync()
+            => _jsComponentInterop.ActivatePrerenderedComponentsAsync();
     }
 }

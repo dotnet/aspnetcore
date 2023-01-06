@@ -92,20 +92,20 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
-  const componentAttacher = new WebAssemblyComponentAttacher(components || []);
+  Blazor._internal['currentComponentAttacher'] = new WebAssemblyComponentAttacher(components || []);
   Blazor._internal.registeredComponents = {
-    getRegisteredComponentsCount: () => componentAttacher.getCount(),
-    getId: (index) => componentAttacher.getId(index),
-    getAssembly: (id) => BINDING.js_string_to_mono_string(componentAttacher.getAssembly(id)),
-    getTypeName: (id) => BINDING.js_string_to_mono_string(componentAttacher.getTypeName(id)),
-    getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterDefinitions(id) || ''),
-    getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
+    getRegisteredComponentsCount: () => Blazor._internal['currentComponentAttacher'].getCount(),
+    getId: (index) => Blazor._internal['currentComponentAttacher'].getId(index),
+    getAssembly: (id) => BINDING.js_string_to_mono_string(Blazor._internal['currentComponentAttacher'].getAssembly(id)),
+    getTypeName: (id) => BINDING.js_string_to_mono_string(Blazor._internal['currentComponentAttacher'].getTypeName(id)),
+    getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(Blazor._internal['currentComponentAttacher'].getParameterDefinitions(id) || ''),
+    getParameterValues: (id) => BINDING.js_string_to_mono_string(Blazor._internal['currentComponentAttacher'].getParameterValues(id) || ''),
   };
 
   Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document, 'webassembly') || '');
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-    const element = componentAttacher.resolveRegisteredElement(selector);
+    const element = Blazor._internal['currentComponentAttacher'].resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {

@@ -124,6 +124,19 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
+    protected override async Task ActivatePrerenderedComponentsAsync()
+    {
+        var fakeHost = WebAssemblyHostBuilder.CreateDefault();
+        var tasks = new List<Task>();
+        foreach (var c in fakeHost.RootComponents)
+        {
+            var componentId = AddRootComponent(c.ComponentType, c.Selector);
+            tasks.Add(RenderRootComponentAsync(componentId, c.Parameters));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
     private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]

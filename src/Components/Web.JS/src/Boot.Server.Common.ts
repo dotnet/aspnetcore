@@ -19,6 +19,7 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 
 let renderingFailed = false;
 let connection: HubConnection;
+let circuit: CircuitDescriptor;
 
 export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[]): Promise<void> {
   // Establish options to be used
@@ -33,7 +34,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
       return false;
     }
 
-    const reconnection = existingConnection || await initializeConnection(options, logger, circuit);
+    const reconnection = existingConnection || await initializeConnection(options, logger);
     if (!(await circuit.reconnect(reconnection))) {
       logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
       return false;
@@ -49,7 +50,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   const appState = discoverPersistedState(document, 'server');
-  const circuit = new CircuitDescriptor(components || [], appState || '');
+  circuit = new CircuitDescriptor(components || [], appState || '');
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
@@ -61,7 +62,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   Blazor._internal.forceCloseConnection = () => connection.stop();
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
 
-  const initialConnection = await initializeConnection(options, logger, circuit);
+  const initialConnection = await initializeConnection(options, logger);
   const circuitStarted = await circuit.startCircuit(initialConnection);
   if (!circuitStarted) {
     logger.log(LogLevel.Error, 'Failed to start the circuit.');
@@ -87,7 +88,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
-async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
+async function initializeConnection(options: CircuitStartOptions, logger: Logger): Promise<HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -178,6 +179,12 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   return newConnection;
+}
+
+export async function activatePrerenderedComponents(components: ServerComponentDescriptor[]) {
+  const appState = discoverPersistedState(document, 'server');
+  circuit = new CircuitDescriptor(components || [], appState || '');
+  await connection.send('ActivatePrerenderedComponents', JSON.stringify(components.map(c => c.toRecord())));
 }
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {

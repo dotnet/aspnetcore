@@ -25,10 +25,10 @@ export function attachWebRendererInterop(
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
-  if (Object.keys(jsComponentParameters).length > 0) {
+  //if (Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
     enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
-  }
+  //}
 
   resolveRendererAttached();
 }
