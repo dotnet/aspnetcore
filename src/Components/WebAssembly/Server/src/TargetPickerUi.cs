@@ -65,7 +65,7 @@ public class TargetPickerUi
 </p>
 <h2>Resolution</h2>
 <p>
-    <h4>If you are using Google Chrome for your development, follow these instructions:</h4>
+    <h4>If you are using Google Chrome or Chromium for your development, follow these instructions:</h4>
     {GetLaunchChromeInstructions(targetApplicationUrl.ToString())}
 </p>
 <p>
