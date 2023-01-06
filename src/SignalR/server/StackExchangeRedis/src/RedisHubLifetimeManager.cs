@@ -593,7 +593,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                     }
                     catch (Exception ex)
                     {
-                        RedisLog.ErrorForwardingResult(_logger, completionMessage.InvocationId, ex);
+                        RedisLog.ErrorForwardingResult(_logger, completionMessage.InvocationId!, ex);
                     }
                 }));
 
