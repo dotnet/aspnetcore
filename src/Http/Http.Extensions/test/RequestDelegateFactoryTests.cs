@@ -6936,6 +6936,23 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void InferMetadata_PopulatesCachedContext()
+    {
+        // Arrange
+        var @delegate = void () => { };
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(),
+        };
+
+        // Act
+        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
+
+        // Assert
+        Assert.NotNull(metadataResult.CachedFactoryContext);
+    }
+
+    [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
