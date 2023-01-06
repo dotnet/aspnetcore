@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -15,11 +16,16 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
 {
     private static readonly MediaTypeHeaderValue _jsonMediaType = new("application/json");
     private static readonly MediaTypeHeaderValue _problemDetailsJsonMediaType = new("application/problem+json");
-    private readonly ProblemDetailsOptions _options;
 
-    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options)
+    private readonly ProblemDetailsOptions _options;
+    private readonly JsonSerializerOptions _serializerOptions;
+    private readonly ProblemDetailsJsonContext _jsonContext;
+
+    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options, IOptions<JsonOptions> jsonOptions)
     {
         _options = options.Value;
+        _serializerOptions = jsonOptions.Value.SerializerOptions;
+        _jsonContext = new ProblemDetailsJsonContext(new JsonSerializerOptions(_serializerOptions));
     }
 
     public bool CanWrite(ProblemDetailsContext context)
@@ -59,26 +65,43 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
         _options.CustomizeProblemDetails?.Invoke(context);
 
-        // Use source generation serialization in two scenarios:
-        // 1. There are no extensions. Source generation is faster and works well with trimming.
-        // 2. Native AOT. In this case only the data types specified on ProblemDetailsJsonContext will work.
-        if (context.ProblemDetails.Extensions is { Count: 0 } || !RuntimeFeature.IsDynamicCodeSupported)
+        var problemDetailsType = context.ProblemDetails.GetType();
+
+        if (problemDetailsType == typeof(ProblemDetails) ||
+            problemDetailsType == typeof(HttpValidationProblemDetails))
         {
-            return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                context.ProblemDetails,
-                ProblemDetailsJsonContext.Default.ProblemDetails,
-                contentType: "application/problem+json"));
+            return WriteKnownProblemDetailsAsync(context);
         }
 
         return new ValueTask(httpContext.Response.WriteAsJsonAsync(
                         context.ProblemDetails,
-                        options: null,
+                        _serializerOptions.GetTypeInfo(problemDetailsType),
                         contentType: "application/problem+json"));
+
+        ValueTask WriteKnownProblemDetailsAsync(ProblemDetailsContext context)
+        {
+            // Use source generation serialization in two scenarios:
+            // 1. There are no extensions. Source generation is faster and works well with trimming.
+            // 2. Native AOT. In this case only the data types specified on ProblemDetailsJsonContext will work.
+            if (context.ProblemDetails.Extensions is { Count: 0 } || !RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return new ValueTask(httpContext.Response.WriteAsJsonAsync(
+                    context.ProblemDetails,
+                    _jsonContext.GetTypeInfo(problemDetailsType),
+                    contentType: "application/problem+json"));
+            }
+
+            return new ValueTask(httpContext.Response.WriteAsJsonAsync(
+                            context.ProblemDetails,
+                            _serializerOptions.GetTypeInfo(problemDetailsType),
+                            contentType: "application/problem+json"));
+        }
     }
 
     // Additional values are specified on JsonSerializerContext to support some values for extensions.
     // For example, the DeveloperExceptionMiddleware serializes its complex type to JsonElement, which problem details then needs to serialize.
     [JsonSerializable(typeof(ProblemDetails))]
+    [JsonSerializable(typeof(HttpValidationProblemDetails))]
     [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(decimal))]
