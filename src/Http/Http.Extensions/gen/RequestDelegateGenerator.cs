@@ -95,6 +95,10 @@ builder.Metadata.Add(new SourceKey{StaticRouteHandlerModelEmitter.EmitSourceKey(
 
         context.RegisterSourceOutput(genericThunks.Collect(), (context, sources) =>
         {
+            if (sources.IsDefaultOrEmpty)
+            {
+                return;
+            }
             var code = new StringBuilder();
             foreach (var source in sources)
             {
@@ -105,6 +109,10 @@ builder.Metadata.Add(new SourceKey{StaticRouteHandlerModelEmitter.EmitSourceKey(
 
         context.RegisterSourceOutput(thunks.Collect(), (context, sources) =>
         {
+            if (sources.IsDefaultOrEmpty)
+            {
+                return;
+            }
             var thunks = new StringBuilder();
             foreach (var source in sources)
             {
@@ -116,6 +124,10 @@ builder.Metadata.Add(new SourceKey{StaticRouteHandlerModelEmitter.EmitSourceKey(
 
         context.RegisterSourceOutput(stronglyTypedEndpointDefinitions.Collect(), (context, sources) =>
         {
+            if (sources.IsDefaultOrEmpty)
+            {
+                return;
+            }
             var endpoints = new StringBuilder();
             foreach (var source in sources)
             {
@@ -125,9 +137,12 @@ builder.Metadata.Add(new SourceKey{StaticRouteHandlerModelEmitter.EmitSourceKey(
             context.AddSource("GeneratedRouteBuilderExtensions.Endpoints.g.cs", code);
         });
 
-        context.RegisterSourceOutput(endpoints.Collect(), (context, isGeneratorEnabled) =>
+        context.RegisterSourceOutput(endpoints.Collect(), (context, endpoints) =>
         {
-            context.AddSource("GeneratedRouteBuilderExtensions.Helpers.g.cs", RequestDelegateGeneratorSources.GeneratedRouteBuilderExtensionsSource);
+            if (!endpoints.IsDefaultOrEmpty)
+            {
+                context.AddSource("GeneratedRouteBuilderExtensions.Helpers.g.cs", RequestDelegateGeneratorSources.GeneratedRouteBuilderExtensionsSource);
+            }
         });
     }
 }
