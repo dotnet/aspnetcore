@@ -14,7 +14,7 @@
   "groupIdentity": "Microsoft.Web.Blazor.Wasm.Empty",
   "precedence": "9000",
   "identity": "Microsoft.Web.Blazor.Wasm.Empty.CSharp.7.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/7.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {

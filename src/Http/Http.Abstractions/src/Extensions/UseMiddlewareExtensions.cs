@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Internal;
@@ -107,7 +109,9 @@ public static class UseMiddlewareExtensions
                 return (RequestDelegate)invokeMethod.CreateDelegate(typeof(RequestDelegate), instance);
             }
 
-            var factory = Compile<object>(invokeMethod, parameters);
+            var factory = RuntimeFeature.IsDynamicCodeSupported
+                ? CompileExpression<object>(invokeMethod, parameters)
+                : ReflectionFallback<object>(invokeMethod, parameters);
 
             return context =>
             {
@@ -156,8 +160,36 @@ public static class UseMiddlewareExtensions
         });
     }
 
-    private static Func<T, HttpContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
+    private static Func<T, HttpContext, IServiceProvider, Task> ReflectionFallback<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
     {
+        Debug.Assert(!RuntimeFeature.IsDynamicCodeSupported, "Use reflection fallback when dynamic code is not supported.");
+
+        for (var i = 1; i < parameters.Length; i++)
+        {
+            var parameterType = parameters[i].ParameterType;
+            if (parameterType.IsByRef)
+            {
+                throw new NotSupportedException(Resources.FormatException_InvokeDoesNotSupportRefOrOutParams(InvokeMethodName));
+            }
+        }
+
+        return (middleware, context, serviceProvider) =>
+        {
+            var methodArguments = new object[parameters.Length];
+            methodArguments[0] = context;
+            for (var i = 1; i < parameters.Length; i++)
+            {
+                methodArguments[i] = GetService(serviceProvider, parameters[i].ParameterType, methodInfo.DeclaringType!);
+            }
+
+            return (Task)methodInfo.Invoke(middleware, BindingFlags.DoNotWrapExceptions, binder: null, methodArguments, culture: null)!;
+        };
+    }
+
+    private static Func<T, HttpContext, IServiceProvider, Task> CompileExpression<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
+    {
+        Debug.Assert(RuntimeFeature.IsDynamicCodeSupported, "Use compiled expression when dynamic code is supported.");
+
         // If we call something like
         //
         // public class Middleware
@@ -192,7 +224,7 @@ public static class UseMiddlewareExtensions
 
         var methodArguments = new Expression[parameters.Length];
         methodArguments[0] = httpContextArg;
-        for (int i = 1; i < parameters.Length; i++)
+        for (var i = 1; i < parameters.Length; i++)
         {
             var parameterType = parameters[i].ParameterType;
             if (parameterType.IsByRef)
@@ -202,9 +234,9 @@ public static class UseMiddlewareExtensions
 
             var parameterTypeExpression = new Expression[]
             {
-                    providerArg,
-                    Expression.Constant(parameterType, typeof(Type)),
-                    Expression.Constant(methodInfo.DeclaringType, typeof(Type))
+                providerArg,
+                Expression.Constant(parameterType, typeof(Type)),
+                Expression.Constant(methodInfo.DeclaringType, typeof(Type))
             };
 
             var getServiceCall = Expression.Call(GetServiceInfo, parameterTypeExpression);
