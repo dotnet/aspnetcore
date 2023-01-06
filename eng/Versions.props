@@ -126,14 +126,14 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>8.0.0-alpha.1.23054.18</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>8.0.0-alpha.1.23055.9</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-alpha.1.23055.9</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>8.0.0-alpha.1.23055.13</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-alpha.1.23055.13</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.22630.1</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.22630.1</MicrosoftDotNetBuildTasksTemplatingVersion>
