@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -66,36 +67,27 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         _options.CustomizeProblemDetails?.Invoke(context);
 
         var problemDetailsType = context.ProblemDetails.GetType();
+        JsonTypeInfo? typeInfo = null;
 
         if (problemDetailsType == typeof(ProblemDetails) ||
             problemDetailsType == typeof(HttpValidationProblemDetails))
-        {
-            return WriteKnownProblemDetailsAsync(context);
-        }
-
-        return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                        context.ProblemDetails,
-                        _serializerOptions.GetTypeInfo(problemDetailsType),
-                        contentType: "application/problem+json"));
-
-        ValueTask WriteKnownProblemDetailsAsync(ProblemDetailsContext context)
         {
             // Use source generation serialization in two scenarios:
             // 1. There are no extensions. Source generation is faster and works well with trimming.
             // 2. Native AOT. In this case only the data types specified on ProblemDetailsJsonContext will work.
             if (context.ProblemDetails.Extensions is { Count: 0 } || !RuntimeFeature.IsDynamicCodeSupported)
             {
-                return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                    context.ProblemDetails,
-                    _jsonContext.GetTypeInfo(problemDetailsType),
-                    contentType: "application/problem+json"));
+                // Return TypeInfo from context
+                typeInfo = _jsonContext.GetTypeInfo(problemDetailsType);
             }
-
-            return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                            context.ProblemDetails,
-                            _serializerOptions.GetTypeInfo(problemDetailsType),
-                            contentType: "application/problem+json"));
         }
+
+        typeInfo ??= _serializerOptions.GetTypeInfo(problemDetailsType);
+
+        return new ValueTask(httpContext.Response.WriteAsJsonAsync(
+                        context.ProblemDetails,
+                        typeInfo,
+                        contentType: "application/problem+json"));
     }
 
     // Additional values are specified on JsonSerializerContext to support some values for extensions.
