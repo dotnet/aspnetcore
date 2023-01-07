@@ -8,13 +8,14 @@ namespace Microsoft.AspNetCore.Http.SourceGeneration.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelParser
 {
-    public static EndpointRoute GetEndpointRouteFromArgument(IArgumentOperation argumentOperation)
+    private const int _routePatternArgumentOrdinal = 1;
+    private const int _routeHandlerArgumentOrdinal = 2;
+
+    public static EndpointRoute GetEndpointRouteFromArgument(SyntaxToken routePattern)
     {
-        var syntax = argumentOperation.Syntax as ArgumentSyntax;
-        var expression = syntax.Expression as LiteralExpressionSyntax;
         return new EndpointRoute
         {
-            RoutePattern = expression.Token.ValueText
+            RoutePattern = routePattern.ValueText
         };
     }
 
@@ -29,8 +30,14 @@ internal static class StaticRouteHandlerModelParser
 
     public static Endpoint GetEndpointFromOperation(IInvocationOperation operation)
     {
-        var routePatternArgument = operation.Arguments[1];
-        var method = ResolveMethodFromOperation(operation.Arguments[2]);
+        if (!TryGetRouteHandlerPattern(operation, out var routeToken))
+        {
+            return null;
+        }
+        if (!TryGetRouteHandlerMethod(operation, out var method))
+        {
+            return null;
+        }
         var filePath = operation.Syntax.SyntaxTree.FilePath;
         var span = operation.Syntax.SyntaxTree.GetLineSpan(operation.Syntax.Span);
 
@@ -39,11 +46,52 @@ internal static class StaticRouteHandlerModelParser
 
         return new Endpoint
         {
-            Route = GetEndpointRouteFromArgument(routePatternArgument),
+            Route = GetEndpointRouteFromArgument(routeToken),
             Response = GetEndpointResponseFromMethod(method),
             Location = (filePath, span.EndLinePosition.Line + 1),
             HttpMethod = httpMethod,
         };
+    }
+
+    private static bool TryGetRouteHandlerPattern(IInvocationOperation invocation, out SyntaxToken token)
+    {
+        IArgumentOperation? argumentOperation = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == _routePatternArgumentOrdinal)
+            {
+                argumentOperation = argument;
+            }
+        }
+        if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
+            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        {
+            token = default;
+            return false;
+        }
+        token = routePatternArgumentLiteralSyntax.Token;
+        return true;
+    }
+
+    private static bool TryGetRouteHandlerMethod(IInvocationOperation invocation, out IMethodSymbol method)
+    {
+        IArgumentOperation? argumentOperation = null;
+        method = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == _routeHandlerArgumentOrdinal)
+            {
+                argumentOperation = argument;
+            }
+        }
+
+        if (argumentOperation is not null)
+        {
+            method = ResolveMethodFromOperation(argumentOperation);
+            return true;
+        }
+
+        return false;
     }
 
     private static IMethodSymbol ResolveMethodFromOperation(IOperation operation) => operation switch

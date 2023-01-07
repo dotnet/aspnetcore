@@ -10,6 +10,10 @@ public class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
     [InlineData(@"app.MapPost(""/hello"", () => ""Hello world!"");", "Hello world!")]
     [InlineData(@"app.MapDelete(""/hello"", () => ""Hello world!"");", "Hello world!")]
     [InlineData(@"app.MapPut(""/hello"", () => ""Hello world!"");", "Hello world!")]
+    [InlineData(@"app.MapGet(pattern: ""/hello"", handler: () => ""Hello world!"");", "Hello world!")]
+    [InlineData(@"app.MapPost(handler: () => ""Hello world!"", pattern: ""/hello"");", "Hello world!")]
+    [InlineData(@"app.MapDelete(pattern: ""/hello"", handler: () => ""Hello world!"");", "Hello world!")]
+    [InlineData(@"app.MapPut(handler: () => ""Hello world!"", pattern: ""/hello"");", "Hello world!")]
     public async Task MapAction_NoParam_StringReturn(string source, string expectedBody)
     {
         var (results, compilation) = RunGenerator(source);

@@ -12,7 +12,7 @@ internal enum RequestParameterSource
     Header,
     Form,
     Service,
-    QueryOrService
+    BodyOrService
 }
 
 internal sealed class RequestParameter
