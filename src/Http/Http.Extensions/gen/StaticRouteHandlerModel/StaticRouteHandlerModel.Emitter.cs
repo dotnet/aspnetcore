@@ -36,13 +36,13 @@ internal static class StaticRouteHandlerModelEmitter
      */
     public static string EmitRequestHandler()
     {
-        return $@"
+        return """
 System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext)
-{{
+{
         var result = handler();
         return httpContext.Response.WriteAsync(result);
-}}
-";
+}
+""";
     }
 
     /*
@@ -54,13 +54,13 @@ System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext
      */
     public static string EmitFilteredRequestHandler()
     {
-        return $@"
+        return """
 async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Http.HttpContext httpContext)
-{{
+{
     var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
     await ExecuteObjectResult(result, httpContext);
-}}
-";
+}
+""";
     }
 
     /*
@@ -81,6 +81,6 @@ async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Ht
      */
     public static string EmitFilteredInvocation()
     {
-        return $@"return System.Threading.Tasks.ValueTask.FromResult<object?>(handler());";
+        return "return System.Threading.Tasks.ValueTask.FromResult<object?>(handler());";
     }
 }

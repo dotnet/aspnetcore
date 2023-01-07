@@ -118,6 +118,7 @@ public class RequestDelegateGeneratorTestBase
     private static Compilation CreateCompilation(string sources)
     {
         var source = $$"""
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;

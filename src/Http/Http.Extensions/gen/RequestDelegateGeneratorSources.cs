@@ -34,7 +34,7 @@ using MetadataPopulator = System.Action<System.Delegate, Microsoft.AspNetCore.Bu
 using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Builder.EndpointBuilder, Microsoft.AspNetCore.Http.RequestDelegate>;
 """;
 
-    internal const string GeneratedRouteBuilderExtensionsSource = $$"""
+    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
@@ -53,13 +53,28 @@ namespace Microsoft.AspNetCore.Builder
 }
 
 
-internal static partial class GeneratedRouteBuilderExtensions
+internal static class GeneratedRouteBuilderExtensions
 {
     private static readonly string[] GetVerb = new[] { HttpMethods.Get };
     private static readonly string[] PostVerb = new[] { HttpMethods.Post };
     private static readonly string[] PutVerb = new[]  { HttpMethods.Put };
     private static readonly string[] DeleteVerb = new[] { HttpMethods.Delete };
     private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
+
+    private static class GenericThunks<T>
+    {
+        public static readonly System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
+        {
+            {{genericThunks}}
+        };
+    }
+
+    private static readonly System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
+    {
+        {{thunks}}
+    };
+
+    {{endpoints}}
 
     private static Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore<T>(
         this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
@@ -130,7 +145,7 @@ internal static partial class GeneratedRouteBuilderExtensions
         T.PopulateMetadata(parameter, builder);
     }
 
-    private static Task ExecuteObjectResult(object obj, HttpContext httpContext)
+    private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
     {
         if (obj is IResult r)
         {
@@ -378,46 +393,4 @@ internal static partial class GeneratedRouteBuilderExtensions
     }
 }
 """;
-    internal static string GetGenericThunks(string genericThunks)
-    {
-        return $$"""
-{{SourceHeader}}
-
-internal static partial class GeneratedRouteBuilderExtensions
-{
-    internal static class GenericThunks<T>
-    {
-        public static readonly System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-        {
-{{genericThunks}}
-        };
-    }
-}
-""";
-    }
-
-    internal static string GetThunks(string thunks)
-    {
-        return $$"""
-{{SourceHeader}}
-
-internal static partial class GeneratedRouteBuilderExtensions
-{
-    internal static readonly System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-    {
-        {{thunks}}
-    };
-}
-""";
-    }
-
-    internal static string GetEndpoints(string endpoints)
-    {
-        return $$"""
-internal static partial class GeneratedRouteBuilderExtensions
-{
-    {{endpoints}}
-}
-""";
-    }
 }

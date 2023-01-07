@@ -56,6 +56,7 @@ internal static class StaticRouteHandlerModelParser
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
+        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand),
         _ => null
     };
 
