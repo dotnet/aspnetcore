@@ -16,6 +16,7 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
@@ -23,9 +24,4 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.SourceGeneration.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
-  </ItemGroup>
-
 </Project>

@@ -15,7 +15,7 @@ internal enum RequestParameterSource
     QueryOrService
 }
 
-internal class RequestParameter
+internal sealed class RequestParameter
 {
     public string Name { get; }
     public string Type { get; }
@@ -24,20 +24,20 @@ internal class RequestParameter
     public object? DefaultValue { get; set; }
 }
 
-internal class EndpointRoute
+internal sealed class EndpointRoute
 {
     public string RoutePattern { get; set; }
 
     public List<string> RouteParameters { get; set; }
 }
 
-internal class EndpointResponse
+internal sealed class EndpointResponse
 {
     public string ResponseType { get; set; }
     public string ContentType { get; set; }
 }
 
-internal class EndpointRequest
+internal sealed class EndpointRequest
 {
     public List<RequestParameter> RequestParameters { get; set; }
 }

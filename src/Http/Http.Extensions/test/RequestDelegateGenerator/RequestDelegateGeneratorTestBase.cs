@@ -43,11 +43,17 @@ public class RequestDelegateGeneratorTestBase
 
     internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(ImmutableArray<GeneratorRunResult> results, string stepName)
     {
-        var staticEndpointStep = results[0].TrackedSteps[stepName].Single();
-        var staticEndpointOutput = staticEndpointStep.Outputs.Single();
-        var (staticEndpoint, _) = staticEndpointOutput;
-        var endpoint = Assert.IsType<StaticRouteHandlerModel.Endpoint>(staticEndpoint);
-        return endpoint;
+        // We only invoke the generator once in our test scenarios
+        var firstGeneratorPass = results[0];
+        if (firstGeneratorPass.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
+        {
+            var staticEndpointStep = staticEndpointSteps.Single();
+            var staticEndpointOutput = staticEndpointStep.Outputs.Single();
+            var (staticEndpoint, _) = staticEndpointOutput;
+            var endpoint = Assert.IsType<StaticRouteHandlerModel.Endpoint>(staticEndpoint);
+            return endpoint;
+        }
+        return null;
     }
 
     internal static Endpoint GetEndpointFromCompilation(Compilation compilation)

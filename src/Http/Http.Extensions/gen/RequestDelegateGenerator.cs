@@ -41,6 +41,7 @@ public class RequestDelegateGenerator : IIncrementalGenerator
 
         var endpoints = mapActionOperations
             .Select((operation, _) => StaticRouteHandlerModelParser.GetEndpointFromOperation(operation))
+            .Where(endpoint => endpoint.Response.ResponseType == "string") // Only emit for signatures we support
             .WithTrackingName("EndpointModel");
 
         var genericThunks = endpoints.Select((endpoint, token) =>
