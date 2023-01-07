@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -64,6 +65,48 @@ internal enum WellKnownType
     Microsoft_Extensions_DependencyInjection_OutputCacheConventionBuilderExtensions,
     Microsoft_AspNetCore_Builder_RateLimiterEndpointConventionBuilderExtensions,
     Microsoft_AspNetCore_Builder_RoutingEndpointConventionBuilderExtensions,
+    Microsoft_AspNetCore_Mvc_RouteAttribute,
+    Microsoft_AspNetCore_Mvc_HttpDeleteAttribute,
+    Microsoft_AspNetCore_Mvc_HttpGetAttribute,
+    Microsoft_AspNetCore_Mvc_HttpHeadAttribute,
+    Microsoft_AspNetCore_Mvc_HttpOptionsAttribute,
+    Microsoft_AspNetCore_Mvc_HttpPatchAttribute,
+    Microsoft_AspNetCore_Mvc_HttpPostAttribute,
+    Microsoft_AspNetCore_Mvc_HttpPutAttribute,
+    Microsoft_AspNetCore_Http_EndpointDescriptionAttribute,
+    Microsoft_AspNetCore_Http_EndpointSummaryAttribute,
+    Microsoft_AspNetCore_Http_TagsAttribute,
+    Microsoft_AspNetCore_Routing_EndpointGroupNameAttribute,
+    Microsoft_AspNetCore_Routing_EndpointNameAttribute,
+    Microsoft_AspNetCore_Routing_ExcludeFromDescriptionAttribute,
+    Microsoft_AspNetCore_Cors_DisableCorsAttribute,
+    Microsoft_AspNetCore_Cors_EnableCorsAttribute,
+    Microsoft_AspNetCore_OutputCaching_OutputCacheAttribute,
+    Microsoft_AspNetCore_RateLimiting_DisableRateLimitingAttribute,
+    Microsoft_AspNetCore_RateLimiting_EnableRateLimitingAttribute,
+    Microsoft_AspNetCore_Mvc_ActionNameAttribute,
+    Microsoft_AspNetCore_Mvc_DisableRequestSizeLimitAttribute,
+    Microsoft_AspNetCore_Mvc_FormatFilterAttribute,
+    Microsoft_AspNetCore_Mvc_ProducesAttribute,
+    Microsoft_AspNetCore_Mvc_ProducesDefaultResponseTypeAttribute,
+    Microsoft_AspNetCore_Mvc_ProducesErrorResponseTypeAttribute,
+    Microsoft_AspNetCore_Mvc_ProducesResponseTypeAttribute,
+    Microsoft_AspNetCore_Mvc_RequestFormLimitsAttribute,
+    Microsoft_AspNetCore_Mvc_RequestSizeLimitAttribute,
+    Microsoft_AspNetCore_Mvc_RequireHttpsAttribute,
+    Microsoft_AspNetCore_Mvc_ResponseCacheAttribute,
+    Microsoft_AspNetCore_Mvc_ServiceFilterAttribute,
+    Microsoft_AspNetCore_Mvc_TypeFilterAttribute,
+    Microsoft_AspNetCore_Mvc_ApiExplorer_ApiConventionNameMatchAttribute,
+    Microsoft_AspNetCore_Mvc_Filters_ResultFilterAttribute,
+    Microsoft_AspNetCore_Mvc_Infrastructure_DefaultStatusCodeAttribute,
+    Microsoft_AspNetCore_Mvc_AutoValidateAntiforgeryTokenAttribute,
+    Microsoft_AspNetCore_Mvc_IgnoreAntiforgeryTokenAttribute,
+    Microsoft_AspNetCore_Mvc_ViewFeatures_SaveTempDataAttribute,
+    Microsoft_AspNetCore_Mvc_SkipStatusCodePagesAttribute,
+    Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
+    Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
+    Microsoft_AspNetCore_Authorization_AuthorizeAttribute
 }
 
 internal sealed class WellKnownTypes
@@ -123,6 +166,48 @@ internal sealed class WellKnownTypes
         "Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions",
         "Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions",
         "Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions",
+        "Microsoft.AspNetCore.Mvc.RouteAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpDeleteAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpGetAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpHeadAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpOptionsAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpPatchAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpPostAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpPutAttribute",
+        "Microsoft.AspNetCore.Http.EndpointDescriptionAttribute",
+        "Microsoft.AspNetCore.Http.EndpointSummaryAttribute",
+        "Microsoft.AspNetCore.Http.TagsAttribute",
+        "Microsoft.AspNetCore.Routing.EndpointGroupNameAttribute",
+        "Microsoft.AspNetCore.Routing.EndpointNameAttribute",
+        "Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute",
+        "Microsoft.AspNetCore.Cors.DisableCorsAttribute",
+        "Microsoft.AspNetCore.Cors.EnableCorsAttribute",
+        "Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute",
+        "Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute",
+        "Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute",
+        "Microsoft.AspNetCore.Mvc.ActionNameAttribute",
+        "Microsoft.AspNetCore.Mvc.DisableRequestSizeLimitAttribute",
+        "Microsoft.AspNetCore.Mvc.FormatFilterAttribute",
+        "Microsoft.AspNetCore.Mvc.ProducesAttribute",
+        "Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute",
+        "Microsoft.AspNetCore.Mvc.ProducesErrorResponseTypeAttribute",
+        "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute",
+        "Microsoft.AspNetCore.Mvc.RequestFormLimitsAttribute",
+        "Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute",
+        "Microsoft.AspNetCore.Mvc.RequireHttpsAttribute",
+        "Microsoft.AspNetCore.Mvc.ResponseCacheAttribute",
+        "Microsoft.AspNetCore.Mvc.ServiceFilterAttribute",
+        "Microsoft.AspNetCore.Mvc.TypeFilterAttribute",
+        "Microsoft.AspNetCore.Mvc.ApiExplorer.ApiConventionNameMatchAttribute",
+        "Microsoft.AspNetCore.Mvc.Filters.ResultFilterAttribute",
+        "Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute",
+        "Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute",
+        "Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute",
+        "Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute",
+        "Microsoft.AspNetCore.Mvc.SkipStatusCodePagesAttribute",
+        "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
+        "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
+        "Microsoft.AspNetCore.Authorization.AuthorizeAttribute"
     };
 
     public static WellKnownTypes GetOrCreate(Compilation compilation) =>
@@ -164,6 +249,11 @@ internal sealed class WellKnownTypes
         _compilation = compilation;
     }
 
+    public INamedTypeSymbol Get(SpecialType type)
+    {
+        return _compilation.GetSpecialType(type);
+    }
+
     public INamedTypeSymbol Get(WellKnownType type)
     {
         var index = (int)type;
@@ -192,16 +282,20 @@ internal sealed class WellKnownTypes
         return _lazyWellKnownTypes[index]!;
     }
 
-    public bool IsType(ITypeSymbol type, WellKnownType[] wellKnownTypes)
+    public bool IsType(ITypeSymbol type, WellKnownType[] wellKnownTypes) => IsType(type, wellKnownTypes, out var _);
+
+    public bool IsType(ITypeSymbol type, WellKnownType[] wellKnownTypes, [NotNullWhen(true)] out WellKnownType? match)
     {
         foreach (var wellKnownType in wellKnownTypes)
         {
             if (SymbolEqualityComparer.Default.Equals(type, Get(wellKnownType)))
             {
+                match = wellKnownType;
                 return true;
             }
         }
 
+        match = null;
         return false;
     }
 
