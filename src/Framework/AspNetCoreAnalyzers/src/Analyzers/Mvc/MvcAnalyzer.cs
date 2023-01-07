@@ -32,8 +32,6 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
             var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
 
-            // We want ConcurrentHashSet here in case RegisterOperationAction runs in parallel.
-            // Since ConcurrentHashSet doesn't exist, use ConcurrentDictionary and ignore the value.
             var concurrentQueue = new ConcurrentQueue<List<ActionRoute>>();
 
             context.RegisterSymbolAction(context =>
@@ -79,7 +77,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    var httpMethods = ImmutableArray.Empty<string>();
+                    var httpMethods = ImmutableArray<string>.Empty;
 
                     switch (match.Value)
                     {
