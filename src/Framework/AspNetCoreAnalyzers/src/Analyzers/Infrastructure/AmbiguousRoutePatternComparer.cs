@@ -64,8 +64,8 @@ internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePat
             var equal = xChild switch
             {
                 RoutePatternOptionalSeparatorNode _ => yChild is RoutePatternOptionalSeparatorNode,
-                RoutePatternReplacementNode xReplacement => yChild is RoutePatternReplacementNode yReplacement && Equals(xReplacement.TextToken.Value, yReplacement.TextToken.Value),
-                RoutePatternLiteralNode xLiteral => yChild is RoutePatternLiteralNode yLiteral && Equals(xLiteral.LiteralToken.Value, yLiteral.LiteralToken.Value),
+                RoutePatternReplacementNode xReplacement => yChild is RoutePatternReplacementNode yReplacement && IgnoreCaseEquals(xReplacement.TextToken.Value, yReplacement.TextToken.Value),
+                RoutePatternLiteralNode xLiteral => yChild is RoutePatternLiteralNode yLiteral && IgnoreCaseEquals(xLiteral.LiteralToken.Value, yLiteral.LiteralToken.Value),
                 RoutePatternParameterNode xParameter => Equals(xParameter, yChild as RoutePatternParameterNode),
                 _ => throw new InvalidOperationException($"Unexpected segment node type '{xChild.Kind}'."),
             };
@@ -77,6 +77,19 @@ internal sealed class AmbiguousRoutePatternComparer : IEqualityComparer<RoutePat
         }
 
         return true;
+    }
+
+    private static bool IgnoreCaseEquals(object? value1, object? value2)
+    {
+        var s1 = value1 as string;
+        var s2 = value2 as string;
+
+        if (s1 is null || s2 is null)
+        {
+            return false;
+        }
+
+        return string.Equals(s1, s2, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool Equals(RoutePatternParameterNode x, RoutePatternParameterNode? y)
