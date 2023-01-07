@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption"><!--_locComment_text="{Locked='[BundleNameFull]'}"-->[BundleNameFull] Setup</String>
   <String Id="Title"><!--_locComment_text="{Locked}"-->[BundleNameShort]</String>
@@ -7,7 +7,7 @@
   <String Id="ConfirmCancelMessage">Are you sure you want to cancel?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Previous version</String>
   <String Id="HelpHeader">Setup Help</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
+  <String Id="HelpText"><!--_locComment_text="'directory' is to be translated in both places"-->/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
    creates a complete local copy of the bundle in directory. Install is the default.
 
 /passive | /quiet -  displays minimal UI with no prompts or displays no UI and
