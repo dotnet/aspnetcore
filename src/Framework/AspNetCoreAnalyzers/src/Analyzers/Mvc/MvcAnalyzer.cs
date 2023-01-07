@@ -77,40 +77,35 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    var httpMethods = ImmutableArray<string>.Empty;
-
-                    switch (match.Value)
-                    {
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute:
-                            // No HTTP method.
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute:
-                            httpMethods = ImmutableArray.Create("DELETE");
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute:
-                            httpMethods = ImmutableArray.Create("GET");
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute:
-                            httpMethods = ImmutableArray.Create("HEAD");
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute:
-                            httpMethods = ImmutableArray.Create("OPTIONS");
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute:
-                            httpMethods = ImmutableArray.Create("PATCH");
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute:
-                            httpMethods = ImmutableArray.Create("POST");
-                            break;
-                        case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute:
-                            httpMethods = ImmutableArray.Create("PUT");
-                            break;
-                        default:
-                            throw new InvalidOperationException("Unexpected well known type:" + match);
-                    }
-                    actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, httpMethods));
+                    actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, GetHttpMethods(match.Value)));
                 }
             }
+        }
+    }
+
+    private static ImmutableArray<string> GetHttpMethods(WellKnownType match)
+    {
+        switch (match)
+        {
+            case WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute:
+                // No HTTP method.
+                return ImmutableArray<string>.Empty;
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute:
+                return ImmutableArray.Create("DELETE");
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute:
+                return ImmutableArray.Create("GET");
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute:
+                return ImmutableArray.Create("HEAD");
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute:
+                return ImmutableArray.Create("OPTIONS");
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute:
+                return ImmutableArray.Create("PATCH");
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute:
+                return ImmutableArray.Create("POST");
+            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute:
+                return ImmutableArray.Create("PUT");
+            default:
+                throw new InvalidOperationException("Unexpected well known type:" + match);
         }
     }
 
