@@ -38,8 +38,8 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
 
             context.RegisterSymbolAction(context =>
             {
-                if (context.Symbol is INamedTypeSymbol namedTypeSymbol &&
-                    MvcDetector.IsController(namedTypeSymbol, wellKnownTypes))
+                var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+                if (MvcDetector.IsController(namedTypeSymbol, wellKnownTypes))
                 {
                     // Pool and reuse lists for each block.
                     if (!concurrentQueue.TryDequeue(out var actionRoutes))
@@ -79,7 +79,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    var httpMethodsBuilder = ImmutableArray.CreateBuilder<string>();
+                    var httpMethods = ImmutableArray.Empty<string>();
 
                     switch (match.Value)
                     {
@@ -87,30 +87,30 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                             // No HTTP method.
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute:
-                            httpMethodsBuilder.Add("DELETE");
+                            httpMethods = ImmutableArray.Create("DELETE");
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute:
-                            httpMethodsBuilder.Add("GET");
+                            httpMethods = ImmutableArray.Create("GET");
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute:
-                            httpMethodsBuilder.Add("HEAD");
+                            httpMethods = ImmutableArray.Create("HEAD");
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute:
-                            httpMethodsBuilder.Add("OPTIONS");
+                            httpMethods = ImmutableArray.Create("OPTIONS");
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute:
-                            httpMethodsBuilder.Add("PATCH");
+                            httpMethods = ImmutableArray.Create("PATCH");
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute:
-                            httpMethodsBuilder.Add("POST");
+                            httpMethods = ImmutableArray.Create("POST");
                             break;
                         case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute:
-                            httpMethodsBuilder.Add("PUT");
+                            httpMethods = ImmutableArray.Create("PUT");
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected well known type:" + match);
                     }
-                    actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, httpMethodsBuilder.ToImmutable()));
+                    actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, httpMethods));
                 }
             }
         }
