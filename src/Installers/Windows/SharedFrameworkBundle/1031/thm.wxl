@@ -3,8 +3,6 @@
   <String Id="Caption">[BundleNameFull]-Setup</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Willkommen</String>
-  <String Id="InstallMessage">[WixBundleName] wird von Setup auf Ihrem Computer installiert. Klicken Sie auf "Installieren", um den Vorgang fortzusetzen, auf "Optionen", um das Installationsverzeichnis festzulegen, oder auf "Schließen", um den Vorgang zu beenden.</String>
   <String Id="InstallVersion">Version von [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang wirklich abbrechen?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Vorherige Version</String>
@@ -18,16 +16,9 @@
 /norestart   – Unterdrückt alle Versuche eines Neustarts. Standardmäßig wird über die Benutzeroberfläche eine Aufforderung zum Neustart ausgegeben.
 /log log.txt – Erstellt ein Protokoll in einer festgelegten Datei. Standardmäßig wird die Protokolldatei in %TEMP% erstellt.</String>
   <String Id="HelpCloseButton">S&amp;chließen</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;Lizenzbedingungen&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">Ich &amp;stimme den Bedingungen des Lizenzvertrags zu</String>
-  <String Id="InstallOptionsButton">&amp;Optionen</String>
   <String Id="InstallInstallButton">&amp;Installieren</String>
   <String Id="InstallCloseButton">S&amp;chließen</String>
-  <String Id="OptionsHeader">Setupoptionen</String>
-  <String Id="OptionsLocationLabel">Installationspfad:</String>
-  <String Id="OptionsBrowseButton">&amp;Durchsuchen</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Abbrechen</String>
   <String Id="ProgressHeader">Setupstatus</String>
   <String Id="ProgressLabel">Wird verarbeitet:</String>
   <String Id="OverallProgressPackageText">Initialisierung...</String>
