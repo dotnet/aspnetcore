@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -16,13 +17,15 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private const int DelegateParameterOrdinal = 2;
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters,
         DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
         DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
         DiagnosticDescriptors.DetectMismatchedParameterOptionality,
         DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable,
-        DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT
+        DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT,
+        DiagnosticDescriptors.AmbiguousRouteHandlerRoute
     );
 
     public override void Initialize(AnalysisContext context)
@@ -36,7 +39,30 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
             var routeUsageCache = RouteUsageCache.GetOrCreate(compilation);
 
-            context.RegisterOperationAction(context =>
+            // We want ConcurrentHashSet here in case RegisterOperationAction runs in parallel.
+            // Since ConcurrentHashSet doesn't exist, use ConcurrentDictionary and ignore the value.
+            var concurrentQueue = new ConcurrentQueue<ConcurrentDictionary<MapOperation, byte>>();
+            context.RegisterOperationBlockStartAction(context =>
+            {
+                // Pool and reuse lists for each block.
+                if (!concurrentQueue.TryDequeue(out var mapOperations))
+                {
+                    mapOperations = new ConcurrentDictionary<MapOperation, byte>();
+                }
+
+                context.RegisterOperationAction(c => DoOperationAnalysis(c, mapOperations), OperationKind.Invocation);
+
+                context.RegisterOperationBlockEndAction(c =>
+                {
+                    DetectAmbiguousRoutes(c, wellKnownTypes, mapOperations);
+
+                    // Return to the pool.
+                    mapOperations.Clear();
+                    concurrentQueue.Enqueue(mapOperations);
+                });
+            });
+
+            void DoOperationAnalysis(OperationAnalysisContext context, ConcurrentDictionary<MapOperation, byte> mapOperations)
             {
                 var invocation = (IInvocationOperation)context.Operation;
                 var targetMethod = invocation.TargetMethod;
@@ -70,6 +96,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 {
                     return;
                 }
+
+                mapOperations.TryAdd(MapOperation.Create(invocation, routeUsage), value: default);
 
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {
@@ -133,7 +161,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                     }
                 }
-            }, OperationKind.Invocation);
+            }
         });
     }
 
@@ -168,6 +196,46 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_EndpointRouteBuilderExtensions), targetMethod.ContainingType) &&
             invocation.Arguments.Length == 3 &&
             targetMethod.Parameters.Length == 3 &&
-            SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.System_Delegate), targetMethod.Parameters[DelegateParameterOrdinal].Type);
+            IsCompatibleDelegateType(wellKnownTypes, targetMethod);
+
+        static bool IsCompatibleDelegateType(WellKnownTypes wellKnownTypes, IMethodSymbol targetMethod)
+        {
+            var parmeterType = targetMethod.Parameters[DelegateParameterOrdinal].Type;
+            if (SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.System_Delegate), parmeterType))
+            {
+                return true;
+            }
+            if (SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_RequestDelegate), parmeterType))
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private record struct MapOperation(IOperation? Builder, IInvocationOperation Operation, RouteUsageModel RouteUsageModel)
+    {
+        public static MapOperation Create(IInvocationOperation operation, RouteUsageModel routeUsageModel)
+        {
+            IOperation? builder = null;
+                
+            var builderArgument = operation.Arguments.SingleOrDefault(a => a.Parameter?.Ordinal == 0);
+            if (builderArgument != null)
+            {
+                builder = WalkDownConversion(builderArgument.Value);
+            }
+
+            return new MapOperation(builder, operation, routeUsageModel);
+        }
+
+        private static IOperation WalkDownConversion(IOperation operation)
+        {
+            while (operation is IConversionOperation conversionOperation)
+            {
+                operation = conversionOperation.Operand;
+            }
+
+            return operation;
+        }
     }
 }
