@@ -85,28 +85,18 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
 
     private static ImmutableArray<string> GetHttpMethods(WellKnownType match)
     {
-        switch (match)
+        return match switch
         {
-            case WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute:
-                // No HTTP method.
-                return ImmutableArray<string>.Empty;
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute:
-                return ImmutableArray.Create("DELETE");
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute:
-                return ImmutableArray.Create("GET");
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute:
-                return ImmutableArray.Create("HEAD");
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute:
-                return ImmutableArray.Create("OPTIONS");
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute:
-                return ImmutableArray.Create("PATCH");
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute:
-                return ImmutableArray.Create("POST");
-            case WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute:
-                return ImmutableArray.Create("PUT");
-            default:
-                throw new InvalidOperationException("Unexpected well known type:" + match);
-        }
+            WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute => ImmutableArray<string>.Empty,// No HTTP method.
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute => ImmutableArray.Create("DELETE"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute => ImmutableArray.Create("GET"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute => ImmutableArray.Create("HEAD"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute => ImmutableArray.Create("OPTIONS"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute => ImmutableArray.Create("PATCH"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute => ImmutableArray.Create("POST"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute => ImmutableArray.Create("PUT"),
+            _ => throw new InvalidOperationException("Unexpected well known type:" + match),
+        };
     }
 
     private static readonly WellKnownType[] RouteAttributeTypes = new[]
