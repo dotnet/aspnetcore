@@ -92,6 +92,8 @@ internal static class JumpTableBuilder
         [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Guarded by IsDynamicCodeCompiled")]
         static JumpTable MakeILEmitTrieJumpTableIfSupported(int defaultDestination, int exitDestination, (string text, int destination)[] pathEntries, JumpTable fallback)
         {
+            // ILEmitTrieJumpTable use IL emit to generate a custom, high-performance jump table.
+            // EL emit requires IsDynamicCodeCompiled to be true. Fallback to another jump table implementation if not available.
             return RuntimeFeature.IsDynamicCodeCompiled
                 ? new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback)
                 : fallback;

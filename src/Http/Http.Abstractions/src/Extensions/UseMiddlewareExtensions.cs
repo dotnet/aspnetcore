@@ -109,7 +109,9 @@ public static class UseMiddlewareExtensions
                 return (RequestDelegate)invokeMethod.CreateDelegate(typeof(RequestDelegate), instance);
             }
 
-            var factory = RuntimeFeature.IsDynamicCodeSupported
+            // Performance optimization: Use compiled expressions to invoke middleware with services injected in Invoke.
+            // If IsDynamicCodeCompiled is false then use standard reflection to avoid overhead of interpreting expressions.
+            var factory = RuntimeFeature.IsDynamicCodeCompiled
                 ? CompileExpression<object>(invokeMethod, parameters)
                 : ReflectionFallback<object>(invokeMethod, parameters);
 

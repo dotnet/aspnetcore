@@ -422,6 +422,7 @@ public static partial class RequestDelegateFactory
 
         for (var i = 0; i < argTypes.Length; i++)
         {
+            // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
                 // Register expressions containing the boxed and unboxed variants
@@ -560,7 +561,7 @@ public static partial class RequestDelegateFactory
             DefaultEndpointFilterInvocationContextConstructor,
             new Expression[] { HttpContextExpr, paramArray });
 
-        if (!RuntimeFeature.IsDynamicCodeCompiled)
+        if (!RuntimeFeature.IsDynamicCodeSupported)
         {
             // For AOT platforms it's not possible to support the closed generic arguments that are based on the
             // parameter arguments dynamically (for value types). In that case, fallback to boxing the argument list.
