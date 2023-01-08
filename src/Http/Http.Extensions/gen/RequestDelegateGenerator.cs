@@ -77,19 +77,17 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             }),
 """);
 
-        var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) =>
-        {
-            var code = new StringBuilder();
-            code.AppendLine($"internal static Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint.HttpMethod}");
-            code.Append("(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
-            code.AppendLine(@"[System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern, ");
-            code.AppendLine($"{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)} handler,");
-            code.AppendLine(@"[System.Runtime.CompilerServices.CallerFilePath] string filePath = """", [System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)");
-            code.AppendLine("{");
-            code.AppendLine("   return MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);");
-            code.AppendLine("}");
-            return code.ToString();
-        });
+        var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) => $$"""
+internal static Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
+        this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+        [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+        {{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}} handler,
+        [System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+        [System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+    {
+        return MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);
+    }
+""");
 
         var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions.Collect());
 

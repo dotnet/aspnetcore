@@ -25,7 +25,7 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static string EmitSourceKey(Endpoint endpoint)
     {
-        return $@"(""{endpoint.Location.Item1}"", {endpoint.Location.Item2})";
+        return $@"(@""{endpoint.Location.Item1}"", {endpoint.Location.Item2})";
     }
 
     /*
@@ -38,10 +38,10 @@ internal static class StaticRouteHandlerModelEmitter
     {
         return """
 System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext)
-{
-        var result = handler();
-        return httpContext.Response.WriteAsync(result);
-}
+                {
+                        var result = handler();
+                        return httpContext.Response.WriteAsync(result);
+                }
 """;
     }
 
@@ -56,10 +56,10 @@ System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext
     {
         return """
 async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Http.HttpContext httpContext)
-{
-    var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
-    await ExecuteObjectResult(result, httpContext);
-}
+                {
+                    var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                    await ExecuteObjectResult(result, httpContext);
+                }
 """;
     }
 
