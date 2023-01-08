@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Http.SourceGeneration.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal enum RequestParameterSource
 {

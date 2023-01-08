@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Http.SourceGeneration.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelParser
 {

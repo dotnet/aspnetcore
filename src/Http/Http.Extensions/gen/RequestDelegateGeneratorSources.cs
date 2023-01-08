@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.SourceGeneration;
+namespace Microsoft.AspNetCore.Http.Generators;
 
 internal static class RequestDelegateGeneratorSources
 {
@@ -15,30 +15,33 @@ internal static class RequestDelegateGeneratorSources
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.IO;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Primitives;
+using global::System;
+using global::System.Collections;
+using global::System.Collections.Generic;
+using global::System.Diagnostics;
+using global::System.Linq;
+using global::System.Reflection;
+using global::System.Threading.Tasks;
+using global::System.IO;
+using global::Microsoft.AspNetCore.Routing;
+using global::Microsoft.AspNetCore.Routing.Patterns;
+using global::Microsoft.AspNetCore.Builder;
+using global::Microsoft.AspNetCore.Http;
+using global::Microsoft.Extensions.DependencyInjection;
+using global::Microsoft.Extensions.FileProviders;
+using global::Microsoft.Extensions.Primitives;
 using MetadataPopulator = System.Action<System.Delegate, Microsoft.AspNetCore.Builder.EndpointBuilder>;
 using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Builder.EndpointBuilder, Microsoft.AspNetCore.Http.RequestDelegate>;
 """;
+
+    public static string GeneratedCodeAttribute => $@"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
     public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
 {
+    {{GeneratedCodeAttribute}}
     internal class SourceKey
     {
         public string Path { get; init; }
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder
     }
 }
 
-
+{{GeneratedCodeAttribute}}
 internal static class GeneratedRouteBuilderExtensions
 {
     private static readonly string[] GetVerb = new[] { HttpMethods.Get };
@@ -63,21 +66,21 @@ internal static class GeneratedRouteBuilderExtensions
 
     private static class GenericThunks<T>
     {
-        public static readonly System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
+        public static readonly global::System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
             {{genericThunks}}
         };
     }
 
-    private static readonly System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
+    private static readonly global::System.Collections.Generic.Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
     {
         {{thunks}}
     };
 
     {{endpoints}}
 
-    private static Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore<T>(
-        this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
+    private static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore<T>(
+        this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
         string pattern,
         System.Delegate handler,
         IEnumerable<string> httpMethods,
@@ -88,8 +91,8 @@ internal static class GeneratedRouteBuilderExtensions
         return GetOrAddRouteEndpointDataSource(routes).AddRouteHandler(RoutePatternFactory.Parse(pattern), handler, httpMethods, isFallback: false, populate, factory);
     }
 
-    private static Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore(
-        this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
+    private static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore(
+        this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
         string pattern,
         System.Delegate handler,
         IEnumerable<string> httpMethods,
@@ -119,7 +122,7 @@ internal static class GeneratedRouteBuilderExtensions
         return routeEndpointDataSource;
     }
 
-    private static EndpointFilterDelegate BuildFilterDelegate(EndpointFilterDelegate filteredInvocation, EndpointBuilder builder, System.Reflection.MethodInfo mi)
+    private static EndpointFilterDelegate BuildFilterDelegate(EndpointFilterDelegate filteredInvocation, EndpointBuilder builder, global::System.Reflection.MethodInfo mi)
     {
         var routeHandlerFilters =  builder.FilterFactories;
         var context0 = new EndpointFilterFactoryContext
@@ -140,6 +143,7 @@ internal static class GeneratedRouteBuilderExtensions
     {
         T.PopulateMetadata(method, builder);
     }
+
     private static void PopulateMetadata<T>(System.Reflection.ParameterInfo parameter, EndpointBuilder builder) where T : Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider
     {
         T.PopulateMetadata(parameter, builder);
@@ -161,6 +165,7 @@ internal static class GeneratedRouteBuilderExtensions
         }
     }
 
+    {{GeneratedCodeAttribute}}
     private sealed class SourceGeneratedRouteEndpointDataSource : EndpointDataSource
     {
         private readonly List<RouteEntry> _routeEntries = new();

@@ -6,9 +6,9 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using Microsoft.AspNetCore.Http.SourceGeneration.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
-namespace Microsoft.AspNetCore.Http.SourceGeneration;
+namespace Microsoft.AspNetCore.Http.Generators;
 
 [Generator]
 public sealed class RequestDelegateGenerator : IIncrementalGenerator
@@ -78,6 +78,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 """);
 
         var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) => $$"""
+{{RequestDelegateGeneratorSources.GeneratedCodeAttribute}}
 internal static Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
         this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
         [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,

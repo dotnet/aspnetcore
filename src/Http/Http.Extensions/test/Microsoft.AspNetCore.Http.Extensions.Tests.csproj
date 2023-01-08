@@ -22,6 +22,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)\src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.SourceGeneration.csproj" />
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.Generators.csproj" />
   </ItemGroup>
 </Project>
