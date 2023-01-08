@@ -62,7 +62,7 @@ public class SimpleTypeModelBinder : IModelBinder
 
         try
         {
-            var value = valueProviderResult.FirstValue;
+            var value = valueProviderResult.ToString();
 
             object? model;
             if (bindingContext.ModelType == typeof(string))
