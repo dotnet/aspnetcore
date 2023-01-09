@@ -121,4 +121,18 @@
     <Warning Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRuntimeVersion} does not exist."
         Condition=" !EXISTS('$(_DotNetRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}') " />
   </Target>
+  
+  <!-- 
+    Make a netstandard2.1 copy of the .net ILLinkPack to work around a trimming issue.
+    See https://github.com/dotnet/linker/issues/3175
+  -->
+  <Target Name="_FixKnownILLinkPack"
+          BeforeTargets="ProcessFrameworkReferences">
+    <ItemGroup>
+      <KnownILLinkPack Include="@(KnownILLinkPack)"
+                       Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'"
+                       TargetFramework="netstandard2.1"
+                       ILLinkPackVersion="%(KnownILLinkPack.ILLinkPackVersion)" />
+    </ItemGroup>
+  </Target>
 </Project>
