@@ -207,9 +207,9 @@ input.invalid, textarea.invalid, div.invalid {
     border: 1px solid red;
 }
 
-.validation-errors {
+.validation-errors, .validation-message {
     color: red;
-    font-size: 0.8em;
+    margin-bottom: 0.5rem;
 }
 
 .reviews .rating

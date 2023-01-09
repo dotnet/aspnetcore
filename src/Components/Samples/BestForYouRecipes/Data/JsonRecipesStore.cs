@@ -23,7 +23,7 @@ public class JsonRecipesStore : IRecipesStore
         searchProvider = new InMemorySearchProvider(recipes);
     }
 
-    public async Task<IEnumerable<Recipe>> GetRecipes(string query)
+    public async Task<IEnumerable<Recipe>> GetRecipes(string? query)
     {
         // Simulate DB slowness
         await Task.Delay(500);

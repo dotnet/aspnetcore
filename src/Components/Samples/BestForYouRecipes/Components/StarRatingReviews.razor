@@ -1,10 +1,13 @@
-﻿<div class="reviews">
+﻿@inject IHttpContextAccessor HttpContextAccessor
+<div class="reviews">
     <h2>Reviews</h2>
-    <EditForm class="review-editor" Model="review" OnValidSubmit="OnValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <EditForm method="post" class="review-editor" EditContext="editContext" enhance>
         <StarRating @bind-Value="review.Rating" />
-        <InputTextArea rows="5" placeholder="Write a review" @bind-Value="review.Text" />
+        <ValidationMessage For="@(() => review.Rating)" />
+
+        <InputTextArea rows="5" name="review-text" placeholder="Write a review" @bind-Value="review.Text" />
+        <ValidationMessage For="@(() => review.Text)" />
+
         <button type="submit">Submit</button>
     </EditForm>
     @for (int i = 0; i < Reviews.Count; i++)
@@ -22,7 +25,8 @@
 </div>
 
 @code {
-    Review review = new Review();
+    EditContext? editContext;
+    Review review = default!;
 
     [Parameter, EditorRequired]
     public IList<Review> Reviews { get; set; } = default!;
@@ -30,10 +34,28 @@
     [Parameter]
     public EventCallback<Review> OnSubmitReview { get; set; }
 
-    async Task OnValidSubmit()
+    protected override async Task OnInitializedAsync()
     {
-        await OnSubmitReview.InvokeAsync(review);
-        review = new Review();
+        var httpContext = HttpContextAccessor.HttpContext;
+        if (httpContext.Request.HasFormContentType)
+        {
+            var form = httpContext.Request.Form;
+            review = new Review
+            {
+                Rating = int.TryParse(form["star-rating"], out var starRating) ? starRating : 0,
+                Text = form["review-text"],
+            };
+            editContext = new EditContext(review).AddDataAnnotationsValidation();
+            if (editContext.Validate())
+            {
+                await OnSubmitReview.InvokeAsync(review);
+                httpContext.Response.Redirect(httpContext.Request.Path);
+            }
+        }
+        else
+        {
+            review = new();
+            editContext = new(review);
+        }
     }
-
 }
