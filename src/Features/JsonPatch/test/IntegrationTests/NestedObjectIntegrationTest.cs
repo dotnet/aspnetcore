@@ -3,6 +3,7 @@
 
 using System;
 using System.Dynamic;
+using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -342,7 +343,7 @@ public class NestedObjectIntegrationTest
 
             set
             {
-                ArgumentNullException.ThrowIfNull(value);
+                ArgumentNullThrowHelper.ThrowIfNull(value);
 
                 stringProperty = value;
             }
