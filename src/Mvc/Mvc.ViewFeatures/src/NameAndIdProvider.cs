@@ -31,15 +31,9 @@ internal static class NameAndIdProvider
     /// </remarks>
     public static string CreateSanitizedId(ViewContext viewContext, string fullName, string invalidCharReplacement)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(fullName))
         {
@@ -101,20 +95,11 @@ internal static class NameAndIdProvider
         string fullName,
         string invalidCharReplacement)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
-        if (tagBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(tagBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(tagBuilder);
 
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(fullName))
         {

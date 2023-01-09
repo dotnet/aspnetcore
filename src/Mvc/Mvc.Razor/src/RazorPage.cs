@@ -54,15 +54,9 @@ public abstract class RazorPage : RazorPageBase
     /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
     public override void DefineSection(string name, RenderAsyncDelegate section)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(section);
 
         if (SectionWriters.ContainsKey(name))
         {
@@ -78,10 +72,7 @@ public abstract class RazorPage : RazorPageBase
     /// <returns><c>true</c> if the specified section is defined in the content page; otherwise, <c>false</c>.</returns>
     public bool IsSectionDefined(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         EnsureMethodCanBeInvoked(nameof(IsSectionDefined));
         return PreviousSectionWriters.ContainsKey(name);
@@ -97,10 +88,7 @@ public abstract class RazorPage : RazorPageBase
     /// value does not represent the rendered content.</remarks>
     public HtmlString? RenderSection(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         return RenderSection(name, required: true);
     }
@@ -116,10 +104,7 @@ public abstract class RazorPage : RazorPageBase
     /// value does not represent the rendered content.</remarks>
     public HtmlString? RenderSection(string name, bool required)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         EnsureMethodCanBeInvoked(nameof(RenderSection));
 
@@ -139,10 +124,7 @@ public abstract class RazorPage : RazorPageBase
     /// value does not represent the rendered content.</remarks>
     public Task<HtmlString?> RenderSectionAsync(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         return RenderSectionAsync(name, required: true);
     }
@@ -163,10 +145,7 @@ public abstract class RazorPage : RazorPageBase
     /// was not registered using the <c>@section</c> in the Razor page.</exception>
     public Task<HtmlString?> RenderSectionAsync(string name, bool required)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         EnsureMethodCanBeInvoked(nameof(RenderSectionAsync));
         return RenderSectionAsyncCore(name, required);
@@ -213,10 +192,7 @@ public abstract class RazorPage : RazorPageBase
     /// <param name="sectionName">The section to ignore.</param>
     public void IgnoreSection(string sectionName)
     {
-        if (sectionName == null)
-        {
-            throw new ArgumentNullException(nameof(sectionName));
-        }
+        ArgumentNullException.ThrowIfNull(sectionName);
 
         if (PreviousSectionWriters.ContainsKey(sectionName))
         {

@@ -36,15 +36,9 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         HttpContext httpContext,
         AntiforgeryToken cookieToken)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (cookieToken == null)
-        {
-            throw new ArgumentNullException(nameof(cookieToken));
-        }
+        ArgumentNullException.ThrowIfNull(cookieToken);
 
         if (!IsCookieTokenValid(cookieToken))
         {
@@ -112,10 +106,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         AntiforgeryToken requestToken,
         [NotNullWhen(false)] out string? message)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (cookieToken == null)
         {

@@ -32,10 +32,7 @@ internal sealed class PageLoaderMatcherPolicy : MatcherPolicy, IEndpointSelector
 
     public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // We don't mark Pages as dynamic endpoints because that causes all matcher policies
         // to run in *slow mode*. Instead we produce the same metadata for things that would affect matcher
@@ -57,15 +54,9 @@ internal sealed class PageLoaderMatcherPolicy : MatcherPolicy, IEndpointSelector
 
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(candidates);
 
         for (var i = 0; i < candidates.Count; i++)
         {

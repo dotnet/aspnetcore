@@ -43,20 +43,11 @@ public class LocalizedHtmlString : IHtmlContent
     /// <param name="arguments">The values to format the <paramref name="value"/> with.</param>
     public LocalizedHtmlString(string name, string value, bool isResourceNotFound, params object[] arguments)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
-        if (arguments == null)
-        {
-            throw new ArgumentNullException(nameof(arguments));
-        }
+        ArgumentNullException.ThrowIfNull(arguments);
 
         Name = name;
         Value = value;
@@ -82,15 +73,9 @@ public class LocalizedHtmlString : IHtmlContent
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
 
         var formattableString = new HtmlFormattableString(Value, _arguments);
         formattableString.WriteTo(writer, encoder);

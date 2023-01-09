@@ -162,15 +162,9 @@ public class AnchorTagHelper : TagHelper
     /// <remarks>Does nothing if user provides an <c>href</c> attribute.</remarks>
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(output);
 
         // If "href" is already set, it means the user is attempting to use a normal anchor.
         if (output.Attributes.ContainsName(Href))

@@ -21,15 +21,9 @@ public sealed class RazorExtensionAssemblyNameAttribute : Attribute
     /// <param name="assemblyName">The assembly name of the extension.</param>
     public RazorExtensionAssemblyNameAttribute(string extensionName, string assemblyName)
     {
-        if (extensionName == null)
-        {
-            throw new ArgumentNullException(nameof(extensionName));
-        }
+        ArgumentNullException.ThrowIfNull(extensionName);
 
-        if (assemblyName == null)
-        {
-            throw new ArgumentNullException(nameof(assemblyName));
-        }
+        ArgumentNullException.ThrowIfNull(assemblyName);
 
         ExtensionName = extensionName;
         AssemblyName = assemblyName;

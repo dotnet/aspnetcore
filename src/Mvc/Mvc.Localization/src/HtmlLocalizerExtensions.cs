@@ -18,15 +18,9 @@ public static class HtmlLocalizerExtensions
     /// <returns>The <see cref="LocalizedHtmlString"/> resource.</returns>
     public static LocalizedHtmlString GetHtml(this IHtmlLocalizer htmlLocalizer, string name)
     {
-        if (htmlLocalizer == null)
-        {
-            throw new ArgumentNullException(nameof(htmlLocalizer));
-        }
+        ArgumentNullException.ThrowIfNull(htmlLocalizer);
 
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         return htmlLocalizer[name];
     }
@@ -40,15 +34,9 @@ public static class HtmlLocalizerExtensions
     /// <returns>The <see cref="LocalizedHtmlString"/> resource.</returns>
     public static LocalizedHtmlString GetHtml(this IHtmlLocalizer htmlLocalizer, string name, params object[] arguments)
     {
-        if (htmlLocalizer == null)
-        {
-            throw new ArgumentNullException(nameof(htmlLocalizer));
-        }
+        ArgumentNullException.ThrowIfNull(htmlLocalizer);
 
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         return htmlLocalizer[name, arguments];
     }
@@ -60,10 +48,7 @@ public static class HtmlLocalizerExtensions
     /// <returns>The string resources.</returns>
     public static IEnumerable<LocalizedString> GetAllStrings(this IHtmlLocalizer htmlLocalizer)
     {
-        if (htmlLocalizer == null)
-        {
-            throw new ArgumentNullException(nameof(htmlLocalizer));
-        }
+        ArgumentNullException.ThrowIfNull(htmlLocalizer);
 
         return htmlLocalizer.GetAllStrings(includeParentCultures: true);
     }

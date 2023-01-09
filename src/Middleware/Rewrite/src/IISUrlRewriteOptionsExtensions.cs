@@ -23,15 +23,9 @@ public static class IISUrlRewriteOptionsExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatability")]
     public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool alwaysUseManagedServerVariables = false)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
         var file = fileProvider.GetFileInfo(filePath);
 
@@ -50,15 +44,9 @@ public static class IISUrlRewriteOptionsExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "<Pending>")]
     public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool alwaysUseManagedServerVariables = false)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         var rules = new UrlRewriteFileParser().Parse(reader, alwaysUseManagedServerVariables);
 

@@ -37,15 +37,9 @@ public class HtmlString : IHtmlContent
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
 
         writer.Write(Value);
     }

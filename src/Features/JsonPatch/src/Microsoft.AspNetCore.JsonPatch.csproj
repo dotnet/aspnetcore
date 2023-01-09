@@ -4,6 +4,7 @@
     <Description>ASP.NET Core support for JSON PATCH.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <DefineConstants>$(DefineConstants);INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;json;jsonpatch</PackageTags>
     <Nullable>disable</Nullable>

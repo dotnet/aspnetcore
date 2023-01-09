@@ -30,10 +30,7 @@ public static class MvcRazorMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddRazorViewEngine(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddViews();
         AddRazorViewEngineFeatureProviders(builder.PartManager);
@@ -51,15 +48,9 @@ public static class MvcRazorMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<RazorViewEngineOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.AddViews();
 
@@ -92,10 +83,7 @@ public static class MvcRazorMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/> instance this method extends.</returns>
     public static IMvcCoreBuilder AddTagHelpersAsServices(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         TagHelpersAsServices.AddTagHelpersAsServices(builder.PartManager, builder.Services);
         return builder;
@@ -117,15 +105,9 @@ public static class MvcRazorMvcCoreBuilderExtensions
         Action<TTagHelper, ViewContext> initialize)
         where TTagHelper : ITagHelper
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (initialize == null)
-        {
-            throw new ArgumentNullException(nameof(initialize));
-        }
+        ArgumentNullException.ThrowIfNull(initialize);
 
         var initializer = new TagHelperInitializer<TTagHelper>(initialize);
 

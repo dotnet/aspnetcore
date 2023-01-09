@@ -48,25 +48,13 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         MvcOptions options,
         MvcNewtonsoftJsonOptions jsonOptions)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
-        if (serializerSettings == null)
-        {
-            throw new ArgumentNullException(nameof(serializerSettings));
-        }
+        ArgumentNullException.ThrowIfNull(serializerSettings);
 
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
+        ArgumentNullException.ThrowIfNull(charPool);
 
-        if (objectPoolProvider == null)
-        {
-            throw new ArgumentNullException(nameof(objectPoolProvider));
-        }
+        ArgumentNullException.ThrowIfNull(objectPoolProvider);
 
         _logger = logger;
         SerializerSettings = serializerSettings;
@@ -110,15 +98,9 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         InputFormatterContext context,
         Encoding encoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var httpContext = context.HttpContext;
         var request = httpContext.Request;

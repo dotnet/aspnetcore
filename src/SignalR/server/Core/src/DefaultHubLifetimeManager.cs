@@ -34,15 +34,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
 
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var connection = _connections[connectionId];
         if (connection == null)
@@ -63,15 +57,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
 
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var connection = _connections[connectionId];
         if (connection == null)
@@ -176,10 +164,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendConnectionAsync(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
 
         var connection = _connections[connectionId];
 
@@ -198,10 +183,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendGroupAsync(string groupName, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var group = _groups[groupName];
         if (group != null)
@@ -253,10 +235,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendGroupExceptAsync(string groupName, string methodName, object?[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
     {
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var group = _groups[groupName];
         if (group != null)
@@ -328,10 +307,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc/>
     public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
 
         var connection = _connections[connectionId];
 

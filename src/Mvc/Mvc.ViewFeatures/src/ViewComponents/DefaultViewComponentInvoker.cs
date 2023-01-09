@@ -36,25 +36,13 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
         DiagnosticListener diagnosticListener,
         ILogger logger)
     {
-        if (viewComponentFactory == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentFactory));
-        }
+        ArgumentNullException.ThrowIfNull(viewComponentFactory);
 
-        if (viewComponentInvokerCache == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentInvokerCache));
-        }
+        ArgumentNullException.ThrowIfNull(viewComponentInvokerCache);
 
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         _viewComponentFactory = viewComponentFactory;
         _viewComponentInvokerCache = viewComponentInvokerCache;
@@ -65,10 +53,7 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
     /// <inheritdoc />
     public async Task InvokeAsync(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
 

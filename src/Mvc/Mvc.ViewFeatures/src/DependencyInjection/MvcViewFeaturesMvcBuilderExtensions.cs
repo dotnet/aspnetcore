@@ -26,15 +26,9 @@ public static class MvcViewFeaturesMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<MvcViewOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -47,10 +41,7 @@ public static class MvcViewFeaturesMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddViewComponentsAsServices(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         var feature = new ViewComponentFeature();
         builder.PartManager.PopulateFeature(feature);
@@ -73,10 +64,7 @@ public static class MvcViewFeaturesMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddSessionStateTempDataProvider(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Ensure the TempData basics are registered.
         MvcViewFeaturesMvcCoreBuilderExtensions.AddViewServices(builder.Services);
@@ -95,10 +83,7 @@ public static class MvcViewFeaturesMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddCookieTempDataProvider(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Ensure the TempData basics are registered.
         MvcViewFeaturesMvcCoreBuilderExtensions.AddViewServices(builder.Services);
@@ -123,15 +108,9 @@ public static class MvcViewFeaturesMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<CookieTempDataProviderOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddCookieTempDataProvider(builder);
         builder.Services.Configure(setupAction);

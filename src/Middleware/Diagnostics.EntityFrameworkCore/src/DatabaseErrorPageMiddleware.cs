@@ -52,20 +52,11 @@ public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObser
         ILoggerFactory loggerFactory,
         IOptions<DatabaseErrorPageOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;
@@ -83,10 +74,7 @@ public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObser
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual async Task Invoke(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         try
         {

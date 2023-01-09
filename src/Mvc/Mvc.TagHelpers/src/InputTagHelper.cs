@@ -141,15 +141,9 @@ public class InputTagHelper : TagHelper
     /// </exception>
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attributes that are also well-known HTML attributes. Must be done prior to any copying
         // from a TagBuilder.

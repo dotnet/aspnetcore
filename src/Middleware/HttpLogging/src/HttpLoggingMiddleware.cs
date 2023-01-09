@@ -30,15 +30,8 @@ internal sealed class HttpLoggingMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _options = options;
         _logger = logger;

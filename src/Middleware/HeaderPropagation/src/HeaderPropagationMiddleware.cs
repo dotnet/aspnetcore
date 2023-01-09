@@ -29,10 +29,7 @@ public class HeaderPropagationMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
         _options = options.Value;
 
         _values = values ?? throw new ArgumentNullException(nameof(values));

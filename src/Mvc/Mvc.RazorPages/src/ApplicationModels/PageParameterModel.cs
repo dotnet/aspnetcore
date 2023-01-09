@@ -22,15 +22,9 @@ public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingMode
         IReadOnlyList<object> attributes)
         : base(parameterInfo.ParameterType, attributes)
     {
-        if (parameterInfo == null)
-        {
-            throw new ArgumentNullException(nameof(parameterInfo));
-        }
+        ArgumentNullException.ThrowIfNull(parameterInfo);
 
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
 
         ParameterInfo = parameterInfo;
     }
@@ -42,10 +36,7 @@ public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingMode
     public PageParameterModel(PageParameterModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Handler = other.Handler;
         ParameterInfo = other.ParameterInfo;

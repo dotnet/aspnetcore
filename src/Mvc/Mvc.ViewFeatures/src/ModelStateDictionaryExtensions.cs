@@ -27,20 +27,11 @@ public static class ModelStateDictionaryExtensions
         Expression<Func<TModel, object>> expression,
         string errorMessage)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
-        if (errorMessage == null)
-        {
-            throw new ArgumentNullException(nameof(errorMessage));
-        }
+        ArgumentNullException.ThrowIfNull(errorMessage);
 
         modelState.AddModelError(GetExpressionText(expression), errorMessage);
     }
@@ -65,15 +56,9 @@ public static class ModelStateDictionaryExtensions
         Expression<Func<TModel, object>> expression,
         Exception exception)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         modelState.TryAddModelException(GetExpressionText(expression), exception);
     }
@@ -95,20 +80,11 @@ public static class ModelStateDictionaryExtensions
         Exception exception,
         ModelMetadata metadata)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
         modelState.AddModelError(GetExpressionText(expression), exception, metadata);
     }
@@ -127,15 +103,9 @@ public static class ModelStateDictionaryExtensions
         this ModelStateDictionary modelState,
         Expression<Func<TModel, object>> expression)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         return modelState.Remove(GetExpressionText(expression));
     }
@@ -151,15 +121,9 @@ public static class ModelStateDictionaryExtensions
         this ModelStateDictionary modelState,
         Expression<Func<TModel, object>> expression)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         string modelKey = GetExpressionText(expression);
         if (string.IsNullOrEmpty(modelKey))

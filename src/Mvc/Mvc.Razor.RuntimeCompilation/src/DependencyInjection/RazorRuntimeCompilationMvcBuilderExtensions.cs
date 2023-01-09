@@ -17,10 +17,7 @@ public static class RazorRuntimeCompilationMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddRazorRuntimeCompilation(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(builder.Services);
         return builder;
@@ -34,15 +31,9 @@ public static class RazorRuntimeCompilationMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddRazorRuntimeCompilation(this IMvcBuilder builder, Action<MvcRazorRuntimeCompilationOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(builder.Services);
         builder.Services.Configure(setupAction);

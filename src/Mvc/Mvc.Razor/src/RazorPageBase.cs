@@ -285,10 +285,7 @@ public abstract class RazorPageBase : IRazorPage
     // Internal for unit testing.
     protected internal virtual void PushWriter(TextWriter writer)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         var viewContext = ViewContext;
         _textWriterStack.Push(viewContext.Writer);
@@ -315,10 +312,7 @@ public abstract class RazorPageBase : IRazorPage
     /// <returns>The href for the contentPath.</returns>
     public virtual string Href(string contentPath)
     {
-        if (contentPath == null)
-        {
-            throw new ArgumentNullException(nameof(contentPath));
-        }
+        ArgumentNullException.ThrowIfNull(contentPath);
 
         if (_urlHelper == null)
         {
@@ -350,15 +344,9 @@ public abstract class RazorPageBase : IRazorPage
     /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
     public virtual void DefineSection(string name, RenderAsyncDelegate section)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(section);
 
         if (SectionWriters.ContainsKey(name))
         {
@@ -467,15 +455,9 @@ public abstract class RazorPageBase : IRazorPage
         int suffixOffset,
         int attributeValuesCount)
     {
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix);
 
-        if (suffix == null)
-        {
-            throw new ArgumentNullException(nameof(suffix));
-        }
+        ArgumentNullException.ThrowIfNull(suffix);
 
         _attributeInfo = new AttributeInfo(name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
 

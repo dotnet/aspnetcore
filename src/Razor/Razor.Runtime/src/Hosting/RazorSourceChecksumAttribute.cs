@@ -27,20 +27,11 @@ public sealed class RazorSourceChecksumAttribute : Attribute, IRazorSourceChecks
     /// <param name="identifier">The identifier associated with this thumbprint.</param>
     public RazorSourceChecksumAttribute(string checksumAlgorithm, string checksum, string identifier)
     {
-        if (checksumAlgorithm == null)
-        {
-            throw new ArgumentNullException(nameof(checksumAlgorithm));
-        }
+        ArgumentNullException.ThrowIfNull(checksumAlgorithm);
 
-        if (checksum == null)
-        {
-            throw new ArgumentNullException(nameof(checksum));
-        }
+        ArgumentNullException.ThrowIfNull(checksum);
 
-        if (identifier == null)
-        {
-            throw new ArgumentNullException(nameof(identifier));
-        }
+        ArgumentNullException.ThrowIfNull(identifier);
 
         ChecksumAlgorithm = checksumAlgorithm;
         Checksum = checksum;

@@ -58,15 +58,9 @@ public class TextAreaTagHelper : TagHelper
     /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attribute that is also a well-known HTML attribute. Must be done prior to any copying
         // from a TagBuilder.

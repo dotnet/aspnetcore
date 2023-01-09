@@ -32,10 +32,7 @@ public class RequestLocalizationMiddleware
     /// <see cref="RequestLocalizationMiddleware"/>.</param>
     public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _logger = loggerFactory?.CreateLogger<RequestLocalizationMiddleware>() ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -49,10 +46,7 @@ public class RequestLocalizationMiddleware
     /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
     public async Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var requestCulture = _options.DefaultRequestCulture;
 

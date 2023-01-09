@@ -29,20 +29,11 @@ public class DefaultValidationHtmlAttributeProvider : ValidationHtmlAttributePro
         IModelMetadataProvider metadataProvider,
         ClientValidatorCache clientValidatorCache)
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
 
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
 
-        if (clientValidatorCache == null)
-        {
-            throw new ArgumentNullException(nameof(clientValidatorCache));
-        }
+        ArgumentNullException.ThrowIfNull(clientValidatorCache);
 
         _clientValidatorCache = clientValidatorCache;
         _metadataProvider = metadataProvider;
@@ -57,20 +48,11 @@ public class DefaultValidationHtmlAttributeProvider : ValidationHtmlAttributePro
         ModelExplorer modelExplorer,
         IDictionary<string, string> attributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
 
         var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
         if (formContext == null)

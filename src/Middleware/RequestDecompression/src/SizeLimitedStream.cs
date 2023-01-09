@@ -12,10 +12,7 @@ internal sealed class SizeLimitedStream : Stream
 
     public SizeLimitedStream(Stream innerStream, long? sizeLimit)
     {
-        if (innerStream is null)
-        {
-            throw new ArgumentNullException(nameof(innerStream));
-        }
+        ArgumentNullException.ThrowIfNull(innerStream);
 
         _innerStream = innerStream;
         _sizeLimit = sizeLimit;

@@ -15,6 +15,8 @@
     <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)CreateLinkedToken.cs" Link="Internal\CreateLinkedToken.cs" />
     <Compile Include="$(SharedSourceRoot)OperatingSystem.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

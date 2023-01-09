@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
-    <DefineConstants>$(DefineConstants);AspNetCoreTesting</DefineConstants>
+    <DefineConstants>$(DefineConstants);INTERNAL_NULLABLE_ATTRIBUTES;AspNetCoreTesting</DefineConstants>
     <!-- This package is internal, ignore API doc requirements -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

@@ -49,30 +49,15 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
         ITempDataDictionaryFactory tempDataDictionaryFactory,
         IHttpResponseStreamWriterFactory writerFactory)
     {
-        if (mvcHelperOptions == null)
-        {
-            throw new ArgumentNullException(nameof(mvcHelperOptions));
-        }
+        ArgumentNullException.ThrowIfNull(mvcHelperOptions);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
 
-        if (modelMetadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadataProvider);
 
-        if (tempDataDictionaryFactory == null)
-        {
-            throw new ArgumentNullException(nameof(tempDataDictionaryFactory));
-        }
+        ArgumentNullException.ThrowIfNull(tempDataDictionaryFactory);
 
         _htmlHelperOptions = mvcHelperOptions.Value.HtmlHelperOptions;
         _logger = loggerFactory.CreateLogger<ViewComponentResult>();
@@ -85,15 +70,9 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
     /// <inheritdoc />
     public virtual async Task ExecuteAsync(ActionContext context, ViewComponentResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
         var response = context.HttpContext.Response;
 

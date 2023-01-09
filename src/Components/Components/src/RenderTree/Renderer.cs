@@ -77,20 +77,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
     {
-        if (serviceProvider is null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
-        if (loggerFactory is null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        if (componentActivator is null)
-        {
-            throw new ArgumentNullException(nameof(componentActivator));
-        }
+        ArgumentNullException.ThrowIfNull(componentActivator);
 
         _serviceProvider = serviceProvider;
         // Would normally use ILogger<T> here to get the benefit of the string name being cached but this is a public ctor that

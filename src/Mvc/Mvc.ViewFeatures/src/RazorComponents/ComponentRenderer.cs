@@ -34,15 +34,9 @@ internal sealed class ComponentRenderer : IComponentRenderer
         RenderMode renderMode,
         object parameters)
     {
-        if (viewContext is null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
-        if (componentType is null)
-        {
-            throw new ArgumentNullException(nameof(componentType));
-        }
+        ArgumentNullException.ThrowIfNull(componentType);
 
         if (!typeof(IComponent).IsAssignableFrom(componentType))
         {

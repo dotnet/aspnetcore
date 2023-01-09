@@ -22,15 +22,9 @@ internal sealed class DefaultFileVersionProvider : IFileVersionProvider
         IWebHostEnvironment hostingEnvironment,
         TagHelperMemoryCacheProvider cacheProvider)
     {
-        if (hostingEnvironment == null)
-        {
-            throw new ArgumentNullException(nameof(hostingEnvironment));
-        }
+        ArgumentNullException.ThrowIfNull(hostingEnvironment);
 
-        if (cacheProvider == null)
-        {
-            throw new ArgumentNullException(nameof(cacheProvider));
-        }
+        ArgumentNullException.ThrowIfNull(cacheProvider);
 
         FileProvider = hostingEnvironment.WebRootFileProvider;
         Cache = cacheProvider.Cache;
@@ -42,10 +36,7 @@ internal sealed class DefaultFileVersionProvider : IFileVersionProvider
 
     public string AddFileVersionToPath(PathString requestPathBase, string path)
     {
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullException.ThrowIfNull(path);
 
         var resolvedPath = path;
 

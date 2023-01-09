@@ -50,15 +50,9 @@ public static class HtmlHelperComponentExtensions
         RenderMode renderMode,
         object parameters)
     {
-        if (htmlHelper is null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
-        if (componentType is null)
-        {
-            throw new ArgumentNullException(nameof(componentType));
-        }
+        ArgumentNullException.ThrowIfNull(componentType);
 
         var viewContext = htmlHelper.ViewContext;
         var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();

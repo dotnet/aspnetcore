@@ -22,20 +22,11 @@ public static class JsonPatchExtensions
         T objectToApplyTo,
         ModelStateDictionary modelState) where T : class
     {
-        if (patchDoc == null)
-        {
-            throw new ArgumentNullException(nameof(patchDoc));
-        }
+        ArgumentNullException.ThrowIfNull(patchDoc);
 
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullException.ThrowIfNull(objectToApplyTo);
 
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         patchDoc.ApplyTo(objectToApplyTo, modelState, prefix: string.Empty);
     }
@@ -53,20 +44,11 @@ public static class JsonPatchExtensions
         ModelStateDictionary modelState,
         string prefix) where T : class
     {
-        if (patchDoc == null)
-        {
-            throw new ArgumentNullException(nameof(patchDoc));
-        }
+        ArgumentNullException.ThrowIfNull(patchDoc);
 
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullException.ThrowIfNull(objectToApplyTo);
 
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         patchDoc.ApplyTo(objectToApplyTo, jsonPatchError =>
         {

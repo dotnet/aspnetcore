@@ -26,15 +26,9 @@ public class TagHelperScopeManager
         Action<HtmlEncoder> startTagHelperWritingScope,
         Func<TagHelperContent> endTagHelperWritingScope)
     {
-        if (startTagHelperWritingScope == null)
-        {
-            throw new ArgumentNullException(nameof(startTagHelperWritingScope));
-        }
+        ArgumentNullException.ThrowIfNull(startTagHelperWritingScope);
 
-        if (endTagHelperWritingScope == null)
-        {
-            throw new ArgumentNullException(nameof(endTagHelperWritingScope));
-        }
+        ArgumentNullException.ThrowIfNull(endTagHelperWritingScope);
 
         _executionContextPool = new ExecutionContextPool(startTagHelperWritingScope, endTagHelperWritingScope);
     }
@@ -53,20 +47,11 @@ public class TagHelperScopeManager
         string uniqueId,
         Func<Task> executeChildContentAsync)
     {
-        if (tagName == null)
-        {
-            throw new ArgumentNullException(nameof(tagName));
-        }
+        ArgumentNullException.ThrowIfNull(tagName);
 
-        if (uniqueId == null)
-        {
-            throw new ArgumentNullException(nameof(uniqueId));
-        }
+        ArgumentNullException.ThrowIfNull(uniqueId);
 
-        if (executeChildContentAsync == null)
-        {
-            throw new ArgumentNullException(nameof(executeChildContentAsync));
-        }
+        ArgumentNullException.ThrowIfNull(executeChildContentAsync);
 
         IDictionary<object, object> items;
         var parentExecutionContext = _executionContextPool.Current;

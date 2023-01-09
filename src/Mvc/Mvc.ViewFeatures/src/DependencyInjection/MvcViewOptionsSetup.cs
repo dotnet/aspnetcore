@@ -21,15 +21,9 @@ internal sealed class MvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
         IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions,
         IValidationAttributeAdapterProvider validationAttributeAdapterProvider)
     {
-        if (dataAnnotationLocalizationOptions == null)
-        {
-            throw new ArgumentNullException(nameof(dataAnnotationLocalizationOptions));
-        }
+        ArgumentNullException.ThrowIfNull(dataAnnotationLocalizationOptions);
 
-        if (validationAttributeAdapterProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
-        }
+        ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
 
         _dataAnnotationsLocalizationOptions = dataAnnotationLocalizationOptions;
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
@@ -41,10 +35,7 @@ internal sealed class MvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
         IStringLocalizerFactory stringLocalizerFactory)
         : this(dataAnnotationOptions, validationAttributeAdapterProvider)
     {
-        if (stringLocalizerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(stringLocalizerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(stringLocalizerFactory);
 
         _stringLocalizerFactory = stringLocalizerFactory;
     }

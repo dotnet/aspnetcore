@@ -25,15 +25,9 @@ public static class PageConventionCollectionExtensions
         this PageConventionCollection conventions,
         Func<PageApplicationModel, IFilterMetadata> factory)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return conventions.AddFolderApplicationModelConvention("/", model => model.Filters.Add(factory(model)));
     }
@@ -46,15 +40,9 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection ConfigureFilter(this PageConventionCollection conventions, IFilterMetadata filter)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
-        if (filter == null)
-        {
-            throw new ArgumentNullException(nameof(filter));
-        }
+        ArgumentNullException.ThrowIfNull(filter);
 
         conventions.AddFolderApplicationModelConvention("/", model => model.Filters.Add(filter));
         return conventions;
@@ -69,15 +57,9 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection Add(this PageConventionCollection conventions, IParameterModelBaseConvention convention)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
-        if (convention == null)
-        {
-            throw new ArgumentNullException(nameof(convention));
-        }
+        ArgumentNullException.ThrowIfNull(convention);
 
         var adapter = new ParameterModelBaseConventionAdapter(convention);
         conventions.Add(adapter);
@@ -92,10 +74,7 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection AllowAnonymousToPage(this PageConventionCollection conventions, string pageName)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(pageName))
         {
@@ -134,10 +113,7 @@ public static class PageConventionCollectionExtensions
         string areaName,
         string pageName)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(areaName))
         {
@@ -171,10 +147,7 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection AllowAnonymousToFolder(this PageConventionCollection conventions, string folderPath)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(folderPath))
         {
@@ -213,10 +186,7 @@ public static class PageConventionCollectionExtensions
         string areaName,
         string folderPath)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(areaName))
         {
@@ -251,10 +221,7 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection AuthorizePage(this PageConventionCollection conventions, string pageName, string policy)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(pageName))
         {
@@ -320,10 +287,7 @@ public static class PageConventionCollectionExtensions
         string pageName,
         string policy)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(areaName))
         {
@@ -358,10 +322,7 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection AuthorizeFolder(this PageConventionCollection conventions, string folderPath, string policy)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(folderPath))
         {
@@ -427,10 +388,7 @@ public static class PageConventionCollectionExtensions
         string folderPath,
         string policy)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(areaName))
         {
@@ -469,20 +427,14 @@ public static class PageConventionCollectionExtensions
     /// <returns>The <see cref="PageConventionCollection"/>.</returns>
     public static PageConventionCollection AddPageRoute(this PageConventionCollection conventions, string pageName, [StringSyntax("Route")] string route)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(pageName))
         {
             throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
         }
 
-        if (route == null)
-        {
-            throw new ArgumentNullException(nameof(route));
-        }
+        ArgumentNullException.ThrowIfNull(route);
 
         conventions.AddPageRouteModelConvention(pageName, AddPageRouteThunk(route));
 
@@ -514,10 +466,7 @@ public static class PageConventionCollectionExtensions
         string pageName,
         [StringSyntax("Route")] string route)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         if (string.IsNullOrEmpty(areaName))
         {
@@ -529,10 +478,7 @@ public static class PageConventionCollectionExtensions
             throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
         }
 
-        if (route == null)
-        {
-            throw new ArgumentNullException(nameof(route));
-        }
+        ArgumentNullException.ThrowIfNull(route);
 
         conventions.AddAreaPageRouteModelConvention(areaName, pageName, AddPageRouteThunk(route));
 

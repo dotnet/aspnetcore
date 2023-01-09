@@ -26,10 +26,7 @@ public static class NewtonsoftJsonMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddNewtonsoftJson(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddServicesCore(builder.Services);
         return builder;
@@ -45,15 +42,9 @@ public static class NewtonsoftJsonMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<MvcNewtonsoftJsonOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddServicesCore(builder.Services);
 

@@ -5,6 +5,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Internal;
 

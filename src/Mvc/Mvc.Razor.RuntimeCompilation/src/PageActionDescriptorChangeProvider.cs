@@ -22,20 +22,11 @@ internal sealed class PageActionDescriptorChangeProvider : IActionDescriptorChan
         RuntimeCompilationFileProvider fileProvider,
         IOptions<RazorPagesOptions> razorPagesOptions)
     {
-        if (projectEngine == null)
-        {
-            throw new ArgumentNullException(nameof(projectEngine));
-        }
+        ArgumentNullException.ThrowIfNull(projectEngine);
 
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
-        if (razorPagesOptions == null)
-        {
-            throw new ArgumentNullException(nameof(razorPagesOptions));
-        }
+        ArgumentNullException.ThrowIfNull(razorPagesOptions);
 
         _fileProvider = fileProvider;
 

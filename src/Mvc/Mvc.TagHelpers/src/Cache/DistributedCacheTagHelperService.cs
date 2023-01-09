@@ -49,25 +49,13 @@ public partial class DistributedCacheTagHelperService : IDistributedCacheTagHelp
         HtmlEncoder HtmlEncoder,
         ILoggerFactory loggerFactory)
     {
-        if (storage == null)
-        {
-            throw new ArgumentNullException(nameof(storage));
-        }
+        ArgumentNullException.ThrowIfNull(storage);
 
-        if (formatter == null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
+        ArgumentNullException.ThrowIfNull(formatter);
 
-        if (HtmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(HtmlEncoder));
-        }
+        ArgumentNullException.ThrowIfNull(HtmlEncoder);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _formatter = formatter;
         _storage = storage;

@@ -39,30 +39,15 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         IList<CompiledViewDescriptor> precompiledViews,
         ILogger logger)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
-        if (projectEngine == null)
-        {
-            throw new ArgumentNullException(nameof(projectEngine));
-        }
+        ArgumentNullException.ThrowIfNull(projectEngine);
 
-        if (csharpCompiler == null)
-        {
-            throw new ArgumentNullException(nameof(csharpCompiler));
-        }
+        ArgumentNullException.ThrowIfNull(csharpCompiler);
 
-        if (precompiledViews == null)
-        {
-            throw new ArgumentNullException(nameof(precompiledViews));
-        }
+        ArgumentNullException.ThrowIfNull(precompiledViews);
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         _fileProvider = fileProvider;
         _projectEngine = projectEngine;
@@ -103,10 +88,7 @@ internal partial class RuntimeViewCompiler : IViewCompiler
 
     public Task<CompiledViewDescriptor> CompileAsync(string relativePath)
     {
-        if (relativePath == null)
-        {
-            throw new ArgumentNullException(nameof(relativePath));
-        }
+        ArgumentNullException.ThrowIfNull(relativePath);
 
         // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
         // normalized and a cache entry exists.

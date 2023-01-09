@@ -19,10 +19,7 @@ public class CustomXmlEncryptor : IXmlEncryptor
 
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullException.ThrowIfNull(plaintextElement);
 
         _logger.LogInformation("Not encrypting key");
 

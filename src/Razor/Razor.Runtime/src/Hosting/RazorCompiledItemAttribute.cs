@@ -22,15 +22,9 @@ public sealed class RazorCompiledItemAttribute : Attribute
     /// </param>
     public RazorCompiledItemAttribute(Type type, string kind, string identifier)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
-        if (kind == null)
-        {
-            throw new ArgumentNullException(nameof(kind));
-        }
+        ArgumentNullException.ThrowIfNull(kind);
 
         Type = type;
         Kind = kind;

@@ -28,15 +28,9 @@ public class HeaderPropagationEntry
         string capturedHeaderName,
         Func<HeaderPropagationContext, StringValues>? valueFilter)
     {
-        if (inboundHeaderName == null)
-        {
-            throw new ArgumentNullException(nameof(inboundHeaderName));
-        }
+        ArgumentNullException.ThrowIfNull(inboundHeaderName);
 
-        if (capturedHeaderName == null)
-        {
-            throw new ArgumentNullException(nameof(capturedHeaderName));
-        }
+        ArgumentNullException.ThrowIfNull(capturedHeaderName);
 
         InboundHeaderName = inboundHeaderName;
         CapturedHeaderName = capturedHeaderName;

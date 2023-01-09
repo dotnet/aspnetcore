@@ -42,10 +42,7 @@ public partial class ViewResultExecutor : ViewExecutor, IActionResultExecutor<Vi
         IModelMetadataProvider modelMetadataProvider)
         : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         Logger = loggerFactory.CreateLogger<ViewResultExecutor>();
     }
@@ -63,15 +60,9 @@ public partial class ViewResultExecutor : ViewExecutor, IActionResultExecutor<Vi
     /// <returns>A <see cref="ViewEngineResult"/>.</returns>
     public virtual ViewEngineResult FindView(ActionContext actionContext, ViewResult viewResult)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
-        if (viewResult == null)
-        {
-            throw new ArgumentNullException(nameof(viewResult));
-        }
+        ArgumentNullException.ThrowIfNull(viewResult);
 
         var viewEngine = viewResult.ViewEngine ?? ViewEngine;
 
@@ -148,15 +139,9 @@ public partial class ViewResultExecutor : ViewExecutor, IActionResultExecutor<Vi
     /// <inheritdoc />
     public async Task ExecuteAsync(ActionContext context, ViewResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
         var stopwatch = ValueStopwatch.StartNew();
 
@@ -180,10 +165,7 @@ public partial class ViewResultExecutor : ViewExecutor, IActionResultExecutor<Vi
 
     private static string? GetActionName(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.RouteData.Values.TryGetValue(ActionNameKey, out var routeValue))
         {

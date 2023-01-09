@@ -32,20 +32,11 @@ public class MigrationsEndPointMiddleware
         ILogger<MigrationsEndPointMiddleware> logger,
         IOptions<MigrationsEndPointOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _logger = logger;
@@ -59,10 +50,7 @@ public class MigrationsEndPointMiddleware
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Request.Path.Equals(_options.Path))
         {

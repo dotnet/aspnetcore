@@ -262,15 +262,9 @@ internal static class HttpResponseWritingExtensions
 {
     internal static void Write(this HttpResponse response, string text)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
+        ArgumentNullException.ThrowIfNull(text);
 
         byte[] data = Encoding.UTF8.GetBytes(text);
         response.Body.Write(data, 0, data.Length);

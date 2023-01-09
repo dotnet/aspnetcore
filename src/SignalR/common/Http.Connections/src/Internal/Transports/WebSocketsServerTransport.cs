@@ -19,20 +19,11 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
     public WebSocketsServerTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (application == null)
-        {
-            throw new ArgumentNullException(nameof(application));
-        }
+        ArgumentNullException.ThrowIfNull(application);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options;
         _application = application;

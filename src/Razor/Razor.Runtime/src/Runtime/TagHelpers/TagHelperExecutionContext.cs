@@ -57,15 +57,9 @@ public class TagHelperExecutionContext
         Action<HtmlEncoder> startTagHelperWritingScope,
         Func<TagHelperContent> endTagHelperWritingScope)
     {
-        if (startTagHelperWritingScope == null)
-        {
-            throw new ArgumentNullException(nameof(startTagHelperWritingScope));
-        }
+        ArgumentNullException.ThrowIfNull(startTagHelperWritingScope);
 
-        if (endTagHelperWritingScope == null)
-        {
-            throw new ArgumentNullException(nameof(endTagHelperWritingScope));
-        }
+        ArgumentNullException.ThrowIfNull(endTagHelperWritingScope);
 
         _tagHelpers = new List<ITagHelper>();
         _allAttributes = new TagHelperAttributeList();
@@ -116,10 +110,7 @@ public class TagHelperExecutionContext
     /// <param name="tagHelper">The tag helper to track.</param>
     public void Add(ITagHelper tagHelper)
     {
-        if (tagHelper == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelper));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelper);
 
         _tagHelpers.Add(tagHelper);
     }
@@ -132,10 +123,7 @@ public class TagHelperExecutionContext
     /// <param name="valueStyle">The value style of the attribute.</param>
     public void AddHtmlAttribute(string name, object value, HtmlAttributeValueStyle valueStyle)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var attribute = new TagHelperAttribute(name, value, valueStyle);
         AddHtmlAttribute(attribute);
@@ -147,10 +135,7 @@ public class TagHelperExecutionContext
     /// <param name="attribute">The <see cref="TagHelperAttribute"/> to track.</param>
     public void AddHtmlAttribute(TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         Output.Attributes.Add(attribute);
         _allAttributes.Add(attribute);
@@ -164,10 +149,7 @@ public class TagHelperExecutionContext
     /// <param name="valueStyle">The value style of the attribute.</param>
     public void AddTagHelperAttribute(string name, object value, HtmlAttributeValueStyle valueStyle)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var attribute = new TagHelperAttribute(name, value, valueStyle);
         _allAttributes.Add(attribute);
@@ -179,10 +161,7 @@ public class TagHelperExecutionContext
     /// <param name="attribute">The bound attribute.</param>
     public void AddTagHelperAttribute(TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         _allAttributes.Add(attribute);
     }
@@ -202,25 +181,13 @@ public class TagHelperExecutionContext
         string uniqueId,
         Func<Task> executeChildContentAsync)
     {
-        if (tagName == null)
-        {
-            throw new ArgumentNullException(nameof(tagName));
-        }
+        ArgumentNullException.ThrowIfNull(tagName);
 
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
-        if (uniqueId == null)
-        {
-            throw new ArgumentNullException(nameof(uniqueId));
-        }
+        ArgumentNullException.ThrowIfNull(uniqueId);
 
-        if (executeChildContentAsync == null)
-        {
-            throw new ArgumentNullException(nameof(executeChildContentAsync));
-        }
+        ArgumentNullException.ThrowIfNull(executeChildContentAsync);
 
         Items = items;
         _executeChildContentAsync = executeChildContentAsync;

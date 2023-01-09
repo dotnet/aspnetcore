@@ -36,30 +36,15 @@ internal sealed class TemplateBuilder
         bool readOnly,
         object additionalViewData)
     {
-        if (viewEngine == null)
-        {
-            throw new ArgumentNullException(nameof(viewEngine));
-        }
+        ArgumentNullException.ThrowIfNull(viewEngine);
 
-        if (bufferScope == null)
-        {
-            throw new ArgumentNullException(nameof(bufferScope));
-        }
+        ArgumentNullException.ThrowIfNull(bufferScope);
 
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
+        ArgumentNullException.ThrowIfNull(viewData);
 
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         _viewEngine = viewEngine;
         _bufferScope = bufferScope;

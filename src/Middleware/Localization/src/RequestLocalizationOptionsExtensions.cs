@@ -21,15 +21,9 @@ public static class RequestLocalizationOptionsExtensions
         this RequestLocalizationOptions requestLocalizationOptions,
         RequestCultureProvider requestCultureProvider)
     {
-        if (requestLocalizationOptions == null)
-        {
-            throw new ArgumentNullException(nameof(requestLocalizationOptions));
-        }
+        ArgumentNullException.ThrowIfNull(requestLocalizationOptions);
 
-        if (requestCultureProvider == null)
-        {
-            throw new ArgumentNullException(nameof(requestCultureProvider));
-        }
+        ArgumentNullException.ThrowIfNull(requestCultureProvider);
 
         requestLocalizationOptions.RequestCultureProviders.Insert(0, requestCultureProvider);
 

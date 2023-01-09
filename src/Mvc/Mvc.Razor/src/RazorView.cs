@@ -41,35 +41,17 @@ public class RazorView : IView
         HtmlEncoder htmlEncoder,
         DiagnosticListener diagnosticListener)
     {
-        if (viewEngine == null)
-        {
-            throw new ArgumentNullException(nameof(viewEngine));
-        }
+        ArgumentNullException.ThrowIfNull(viewEngine);
 
-        if (pageActivator == null)
-        {
-            throw new ArgumentNullException(nameof(pageActivator));
-        }
+        ArgumentNullException.ThrowIfNull(pageActivator);
 
-        if (viewStartPages == null)
-        {
-            throw new ArgumentNullException(nameof(viewStartPages));
-        }
+        ArgumentNullException.ThrowIfNull(viewStartPages);
 
-        if (razorPage == null)
-        {
-            throw new ArgumentNullException(nameof(razorPage));
-        }
+        ArgumentNullException.ThrowIfNull(razorPage);
 
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
 
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
 
         _viewEngine = viewEngine;
         _pageActivator = pageActivator;
@@ -97,10 +79,7 @@ public class RazorView : IView
     /// <inheritdoc />
     public virtual async Task RenderAsync(ViewContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // This GetRequiredService call is by design. ViewBufferScope is a scoped service, RazorViewEngine
         // is the component responsible for creating RazorViews and it is a Singleton service. It doesn't

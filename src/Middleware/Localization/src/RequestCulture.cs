@@ -49,15 +49,9 @@ public class RequestCulture
     /// <param name="uiCulture">The <see cref="CultureInfo"/> for the request to be used for text, i.e. language.</param>
     public RequestCulture(CultureInfo culture, CultureInfo uiCulture)
     {
-        if (culture == null)
-        {
-            throw new ArgumentNullException(nameof(culture));
-        }
+        ArgumentNullException.ThrowIfNull(culture);
 
-        if (uiCulture == null)
-        {
-            throw new ArgumentNullException(nameof(uiCulture));
-        }
+        ArgumentNullException.ThrowIfNull(uiCulture);
 
         Culture = culture;
         UICulture = uiCulture;

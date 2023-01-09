@@ -20,10 +20,7 @@ public sealed class HeaderPropagationMessageHandlerEntryCollection : Collection<
     /// </param>
     public void Add(string headerName)
     {
-        if (headerName == null)
-        {
-            throw new ArgumentNullException(nameof(headerName));
-        }
+        ArgumentNullException.ThrowIfNull(headerName);
 
         Add(new HeaderPropagationMessageHandlerEntry(headerName, headerName));
     }
@@ -40,15 +37,9 @@ public sealed class HeaderPropagationMessageHandlerEntryCollection : Collection<
     /// </param>
     public void Add(string capturedHeaderName, string outboundHeaderName)
     {
-        if (capturedHeaderName == null)
-        {
-            throw new ArgumentNullException(nameof(capturedHeaderName));
-        }
+        ArgumentNullException.ThrowIfNull(capturedHeaderName);
 
-        if (outboundHeaderName == null)
-        {
-            throw new ArgumentNullException(nameof(outboundHeaderName));
-        }
+        ArgumentNullException.ThrowIfNull(outboundHeaderName);
 
         Add(new HeaderPropagationMessageHandlerEntry(capturedHeaderName, outboundHeaderName));
     }

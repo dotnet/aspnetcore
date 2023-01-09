@@ -25,15 +25,9 @@ public static class ModelMetadataProviderExtensions
         Type modelType,
         object model)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var modelMetadata = provider.GetMetadataForType(modelType);
         return new ModelExplorer(provider, modelMetadata, model);

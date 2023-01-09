@@ -26,15 +26,9 @@ public sealed class BindInputElementAttribute : Attribute
     /// </param>
     public BindInputElementAttribute(string? type, string? suffix, string? valueAttribute, string? changeAttribute, bool isInvariantCulture, string? format)
     {
-        if (valueAttribute == null)
-        {
-            throw new ArgumentNullException(nameof(valueAttribute));
-        }
+        ArgumentNullException.ThrowIfNull(valueAttribute);
 
-        if (changeAttribute == null)
-        {
-            throw new ArgumentNullException(nameof(changeAttribute));
-        }
+        ArgumentNullException.ThrowIfNull(changeAttribute);
 
         Type = type;
         Suffix = suffix;

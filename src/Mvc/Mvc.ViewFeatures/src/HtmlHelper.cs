@@ -66,35 +66,17 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         HtmlEncoder htmlEncoder,
         UrlEncoder urlEncoder)
     {
-        if (htmlGenerator == null)
-        {
-            throw new ArgumentNullException(nameof(htmlGenerator));
-        }
+        ArgumentNullException.ThrowIfNull(htmlGenerator);
 
-        if (viewEngine == null)
-        {
-            throw new ArgumentNullException(nameof(viewEngine));
-        }
+        ArgumentNullException.ThrowIfNull(viewEngine);
 
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
 
-        if (bufferScope == null)
-        {
-            throw new ArgumentNullException(nameof(bufferScope));
-        }
+        ArgumentNullException.ThrowIfNull(bufferScope);
 
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
 
-        if (urlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(urlEncoder));
-        }
+        ArgumentNullException.ThrowIfNull(urlEncoder);
 
         _viewEngine = viewEngine;
         _htmlGenerator = htmlGenerator;
@@ -203,10 +185,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <param name="viewContext">The context to use.</param>
     public virtual void Contextualize(ViewContext viewContext)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         ViewContext = viewContext;
     }
@@ -222,10 +201,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         object routeValues,
         object htmlAttributes)
     {
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var tagBuilder = _htmlGenerator.GenerateActionLink(
             ViewContext,
@@ -325,10 +301,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <inheritdoc />
     public string GenerateIdFromName(string fullName)
     {
-        if (fullName == null)
-        {
-            throw new ArgumentNullException(nameof(fullName));
-        }
+        ArgumentNullException.ThrowIfNull(fullName);
 
         return NameAndIdProvider.CreateSanitizedId(ViewContext, fullName, IdAttributeDotReplacement);
     }
@@ -414,10 +387,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <inheritdoc />
     public IEnumerable<SelectListItem> GetEnumSelectList(Type enumType)
     {
-        if (enumType == null)
-        {
-            throw new ArgumentNullException(nameof(enumType));
-        }
+        ArgumentNullException.ThrowIfNull(enumType);
 
         var metadata = MetadataProvider.GetMetadataForType(enumType);
         if (!metadata.IsEnum || metadata.IsFlagsEnum)
@@ -482,10 +452,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         object model,
         ViewDataDictionary viewData)
     {
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         var viewBuffer = new ViewBuffer(_bufferScope, partialViewName, ViewBuffer.PartialViewPageSize);
         using (var writer = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8))
@@ -498,10 +465,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <inheritdoc />
     public Task RenderPartialAsync(string partialViewName, object model, ViewDataDictionary viewData)
     {
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
     }
@@ -548,10 +512,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         ViewDataDictionary viewData,
         TextWriter writer)
     {
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         var viewEngineResult = _viewEngine.GetView(
             ViewContext.ExecutingFilePath,
@@ -637,10 +598,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         object routeValues,
         object htmlAttributes)
     {
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var tagBuilder = _htmlGenerator.GenerateRouteLink(
             ViewContext,
@@ -815,10 +773,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <returns>The display name.</returns>
     protected virtual string GenerateDisplayName(ModelExplorer modelExplorer, string expression)
     {
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         // We don't call ModelMetadata.GetDisplayName here because
         // we want to fall back to the field name rather than the ModelType.
@@ -1092,10 +1047,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         string labelText,
         object htmlAttributes)
     {
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         var tagBuilder = _htmlGenerator.GenerateLabel(
             ViewContext,
@@ -1420,10 +1372,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// </exception>
     protected virtual IEnumerable<SelectListItem> GetEnumSelectList(ModelMetadata metadata)
     {
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
         if (!metadata.IsEnum || metadata.IsFlagsEnum)
         {

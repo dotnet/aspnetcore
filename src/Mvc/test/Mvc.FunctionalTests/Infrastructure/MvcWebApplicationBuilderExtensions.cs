@@ -21,15 +21,9 @@ public static class MvcWebApplicationBuilderExtensions
     public static IWebHostBuilder UseRequestCulture<TStartup>(this IWebHostBuilder builder, string culture, string uiCulture)
         where TStartup : class
     {
-        if (culture == null)
-        {
-            throw new ArgumentNullException(nameof(culture));
-        }
+        ArgumentNullException.ThrowIfNull(culture);
 
-        if (uiCulture == null)
-        {
-            throw new ArgumentNullException(nameof(uiCulture));
-        }
+        ArgumentNullException.ThrowIfNull(uiCulture);
 
         builder.ConfigureServices(services =>
         {

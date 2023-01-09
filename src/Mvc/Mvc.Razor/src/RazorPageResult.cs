@@ -15,15 +15,9 @@ public readonly struct RazorPageResult
     /// <param name="page">The located <see cref="IRazorPage"/>.</param>
     public RazorPageResult(string name, IRazorPage page)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(page);
 
         Name = name;
         Page = page;
@@ -37,15 +31,9 @@ public readonly struct RazorPageResult
     /// <param name="searchedLocations">The locations that were searched.</param>
     public RazorPageResult(string name, IEnumerable<string> searchedLocations)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (searchedLocations == null)
-        {
-            throw new ArgumentNullException(nameof(searchedLocations));
-        }
+        ArgumentNullException.ThrowIfNull(searchedLocations);
 
         Name = name;
         Page = null;

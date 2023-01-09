@@ -19,15 +19,9 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
         ILogger<DefaultRequestDecompressionProvider> logger,
         IOptions<RequestDecompressionOptions> options)
     {
-        if (logger is null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _logger = logger;
         _providers = options.Value.DecompressionProviders;

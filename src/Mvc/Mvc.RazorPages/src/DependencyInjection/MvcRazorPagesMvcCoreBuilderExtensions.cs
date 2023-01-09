@@ -28,10 +28,7 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddRazorPages(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddRazorViewEngine();
 
@@ -50,15 +47,9 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<RazorPagesOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.AddRazorViewEngine();
 
@@ -77,10 +68,7 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     /// <returns></returns>
     public static IMvcCoreBuilder WithRazorPagesRoot(this IMvcCoreBuilder builder, string rootDirectory)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         if (string.IsNullOrEmpty(rootDirectory))
         {

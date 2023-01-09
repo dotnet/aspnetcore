@@ -43,15 +43,9 @@ public class HtmlFormattableString : IHtmlContent
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[] args)
     {
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
+        ArgumentNullException.ThrowIfNull(format);
 
-        if (args == null)
-        {
-            throw new ArgumentNullException(nameof(args));
-        }
+        ArgumentNullException.ThrowIfNull(args);
 
         _formatProvider = formatProvider ?? CultureInfo.CurrentCulture;
         _format = format;
@@ -61,15 +55,9 @@ public class HtmlFormattableString : IHtmlContent
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
 
         var formatProvider = new EncodingFormatProvider(_formatProvider, encoder);
         writer.Write(string.Format(formatProvider, _format, _args));

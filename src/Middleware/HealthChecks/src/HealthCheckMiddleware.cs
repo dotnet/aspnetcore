@@ -24,20 +24,11 @@ public class HealthCheckMiddleware
         IOptions<HealthCheckOptions> healthCheckOptions,
         HealthCheckService healthCheckService)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
-        if (healthCheckOptions == null)
-        {
-            throw new ArgumentNullException(nameof(healthCheckOptions));
-        }
+        ArgumentNullException.ThrowIfNull(healthCheckOptions);
 
-        if (healthCheckService == null)
-        {
-            throw new ArgumentNullException(nameof(healthCheckService));
-        }
+        ArgumentNullException.ThrowIfNull(healthCheckService);
 
         _next = next;
         _healthCheckOptions = healthCheckOptions.Value;
@@ -51,10 +42,7 @@ public class HealthCheckMiddleware
     /// <returns></returns>
     public async Task InvokeAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         // Get results
         var result = await _healthCheckService.CheckHealthAsync(_healthCheckOptions.Predicate, httpContext.RequestAborted);

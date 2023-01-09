@@ -342,10 +342,7 @@ public class NestedObjectIntegrationTest
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 stringProperty = value;
             }

@@ -115,20 +115,11 @@ public class ViewDataDictionary : IDictionary<string, object?>
                data: new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase),
                templateInfo: new TemplateInfo())
     {
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
 
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (declaredModelType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredModelType));
-        }
+        ArgumentNullException.ThrowIfNull(declaredModelType);
 
         // Base ModelMetadata on the declared type.
         ModelExplorer = _metadataProvider.GetModelExplorerForType(declaredModelType, model: null);
@@ -188,10 +179,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
                data: new CopyOnWriteDictionary<string, object?>(source, StringComparer.OrdinalIgnoreCase),
                templateInfo: new TemplateInfo(source.TemplateInfo))
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         // A non-null Model must always be assignable to both _declaredModelType and ModelMetadata.ModelType.
         //
@@ -531,10 +519,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public void Add(string key, object? value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         _data.Add(key, value);
     }
@@ -542,10 +527,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public bool ContainsKey(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _data.ContainsKey(key);
     }
@@ -553,10 +535,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public bool Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _data.Remove(key);
     }
@@ -564,10 +543,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public bool TryGetValue(string key, out object? value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _data.TryGetValue(key, out value);
     }
@@ -593,10 +569,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public void CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         _data.CopyTo(array, arrayIndex);
     }

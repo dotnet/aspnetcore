@@ -40,20 +40,11 @@ public class CorsAuthorizationFilter : ICorsAuthorizationFilter
         ICorsPolicyProvider policyProvider,
         ILoggerFactory loggerFactory)
     {
-        if (corsService == null)
-        {
-            throw new ArgumentNullException(nameof(corsService));
-        }
+        ArgumentNullException.ThrowIfNull(corsService);
 
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
+        ArgumentNullException.ThrowIfNull(policyProvider);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _corsService = corsService;
         _corsPolicyProvider = policyProvider;
@@ -73,10 +64,7 @@ public class CorsAuthorizationFilter : ICorsAuthorizationFilter
     /// <inheritdoc />
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // If this filter is not closest to the action, it is not applicable.
         if (!context.IsEffectivePolicy<ICorsAuthorizationFilter>(this))

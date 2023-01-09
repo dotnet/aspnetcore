@@ -173,15 +173,9 @@ public abstract class NavigationManager
     protected void Initialize(string baseUri, string uri)
     {
         // Make sure it's possible/safe to call this method from constructors of derived classes.
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
-        if (baseUri == null)
-        {
-            throw new ArgumentNullException(nameof(baseUri));
-        }
+        ArgumentNullException.ThrowIfNull(baseUri);
 
         if (_isInitialized)
         {

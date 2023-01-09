@@ -19,20 +19,11 @@ internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpoin
 
     public DynamicPageEndpointMatcherPolicy(DynamicPageEndpointSelectorCache selectorCache, PageLoader loader, EndpointMetadataComparer comparer)
     {
-        if (selectorCache == null)
-        {
-            throw new ArgumentNullException(nameof(selectorCache));
-        }
+        ArgumentNullException.ThrowIfNull(selectorCache);
 
-        if (loader == null)
-        {
-            throw new ArgumentNullException(nameof(loader));
-        }
+        ArgumentNullException.ThrowIfNull(loader);
 
-        if (comparer == null)
-        {
-            throw new ArgumentNullException(nameof(comparer));
-        }
+        ArgumentNullException.ThrowIfNull(comparer);
 
         _selectorCache = selectorCache;
         _loader = loader;
@@ -43,10 +34,7 @@ internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpoin
 
     public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (!ContainsDynamicEndpoints(endpoints))
         {
@@ -74,15 +62,9 @@ internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpoin
 
     public async Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(candidates);
 
         DynamicPageEndpointSelector? selector = null;
 

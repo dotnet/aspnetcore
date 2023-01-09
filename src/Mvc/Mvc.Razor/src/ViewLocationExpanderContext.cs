@@ -25,15 +25,9 @@ public class ViewLocationExpanderContext
         string? pageName,
         bool isMainPage)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
-        if (viewName == null)
-        {
-            throw new ArgumentNullException(nameof(viewName));
-        }
+        ArgumentNullException.ThrowIfNull(viewName);
 
         ActionContext = actionContext;
         ViewName = viewName;

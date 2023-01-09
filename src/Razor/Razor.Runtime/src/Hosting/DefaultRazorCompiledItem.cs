@@ -9,20 +9,11 @@ internal sealed class DefaultRazorCompiledItem : RazorCompiledItem
 
     public DefaultRazorCompiledItem(Type type, string kind, string identifier)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
-        if (kind == null)
-        {
-            throw new ArgumentNullException(nameof(kind));
-        }
+        ArgumentNullException.ThrowIfNull(kind);
 
-        if (identifier == null)
-        {
-            throw new ArgumentNullException(nameof(identifier));
-        }
+        ArgumentNullException.ThrowIfNull(identifier);
 
         Type = type;
         Kind = kind;

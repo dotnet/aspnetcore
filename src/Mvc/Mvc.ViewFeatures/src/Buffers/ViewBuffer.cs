@@ -33,15 +33,8 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
     /// <param name="pageSize">The size of buffer pages.</param>
     public ViewBuffer(IViewBufferScope bufferScope, string name, int pageSize)
     {
-        if (bufferScope == null)
-        {
-            throw new ArgumentNullException(nameof(bufferScope));
-        }
-
-        if (pageSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(pageSize));
-        }
+        ArgumentNullException.ThrowIfNull(bufferScope);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
 
         _bufferScope = bufferScope;
         _name = name;
@@ -184,15 +177,9 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
 
         for (var i = 0; i < Count; i++)
         {
@@ -224,15 +211,9 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
     /// <returns>A <see cref="Task"/> which will complete once content has been written.</returns>
     public async Task WriteToAsync(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
 
         for (var i = 0; i < Count; i++)
         {
@@ -267,10 +248,7 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
 
     public void CopyTo(IHtmlContentBuilder destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         for (var i = 0; i < Count; i++)
         {
@@ -299,10 +277,7 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
 
     public void MoveTo(IHtmlContentBuilder destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         // Perf: We have an efficient implementation when the destination is another view buffer,
         // we can just insert our pages as-is.

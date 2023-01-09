@@ -74,10 +74,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
     {
         using (Logger.BeginScope("Deploy"))
         {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException("This instance of deployer has already been disposed.");
-            }
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             // Publish the app to a local temp folder on the machine where the test is running
             DotnetPublish();

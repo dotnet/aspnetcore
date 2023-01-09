@@ -22,15 +22,9 @@ public static class MvcXmlMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<MvcXmlOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -43,10 +37,7 @@ public static class MvcXmlMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddXmlDataContractSerializerFormatters(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddXmlDataContractSerializerFormatterServices(builder.Services);
         return builder;
@@ -62,15 +53,9 @@ public static class MvcXmlMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<MvcXmlOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddXmlDataContractSerializerFormatterServices(builder.Services);
         builder.Services.Configure(setupAction);
@@ -84,10 +69,7 @@ public static class MvcXmlMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddXmlSerializerFormatters(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddXmlSerializerFormatterServices(builder.Services);
         return builder;
@@ -103,10 +85,7 @@ public static class MvcXmlMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<MvcXmlOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddXmlSerializerFormatterServices(builder.Services);
         builder.Services.Configure(setupAction);

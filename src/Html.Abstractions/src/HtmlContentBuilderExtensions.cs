@@ -29,20 +29,11 @@ public static class HtmlContentBuilderExtensions
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[] args)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
+        ArgumentNullException.ThrowIfNull(format);
 
-        if (args == null)
-        {
-            throw new ArgumentNullException(nameof(args));
-        }
+        ArgumentNullException.ThrowIfNull(args);
 
         builder.AppendHtml(new HtmlFormattableString(format, args));
         return builder;
@@ -69,20 +60,11 @@ public static class HtmlContentBuilderExtensions
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
         params object?[] args)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
+        ArgumentNullException.ThrowIfNull(format);
 
-        if (args == null)
-        {
-            throw new ArgumentNullException(nameof(args));
-        }
+        ArgumentNullException.ThrowIfNull(args);
 
         builder.AppendHtml(new HtmlFormattableString(formatProvider, format, args));
         return builder;
@@ -95,10 +77,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AppendHtml(HtmlString.NewLine);
         return builder;
@@ -113,10 +92,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder, string unencoded)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Append(unencoded);
         builder.AppendHtml(HtmlString.NewLine);
@@ -131,10 +107,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder, IHtmlContent content)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AppendHtml(content);
         builder.AppendHtml(HtmlString.NewLine);
@@ -150,10 +123,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder AppendHtmlLine(this IHtmlContentBuilder builder, string encoded)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AppendHtml(encoded);
         builder.AppendHtml(HtmlString.NewLine);
@@ -169,10 +139,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder SetContent(this IHtmlContentBuilder builder, string unencoded)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Clear();
         builder.Append(unencoded);
@@ -187,10 +154,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder SetHtmlContent(this IHtmlContentBuilder builder, IHtmlContent content)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Clear();
         builder.AppendHtml(content);
@@ -206,10 +170,7 @@ public static class HtmlContentBuilderExtensions
     /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
     public static IHtmlContentBuilder SetHtmlContent(this IHtmlContentBuilder builder, string encoded)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Clear();
         builder.AppendHtml(encoded);

@@ -38,10 +38,7 @@ public class HttpsRedirectionMiddleware
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _config = config ?? throw new ArgumentNullException(nameof(config));
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
         var httpsRedirectionOptions = options.Value;
         if (httpsRedirectionOptions.HttpsPort.HasValue)
         {

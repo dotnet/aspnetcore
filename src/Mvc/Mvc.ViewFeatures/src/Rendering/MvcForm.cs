@@ -24,15 +24,9 @@ public class MvcForm : IDisposable
     /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
     public MvcForm(ViewContext viewContext, HtmlEncoder htmlEncoder)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
 
         _viewContext = viewContext;
         _htmlEncoder = htmlEncoder;

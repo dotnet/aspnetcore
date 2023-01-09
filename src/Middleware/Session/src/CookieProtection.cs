@@ -11,10 +11,7 @@ internal static class CookieProtection
 {
     internal static string Protect(IDataProtector protector, string data)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
+        ArgumentNullException.ThrowIfNull(protector);
         if (string.IsNullOrEmpty(data))
         {
             return data;
