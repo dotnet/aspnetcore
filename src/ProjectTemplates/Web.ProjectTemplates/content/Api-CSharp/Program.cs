@@ -21,7 +21,9 @@ api.MapGet("/{id}", (int id) =>
 
 app.Run();
 
+[JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(Album))]
+[JsonSerializable(typeof(Album[]))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 

@@ -27,7 +27,9 @@ public class Program
     }
 }
 
+[JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(Album))]
+[JsonSerializable(typeof(Album[]))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 
