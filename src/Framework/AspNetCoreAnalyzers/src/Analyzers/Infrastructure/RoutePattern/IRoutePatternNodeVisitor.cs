@@ -10,8 +10,8 @@ internal interface IRoutePatternNodeVisitor
     void Visit(RoutePatternReplacementNode node);
     void Visit(RoutePatternParameterNode node);
     void Visit(RoutePatternLiteralNode node);
-    void Visit(RoutePatternSegmentSeperatorNode node);
-    void Visit(RoutePatternOptionalSeperatorNode node);
+    void Visit(RoutePatternSegmentSeparatorNode node);
+    void Visit(RoutePatternOptionalSeparatorNode node);
     void Visit(RoutePatternCatchAllParameterPartNode node);
     void Visit(RoutePatternNameParameterPartNode node);
     void Visit(RoutePatternPolicyParameterPartNode node);

@@ -68,6 +68,7 @@ internal sealed class StartupLoader
             Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
         static Type CreateConfigureServicesDelegateBuilder(Type type)
         {
+            // Configure container uses MakeGenericType with the container type. MakeGenericType + struct container type requires IsDynamicCodeSupported.
             if (type.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
             {
                 throw new InvalidOperationException("ValueType startup container isn't supported with AOT.");
