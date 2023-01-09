@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,10 +25,16 @@ public partial class HttpResultsHelperTests
             Name = "Write even more tests!",
         };
         var responseBodyStream = new MemoryStream();
-        var httpContext = CreateHttpContext(responseBodyStream, useJsonContext);
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.AddContext<TestJsonContext>();
+        }
 
         // Act
-        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value);
+        await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), new JsonSerializerOptions
@@ -52,10 +59,16 @@ public partial class HttpResultsHelperTests
             Name = "Write even more tests!",
         };
         var responseBodyStream = new MemoryStream();
-        var httpContext = CreateHttpContext(responseBodyStream, useJsonContext);
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.AddContext<TestJsonContext>();
+        }
 
         // Act
-        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value);
+        await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
@@ -82,10 +95,16 @@ public partial class HttpResultsHelperTests
             Child = "With type hierarchies!"
         };
         var responseBodyStream = new MemoryStream();
-        var httpContext = CreateHttpContext(responseBodyStream, useJsonContext);
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.AddContext<TestJsonContext>();
+        }
 
         // Act
-        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value);
+        await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
@@ -99,26 +118,20 @@ public partial class HttpResultsHelperTests
         Assert.Equal("With type hierarchies!", body!.Child);
     }
 
-    private static DefaultHttpContext CreateHttpContext(Stream stream, bool useJsonContext = false)
+    private static DefaultHttpContext CreateHttpContext(Stream stream)
         => new()
         {
-            RequestServices = CreateServices(useJsonContext),
+            RequestServices = CreateServices(),
             Response =
             {
                 Body = stream,
             },
         };
 
-    private static IServiceProvider CreateServices(bool useJsonContext = false)
+    private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-
-        if (useJsonContext)
-        {
-            services.ConfigureHttpJsonOptions(o => o.SerializerOptions.AddContext<TestJsonContext>());
-        }
-
         return services.BuildServiceProvider();
     }
 

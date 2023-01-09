@@ -56,10 +56,10 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ValidationProblem));
 
-        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        return HttpResultsWriter.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 value: ProblemDetails,

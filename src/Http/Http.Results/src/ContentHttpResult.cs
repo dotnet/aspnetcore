@@ -65,11 +65,11 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, 
 
         if (StatusCode is { } statusCode)
         {
-            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
+            HttpResultsWriter.Log.WritingResultAsStatusCode(logger, statusCode);
             httpContext.Response.StatusCode = statusCode;
         }
 
-        return HttpResultsHelper.WriteResultAsContentAsync(
+        return HttpResultsWriter.WriteResultAsContentAsync(
             httpContext,
             logger,
             ResponseContent,

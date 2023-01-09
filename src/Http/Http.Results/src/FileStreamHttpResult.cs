@@ -123,7 +123,7 @@ public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTyp
 
         await using (FileStream)
         {
-            var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
+            var (range, rangeLength, completed) = HttpResultsWriter.WriteResultAsFileCore(
                 httpContext,
                 logger,
                 FileDownloadName,

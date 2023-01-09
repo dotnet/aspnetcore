@@ -38,7 +38,7 @@ public class NoContent : IResult, IEndpointMetadataProvider, IStatusCodeHttpResu
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.NoContentResult");
 
-        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
 

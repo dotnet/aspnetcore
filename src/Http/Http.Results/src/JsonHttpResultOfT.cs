@@ -89,11 +89,11 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
 
         if (StatusCode is { } statusCode)
         {
-            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
+            HttpResultsWriter.Log.WritingResultAsStatusCode(logger, statusCode);
             httpContext.Response.StatusCode = statusCode;
         }
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        return HttpResultsWriter.WriteResultAsJsonAsync(
             httpContext,
             logger,
             Value,

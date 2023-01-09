@@ -24,7 +24,7 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
     internal UnprocessableEntity(TValue? value)
     {
         Value = value;
-        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -50,10 +50,10 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.UnprocessableEntityObjectResult");
 
-        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        return HttpResultsWriter.WriteResultAsJsonAsync(
                 httpContext,
                 logger: logger,
                 Value);

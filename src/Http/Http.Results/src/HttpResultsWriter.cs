@@ -3,17 +3,23 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal static partial class HttpResultsHelper
+internal static partial class HttpResultsWriter
 {
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
+    private static JsonSerializerOptions? _defaultSerializerOptions;
+    private readonly static object _syncObj = new();
 
     public static Task WriteResultAsJsonAsync<T>(
         HttpContext httpContext,
@@ -27,32 +33,45 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        var declaredType = typeof(T);
-        if (declaredType.IsValueType)
-        {
-            Log.WritingResultAsJson(logger, declaredType.Name);
+        jsonSerializerOptions ??= GetDefaultOptions(httpContext);
 
+        var declaredTypeInfo = (JsonTypeInfo<T>)jsonSerializerOptions.GetTypeInfo(typeof(T));
+        if (value is null || declaredTypeInfo.IsPolymorphicSafe())
+        {
             // In this case the polymorphism is not
             // relevant and we don't need to box.
             return httpContext.Response.WriteAsJsonAsync(
-                        value,
-                        options: jsonSerializerOptions,
-                        contentType: contentType);
+                value,
+                declaredTypeInfo,
+                contentType: contentType);
         }
-
-        var runtimeType = value.GetType();
-
-        Log.WritingResultAsJson(logger, runtimeType.Name);
 
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+
+        var jsonTypeInfo = jsonSerializerOptions.GetTypeInfo(value.GetType());
+        Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
+
         return httpContext.Response.WriteAsJsonAsync(
             value,
-            runtimeType,
-            options: jsonSerializerOptions,
+            jsonTypeInfo,
             contentType: contentType);
+
+        static JsonSerializerOptions GetDefaultOptions(HttpContext httpContext)
+        {
+            if (_defaultSerializerOptions != null)
+            {
+                return _defaultSerializerOptions;
+            }
+
+            // TODO: Should I lock it???
+            lock (_syncObj)
+            {
+                return _defaultSerializerOptions = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
+            }
+        }
     }
 
     public static Task WriteResultAsContentAsync(

@@ -26,7 +26,7 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     {
         Value = value;
         Location = location;
-        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     internal Created(Uri? locationUri, TValue? value)
     {
         Value = value;
-        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
         if (locationUri != null)
         {
@@ -84,10 +84,10 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.CreatedResult");
 
-        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        return HttpResultsWriter.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 Value);

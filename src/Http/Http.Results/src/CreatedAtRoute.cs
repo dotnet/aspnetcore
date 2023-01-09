@@ -81,7 +81,7 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatus
 
         httpContext.Response.Headers.Location = url;
 
-        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;

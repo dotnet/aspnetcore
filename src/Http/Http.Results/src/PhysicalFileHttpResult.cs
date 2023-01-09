@@ -122,7 +122,7 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult, I
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PhysicalFileResult");
 
-        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
+        var (range, rangeLength, completed) = HttpResultsWriter.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,

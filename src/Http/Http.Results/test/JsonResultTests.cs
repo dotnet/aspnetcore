@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -77,7 +78,9 @@ public class JsonResultTests
         var jsonOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            //TODO: Is that true????
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
         };
         var value = new Todo(10, "MyName") { Description = null };
         var result = new JsonHttpResult<object>(value, jsonSerializerOptions: jsonOptions);
