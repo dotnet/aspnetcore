@@ -157,10 +157,7 @@ public static partial class HttpResponseJsonExtensions
         string? contentType = default,
         CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 

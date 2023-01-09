@@ -135,10 +135,7 @@ public static class HttpRequestJsonExtensions
         JsonTypeInfo jsonTypeInfo,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!request.HasJsonContentType(out var charset))
         {
