@@ -31,9 +31,8 @@ internal static class ClosedGenericMatcher
     /// </remarks>
     public static Type? ExtractGenericInterface(Type queryType, Type interfaceType)
     {
-        ArgumentNullException.ThrowIfNull(queryType);
-
-        ArgumentNullException.ThrowIfNull(interfaceType);
+        ArgumentNullThrowHelper.ThrowIfNull(queryType);
+        ArgumentNullThrowHelper.ThrowIfNull(interfaceType);
 
         if (IsGenericInstantiation(queryType, interfaceType))
         {

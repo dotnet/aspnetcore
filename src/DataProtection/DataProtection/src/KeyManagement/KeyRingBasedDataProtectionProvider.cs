@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -20,7 +21,7 @@ internal sealed unsafe class KeyRingBasedDataProtectionProvider : IDataProtectio
 
     public IDataProtector CreateProtector(string purpose)
     {
-        ArgumentNullException.ThrowIfNull(purpose);
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return new KeyRingBasedDataProtector(
             logger: _logger,

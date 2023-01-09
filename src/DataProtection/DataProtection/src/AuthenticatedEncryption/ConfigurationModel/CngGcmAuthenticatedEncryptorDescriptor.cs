@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -21,9 +22,8 @@ public sealed class CngGcmAuthenticatedEncryptorDescriptor : IAuthenticatedEncry
     /// <param name="masterKey">The master key.</param>
     public CngGcmAuthenticatedEncryptorDescriptor(CngGcmAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        ArgumentNullException.ThrowIfNull(masterKey);
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullThrowHelper.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;

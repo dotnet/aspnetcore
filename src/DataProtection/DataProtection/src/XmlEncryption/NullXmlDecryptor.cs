@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
@@ -19,7 +20,7 @@ public sealed class NullXmlDecryptor : IXmlDecryptor
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
     public XElement Decrypt(XElement encryptedElement)
     {
-        ArgumentNullException.ThrowIfNull(encryptedElement);
+        ArgumentNullThrowHelper.ThrowIfNull(encryptedElement);
 
         // <unencryptedKey>
         //   <!-- This key is not encrypted. -->

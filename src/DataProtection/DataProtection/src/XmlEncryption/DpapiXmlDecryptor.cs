@@ -5,6 +5,7 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Cng;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -42,7 +43,7 @@ public sealed class DpapiXmlDecryptor : IXmlDecryptor
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
     public XElement Decrypt(XElement encryptedElement)
     {
-        ArgumentNullException.ThrowIfNull(encryptedElement);
+        ArgumentNullThrowHelper.ThrowIfNull(encryptedElement);
 
         _logger.DecryptingSecretElementUsingWindowsDPAPI();
 

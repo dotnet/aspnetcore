@@ -7,6 +7,7 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -28,9 +29,8 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver, ILoggerFactory loggerFactory)
         : this(loggerFactory, encryptor: null)
     {
-        ArgumentNullException.ThrowIfNull(thumbprint);
-
-        ArgumentNullException.ThrowIfNull(certificateResolver);
+        ArgumentNullThrowHelper.ThrowIfNull(thumbprint);
+        ArgumentNullThrowHelper.ThrowIfNull(certificateResolver);
 
         _certFactory = CreateCertFactory(thumbprint, certificateResolver);
     }
@@ -42,7 +42,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     public CertificateXmlEncryptor(X509Certificate2 certificate, ILoggerFactory loggerFactory)
         : this(loggerFactory, encryptor: null)
     {
-        ArgumentNullException.ThrowIfNull(certificate);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         _certFactory = () => certificate;
     }
@@ -65,7 +65,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        ArgumentNullException.ThrowIfNull(plaintextElement);
+        ArgumentNullThrowHelper.ThrowIfNull(plaintextElement);
 
         // <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">
         //   ...

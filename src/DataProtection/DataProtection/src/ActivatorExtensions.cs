@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -21,7 +22,7 @@ internal static class ActivatorExtensions
     public static T CreateInstance<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IActivator activator, string implementationTypeName)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(implementationTypeName);
+        ArgumentNullThrowHelper.ThrowIfNull(implementationTypeName);
 
         return activator.CreateInstance(typeof(T), implementationTypeName) as T
             ?? CryptoUtil.Fail<T>("CreateInstance returned null.");

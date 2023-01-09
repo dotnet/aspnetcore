@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -19,9 +20,8 @@ public sealed class AuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDe
     /// <param name="masterKey">The master key.</param>
     public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        ArgumentNullException.ThrowIfNull(masterKey);
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullThrowHelper.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;

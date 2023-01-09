@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories;
@@ -110,7 +111,7 @@ public class FileSystemXmlRepository : IXmlRepository
     /// <inheritdoc/>
     public virtual void StoreElement(XElement element, string friendlyName)
     {
-        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         if (!IsSafeFilename(friendlyName))
         {

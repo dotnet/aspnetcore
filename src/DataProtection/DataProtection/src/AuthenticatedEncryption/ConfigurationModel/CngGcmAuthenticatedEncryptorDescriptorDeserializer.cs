@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -20,7 +21,7 @@ public sealed class CngGcmAuthenticatedEncryptorDescriptorDeserializer : IAuthen
     /// </summary>
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
-        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         // <descriptor>
         //   <!-- Windows CNG-GCM -->
