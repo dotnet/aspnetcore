@@ -20,5 +20,9 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+  </ItemGroup>
 
 </Project>

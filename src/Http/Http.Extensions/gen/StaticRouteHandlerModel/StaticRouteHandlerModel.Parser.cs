@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -8,24 +9,17 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelParser
 {
-    private const int _routePatternArgumentOrdinal = 1;
-    private const int _routeHandlerArgumentOrdinal = 2;
+    private const int RoutePatternArgumentOrdinal = 1;
+    private const int RouteHandlerArgumentOrdinal = 2;
 
-    public static EndpointRoute GetEndpointRouteFromArgument(SyntaxToken routePattern)
+    private static EndpointRoute GetEndpointRouteFromArgument(SyntaxToken routePattern)
     {
-        return new EndpointRoute
-        {
-            RoutePattern = routePattern.ValueText
-        };
+        return new EndpointRoute(routePattern.ValueText, new List<string>());
     }
 
-    public static EndpointResponse GetEndpointResponseFromMethod(IMethodSymbol method)
+    private static EndpointResponse GetEndpointResponseFromMethod(IMethodSymbol method)
     {
-        return new EndpointResponse
-        {
-            ContentType = "plain/text",
-            ResponseType = method.ReturnType.ToString(),
-        };
+        return new EndpointResponse(method.ReturnType.ToString(), "plain/text");
     }
 
     public static Endpoint GetEndpointFromOperation(IInvocationOperation operation)
@@ -44,13 +38,10 @@ internal static class StaticRouteHandlerModelParser
         var invocationExpression = (InvocationExpressionSyntax)operation.Syntax;
         var httpMethod = ((IdentifierNameSyntax)((MemberAccessExpressionSyntax)invocationExpression.Expression).Name).Identifier.ValueText;
 
-        return new Endpoint
-        {
-            Route = GetEndpointRouteFromArgument(routeToken),
-            Response = GetEndpointResponseFromMethod(method),
-            Location = (filePath, span.EndLinePosition.Line + 1),
-            HttpMethod = httpMethod,
-        };
+        return new Endpoint(httpMethod,
+            GetEndpointRouteFromArgument(routeToken),
+            GetEndpointResponseFromMethod(method),
+            (filePath, span.EndLinePosition.Line + 1));
     }
 
     private static bool TryGetRouteHandlerPattern(IInvocationOperation invocation, out SyntaxToken token)
@@ -58,7 +49,7 @@ internal static class StaticRouteHandlerModelParser
         IArgumentOperation? argumentOperation = null;
         foreach (var argument in invocation.Arguments)
         {
-            if (argument.Parameter?.Ordinal == _routePatternArgumentOrdinal)
+            if (argument.Parameter?.Ordinal == RoutePatternArgumentOrdinal)
             {
                 argumentOperation = argument;
             }
@@ -77,7 +68,7 @@ internal static class StaticRouteHandlerModelParser
     {
         foreach (var argument in invocation.Arguments)
         {
-            if (argument.Parameter?.Ordinal == _routeHandlerArgumentOrdinal)
+            if (argument.Parameter?.Ordinal == RouteHandlerArgumentOrdinal)
             {
                 method = ResolveMethodFromOperation(argument);
                 return true;
