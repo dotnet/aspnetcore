@@ -15,6 +15,6 @@ internal enum RequestParameterSource
 }
 
 internal record RequestParameter(string Name, string Type, RequestParameterSource Source, bool IsOptional, object? DefaultValue);
-internal record EndpointRoute(string RoutePattern, List<string> RouteParameters);
+internal record EndpointRoute(string RoutePattern);
 internal record EndpointResponse(string ResponseType, string ContentType);
 internal record Endpoint(string HttpMethod, EndpointRoute Route, EndpointResponse Response, (string, int) Location);

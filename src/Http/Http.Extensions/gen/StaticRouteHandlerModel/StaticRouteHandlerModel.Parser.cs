@@ -1,6 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-using System.Collections.Generic;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -14,7 +14,7 @@ internal static class StaticRouteHandlerModelParser
 
     private static EndpointRoute GetEndpointRouteFromArgument(SyntaxToken routePattern)
     {
-        return new EndpointRoute(routePattern.ValueText, new List<string>());
+        return new EndpointRoute(routePattern.ValueText);
     }
 
     private static EndpointResponse GetEndpointResponseFromMethod(IMethodSymbol method)
