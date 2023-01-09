@@ -140,7 +140,7 @@ public static class ComponentEndpointRouteBuilderExtensions
         var blazorEndpoint = endpoints.Map("/_framework/blazor.server.js", app.Build())
             .WithDisplayName("Blazor static files");
 
-        blazorEndpoint.Add((builder) => ((RouteEndpointBuilder)builder).Order = -1);
+        blazorEndpoint.Add((builder) => ((RouteEndpointBuilder)builder).Order = int.MinValue);
 
         return blazorEndpoint;
     }
