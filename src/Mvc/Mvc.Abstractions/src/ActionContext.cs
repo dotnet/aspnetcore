@@ -65,11 +65,8 @@ public class ActionContext
         ModelStateDictionary modelState)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(routeData);
-
         ArgumentNullException.ThrowIfNull(actionDescriptor);
-
         ArgumentNullException.ThrowIfNull(modelState);
 
         HttpContext = httpContext;

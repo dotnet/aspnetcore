@@ -74,7 +74,6 @@ public class FileBufferingReadStream : Stream
         ArrayPool<byte> bytePool)
     {
         ArgumentNullException.ThrowIfNull(inner);
-
         ArgumentNullException.ThrowIfNull(tempFileDirectoryAccessor);
 
         _bytePool = bytePool;
@@ -127,7 +126,6 @@ public class FileBufferingReadStream : Stream
         ArrayPool<byte> bytePool)
     {
         ArgumentNullException.ThrowIfNull(inner);
-
         ArgumentNullException.ThrowIfNull(tempFileDirectory);
 
         _bytePool = bytePool;

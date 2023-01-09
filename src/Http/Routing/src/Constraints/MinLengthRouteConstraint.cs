@@ -41,7 +41,6 @@ public class MinLengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeM
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)

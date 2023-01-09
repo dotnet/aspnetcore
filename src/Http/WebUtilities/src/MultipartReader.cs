@@ -48,7 +48,6 @@ public class MultipartReader
     public MultipartReader(string boundary, Stream stream, int bufferSize)
     {
         ArgumentNullException.ThrowIfNull(boundary);
-
         ArgumentNullException.ThrowIfNull(stream);
 
         if (bufferSize < boundary.Length + 8) // Size of the boundary + leading and trailing CRLF + leading and trailing '--' markers.

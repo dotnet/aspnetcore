@@ -34,7 +34,6 @@ public partial class VirtualFileResultExecutor : FileResultExecutorBase, IAction
     public virtual Task ExecuteAsync(ActionContext context, VirtualFileResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var fileInfo = GetFileInformation(result, _hostingEnvironment);
@@ -67,7 +66,6 @@ public partial class VirtualFileResultExecutor : FileResultExecutorBase, IAction
     protected virtual Task WriteFileAsync(ActionContext context, VirtualFileResult result, IFileInfo fileInfo, RangeItemHeaderValue? range, long rangeLength)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         return WriteFileAsyncInternal(context.HttpContext, fileInfo, range, rangeLength, Logger);

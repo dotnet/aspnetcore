@@ -69,9 +69,7 @@ public class TemplateBinder
         IEnumerable<(string parameterName, IParameterPolicy policy)>? parameterPolicies)
     {
         ArgumentNullException.ThrowIfNull(urlEncoder);
-
         ArgumentNullException.ThrowIfNull(pool);
-
         ArgumentNullException.ThrowIfNull(pattern);
 
         _urlEncoder = urlEncoder;
@@ -108,9 +106,7 @@ public class TemplateBinder
         IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
     {
         ArgumentNullException.ThrowIfNull(urlEncoder);
-
         ArgumentNullException.ThrowIfNull(pool);
-
         ArgumentNullException.ThrowIfNull(pattern);
 
         // Parameter policies can be null.

@@ -26,9 +26,7 @@ public static class QueryHelpers
     public static string AddQueryString(string uri, string name, string value)
     {
         ArgumentNullException.ThrowIfNull(uri);
-
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(value);
 
         return AddQueryString(
@@ -46,7 +44,6 @@ public static class QueryHelpers
     public static string AddQueryString(string uri, IDictionary<string, string?> queryString)
     {
         ArgumentNullException.ThrowIfNull(uri);
-
         ArgumentNullException.ThrowIfNull(queryString);
 
         return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string?>>)queryString);
@@ -63,7 +60,6 @@ public static class QueryHelpers
     public static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, StringValues>> queryString)
     {
         ArgumentNullException.ThrowIfNull(uri);
-
         ArgumentNullException.ThrowIfNull(queryString);
 
         return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create<string, string?>(kvp.Key, v)));
@@ -82,7 +78,6 @@ public static class QueryHelpers
         IEnumerable<KeyValuePair<string, string?>> queryString)
     {
         ArgumentNullException.ThrowIfNull(uri);
-
         ArgumentNullException.ThrowIfNull(queryString);
 
         var anchorIndex = uri.IndexOf('#');

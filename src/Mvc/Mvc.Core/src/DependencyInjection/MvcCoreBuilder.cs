@@ -20,7 +20,6 @@ internal sealed class MvcCoreBuilder : IMvcCoreBuilder
         ApplicationPartManager manager)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(manager);
 
         Services = services;

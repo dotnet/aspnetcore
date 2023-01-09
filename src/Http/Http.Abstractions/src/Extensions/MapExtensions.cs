@@ -49,7 +49,6 @@ public static class MapExtensions
     public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, bool preserveMatchedPathSegment, Action<IApplicationBuilder> configuration)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(configuration);
 
         if (pathMatch.HasValue && pathMatch.Value!.EndsWith('/'))

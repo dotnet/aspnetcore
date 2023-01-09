@@ -53,7 +53,6 @@ internal sealed class DefaultControllerActivator : IControllerActivator
     public void Release(ControllerContext context, object controller)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         if (controller is IDisposable disposable)
@@ -65,7 +64,6 @@ internal sealed class DefaultControllerActivator : IControllerActivator
     public ValueTask ReleaseAsync(ControllerContext context, object controller)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         if (controller is IAsyncDisposable asyncDisposable)

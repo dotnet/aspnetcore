@@ -37,7 +37,6 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         AntiforgeryToken cookieToken)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(cookieToken);
 
         if (!IsCookieTokenValid(cookieToken))

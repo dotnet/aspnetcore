@@ -29,7 +29,6 @@ public class QueryStringValueProvider : BindingSourceValueProvider, IEnumerableV
         : base(bindingSource)
     {
         ArgumentNullException.ThrowIfNull(bindingSource);
-
         ArgumentNullException.ThrowIfNull(values);
 
         _values = values;

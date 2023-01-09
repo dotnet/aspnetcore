@@ -183,9 +183,7 @@ public static class ControllerEndpointRouteBuilderExtensions
         string controller)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(action);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
@@ -248,11 +246,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         string controller)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(pattern);
-
         ArgumentNullException.ThrowIfNull(action);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
@@ -312,9 +307,7 @@ public static class ControllerEndpointRouteBuilderExtensions
         string area)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(action);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
@@ -379,11 +372,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         string area)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(pattern);
-
         ArgumentNullException.ThrowIfNull(action);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);

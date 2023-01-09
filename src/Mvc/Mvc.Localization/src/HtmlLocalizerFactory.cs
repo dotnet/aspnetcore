@@ -45,7 +45,6 @@ public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     public virtual IHtmlLocalizer Create(string baseName, string location)
     {
         ArgumentNullException.ThrowIfNull(baseName);
-
         ArgumentNullException.ThrowIfNull(location);
 
         var localizer = _factory.Create(baseName, location);

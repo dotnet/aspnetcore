@@ -25,7 +25,6 @@ public class DefaultInlineConstraintResolver : IInlineConstraintResolver
     public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions, IServiceProvider serviceProvider)
     {
         ArgumentNullException.ThrowIfNull(routeOptions);
-
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
         _inlineConstraintMap = routeOptions.Value.TrimmerSafeConstraintMap;

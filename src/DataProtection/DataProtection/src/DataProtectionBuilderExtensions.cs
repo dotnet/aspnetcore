@@ -61,7 +61,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder AddKeyEscrowSink(this IDataProtectionBuilder builder, IKeyEscrowSink sink)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(sink);
 
         builder.Services.Configure<KeyManagementOptions>(options =>
@@ -110,7 +109,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder AddKeyEscrowSink(this IDataProtectionBuilder builder, Func<IServiceProvider, IKeyEscrowSink> factory)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(factory);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
@@ -134,7 +132,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder AddKeyManagementOptions(this IDataProtectionBuilder builder, Action<KeyManagementOptions> setupAction)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
@@ -171,7 +168,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder PersistKeysToFileSystem(this IDataProtectionBuilder builder, DirectoryInfo directory)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(directory);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
@@ -196,7 +192,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder PersistKeysToRegistry(this IDataProtectionBuilder builder, RegistryKey registryKey)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(registryKey);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
@@ -220,7 +215,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder ProtectKeysWithCertificate(this IDataProtectionBuilder builder, X509Certificate2 certificate)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
@@ -246,7 +240,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder ProtectKeysWithCertificate(this IDataProtectionBuilder builder, string thumbprint)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(thumbprint);
 
         // Make sure the thumbprint corresponds to a valid certificate.
@@ -382,7 +375,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder ProtectKeysWithDpapiNG(this IDataProtectionBuilder builder, string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(protectionDescriptorRule);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
@@ -433,7 +425,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder UseCryptographicAlgorithms(this IDataProtectionBuilder builder, AuthenticatedEncryptorConfiguration configuration)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
@@ -456,7 +447,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngCbcAuthenticatedEncryptorConfiguration configuration)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
@@ -479,7 +469,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngGcmAuthenticatedEncryptorConfiguration configuration)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
@@ -498,7 +487,6 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, ManagedAuthenticatedEncryptorConfiguration configuration)
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
-
         ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);

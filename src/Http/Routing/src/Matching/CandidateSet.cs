@@ -35,9 +35,7 @@ public sealed class CandidateSet
     public CandidateSet(Endpoint[] endpoints, RouteValueDictionary[] values, int[] scores)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(values);
-
         ArgumentNullException.ThrowIfNull(scores);
 
         if (endpoints.Length != values.Length || endpoints.Length != scores.Length)

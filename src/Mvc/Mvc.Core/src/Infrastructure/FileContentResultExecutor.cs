@@ -26,7 +26,6 @@ public partial class FileContentResultExecutor : FileResultExecutorBase, IAction
     public virtual Task ExecuteAsync(ActionContext context, FileContentResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         Log.ExecutingFileResult(Logger, result);
@@ -57,7 +56,6 @@ public partial class FileContentResultExecutor : FileResultExecutorBase, IAction
     protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue? range, long rangeLength)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         if (range != null && rangeLength == 0)

@@ -27,7 +27,6 @@ public sealed class BindInputElementAttribute : Attribute
     public BindInputElementAttribute(string? type, string? suffix, string? valueAttribute, string? changeAttribute, bool isInvariantCulture, string? format)
     {
         ArgumentNullException.ThrowIfNull(valueAttribute);
-
         ArgumentNullException.ThrowIfNull(changeAttribute);
 
         Type = type;

@@ -51,7 +51,6 @@ public static class HeaderPropagationHttpClientBuilderExtensions
     public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder, Action<HeaderPropagationMessageHandlerOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.AddHeaderPropagation();

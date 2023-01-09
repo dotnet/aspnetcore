@@ -39,7 +39,6 @@ public class StringWithQualityHeaderValueComparer : IComparer<StringWithQualityH
         StringWithQualityHeaderValue? stringWithQuality2)
     {
         ArgumentNullException.ThrowIfNull(stringWithQuality1);
-
         ArgumentNullException.ThrowIfNull(stringWithQuality2);
 
         var quality1 = stringWithQuality1.Quality ?? HeaderQuality.Match;

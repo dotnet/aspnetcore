@@ -66,13 +66,9 @@ public class InputFormatterContext
         bool treatEmptyInputAsDefaultValue)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(modelName);
-
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(metadata);
-
         ArgumentNullException.ThrowIfNull(readerFactory);
 
         HttpContext = httpContext;

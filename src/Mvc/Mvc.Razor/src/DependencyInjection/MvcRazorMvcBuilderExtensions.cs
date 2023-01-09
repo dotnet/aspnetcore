@@ -23,7 +23,6 @@ public static class MvcRazorMvcBuilderExtensions
         Action<RazorViewEngineOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
@@ -61,7 +60,6 @@ public static class MvcRazorMvcBuilderExtensions
         where TTagHelper : ITagHelper
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(initialize);
 
         var initializer = new TagHelperInitializer<TTagHelper>(initialize);

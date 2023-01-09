@@ -45,7 +45,6 @@ public static class JsonHelperExtensions
         }
 
         ArgumentNullException.ThrowIfNull(value);
-
         ArgumentNullException.ThrowIfNull(serializerSettings);
 
         return newtonsoftJsonHelper.Serialize(value, serializerSettings);

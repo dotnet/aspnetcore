@@ -68,7 +68,6 @@ public partial class ComplexTypeModelBinder : IModelBinder
         bool allowValidatingTopLevelNodes)
     {
         ArgumentNullException.ThrowIfNull(propertyBinders);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _propertyBinders = propertyBinders;
@@ -523,9 +522,7 @@ public partial class ComplexTypeModelBinder : IModelBinder
         ModelBindingResult result)
     {
         ArgumentNullException.ThrowIfNull(bindingContext);
-
         ArgumentNullException.ThrowIfNull(modelName);
-
         ArgumentNullException.ThrowIfNull(propertyMetadata);
 
         if (!result.IsModelSet)

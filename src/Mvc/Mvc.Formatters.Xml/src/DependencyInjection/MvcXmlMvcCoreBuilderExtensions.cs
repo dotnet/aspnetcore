@@ -24,7 +24,6 @@ public static class MvcXmlMvcCoreBuilderExtensions
        Action<MvcXmlOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
@@ -55,7 +54,6 @@ public static class MvcXmlMvcCoreBuilderExtensions
         Action<MvcXmlOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         AddXmlDataContractSerializerFormatterServices(builder.Services);

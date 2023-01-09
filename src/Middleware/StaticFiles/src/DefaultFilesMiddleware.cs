@@ -30,9 +30,7 @@ public class DefaultFilesMiddleware
     public DefaultFilesMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(hostingEnv);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

@@ -26,7 +26,6 @@ public static class HttpResponseWritingExtensions
     public static Task WriteAsync(this HttpResponse response, string text, CancellationToken cancellationToken = default(CancellationToken))
     {
         ArgumentNullException.ThrowIfNull(response);
-
         ArgumentNullException.ThrowIfNull(text);
 
         return response.WriteAsync(text, Encoding.UTF8, cancellationToken);
@@ -44,9 +43,7 @@ public static class HttpResponseWritingExtensions
     public static Task WriteAsync(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
     {
         ArgumentNullException.ThrowIfNull(response);
-
         ArgumentNullException.ThrowIfNull(text);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         // Need to call StartAsync before GetMemory/GetSpan

@@ -40,13 +40,9 @@ public class SessionMiddleware
         IOptions<SessionOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(dataProtectionProvider);
-
         ArgumentNullException.ThrowIfNull(sessionStore);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

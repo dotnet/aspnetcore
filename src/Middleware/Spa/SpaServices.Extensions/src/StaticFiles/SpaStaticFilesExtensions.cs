@@ -62,7 +62,6 @@ public static class SpaStaticFilesExtensions
     public static void UseSpaStaticFiles(this IApplicationBuilder applicationBuilder, StaticFileOptions options)
     {
         ArgumentNullException.ThrowIfNull(applicationBuilder);
-
         ArgumentNullException.ThrowIfNull(options);
 
         UseSpaStaticFilesInternal(applicationBuilder,

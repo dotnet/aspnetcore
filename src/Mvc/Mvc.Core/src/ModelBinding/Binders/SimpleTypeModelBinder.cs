@@ -25,7 +25,6 @@ public class SimpleTypeModelBinder : IModelBinder
     public SimpleTypeModelBinder(Type type, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _typeConverter = TypeDescriptor.GetConverter(type);

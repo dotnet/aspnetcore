@@ -38,7 +38,6 @@ public static class LinkParserEndpointNameAddressExtensions
         PathString path)
     {
         ArgumentNullException.ThrowIfNull(parser);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return parser.ParsePathByAddress<string>(endpointName, path);

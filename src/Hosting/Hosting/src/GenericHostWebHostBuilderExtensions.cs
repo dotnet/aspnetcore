@@ -35,7 +35,6 @@ public static class GenericHostWebHostBuilderExtensions
     public static IHostBuilder ConfigureWebHost(this IHostBuilder builder, Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureWebHostBuilder)
     {
         ArgumentNullException.ThrowIfNull(configure);
-
         ArgumentNullException.ThrowIfNull(configureWebHostBuilder);
 
         // Light up custom implementations namely ConfigureHostBuilder which throws.

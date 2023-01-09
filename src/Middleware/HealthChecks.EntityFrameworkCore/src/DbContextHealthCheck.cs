@@ -19,7 +19,6 @@ internal sealed class DbContextHealthCheck<TContext> : IHealthCheck where TConte
     public DbContextHealthCheck(TContext dbContext, IOptionsMonitor<DbContextHealthCheckOptions<TContext>> options)
     {
         ArgumentNullException.ThrowIfNull(dbContext);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _dbContext = dbContext;

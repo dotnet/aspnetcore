@@ -62,7 +62,6 @@ public sealed class MediaTypeOptions
     public void AddText(string contentType, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(contentType);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         var mediaType = MediaTypeHeaderValue.Parse(contentType);

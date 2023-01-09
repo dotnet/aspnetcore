@@ -30,7 +30,6 @@ public static class ValueProviderFactoryExtensions
     public static void RemoveType(this IList<IValueProviderFactory> list, Type type)
     {
         ArgumentNullException.ThrowIfNull(list);
-
         ArgumentNullException.ThrowIfNull(type);
 
         for (var i = list.Count - 1; i >= 0; i--)

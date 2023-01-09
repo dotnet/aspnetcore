@@ -406,7 +406,6 @@ public class RequestHeaders
     public void Append(string name, object value)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(value);
 
         Headers.Append(name, value.ToString());

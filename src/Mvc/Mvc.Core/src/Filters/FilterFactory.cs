@@ -12,7 +12,6 @@ internal static class FilterFactory
         ActionContext actionContext)
     {
         ArgumentNullException.ThrowIfNull(filterProviders);
-
         ArgumentNullException.ThrowIfNull(actionContext);
 
         var actionDescriptor = actionContext.ActionDescriptor;
@@ -65,9 +64,7 @@ internal static class FilterFactory
         FilterItem[] cachedFilterItems)
     {
         ArgumentNullException.ThrowIfNull(filterProviders);
-
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(cachedFilterItems);
 
         if (actionContext.ActionDescriptor.CachedReusableFilters is { } cached)

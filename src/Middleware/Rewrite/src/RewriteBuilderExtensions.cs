@@ -36,7 +36,6 @@ public static class RewriteBuilderExtensions
     public static IApplicationBuilder UseRewriter(this IApplicationBuilder app, RewriteOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(options);
 
         // put middleware in pipeline

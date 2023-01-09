@@ -20,9 +20,7 @@ public class ModelValidationContextBase
         IModelMetadataProvider metadataProvider)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(modelMetadata);
-
         ArgumentNullException.ThrowIfNull(metadataProvider);
 
         ActionContext = actionContext;

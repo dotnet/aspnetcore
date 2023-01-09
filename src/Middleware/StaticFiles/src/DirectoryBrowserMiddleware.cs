@@ -42,11 +42,8 @@ public class DirectoryBrowserMiddleware
     public DirectoryBrowserMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, HtmlEncoder encoder, IOptions<DirectoryBrowserOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(hostingEnv);
-
         ArgumentNullException.ThrowIfNull(encoder);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

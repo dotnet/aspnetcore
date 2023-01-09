@@ -27,9 +27,7 @@ public class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
     public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(keyBinder);
-
         ArgumentNullException.ThrowIfNull(valueBinder);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _keyBinder = keyBinder;

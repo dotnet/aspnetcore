@@ -78,7 +78,6 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(candidates);
 
         // Returning a 405 here requires us to return keep track of all 'seen' HTTP methods. We allocate to

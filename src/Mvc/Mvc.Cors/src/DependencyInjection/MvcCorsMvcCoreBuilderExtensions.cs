@@ -37,7 +37,6 @@ public static class MvcCorsMvcCoreBuilderExtensions
         Action<CorsOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         AddCorsServices(builder.Services);
@@ -57,7 +56,6 @@ public static class MvcCorsMvcCoreBuilderExtensions
         Action<CorsOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);

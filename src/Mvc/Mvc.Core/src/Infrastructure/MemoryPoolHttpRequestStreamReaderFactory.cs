@@ -36,7 +36,6 @@ internal sealed class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStr
         ArrayPool<char> charPool)
     {
         ArgumentNullException.ThrowIfNull(bytePool);
-
         ArgumentNullException.ThrowIfNull(charPool);
 
         _bytePool = bytePool;
@@ -47,7 +46,6 @@ internal sealed class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStr
     public TextReader CreateReader(Stream stream, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(stream);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         return new HttpRequestStreamReader(stream, encoding, DefaultBufferSize, _bytePool, _charPool);

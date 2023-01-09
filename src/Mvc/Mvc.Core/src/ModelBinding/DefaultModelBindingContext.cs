@@ -202,11 +202,8 @@ public class DefaultModelBindingContext : ModelBindingContext
         string modelName)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
-
         ArgumentNullException.ThrowIfNull(metadata);
-
         ArgumentNullException.ThrowIfNull(modelName);
 
         var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
@@ -252,9 +249,7 @@ public class DefaultModelBindingContext : ModelBindingContext
         object? model)
     {
         ArgumentNullException.ThrowIfNull(modelMetadata);
-
         ArgumentNullException.ThrowIfNull(fieldName);
-
         ArgumentNullException.ThrowIfNull(modelName);
 
         var scope = EnterNestedScope();

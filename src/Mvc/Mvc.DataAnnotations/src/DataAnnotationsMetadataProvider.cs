@@ -31,7 +31,6 @@ internal sealed class DataAnnotationsMetadataProvider :
         IStringLocalizerFactory? stringLocalizerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(localizationOptions);
 
         _options = options;

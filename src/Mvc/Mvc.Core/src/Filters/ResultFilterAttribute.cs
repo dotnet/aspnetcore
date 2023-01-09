@@ -30,7 +30,6 @@ public abstract class ResultFilterAttribute : Attribute, IResultFilter, IAsyncRe
         ResultExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(next);
 
         OnResultExecuting(context);

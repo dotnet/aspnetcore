@@ -30,7 +30,6 @@ public static class MvcCoreMvcCoreBuilderExtensions
         Action<MvcOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
@@ -48,7 +47,6 @@ public static class MvcCoreMvcCoreBuilderExtensions
         Action<JsonOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure(configure);
@@ -163,7 +161,6 @@ public static class MvcCoreMvcCoreBuilderExtensions
     public static IMvcCoreBuilder AddApplicationPart(this IMvcCoreBuilder builder, Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(assembly);
 
         builder.ConfigureApplicationPartManager(manager =>
@@ -190,7 +187,6 @@ public static class MvcCoreMvcCoreBuilderExtensions
         Action<ApplicationPartManager> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         setupAction(builder.PartManager);
@@ -209,7 +205,6 @@ public static class MvcCoreMvcCoreBuilderExtensions
         Action<ApiBehaviorOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);

@@ -57,7 +57,6 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var httpContext = context.HttpContext;

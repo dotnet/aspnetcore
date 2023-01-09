@@ -51,7 +51,6 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         Type containerType)
     {
         ArgumentNullException.ThrowIfNull(modelType);
-
         ArgumentNullException.ThrowIfNull(containerType);
 
         if (string.IsNullOrEmpty(name))
@@ -75,9 +74,7 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         Type containerType)
     {
         ArgumentNullException.ThrowIfNull(propertyInfo);
-
         ArgumentNullException.ThrowIfNull(modelType);
-
         ArgumentNullException.ThrowIfNull(containerType);
 
         return new ModelMetadataIdentity(modelType, propertyInfo.Name, containerType, fieldInfo: propertyInfo);
@@ -101,7 +98,6 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     public static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
     {
         ArgumentNullException.ThrowIfNull(parameter);
-
         ArgumentNullException.ThrowIfNull(modelType);
 
         return new ModelMetadataIdentity(modelType, parameter.Name, fieldInfo: parameter);
@@ -117,7 +113,6 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     public static ModelMetadataIdentity ForConstructor(ConstructorInfo constructor, Type modelType)
     {
         ArgumentNullException.ThrowIfNull(constructor);
-
         ArgumentNullException.ThrowIfNull(modelType);
 
         return new ModelMetadataIdentity(modelType, constructor.Name, constructorInfo: constructor);

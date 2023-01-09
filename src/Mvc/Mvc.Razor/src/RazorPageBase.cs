@@ -345,7 +345,6 @@ public abstract class RazorPageBase : IRazorPage
     public virtual void DefineSection(string name, RenderAsyncDelegate section)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(section);
 
         if (SectionWriters.ContainsKey(name))
@@ -456,7 +455,6 @@ public abstract class RazorPageBase : IRazorPage
         int attributeValuesCount)
     {
         ArgumentNullException.ThrowIfNull(prefix);
-
         ArgumentNullException.ThrowIfNull(suffix);
 
         _attributeInfo = new AttributeInfo(name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);

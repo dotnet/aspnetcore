@@ -26,7 +26,6 @@ public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActio
     public virtual Task ExecuteAsync(ActionContext context, PhysicalFileResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var fileInfo = GetFileInfo(result.FileName);
@@ -69,7 +68,6 @@ public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActio
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(result);
 
         if (range != null && rangeLength == 0)

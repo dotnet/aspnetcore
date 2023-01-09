@@ -30,7 +30,6 @@ public static class MetadataDetailsProviderExtensions
     public static void RemoveType(this IList<IMetadataDetailsProvider> list, Type type)
     {
         ArgumentNullException.ThrowIfNull(list);
-
         ArgumentNullException.ThrowIfNull(type);
 
         for (var i = list.Count - 1; i >= 0; i--)

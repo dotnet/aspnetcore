@@ -21,7 +21,6 @@ public class BoolRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchi
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)

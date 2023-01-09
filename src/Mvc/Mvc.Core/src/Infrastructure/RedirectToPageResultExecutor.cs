@@ -24,7 +24,6 @@ public partial class RedirectToPageResultExecutor : IActionResultExecutor<Redire
     public RedirectToPageResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(urlHelperFactory);
 
         _logger = loggerFactory.CreateLogger<RedirectToRouteResult>();
@@ -35,7 +34,6 @@ public partial class RedirectToPageResultExecutor : IActionResultExecutor<Redire
     public virtual Task ExecuteAsync(ActionContext context, RedirectToPageResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);

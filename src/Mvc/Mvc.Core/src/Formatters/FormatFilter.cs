@@ -27,7 +27,6 @@ public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilte
     public FormatFilter(IOptions<MvcOptions> options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;

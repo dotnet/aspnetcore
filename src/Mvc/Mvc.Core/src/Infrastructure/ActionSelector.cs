@@ -79,7 +79,6 @@ internal sealed partial class ActionSelector : IActionSelector
     public ActionDescriptor? SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(candidates);
 
         var finalMatches = EvaluateActionConstraints(context, candidates);

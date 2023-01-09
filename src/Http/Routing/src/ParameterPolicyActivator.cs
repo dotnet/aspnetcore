@@ -24,7 +24,6 @@ internal static class ParameterPolicyActivator
         // DefaultInlineConstraintResolver can be created without an IServiceProvider and then call this method
 
         ArgumentNullException.ThrowIfNull(inlineParameterPolicyMap);
-
         ArgumentNullException.ThrowIfNull(inlineParameterPolicy);
 
         string argumentString;

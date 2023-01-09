@@ -20,7 +20,6 @@ internal sealed class ControllerFactoryProvider : IControllerFactoryProvider
         IEnumerable<IControllerPropertyActivator> propertyActivators)
     {
         ArgumentNullException.ThrowIfNull(activatorProvider);
-
         ArgumentNullException.ThrowIfNull(controllerFactory);
 
         _activatorProvider = activatorProvider;

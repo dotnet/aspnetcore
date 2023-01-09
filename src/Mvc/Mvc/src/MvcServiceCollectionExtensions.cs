@@ -43,7 +43,6 @@ public static class MvcServiceCollectionExtensions
     public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddMvc();

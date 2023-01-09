@@ -26,7 +26,6 @@ public partial class LocalRedirectResultExecutor : IActionResultExecutor<LocalRe
     public LocalRedirectResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(urlHelperFactory);
 
         _logger = loggerFactory.CreateLogger<LocalRedirectResultExecutor>();
@@ -37,7 +36,6 @@ public partial class LocalRedirectResultExecutor : IActionResultExecutor<LocalRe
     public virtual Task ExecuteAsync(ActionContext context, LocalRedirectResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);

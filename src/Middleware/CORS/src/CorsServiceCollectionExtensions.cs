@@ -37,7 +37,6 @@ public static class CorsServiceCollectionExtensions
     public static IServiceCollection AddCors(this IServiceCollection services, Action<CorsOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         services.AddCors();

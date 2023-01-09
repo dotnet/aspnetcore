@@ -29,7 +29,6 @@ internal sealed class DefaultControllerFactory : IControllerFactory
         IEnumerable<IControllerPropertyActivator> propertyActivators)
     {
         ArgumentNullException.ThrowIfNull(controllerActivator);
-
         ArgumentNullException.ThrowIfNull(propertyActivators);
 
         _controllerActivator = controllerActivator;
@@ -61,7 +60,6 @@ internal sealed class DefaultControllerFactory : IControllerFactory
     public void ReleaseController(ControllerContext context, object controller)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         _controllerActivator.Release(context, controller);
@@ -70,7 +68,6 @@ internal sealed class DefaultControllerFactory : IControllerFactory
     public ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         return _controllerActivator.ReleaseAsync(context, controller);

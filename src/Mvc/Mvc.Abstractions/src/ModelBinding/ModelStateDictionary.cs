@@ -203,7 +203,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     public bool TryAddModelException(string key, Exception exception)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(exception);
 
         if ((exception is InputFormatterException || exception is ValueProviderException)
@@ -236,9 +235,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     public void AddModelError(string key, Exception exception, ModelMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(exception);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         TryAddModelError(key, exception, metadata);
@@ -261,9 +258,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     public bool TryAddModelError(string key, Exception exception, ModelMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(exception);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         if (ErrorCount >= MaxAllowedErrors - 1)
@@ -325,7 +320,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     public void AddModelError(string key, string errorMessage)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(errorMessage);
 
         TryAddModelError(key, errorMessage);
@@ -346,7 +340,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     public bool TryAddModelError(string key, string errorMessage)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(errorMessage);
 
         if (ErrorCount >= MaxAllowedErrors - 1)
@@ -768,7 +761,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
     public static bool StartsWithPrefix(string prefix, string key)
     {
         ArgumentNullException.ThrowIfNull(prefix);
-
         ArgumentNullException.ThrowIfNull(key);
 
         if (prefix.Length == 0)
@@ -986,7 +978,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         public PrefixEnumerable(ModelStateDictionary dictionary, string prefix)
         {
             ArgumentNullException.ThrowIfNull(dictionary);
-
             ArgumentNullException.ThrowIfNull(prefix);
 
             _dictionary = dictionary;
@@ -1021,7 +1012,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         public Enumerator(ModelStateDictionary dictionary, string prefix)
         {
             ArgumentNullException.ThrowIfNull(dictionary);
-
             ArgumentNullException.ThrowIfNull(prefix);
 
             _index = -1;

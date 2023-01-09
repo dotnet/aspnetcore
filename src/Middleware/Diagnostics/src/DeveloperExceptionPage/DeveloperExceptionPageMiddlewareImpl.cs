@@ -62,9 +62,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
         IProblemDetailsService? problemDetailsService = null)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(filters);
 
         _next = next;

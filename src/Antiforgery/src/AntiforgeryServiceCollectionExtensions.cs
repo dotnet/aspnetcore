@@ -55,7 +55,6 @@ public static class AntiforgeryServiceCollectionExtensions
     public static IServiceCollection AddAntiforgery(this IServiceCollection services, Action<AntiforgeryOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         services.AddAntiforgery();

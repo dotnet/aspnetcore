@@ -24,7 +24,6 @@ public class FormatterMappings
     public void SetMediaTypeMappingForFormat(string format, string contentType)
     {
         ArgumentNullException.ThrowIfNull(format);
-
         ArgumentNullException.ThrowIfNull(contentType);
 
         SetMediaTypeMappingForFormat(format, MediaTypeHeaderValue.Parse(contentType));
@@ -39,7 +38,6 @@ public class FormatterMappings
     public void SetMediaTypeMappingForFormat(string format, MediaTypeHeaderValue contentType)
     {
         ArgumentNullException.ThrowIfNull(format);
-
         ArgumentNullException.ThrowIfNull(contentType);
 
         ValidateContentType(contentType);

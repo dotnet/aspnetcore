@@ -26,9 +26,7 @@ internal sealed class AttributeRoute : IRouter
         Func<ActionDescriptor[], IRouter> handlerFactory)
     {
         ArgumentNullException.ThrowIfNull(actionDescriptorCollectionProvider);
-
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(handlerFactory);
 
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;

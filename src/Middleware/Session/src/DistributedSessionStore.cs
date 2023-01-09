@@ -23,7 +23,6 @@ public class DistributedSessionStore : ISessionStore
     public DistributedSessionStore(IDistributedCache cache, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(cache);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _cache = cache;

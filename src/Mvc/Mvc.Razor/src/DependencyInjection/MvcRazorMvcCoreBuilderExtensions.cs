@@ -106,7 +106,6 @@ public static class MvcRazorMvcCoreBuilderExtensions
         where TTagHelper : ITagHelper
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(initialize);
 
         var initializer = new TagHelperInitializer<TTagHelper>(initialize);

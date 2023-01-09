@@ -23,9 +23,7 @@ public static class MapWhenExtensions
     public static IApplicationBuilder MapWhen(this IApplicationBuilder app, Predicate predicate, Action<IApplicationBuilder> configuration)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(predicate);
-
         ArgumentNullException.ThrowIfNull(configuration);
 
         // create branch

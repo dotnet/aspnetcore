@@ -18,7 +18,6 @@ public static class RunExtensions
     public static void Run(this IApplicationBuilder app, RequestDelegate handler)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(handler);
 
         app.Use(_ => handler);

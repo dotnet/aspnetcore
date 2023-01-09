@@ -240,9 +240,7 @@ public static class HttpRequestJsonExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(context);
 
         if (!request.HasJsonContentType(out var charset))

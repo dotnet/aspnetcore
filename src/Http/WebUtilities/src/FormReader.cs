@@ -94,7 +94,6 @@ public class FormReader : IDisposable
     public FormReader(Stream stream, Encoding encoding, ArrayPool<char> charPool)
     {
         ArgumentNullException.ThrowIfNull(stream);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         _buffer = charPool.Rent(_rentedCharPoolLength);

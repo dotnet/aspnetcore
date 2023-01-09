@@ -53,9 +53,7 @@ public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObser
         IOptions<DatabaseErrorPageOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

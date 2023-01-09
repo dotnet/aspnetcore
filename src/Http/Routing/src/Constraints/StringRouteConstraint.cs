@@ -29,7 +29,6 @@ public class StringRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatc
     public bool Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var routeValue)

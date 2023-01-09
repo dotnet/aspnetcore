@@ -19,7 +19,6 @@ internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IE
     public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelectorCache selectorCache, EndpointMetadataComparer comparer)
     {
         ArgumentNullException.ThrowIfNull(selectorCache);
-
         ArgumentNullException.ThrowIfNull(comparer);
 
         _selectorCache = selectorCache;
@@ -59,7 +58,6 @@ internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IE
     public async Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(candidates);
 
         // The per-route selector, must be the same for all the endpoints we are dealing with.

@@ -212,21 +212,13 @@ internal static class ModelBindingHelper
         Func<ModelMetadata, bool> propertyFilter)
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(modelType);
-
         ArgumentNullException.ThrowIfNull(prefix);
-
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(modelBinderFactory);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
-
         ArgumentNullException.ThrowIfNull(objectModelValidator);
-
         ArgumentNullException.ThrowIfNull(propertyFilter);
 
         if (!modelType.IsAssignableFrom(model.GetType()))
@@ -376,9 +368,7 @@ internal static class ModelBindingHelper
         string modelKey)
     {
         ArgumentNullException.ThrowIfNull(modelType);
-
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(metadataProvider);
 
         ClearValidationStateForModel(metadataProvider.GetMetadataForType(modelType), modelState, modelKey);
@@ -396,7 +386,6 @@ internal static class ModelBindingHelper
         string? modelKey)
     {
         ArgumentNullException.ThrowIfNull(modelMetadata);
-
         ArgumentNullException.ThrowIfNull(modelState);
 
         if (string.IsNullOrEmpty(modelKey))

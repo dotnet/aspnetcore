@@ -18,7 +18,6 @@ public class FilterProviderContext
     public FilterProviderContext(ActionContext actionContext, IList<FilterItem> items)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(items);
 
         ActionContext = actionContext;

@@ -59,7 +59,6 @@ public static class SendFileResponseExtensions
     public static Task SendFileAsync(this HttpResponse response, string fileName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(response);
-
         ArgumentNullException.ThrowIfNull(fileName);
 
         return SendFileAsyncCore(response, fileName, 0, null, cancellationToken);
@@ -78,7 +77,6 @@ public static class SendFileResponseExtensions
     public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(response);
-
         ArgumentNullException.ThrowIfNull(fileName);
 
         return SendFileAsyncCore(response, fileName, offset, count, cancellationToken);

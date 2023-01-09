@@ -36,7 +36,6 @@ public static class ApplicationBuilderExtensions
         RequestLocalizationOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<RequestLocalizationMiddleware>(Options.Create(options));
@@ -57,7 +56,6 @@ public static class ApplicationBuilderExtensions
         Action<RequestLocalizationOptions> optionsAction)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(optionsAction);
 
         var options = new RequestLocalizationOptions();
@@ -81,7 +79,6 @@ public static class ApplicationBuilderExtensions
         params string[] cultures)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(cultures);
 
         if (cultures.Length == 0)

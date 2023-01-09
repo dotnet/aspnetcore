@@ -30,7 +30,6 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         : base(bindingSource)
     {
         ArgumentNullException.ThrowIfNull(bindingSource);
-
         ArgumentNullException.ThrowIfNull(values);
 
         _values = values;

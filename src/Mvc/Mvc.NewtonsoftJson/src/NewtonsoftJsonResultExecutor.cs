@@ -47,11 +47,8 @@ internal sealed partial class NewtonsoftJsonResultExecutor : IActionResultExecut
         ArrayPool<char> charPool)
     {
         ArgumentNullException.ThrowIfNull(writerFactory);
-
         ArgumentNullException.ThrowIfNull(logger);
-
         ArgumentNullException.ThrowIfNull(jsonOptions);
-
         ArgumentNullException.ThrowIfNull(charPool);
 
         _writerFactory = writerFactory;
@@ -71,7 +68,6 @@ internal sealed partial class NewtonsoftJsonResultExecutor : IActionResultExecut
     public async Task ExecuteAsync(ActionContext context, JsonResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var jsonSerializerSettings = GetSerializerSettings(result);

@@ -33,7 +33,6 @@ internal sealed class TryParseModelBinder : IModelBinder
     public TryParseModelBinder(Type modelType, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(modelType);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _tryParseOperation = CreateTryParseOperation(modelType);

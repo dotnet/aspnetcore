@@ -30,7 +30,6 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         IStringLocalizer? stringLocalizer)
     {
         ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
-
         ArgumentNullException.ThrowIfNull(attribute);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;

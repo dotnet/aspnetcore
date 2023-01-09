@@ -39,7 +39,6 @@ public class KnownRouteValueConstraint : IRouteConstraint
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var obj))

@@ -209,7 +209,6 @@ internal static class SpaProxy
     private static async Task<bool> AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(destinationUri);
 
         using (var client = new ClientWebSocket())

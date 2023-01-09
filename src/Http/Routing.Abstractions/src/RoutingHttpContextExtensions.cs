@@ -36,7 +36,6 @@ public static class RoutingHttpContextExtensions
     public static object? GetRouteValue(this HttpContext httpContext, string key)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(key);
 
         return httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues[key];

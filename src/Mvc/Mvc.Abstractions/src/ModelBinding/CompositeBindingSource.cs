@@ -64,7 +64,6 @@ public class CompositeBindingSource : BindingSource
         : base(id, displayName, isGreedy: false, isFromRequest: true)
     {
         ArgumentNullException.ThrowIfNull(id);
-
         ArgumentNullException.ThrowIfNull(bindingSources);
 
         BindingSources = bindingSources;

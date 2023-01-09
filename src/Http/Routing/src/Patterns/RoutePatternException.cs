@@ -27,7 +27,6 @@ public sealed class RoutePatternException : Exception
         : base(message)
     {
         ArgumentNullException.ThrowIfNull(pattern);
-
         ArgumentNullException.ThrowIfNull(message);
 
         Pattern = pattern;

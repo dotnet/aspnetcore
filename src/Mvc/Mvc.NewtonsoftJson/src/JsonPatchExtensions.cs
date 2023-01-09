@@ -23,9 +23,7 @@ public static class JsonPatchExtensions
         ModelStateDictionary modelState) where T : class
     {
         ArgumentNullException.ThrowIfNull(patchDoc);
-
         ArgumentNullException.ThrowIfNull(objectToApplyTo);
-
         ArgumentNullException.ThrowIfNull(modelState);
 
         patchDoc.ApplyTo(objectToApplyTo, modelState, prefix: string.Empty);
@@ -45,9 +43,7 @@ public static class JsonPatchExtensions
         string prefix) where T : class
     {
         ArgumentNullException.ThrowIfNull(patchDoc);
-
         ArgumentNullException.ThrowIfNull(objectToApplyTo);
-
         ArgumentNullException.ThrowIfNull(modelState);
 
         patchDoc.ApplyTo(objectToApplyTo, jsonPatchError =>

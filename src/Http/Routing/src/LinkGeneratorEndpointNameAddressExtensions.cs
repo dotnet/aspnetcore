@@ -38,9 +38,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(
@@ -80,9 +78,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(
@@ -118,7 +114,6 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(endpointName, new RouteValueDictionary(values), pathBase, fragment, options);
@@ -147,7 +142,6 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(endpointName, values ?? new(), pathBase, fragment, options);
@@ -197,9 +191,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetUriByAddress<string>(
@@ -258,9 +250,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetUriByAddress<string>(
@@ -313,7 +303,6 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         if (string.IsNullOrEmpty(scheme))
@@ -367,7 +356,6 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(endpointName);
 
         if (string.IsNullOrEmpty(scheme))

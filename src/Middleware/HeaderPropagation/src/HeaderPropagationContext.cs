@@ -21,7 +21,6 @@ public readonly struct HeaderPropagationContext
     public HeaderPropagationContext(HttpContext httpContext, string headerName, StringValues headerValue)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(headerName);
 
         HttpContext = httpContext;

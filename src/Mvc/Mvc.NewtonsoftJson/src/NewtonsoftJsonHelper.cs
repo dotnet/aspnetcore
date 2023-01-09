@@ -30,7 +30,6 @@ internal sealed class NewtonsoftJsonHelper : IJsonHelper
     public NewtonsoftJsonHelper(IOptions<MvcNewtonsoftJsonOptions> options, ArrayPool<char> charPool)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(charPool);
 
         _defaultSettingsJsonSerializer = CreateHtmlSafeSerializer(options.Value.SerializerSettings);

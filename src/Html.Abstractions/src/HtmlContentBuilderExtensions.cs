@@ -30,9 +30,7 @@ public static class HtmlContentBuilderExtensions
         params object?[] args)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(format);
-
         ArgumentNullException.ThrowIfNull(args);
 
         builder.AppendHtml(new HtmlFormattableString(format, args));
@@ -61,9 +59,7 @@ public static class HtmlContentBuilderExtensions
         params object?[] args)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(format);
-
         ArgumentNullException.ThrowIfNull(args);
 
         builder.AppendHtml(new HtmlFormattableString(formatProvider, format, args));

@@ -19,7 +19,6 @@ internal static class AcceptHeaderParser
     public static void ParseAcceptHeader(IList<string> acceptHeaders, IList<MediaTypeSegmentWithQuality> parsedValues)
     {
         ArgumentNullException.ThrowIfNull(acceptHeaders);
-
         ArgumentNullException.ThrowIfNull(parsedValues);
         for (var i = 0; i < acceptHeaders.Count; i++)
         {

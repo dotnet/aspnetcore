@@ -23,7 +23,6 @@ internal sealed class DefaultFileVersionProvider : IFileVersionProvider
         TagHelperMemoryCacheProvider cacheProvider)
     {
         ArgumentNullException.ThrowIfNull(hostingEnvironment);
-
         ArgumentNullException.ThrowIfNull(cacheProvider);
 
         FileProvider = hostingEnvironment.WebRootFileProvider;

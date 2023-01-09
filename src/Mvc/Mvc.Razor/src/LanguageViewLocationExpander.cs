@@ -54,7 +54,6 @@ public class LanguageViewLocationExpander : IViewLocationExpander
         IEnumerable<string> viewLocations)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(viewLocations);
 
         context.Values.TryGetValue(ValueKey, out var value);

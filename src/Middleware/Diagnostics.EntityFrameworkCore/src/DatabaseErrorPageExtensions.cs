@@ -39,7 +39,6 @@ public static class DatabaseErrorPageExtensions
         this IApplicationBuilder app, DatabaseErrorPageOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(options);
 
         app = app.UseMiddleware<DatabaseErrorPageMiddleware>(Options.Create(options));

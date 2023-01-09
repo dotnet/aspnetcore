@@ -47,7 +47,6 @@ public class RootComponentMappingCollection : Collection<RootComponentMapping>, 
     public void Add([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters)
     {
         ArgumentNullException.ThrowIfNull(componentType);
-
         ArgumentNullException.ThrowIfNull(selector);
 
         Add(new RootComponentMapping(componentType, selector, parameters));

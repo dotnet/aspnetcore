@@ -46,7 +46,6 @@ public static class CorsMiddlewareExtensions
         Action<CorsPolicyBuilder> configurePolicy)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new CorsPolicyBuilder();

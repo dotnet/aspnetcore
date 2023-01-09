@@ -20,7 +20,6 @@ public static class ServerSideBlazorBuilderExtensions
     public static IServerSideBlazorBuilder AddCircuitOptions(this IServerSideBlazorBuilder builder, Action<CircuitOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure<CircuitOptions>(configure);
@@ -37,7 +36,6 @@ public static class ServerSideBlazorBuilderExtensions
     public static IServerSideBlazorBuilder AddHubOptions(this IServerSideBlazorBuilder builder, Action<HubOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure<HubOptions<ComponentHub>>(configure);

@@ -24,7 +24,6 @@ public static class IISUrlRewriteOptionsExtensions
     public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool alwaysUseManagedServerVariables = false)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(fileProvider);
 
         var file = fileProvider.GetFileInfo(filePath);
@@ -45,7 +44,6 @@ public static class IISUrlRewriteOptionsExtensions
     public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool alwaysUseManagedServerVariables = false)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(reader);
 
         var rules = new UrlRewriteFileParser().Parse(reader, alwaysUseManagedServerVariables);

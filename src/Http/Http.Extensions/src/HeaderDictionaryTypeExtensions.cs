@@ -42,7 +42,6 @@ public static class HeaderDictionaryTypeExtensions
     internal static DateTimeOffset? GetDate(this IHeaderDictionary headers, string name)
     {
         ArgumentNullException.ThrowIfNull(headers);
-
         ArgumentNullException.ThrowIfNull(name);
 
         return headers.Get<DateTimeOffset?>(name);
@@ -51,7 +50,6 @@ public static class HeaderDictionaryTypeExtensions
     internal static void Set(this IHeaderDictionary headers, string name, object? value)
     {
         ArgumentNullException.ThrowIfNull(headers);
-
         ArgumentNullException.ThrowIfNull(name);
 
         if (value == null)
@@ -67,7 +65,6 @@ public static class HeaderDictionaryTypeExtensions
     internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T>? values)
     {
         ArgumentNullException.ThrowIfNull(headers);
-
         ArgumentNullException.ThrowIfNull(name);
 
         if (values == null || values.Count == 0)
@@ -99,7 +96,6 @@ public static class HeaderDictionaryTypeExtensions
     public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(values);
 
         switch (values.Count)
@@ -124,7 +120,6 @@ public static class HeaderDictionaryTypeExtensions
     internal static void SetDate(this IHeaderDictionary headers, string name, DateTimeOffset? value)
     {
         ArgumentNullException.ThrowIfNull(headers);
-
         ArgumentNullException.ThrowIfNull(name);
 
         if (value.HasValue)

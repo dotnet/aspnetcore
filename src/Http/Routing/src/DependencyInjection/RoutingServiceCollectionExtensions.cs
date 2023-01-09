@@ -112,7 +112,6 @@ public static class RoutingServiceCollectionExtensions
         Action<RouteOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);

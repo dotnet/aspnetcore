@@ -16,7 +16,6 @@ public readonly struct RazorPageResult
     public RazorPageResult(string name, IRazorPage page)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(page);
 
         Name = name;
@@ -32,7 +31,6 @@ public readonly struct RazorPageResult
     public RazorPageResult(string name, IEnumerable<string> searchedLocations)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(searchedLocations);
 
         Name = name;

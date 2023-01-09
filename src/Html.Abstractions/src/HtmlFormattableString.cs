@@ -44,7 +44,6 @@ public class HtmlFormattableString : IHtmlContent
         params object?[] args)
     {
         ArgumentNullException.ThrowIfNull(format);
-
         ArgumentNullException.ThrowIfNull(args);
 
         _formatProvider = formatProvider ?? CultureInfo.CurrentCulture;
@@ -56,7 +55,6 @@ public class HtmlFormattableString : IHtmlContent
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         var formatProvider = new EncodingFormatProvider(_formatProvider, encoder);

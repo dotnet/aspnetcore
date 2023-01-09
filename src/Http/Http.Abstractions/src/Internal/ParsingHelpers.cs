@@ -105,7 +105,6 @@ internal static class ParsingHelpers
     public static void AppendHeaderJoined(IHeaderDictionary headers, string key, params string[] values)
     {
         ArgumentNullException.ThrowIfNull(headers);
-
         ArgumentNullException.ThrowIfNull(key);
 
         if (values == null || values.Length == 0)
@@ -127,7 +126,6 @@ internal static class ParsingHelpers
     public static void AppendHeaderUnmodified(IHeaderDictionary headers, string key, StringValues values)
     {
         ArgumentNullException.ThrowIfNull(headers);
-
         ArgumentNullException.ThrowIfNull(key);
 
         if (values.Count == 0)

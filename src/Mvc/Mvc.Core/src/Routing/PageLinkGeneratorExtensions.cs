@@ -47,7 +47,6 @@ public static class PageLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, page, handler, values);
@@ -90,7 +89,6 @@ public static class PageLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(page);
 
         var address = CreateAddress(httpContext: null, page, handler, values);
@@ -147,7 +145,6 @@ public static class PageLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, page, handler, values);
@@ -200,7 +197,6 @@ public static class PageLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(page);
 
         var address = CreateAddress(httpContext: null, page, handler, values);

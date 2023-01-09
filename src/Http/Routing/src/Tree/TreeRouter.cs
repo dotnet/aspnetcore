@@ -49,15 +49,10 @@ public partial class TreeRouter : IRouter
         int version)
     {
         ArgumentNullException.ThrowIfNull(trees);
-
         ArgumentNullException.ThrowIfNull(linkGenerationEntries);
-
         ArgumentNullException.ThrowIfNull(urlEncoder);
-
         ArgumentNullException.ThrowIfNull(objectPool);
-
         ArgumentNullException.ThrowIfNull(routeLogger);
-
         ArgumentNullException.ThrowIfNull(constraintLogger);
 
         _trees = trees;

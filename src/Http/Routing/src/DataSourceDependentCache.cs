@@ -27,7 +27,6 @@ internal sealed class DataSourceDependentCache<T> : IDisposable where T : class
     public DataSourceDependentCache(EndpointDataSource dataSource, Func<IReadOnlyList<Endpoint>, T> initialize)
     {
         ArgumentNullException.ThrowIfNull(dataSource);
-
         ArgumentNullException.ThrowIfNull(initialize);
 
         _dataSource = dataSource;

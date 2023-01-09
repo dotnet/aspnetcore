@@ -55,7 +55,6 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         bool allowValidatingTopLevelNodes)
     {
         ArgumentNullException.ThrowIfNull(elementBinder);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         ElementBinder = elementBinder;

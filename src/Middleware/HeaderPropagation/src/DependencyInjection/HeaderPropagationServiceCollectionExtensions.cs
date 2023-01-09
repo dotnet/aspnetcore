@@ -35,7 +35,6 @@ public static class HeaderPropagationServiceCollectionExtensions
     public static IServiceCollection AddHeaderPropagation(this IServiceCollection services, Action<HeaderPropagationOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);

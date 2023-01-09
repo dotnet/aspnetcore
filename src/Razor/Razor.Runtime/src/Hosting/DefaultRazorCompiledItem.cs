@@ -10,9 +10,7 @@ internal sealed class DefaultRazorCompiledItem : RazorCompiledItem
     public DefaultRazorCompiledItem(Type type, string kind, string identifier)
     {
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(kind);
-
         ArgumentNullException.ThrowIfNull(identifier);
 
         Type = type;

@@ -39,9 +39,7 @@ public class RouteValueProvider : BindingSourceValueProvider
         : base(bindingSource)
     {
         ArgumentNullException.ThrowIfNull(bindingSource);
-
         ArgumentNullException.ThrowIfNull(values);
-
         ArgumentNullException.ThrowIfNull(culture);
 
         _values = values;

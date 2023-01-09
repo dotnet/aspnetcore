@@ -36,7 +36,6 @@ public static class AuthenticationCoreServiceCollectionExtensions
     public static IServiceCollection AddAuthenticationCore(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.AddAuthenticationCore();

@@ -22,7 +22,6 @@ internal static class NormalizedRouteValue
     public static string? GetNormalizedRouteValue(ActionContext context, string key)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(key);
 
         if (!context.RouteData.Values.TryGetValue(key, out var routeValue))

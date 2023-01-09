@@ -181,7 +181,6 @@ public class BindingInfo
     public static BindingInfo? GetBindingInfo(IEnumerable<object> attributes, ModelMetadata modelMetadata)
     {
         ArgumentNullException.ThrowIfNull(attributes);
-
         ArgumentNullException.ThrowIfNull(modelMetadata);
 
         var bindingInfo = GetBindingInfo(attributes);

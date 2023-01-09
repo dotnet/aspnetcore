@@ -68,7 +68,6 @@ public class DistributedSession : ISession
         }
 
         ArgumentNullException.ThrowIfNull(tryEstablishSession);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _cache = cache;

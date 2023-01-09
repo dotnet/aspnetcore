@@ -38,7 +38,6 @@ public static class ComponentEndpointRouteBuilderExtensions
         string path)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(path);
 
         return endpoints.MapBlazorHub(path, configureOptions: _ => { });
@@ -55,7 +54,6 @@ public static class ComponentEndpointRouteBuilderExtensions
         Action<HttpConnectionDispatcherOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         return endpoints.MapBlazorHub(ComponentHub.DefaultPath, configureOptions);
@@ -74,9 +72,7 @@ public static class ComponentEndpointRouteBuilderExtensions
         Action<HttpConnectionDispatcherOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(path);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions);

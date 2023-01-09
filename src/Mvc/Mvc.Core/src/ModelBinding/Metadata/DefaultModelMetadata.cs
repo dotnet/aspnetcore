@@ -63,11 +63,8 @@ public class DefaultModelMetadata : ModelMetadata
         : base(details.Key)
     {
         ArgumentNullException.ThrowIfNull(provider);
-
         ArgumentNullException.ThrowIfNull(detailsProvider);
-
         ArgumentNullException.ThrowIfNull(details);
-
         ArgumentNullException.ThrowIfNull(modelBindingMessageProvider);
 
         _provider = provider;

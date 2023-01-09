@@ -19,9 +19,7 @@ public sealed class BindElementAttribute : Attribute
     public BindElementAttribute(string element, string? suffix, string valueAttribute, string changeAttribute)
     {
         ArgumentNullException.ThrowIfNull(element);
-
         ArgumentNullException.ThrowIfNull(valueAttribute);
-
         ArgumentNullException.ThrowIfNull(changeAttribute);
 
         Element = element;

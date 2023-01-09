@@ -50,7 +50,6 @@ public class RequestCulture
     public RequestCulture(CultureInfo culture, CultureInfo uiCulture)
     {
         ArgumentNullException.ThrowIfNull(culture);
-
         ArgumentNullException.ThrowIfNull(uiCulture);
 
         Culture = culture;

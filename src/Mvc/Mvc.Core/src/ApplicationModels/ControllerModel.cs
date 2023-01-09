@@ -26,7 +26,6 @@ public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
         IReadOnlyList<object> attributes)
     {
         ArgumentNullException.ThrowIfNull(controllerType);
-
         ArgumentNullException.ThrowIfNull(attributes);
 
         ControllerType = controllerType;

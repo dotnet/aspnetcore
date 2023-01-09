@@ -183,9 +183,7 @@ internal sealed class ActionEndpointFactory
         RoutePattern? groupPrefix = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(keys);
-
         ArgumentNullException.ThrowIfNull(conventions);
 
         var requiredValues = new RouteValueDictionary();

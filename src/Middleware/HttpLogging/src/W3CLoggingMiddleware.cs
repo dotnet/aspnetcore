@@ -53,9 +53,7 @@ internal sealed class W3CLoggingMiddleware
     public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, W3CLogger w3cLogger)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(w3cLogger);
 
         _next = next;

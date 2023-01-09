@@ -35,7 +35,6 @@ public static class SessionServiceCollectionExtensions
     public static IServiceCollection AddSession(this IServiceCollection services, Action<SessionOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         services.Configure(configure);

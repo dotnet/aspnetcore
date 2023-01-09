@@ -103,7 +103,6 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     public override ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
     {
         ArgumentNullException.ThrowIfNull(parameter);
-
         ArgumentNullException.ThrowIfNull(modelType);
 
         var cacheEntry = GetCacheEntry(parameter, modelType);
@@ -125,7 +124,6 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     public override ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
     {
         ArgumentNullException.ThrowIfNull(propertyInfo);
-
         ArgumentNullException.ThrowIfNull(modelType);
 
         var cacheEntry = GetCacheEntry(propertyInfo, modelType);

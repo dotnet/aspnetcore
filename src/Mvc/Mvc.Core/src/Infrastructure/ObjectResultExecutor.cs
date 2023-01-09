@@ -31,9 +31,7 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
         IOptions<MvcOptions> mvcOptions)
     {
         ArgumentNullException.ThrowIfNull(formatterSelector);
-
         ArgumentNullException.ThrowIfNull(writerFactory);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         FormatterSelector = formatterSelector;
@@ -67,7 +65,6 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     public virtual Task ExecuteAsync(ActionContext context, ObjectResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         InferContentTypes(context, result);

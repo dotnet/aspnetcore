@@ -57,7 +57,6 @@ public static class HealthCheckApplicationBuilderExtensions
     public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, HealthCheckOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(options);
 
         UseHealthChecksCore(app, path, port: null, new[] { Options.Create(options), });
@@ -113,7 +112,6 @@ public static class HealthCheckApplicationBuilderExtensions
     public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, string port)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(port);
 
         if (!int.TryParse(port, out var portAsInt))
@@ -145,7 +143,6 @@ public static class HealthCheckApplicationBuilderExtensions
     public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, int port, HealthCheckOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(options);
 
         UseHealthChecksCore(app, path, port, new[] { Options.Create(options), });

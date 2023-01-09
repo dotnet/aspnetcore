@@ -25,9 +25,7 @@ public class HealthCheckMiddleware
         HealthCheckService healthCheckService)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(healthCheckOptions);
-
         ArgumentNullException.ThrowIfNull(healthCheckService);
 
         _next = next;

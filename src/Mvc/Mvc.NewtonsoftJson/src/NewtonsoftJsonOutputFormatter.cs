@@ -59,7 +59,6 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
         MvcNewtonsoftJsonOptions? jsonOptions)
     {
         ArgumentNullException.ThrowIfNull(serializerSettings);
-
         ArgumentNullException.ThrowIfNull(charPool);
 
         SerializerSettings = serializerSettings;
@@ -135,7 +134,6 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
     public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         // Compat mode for derived options

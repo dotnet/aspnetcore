@@ -38,7 +38,6 @@ public class HttpMethodRouteConstraint : IRouteConstraint
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         switch (routeDirection)

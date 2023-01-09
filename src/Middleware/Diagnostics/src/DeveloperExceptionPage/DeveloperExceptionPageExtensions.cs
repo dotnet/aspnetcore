@@ -41,7 +41,6 @@ public static class DeveloperExceptionPageExtensions
         DeveloperExceptionPageOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(options);
 
         app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware";

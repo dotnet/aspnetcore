@@ -33,9 +33,7 @@ public class MigrationsEndPointMiddleware
         IOptions<MigrationsEndPointOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(logger);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

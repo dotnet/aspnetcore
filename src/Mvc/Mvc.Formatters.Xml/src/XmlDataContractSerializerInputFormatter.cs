@@ -99,7 +99,6 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         var request = context.HttpContext.Request;
@@ -187,7 +186,6 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     protected virtual XmlReader CreateXmlReader(Stream readStream, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(readStream);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         return XmlDictionaryReader.CreateTextReader(readStream, encoding, _readerQuotas, onClose: null);

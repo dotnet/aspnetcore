@@ -20,7 +20,6 @@ internal static class ApplicationModelConventions
         IEnumerable<IApplicationModelConvention> conventions)
     {
         ArgumentNullException.ThrowIfNull(applicationModel);
-
         ArgumentNullException.ThrowIfNull(conventions);
 
         // Conventions are applied from the outside-in to allow for scenarios where an action overrides

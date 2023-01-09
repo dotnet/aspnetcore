@@ -10,7 +10,6 @@ internal sealed class FilterDescriptorOrderComparer : IComparer<FilterDescriptor
     public int Compare(FilterDescriptor? x, FilterDescriptor? y)
     {
         ArgumentNullException.ThrowIfNull(x);
-
         ArgumentNullException.ThrowIfNull(y);
 
         if (x.Order == y.Order)

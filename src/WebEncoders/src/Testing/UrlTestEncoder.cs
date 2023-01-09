@@ -36,7 +36,6 @@ public class UrlTestEncoder : UrlEncoder
     public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
     {
         ArgumentNullThrowHelper.ThrowIfNull(output);
-
         ArgumentNullThrowHelper.ThrowIfNull(value);
 
         if (characterCount == 0)
@@ -53,7 +52,6 @@ public class UrlTestEncoder : UrlEncoder
     public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
     {
         ArgumentNullThrowHelper.ThrowIfNull(output);
-
         ArgumentNullThrowHelper.ThrowIfNull(value);
 
         if (characterCount == 0)

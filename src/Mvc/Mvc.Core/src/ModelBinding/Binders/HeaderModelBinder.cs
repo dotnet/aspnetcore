@@ -36,7 +36,6 @@ public class HeaderModelBinder : IModelBinder
     public HeaderModelBinder(ILoggerFactory loggerFactory, IModelBinder innerModelBinder)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(innerModelBinder);
 
         _logger = loggerFactory.CreateLogger<HeaderModelBinder>();

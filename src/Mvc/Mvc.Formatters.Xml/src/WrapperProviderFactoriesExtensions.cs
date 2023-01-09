@@ -21,7 +21,6 @@ public static class WrapperProviderFactoriesExtensions
         WrapperProviderContext wrapperProviderContext)
     {
         ArgumentNullException.ThrowIfNull(wrapperProviderFactories);
-
         ArgumentNullException.ThrowIfNull(wrapperProviderContext);
 
         foreach (var wrapperProviderFactory in wrapperProviderFactories)

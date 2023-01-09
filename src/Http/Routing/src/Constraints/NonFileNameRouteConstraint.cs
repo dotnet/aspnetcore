@@ -88,7 +88,6 @@ public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNod
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var obj) && obj != null)

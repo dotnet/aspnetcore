@@ -258,7 +258,6 @@ public partial class ModelBinderFactory : IModelBinderFactory
         public override IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
         {
             ArgumentNullException.ThrowIfNull(metadata);
-
             ArgumentNullException.ThrowIfNull(bindingInfo);
 
             // For non-root nodes we use the ModelMetadata as the cache token. This ensures that all non-root

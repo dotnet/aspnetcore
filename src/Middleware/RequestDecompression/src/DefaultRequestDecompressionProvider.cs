@@ -20,7 +20,6 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
         IOptions<RequestDecompressionOptions> options)
     {
         ArgumentNullException.ThrowIfNull(logger);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _logger = logger;
@@ -77,7 +76,7 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
                 DecompressingWithCore(logger, contentEncoding.ToLowerInvariant());
             }
         }
-        
+
         [LoggerMessage(4, LogLevel.Debug, "The request will be decompressed with '{ContentEncoding}'.", EventName = "DecompressingWith", SkipEnabledCheck = true)]
         private static partial void DecompressingWithCore(ILogger logger, string contentEncoding);
     }

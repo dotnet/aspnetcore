@@ -44,9 +44,7 @@ public class LocalizedHtmlString : IHtmlContent
     public LocalizedHtmlString(string name, string value, bool isResourceNotFound, params object[] arguments)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(value);
-
         ArgumentNullException.ThrowIfNull(arguments);
 
         Name = name;
@@ -74,7 +72,6 @@ public class LocalizedHtmlString : IHtmlContent
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         var formattableString = new HtmlFormattableString(Value, _arguments);

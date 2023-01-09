@@ -58,7 +58,6 @@ public class RazorPageActivator : IRazorPageActivator
     public void Activate(IRazorPage page, ViewContext context)
     {
         ArgumentNullException.ThrowIfNull(page);
-
         ArgumentNullException.ThrowIfNull(context);
 
         var propertyActivator = GetOrAddCacheEntry(page);

@@ -26,7 +26,6 @@ public abstract class ObjectModelValidator : IObjectModelValidator
         IList<IModelValidatorProvider> validatorProviders)
     {
         ArgumentNullException.ThrowIfNull(modelMetadataProvider);
-
         ArgumentNullException.ThrowIfNull(validatorProviders);
 
         _modelMetadataProvider = modelMetadataProvider;

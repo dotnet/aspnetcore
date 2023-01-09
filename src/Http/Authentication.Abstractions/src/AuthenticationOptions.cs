@@ -33,6 +33,7 @@ public class AuthenticationOptions
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(configureBuilder);
+
         if (SchemeMap.ContainsKey(name))
         {
             throw new InvalidOperationException("Scheme already exists: " + name);

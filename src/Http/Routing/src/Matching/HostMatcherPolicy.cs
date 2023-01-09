@@ -71,7 +71,6 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(candidates);
 
         for (var i = 0; i < candidates.Count; i++)

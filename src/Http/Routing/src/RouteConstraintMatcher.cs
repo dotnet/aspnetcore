@@ -33,11 +33,8 @@ public static partial class RouteConstraintMatcher
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(routeValues);
-
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(route);
-
         ArgumentNullException.ThrowIfNull(logger);
 
         if (constraints == null || constraints.Count == 0)

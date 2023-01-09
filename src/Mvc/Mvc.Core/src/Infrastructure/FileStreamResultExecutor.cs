@@ -26,7 +26,6 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
     public virtual async Task ExecuteAsync(ActionContext context, FileStreamResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         using (result.FileStream)
@@ -70,7 +69,6 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
         long rangeLength)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         if (range != null && rangeLength == 0)

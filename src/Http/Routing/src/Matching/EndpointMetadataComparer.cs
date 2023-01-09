@@ -48,7 +48,6 @@ public sealed class EndpointMetadataComparer : IComparer<Endpoint>
     int IComparer<Endpoint>.Compare(Endpoint? x, Endpoint? y)
     {
         ArgumentNullException.ThrowIfNull(x);
-
         ArgumentNullException.ThrowIfNull(y);
 
         var comparers = Comparers;
@@ -95,7 +94,6 @@ public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> 
     public int Compare(Endpoint? x, Endpoint? y)
     {
         ArgumentNullException.ThrowIfNull(x);
-
         ArgumentNullException.ThrowIfNull(y);
 
         return CompareMetadata(GetMetadata(x), GetMetadata(y));

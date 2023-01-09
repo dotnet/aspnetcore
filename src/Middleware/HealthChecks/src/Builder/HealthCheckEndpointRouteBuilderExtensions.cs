@@ -45,7 +45,6 @@ public static class HealthCheckEndpointRouteBuilderExtensions
        HealthCheckOptions options)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(options);
 
         return MapHealthChecksCore(endpoints, pattern, options);

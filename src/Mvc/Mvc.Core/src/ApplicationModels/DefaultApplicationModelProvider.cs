@@ -257,7 +257,6 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         MethodInfo methodInfo)
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
-
         ArgumentNullException.ThrowIfNull(methodInfo);
 
         if (!IsAction(typeInfo, methodInfo))
@@ -378,7 +377,6 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     internal static bool IsAction(TypeInfo typeInfo, MethodInfo methodInfo)
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
-
         ArgumentNullException.ThrowIfNull(methodInfo);
 
         // The SpecialName bit is set to flag members that are treated in a special way by some compilers

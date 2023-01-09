@@ -17,7 +17,6 @@ internal sealed class DefaultTemplateBinderFactory : TemplateBinderFactory
         ObjectPool<UriBuildingContext> pool)
     {
         ArgumentNullException.ThrowIfNull(policyFactory);
-
         ArgumentNullException.ThrowIfNull(pool);
 
         _policyFactory = policyFactory;
@@ -27,7 +26,6 @@ internal sealed class DefaultTemplateBinderFactory : TemplateBinderFactory
     public override TemplateBinder Create(RouteTemplate template, RouteValueDictionary defaults)
     {
         ArgumentNullException.ThrowIfNull(template);
-
         ArgumentNullException.ThrowIfNull(defaults);
 
         return new TemplateBinder(UrlEncoder.Default, _pool, template, defaults);

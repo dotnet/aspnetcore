@@ -20,7 +20,6 @@ public static class ApacheModRewriteOptionsExtensions
     public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(fileProvider);
 
         var fileInfo = fileProvider.GetFileInfo(filePath);
@@ -38,7 +37,6 @@ public static class ApacheModRewriteOptionsExtensions
     public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, TextReader reader)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(reader);
         var rules = FileParser.Parse(reader);
 

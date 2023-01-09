@@ -36,7 +36,6 @@ public class RewriteMiddleware
         IOptions<RewriteOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

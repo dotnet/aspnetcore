@@ -38,7 +38,6 @@ public sealed class HeaderPropagationMessageHandlerEntryCollection : Collection<
     public void Add(string capturedHeaderName, string outboundHeaderName)
     {
         ArgumentNullException.ThrowIfNull(capturedHeaderName);
-
         ArgumentNullException.ThrowIfNull(outboundHeaderName);
 
         Add(new HeaderPropagationMessageHandlerEntry(capturedHeaderName, outboundHeaderName));

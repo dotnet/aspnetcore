@@ -27,7 +27,6 @@ public class CorsService : ICorsService
     public CorsService(IOptions<CorsOptions> options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
@@ -59,7 +58,6 @@ public class CorsService : ICorsService
     public CorsResult EvaluatePolicy(HttpContext context, CorsPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(policy);
 
         if (policy.AllowAnyOrigin && policy.SupportsCredentials)
@@ -154,7 +152,6 @@ public class CorsService : ICorsService
     public virtual void ApplyResult(CorsResult result, HttpResponse response)
     {
         ArgumentNullException.ThrowIfNull(result);
-
         ArgumentNullException.ThrowIfNull(response);
 
         if (!result.IsOriginAllowed)

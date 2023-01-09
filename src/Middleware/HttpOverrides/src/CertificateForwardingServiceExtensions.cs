@@ -21,7 +21,6 @@ public static class CertificateForwardingServiceExtensions
         Action<CertificateForwardingOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         services.AddOptions<CertificateForwardingOptions>().Validate(o => !string.IsNullOrEmpty(o.CertificateHeader), "CertificateForwarderOptions.CertificateHeader cannot be null or empty.");

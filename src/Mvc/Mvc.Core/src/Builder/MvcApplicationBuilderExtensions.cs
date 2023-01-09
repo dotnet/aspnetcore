@@ -61,7 +61,6 @@ public static class MvcApplicationBuilderExtensions
         Action<IRouteBuilder> configureRoutes)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(configureRoutes);
 
         VerifyMvcIsRegistered(app);

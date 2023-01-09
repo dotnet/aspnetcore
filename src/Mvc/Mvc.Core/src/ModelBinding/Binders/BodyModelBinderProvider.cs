@@ -56,7 +56,6 @@ public class BodyModelBinderProvider : IModelBinderProvider
         MvcOptions? options)
     {
         ArgumentNullException.ThrowIfNull(formatters);
-
         ArgumentNullException.ThrowIfNull(readerFactory);
 
         _formatters = formatters;

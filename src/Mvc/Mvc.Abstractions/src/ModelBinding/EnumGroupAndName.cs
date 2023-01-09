@@ -19,7 +19,6 @@ public readonly struct EnumGroupAndName
     public EnumGroupAndName(string group, string name)
     {
         ArgumentNullException.ThrowIfNull(group);
-
         ArgumentNullException.ThrowIfNull(name);
 
         Group = group;
@@ -36,7 +35,6 @@ public readonly struct EnumGroupAndName
         Func<string> name)
     {
         ArgumentNullException.ThrowIfNull(group);
-
         ArgumentNullException.ThrowIfNull(name);
 
         Group = group;

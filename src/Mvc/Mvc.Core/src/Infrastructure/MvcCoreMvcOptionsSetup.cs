@@ -34,9 +34,7 @@ internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IP
     public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory, IOptions<JsonOptions> jsonOptions)
     {
         ArgumentNullException.ThrowIfNull(readerFactory);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(jsonOptions);
 
         _readerFactory = readerFactory;

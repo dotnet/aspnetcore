@@ -263,7 +263,6 @@ internal static class HttpResponseWritingExtensions
     internal static void Write(this HttpResponse response, string text)
     {
         ArgumentNullException.ThrowIfNull(response);
-
         ArgumentNullException.ThrowIfNull(text);
 
         byte[] data = Encoding.UTF8.GetBytes(text);

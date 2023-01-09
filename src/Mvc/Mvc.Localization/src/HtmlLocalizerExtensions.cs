@@ -19,7 +19,6 @@ public static class HtmlLocalizerExtensions
     public static LocalizedHtmlString GetHtml(this IHtmlLocalizer htmlLocalizer, string name)
     {
         ArgumentNullException.ThrowIfNull(htmlLocalizer);
-
         ArgumentNullException.ThrowIfNull(name);
 
         return htmlLocalizer[name];
@@ -35,7 +34,6 @@ public static class HtmlLocalizerExtensions
     public static LocalizedHtmlString GetHtml(this IHtmlLocalizer htmlLocalizer, string name, params object[] arguments)
     {
         ArgumentNullException.ThrowIfNull(htmlLocalizer);
-
         ArgumentNullException.ThrowIfNull(name);
 
         return htmlLocalizer[name, arguments];

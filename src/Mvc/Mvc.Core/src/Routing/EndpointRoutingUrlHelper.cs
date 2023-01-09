@@ -30,7 +30,6 @@ internal sealed class EndpointRoutingUrlHelper : UrlHelperBase
         : base(actionContext)
     {
         ArgumentNullException.ThrowIfNull(linkGenerator);
-
         ArgumentNullException.ThrowIfNull(logger);
 
         _linkGenerator = linkGenerator;

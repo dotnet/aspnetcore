@@ -36,7 +36,6 @@ public static class FeatureCollectionExtensions
     public static object GetRequiredFeature(this IFeatureCollection featureCollection, Type key)
     {
         ArgumentNullThrowHelper.ThrowIfNull(featureCollection);
-
         ArgumentNullThrowHelper.ThrowIfNull(key);
 
         return featureCollection[key] ?? throw new InvalidOperationException($"Feature '{key}' is not present.");

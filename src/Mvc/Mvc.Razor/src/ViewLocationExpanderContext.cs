@@ -26,7 +26,6 @@ public class ViewLocationExpanderContext
         bool isMainPage)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(viewName);
 
         ActionContext = actionContext;

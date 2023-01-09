@@ -29,7 +29,6 @@ public class RouteConstraintBuilder
         string displayName)
     {
         ArgumentNullException.ThrowIfNull(inlineConstraintResolver);
-
         ArgumentNullException.ThrowIfNull(displayName);
 
         _inlineConstraintResolver = inlineConstraintResolver;
@@ -88,7 +87,6 @@ public class RouteConstraintBuilder
     public void AddConstraint(string key, object value)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(value);
 
         var constraint = value as IRouteConstraint;
@@ -125,7 +123,6 @@ public class RouteConstraintBuilder
     public void AddResolvedConstraint(string key, string constraintText)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(constraintText);
 
         var constraint = _inlineConstraintResolver.ResolveConstraint(constraintText);

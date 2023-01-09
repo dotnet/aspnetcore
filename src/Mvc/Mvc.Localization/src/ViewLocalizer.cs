@@ -28,7 +28,6 @@ public class ViewLocalizer : IViewLocalizer, IViewContextAware
     public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IWebHostEnvironment hostingEnvironment)
     {
         ArgumentNullException.ThrowIfNull(localizerFactory);
-
         ArgumentNullException.ThrowIfNull(hostingEnvironment);
 
         if (string.IsNullOrEmpty(hostingEnvironment.ApplicationName))

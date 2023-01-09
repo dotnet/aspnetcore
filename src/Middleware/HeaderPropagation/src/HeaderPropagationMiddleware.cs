@@ -27,12 +27,13 @@ public class HeaderPropagationMiddleware
     /// </param>
     public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-
+        ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
-        _options = options.Value;
+        ArgumentNullException.ThrowIfNull(values);
 
-        _values = values ?? throw new ArgumentNullException(nameof(values));
+        _next = next;
+        _options = options.Value;
+        _values = values;
     }
 
     /// <summary>

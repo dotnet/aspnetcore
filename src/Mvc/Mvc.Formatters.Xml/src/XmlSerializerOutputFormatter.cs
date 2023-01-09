@@ -160,7 +160,6 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
         XmlWriterSettings xmlWriterSettings)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(xmlWriterSettings);
 
         // We always close the TextWriter, so the XmlWriter shouldn't.
@@ -193,7 +192,6 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
     public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var writerSettings = WriterSettings.Clone();

@@ -33,7 +33,6 @@ public static class RequestDecompressionServiceExtensions
     public static IServiceCollection AddRequestDecompression(this IServiceCollection services, Action<RequestDecompressionOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);

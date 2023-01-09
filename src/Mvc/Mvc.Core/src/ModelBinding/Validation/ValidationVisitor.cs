@@ -35,9 +35,7 @@ public class ValidationVisitor
         ValidationStateDictionary? validationState)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(validatorProvider);
-
         ArgumentNullException.ThrowIfNull(validatorCache);
 
         Context = actionContext;

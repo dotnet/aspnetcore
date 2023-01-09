@@ -27,7 +27,6 @@ public class ActionModel : ICommonModel, IFilterModel, IApiExplorerModel
         IReadOnlyList<object> attributes)
     {
         ArgumentNullException.ThrowIfNull(actionMethod);
-
         ArgumentNullException.ThrowIfNull(attributes);
 
         ActionMethod = actionMethod;

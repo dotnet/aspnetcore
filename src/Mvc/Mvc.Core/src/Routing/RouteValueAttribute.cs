@@ -31,7 +31,6 @@ public abstract class RouteValueAttribute : Attribute, IRouteValueProvider
         string routeValue)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(routeValue);
 
         RouteKey = routeKey;

@@ -31,11 +31,8 @@ internal sealed class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptio
         ObjectPoolProvider objectPoolProvider)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(jsonOptions);
-
         ArgumentNullException.ThrowIfNull(charPool);
-
         ArgumentNullException.ThrowIfNull(objectPoolProvider);
 
         _loggerFactory = loggerFactory;

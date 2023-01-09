@@ -20,7 +20,6 @@ internal sealed class ControllerResultFilter : IAsyncResultFilter, IOrderedFilte
         ResultExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(next);
 
         var controller = context.Controller;

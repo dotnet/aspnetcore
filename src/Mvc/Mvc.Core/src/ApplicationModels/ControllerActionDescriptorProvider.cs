@@ -18,7 +18,6 @@ internal sealed class ControllerActionDescriptorProvider : IActionDescriptorProv
         ApplicationModelFactory applicationModelFactory)
     {
         ArgumentNullException.ThrowIfNull(partManager);
-
         ArgumentNullException.ThrowIfNull(applicationModelFactory);
 
         _partManager = partManager;

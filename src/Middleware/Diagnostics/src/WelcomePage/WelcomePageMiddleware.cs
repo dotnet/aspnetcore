@@ -24,7 +24,6 @@ public class WelcomePageMiddleware
     public WelcomePageMiddleware(RequestDelegate next, IOptions<WelcomePageOptions> options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _next = next;

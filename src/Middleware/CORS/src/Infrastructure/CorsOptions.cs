@@ -57,7 +57,6 @@ public class CorsOptions
     public void AddPolicy(string name, CorsPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(policy);
 
         PolicyMap[name] = (policy, Task.FromResult(policy));
@@ -71,7 +70,6 @@ public class CorsOptions
     public void AddPolicy(string name, Action<CorsPolicyBuilder> configurePolicy)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new CorsPolicyBuilder();

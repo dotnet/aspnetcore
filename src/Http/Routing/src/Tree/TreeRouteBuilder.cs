@@ -34,9 +34,7 @@ public class TreeRouteBuilder
         IInlineConstraintResolver constraintResolver)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(objectPool);
-
         ArgumentNullException.ThrowIfNull(constraintResolver);
 
         _urlEncoder = UrlEncoder.Default;
@@ -62,7 +60,6 @@ public class TreeRouteBuilder
         int order)
     {
         ArgumentNullException.ThrowIfNull(handler);
-
         ArgumentNullException.ThrowIfNull(routeTemplate);
 
         var entry = new InboundRouteEntry()
@@ -123,9 +120,7 @@ public class TreeRouteBuilder
         int order)
     {
         ArgumentNullException.ThrowIfNull(handler);
-
         ArgumentNullException.ThrowIfNull(routeTemplate);
-
         ArgumentNullException.ThrowIfNull(requiredLinkValues);
 
         var entry = new OutboundRouteEntry()

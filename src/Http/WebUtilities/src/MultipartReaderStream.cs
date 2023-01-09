@@ -36,7 +36,6 @@ internal sealed class MultipartReaderStream : Stream
     public MultipartReaderStream(BufferedReadStream stream, MultipartBoundary boundary, ArrayPool<byte> bytePool)
     {
         ArgumentNullException.ThrowIfNull(stream);
-
         ArgumentNullException.ThrowIfNull(boundary);
 
         _bytePool = bytePool;

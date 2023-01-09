@@ -40,7 +40,6 @@ public class HelperResult : IHtmlContent
     public virtual void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         _asyncAction(writer).GetAwaiter().GetResult();

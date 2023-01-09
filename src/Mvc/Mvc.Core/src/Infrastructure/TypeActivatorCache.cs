@@ -23,7 +23,6 @@ internal sealed class TypeActivatorCache : ITypeActivatorCache
         Type implementationType)
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
-
         ArgumentNullException.ThrowIfNull(implementationType);
 
         var createFactory = _typeActivatorCache.GetOrAdd(implementationType, _createFactory);

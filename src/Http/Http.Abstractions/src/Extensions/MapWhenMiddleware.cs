@@ -21,7 +21,6 @@ public class MapWhenMiddleware
     public MapWhenMiddleware(RequestDelegate next, MapWhenOptions options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(options);
 
         if (options.Predicate == null)

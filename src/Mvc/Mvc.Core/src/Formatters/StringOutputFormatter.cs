@@ -43,7 +43,6 @@ public class StringOutputFormatter : TextOutputFormatter
     public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         var valueAsString = (string?)context.Object;

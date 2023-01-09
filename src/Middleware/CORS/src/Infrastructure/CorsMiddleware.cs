@@ -48,9 +48,7 @@ public class CorsMiddleware
         string? policyName)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(corsService);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _next = next;
@@ -73,11 +71,8 @@ public class CorsMiddleware
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(corsService);
-
         ArgumentNullException.ThrowIfNull(policy);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _next = next;

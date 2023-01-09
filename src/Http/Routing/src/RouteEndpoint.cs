@@ -30,7 +30,6 @@ public sealed class RouteEndpoint : Endpoint
         : base(requestDelegate, metadata, displayName)
     {
         ArgumentNullException.ThrowIfNull(requestDelegate);
-
         ArgumentNullException.ThrowIfNull(routePattern);
 
         RoutePattern = routePattern;

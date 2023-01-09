@@ -21,7 +21,6 @@ public class MapMiddleware
     public MapMiddleware(RequestDelegate next, MapOptions options)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(options);
 
         if (options.Branch == null)

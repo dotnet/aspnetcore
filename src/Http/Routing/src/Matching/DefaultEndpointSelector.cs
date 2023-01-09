@@ -13,7 +13,6 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
         CandidateSet candidateSet)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(candidateSet);
 
         Select(httpContext, candidateSet.Candidates);

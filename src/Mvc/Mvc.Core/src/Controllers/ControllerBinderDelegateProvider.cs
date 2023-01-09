@@ -19,13 +19,9 @@ internal static class ControllerBinderDelegateProvider
         MvcOptions mvcOptions)
     {
         ArgumentNullException.ThrowIfNull(parameterBinder);
-
         ArgumentNullException.ThrowIfNull(modelBinderFactory);
-
         ArgumentNullException.ThrowIfNull(modelMetadataProvider);
-
         ArgumentNullException.ThrowIfNull(actionDescriptor);
-
         ArgumentNullException.ThrowIfNull(mvcOptions);
 
         var parameterBindingInfo = GetParameterBindingInfo(

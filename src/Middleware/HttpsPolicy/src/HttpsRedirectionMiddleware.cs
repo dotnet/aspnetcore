@@ -35,10 +35,13 @@ public class HttpsRedirectionMiddleware
     /// <param name="loggerFactory"></param>
     public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _config = config ?? throw new ArgumentNullException(nameof(config));
-
+        ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(config);
+
+        _next = next;
+        _config = config;
+
         var httpsRedirectionOptions = options.Value;
         if (httpsRedirectionOptions.HttpsPort.HasValue)
         {

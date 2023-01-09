@@ -559,7 +559,6 @@ public static class NavigationManagerExtensions
         IReadOnlyDictionary<string, object?> parameters)
     {
         ArgumentNullException.ThrowIfNull(navigationManager);
-
         ArgumentNullException.ThrowIfNull(uri);
 
         if (!TryRebuildExistingQueryFromUri(
@@ -743,7 +742,7 @@ public static class NavigationManagerExtensions
 
         if (queryStartIndex < 0)
         {
-            
+
             existingQueryStringEnumerable = default;
             uriWithoutQueryStringAndHash = hashStartIndex < 0 ? uri : uri.AsSpan(0, hashStartIndex);
             newQueryStringBuilder = new(uriWithoutQueryStringAndHash);

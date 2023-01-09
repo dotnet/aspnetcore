@@ -48,7 +48,6 @@ public static class ControllerLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, action, controller, values);
@@ -87,9 +86,7 @@ public static class ControllerLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(action);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         var address = CreateAddress(httpContext: null, action, controller, values);
@@ -147,7 +144,6 @@ public static class ControllerLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, action, controller, values);
@@ -200,9 +196,7 @@ public static class ControllerLinkGeneratorExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(action);
-
         ArgumentNullException.ThrowIfNull(controller);
 
         var address = CreateAddress(httpContext: null, action, controller, values);

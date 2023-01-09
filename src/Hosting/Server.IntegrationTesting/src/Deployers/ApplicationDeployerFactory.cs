@@ -20,7 +20,6 @@ public class ApplicationDeployerFactory
     public static ApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(deploymentParameters);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         switch (deploymentParameters.ServerType)

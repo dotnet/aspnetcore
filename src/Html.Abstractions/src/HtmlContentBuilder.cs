@@ -157,7 +157,6 @@ public class HtmlContentBuilder : IHtmlContentBuilder
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         var count = Entries.Count;

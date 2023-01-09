@@ -34,7 +34,6 @@ public static class NewtonsoftJsonMvcBuilderExtensions
         Action<MvcNewtonsoftJsonOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         NewtonsoftJsonMvcCoreBuilderExtensions.AddServicesCore(builder.Services);

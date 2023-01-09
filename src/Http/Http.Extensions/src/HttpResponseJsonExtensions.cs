@@ -314,9 +314,7 @@ public static partial class HttpResponseJsonExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(response);
-
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(context);
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;

@@ -35,13 +35,9 @@ public partial class ParameterBinder
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(modelMetadataProvider);
-
         ArgumentNullException.ThrowIfNull(modelBinderFactory);
-
         ArgumentNullException.ThrowIfNull(validator);
-
         ArgumentNullException.ThrowIfNull(mvcOptions);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _modelMetadataProvider = modelMetadataProvider;
@@ -95,13 +91,9 @@ public partial class ParameterBinder
         object? container)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(modelBinder);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
-
         ArgumentNullException.ThrowIfNull(parameter);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         Log.AttemptingToBindParameterOrProperty(Logger, parameter, metadata);

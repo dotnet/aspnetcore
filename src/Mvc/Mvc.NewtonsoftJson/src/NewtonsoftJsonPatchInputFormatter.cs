@@ -63,7 +63,6 @@ public class NewtonsoftJsonPatchInputFormatter : NewtonsoftJsonInputFormatter
         Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         var result = await base.ReadRequestBodyAsync(context, encoding);

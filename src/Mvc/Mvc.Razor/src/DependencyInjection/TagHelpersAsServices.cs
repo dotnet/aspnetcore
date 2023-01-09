@@ -14,7 +14,6 @@ internal static class TagHelpersAsServices
     public static void AddTagHelpersAsServices(ApplicationPartManager manager, IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(manager);
-
         ArgumentNullException.ThrowIfNull(services);
 
         var feature = new TagHelperFeature();

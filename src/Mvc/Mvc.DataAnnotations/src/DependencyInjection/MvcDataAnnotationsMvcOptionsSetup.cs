@@ -22,7 +22,6 @@ internal sealed class MvcDataAnnotationsMvcOptionsSetup : IConfigureOptions<MvcO
         IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions)
     {
         ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
-
         ArgumentNullException.ThrowIfNull(dataAnnotationLocalizationOptions);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;

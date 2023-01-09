@@ -32,11 +32,8 @@ public class StaticFileMiddleware
     public StaticFileMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<StaticFileOptions> options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(hostingEnv);
-
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _next = next;

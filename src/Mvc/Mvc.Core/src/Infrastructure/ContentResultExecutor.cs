@@ -34,7 +34,6 @@ public partial class ContentResultExecutor : IActionResultExecutor<ContentResult
     public virtual async Task ExecuteAsync(ActionContext context, ContentResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var response = context.HttpContext.Response;

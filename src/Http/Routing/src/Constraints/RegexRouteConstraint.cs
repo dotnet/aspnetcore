@@ -57,7 +57,6 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var routeValue)

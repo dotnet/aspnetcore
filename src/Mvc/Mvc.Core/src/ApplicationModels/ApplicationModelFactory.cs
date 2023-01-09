@@ -24,7 +24,6 @@ internal sealed class ApplicationModelFactory
         IOptions<MvcOptions> options)
     {
         ArgumentNullException.ThrowIfNull(applicationModelProviders);
-
         ArgumentNullException.ThrowIfNull(options);
 
         _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();

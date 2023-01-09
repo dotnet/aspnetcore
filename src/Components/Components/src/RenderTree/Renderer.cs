@@ -78,9 +78,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(componentActivator);
 
         _serviceProvider = serviceProvider;

@@ -32,7 +32,6 @@ public static class ApplicationModelConventionExtensions
     public static void RemoveType(this IList<IApplicationModelConvention> list, Type type)
     {
         ArgumentNullException.ThrowIfNull(list);
-
         ArgumentNullException.ThrowIfNull(type);
 
         for (var i = list.Count - 1; i >= 0; i--)
@@ -57,7 +56,6 @@ public static class ApplicationModelConventionExtensions
         IControllerModelConvention controllerModelConvention)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(controllerModelConvention);
 
         conventions.Add(new ControllerApplicationModelConvention(controllerModelConvention));
@@ -75,7 +73,6 @@ public static class ApplicationModelConventionExtensions
         IActionModelConvention actionModelConvention)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(actionModelConvention);
 
         conventions.Add(new ActionApplicationModelConvention(actionModelConvention));
@@ -93,7 +90,6 @@ public static class ApplicationModelConventionExtensions
         IParameterModelConvention parameterModelConvention)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(parameterModelConvention);
 
         conventions.Add(new ParameterApplicationModelConvention(parameterModelConvention));
@@ -111,7 +107,6 @@ public static class ApplicationModelConventionExtensions
         IParameterModelBaseConvention parameterModelConvention)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(parameterModelConvention);
 
         conventions.Add(new ParameterBaseApplicationModelConvention(parameterModelConvention));

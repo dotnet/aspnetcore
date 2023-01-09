@@ -83,7 +83,6 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
         Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         var request = context.HttpContext.Request;
@@ -210,7 +209,6 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
     protected virtual XmlReader CreateXmlReader(Stream readStream, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(readStream);
-
         ArgumentNullException.ThrowIfNull(encoding);
 
         return XmlDictionaryReader.CreateTextReader(readStream, encoding, _readerQuotas, onClose: null);

@@ -1988,7 +1988,7 @@ public abstract class ControllerBase
 
     /// <summary>
     /// Creates a <see cref="CreatedResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
     [NonAction]
     public virtual CreatedResult Created()
@@ -2503,7 +2503,6 @@ public abstract class ControllerBase
         where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(prefix);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
@@ -2533,9 +2532,7 @@ public abstract class ControllerBase
         where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(prefix);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
 
         return ModelBindingHelper.TryUpdateModelAsync(
@@ -2567,7 +2564,6 @@ public abstract class ControllerBase
        where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(includeExpressions);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
@@ -2605,7 +2601,6 @@ public abstract class ControllerBase
         where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(propertyFilter);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
@@ -2646,9 +2641,7 @@ public abstract class ControllerBase
        where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
-
         ArgumentNullException.ThrowIfNull(includeExpressions);
 
         return ModelBindingHelper.TryUpdateModelAsync(
@@ -2682,9 +2675,7 @@ public abstract class ControllerBase
         where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
-
         ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
@@ -2714,7 +2705,6 @@ public abstract class ControllerBase
         string prefix)
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(modelType);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
@@ -2754,11 +2744,8 @@ public abstract class ControllerBase
         Func<ModelMetadata, bool> propertyFilter)
     {
         ArgumentNullException.ThrowIfNull(model);
-
         ArgumentNullException.ThrowIfNull(modelType);
-
         ArgumentNullException.ThrowIfNull(valueProvider);
-
         ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(

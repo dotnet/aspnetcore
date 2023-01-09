@@ -20,7 +20,6 @@ public struct ValidationEntry
     public ValidationEntry(ModelMetadata metadata, string key, object? model)
     {
         ArgumentNullException.ThrowIfNull(metadata);
-
         ArgumentNullException.ThrowIfNull(key);
 
         Metadata = metadata;
@@ -38,9 +37,7 @@ public struct ValidationEntry
     public ValidationEntry(ModelMetadata metadata, string key, Func<object?> modelAccessor)
     {
         ArgumentNullException.ThrowIfNull(metadata);
-
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(modelAccessor);
 
         Metadata = metadata;

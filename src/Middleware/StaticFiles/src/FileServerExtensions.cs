@@ -61,7 +61,6 @@ public static class FileServerExtensions
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, string requestPath)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(requestPath);
 
         return app.UseFileServer(new FileServerOptions

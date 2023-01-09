@@ -75,7 +75,6 @@ public static class WebHostBuilderExtensions
     public static IWebHostBuilder ConfigureTestServices(this IWebHostBuilder webHostBuilder, Action<IServiceCollection> servicesConfiguration)
     {
         ArgumentNullException.ThrowIfNull(webHostBuilder);
-
         ArgumentNullException.ThrowIfNull(servicesConfiguration);
 
         if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder", StringComparison.Ordinal))
@@ -105,7 +104,6 @@ public static class WebHostBuilderExtensions
     public static IWebHostBuilder ConfigureTestContainer<TContainer>(this IWebHostBuilder webHostBuilder, Action<TContainer> servicesConfiguration)
     {
         ArgumentNullException.ThrowIfNull(webHostBuilder);
-
         ArgumentNullException.ThrowIfNull(servicesConfiguration);
 
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -149,7 +147,6 @@ public static class WebHostBuilderExtensions
         string solutionName = "*.sln")
     {
         ArgumentNullException.ThrowIfNull(solutionRelativePath);
-
         ArgumentNullException.ThrowIfNull(applicationBasePath);
 
         var directoryInfo = new DirectoryInfo(applicationBasePath);

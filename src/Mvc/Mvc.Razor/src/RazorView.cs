@@ -42,15 +42,10 @@ public class RazorView : IView
         DiagnosticListener diagnosticListener)
     {
         ArgumentNullException.ThrowIfNull(viewEngine);
-
         ArgumentNullException.ThrowIfNull(pageActivator);
-
         ArgumentNullException.ThrowIfNull(viewStartPages);
-
         ArgumentNullException.ThrowIfNull(razorPage);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
-
         ArgumentNullException.ThrowIfNull(diagnosticListener);
 
         _viewEngine = viewEngine;

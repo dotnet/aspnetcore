@@ -18,7 +18,6 @@ internal sealed class MvcBuilder : IMvcBuilder
     public MvcBuilder(IServiceCollection services, ApplicationPartManager manager)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(manager);
 
         Services = services;

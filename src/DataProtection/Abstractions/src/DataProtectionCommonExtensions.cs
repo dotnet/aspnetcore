@@ -70,7 +70,6 @@ public static class DataProtectionCommonExtensions
     public static IDataProtector CreateProtector(this IDataProtectionProvider provider, string purpose, params string[] subPurposes)
     {
         ArgumentNullThrowHelper.ThrowIfNull(provider);
-
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         // The method signature isn't simply CreateProtector(this IDataProtectionProvider, params string[] purposes)
@@ -143,7 +142,6 @@ public static class DataProtectionCommonExtensions
     public static IDataProtector GetDataProtector(this IServiceProvider services, string purpose, params string[] subPurposes)
     {
         ArgumentNullThrowHelper.ThrowIfNull(services);
-
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return services.GetDataProtectionProvider().CreateProtector(purpose, subPurposes);
@@ -158,7 +156,6 @@ public static class DataProtectionCommonExtensions
     public static string Protect(this IDataProtector protector, string plaintext)
     {
         ArgumentNullThrowHelper.ThrowIfNull(protector);
-
         ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         try
@@ -186,7 +183,6 @@ public static class DataProtectionCommonExtensions
     public static string Unprotect(this IDataProtector protector, string protectedData)
     {
         ArgumentNullThrowHelper.ThrowIfNull(protector);
-
         ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         try

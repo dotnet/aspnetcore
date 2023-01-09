@@ -22,9 +22,7 @@ public static class UseWhenExtensions
     public static IApplicationBuilder UseWhen(this IApplicationBuilder app, Predicate predicate, Action<IApplicationBuilder> configuration)
     {
         ArgumentNullException.ThrowIfNull(app);
-
         ArgumentNullException.ThrowIfNull(predicate);
-
         ArgumentNullException.ThrowIfNull(configuration);
 
         // Create and configure the branch builder right away; otherwise,

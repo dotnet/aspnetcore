@@ -28,7 +28,6 @@ public sealed class EventHandlerAttribute : Attribute
     public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault)
     {
         ArgumentNullException.ThrowIfNull(attributeName);
-
         ArgumentNullException.ThrowIfNull(eventArgsType);
 
         AttributeName = attributeName;

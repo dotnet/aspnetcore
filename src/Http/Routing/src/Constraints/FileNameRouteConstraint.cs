@@ -92,7 +92,6 @@ public class FileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMa
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var obj) && obj != null)

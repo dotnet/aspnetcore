@@ -47,7 +47,6 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(candidates);
 
         // We want to return a 415 if we eliminated ALL of the currently valid endpoints due to content type

@@ -55,7 +55,6 @@ public abstract class RazorPage : RazorPageBase
     public override void DefineSection(string name, RenderAsyncDelegate section)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(section);
 
         if (SectionWriters.ContainsKey(name))

@@ -129,7 +129,6 @@ public class ModelAttributes
     public static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
     {
         ArgumentNullException.ThrowIfNull(containerType);
-
         ArgumentNullException.ThrowIfNull(property);
 
         var propertyAttributes = property.GetCustomAttributes();
@@ -202,7 +201,6 @@ public class ModelAttributes
     public static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
     {
         ArgumentNullException.ThrowIfNull(parameterInfo);
-
         ArgumentNullException.ThrowIfNull(modelType);
 
         // Prior versions called IModelMetadataProvider.GetMetadataForType(...) and therefore

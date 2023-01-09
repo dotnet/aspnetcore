@@ -33,7 +33,6 @@ public abstract class ActionFilterAttribute :
         ActionExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(next);
 
         OnActionExecuting(context);
@@ -59,7 +58,6 @@ public abstract class ActionFilterAttribute :
         ResultExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(next);
 
         OnResultExecuting(context);

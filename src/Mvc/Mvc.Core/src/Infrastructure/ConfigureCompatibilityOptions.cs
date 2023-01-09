@@ -50,7 +50,6 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
     public virtual void PostConfigure(string? name, TOptions options)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(options);
 
         // Evaluate DefaultValues once so subclasses don't have to cache.

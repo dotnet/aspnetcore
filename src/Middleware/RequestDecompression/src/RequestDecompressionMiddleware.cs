@@ -30,9 +30,7 @@ internal sealed partial class RequestDecompressionMiddleware
         IRequestDecompressionProvider provider)
     {
         ArgumentNullException.ThrowIfNull(next);
-
         ArgumentNullException.ThrowIfNull(logger);
-
         ArgumentNullException.ThrowIfNull(provider);
 
         _next = next;

@@ -35,7 +35,6 @@ public class OptionalRouteConstraint : IRouteConstraint
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out _))

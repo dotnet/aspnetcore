@@ -41,9 +41,7 @@ public class CorsAuthorizationFilter : ICorsAuthorizationFilter
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(corsService);
-
         ArgumentNullException.ThrowIfNull(policyProvider);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _corsService = corsService;

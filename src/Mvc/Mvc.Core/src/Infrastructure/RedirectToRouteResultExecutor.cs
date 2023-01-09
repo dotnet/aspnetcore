@@ -24,7 +24,6 @@ public partial class RedirectToRouteResultExecutor : IActionResultExecutor<Redir
     public RedirectToRouteResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(urlHelperFactory);
 
         _logger = loggerFactory.CreateLogger<RedirectToRouteResult>();

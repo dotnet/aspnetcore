@@ -38,7 +38,6 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, new(values));
@@ -79,7 +78,6 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, values);
@@ -193,7 +191,6 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, new(values));
@@ -253,7 +250,6 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         LinkOptions? options = default)
     {
         ArgumentNullException.ThrowIfNull(generator);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, values);

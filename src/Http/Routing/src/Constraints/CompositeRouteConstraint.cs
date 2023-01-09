@@ -36,7 +36,6 @@ public class CompositeRouteConstraint : IRouteConstraint, IParameterLiteralNodeM
         RouteDirection routeDirection)
     {
         ArgumentNullException.ThrowIfNull(routeKey);
-
         ArgumentNullException.ThrowIfNull(values);
 
         foreach (var constraint in Constraints)

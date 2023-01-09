@@ -49,7 +49,6 @@ public static class DataProtectionServiceCollectionExtensions
     public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services, Action<DataProtectionOptions> setupAction)
     {
         ArgumentNullThrowHelper.ThrowIfNull(services);
-
         ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
         var builder = services.AddDataProtection();

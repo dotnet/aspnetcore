@@ -117,7 +117,6 @@ public static class MvcCoreServiceCollectionExtensions
         Action<MvcOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddMvcCore();
