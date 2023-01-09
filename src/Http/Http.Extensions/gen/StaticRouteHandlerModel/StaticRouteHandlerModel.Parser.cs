@@ -75,22 +75,15 @@ internal static class StaticRouteHandlerModelParser
 
     private static bool TryGetRouteHandlerMethod(IInvocationOperation invocation, out IMethodSymbol method)
     {
-        IArgumentOperation? argumentOperation = null;
-        method = null;
         foreach (var argument in invocation.Arguments)
         {
             if (argument.Parameter?.Ordinal == _routeHandlerArgumentOrdinal)
             {
-                argumentOperation = argument;
+                method = ResolveMethodFromOperation(argument);
+                return true;
             }
         }
-
-        if (argumentOperation is not null)
-        {
-            method = ResolveMethodFromOperation(argumentOperation);
-            return true;
-        }
-
+        method = null;
         return false;
     }
 
