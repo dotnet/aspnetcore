@@ -1,0 +1,36 @@
+﻿@page "/"
+@inject IRecipesStore RecipesStore
+ 
+<form class="search" enhance>
+    <input name="query" placeholder="Search..." value="@Query" />
+    <button title="Search" class="ms-Icon ms-Icon--Search"></button>
+</form>
+
+@if (recipes is null)
+{
+    <p>Loading recipes...</p>
+}
+else
+{
+    <ul class="recipe-list">
+        @foreach (var recipe in recipes)
+        {
+            <li class="recipe-list-item">
+                <a href="recipe/@recipe.Id">
+                    <RecipeCard Recipe="recipe" />
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public string? Query { get; set; }
+
+    IEnumerable<Recipe>? recipes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        recipes = await RecipesStore.GetRecipes(Query);
+    }
+}

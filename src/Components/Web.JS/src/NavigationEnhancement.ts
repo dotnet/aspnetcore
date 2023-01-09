@@ -112,7 +112,7 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
     return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
 }
 
-function isWithinOrigin(href: string) {
+export function isWithinOrigin(href: string) {
     const origin = document.location.origin;
     const nextChar = href.charAt(origin.length);
 

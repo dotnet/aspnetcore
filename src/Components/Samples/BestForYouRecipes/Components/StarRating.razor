@@ -1,0 +1,50 @@
+﻿<div class="@CssClass" style="@($"--star-rating: {Value};")">
+    @if (!ValueChanged.HasDelegate)
+    {
+        <span class="stars">☆☆☆☆☆</span>
+        <span class="rating">@Math.Round(Value, 1)</span>
+    }
+    else
+    {
+        for (int i = 5; i > 0; i--)
+        {
+            var id = $"star{i}";
+            var value = i;
+            <input type="radio" id="@id" name="star-rating" value="@value" checked="@(Value == value)" @onchange="OnChange" />
+            <label for="@id"></label>
+        }
+    }
+</div>
+
+@code {
+    FieldIdentifier fieldIdentifier;
+
+    protected override void OnInitialized()
+    {
+        if (ValueExpression != null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+        }
+    }
+
+    [CascadingParameter]
+    EditContext? EditContext { get; set; }
+
+    [Parameter]
+    public double Value { get; set; }
+
+    [Parameter]
+    public EventCallback<double> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<double>>? ValueExpression { get; set; }
+
+    string CssClass => $"star-rating {EditContext?.FieldCssClass(fieldIdentifier) ?? ""}";
+
+    async Task OnChange(ChangeEventArgs args)
+    {
+        Value = double.Parse(args.Value!.ToString()!);
+        await ValueChanged.InvokeAsync(Value);
+        EditContext?.NotifyFieldChanged(fieldIdentifier);
+    }
+}

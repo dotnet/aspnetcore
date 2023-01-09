@@ -1,0 +1,259 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    margin: 0;
+    overflow-y: scroll;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body > * {
+    padding: 20px 10%;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Playfair Display', serif;
+    font-weight: normal;
+}
+
+h1 {
+    color: #435896;
+    text-align: center;
+}
+
+p, input {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+}
+
+input[type="checkbox"] {
+    vertical-align: middle;
+}
+
+header {
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#logo {
+    height: inherit;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+    max-width: 30em;
+    margin: 0 auto;
+    background: #F5F5F5;
+    opacity: 0.78;
+    color: #666666;
+    border: 1px solid #999999;
+    border-radius: 2px;
+    padding: 6px 12px;
+}
+
+    .search input {
+        flex: 1;
+        font-family: Open Sans;
+        font-size: 14px;
+        line-height: 20px;
+        border: none;
+        background: inherit;
+    }
+
+    .search input:focus {
+        outline: none;
+    }
+
+    .search button {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        margin-right: -3px;
+        cursor: pointer;
+    }
+
+.recipe-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18em, 1fr));
+    grid-gap: 20px;
+}
+
+.recipe-list-item {
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.15);
+}
+
+    .recipe-list-item a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .recipe-list-item:hover {
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
+    }
+
+.recipe-card {
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+}
+
+    .recipe-card img {
+        width: 100%;
+        aspect-ratio: 508 / 472;
+    }
+
+.recipe-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0px 8px 0px 8px;
+}
+
+.recipe-card-name {
+    margin: 1rem 0 1rem 0;
+}
+
+.recipe-card-source {
+    margin-top: 0;
+}
+
+.recipe-card .star-rating {
+    margin-top: auto;
+    justify-content: flex-end;
+}
+
+.back-link {
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+    color: #435869;
+    text-decoration: none;
+}
+
+.source-and-servings {
+    text-align: center;
+    text-transform: uppercase;
+    color: #212A31;
+    text-align: center;
+    margin: 5px 0;
+}
+
+.recipe > .star-rating-avg {
+    text-align: center;
+    margin: 5px auto;
+}
+
+.recipe-banner {
+    display: block;
+    width: 125%;
+    margin: 0 -12.5%;
+}
+
+    .recipe-banner img {
+        display: block;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 1800px;
+    }
+
+.recipe-details {
+    padding: 0 5%;
+}
+
+    .recipe-details ul {
+        list-style: none;
+        padding: 0;
+    }
+
+.tag {
+    color: inherit;
+    font-size: 0.8em;
+    text-decoration: none;
+    background-color: #eaeaea;
+    text-transform: uppercase;
+    padding: 0 4px;
+}
+
+button {
+    padding: 6px 25px;
+    font-family: Playfair Display;
+    color: white;
+    background-color: #435869;
+    border-radius: 2px;
+    border: 0;
+}
+
+button:hover {
+    background-color: #334452;
+}
+
+button:active {
+    background-color: #26343f;
+}
+
+.review-editor {
+    margin-bottom: 10px;
+}
+
+input.invalid, textarea.invalid, div.invalid {
+    border: 1px solid red;
+}
+
+.validation-errors {
+    color: red;
+    font-size: 0.8em;
+}
+
+.reviews .rating
+{
+    display: none;
+}
+
+footer {
+    margin-top: auto;
+    height: 72px;
+    background: #435869;
+    font-family: 'Playfair Display', serif;
+    color: white;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url('fonts/open-sans-v34-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 400;
+    src: local(''), url('fonts/playfair-display-v30-latin-regular.woff2') format('woff2');
+}

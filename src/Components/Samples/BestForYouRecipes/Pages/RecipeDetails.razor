@@ -1,0 +1,65 @@
+﻿@page "/recipe/{recipeId}"
+@inject IRecipesStore RecipesStore
+
+<a class="back-link" href="/">←Back to all recipes</a>
+
+<div class="recipe">
+    @if (recipe == null)
+    {
+        <h1>Recipe not found!</h1>
+    }
+    else
+    {
+        <PageTitle>@recipe.Name</PageTitle>
+        <h1>@recipe.Name</h1>
+        <div class="source-and-servings">
+            @recipe.SourceShort | Servings: @recipe.Servings
+        </div>
+        <div class="star-rating-avg">
+            <StarRating Value="recipe.Reviews.AverageRating()" />
+        </div>
+        <img class="recipe-banner" src="@recipe.BannerImageUrl" />
+        <div class="recipe-details">
+            <h2>Ingredients</h2>
+            <ul>
+                @for (int i = 0; i < recipe.Ingredients.Length; i++)
+                {
+                    string id = $"ingredient{i}";
+                    <li>
+                        <input id="@id" type="checkbox" />
+                        <label for="@id">@recipe.Ingredients[i]</label>
+                    </li>
+                }
+            </ul>
+            <h2>Instructions</h2>
+            @foreach (var instruction in recipe.Instructions.Split("\r\n"))
+            {
+                <p>@instruction</p>
+            }
+            <h2>Tags</h2>
+            @foreach (var tag in recipe.Tags)
+            {
+                <a class="tag" href="@($"tag/{tag}")">@tag</a>
+            }
+            <StarRatingReviews Reviews="recipe.Reviews" OnSubmitReview="OnSubmitReview" />
+        </div>
+    }
+</div>
+
+@code {
+    Recipe? recipe;
+
+    [Parameter, EditorRequired]
+    public string RecipeId { get; set; } = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        recipe = await RecipesStore.GetRecipe(RecipeId);
+    }
+
+    Task OnSubmitReview(Review review)
+    {
+        recipe!.Reviews.Insert(0, review);
+        return RecipesStore.UpdateRecipe(recipe);
+    }
+}

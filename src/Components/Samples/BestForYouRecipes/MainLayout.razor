@@ -1,0 +1,35 @@
+﻿@inherits LayoutComponentBase
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <PageTitle>Best For You Organics</PageTitle>
+    <HeadOutlet />
+    <base href="/" />
+    <link href="css/fabric-icons-inline.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="BestForYouRecipes.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <a href="/" title="Return to the homepage" id="logo">
+            <img id="logo" src="images/logo-with-text.png" alt="Best For You logo" />
+        </a>
+    </header>
+    <main>
+        @Body
+    </main>
+    <footer>
+        Best For You Organics, Co.
+    </footer>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+
+    <script src="_framework/blazor.united.js" suppress-error="BL9992"></script>
+</body>
+</html>

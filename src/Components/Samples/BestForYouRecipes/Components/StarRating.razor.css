@@ -1,0 +1,57 @@
+﻿/*
+    This file is to show how CSS and other static resources (such as images) can be
+    used from a library project/package.
+*/
+
+.star-rating {
+    --percent: calc(var(--star-rating) / 5 * 100%);
+    font-size: 1.5em;
+    display: inline-block;
+}
+
+    .star-rating .stars {
+        position: relative;
+        display: inline-block;
+    }
+
+        .star-rating .stars::before {
+            position: absolute;
+            content: "☆☆☆☆☆";
+            color: #666666;
+        }
+
+        .star-rating .stars::after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            content: "★★★★★";
+            color: #feac25;
+            width: var(--percent);
+            overflow: hidden;
+        }
+
+    .star-rating .rating {
+        font-size: 1ex;
+        color: #605E5C
+    }
+
+    .star-rating input {
+        display: none;
+    }
+
+    .star-rating label {
+        float: right;
+    }
+
+        .star-rating label:before {
+            content: "☆";
+            color: #666666;
+            cursor: pointer;
+        }
+
+    .star-rating input:checked ~ label:before,
+    .star-rating:not(:checked) > label:hover:before,
+    .star-rating:not(:checked) > label:hover ~ label:before {
+        content: "★";
+        color: #feac25;
+    }

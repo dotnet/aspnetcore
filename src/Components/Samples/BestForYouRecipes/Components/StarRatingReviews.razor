@@ -1,0 +1,39 @@
+﻿<div class="reviews">
+    <h2>Reviews</h2>
+    <EditForm class="review-editor" Model="review" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <StarRating @bind-Value="review.Rating" />
+        <InputTextArea rows="5" placeholder="Write a review" @bind-Value="review.Text" />
+        <button type="submit">Submit</button>
+    </EditForm>
+    @for (int i = 0; i < Reviews.Count; i++)
+    {
+        var review = Reviews[i];
+        <div class="review">
+            <StarRating Value="review.Rating" />
+            <p>@review.Text</p>
+            @if (i < Reviews.Count - 1)
+            {
+                <hr />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    Review review = new Review();
+
+    [Parameter, EditorRequired]
+    public IList<Review> Reviews { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<Review> OnSubmitReview { get; set; }
+
+    async Task OnValidSubmit()
+    {
+        await OnSubmitReview.InvokeAsync(review);
+        review = new Review();
+    }
+
+}

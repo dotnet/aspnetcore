@@ -1,4 +1,5 @@
-import { performEnhancedPageLoad } from "./NavigationEnhancement";
+import { isWithinOrigin, performEnhancedPageLoad } from "./NavigationEnhancement";
+import { toAbsoluteUri } from "./Services/NavigationManager";
 
 export function enableFormEnhancement() {
     document.body.addEventListener('submit', async evt => {
@@ -6,8 +7,6 @@ export function enableFormEnhancement() {
         if (!form || form.getAttribute('enhance') === null) {
             return;
         }
-
-        evt.preventDefault();
 
         const url = new URL(form.action);
         const fetchOptions: RequestInit = { method: form.method };
@@ -22,6 +21,15 @@ export function enableFormEnhancement() {
             fetchOptions.body = formData;
         }
 
-        await performEnhancedPageLoad(url.toString(), fetchOptions);
+        const absoluteHref = toAbsoluteUri(url.toString());
+
+        if (isWithinOrigin(absoluteHref)) {
+            evt.preventDefault();
+            if (absoluteHref !== toAbsoluteUri(location.href)) {
+                history.pushState(null, '', url);
+            }
+
+            await performEnhancedPageLoad(url.toString(), fetchOptions);
+        }
     });
 }

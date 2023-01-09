@@ -1,0 +1,13 @@
+﻿<div class="recipe-card">
+    <img src="@Recipe.CardImageUrl" />
+    <div class="recipe-card-body">
+        <h2 class="recipe-card-name">@Recipe.Name</h2>
+        <h3 class="recipe-card-source">@Recipe.SourceShort</h3>
+        <StarRating Value="@Recipe.Reviews.AverageRating()" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Recipe Recipe { get; set; } = default!;
+}
