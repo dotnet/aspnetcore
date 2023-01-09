@@ -64,7 +64,6 @@ public static class AuthorizationServiceExtensions
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, AuthorizationPolicy policy)
     {
         ArgumentNullThrowHelper.ThrowIfNull(service);
-
         ArgumentNullThrowHelper.ThrowIfNull(policy);
 
         return service.AuthorizeAsync(user, resource: null, policy: policy);
@@ -83,7 +82,6 @@ public static class AuthorizationServiceExtensions
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, string policyName)
     {
         ArgumentNullThrowHelper.ThrowIfNull(service);
-
         ArgumentNullThrowHelper.ThrowIfNull(policyName);
 
         return service.AuthorizeAsync(user, resource: null, policyName: policyName);

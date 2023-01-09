@@ -265,7 +265,6 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(expression);
-
         ArgumentNullException.ThrowIfNull(value);
 
         var modelExpression = GetModelExpression(expression);

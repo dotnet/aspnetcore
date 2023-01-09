@@ -200,9 +200,7 @@ internal static class ExpressionHelper
         LambdaExpression parentExpression)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(indexExpression);
-
         ArgumentNullException.ThrowIfNull(parentExpression);
 
         if (parentExpression.Parameters == null)

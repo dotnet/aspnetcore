@@ -104,7 +104,6 @@ public class PartialTagHelper : TagHelper
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(output);
 
         // Reset the TagName. We don't want `partial` to render.

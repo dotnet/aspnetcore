@@ -43,7 +43,6 @@ public class TagHelperOutput : IHtmlContentContainer
         Func<bool, HtmlEncoder, Task<TagHelperContent>> getChildContentAsync)
     {
         ArgumentNullException.ThrowIfNull(getChildContentAsync);
-
         ArgumentNullException.ThrowIfNull(attributes);
 
         TagName = tagName;
@@ -383,7 +382,6 @@ public class TagHelperOutput : IHtmlContentContainer
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         _preElement?.WriteTo(writer, encoder);

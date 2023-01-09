@@ -146,7 +146,6 @@ public static class ClaimActionCollectionMapExtensions
     public static void DeleteClaims(this ClaimActionCollection collection, params string[] claimTypes)
     {
         ArgumentNullException.ThrowIfNull(collection);
-
         ArgumentNullException.ThrowIfNull(claimTypes);
 
         foreach (var claimType in claimTypes)

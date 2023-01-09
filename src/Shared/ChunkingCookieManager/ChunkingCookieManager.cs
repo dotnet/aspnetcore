@@ -89,7 +89,6 @@ internal sealed class ChunkingCookieManager
     public string? GetRequestCookie(HttpContext context, string key)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(key);
 
         var requestCookies = context.Request.Cookies;
@@ -145,9 +144,7 @@ internal sealed class ChunkingCookieManager
     public void AppendResponseCookie(HttpContext context, string key, string? value, CookieOptions options)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(options);
 
         var responseCookies = context.Response.Cookies;
@@ -211,9 +208,7 @@ internal sealed class ChunkingCookieManager
 #pragma warning restore CA1822 // Mark members as static
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(options);
 
         var keys = new List<string>

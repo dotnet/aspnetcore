@@ -30,7 +30,6 @@ public class PageHandlerExecutingContext : FilterContext
         : base(pageContext, filters)
     {
         ArgumentNullException.ThrowIfNull(handlerArguments);
-
         ArgumentNullException.ThrowIfNull(handlerInstance);
 
         HandlerMethod = handlerMethod;

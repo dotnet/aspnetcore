@@ -178,7 +178,6 @@ public class FormActionTagHelper : TagHelper
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(output);
 
         // If "FormAction" is already set, it means the user is attempting to use a normal button or input element.

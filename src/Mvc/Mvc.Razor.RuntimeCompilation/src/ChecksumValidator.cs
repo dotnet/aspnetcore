@@ -27,7 +27,6 @@ internal static class ChecksumValidator
     public static bool IsItemValid(RazorProjectFileSystem fileSystem, RazorCompiledItem item)
     {
         ArgumentNullException.ThrowIfNull(fileSystem);
-
         ArgumentNullException.ThrowIfNull(item);
 
         var checksums = item.GetChecksumMetadata();

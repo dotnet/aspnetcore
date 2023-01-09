@@ -48,7 +48,6 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
         Action<RazorPagesOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.AddRazorViewEngine();

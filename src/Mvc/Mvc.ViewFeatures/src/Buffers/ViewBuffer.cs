@@ -178,7 +178,6 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         for (var i = 0; i < Count; i++)
@@ -212,7 +211,6 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
     public async Task WriteToAsync(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         for (var i = 0; i < Count; i++)

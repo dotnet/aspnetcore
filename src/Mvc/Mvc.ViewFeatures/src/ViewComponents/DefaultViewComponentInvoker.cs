@@ -37,11 +37,8 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(viewComponentFactory);
-
         ArgumentNullException.ThrowIfNull(viewComponentInvokerCache);
-
         ArgumentNullException.ThrowIfNull(diagnosticListener);
-
         ArgumentNullException.ThrowIfNull(logger);
 
         _viewComponentFactory = viewComponentFactory;

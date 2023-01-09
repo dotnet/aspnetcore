@@ -37,13 +37,9 @@ internal sealed class TemplateBuilder
         object additionalViewData)
     {
         ArgumentNullException.ThrowIfNull(viewEngine);
-
         ArgumentNullException.ThrowIfNull(bufferScope);
-
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(viewData);
-
         ArgumentNullException.ThrowIfNull(modelExplorer);
 
         _viewEngine = viewEngine;

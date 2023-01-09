@@ -51,7 +51,6 @@ public static class HtmlHelperComponentExtensions
         object parameters)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(componentType);
 
         var viewContext = htmlHelper.ViewContext;

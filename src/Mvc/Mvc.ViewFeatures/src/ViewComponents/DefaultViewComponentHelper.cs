@@ -43,13 +43,9 @@ public class DefaultViewComponentHelper : IViewComponentHelper, IViewContextAwar
         IViewBufferScope viewBufferScope)
     {
         ArgumentNullException.ThrowIfNull(descriptorProvider);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
-
         ArgumentNullException.ThrowIfNull(selector);
-
         ArgumentNullException.ThrowIfNull(invokerFactory);
-
         ArgumentNullException.ThrowIfNull(viewBufferScope);
 
         _descriptorProvider = descriptorProvider;

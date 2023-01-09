@@ -28,9 +28,7 @@ public sealed class RazorSourceChecksumAttribute : Attribute, IRazorSourceChecks
     public RazorSourceChecksumAttribute(string checksumAlgorithm, string checksum, string identifier)
     {
         ArgumentNullException.ThrowIfNull(checksumAlgorithm);
-
         ArgumentNullException.ThrowIfNull(checksum);
-
         ArgumentNullException.ThrowIfNull(identifier);
 
         ChecksumAlgorithm = checksumAlgorithm;

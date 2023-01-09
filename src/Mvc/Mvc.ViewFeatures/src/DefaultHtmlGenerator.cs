@@ -61,15 +61,10 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         ValidationHtmlAttributeProvider validationAttributeProvider)
     {
         ArgumentNullException.ThrowIfNull(antiforgery);
-
         ArgumentNullException.ThrowIfNull(optionsAccessor);
-
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(urlHelperFactory);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
-
         ArgumentNullException.ThrowIfNull(validationAttributeProvider);
 
         _antiforgery = antiforgery;
@@ -139,7 +134,6 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
@@ -160,7 +154,6 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
@@ -372,7 +365,6 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(modelExplorer);
 
         var resolvedLabelText = labelText ??
@@ -502,7 +494,6 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);

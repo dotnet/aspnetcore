@@ -248,7 +248,6 @@ public class LinkTagHelper : UrlResolutionTagHelper
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attribute that is also a well-known HTML attribute.

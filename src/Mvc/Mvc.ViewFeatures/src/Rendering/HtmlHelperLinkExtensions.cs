@@ -23,7 +23,6 @@ public static class HtmlHelperLinkExtensions
         string actionName)
     {
         ArgumentNullException.ThrowIfNull(helper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return helper.ActionLink(
@@ -58,7 +57,6 @@ public static class HtmlHelperLinkExtensions
         object routeValues)
     {
         ArgumentNullException.ThrowIfNull(helper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return helper.ActionLink(
@@ -99,7 +97,6 @@ public static class HtmlHelperLinkExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(helper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return helper.ActionLink(
@@ -128,7 +125,6 @@ public static class HtmlHelperLinkExtensions
         string controllerName)
     {
         ArgumentNullException.ThrowIfNull(helper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return helper.ActionLink(
@@ -165,7 +161,6 @@ public static class HtmlHelperLinkExtensions
         object routeValues)
     {
         ArgumentNullException.ThrowIfNull(helper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return helper.ActionLink(
@@ -208,7 +203,6 @@ public static class HtmlHelperLinkExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(helper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return helper.ActionLink(
@@ -241,7 +235,6 @@ public static class HtmlHelperLinkExtensions
         object routeValues)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return htmlHelper.RouteLink(
@@ -267,7 +260,6 @@ public static class HtmlHelperLinkExtensions
         string routeName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return htmlHelper.RouteLink(
@@ -301,7 +293,6 @@ public static class HtmlHelperLinkExtensions
         object routeValues)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return htmlHelper.RouteLink(
@@ -339,7 +330,6 @@ public static class HtmlHelperLinkExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return htmlHelper.RouteLink(
@@ -379,7 +369,6 @@ public static class HtmlHelperLinkExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(linkText);
 
         return htmlHelper.RouteLink(

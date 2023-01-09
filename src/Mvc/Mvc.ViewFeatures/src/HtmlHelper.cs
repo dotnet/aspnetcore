@@ -67,15 +67,10 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
         UrlEncoder urlEncoder)
     {
         ArgumentNullException.ThrowIfNull(htmlGenerator);
-
         ArgumentNullException.ThrowIfNull(viewEngine);
-
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(bufferScope);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
-
         ArgumentNullException.ThrowIfNull(urlEncoder);
 
         _viewEngine = viewEngine;

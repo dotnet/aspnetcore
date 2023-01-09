@@ -233,7 +233,6 @@ public static class HtmlHelperDisplayExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DisplayFor(
@@ -274,7 +273,6 @@ public static class HtmlHelperDisplayExtensions
         object additionalViewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DisplayFor(
@@ -311,7 +309,6 @@ public static class HtmlHelperDisplayExtensions
         string templateName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DisplayFor(
@@ -354,7 +351,6 @@ public static class HtmlHelperDisplayExtensions
         object additionalViewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DisplayFor(
@@ -396,7 +392,6 @@ public static class HtmlHelperDisplayExtensions
         string htmlFieldName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DisplayFor(

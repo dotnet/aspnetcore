@@ -58,7 +58,6 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     public static IEndpointConventionBuilder MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
@@ -116,9 +115,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         string page)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(pattern);
-
         ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
@@ -173,7 +170,6 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         string area)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
@@ -233,9 +229,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         string area)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(pattern);
-
         ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
@@ -304,7 +298,6 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         where TTransformer : DynamicRouteValueTransformer
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(pattern);
 
         EnsureRazorPagesServices(endpoints);
@@ -339,7 +332,6 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         where TTransformer : DynamicRouteValueTransformer
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
         ArgumentNullException.ThrowIfNull(pattern);
 
         EnsureRazorPagesServices(endpoints);

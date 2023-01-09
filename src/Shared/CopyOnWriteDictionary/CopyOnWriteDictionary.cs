@@ -20,7 +20,6 @@ internal sealed class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TV
         IEqualityComparer<TKey> comparer)
     {
         ArgumentNullException.ThrowIfNull(sourceDictionary);
-
         ArgumentNullException.ThrowIfNull(comparer);
 
         _sourceDictionary = sourceDictionary;

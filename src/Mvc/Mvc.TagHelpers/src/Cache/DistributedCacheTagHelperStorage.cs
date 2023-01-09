@@ -34,7 +34,6 @@ public class DistributedCacheTagHelperStorage : IDistributedCacheTagHelperStorag
     public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
     {
         ArgumentNullException.ThrowIfNull(key);
-
         ArgumentNullException.ThrowIfNull(value);
 
         return _distributedCache.SetAsync(key, value, options);

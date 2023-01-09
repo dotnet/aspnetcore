@@ -27,7 +27,6 @@ public static class HtmlHelperPartialExtensions
         string partialViewName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
@@ -51,7 +50,6 @@ public static class HtmlHelperPartialExtensions
         ViewDataDictionary viewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
@@ -75,7 +73,6 @@ public static class HtmlHelperPartialExtensions
         object model)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.PartialAsync(partialViewName, model, viewData: null);
@@ -166,7 +163,6 @@ public static class HtmlHelperPartialExtensions
         ViewDataDictionary viewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         var result = htmlHelper.PartialAsync(partialViewName, model, viewData);
@@ -242,7 +238,6 @@ public static class HtmlHelperPartialExtensions
         ViewDataDictionary viewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         var result = htmlHelper.RenderPartialAsync(partialViewName, model, viewData);
@@ -265,7 +260,6 @@ public static class HtmlHelperPartialExtensions
         string partialViewName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
@@ -289,7 +283,6 @@ public static class HtmlHelperPartialExtensions
         ViewDataDictionary viewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
@@ -313,7 +306,6 @@ public static class HtmlHelperPartialExtensions
         object model)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.RenderPartialAsync(partialViewName, model, viewData: null);

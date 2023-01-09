@@ -15,7 +15,6 @@ internal sealed class PageHandlerPageFilter : IAsyncPageFilter, IOrderedFilter
     public Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(next);
 
         var handlerInstance = context.HandlerInstance;

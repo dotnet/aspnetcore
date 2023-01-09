@@ -116,9 +116,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
                templateInfo: new TemplateInfo())
     {
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(declaredModelType);
 
         // Base ModelMetadata on the declared type.

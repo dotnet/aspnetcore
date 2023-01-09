@@ -50,13 +50,9 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
         IHttpResponseStreamWriterFactory writerFactory)
     {
         ArgumentNullException.ThrowIfNull(mvcHelperOptions);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
-
         ArgumentNullException.ThrowIfNull(modelMetadataProvider);
-
         ArgumentNullException.ThrowIfNull(tempDataDictionaryFactory);
 
         _htmlHelperOptions = mvcHelperOptions.Value.HtmlHelperOptions;
@@ -71,7 +67,6 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
     public virtual async Task ExecuteAsync(ActionContext context, ViewComponentResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var response = context.HttpContext.Response;

@@ -32,7 +32,6 @@ public static class RazorRuntimeCompilationMvcBuilderExtensions
     public static IMvcBuilder AddRazorRuntimeCompilation(this IMvcBuilder builder, Action<MvcRazorRuntimeCompilationOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(builder.Services);

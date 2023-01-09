@@ -15,7 +15,6 @@ public class ViewComponentFeatureProvider : IApplicationFeatureProvider<ViewComp
     public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewComponentFeature feature)
     {
         ArgumentNullException.ThrowIfNull(parts);
-
         ArgumentNullException.ThrowIfNull(feature);
 
         foreach (var type in parts.OfType<IApplicationPartTypeProvider>().SelectMany(p => p.Types))

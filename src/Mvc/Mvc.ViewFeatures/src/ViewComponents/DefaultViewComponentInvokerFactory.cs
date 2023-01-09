@@ -20,11 +20,8 @@ internal sealed class DefaultViewComponentInvokerFactory : IViewComponentInvoker
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(viewComponentFactory);
-
         ArgumentNullException.ThrowIfNull(viewComponentInvokerCache);
-
         ArgumentNullException.ThrowIfNull(diagnosticListener);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _viewComponentFactory = viewComponentFactory;

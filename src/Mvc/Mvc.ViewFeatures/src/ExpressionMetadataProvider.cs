@@ -17,7 +17,6 @@ internal static class ExpressionMetadataProvider
         IModelMetadataProvider metadataProvider)
     {
         ArgumentNullException.ThrowIfNull(expression);
-
         ArgumentNullException.ThrowIfNull(viewData);
 
         string propertyName = null;

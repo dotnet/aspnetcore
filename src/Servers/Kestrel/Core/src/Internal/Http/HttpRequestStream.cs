@@ -155,7 +155,6 @@ internal sealed class HttpRequestStream : Stream
     public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(destination);
-
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
 
         return _pipeReader.CopyToAsync(destination, cancellationToken);

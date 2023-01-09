@@ -61,7 +61,6 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
     public virtual ViewEngineResult FindView(ActionContext actionContext, PartialViewResult viewResult)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(viewResult);
 
         var viewEngine = viewResult.ViewEngine ?? ViewEngine;
@@ -130,9 +129,7 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
     public virtual Task ExecuteAsync(ActionContext actionContext, IView view, PartialViewResult viewResult)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(view);
-
         ArgumentNullException.ThrowIfNull(viewResult);
 
         return ExecuteAsync(
@@ -148,7 +145,6 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
     public virtual async Task ExecuteAsync(ActionContext context, PartialViewResult result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(result);
 
         var stopwatch = ValueStopwatch.StartNew();

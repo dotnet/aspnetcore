@@ -58,7 +58,6 @@ public class TagHelperExecutionContext
         Func<TagHelperContent> endTagHelperWritingScope)
     {
         ArgumentNullException.ThrowIfNull(startTagHelperWritingScope);
-
         ArgumentNullException.ThrowIfNull(endTagHelperWritingScope);
 
         _tagHelpers = new List<ITagHelper>();
@@ -182,11 +181,8 @@ public class TagHelperExecutionContext
         Func<Task> executeChildContentAsync)
     {
         ArgumentNullException.ThrowIfNull(tagName);
-
         ArgumentNullException.ThrowIfNull(items);
-
         ArgumentNullException.ThrowIfNull(uniqueId);
-
         ArgumentNullException.ThrowIfNull(executeChildContentAsync);
 
         Items = items;

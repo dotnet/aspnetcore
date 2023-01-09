@@ -67,7 +67,6 @@ public class EnvironmentTagHelper : TagHelper
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(output);
 
         // Always strip the outer tag name as we never want <environment> to render

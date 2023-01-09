@@ -118,7 +118,6 @@ public static class HtmlHelperInputExtensions
         Expression<Func<TModel, bool>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.CheckBoxFor(expression, htmlAttributes: null);
@@ -197,7 +196,6 @@ public static class HtmlHelperInputExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.HiddenFor(expression, htmlAttributes: null);
@@ -264,7 +262,6 @@ public static class HtmlHelperInputExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.PasswordFor(expression, htmlAttributes: null);
@@ -407,9 +404,7 @@ public static class HtmlHelperInputExtensions
         object value)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
-
         ArgumentNullException.ThrowIfNull(value);
 
         return htmlHelper.RadioButtonFor(expression, value, htmlAttributes: null);
@@ -556,7 +551,6 @@ public static class HtmlHelperInputExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: null);
@@ -589,7 +583,6 @@ public static class HtmlHelperInputExtensions
         string format)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.TextBoxFor(expression, format, htmlAttributes: null);
@@ -624,7 +617,6 @@ public static class HtmlHelperInputExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.TextBoxFor(expression, format: null, htmlAttributes: htmlAttributes);
@@ -770,7 +762,6 @@ public static class HtmlHelperInputExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: null);
@@ -804,7 +795,6 @@ public static class HtmlHelperInputExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.TextAreaFor(expression, rows: 0, columns: 0, htmlAttributes: htmlAttributes);

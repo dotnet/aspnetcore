@@ -30,9 +30,7 @@ public class DefaultValidationHtmlAttributeProvider : ValidationHtmlAttributePro
         ClientValidatorCache clientValidatorCache)
     {
         ArgumentNullException.ThrowIfNull(optionsAccessor);
-
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(clientValidatorCache);
 
         _clientValidatorCache = clientValidatorCache;
@@ -49,9 +47,7 @@ public class DefaultValidationHtmlAttributeProvider : ValidationHtmlAttributePro
         IDictionary<string, string> attributes)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(modelExplorer);
-
         ArgumentNullException.ThrowIfNull(attributes);
 
         var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;

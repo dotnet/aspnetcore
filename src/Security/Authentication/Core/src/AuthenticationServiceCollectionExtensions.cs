@@ -48,7 +48,6 @@ public static class AuthenticationServiceCollectionExtensions
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         var builder = services.AddAuthentication();

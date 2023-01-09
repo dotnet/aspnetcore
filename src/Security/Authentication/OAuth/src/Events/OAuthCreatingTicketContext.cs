@@ -37,7 +37,6 @@ public class OAuthCreatingTicketContext : ResultContext<OAuthOptions>
         : base(context, scheme, options)
     {
         ArgumentNullException.ThrowIfNull(backchannel);
-
         ArgumentNullException.ThrowIfNull(tokens);
 
         TokenResponse = tokens;

@@ -32,7 +32,6 @@ internal static class NameAndIdProvider
     public static string CreateSanitizedId(ViewContext viewContext, string fullName, string invalidCharReplacement)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(fullName))
@@ -96,9 +95,7 @@ internal static class NameAndIdProvider
         string invalidCharReplacement)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(tagBuilder);
-
         ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(fullName))

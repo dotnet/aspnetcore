@@ -70,7 +70,6 @@ public class DefaultViewComponentFactory : IViewComponentFactory
     public void ReleaseViewComponent(ViewComponentContext context, object component)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(component);
 
         _activator.Release(context, component);
@@ -80,7 +79,6 @@ public class DefaultViewComponentFactory : IViewComponentFactory
     public ValueTask ReleaseViewComponentAsync(ViewComponentContext context, object component)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(component);
 
         return _activator.ReleaseAsync(context, component);

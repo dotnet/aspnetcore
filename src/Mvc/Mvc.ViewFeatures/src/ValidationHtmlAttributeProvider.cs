@@ -54,9 +54,7 @@ public abstract class ValidationHtmlAttributeProvider
         IDictionary<string, string> attributes)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(modelExplorer);
-
         ArgumentNullException.ThrowIfNull(attributes);
 
         // Don't track fields when client-side validation is disabled.

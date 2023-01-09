@@ -47,7 +47,6 @@ public class ModelExpressionProvider : IModelExpressionProvider
         Expression<Func<TModel, TValue>> expression)
     {
         ArgumentNullException.ThrowIfNull(viewData);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         var name = GetExpressionText(expression);
@@ -74,7 +73,6 @@ public class ModelExpressionProvider : IModelExpressionProvider
         string expression)
     {
         ArgumentNullException.ThrowIfNull(viewData);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         var modelExplorer = ExpressionMetadataProvider.FromStringExpression(expression, viewData, _modelMetadataProvider);

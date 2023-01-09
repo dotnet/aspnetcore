@@ -35,7 +35,6 @@ public static class TagHelperServicesExtensions
     public static IMvcBuilder AddCacheTagHelperLimits(this IMvcBuilder builder, Action<CacheTagHelperOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure(configure);
@@ -52,7 +51,6 @@ public static class TagHelperServicesExtensions
     public static IMvcCoreBuilder AddCacheTagHelperLimits(this IMvcCoreBuilder builder, Action<CacheTagHelperOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure(configure);

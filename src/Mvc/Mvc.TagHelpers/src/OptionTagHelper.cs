@@ -59,7 +59,6 @@ public class OptionTagHelper : TagHelper
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attributes that are also well-known HTML attributes.

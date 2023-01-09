@@ -50,11 +50,8 @@ public partial class DistributedCacheTagHelperService : IDistributedCacheTagHelp
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(storage);
-
         ArgumentNullException.ThrowIfNull(formatter);
-
         ArgumentNullException.ThrowIfNull(HtmlEncoder);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _formatter = formatter;

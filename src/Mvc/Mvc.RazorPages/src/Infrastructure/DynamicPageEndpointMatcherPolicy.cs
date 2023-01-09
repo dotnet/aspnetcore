@@ -20,9 +20,7 @@ internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpoin
     public DynamicPageEndpointMatcherPolicy(DynamicPageEndpointSelectorCache selectorCache, PageLoader loader, EndpointMetadataComparer comparer)
     {
         ArgumentNullException.ThrowIfNull(selectorCache);
-
         ArgumentNullException.ThrowIfNull(loader);
-
         ArgumentNullException.ThrowIfNull(comparer);
 
         _selectorCache = selectorCache;
@@ -63,7 +61,6 @@ internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpoin
     public async Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-
         ArgumentNullException.ThrowIfNull(candidates);
 
         DynamicPageEndpointSelector? selector = null;

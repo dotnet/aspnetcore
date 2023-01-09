@@ -51,7 +51,6 @@ public static class HtmlHelperValueExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.ValueFor(expression, format: null);

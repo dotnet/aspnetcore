@@ -22,7 +22,6 @@ public sealed class RazorExtensionAssemblyNameAttribute : Attribute
     public RazorExtensionAssemblyNameAttribute(string extensionName, string assemblyName)
     {
         ArgumentNullException.ThrowIfNull(extensionName);
-
         ArgumentNullException.ThrowIfNull(assemblyName);
 
         ExtensionName = extensionName;

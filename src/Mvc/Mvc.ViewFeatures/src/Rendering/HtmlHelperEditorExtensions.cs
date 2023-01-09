@@ -230,7 +230,6 @@ public static class HtmlHelperEditorExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.EditorFor(expression, templateName: null, htmlFieldName: null, additionalViewData: null);
@@ -267,7 +266,6 @@ public static class HtmlHelperEditorExtensions
         object additionalViewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.EditorFor(
@@ -304,7 +302,6 @@ public static class HtmlHelperEditorExtensions
         string templateName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.EditorFor(expression, templateName, htmlFieldName: null, additionalViewData: null);
@@ -343,7 +340,6 @@ public static class HtmlHelperEditorExtensions
         object additionalViewData)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.EditorFor(
@@ -385,7 +381,6 @@ public static class HtmlHelperEditorExtensions
         string htmlFieldName)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.EditorFor(expression, templateName, htmlFieldName, additionalViewData: null);

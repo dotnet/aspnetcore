@@ -35,7 +35,6 @@ internal sealed class ComponentRenderer : IComponentRenderer
         object parameters)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(componentType);
 
         if (!typeof(IComponent).IsAssignableFrom(componentType))

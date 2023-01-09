@@ -45,9 +45,7 @@ public class ViewExecutor
         : this(writerFactory, viewEngine, diagnosticListener)
     {
         ArgumentNullException.ThrowIfNull(viewOptions);
-
         ArgumentNullException.ThrowIfNull(tempDataFactory);
-
         ArgumentNullException.ThrowIfNull(diagnosticListener);
 
         ViewOptions = viewOptions.Value;
@@ -67,9 +65,7 @@ public class ViewExecutor
         DiagnosticListener diagnosticListener)
     {
         ArgumentNullException.ThrowIfNull(writerFactory);
-
         ArgumentNullException.ThrowIfNull(viewEngine);
-
         ArgumentNullException.ThrowIfNull(diagnosticListener);
 
         WriterFactory = writerFactory;
@@ -131,7 +127,6 @@ public class ViewExecutor
         int? statusCode)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(view);
 
         if (ViewOptions == null)

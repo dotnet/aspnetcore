@@ -27,7 +27,6 @@ public static class MvcViewFeaturesMvcBuilderExtensions
         Action<MvcViewOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
@@ -109,7 +108,6 @@ public static class MvcViewFeaturesMvcBuilderExtensions
         Action<CookieTempDataProviderOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         AddCookieTempDataProvider(builder);

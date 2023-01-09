@@ -180,9 +180,7 @@ internal abstract class BaseView
         params AttributeValue[] values)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(leader);
-
         ArgumentNullException.ThrowIfNull(trailer);
 
         WriteLiteral(leader);

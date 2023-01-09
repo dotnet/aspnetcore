@@ -28,9 +28,7 @@ public static class ModelStateDictionaryExtensions
         string errorMessage)
     {
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(expression);
-
         ArgumentNullException.ThrowIfNull(errorMessage);
 
         modelState.AddModelError(GetExpressionText(expression), errorMessage);
@@ -57,7 +55,6 @@ public static class ModelStateDictionaryExtensions
         Exception exception)
     {
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         modelState.TryAddModelException(GetExpressionText(expression), exception);
@@ -81,9 +78,7 @@ public static class ModelStateDictionaryExtensions
         ModelMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(expression);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         modelState.AddModelError(GetExpressionText(expression), exception, metadata);
@@ -104,7 +99,6 @@ public static class ModelStateDictionaryExtensions
         Expression<Func<TModel, object>> expression)
     {
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return modelState.Remove(GetExpressionText(expression));
@@ -122,7 +116,6 @@ public static class ModelStateDictionaryExtensions
         Expression<Func<TModel, object>> expression)
     {
         ArgumentNullException.ThrowIfNull(modelState);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         string modelKey = GetExpressionText(expression);

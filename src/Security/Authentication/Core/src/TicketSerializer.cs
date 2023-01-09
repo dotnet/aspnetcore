@@ -53,7 +53,6 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     public virtual void Write(BinaryWriter writer, AuthenticationTicket ticket)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(ticket);
 
         writer.Write(FormatVersion);
@@ -79,7 +78,6 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(identity);
 
         var authenticationType = identity.AuthenticationType ?? string.Empty;
@@ -122,7 +120,6 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(claim);
 
         WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
@@ -228,7 +225,6 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
     {
         ArgumentNullException.ThrowIfNull(reader);
-
         ArgumentNullException.ThrowIfNull(identity);
 
         var type = ReadWithDefault(reader, identity.NameClaimType);

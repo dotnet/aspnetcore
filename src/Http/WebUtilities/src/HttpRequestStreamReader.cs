@@ -153,7 +153,6 @@ public class HttpRequestStreamReader : TextReader
     public override int Read(char[] buffer, int index, int count)
     {
         ArgumentNullException.ThrowIfNull(buffer);
-
         ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         if (count < 0 || index + count > buffer.Length)
@@ -220,7 +219,6 @@ public class HttpRequestStreamReader : TextReader
     public override Task<int> ReadAsync(char[] buffer, int index, int count)
     {
         ArgumentNullException.ThrowIfNull(buffer);
-
         ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         if (count < 0 || index + count > buffer.Length)

@@ -42,9 +42,7 @@ public class TagHelperContext
         string uniqueId)
     {
         ArgumentNullException.ThrowIfNull(items);
-
         ArgumentNullException.ThrowIfNull(uniqueId);
-
         ArgumentNullException.ThrowIfNull(allAttributes);
 
         _allAttributes = allAttributes;

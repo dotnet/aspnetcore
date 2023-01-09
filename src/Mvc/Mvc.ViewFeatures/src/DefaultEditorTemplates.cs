@@ -513,7 +513,6 @@ internal static class DefaultEditorTemplates
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
             ArgumentNullException.ThrowIfNull(output);
-
             ArgumentNullException.ThrowIfNull(value);
 
             if (characterCount == 0)

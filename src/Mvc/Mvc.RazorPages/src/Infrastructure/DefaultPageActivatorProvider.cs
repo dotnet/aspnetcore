@@ -80,9 +80,7 @@ internal sealed class DefaultPageActivatorProvider : IPageActivatorProvider
     private static void Dispose(PageContext context, ViewContext viewContext, object page)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(page);
 
         ((IDisposable)page).Dispose();
@@ -97,9 +95,7 @@ internal sealed class DefaultPageActivatorProvider : IPageActivatorProvider
     private static ValueTask AsyncDispose(PageContext context, ViewContext viewContext, object page)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(page);
 
         return ((IAsyncDisposable)page).DisposeAsync();

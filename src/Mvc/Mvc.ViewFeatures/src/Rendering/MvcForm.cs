@@ -25,7 +25,6 @@ public class MvcForm : IDisposable
     public MvcForm(ViewContext viewContext, HtmlEncoder htmlEncoder)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
 
         _viewContext = viewContext;

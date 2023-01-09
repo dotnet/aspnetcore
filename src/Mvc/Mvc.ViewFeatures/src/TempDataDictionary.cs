@@ -31,7 +31,6 @@ public class TempDataDictionary : ITempDataDictionary
     public TempDataDictionary(HttpContext context, ITempDataProvider provider)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(provider);
 
         _provider = provider;

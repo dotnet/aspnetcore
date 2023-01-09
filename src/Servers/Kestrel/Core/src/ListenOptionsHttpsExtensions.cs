@@ -144,7 +144,6 @@ public static class ListenOptionsHttpsExtensions
         Action<HttpsConnectionAdapterOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(serverCertificate);
-
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         return listenOptions.UseHttps(options =>

@@ -23,7 +23,6 @@ public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingMode
         : base(parameterInfo.ParameterType, attributes)
     {
         ArgumentNullException.ThrowIfNull(parameterInfo);
-
         ArgumentNullException.ThrowIfNull(attributes);
 
         ParameterInfo = parameterInfo;

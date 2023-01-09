@@ -40,7 +40,6 @@ public sealed class NullHtmlEncoder : HtmlEncoder
     public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
     {
         ArgumentNullException.ThrowIfNull(output);
-
         ArgumentNullException.ThrowIfNull(value);
 
         if (characterCount == 0)
@@ -55,7 +54,6 @@ public sealed class NullHtmlEncoder : HtmlEncoder
     public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
     {
         ArgumentNullException.ThrowIfNull(output);
-
         ArgumentNullException.ThrowIfNull(value);
 
         if (characterCount == 0)

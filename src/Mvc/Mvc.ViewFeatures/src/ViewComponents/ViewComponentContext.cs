@@ -44,13 +44,9 @@ public class ViewComponentContext
         TextWriter writer)
     {
         ArgumentNullException.ThrowIfNull(viewComponentDescriptor);
-
         ArgumentNullException.ThrowIfNull(arguments);
-
         ArgumentNullException.ThrowIfNull(htmlEncoder);
-
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(writer);
 
         ViewComponentDescriptor = viewComponentDescriptor;

@@ -23,7 +23,6 @@ public sealed class RazorCompiledItemAttribute : Attribute
     public RazorCompiledItemAttribute(Type type, string kind, string identifier)
     {
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(kind);
 
         Type = type;

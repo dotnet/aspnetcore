@@ -23,7 +23,6 @@ public static class MvcRazorPagesMvcBuilderExtensions
         Action<RazorPagesOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
         ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);

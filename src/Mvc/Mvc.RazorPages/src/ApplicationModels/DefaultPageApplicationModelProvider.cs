@@ -62,7 +62,6 @@ internal sealed class DefaultPageApplicationModelProvider : IPageApplicationMode
         TypeInfo pageTypeInfo)
     {
         ArgumentNullException.ThrowIfNull(actionDescriptor);
-
         ArgumentNullException.ThrowIfNull(pageTypeInfo);
 
         if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(pageTypeInfo))

@@ -178,7 +178,6 @@ public static class HtmlHelperValidationExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.ValidationMessageFor(expression, message: null, htmlAttributes: null, tag: null);
@@ -208,7 +207,6 @@ public static class HtmlHelperValidationExtensions
         string message)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.ValidationMessageFor(expression, message, htmlAttributes: null, tag: null);
@@ -245,7 +243,6 @@ public static class HtmlHelperValidationExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.ValidationMessageFor(expression, message, htmlAttributes, tag: null);
@@ -280,7 +277,6 @@ public static class HtmlHelperValidationExtensions
         string tag)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.ValidationMessageFor(expression, message, htmlAttributes: null, tag: tag);

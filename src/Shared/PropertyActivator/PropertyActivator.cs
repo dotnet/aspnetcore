@@ -40,9 +40,7 @@ internal sealed class PropertyActivator<TContext>
         Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
     {
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(activateAttributeType);
-
         ArgumentNullException.ThrowIfNull(createActivateInfo);
 
         return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
@@ -55,9 +53,7 @@ internal sealed class PropertyActivator<TContext>
         bool includeNonPublic)
     {
         ArgumentNullException.ThrowIfNull(type);
-
         ArgumentNullException.ThrowIfNull(activateAttributeType);
-
         ArgumentNullException.ThrowIfNull(createActivateInfo);
 
         var properties = type.GetRuntimeProperties()

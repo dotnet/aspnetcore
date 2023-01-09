@@ -31,7 +31,6 @@ public class ModelExplorer
         object model)
     {
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         _metadataProvider = metadataProvider;
@@ -53,9 +52,7 @@ public class ModelExplorer
         Func<object, object> modelAccessor)
     {
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(container);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         _metadataProvider = metadataProvider;
@@ -78,7 +75,6 @@ public class ModelExplorer
         object model)
     {
         ArgumentNullException.ThrowIfNull(metadataProvider);
-
         ArgumentNullException.ThrowIfNull(metadata);
 
         _metadataProvider = metadataProvider;

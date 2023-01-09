@@ -332,7 +332,6 @@ public class TagBuilder : IHtmlContent
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         WriteTo(this, writer, encoder, TagRenderMode);

@@ -65,7 +65,6 @@ internal sealed class DefaultPageModelActivatorProvider : IPageModelActivatorPro
     private static void Dispose(PageContext context, object page)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(page);
 
         ((IDisposable)page).Dispose();
@@ -74,7 +73,6 @@ internal sealed class DefaultPageModelActivatorProvider : IPageModelActivatorPro
     private static ValueTask DisposeAsync(PageContext context, object page)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(page);
 
         return ((IAsyncDisposable)page).DisposeAsync();

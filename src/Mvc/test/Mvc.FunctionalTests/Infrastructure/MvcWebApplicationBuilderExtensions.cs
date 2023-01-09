@@ -22,7 +22,6 @@ public static class MvcWebApplicationBuilderExtensions
         where TStartup : class
     {
         ArgumentNullException.ThrowIfNull(culture);
-
         ArgumentNullException.ThrowIfNull(uiCulture);
 
         builder.ConfigureServices(services =>

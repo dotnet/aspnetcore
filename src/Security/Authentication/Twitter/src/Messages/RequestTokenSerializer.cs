@@ -52,7 +52,6 @@ public class RequestTokenSerializer : IDataSerializer<RequestToken>
     public static void Write(BinaryWriter writer, RequestToken token)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(token);
 
         writer.Write(FormatVersion);

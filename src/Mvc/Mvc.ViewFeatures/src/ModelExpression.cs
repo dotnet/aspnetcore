@@ -22,7 +22,6 @@ public sealed class ModelExpression
     public ModelExpression(string name, ModelExplorer modelExplorer)
     {
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(modelExplorer);
 
         Name = name;

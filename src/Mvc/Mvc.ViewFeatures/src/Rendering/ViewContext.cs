@@ -52,15 +52,10 @@ public class ViewContext : ActionContext
         : base(actionContext)
     {
         ArgumentNullException.ThrowIfNull(actionContext);
-
         ArgumentNullException.ThrowIfNull(view);
-
         ArgumentNullException.ThrowIfNull(viewData);
-
         ArgumentNullException.ThrowIfNull(tempData);
-
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(htmlHelperOptions);
 
         View = view;
@@ -92,11 +87,8 @@ public class ViewContext : ActionContext
         : base(viewContext)
     {
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(view);
-
         ArgumentNullException.ThrowIfNull(viewData);
-
         ArgumentNullException.ThrowIfNull(writer);
 
         FormContext = viewContext.FormContext;

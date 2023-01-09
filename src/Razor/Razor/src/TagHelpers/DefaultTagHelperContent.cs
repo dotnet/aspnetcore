@@ -179,7 +179,6 @@ public class DefaultTagHelperContent : TagHelperContent
     public override void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(encoder);
 
         if (!_hasContent)

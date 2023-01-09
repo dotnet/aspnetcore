@@ -223,7 +223,6 @@ public static class HtmlHelperSelectExtensions
         IEnumerable<SelectListItem> selectList)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DropDownListFor(expression, selectList, optionLabel: null, htmlAttributes: null);
@@ -264,7 +263,6 @@ public static class HtmlHelperSelectExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DropDownListFor(
@@ -308,7 +306,6 @@ public static class HtmlHelperSelectExtensions
         string optionLabel)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DropDownListFor(expression, selectList, optionLabel, htmlAttributes: null);
@@ -408,7 +405,6 @@ public static class HtmlHelperSelectExtensions
         IEnumerable<SelectListItem> selectList)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.ListBoxFor(expression, selectList, htmlAttributes: null);

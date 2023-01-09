@@ -208,7 +208,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
-
         ArgumentNullException.ThrowIfNull(groupName);
 
         var connection = _connections[connectionId];
@@ -225,7 +224,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
-
         ArgumentNullException.ThrowIfNull(groupName);
 
         var connection = _connections[connectionId];

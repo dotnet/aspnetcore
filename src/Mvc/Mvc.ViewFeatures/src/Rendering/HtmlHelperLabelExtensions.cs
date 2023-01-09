@@ -51,7 +51,6 @@ public static class HtmlHelperLabelExtensions
         Expression<Func<TModel, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.LabelFor(expression, labelText: null, htmlAttributes: null);
@@ -72,7 +71,6 @@ public static class HtmlHelperLabelExtensions
         string labelText)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.LabelFor<TResult>(expression, labelText, htmlAttributes: null);
@@ -97,7 +95,6 @@ public static class HtmlHelperLabelExtensions
         object htmlAttributes)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.LabelFor<TResult>(expression, labelText: null, htmlAttributes: htmlAttributes);

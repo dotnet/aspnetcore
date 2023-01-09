@@ -51,7 +51,6 @@ public class PageResultExecutor : ViewExecutor
     public virtual Task ExecuteAsync(PageContext pageContext, PageResult result)
     {
         ArgumentNullException.ThrowIfNull(pageContext);
-
         ArgumentNullException.ThrowIfNull(result);
 
         if (result.Model != null)

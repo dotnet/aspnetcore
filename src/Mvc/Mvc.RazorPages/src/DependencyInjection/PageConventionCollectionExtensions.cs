@@ -26,7 +26,6 @@ public static class PageConventionCollectionExtensions
         Func<PageApplicationModel, IFilterMetadata> factory)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(factory);
 
         return conventions.AddFolderApplicationModelConvention("/", model => model.Filters.Add(factory(model)));
@@ -41,7 +40,6 @@ public static class PageConventionCollectionExtensions
     public static PageConventionCollection ConfigureFilter(this PageConventionCollection conventions, IFilterMetadata filter)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(filter);
 
         conventions.AddFolderApplicationModelConvention("/", model => model.Filters.Add(filter));
@@ -58,7 +56,6 @@ public static class PageConventionCollectionExtensions
     public static PageConventionCollection Add(this PageConventionCollection conventions, IParameterModelBaseConvention convention)
     {
         ArgumentNullException.ThrowIfNull(conventions);
-
         ArgumentNullException.ThrowIfNull(convention);
 
         var adapter = new ParameterModelBaseConventionAdapter(convention);

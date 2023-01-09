@@ -40,13 +40,9 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(fileProvider);
-
         ArgumentNullException.ThrowIfNull(projectEngine);
-
         ArgumentNullException.ThrowIfNull(csharpCompiler);
-
         ArgumentNullException.ThrowIfNull(precompiledViews);
-
         ArgumentNullException.ThrowIfNull(logger);
 
         _fileProvider = fileProvider;

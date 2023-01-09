@@ -142,11 +142,8 @@ internal abstract class BaseView
         params AttributeValue[] values)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(name);
-
         ArgumentNullException.ThrowIfNull(leader);
-
         ArgumentNullException.ThrowIfNull(trailer);
 
         WriteLiteralTo(writer, leader);

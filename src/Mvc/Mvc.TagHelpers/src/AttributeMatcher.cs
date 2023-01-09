@@ -27,9 +27,7 @@ internal static class AttributeMatcher
         out TMode result)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(modeInfos);
-
         ArgumentNullException.ThrowIfNull(compare);
 
         var foundResult = false;

@@ -27,7 +27,6 @@ public class TagHelperScopeManager
         Func<TagHelperContent> endTagHelperWritingScope)
     {
         ArgumentNullException.ThrowIfNull(startTagHelperWritingScope);
-
         ArgumentNullException.ThrowIfNull(endTagHelperWritingScope);
 
         _executionContextPool = new ExecutionContextPool(startTagHelperWritingScope, endTagHelperWritingScope);
@@ -48,9 +47,7 @@ public class TagHelperScopeManager
         Func<Task> executeChildContentAsync)
     {
         ArgumentNullException.ThrowIfNull(tagName);
-
         ArgumentNullException.ThrowIfNull(uniqueId);
-
         ArgumentNullException.ThrowIfNull(executeChildContentAsync);
 
         IDictionary<object, object> items;

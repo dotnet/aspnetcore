@@ -45,7 +45,6 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     public virtual void Write(BinaryWriter writer, AuthenticationProperties properties)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         ArgumentNullException.ThrowIfNull(properties);
 
         writer.Write(FormatVersion);

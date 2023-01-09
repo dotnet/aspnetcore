@@ -80,7 +80,6 @@ public class ValidationSummaryTagHelper : TagHelper
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(output);
 
         if (ValidationSummary == ValidationSummary.None)

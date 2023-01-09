@@ -345,7 +345,6 @@ public abstract class Controller : ControllerBase, IActionFilter, IAsyncActionFi
         ActionExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         ArgumentNullException.ThrowIfNull(next);
 
         OnActionExecuting(context);

@@ -84,11 +84,8 @@ internal sealed class TemplateRenderer
         bool readOnly)
     {
         ArgumentNullException.ThrowIfNull(viewEngine);
-
         ArgumentNullException.ThrowIfNull(bufferScope);
-
         ArgumentNullException.ThrowIfNull(viewContext);
-
         ArgumentNullException.ThrowIfNull(viewData);
 
         _viewEngine = viewEngine;

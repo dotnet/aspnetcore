@@ -31,7 +31,6 @@ public static class AntiforgeryExtensions
     public static IHtmlContent GetHtml(this IAntiforgery antiforgery, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(antiforgery);
-
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var tokenSet = antiforgery.GetAndStoreTokens(httpContext);

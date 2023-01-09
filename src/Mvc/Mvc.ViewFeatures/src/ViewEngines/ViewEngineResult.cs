@@ -51,7 +51,6 @@ public class ViewEngineResult
         IEnumerable<string> searchedLocations)
     {
         ArgumentNullException.ThrowIfNull(viewName);
-
         ArgumentNullException.ThrowIfNull(searchedLocations);
 
         return new ViewEngineResult(viewName)
@@ -69,7 +68,6 @@ public class ViewEngineResult
     public static ViewEngineResult Found(string viewName, IView view)
     {
         ArgumentNullException.ThrowIfNull(viewName);
-
         ArgumentNullException.ThrowIfNull(view);
 
         return new ViewEngineResult(viewName)

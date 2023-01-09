@@ -38,7 +38,6 @@ public static class HtmlHelperDisplayNameExtensions
         Expression<Func<TModelItem, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(htmlHelper);
-
         ArgumentNullException.ThrowIfNull(expression);
 
         return htmlHelper.DisplayNameForInnerType(expression);

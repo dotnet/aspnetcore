@@ -16,7 +16,6 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
     public FileProviderRazorProjectFileSystem(RuntimeCompilationFileProvider fileProvider, IWebHostEnvironment hostingEnvironment)
     {
         ArgumentNullException.ThrowIfNull(fileProvider);
-
         ArgumentNullException.ThrowIfNull(hostingEnvironment);
 
         _fileProvider = fileProvider;

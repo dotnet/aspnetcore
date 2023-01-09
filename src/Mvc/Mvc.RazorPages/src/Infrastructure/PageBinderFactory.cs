@@ -17,7 +17,6 @@ internal static class PageBinderFactory
         CompiledPageActionDescriptor actionDescriptor)
     {
         ArgumentNullException.ThrowIfNull(parameterBinder);
-
         ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         var properties = actionDescriptor.BoundProperties;
