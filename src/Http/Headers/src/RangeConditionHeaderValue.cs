@@ -38,10 +38,7 @@ public class RangeConditionHeaderValue
     /// <param name="entityTag">An entity tag uniquely representing the requested resource.</param>
     public RangeConditionHeaderValue(EntityTagHeaderValue entityTag)
     {
-        if (entityTag == null)
-        {
-            throw new ArgumentNullException(nameof(entityTag));
-        }
+        ArgumentNullException.ThrowIfNull(entityTag);
 
         _entityTag = entityTag;
     }

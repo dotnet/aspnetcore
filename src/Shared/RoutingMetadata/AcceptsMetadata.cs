@@ -18,10 +18,7 @@ internal sealed class AcceptsMetadata : IAcceptsMetadata
     /// </summary>
     public AcceptsMetadata(string[] contentTypes)
     {
-        if (contentTypes == null)
-        {
-            throw new ArgumentNullException(nameof(contentTypes));
-        }
+        ArgumentNullException.ThrowIfNull(contentTypes);
 
         ContentTypes = contentTypes;
     }
@@ -33,10 +30,7 @@ internal sealed class AcceptsMetadata : IAcceptsMetadata
     {
         RequestType = type ?? throw new ArgumentNullException(nameof(type));
 
-        if (contentTypes == null)
-        {
-            throw new ArgumentNullException(nameof(contentTypes));
-        }
+        ArgumentNullException.ThrowIfNull(contentTypes);
 
         ContentTypes = contentTypes;
         IsOptional = isOptional;

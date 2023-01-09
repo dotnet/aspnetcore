@@ -20,15 +20,9 @@ public sealed class EncryptedXmlInfo
     /// method can be used to decrypt <paramref name="encryptedElement"/>.</param>
     public EncryptedXmlInfo(XElement encryptedElement, Type decryptorType)
     {
-        if (encryptedElement == null)
-        {
-            throw new ArgumentNullException(nameof(encryptedElement));
-        }
+        ArgumentNullException.ThrowIfNull(encryptedElement);
 
-        if (decryptorType == null)
-        {
-            throw new ArgumentNullException(nameof(decryptorType));
-        }
+        ArgumentNullException.ThrowIfNull(decryptorType);
 
         if (!typeof(IXmlDecryptor).IsAssignableFrom(decryptorType))
         {

@@ -23,15 +23,9 @@ internal sealed class ApplicationModelFactory
         IEnumerable<IApplicationModelProvider> applicationModelProviders,
         IOptions<MvcOptions> options)
     {
-        if (applicationModelProviders == null)
-        {
-            throw new ArgumentNullException(nameof(applicationModelProviders));
-        }
+        ArgumentNullException.ThrowIfNull(applicationModelProviders);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();
         _conventions = options.Value.Conventions;
@@ -39,10 +33,7 @@ internal sealed class ApplicationModelFactory
 
     public ApplicationModel CreateApplicationModel(IEnumerable<TypeInfo> controllerTypes)
     {
-        if (controllerTypes == null)
-        {
-            throw new ArgumentNullException(nameof(controllerTypes));
-        }
+        ArgumentNullException.ThrowIfNull(controllerTypes);
 
         var context = new ApplicationModelProviderContext(controllerTypes);
 

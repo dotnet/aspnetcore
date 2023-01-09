@@ -37,15 +37,9 @@ public static class LinkParserEndpointNameAddressExtensions
         string endpointName,
         PathString path)
     {
-        if (parser == null)
-        {
-            throw new ArgumentNullException(nameof(parser));
-        }
+        ArgumentNullException.ThrowIfNull(parser);
 
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return parser.ParsePathByAddress<string>(endpointName, path);
     }

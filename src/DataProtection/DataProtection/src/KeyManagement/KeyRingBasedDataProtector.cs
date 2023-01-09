@@ -58,10 +58,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 
     public IDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullException.ThrowIfNull(purpose);
 
         return new KeyRingBasedDataProtector(
             logger: _logger,
@@ -79,10 +76,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
     {
         // argument & state checking
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullException.ThrowIfNull(protectedData);
 
         UnprotectStatus status;
         var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
@@ -93,10 +87,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 
     public byte[] Protect(byte[] plaintext)
     {
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullException.ThrowIfNull(plaintext);
 
         try
         {
@@ -182,10 +173,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 
     public byte[] Unprotect(byte[] protectedData)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullException.ThrowIfNull(protectedData);
 
         // Argument checking will be done by the callee
         return DangerousUnprotect(protectedData,

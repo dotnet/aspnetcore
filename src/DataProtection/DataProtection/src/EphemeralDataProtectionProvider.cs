@@ -40,10 +40,7 @@ public sealed class EphemeralDataProtectionProvider : IDataProtectionProvider
     /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
     public EphemeralDataProtectionProvider(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         IKeyRingProvider keyringProvider;
         if (OSVersionUtil.IsWindows())
@@ -68,10 +65,7 @@ public sealed class EphemeralDataProtectionProvider : IDataProtectionProvider
     /// <inheritdoc />
     public IDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullException.ThrowIfNull(purpose);
 
         // just forward to the underlying provider
         return _dataProtectionProvider.CreateProtector(purpose);

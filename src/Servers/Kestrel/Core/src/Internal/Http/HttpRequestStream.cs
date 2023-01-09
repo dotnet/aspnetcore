@@ -156,10 +156,7 @@ internal sealed class HttpRequestStream : Stream
     {
         ArgumentNullException.ThrowIfNull(destination);
 
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
 
         return _pipeReader.CopyToAsync(destination, cancellationToken);
     }

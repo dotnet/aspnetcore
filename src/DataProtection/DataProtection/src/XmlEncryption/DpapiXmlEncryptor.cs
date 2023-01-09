@@ -48,10 +48,7 @@ public sealed class DpapiXmlEncryptor : IXmlEncryptor
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullException.ThrowIfNull(plaintextElement);
         if (_protectToLocalMachine)
         {
             _logger.EncryptingToWindowsDPAPIForLocalMachineAccount();

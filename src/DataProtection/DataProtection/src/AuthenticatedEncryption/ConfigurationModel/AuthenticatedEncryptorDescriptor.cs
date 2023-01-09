@@ -19,15 +19,9 @@ public sealed class AuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDe
     /// <param name="masterKey">The master key.</param>
     public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
-        if (masterKey == null)
-        {
-            throw new ArgumentNullException(nameof(masterKey));
-        }
+        ArgumentNullException.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;

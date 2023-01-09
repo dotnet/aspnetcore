@@ -110,10 +110,7 @@ public class FileSystemXmlRepository : IXmlRepository
     /// <inheritdoc/>
     public virtual void StoreElement(XElement element, string friendlyName)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullException.ThrowIfNull(element);
 
         if (!IsSafeFilename(friendlyName))
         {

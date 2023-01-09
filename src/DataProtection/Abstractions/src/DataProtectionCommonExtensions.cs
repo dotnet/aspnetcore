@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection.Abstractions;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -29,15 +30,8 @@ public static class DataProtectionCommonExtensions
     /// </remarks>
     public static IDataProtector CreateProtector(this IDataProtectionProvider provider, IEnumerable<string> purposes)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
-        if (purposes == null)
-        {
-            throw new ArgumentNullException(nameof(purposes));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(provider);
+        ArgumentNullThrowHelper.ThrowIfNull(purposes);
 
         bool collectionIsEmpty = true;
         IDataProtectionProvider retVal = provider;
@@ -75,15 +69,9 @@ public static class DataProtectionCommonExtensions
     /// </remarks>
     public static IDataProtector CreateProtector(this IDataProtectionProvider provider, string purpose, params string[] subPurposes)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(provider);
 
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         // The method signature isn't simply CreateProtector(this IDataProtectionProvider, params string[] purposes)
         // because we don't want the code provider.CreateProtector() [parameterless] to inadvertently compile.
@@ -105,10 +93,7 @@ public static class DataProtectionCommonExtensions
     /// <exception cref="InvalidOperationException">If no <see cref="IDataProtectionProvider"/> service exists in <paramref name="services"/>.</exception>
     public static IDataProtectionProvider GetDataProtectionProvider(this IServiceProvider services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(services);
 
         // We have our own implementation of GetRequiredService<T> since we don't want to
         // take a dependency on DependencyInjection.Interfaces.
@@ -135,15 +120,8 @@ public static class DataProtectionCommonExtensions
     /// </remarks>
     public static IDataProtector GetDataProtector(this IServiceProvider services, IEnumerable<string> purposes)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (purposes == null)
-        {
-            throw new ArgumentNullException(nameof(purposes));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(services);
+        ArgumentNullThrowHelper.ThrowIfNull(purposes);
 
         return services.GetDataProtectionProvider().CreateProtector(purposes);
     }
@@ -164,15 +142,9 @@ public static class DataProtectionCommonExtensions
     /// </remarks>
     public static IDataProtector GetDataProtector(this IServiceProvider services, string purpose, params string[] subPurposes)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(services);
 
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return services.GetDataProtectionProvider().CreateProtector(purpose, subPurposes);
     }
@@ -185,15 +157,9 @@ public static class DataProtectionCommonExtensions
     /// <returns>The protected form of the plaintext data.</returns>
     public static string Protect(this IDataProtector protector, string plaintext)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
 
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         try
         {
@@ -219,15 +185,9 @@ public static class DataProtectionCommonExtensions
     /// </exception>
     public static string Unprotect(this IDataProtector protector, string protectedData)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
 
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         try
         {

@@ -20,15 +20,9 @@ public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncr
     /// <param name="masterKey">The master key.</param>
     public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
-        if (masterKey == null)
-        {
-            throw new ArgumentNullException(nameof(masterKey));
-        }
+        ArgumentNullException.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;

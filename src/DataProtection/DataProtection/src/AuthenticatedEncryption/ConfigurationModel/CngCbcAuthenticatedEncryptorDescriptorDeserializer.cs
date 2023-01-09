@@ -20,10 +20,7 @@ public sealed class CngCbcAuthenticatedEncryptorDescriptorDeserializer : IAuthen
     /// </summary>
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullException.ThrowIfNull(element);
 
         // <descriptor>
         //   <!-- Windows CNG-CBC -->

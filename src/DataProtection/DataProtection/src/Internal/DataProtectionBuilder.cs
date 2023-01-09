@@ -16,10 +16,7 @@ internal sealed class DataProtectionBuilder : IDataProtectionBuilder
     /// </summary>
     public DataProtectionBuilder(IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         Services = services;
     }

@@ -31,15 +31,9 @@ public class CertificateForwardingMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<CertificateForwardingMiddleware>();

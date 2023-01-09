@@ -36,15 +36,9 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
     /// <param name="loggerFactory">The logger factory.</param>
     public DefaultOutputFormatterSelector(IOptions<MvcOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<DefaultOutputFormatterSelector>();
 
@@ -56,20 +50,11 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
     /// <inheritdoc/>
     public override IOutputFormatter? SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (formatters == null)
-        {
-            throw new ArgumentNullException(nameof(formatters));
-        }
+        ArgumentNullException.ThrowIfNull(formatters);
 
-        if (contentTypes == null)
-        {
-            throw new ArgumentNullException(nameof(contentTypes));
-        }
+        ArgumentNullException.ThrowIfNull(contentTypes);
 
         ValidateContentTypes(contentTypes);
 

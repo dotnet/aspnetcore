@@ -32,25 +32,13 @@ public static partial class RouteConstraintMatcher
         RouteDirection routeDirection,
         ILogger logger)
     {
-        if (routeValues == null)
-        {
-            throw new ArgumentNullException(nameof(routeValues));
-        }
+        ArgumentNullException.ThrowIfNull(routeValues);
 
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (route == null)
-        {
-            throw new ArgumentNullException(nameof(route));
-        }
+        ArgumentNullException.ThrowIfNull(route);
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         if (constraints == null || constraints.Count == 0)
         {

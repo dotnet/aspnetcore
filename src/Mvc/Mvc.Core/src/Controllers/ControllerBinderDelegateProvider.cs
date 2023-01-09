@@ -18,30 +18,15 @@ internal static class ControllerBinderDelegateProvider
         ControllerActionDescriptor actionDescriptor,
         MvcOptions mvcOptions)
     {
-        if (parameterBinder == null)
-        {
-            throw new ArgumentNullException(nameof(parameterBinder));
-        }
+        ArgumentNullException.ThrowIfNull(parameterBinder);
 
-        if (modelBinderFactory == null)
-        {
-            throw new ArgumentNullException(nameof(modelBinderFactory));
-        }
+        ArgumentNullException.ThrowIfNull(modelBinderFactory);
 
-        if (modelMetadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadataProvider);
 
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
-        if (mvcOptions == null)
-        {
-            throw new ArgumentNullException(nameof(mvcOptions));
-        }
+        ArgumentNullException.ThrowIfNull(mvcOptions);
 
         var parameterBindingInfo = GetParameterBindingInfo(
             modelBinderFactory,

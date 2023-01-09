@@ -47,20 +47,11 @@ public class CorsMiddleware
         ILoggerFactory loggerFactory,
         string? policyName)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
-        if (corsService == null)
-        {
-            throw new ArgumentNullException(nameof(corsService));
-        }
+        ArgumentNullException.ThrowIfNull(corsService);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _next = next;
         CorsService = corsService;
@@ -81,25 +72,13 @@ public class CorsMiddleware
         CorsPolicy policy,
         ILoggerFactory loggerFactory)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
-        if (corsService == null)
-        {
-            throw new ArgumentNullException(nameof(corsService));
-        }
+        ArgumentNullException.ThrowIfNull(corsService);
 
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _next = next;
         CorsService = corsService;

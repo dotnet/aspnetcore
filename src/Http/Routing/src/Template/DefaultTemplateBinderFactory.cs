@@ -16,15 +16,9 @@ internal sealed class DefaultTemplateBinderFactory : TemplateBinderFactory
         ParameterPolicyFactory policyFactory,
         ObjectPool<UriBuildingContext> pool)
     {
-        if (policyFactory == null)
-        {
-            throw new ArgumentNullException(nameof(policyFactory));
-        }
+        ArgumentNullException.ThrowIfNull(policyFactory);
 
-        if (pool == null)
-        {
-            throw new ArgumentNullException(nameof(pool));
-        }
+        ArgumentNullException.ThrowIfNull(pool);
 
         _policyFactory = policyFactory;
         _pool = pool;
@@ -32,25 +26,16 @@ internal sealed class DefaultTemplateBinderFactory : TemplateBinderFactory
 
     public override TemplateBinder Create(RouteTemplate template, RouteValueDictionary defaults)
     {
-        if (template == null)
-        {
-            throw new ArgumentNullException(nameof(template));
-        }
+        ArgumentNullException.ThrowIfNull(template);
 
-        if (defaults == null)
-        {
-            throw new ArgumentNullException(nameof(defaults));
-        }
+        ArgumentNullException.ThrowIfNull(defaults);
 
         return new TemplateBinder(UrlEncoder.Default, _pool, template, defaults);
     }
 
     public override TemplateBinder Create(RoutePattern pattern)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         // Now create the constraints and parameter transformers from the pattern
         var policies = new List<(string parameterName, IParameterPolicy policy)>();

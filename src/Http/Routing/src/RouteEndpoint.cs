@@ -29,15 +29,9 @@ public sealed class RouteEndpoint : Endpoint
         string? displayName)
         : base(requestDelegate, metadata, displayName)
     {
-        if (requestDelegate == null)
-        {
-            throw new ArgumentNullException(nameof(requestDelegate));
-        }
+        ArgumentNullException.ThrowIfNull(requestDelegate);
 
-        if (routePattern == null)
-        {
-            throw new ArgumentNullException(nameof(routePattern));
-        }
+        ArgumentNullException.ThrowIfNull(routePattern);
 
         RoutePattern = routePattern;
         Order = order;

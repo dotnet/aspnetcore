@@ -23,15 +23,9 @@ public partial class RedirectToRouteResultExecutor : IActionResultExecutor<Redir
     /// <param name="urlHelperFactory">The factory used to create url helpers.</param>
     public RedirectToRouteResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        if (urlHelperFactory == null)
-        {
-            throw new ArgumentNullException(nameof(urlHelperFactory));
-        }
+        ArgumentNullException.ThrowIfNull(urlHelperFactory);
 
         _logger = loggerFactory.CreateLogger<RedirectToRouteResult>();
         _urlHelperFactory = urlHelperFactory;

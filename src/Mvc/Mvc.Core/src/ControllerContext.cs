@@ -80,10 +80,7 @@ public class ControllerContext : ActionContext
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _valueProviderFactories = value;
         }

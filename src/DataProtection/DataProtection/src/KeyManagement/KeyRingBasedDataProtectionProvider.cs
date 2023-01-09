@@ -20,10 +20,7 @@ internal sealed unsafe class KeyRingBasedDataProtectionProvider : IDataProtectio
 
     public IDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullException.ThrowIfNull(purpose);
 
         return new KeyRingBasedDataProtector(
             logger: _logger,

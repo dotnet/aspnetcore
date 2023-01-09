@@ -21,15 +21,9 @@ public sealed class XmlSerializedDescriptorInfo
     /// method can be used to deserialize <paramref name="serializedDescriptorElement"/>.</param>
     public XmlSerializedDescriptorInfo(XElement serializedDescriptorElement, Type deserializerType)
     {
-        if (serializedDescriptorElement == null)
-        {
-            throw new ArgumentNullException(nameof(serializedDescriptorElement));
-        }
+        ArgumentNullException.ThrowIfNull(serializedDescriptorElement);
 
-        if (deserializerType == null)
-        {
-            throw new ArgumentNullException(nameof(deserializerType));
-        }
+        ArgumentNullException.ThrowIfNull(deserializerType);
 
         if (!typeof(IAuthenticatedEncryptorDescriptorDeserializer).IsAssignableFrom(deserializerType))
         {

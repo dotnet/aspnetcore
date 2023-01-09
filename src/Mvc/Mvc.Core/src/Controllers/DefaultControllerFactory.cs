@@ -28,15 +28,9 @@ internal sealed class DefaultControllerFactory : IControllerFactory
         IControllerActivator controllerActivator,
         IEnumerable<IControllerPropertyActivator> propertyActivators)
     {
-        if (controllerActivator == null)
-        {
-            throw new ArgumentNullException(nameof(controllerActivator));
-        }
+        ArgumentNullException.ThrowIfNull(controllerActivator);
 
-        if (propertyActivators == null)
-        {
-            throw new ArgumentNullException(nameof(propertyActivators));
-        }
+        ArgumentNullException.ThrowIfNull(propertyActivators);
 
         _controllerActivator = controllerActivator;
         _propertyActivators = propertyActivators.ToArray();
@@ -45,10 +39,7 @@ internal sealed class DefaultControllerFactory : IControllerFactory
     /// <inheritdoc />
     public object CreateController(ControllerContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.ActionDescriptor == null)
         {
@@ -69,30 +60,18 @@ internal sealed class DefaultControllerFactory : IControllerFactory
     /// <inheritdoc />
     public void ReleaseController(ControllerContext context, object controller)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(controller);
 
         _controllerActivator.Release(context, controller);
     }
 
     public ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(controller);
 
         return _controllerActivator.ReleaseAsync(context, controller);
     }

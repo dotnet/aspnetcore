@@ -17,15 +17,9 @@ public static class RunExtensions
     /// <param name="handler">A delegate that handles the request.</param>
     public static void Run(this IApplicationBuilder app, RequestDelegate handler)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(handler);
 
         app.Use(_ => handler);
     }

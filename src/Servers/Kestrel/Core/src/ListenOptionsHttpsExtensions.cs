@@ -259,10 +259,7 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, TlsHandshakeCallbackOptions callbackOptions)
     {
-        if (callbackOptions is null)
-        {
-            throw new ArgumentNullException(nameof(callbackOptions));
-        }
+        ArgumentNullException.ThrowIfNull(callbackOptions);
 
         if (callbackOptions.OnConnection is null)
         {

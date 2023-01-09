@@ -16,10 +16,7 @@ public class OptionalRouteConstraint : IRouteConstraint
     /// <param name="innerConstraint"></param>
     public OptionalRouteConstraint(IRouteConstraint innerConstraint)
     {
-        if (innerConstraint == null)
-        {
-            throw new ArgumentNullException(nameof(innerConstraint));
-        }
+        ArgumentNullException.ThrowIfNull(innerConstraint);
 
         InnerConstraint = innerConstraint;
     }
@@ -37,15 +34,9 @@ public class OptionalRouteConstraint : IRouteConstraint
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
 
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out _))
         {

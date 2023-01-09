@@ -43,15 +43,9 @@ internal sealed class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseS
         ArrayPool<byte> bytePool,
         ArrayPool<char> charPool)
     {
-        if (bytePool == null)
-        {
-            throw new ArgumentNullException(nameof(bytePool));
-        }
+        ArgumentNullException.ThrowIfNull(bytePool);
 
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
+        ArgumentNullException.ThrowIfNull(charPool);
 
         _bytePool = bytePool;
         _charPool = charPool;
@@ -60,15 +54,9 @@ internal sealed class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseS
     /// <inheritdoc />
     public TextWriter CreateWriter(Stream stream, Encoding encoding)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(encoding);
 
         return new HttpResponseStreamWriter(stream, encoding, DefaultBufferSize, _bytePool, _charPool);
     }

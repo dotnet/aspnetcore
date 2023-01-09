@@ -47,10 +47,7 @@ public class ModelAttributes
         if (propertyAttributes != null)
         {
             // Represents a property
-            if (typeAttributes == null)
-            {
-                throw new ArgumentNullException(nameof(typeAttributes));
-            }
+            ArgumentNullException.ThrowIfNull(typeAttributes);
 
             PropertyAttributes = propertyAttributes.ToArray();
             TypeAttributes = typeAttributes.ToArray();
@@ -59,10 +56,7 @@ public class ModelAttributes
         else if (parameterAttributes != null)
         {
             // Represents a parameter
-            if (typeAttributes == null)
-            {
-                throw new ArgumentNullException(nameof(typeAttributes));
-            }
+            ArgumentNullException.ThrowIfNull(typeAttributes);
 
             ParameterAttributes = parameterAttributes.ToArray();
             TypeAttributes = typeAttributes.ToArray();
@@ -134,15 +128,9 @@ public class ModelAttributes
     /// </returns>
     public static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
     {
-        if (containerType == null)
-        {
-            throw new ArgumentNullException(nameof(containerType));
-        }
+        ArgumentNullException.ThrowIfNull(containerType);
 
-        if (property == null)
-        {
-            throw new ArgumentNullException(nameof(property));
-        }
+        ArgumentNullException.ThrowIfNull(property);
 
         var propertyAttributes = property.GetCustomAttributes();
         var typeAttributes = modelType.GetCustomAttributes();
@@ -168,10 +156,7 @@ public class ModelAttributes
     /// <returns>A <see cref="ModelAttributes"/> instance with the attributes of the <see cref="Type"/>.</returns>
     public static ModelAttributes GetAttributesForType(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         var attributes = type.GetCustomAttributes();
 
@@ -216,15 +201,9 @@ public class ModelAttributes
     /// </returns>
     public static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
     {
-        if (parameterInfo == null)
-        {
-            throw new ArgumentNullException(nameof(parameterInfo));
-        }
+        ArgumentNullException.ThrowIfNull(parameterInfo);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         // Prior versions called IModelMetadataProvider.GetMetadataForType(...) and therefore
         // GetAttributesForType(...) for parameters. Maintain that set of attributes (including those from an

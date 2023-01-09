@@ -78,10 +78,7 @@ public abstract class ControllerBase
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _controllerContext = value;
         }
@@ -103,10 +100,7 @@ public abstract class ControllerBase
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _metadataProvider = value;
         }
@@ -128,10 +122,7 @@ public abstract class ControllerBase
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _modelBinderFactory = value;
         }
@@ -154,10 +145,7 @@ public abstract class ControllerBase
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _url = value;
         }
@@ -179,10 +167,7 @@ public abstract class ControllerBase
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _objectValidator = value;
         }
@@ -204,10 +189,7 @@ public abstract class ControllerBase
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _problemDetailsFactory = value;
         }
@@ -1057,10 +1039,7 @@ public abstract class ControllerBase
         object? routeValues = null,
         string? fragment = null)
     {
-        if (pageName == null)
-        {
-            throw new ArgumentNullException(nameof(pageName));
-        }
+        ArgumentNullException.ThrowIfNull(pageName);
 
         return new RedirectToPageResult(
             pageName: pageName,
@@ -1088,10 +1067,7 @@ public abstract class ControllerBase
         object? routeValues = null,
         string? fragment = null)
     {
-        if (pageName == null)
-        {
-            throw new ArgumentNullException(nameof(pageName));
-        }
+        ArgumentNullException.ThrowIfNull(pageName);
 
         return new RedirectToPageResult(
             pageName: pageName,
@@ -1807,10 +1783,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual BadRequestObjectResult BadRequest([ActionResultObjectValue] ModelStateDictionary modelState)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         return new BadRequestObjectResult(modelState);
     }
@@ -1840,10 +1813,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual UnprocessableEntityObjectResult UnprocessableEntity([ActionResultObjectValue] ModelStateDictionary modelState)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         return new UnprocessableEntityObjectResult(modelState);
     }
@@ -1929,10 +1899,7 @@ public abstract class ControllerBase
     [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem([ActionResultObjectValue] ValidationProblemDetails descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         return new BadRequestObjectResult(descriptor);
     }
@@ -2147,10 +2114,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual AcceptedResult Accepted(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new AcceptedResult(locationUri: uri, value: null);
     }
@@ -2184,10 +2148,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual AcceptedResult Accepted(Uri uri, [ActionResultObjectValue] object? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new AcceptedResult(locationUri: uri, value: value);
     }
@@ -2521,10 +2482,7 @@ public abstract class ControllerBase
         TModel model)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         return TryUpdateModelAsync(model, prefix: string.Empty);
     }
@@ -2544,15 +2502,9 @@ public abstract class ControllerBase
         string prefix)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
         if (!success)
@@ -2580,20 +2532,11 @@ public abstract class ControllerBase
         IValueProvider valueProvider)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix);
 
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -2623,15 +2566,9 @@ public abstract class ControllerBase
         params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (includeExpressions == null)
-        {
-            throw new ArgumentNullException(nameof(includeExpressions));
-        }
+        ArgumentNullException.ThrowIfNull(includeExpressions);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
         if (!success)
@@ -2667,15 +2604,9 @@ public abstract class ControllerBase
         Func<ModelMetadata, bool> propertyFilter)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
         if (!success)
@@ -2714,20 +2645,11 @@ public abstract class ControllerBase
         params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
-        if (includeExpressions == null)
-        {
-            throw new ArgumentNullException(nameof(includeExpressions));
-        }
+        ArgumentNullException.ThrowIfNull(includeExpressions);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -2759,20 +2681,11 @@ public abstract class ControllerBase
         Func<ModelMetadata, bool> propertyFilter)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -2800,15 +2713,9 @@ public abstract class ControllerBase
         Type modelType,
         string prefix)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
         if (!success)
@@ -2846,25 +2753,13 @@ public abstract class ControllerBase
         IValueProvider valueProvider,
         Func<ModelMetadata, bool> propertyFilter)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -2887,10 +2782,7 @@ public abstract class ControllerBase
     public virtual bool TryValidateModel(
         object model)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         return TryValidateModel(model, prefix: null);
     }
@@ -2907,10 +2799,7 @@ public abstract class ControllerBase
         object model,
         string? prefix)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         ObjectValidator.Validate(
             ControllerContext,

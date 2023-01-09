@@ -65,30 +65,15 @@ public class InputFormatterContext
         Func<Stream, Encoding, TextReader> readerFactory,
         bool treatEmptyInputAsDefaultValue)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (modelName == null)
-        {
-            throw new ArgumentNullException(nameof(modelName));
-        }
+        ArgumentNullException.ThrowIfNull(modelName);
 
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
-        if (readerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(readerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(readerFactory);
 
         HttpContext = httpContext;
         ModelName = modelName;

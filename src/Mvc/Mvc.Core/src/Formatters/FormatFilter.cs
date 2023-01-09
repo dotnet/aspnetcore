@@ -26,15 +26,9 @@ public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilte
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public FormatFilter(IOptions<MvcOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
         _logger = loggerFactory.CreateLogger(GetType());
@@ -67,10 +61,7 @@ public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilte
     /// <param name="context">The <see cref="ResourceExecutingContext"/>.</param>
     public void OnResourceExecuting(ResourceExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var format = GetFormat(context);
         if (format == null)
@@ -141,10 +132,7 @@ public partial class FormatFilter : IFormatFilter, IResourceFilter, IResultFilte
     /// <param name="context">The <see cref="ResultExecutingContext"/>.</param>
     public void OnResultExecuting(ResultExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var format = GetFormat(context);
         if (format == null)

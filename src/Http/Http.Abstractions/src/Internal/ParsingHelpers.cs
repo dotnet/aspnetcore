@@ -37,10 +37,7 @@ internal static class ParsingHelpers
 
     public static StringValues GetHeaderUnmodified(IHeaderDictionary headers, string key)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         StringValues values;
         return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
@@ -48,10 +45,7 @@ internal static class ParsingHelpers
 
     public static void SetHeaderJoined(IHeaderDictionary headers, string key, StringValues value)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         if (string.IsNullOrEmpty(key))
         {
@@ -92,10 +86,7 @@ internal static class ParsingHelpers
 
     public static void SetHeaderUnmodified(IHeaderDictionary headers, string key, StringValues? values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         if (string.IsNullOrEmpty(key))
         {
@@ -113,15 +104,9 @@ internal static class ParsingHelpers
 
     public static void AppendHeaderJoined(IHeaderDictionary headers, string key, params string[] values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (values == null || values.Length == 0)
         {
@@ -141,15 +126,9 @@ internal static class ParsingHelpers
 
     public static void AppendHeaderUnmodified(IHeaderDictionary headers, string key, StringValues values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (values.Count == 0)
         {

@@ -20,15 +20,9 @@ public class DecimalRouteConstraint : IRouteConstraint, IParameterLiteralNodeMat
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
 
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {

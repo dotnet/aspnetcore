@@ -25,10 +25,7 @@ public partial class VirtualFileResultExecutor : FileResultExecutorBase, IAction
     public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
         : base(CreateLogger<VirtualFileResultExecutor>(loggerFactory))
     {
-        if (hostingEnvironment == null)
-        {
-            throw new ArgumentNullException(nameof(hostingEnvironment));
-        }
+        ArgumentNullException.ThrowIfNull(hostingEnvironment);
 
         _hostingEnvironment = hostingEnvironment;
     }
@@ -36,15 +33,9 @@ public partial class VirtualFileResultExecutor : FileResultExecutorBase, IAction
     /// <inheritdoc />
     public virtual Task ExecuteAsync(ActionContext context, VirtualFileResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
         var fileInfo = GetFileInformation(result, _hostingEnvironment);
         if (!fileInfo.Exists)
@@ -75,15 +66,9 @@ public partial class VirtualFileResultExecutor : FileResultExecutorBase, IAction
     /// <inheritdoc/>
     protected virtual Task WriteFileAsync(ActionContext context, VirtualFileResult result, IFileInfo fileInfo, RangeItemHeaderValue? range, long rangeLength)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
         return WriteFileAsyncInternal(context.HttpContext, fileInfo, range, rangeLength, Logger);
     }

@@ -23,15 +23,9 @@ public class WelcomePageMiddleware
     /// <param name="options"></param>
     public WelcomePageMiddleware(RequestDelegate next, IOptions<WelcomePageOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;

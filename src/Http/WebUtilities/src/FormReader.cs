@@ -59,10 +59,7 @@ public class FormReader : IDisposable
     /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
     public FormReader(string data, ArrayPool<char> charPool)
     {
-        if (data == null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
+        ArgumentNullException.ThrowIfNull(data);
 
         _buffer = charPool.Rent(_rentedCharPoolLength);
         _charPool = charPool;
@@ -96,15 +93,9 @@ public class FormReader : IDisposable
     /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
     public FormReader(Stream stream, Encoding encoding, ArrayPool<char> charPool)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(encoding);
 
         _buffer = charPool.Rent(_rentedCharPoolLength);
         _charPool = charPool;

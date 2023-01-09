@@ -17,15 +17,9 @@ internal sealed class MvcBuilder : IMvcBuilder
     /// <param name="manager">The <see cref="ApplicationPartManager"/> of the application.</param>
     public MvcBuilder(IServiceCollection services, ApplicationPartManager manager)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullException.ThrowIfNull(manager);
 
         Services = services;
         PartManager = manager;

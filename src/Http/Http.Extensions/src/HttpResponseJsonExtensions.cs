@@ -81,10 +81,7 @@ public static partial class HttpResponseJsonExtensions
         string? contentType,
         CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
         options ??= ResolveSerializerOptions(response.HttpContext);
 
@@ -119,10 +116,7 @@ public static partial class HttpResponseJsonExtensions
         string? contentType = default,
         CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
@@ -266,14 +260,8 @@ public static partial class HttpResponseJsonExtensions
         string? contentType,
         CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(type);
 
         options ??= ResolveSerializerOptions(response.HttpContext);
 
@@ -325,20 +313,11 @@ public static partial class HttpResponseJsonExtensions
         string? contentType = default,
         CancellationToken cancellationToken = default)
     {
-        if (response is null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 

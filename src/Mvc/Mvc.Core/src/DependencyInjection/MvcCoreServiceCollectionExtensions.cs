@@ -46,10 +46,7 @@ public static class MvcCoreServiceCollectionExtensions
     /// </remarks>
     public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
         var partManager = GetApplicationPartManager(services, environment);
@@ -119,15 +116,9 @@ public static class MvcCoreServiceCollectionExtensions
         this IServiceCollection services,
         Action<MvcOptions> setupAction)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddMvcCore();
         services.Configure(setupAction);

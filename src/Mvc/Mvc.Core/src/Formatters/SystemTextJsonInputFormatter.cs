@@ -54,15 +54,9 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
         InputFormatterContext context,
         Encoding encoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var httpContext = context.HttpContext;
         var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);

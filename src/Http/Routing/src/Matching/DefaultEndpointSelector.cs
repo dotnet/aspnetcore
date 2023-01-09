@@ -12,15 +12,9 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
         HttpContext httpContext,
         CandidateSet candidateSet)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (candidateSet == null)
-        {
-            throw new ArgumentNullException(nameof(candidateSet));
-        }
+        ArgumentNullException.ThrowIfNull(candidateSet);
 
         Select(httpContext, candidateSet.Candidates);
         return Task.CompletedTask;

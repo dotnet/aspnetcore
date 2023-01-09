@@ -28,15 +28,9 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver, ILoggerFactory loggerFactory)
         : this(loggerFactory, encryptor: null)
     {
-        if (thumbprint == null)
-        {
-            throw new ArgumentNullException(nameof(thumbprint));
-        }
+        ArgumentNullException.ThrowIfNull(thumbprint);
 
-        if (certificateResolver == null)
-        {
-            throw new ArgumentNullException(nameof(certificateResolver));
-        }
+        ArgumentNullException.ThrowIfNull(certificateResolver);
 
         _certFactory = CreateCertFactory(thumbprint, certificateResolver);
     }
@@ -48,10 +42,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     public CertificateXmlEncryptor(X509Certificate2 certificate, ILoggerFactory loggerFactory)
         : this(loggerFactory, encryptor: null)
     {
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullException.ThrowIfNull(certificate);
 
         _certFactory = () => certificate;
     }
@@ -74,10 +65,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullException.ThrowIfNull(plaintextElement);
 
         // <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">
         //   ...

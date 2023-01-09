@@ -67,15 +67,9 @@ public partial class ComplexTypeModelBinder : IModelBinder
         ILoggerFactory loggerFactory,
         bool allowValidatingTopLevelNodes)
     {
-        if (propertyBinders == null)
-        {
-            throw new ArgumentNullException(nameof(propertyBinders));
-        }
+        ArgumentNullException.ThrowIfNull(propertyBinders);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _propertyBinders = propertyBinders;
         _logger = loggerFactory.CreateLogger<ComplexTypeModelBinder>();
@@ -84,10 +78,7 @@ public partial class ComplexTypeModelBinder : IModelBinder
     /// <inheritdoc/>
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 
@@ -468,10 +459,7 @@ public partial class ComplexTypeModelBinder : IModelBinder
     /// <returns>An <see cref="object"/> compatible with <see cref="ModelBindingContext.ModelType"/>.</returns>
     protected virtual object CreateModel(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         // If model creator throws an exception, we want to propagate it back up the call stack, since the
         // application developer should know that this was an invalid type to try to bind to.
@@ -534,20 +522,11 @@ public partial class ComplexTypeModelBinder : IModelBinder
         ModelMetadata propertyMetadata,
         ModelBindingResult result)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
-        if (modelName == null)
-        {
-            throw new ArgumentNullException(nameof(modelName));
-        }
+        ArgumentNullException.ThrowIfNull(modelName);
 
-        if (propertyMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(propertyMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(propertyMetadata);
 
         if (!result.IsModelSet)
         {

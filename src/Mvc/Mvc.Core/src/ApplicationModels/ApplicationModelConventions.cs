@@ -19,15 +19,9 @@ internal static class ApplicationModelConventions
         ApplicationModel applicationModel,
         IEnumerable<IApplicationModelConvention> conventions)
     {
-        if (applicationModel == null)
-        {
-            throw new ArgumentNullException(nameof(applicationModel));
-        }
+        ArgumentNullException.ThrowIfNull(applicationModel);
 
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
 
         // Conventions are applied from the outside-in to allow for scenarios where an action overrides
         // a controller, etc.

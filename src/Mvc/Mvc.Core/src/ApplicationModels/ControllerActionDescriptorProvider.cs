@@ -17,15 +17,9 @@ internal sealed class ControllerActionDescriptorProvider : IActionDescriptorProv
         ApplicationPartManager partManager,
         ApplicationModelFactory applicationModelFactory)
     {
-        if (partManager == null)
-        {
-            throw new ArgumentNullException(nameof(partManager));
-        }
+        ArgumentNullException.ThrowIfNull(partManager);
 
-        if (applicationModelFactory == null)
-        {
-            throw new ArgumentNullException(nameof(applicationModelFactory));
-        }
+        ArgumentNullException.ThrowIfNull(applicationModelFactory);
 
         _partManager = partManager;
         _applicationModelFactory = applicationModelFactory;
@@ -36,10 +30,7 @@ internal sealed class ControllerActionDescriptorProvider : IActionDescriptorProv
     /// <inheritdoc />
     public void OnProvidersExecuting(ActionDescriptorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var descriptor in GetDescriptors())
         {

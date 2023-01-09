@@ -18,15 +18,9 @@ internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IE
 
     public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelectorCache selectorCache, EndpointMetadataComparer comparer)
     {
-        if (selectorCache == null)
-        {
-            throw new ArgumentNullException(nameof(selectorCache));
-        }
+        ArgumentNullException.ThrowIfNull(selectorCache);
 
-        if (comparer == null)
-        {
-            throw new ArgumentNullException(nameof(comparer));
-        }
+        ArgumentNullException.ThrowIfNull(comparer);
 
         _selectorCache = selectorCache;
         _comparer = comparer;
@@ -36,10 +30,7 @@ internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IE
 
     public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (!ContainsDynamicEndpoints(endpoints))
         {
@@ -67,15 +58,9 @@ internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IE
 
     public async Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(candidates);
 
         // The per-route selector, must be the same for all the endpoints we are dealing with.
         DynamicControllerEndpointSelector? selector = null;

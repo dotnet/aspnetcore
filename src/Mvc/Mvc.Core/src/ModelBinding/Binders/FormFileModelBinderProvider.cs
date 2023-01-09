@@ -18,10 +18,7 @@ public class FormFileModelBinderProvider : IModelBinderProvider
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Note: This condition needs to be kept in sync with ApiBehaviorApplicationModelProvider.
         var modelType = context.Metadata.ModelType;

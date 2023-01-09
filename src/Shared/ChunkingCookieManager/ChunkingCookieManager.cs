@@ -88,15 +88,9 @@ internal sealed class ChunkingCookieManager
     /// <returns>The reassembled cookie, if any, or null.</returns>
     public string? GetRequestCookie(HttpContext context, string key)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         var requestCookies = context.Request.Cookies;
         var value = requestCookies[key];
@@ -150,20 +144,11 @@ internal sealed class ChunkingCookieManager
     /// <param name="options"></param>
     public void AppendResponseCookie(HttpContext context, string key, string? value, CookieOptions options)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var responseCookies = context.Response.Cookies;
 
@@ -225,20 +210,11 @@ internal sealed class ChunkingCookieManager
     public void DeleteCookie(HttpContext context, string key, CookieOptions options)
 #pragma warning restore CA1822 // Mark members as static
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var keys = new List<string>
         {

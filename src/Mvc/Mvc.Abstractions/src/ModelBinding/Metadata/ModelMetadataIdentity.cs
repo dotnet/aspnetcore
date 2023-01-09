@@ -32,10 +32,7 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
     public static ModelMetadataIdentity ForType(Type modelType)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         return new ModelMetadataIdentity(modelType);
     }
@@ -53,15 +50,9 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         string name,
         Type containerType)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
-        if (containerType == null)
-        {
-            throw new ArgumentNullException(nameof(containerType));
-        }
+        ArgumentNullException.ThrowIfNull(containerType);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -83,20 +74,11 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         Type modelType,
         Type containerType)
     {
-        if (propertyInfo == null)
-        {
-            throw new ArgumentNullException(nameof(propertyInfo));
-        }
+        ArgumentNullException.ThrowIfNull(propertyInfo);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
-        if (containerType == null)
-        {
-            throw new ArgumentNullException(nameof(containerType));
-        }
+        ArgumentNullException.ThrowIfNull(containerType);
 
         return new ModelMetadataIdentity(modelType, propertyInfo.Name, containerType, fieldInfo: propertyInfo);
     }
@@ -118,15 +100,9 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
     public static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
     {
-        if (parameter == null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        ArgumentNullException.ThrowIfNull(parameter);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         return new ModelMetadataIdentity(modelType, parameter.Name, fieldInfo: parameter);
     }
@@ -140,15 +116,9 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
     public static ModelMetadataIdentity ForConstructor(ConstructorInfo constructor, Type modelType)
     {
-        if (constructor == null)
-        {
-            throw new ArgumentNullException(nameof(constructor));
-        }
+        ArgumentNullException.ThrowIfNull(constructor);
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         return new ModelMetadataIdentity(modelType, constructor.Name, constructorInfo: constructor);
     }

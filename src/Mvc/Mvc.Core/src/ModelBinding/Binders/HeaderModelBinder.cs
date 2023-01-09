@@ -35,15 +35,9 @@ public class HeaderModelBinder : IModelBinder
     /// binding of values.</param>
     public HeaderModelBinder(ILoggerFactory loggerFactory, IModelBinder innerModelBinder)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        if (innerModelBinder == null)
-        {
-            throw new ArgumentNullException(nameof(innerModelBinder));
-        }
+        ArgumentNullException.ThrowIfNull(innerModelBinder);
 
         _logger = loggerFactory.CreateLogger<HeaderModelBinder>();
         InnerModelBinder = innerModelBinder;
@@ -55,10 +49,7 @@ public class HeaderModelBinder : IModelBinder
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

@@ -26,15 +26,9 @@ public class ActionModel : ICommonModel, IFilterModel, IApiExplorerModel
         MethodInfo actionMethod,
         IReadOnlyList<object> attributes)
     {
-        if (actionMethod == null)
-        {
-            throw new ArgumentNullException(nameof(actionMethod));
-        }
+        ArgumentNullException.ThrowIfNull(actionMethod);
 
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
 
         ActionMethod = actionMethod;
 
@@ -53,10 +47,7 @@ public class ActionModel : ICommonModel, IFilterModel, IApiExplorerModel
     /// <param name="other">The <see cref="ActionModel"/> to copy.</param>
     public ActionModel(ActionModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         ActionMethod = other.ActionMethod;
         ActionName = other.ActionName;

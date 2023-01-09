@@ -18,10 +18,7 @@ public static class AuthenticationCoreServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddAuthenticationCore(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped<IAuthenticationService, AuthenticationService>();
         services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
@@ -38,15 +35,9 @@ public static class AuthenticationCoreServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddAuthenticationCore(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.AddAuthenticationCore();
         services.Configure(configureOptions);

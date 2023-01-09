@@ -62,10 +62,7 @@ internal sealed partial class ActionSelector : IActionSelector
 
     public IReadOnlyList<ActionDescriptor> SelectCandidates(RouteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var cache = Current;
 
@@ -81,15 +78,9 @@ internal sealed partial class ActionSelector : IActionSelector
 
     public ActionDescriptor? SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(candidates);
 
         var finalMatches = EvaluateActionConstraints(context, candidates);
 

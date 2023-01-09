@@ -43,10 +43,7 @@ public sealed class NullXmlEncryptor : IXmlEncryptor
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullException.ThrowIfNull(plaintextElement);
 
         _logger.EncryptingUsingNullEncryptor();
 

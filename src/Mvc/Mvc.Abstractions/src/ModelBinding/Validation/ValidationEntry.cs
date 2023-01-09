@@ -19,15 +19,9 @@ public struct ValidationEntry
     /// <param name="model">The model object.</param>
     public ValidationEntry(ModelMetadata metadata, string key, object? model)
     {
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         Metadata = metadata;
         Key = key;
@@ -43,20 +37,11 @@ public struct ValidationEntry
     /// <param name="modelAccessor">A delegate that will return the <see cref="Model"/>.</param>
     public ValidationEntry(ModelMetadata metadata, string key, Func<object?> modelAccessor)
     {
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
-        if (modelAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(modelAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(modelAccessor);
 
         Metadata = metadata;
         Key = key;

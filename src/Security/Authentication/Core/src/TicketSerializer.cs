@@ -52,15 +52,9 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <param name="ticket">The <see cref="AuthenticationTicket"/>.</param>
     public virtual void Write(BinaryWriter writer, AuthenticationTicket ticket)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
 
         writer.Write(FormatVersion);
         writer.Write(ticket.AuthenticationScheme);
@@ -84,15 +78,9 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <param name="identity">The <see cref="ClaimsIdentity" />.</param>
     protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (identity == null)
-        {
-            throw new ArgumentNullException(nameof(identity));
-        }
+        ArgumentNullException.ThrowIfNull(identity);
 
         var authenticationType = identity.AuthenticationType ?? string.Empty;
 
@@ -133,15 +121,9 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <inheritdoc/>
     protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
 
         WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
         writer.Write(claim.Value);
@@ -166,10 +148,7 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The <see cref="AuthenticationTicket"/> if the format is supported, otherwise <see langword="null"/>.</returns>
     public virtual AuthenticationTicket? Read(BinaryReader reader)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         if (reader.ReadInt32() != FormatVersion)
         {
@@ -204,10 +183,7 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The read <see cref="ClaimsIdentity"/>.</returns>
     protected virtual ClaimsIdentity ReadIdentity(BinaryReader reader)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         var authenticationType = reader.ReadString();
         var nameClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultNameClaimType);
@@ -251,15 +227,9 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The read <see cref="Claim"/>.</returns>
     protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
-        if (identity == null)
-        {
-            throw new ArgumentNullException(nameof(identity));
-        }
+        ArgumentNullException.ThrowIfNull(identity);
 
         var type = ReadWithDefault(reader, identity.NameClaimType);
         var value = reader.ReadString();

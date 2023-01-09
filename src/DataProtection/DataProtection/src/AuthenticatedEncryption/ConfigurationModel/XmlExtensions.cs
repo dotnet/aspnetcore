@@ -22,10 +22,7 @@ public static class XmlExtensions
     /// </summary>
     public static void MarkAsRequiresEncryption(this XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullException.ThrowIfNull(element);
 
         element.SetAttributeValue(XmlConstants.RequiresEncryptionAttributeName, true);
     }

@@ -62,10 +62,7 @@ public class ControllerActionDescriptor : ActionDescriptor
 
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             base.DisplayName = value;
         }

@@ -19,15 +19,9 @@ internal sealed class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TV
         IDictionary<TKey, TValue> sourceDictionary,
         IEqualityComparer<TKey> comparer)
     {
-        if (sourceDictionary == null)
-        {
-            throw new ArgumentNullException(nameof(sourceDictionary));
-        }
+        ArgumentNullException.ThrowIfNull(sourceDictionary);
 
-        if (comparer == null)
-        {
-            throw new ArgumentNullException(nameof(comparer));
-        }
+        ArgumentNullException.ThrowIfNull(comparer);
 
         _sourceDictionary = sourceDictionary;
         _comparer = comparer;

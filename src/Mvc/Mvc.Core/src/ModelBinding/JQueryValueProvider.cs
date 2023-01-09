@@ -31,15 +31,9 @@ public abstract class JQueryValueProvider :
         CultureInfo? culture)
         : base(bindingSource)
     {
-        if (bindingSource == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
 
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         _values = values;
         Culture = culture;
@@ -79,10 +73,7 @@ public abstract class JQueryValueProvider :
     /// <inheritdoc />
     public override ValueProviderResult GetValue(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (_values.TryGetValue(key, out var values) && values.Count > 0)
         {

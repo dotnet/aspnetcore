@@ -34,30 +34,15 @@ public partial class ParameterBinder
         IOptions<MvcOptions> mvcOptions,
         ILoggerFactory loggerFactory)
     {
-        if (modelMetadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadataProvider);
 
-        if (modelBinderFactory == null)
-        {
-            throw new ArgumentNullException(nameof(modelBinderFactory));
-        }
+        ArgumentNullException.ThrowIfNull(modelBinderFactory);
 
-        if (validator == null)
-        {
-            throw new ArgumentNullException(nameof(validator));
-        }
+        ArgumentNullException.ThrowIfNull(validator);
 
-        if (mvcOptions == null)
-        {
-            throw new ArgumentNullException(nameof(mvcOptions));
-        }
+        ArgumentNullException.ThrowIfNull(mvcOptions);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _modelMetadataProvider = modelMetadataProvider;
         _modelBinderFactory = modelBinderFactory;
@@ -109,30 +94,15 @@ public partial class ParameterBinder
         object? value,
         object? container)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
-        if (modelBinder == null)
-        {
-            throw new ArgumentNullException(nameof(modelBinder));
-        }
+        ArgumentNullException.ThrowIfNull(modelBinder);
 
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
-        if (parameter == null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        ArgumentNullException.ThrowIfNull(parameter);
 
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
         Log.AttemptingToBindParameterOrProperty(Logger, parameter, metadata);
 

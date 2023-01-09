@@ -45,10 +45,7 @@ public sealed class DpapiNGXmlDecryptor : IXmlDecryptor
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
     public XElement Decrypt(XElement encryptedElement)
     {
-        if (encryptedElement == null)
-        {
-            throw new ArgumentNullException(nameof(encryptedElement));
-        }
+        ArgumentNullException.ThrowIfNull(encryptedElement);
 
         try
         {

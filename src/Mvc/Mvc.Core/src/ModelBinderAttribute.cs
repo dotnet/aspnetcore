@@ -46,10 +46,7 @@ public class ModelBinderAttribute : Attribute, IModelNameProvider, IBinderTypePr
     /// </remarks>
     public ModelBinderAttribute(Type binderType)
     {
-        if (binderType == null)
-        {
-            throw new ArgumentNullException(nameof(binderType));
-        }
+        ArgumentNullException.ThrowIfNull(binderType);
 
         BinderType = binderType;
     }

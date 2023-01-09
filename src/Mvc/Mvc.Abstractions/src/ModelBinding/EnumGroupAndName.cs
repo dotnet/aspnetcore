@@ -18,15 +18,9 @@ public readonly struct EnumGroupAndName
     /// <param name="name">The name.</param>
     public EnumGroupAndName(string group, string name)
     {
-        if (group == null)
-        {
-            throw new ArgumentNullException(nameof(group));
-        }
+        ArgumentNullException.ThrowIfNull(group);
 
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Group = group;
         _name = () => name;
@@ -41,15 +35,9 @@ public readonly struct EnumGroupAndName
         string group,
         Func<string> name)
     {
-        if (group == null)
-        {
-            throw new ArgumentNullException(nameof(group));
-        }
+        ArgumentNullException.ThrowIfNull(group);
 
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Group = group;
         _name = name;

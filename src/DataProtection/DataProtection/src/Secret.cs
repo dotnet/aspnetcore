@@ -39,10 +39,7 @@ public sealed unsafe class Secret : IDisposable, ISecret
     public Secret(byte[] value)
         : this(new ArraySegment<byte>(value))
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
     }
 
     /// <summary>
@@ -69,10 +66,7 @@ public sealed unsafe class Secret : IDisposable, ISecret
     /// </summary>
     public Secret(ISecret secret)
     {
-        if (secret == null)
-        {
-            throw new ArgumentNullException(nameof(secret));
-        }
+        ArgumentNullException.ThrowIfNull(secret);
 
         var other = secret as Secret;
         if (other != null)

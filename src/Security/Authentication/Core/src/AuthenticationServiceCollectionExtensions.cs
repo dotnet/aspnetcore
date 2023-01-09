@@ -18,10 +18,7 @@ public static class AuthenticationServiceCollectionExtensions
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthenticationCore();
         services.AddDataProtection();
@@ -50,15 +47,9 @@ public static class AuthenticationServiceCollectionExtensions
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var builder = services.AddAuthentication();
         services.Configure(configureOptions);

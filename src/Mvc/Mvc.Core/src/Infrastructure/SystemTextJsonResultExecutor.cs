@@ -33,15 +33,9 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
 
     public async Task ExecuteAsync(ActionContext context, JsonResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
         var jsonSerializerOptions = GetSerializerOptions(result);
 

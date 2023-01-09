@@ -19,10 +19,7 @@ public sealed class AuthenticatedEncryptorDescriptorDeserializer : IAuthenticate
     /// </summary>
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullException.ThrowIfNull(element);
 
         // <descriptor>
         //   <encryption algorithm="..." />

@@ -29,10 +29,7 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
         ILoggerFactory loggerFactory,
         IOptions<MvcCompatibilityOptions> compatibilityOptions)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         Version = compatibilityOptions.Value.CompatibilityVersion;
         _logger = loggerFactory.CreateLogger<TOptions>();
@@ -52,15 +49,9 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
     /// <inheritdoc />
     public virtual void PostConfigure(string? name, TOptions options)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Evaluate DefaultValues once so subclasses don't have to cache.
         var defaultValues = DefaultValues;

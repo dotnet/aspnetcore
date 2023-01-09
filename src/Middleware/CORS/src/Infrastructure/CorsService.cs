@@ -26,15 +26,9 @@ public class CorsService : ICorsService
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public CorsService(IOptions<CorsOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<CorsService>();
@@ -50,10 +44,7 @@ public class CorsService : ICorsService
     /// used by the caller to set appropriate response headers.</returns>
     public CorsResult EvaluatePolicy(HttpContext context, string policyName)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var policy = _options.GetPolicy(policyName);
         if (policy is null)
@@ -67,15 +58,9 @@ public class CorsService : ICorsService
     /// <inheritdoc />
     public CorsResult EvaluatePolicy(HttpContext context, CorsPolicy policy)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         if (policy.AllowAnyOrigin && policy.SupportsCredentials)
         {
@@ -168,15 +153,9 @@ public class CorsService : ICorsService
     /// <inheritdoc />
     public virtual void ApplyResult(CorsResult result, HttpResponse response)
     {
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
         if (!result.IsOriginAllowed)
         {

@@ -52,20 +52,11 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         IConfiguration config,
         AggregateException? hostingStartupErrors)
     {
-        if (appServices == null)
-        {
-            throw new ArgumentNullException(nameof(appServices));
-        }
+        ArgumentNullException.ThrowIfNull(appServices);
 
-        if (hostingServiceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(hostingServiceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(hostingServiceProvider);
 
-        if (config == null)
-        {
-            throw new ArgumentNullException(nameof(config));
-        }
+        ArgumentNullException.ThrowIfNull(config);
 
         _config = config;
         _hostingStartupErrors = hostingStartupErrors;

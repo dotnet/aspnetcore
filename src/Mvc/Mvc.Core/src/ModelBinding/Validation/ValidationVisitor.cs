@@ -34,20 +34,11 @@ public class ValidationVisitor
         IModelMetadataProvider metadataProvider,
         ValidationStateDictionary? validationState)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
-        if (validatorProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validatorProvider));
-        }
+        ArgumentNullException.ThrowIfNull(validatorProvider);
 
-        if (validatorCache == null)
-        {
-            throw new ArgumentNullException(nameof(validatorCache));
-        }
+        ArgumentNullException.ThrowIfNull(validatorCache);
 
         Context = actionContext;
         ValidatorProvider = validatorProvider;

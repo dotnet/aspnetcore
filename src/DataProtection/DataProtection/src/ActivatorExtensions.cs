@@ -21,10 +21,7 @@ internal static class ActivatorExtensions
     public static T CreateInstance<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IActivator activator, string implementationTypeName)
         where T : class
     {
-        if (implementationTypeName == null)
-        {
-            throw new ArgumentNullException(nameof(implementationTypeName));
-        }
+        ArgumentNullException.ThrowIfNull(implementationTypeName);
 
         return activator.CreateInstance(typeof(T), implementationTypeName) as T
             ?? CryptoUtil.Fail<T>("CreateInstance returned null.");

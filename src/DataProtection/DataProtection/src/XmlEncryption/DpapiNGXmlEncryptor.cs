@@ -33,10 +33,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags, ILoggerFactory loggerFactory)
     {
-        if (protectionDescriptorRule == null)
-        {
-            throw new ArgumentNullException(nameof(protectionDescriptorRule));
-        }
+        ArgumentNullException.ThrowIfNull(protectionDescriptorRule);
 
         CryptoUtil.AssertPlatformIsWindows8OrLater();
 
@@ -58,10 +55,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullException.ThrowIfNull(plaintextElement);
 
         var protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
         _logger.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(protectionDescriptorRuleString);

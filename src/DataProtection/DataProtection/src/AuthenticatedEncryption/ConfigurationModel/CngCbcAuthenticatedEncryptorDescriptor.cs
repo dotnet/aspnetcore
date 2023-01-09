@@ -21,15 +21,9 @@ public sealed class CngCbcAuthenticatedEncryptorDescriptor : IAuthenticatedEncry
     /// <param name="masterKey">The master key.</param>
     public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
-        if (masterKey == null)
-        {
-            throw new ArgumentNullException(nameof(masterKey));
-        }
+        ArgumentNullException.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;
