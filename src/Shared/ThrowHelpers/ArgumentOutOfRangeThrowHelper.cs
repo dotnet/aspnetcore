@@ -89,7 +89,7 @@ internal static partial class ArgumentOutOfRangeThrowHelper
     public static void ThrowIfNegativeOrZero(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
 #if !NET7_0_OR_GREATER
-        if (value < 0 || value == 0)
+        if (value <= 0)
         {
             ThrowNegativeOrZero(paramName, value);
         }
