@@ -4,9 +4,9 @@ public class Album
 {
     public int Id { get; set; }
 
-    public required string Title { get; set; }
+    public string? Title { get; set; }
 
-    public required string Artist { get; set; }
+    public string? Artist { get; set; }
 
     public DateOnly FirstReleased { get; set; }
 
