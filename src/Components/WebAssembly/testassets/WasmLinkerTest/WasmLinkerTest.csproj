@@ -5,6 +5,7 @@
     <SelfContained>true</SelfContained>
     <UseMonoRuntime>true</UseMonoRuntime>
     <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Metadata" />
