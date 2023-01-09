@@ -222,7 +222,20 @@ internal sealed class HtmlRenderer : Renderer
                 context.ClosestSelectValueAsString = capturedValueAttribute;
             }
 
-            var afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
+            var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
+            int afterElement;
+            if (isTextArea && !string.IsNullOrEmpty(capturedValueAttribute))
+            {
+                // Textarea is a special type of form field where the value is given as text content instead of a 'value' attribute
+                // So, if we captured a value attribute, use that instead of any child content
+                result.Append(capturedValueAttribute);
+                afterElement = position + frame.ElementSubtreeLength; // Skip descendants
+            }
+            else
+            {
+                // Render descendants
+                afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
+            }
 
             if (isSelect)
             {
