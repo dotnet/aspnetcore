@@ -95,10 +95,10 @@ public static partial class RequestDelegateFactory
     // Due to https://github.com/dotnet/aspnetcore/issues/41330 we cannot reference the EmptyHttpResult type
     // but users still need to assert on it as in https://github.com/dotnet/aspnetcore/issues/45063
     // so we temporarily work around this here by using reflection to get the actual type.
-    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Type.GetType("Microsoft.AspNetCore.Http.Results, Microsoft.AspNetCore.Http.Results") is {} resultsType
-        ? Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Property(null, resultsType.GetProperty("Empty")!))
-        : Expression.New(typeof(ValueTask<object>));
     private static readonly object? EmptyHttpResultInstance = Type.GetType("Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult, Microsoft.AspNetCore.Http.Results")?.GetProperty("Instance")?.GetValue(null, null);
+    private static readonly NewExpression EmptyHttpResultValueTaskExpr = EmptyHttpResultInstance is not null
+        ? Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Constant(EmptyHttpResultInstance))
+        : throw new UnreachableException("The EmptyHttpResult type could not be found.");
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
