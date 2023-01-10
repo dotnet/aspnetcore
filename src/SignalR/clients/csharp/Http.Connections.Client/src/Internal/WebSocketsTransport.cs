@@ -91,7 +91,9 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
             }
 
+#if NET7_0_OR_GREATER
             var allowHttp2 = true;
+#endif
 
             if (!isBrowser)
             {
@@ -110,7 +112,9 @@ internal sealed partial class WebSocketsTransport : ITransport
                     webSocket.Options.Credentials = context.Options.Credentials;
                     // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
                     // https://github.com/dotnet/runtime/issues/1582
+#if NET7_0_OR_GREATER
                     allowHttp2 = false;
+#endif
                 }
 
                 var originalProxy = webSocket.Options.Proxy;
@@ -126,7 +130,9 @@ internal sealed partial class WebSocketsTransport : ITransport
                     {
                         // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
                         // https://github.com/dotnet/runtime/issues/1582
+#if NET7_0_OR_GREATER
                         allowHttp2 = false;
+#endif
                     }
                 }
 
