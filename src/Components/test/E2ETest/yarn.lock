@@ -37,9 +37,9 @@
     "@types/node" "*"
 
 "@types/node@*":
-  version "18.11.9"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-18.11.9.tgz#02d013de7058cea16d36168ef2fc653464cfbad4"
-  integrity sha1-AtAT3nBYzqFtNhaO8vxlNGTPutQ=
+  version "18.11.18"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-18.11.18.tgz#8dfb97f0da23c2293e554c5a50d61ef134d7697f"
+  integrity sha1-jfuX8Nojwik+VUxaUNYe8TTXaX8=
 
 "@types/node@^13.1.7":
   version "13.13.52"
@@ -243,9 +243,9 @@ glob@^7.1.3:
     path-is-absolute "^1.0.0"
 
 got@^11.8.2:
-  version "11.8.5"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/got/-/got-11.8.5.tgz#ce77d045136de56e8f024bebb82ea349bc730046"
-  integrity sha1-znfQRRNt5W6PAkvruC6jSbxzAEY=
+  version "11.8.6"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/got/-/got-11.8.6.tgz#276e827ead8772eddbcfc97170590b841823233a"
+  integrity sha1-J26Cfq2Hcu3bz8lxcFkLhBgjIzo=
   dependencies:
     "@sindresorhus/is" "^4.0.0"
     "@szmarczak/http-timer" "^4.0.5"
