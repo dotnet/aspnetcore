@@ -45,13 +45,13 @@ internal static partial class ObjectDisposedThrowHelper
 
 #if !NET7_0_OR_GREATER
     [DoesNotReturn]
-    internal static void ThrowObjectDisposedException(object? instance)
+    private static void ThrowObjectDisposedException(object? instance)
     {
         throw new ObjectDisposedException(instance?.GetType().FullName);
     }
 
     [DoesNotReturn]
-    internal static void ThrowObjectDisposedException(Type? type)
+    private static void ThrowObjectDisposedException(Type? type)
     {
         throw new ObjectDisposedException(type?.FullName);
     }

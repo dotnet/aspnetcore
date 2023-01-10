@@ -15,7 +15,6 @@ internal sealed class ManifestFileInfo : IFileInfo
     public ManifestFileInfo(Assembly assembly, ManifestFile file, DateTimeOffset lastModified)
     {
         ArgumentNullThrowHelper.ThrowIfNull(assembly);
-
         ArgumentNullThrowHelper.ThrowIfNull(file);
 
         Assembly = assembly;
