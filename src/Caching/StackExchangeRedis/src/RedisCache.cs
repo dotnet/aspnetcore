@@ -77,9 +77,10 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private long _firstErrorTimeTicks;
     private long _previousErrorTimeTicks;
 
-    //// StackExchange.Redis will also be trying to reconnect internally,
-    //// so limit how often we recreate the ConnectionMultiplexer instance
-    //// in an attempt to reconnect
+    // StackExchange.Redis will also be trying to reconnect internally,
+    // so limit how often we recreate the ConnectionMultiplexer instance
+    // in an attempt to reconnect
+
     // Never reconnect within 60 seconds of the last attempt to connect or reconnect.
     private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
     // Only reconnect if errors have occurred for at least the last 30 seconds.
@@ -134,7 +135,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
             // SE.Redis allows efficient append of key-prefix scenarios, but we can help it
             // avoid some work/allocations by forcing the key-prefix to be a byte[]; SE.Redis
             // would do this itself anyway, using UTF8
-            _instancePrefix = Encoding.UTF8.GetBytes(instanceName);
+            _instancePrefix = (RedisKey)Encoding.UTF8.GetBytes(instanceName);
         }
     }
 
@@ -670,7 +671,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private void OnRedisError(Exception exception, IDatabase cache)
     {
-        if (exception is RedisConnectionException or SocketException)
+        if ((exception is RedisConnectionException or SocketException) && _options.UseForceReconnect)
         {
             var utcNow = DateTimeOffset.UtcNow;
             var previousConnectTime = ReadTimeTicks(ref _lastConnectTicks);
