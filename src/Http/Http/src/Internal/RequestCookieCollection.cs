@@ -40,10 +40,7 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
     {
         get
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullException.ThrowIfNull(key);
 
             if (Store == null)
             {

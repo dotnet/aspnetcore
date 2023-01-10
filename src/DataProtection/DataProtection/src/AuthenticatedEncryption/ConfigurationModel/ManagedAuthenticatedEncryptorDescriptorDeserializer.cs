@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -19,10 +20,7 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
     /// </summary>
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         // <descriptor>
         //   <!-- managed implementations -->

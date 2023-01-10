@@ -34,10 +34,7 @@ public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider
     /// <param name="template">The route template.</param>
     public HttpMethodAttribute(IEnumerable<string> httpMethods, [StringSyntax("Route")] string? template)
     {
-        if (httpMethods == null)
-        {
-            throw new ArgumentNullException(nameof(httpMethods));
-        }
+        ArgumentNullException.ThrowIfNull(httpMethods);
 
         _httpMethods = httpMethods.ToList();
         Template = template;

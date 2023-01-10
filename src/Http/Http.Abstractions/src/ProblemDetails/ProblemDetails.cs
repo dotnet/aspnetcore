@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc;
 [JsonConverter(typeof(ProblemDetailsJsonConverter))]
 public class ProblemDetails
 {
+    private readonly IDictionary<string, object?> _extensions = new Dictionary<string, object?>(StringComparer.Ordinal);
+
     /// <summary>
     /// A URI reference [RFC3986] that identifies the problem type. This specification encourages that, when
     /// dereferenced, it provide human-readable documentation for the problem type
@@ -59,5 +62,10 @@ public class ProblemDetails
     /// In particular, complex types or collection types may not round-trip to the original type when using the built-in JSON or XML formatters.
     /// </remarks>
     [JsonExtensionData]
-    public IDictionary<string, object?> Extensions { get; } = new Dictionary<string, object?>(StringComparer.Ordinal);
+    public IDictionary<string, object?> Extensions
+    {
+        [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+        [RequiresDynamicCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
+        get => _extensions;
+    }
 }

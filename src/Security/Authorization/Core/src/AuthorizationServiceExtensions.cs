@@ -4,6 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -25,15 +26,8 @@ public static class AuthorizationServiceExtensions
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, IAuthorizationRequirement requirement)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (requirement == null)
-        {
-            throw new ArgumentNullException(nameof(requirement));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(service);
+        ArgumentNullThrowHelper.ThrowIfNull(requirement);
 
         return service.AuthorizeAsync(user, resource, new IAuthorizationRequirement[] { requirement });
     }
@@ -51,15 +45,8 @@ public static class AuthorizationServiceExtensions
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, AuthorizationPolicy policy)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(service);
+        ArgumentNullThrowHelper.ThrowIfNull(policy);
 
         return service.AuthorizeAsync(user, resource, policy.Requirements);
     }
@@ -76,15 +63,8 @@ public static class AuthorizationServiceExtensions
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, AuthorizationPolicy policy)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(service);
+        ArgumentNullThrowHelper.ThrowIfNull(policy);
 
         return service.AuthorizeAsync(user, resource: null, policy: policy);
     }
@@ -101,15 +81,8 @@ public static class AuthorizationServiceExtensions
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, string policyName)
     {
-        if (service == null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
-
-        if (policyName == null)
-        {
-            throw new ArgumentNullException(nameof(policyName));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(service);
+        ArgumentNullThrowHelper.ThrowIfNull(policyName);
 
         return service.AuthorizeAsync(user, resource: null, policyName: policyName);
     }

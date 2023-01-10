@@ -716,7 +716,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
         var padding = buffer.Slice(extendedHeaderLength + length, padLength);
-        padding.Fill(0);
+        padding.Clear();
 
         frame.PayloadLength = extendedHeaderLength + length + padLength;
 

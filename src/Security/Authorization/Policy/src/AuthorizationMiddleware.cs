@@ -81,10 +81,7 @@ public class AuthorizationMiddleware
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     public async Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var endpoint = context.GetEndpoint();
         if (endpoint != null)

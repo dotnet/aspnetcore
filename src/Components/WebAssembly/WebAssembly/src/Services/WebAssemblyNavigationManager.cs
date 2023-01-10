@@ -52,10 +52,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         _ = PerformNavigationAsync();
 

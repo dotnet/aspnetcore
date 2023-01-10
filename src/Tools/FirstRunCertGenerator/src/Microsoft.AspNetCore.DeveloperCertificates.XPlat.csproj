@@ -16,4 +16,7 @@
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests" />
+  </ItemGroup>
 </Project>

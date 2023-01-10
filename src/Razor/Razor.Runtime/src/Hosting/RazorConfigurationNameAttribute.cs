@@ -20,10 +20,7 @@ public sealed class RazorConfigurationNameAttribute : Attribute
     /// <param name="configurationName">The name of the Razor configuration.</param>
     public RazorConfigurationNameAttribute(string configurationName)
     {
-        if (configurationName == null)
-        {
-            throw new ArgumentNullException(nameof(configurationName));
-        }
+        ArgumentNullException.ThrowIfNull(configurationName);
 
         ConfigurationName = configurationName;
     }

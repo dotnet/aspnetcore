@@ -17,10 +17,7 @@ public static class MvcDataAnnotationsMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddDataAnnotationsLocalization(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         return AddDataAnnotationsLocalization(builder, setupAction: null);
     }
@@ -36,10 +33,7 @@ public static class MvcDataAnnotationsMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<MvcDataAnnotationsLocalizationOptions>? setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         DataAnnotationsLocalizationServices.AddDataAnnotationsLocalizationServices(
             builder.Services,

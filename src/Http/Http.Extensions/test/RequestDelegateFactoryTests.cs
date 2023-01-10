@@ -17,7 +17,9 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -31,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Routing.Internal;
 
@@ -3070,6 +3073,122 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
+    public static IEnumerable<object[]> PolymorphicResult
+    {
+        get
+        {
+            JsonTodoChild originalTodo = new()
+            {
+                Name = "Write even more tests!",
+                Child = "With type hierarchies!",
+            };
+
+            JsonTodo TestAction() => originalTodo;
+
+            Task<JsonTodo> TaskTestAction() => Task.FromResult<JsonTodo>(originalTodo);
+            async Task<JsonTodo> TaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            ValueTask<JsonTodo> ValueTaskTestAction() => ValueTask.FromResult<JsonTodo>(originalTodo);
+            async ValueTask<JsonTodo> ValueTaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            return new List<object[]>
+                {
+                    new object[] { (Func<JsonTodo>)TestAction },
+                    new object[] { (Func<Task<JsonTodo>>)TaskTestAction},
+                    new object[] { (Func<Task<JsonTodo>>)TaskTestActionAwaited},
+                    new object[] { (Func<ValueTask<JsonTodo>>)ValueTaskTestAction},
+                    new object[] { (Func<ValueTask<JsonTodo>>)ValueTaskTestActionAwaited},
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptionsAndConfiguredJsonOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions { ServiceProvider = httpContext.RequestServices });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesJsonTypeDiscriminatorToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonNode.Parse(responseBodyStream.ToArray());
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.NotNull(deserializedResponseBody["$type"]);
+        Assert.Equal(nameof(JsonTodoChild), deserializedResponseBody["$type"]!.GetValue<string>());
+    }
+
     public static IEnumerable<object[]> JsonContextActions
     {
         get
@@ -3108,6 +3227,22 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+    }
+
+    [Fact]
+    public void CreateDelegateThrows_WhenGetJsonTypeInfoFail()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .ConfigureHttpJsonOptions(o => o.SerializerOptions.AddContext<TestJsonContext>())
+            .BuildServiceProvider();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        TodoStruct TestAction() => new TodoStruct(42, "Bob", true);
+        Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = httpContext.RequestServices }));
     }
 
     public static IEnumerable<object[]> CustomResults
@@ -6936,6 +7071,23 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void InferMetadata_PopulatesCachedContext()
+    {
+        // Arrange
+        var @delegate = void () => { };
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(),
+        };
+
+        // Act
+        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
+
+        // Assert
+        Assert.NotNull(metadataResult.CachedFactoryContext);
+    }
+
+    [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -7074,6 +7226,158 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(options.EndpointBuilder.RequestDelegate, result.RequestDelegate);
         Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
     }
+
+    private class ParameterListRequiredStringFromDifferentSources
+    {
+        public HttpContext? HttpContext { get; set; }
+
+        [FromRoute]
+        public required string RequiredRouteParam { get; set; }
+
+        [FromQuery]
+        public required string RequiredQueryParam { get; set; }
+
+        [FromHeader]
+        public required string RequiredHeaderParam { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember()
+    {
+        // Arrange
+        static void TestAction([AsParameters] ParameterListRequiredStringFromDifferentSources args) { }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert that the required modifier on members that
+        // are not nullable treats them as required.
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+
+        Assert.Equal(3, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredRouteParam"" was not provided from route.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredQueryParam"" was not provided from query string.", logs[1].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
+    }
+
+    private class ParameterListRequiredNullableStringFromDifferentSources
+    {
+        public HttpContext? HttpContext { get; set; }
+
+        [FromRoute]
+        public required StringValues? RequiredRouteParam { get; set; }
+
+        [FromQuery]
+        public required StringValues? RequiredQueryParam { get; set; }
+
+        [FromHeader]
+        public required StringValues? RequiredHeaderParam { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsNullableRequiredMember()
+    {
+        // Arrange
+        static void TestAction([AsParameters] ParameterListRequiredNullableStringFromDifferentSources args)
+        {
+            args.HttpContext!.Items.Add("RequiredRouteParam", args.RequiredRouteParam);
+            args.HttpContext!.Items.Add("RequiredQueryParam", args.RequiredQueryParam);
+            args.HttpContext!.Items.Add("RequiredHeaderParam", args.RequiredHeaderParam);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert that when properties are required but nullable
+        // we evaluate them as optional because required members
+        // must be initialized but they can be initialized to null
+        // when an NRT is required.
+        Assert.Equal(200, httpContext.Response.StatusCode);
+
+        Assert.Null(httpContext.Items["RequiredRouteParam"]);
+        Assert.Null(httpContext.Items["RequiredQueryParam"]);
+        Assert.Null(httpContext.Items["RequiredHeaderParam"]);
+    }
+
+#nullable disable
+    private class ParameterListMixedRequiredStringsFromDifferentSources
+    {
+        public HttpContext HttpContext { get; set; }
+
+        [FromRoute]
+        public required string RequiredRouteParam { get; set; }
+
+        [FromRoute]
+        public string OptionalRouteParam { get; set; }
+
+        [FromQuery]
+        public required string RequiredQueryParam { get; set; }
+
+        [FromQuery]
+        public string OptionalQueryParam { get; set; }
+
+        [FromHeader]
+        public required string RequiredHeaderParam { get; set; }
+
+        [FromHeader]
+        public string OptionalHeaderParam { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember_NullabilityDisabled()
+    {
+        // Arange
+        static void TestAction([AsParameters] ParameterListMixedRequiredStringsFromDifferentSources args) { }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert that we only execute required parameter
+        // checks for members that have the required modifier
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+        Assert.Equal(3, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredRouteParam"" was not provided from route.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredQueryParam"" was not provided from query string.", logs[1].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
+    }
+#nullable enable
 
     private DefaultHttpContext CreateHttpContext()
     {
@@ -7357,6 +7661,11 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public string? Child { get; set; }
     }
 
+    private class JsonTodoChild : JsonTodo
+    {
+        public string? Child { get; set; }
+    }
+
     private class CustomTodo : Todo
     {
         public static async ValueTask<CustomTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
@@ -7370,6 +7679,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(JsonTodoChild), nameof(JsonTodoChild))]
     private class JsonTodo : Todo
     {
         public static async ValueTask<JsonTodo?> BindAsync(HttpContext context, ParameterInfo parameter)

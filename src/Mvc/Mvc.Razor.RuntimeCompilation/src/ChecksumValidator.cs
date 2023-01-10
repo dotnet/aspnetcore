@@ -12,10 +12,7 @@ internal static class ChecksumValidator
 {
     public static bool IsRecompilationSupported(RazorCompiledItem item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         // A Razor item only supports recompilation if its primary source file has a checksum.
         //
@@ -29,15 +26,8 @@ internal static class ChecksumValidator
     // disk.
     public static bool IsItemValid(RazorProjectFileSystem fileSystem, RazorCompiledItem item)
     {
-        if (fileSystem == null)
-        {
-            throw new ArgumentNullException(nameof(fileSystem));
-        }
-
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(fileSystem);
+        ArgumentNullException.ThrowIfNull(item);
 
         var checksums = item.GetChecksumMetadata();
 

@@ -4,6 +4,7 @@
   "description": "An empty project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template does not have any content in it.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
   "symbols/Hosted/description": "If specified, includes an ASP.NET Core host for the Blazor WebAssembly app.",
