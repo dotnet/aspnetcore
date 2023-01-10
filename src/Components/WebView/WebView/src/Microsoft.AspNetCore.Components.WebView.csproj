@@ -66,12 +66,9 @@
     <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
   </PropertyGroup>
 
-  <!-- blazor.webview.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. Fall back if not. -->
+  <!-- blazor.webview.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->
   <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" '$(BuildNodeJS)' != 'false' and !EXISTS('$(BlazorWebViewJSFile)') ">
-    <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Falling back to checked-in copy." />
-    <PropertyGroup>
-      <BlazorWebViewJSFile>..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-    </PropertyGroup>
+    <Error Text="'$(BlazorWebViewJSFile)' does not exist. Falling back to checked-in copy." />
   </Target>
 
   <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
