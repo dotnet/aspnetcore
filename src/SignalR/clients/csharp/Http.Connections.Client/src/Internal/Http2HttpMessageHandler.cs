@@ -20,9 +20,13 @@ internal class Http2HttpMessageHandler : DelegatingHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
 #if NETSTANDARD2_1_OR_GREATER || NET7_0_OR_GREATER
-        // HttpClient gracefully falls back to HTTP/1.1,
-        // so it's fine to set the preferred version to a higher version
-        request.Version = HttpVersion.Version20;
+        // Check just in case HttpRequestMessage defaults to 3 or higher for some reason
+        if (request.Version == HttpVersion.Version11)
+        {
+            // HttpClient gracefully falls back to HTTP/1.1,
+            // so it's fine to set the preferred version to a higher version
+            request.Version = HttpVersion.Version20;
+        }
 #endif
 
         return base.SendAsync(request, cancellationToken);

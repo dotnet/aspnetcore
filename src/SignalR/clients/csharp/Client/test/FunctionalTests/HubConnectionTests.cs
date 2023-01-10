@@ -1790,13 +1790,15 @@ public class HubConnectionTests : FunctionalTestBase
 
     [Theory]
     [MemberData(nameof(TransportTypes))]
+    // Negotiate auth on non-windows requires a lot of setup which is out of scope for these tests
+    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
     public async Task TransportFallsbackFromHttp2WhenUsingCredentials(HttpTransportType httpTransportType)
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
         {
             o.ConfigureEndpointDefaults(o2 =>
             {
-                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http1;
                 o2.UseHttps();
             });
             o.ConfigureHttpsDefaults(httpsOptions =>
@@ -1847,6 +1849,8 @@ public class HubConnectionTests : FunctionalTestBase
 
     [ConditionalFact]
     [WebSocketsSupportedCondition]
+    // Negotiate auth on non-windows requires a lot of setup which is out of scope for these tests
+    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
     public async Task WebSocketsFailsWhenHttp1NotAllowedAndUsingCredentials()
     {
         await using (var server = await StartServer<Startup>(context => context.EventId.Name == "ErrorStartingTransport",

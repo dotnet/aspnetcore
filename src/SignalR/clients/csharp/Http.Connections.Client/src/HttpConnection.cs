@@ -538,7 +538,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         HttpMessageHandler httpMessageHandler = httpClientHandler;
 
         var isBrowser = OperatingSystem.IsBrowser();
-        var useHttp2 = true;
+        var allowHttp2 = true;
 
         if (_httpConnectionOptions != null)
         {
@@ -578,7 +578,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                     httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
                     // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
                     // https://github.com/dotnet/runtime/issues/1582
-                    useHttp2 = !_httpConnectionOptions.UseDefaultCredentials.Value;
+                    allowHttp2 = !_httpConnectionOptions.UseDefaultCredentials.Value;
                 }
 
                 if (_httpConnectionOptions.Credentials != null)
@@ -586,7 +586,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                     httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
                     // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
                     // https://github.com/dotnet/runtime/issues/1582
-                    useHttp2 = false;
+                    allowHttp2 = false;
                 }
             }
 
@@ -607,7 +607,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         // Wrap message handler after HttpMessageHandlerFactory to ensure not overridden
         httpMessageHandler = new LoggingHttpMessageHandler(httpMessageHandler, _loggerFactory);
 
-        if (useHttp2)
+        if (allowHttp2)
         {
             httpMessageHandler = new Http2HttpMessageHandler(httpMessageHandler);
         }
