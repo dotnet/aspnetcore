@@ -80,7 +80,10 @@ public partial class RedisCache : IDistributedCache, IDisposable
     //// StackExchange.Redis will also be trying to reconnect internally,
     //// so limit how often we recreate the ConnectionMultiplexer instance
     //// in an attempt to reconnect
+    // Never reconnect within 60 seconds of the last attempt to connect or reconnect.
     private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
+    // Only reconnect if errors have occurred for at least the last 30 seconds.
+    // This count resets if there are no errors for 30 seconds
     private readonly TimeSpan ReconnectErrorThreshold = TimeSpan.FromSeconds(30);
 
     private static DateTimeOffset ReadTimeTicks(ref long field)
