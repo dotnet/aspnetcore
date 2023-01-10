@@ -6,12 +6,6 @@ import { BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 const networkFetchCacheMode = 'no-cache';
 
-const anchorTagForAbsoluteUrlConversions = document.createElement('a');
-function toAbsoluteUrl(possiblyRelativeUrl: string) {
-  anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
-  return anchorTagForAbsoluteUrlConversions.href;
-}
-
 export class WebAssemblyResourceLoader {
   private usedCacheKeys: { [key: string]: boolean } = {};
 
@@ -37,7 +31,7 @@ export class WebAssemblyResourceLoader {
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
       : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
 
-    return { name, url: toAbsoluteUrl(url), response };
+    return { name, url, response };
   }
 
   logToConsole(): void {
