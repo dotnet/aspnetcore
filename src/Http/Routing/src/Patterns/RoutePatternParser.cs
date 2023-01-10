@@ -20,10 +20,7 @@ internal static class RoutePatternParser
 
     public static RoutePattern Parse(string pattern)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         var trimmedPattern = TrimPrefix(pattern);
 

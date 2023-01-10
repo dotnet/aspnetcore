@@ -15,10 +15,7 @@ public class ApiDescriptionGroupCollection
     /// <param name="version">The unique version of discovered groups.</param>
     public ApiDescriptionGroupCollection(IReadOnlyList<ApiDescriptionGroup> items, int version)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         Items = items;
         Version = version;

@@ -25,10 +25,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url)
         : this(url, permanent: false)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
+        ArgumentNullException.ThrowIfNull(url);
     }
 
     /// <summary>
@@ -51,10 +48,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent, bool preserveMethod)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
+        ArgumentNullException.ThrowIfNull(url);
 
         if (string.IsNullOrEmpty(url))
         {
@@ -102,10 +96,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<RedirectResult>>();
         return executor.ExecuteAsync(context, this);

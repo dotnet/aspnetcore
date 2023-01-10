@@ -59,10 +59,7 @@ public class ViewResult : ActionResult, IStatusCodeActionResult
     /// <inheritdoc />
     public override async Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetService<IActionResultExecutor<ViewResult>>();
         if (executor == null)

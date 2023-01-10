@@ -18,10 +18,7 @@ public static class HttpsPolicyBuilderExtensions
     /// <returns>The <see cref="IApplicationBuilder"/> for HttpsRedirection.</returns>
     public static IApplicationBuilder UseHttpsRedirection(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         var serverAddressFeature = app.ServerFeatures.Get<IServerAddressesFeature>();
         if (serverAddressFeature != null)

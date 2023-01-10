@@ -20,10 +20,7 @@ public class FilterItem
     /// <param name="descriptor">The <see cref="FilterDescriptor"/>.</param>
     public FilterItem(FilterDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         Descriptor = descriptor;
     }
@@ -36,10 +33,7 @@ public class FilterItem
     public FilterItem(FilterDescriptor descriptor, IFilterMetadata filter)
         : this(descriptor)
     {
-        if (filter == null)
-        {
-            throw new ArgumentNullException(nameof(filter));
-        }
+        ArgumentNullException.ThrowIfNull(filter);
 
         Filter = filter;
     }

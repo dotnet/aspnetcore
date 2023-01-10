@@ -28,6 +28,12 @@
     <!-- Ignore API doc requirements for test assets -->
     <NoWarn Condition="'$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or
       '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CS1591</NoWarn>
+
+    <!-- Ignore analyzers that recommend APIs introduced in .NET Core when targeting frameworks that lack those APIs
+         to avoid issues with multitargeting.
+         Some projects only build DefaultNetCoreTargetFramework when DotNetBuildFromSource is true so also suppress for source build.
+    -->
+    <NoWarn Condition="$(TargetFrameworks.Contains('NetFramework')) or $(TargetFrameworks.Contains('netstandard')) or '$(DotNetBuildFromSource)' == 'true'">$(NoWarn);CA1510;CA1511;CA1512;CA1513</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">

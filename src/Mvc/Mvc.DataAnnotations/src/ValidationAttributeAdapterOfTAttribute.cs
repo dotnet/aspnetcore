@@ -64,10 +64,7 @@ public abstract class ValidationAttributeAdapter<TAttribute> : IClientModelValid
     /// <returns>Formatted error string.</returns>
     protected virtual string GetErrorMessage(ModelMetadata modelMetadata, params object[] arguments)
     {
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadata);
 
         if (_stringLocalizer != null &&
             !string.IsNullOrEmpty(Attribute.ErrorMessage) &&

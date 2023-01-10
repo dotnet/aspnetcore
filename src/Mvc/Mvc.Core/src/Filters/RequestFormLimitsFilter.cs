@@ -22,10 +22,7 @@ internal sealed partial class RequestFormLimitsFilter : IAuthorizationFilter, IR
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var effectivePolicy = context.FindEffectivePolicy<IRequestFormLimitsPolicy>();
         if (effectivePolicy != null && effectivePolicy != this)

@@ -17,10 +17,7 @@ public static class ConcurrencyLimiterExtensions
     /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseConcurrencyLimiter(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<ConcurrencyLimiterMiddleware>();
     }

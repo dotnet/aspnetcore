@@ -24,10 +24,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestCredentials(this HttpRequestMessage requestMessage, BrowserRequestCredentials requestCredentials)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         var stringOption = requestCredentials switch
         {
@@ -51,10 +48,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestCache(this HttpRequestMessage requestMessage, BrowserRequestCache requestCache)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         var stringOption = requestCache switch
         {
@@ -81,10 +75,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestMode(this HttpRequestMessage requestMessage, BrowserRequestMode requestMode)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         var stringOption = requestMode switch
         {
@@ -122,10 +113,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestOption(this HttpRequestMessage requestMessage, string name, object value)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         IDictionary<string, object> fetchOptions;
         if (requestMessage.Options.TryGetValue(FetchRequestOptionsKey, out var entry))
@@ -155,10 +143,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserResponseStreamingEnabled(this HttpRequestMessage requestMessage, bool streamingEnabled)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         requestMessage.Options.Set(WebAssemblyEnableStreamingResponseKey, streamingEnabled);
 

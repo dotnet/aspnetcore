@@ -211,6 +211,7 @@ internal sealed class PropertyHelper
         Debug.Assert(!getMethod.IsStatic);
         Debug.Assert(getMethod.GetParameters().Length == 0);
 
+        // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
         if (RuntimeFeature.IsDynamicCodeSupported)
         {
             // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
@@ -285,6 +286,7 @@ internal sealed class PropertyHelper
         var parameters = setMethod.GetParameters();
         Debug.Assert(parameters.Length == 1);
 
+        // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
         if (RuntimeFeature.IsDynamicCodeSupported)
         {
             // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.

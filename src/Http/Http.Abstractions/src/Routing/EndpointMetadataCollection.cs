@@ -32,10 +32,7 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     /// <param name="items">The metadata items.</param>
     public EndpointMetadataCollection(IEnumerable<object> items)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         _items = items.ToArray();
         _cache = new ConcurrentDictionary<Type, object[]>();

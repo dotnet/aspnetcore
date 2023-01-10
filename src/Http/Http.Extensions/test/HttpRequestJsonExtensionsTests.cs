@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 #nullable enable
 
@@ -10,6 +11,26 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public class HttpRequestJsonExtensionsTests
 {
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("application/xml", false)]
+    [InlineData("text/json", false)]
+    [InlineData("text/json; charset=utf-8", false)]
+    [InlineData("application/json", true)]
+    [InlineData("application/json; charset=utf-8", true)]
+    [InlineData("application/ld+json", true)]
+    [InlineData("APPLICATION/JSON", true)]
+    [InlineData("APPLICATION/JSON; CHARSET=UTF-8", true)]
+    [InlineData("APPLICATION/LD+JSON", true)]
+    public void HasJsonContentType(string contentType, bool hasJsonContentType)
+    {
+        var request = new DefaultHttpContext().Request;
+        request.ContentType = contentType;
+
+        Assert.Equal(hasJsonContentType, request.HasJsonContentType());
+    }
+
     [Fact]
     public async Task ReadFromJsonAsyncGeneric_NonJsonContentType_ThrowError()
     {
@@ -200,6 +221,51 @@ public class HttpRequestJsonExtensionsTests
 
         // Act
         var result = (List<int>?)await context.Request.ReadFromJsonAsync(typeof(List<int>), options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Collection(result,
+            i => Assert.Equal(1, i),
+            i => Assert.Equal(2, i));
+    }
+
+    [Fact]
+    public async Task ReadFromJsonAsync_WithTypeInfo_ReturnValue()
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/json";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2,]"));
+
+        var options = new JsonSerializerOptions();
+        options.AllowTrailingCommas = true;
+        options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        // Act
+        var result = (List<int>?)await context.Request.ReadFromJsonAsync(options.GetTypeInfo(typeof(List<int>)));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Collection(result,
+            i => Assert.Equal(1, i),
+            i => Assert.Equal(2, i));
+    }
+
+    [Fact]
+    public async Task ReadFromJsonAsync_WithGenericTypeInfo_ReturnValue()
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/json";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2,]"));
+
+        var options = new JsonSerializerOptions();
+        options.AllowTrailingCommas = true;
+        options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        // Act
+        var typeInfo = (JsonTypeInfo<List<int>>)options.GetTypeInfo(typeof(List<int>));
+        var result = await context.Request.ReadFromJsonAsync(typeInfo);
 
         // Assert
         Assert.NotNull(result);

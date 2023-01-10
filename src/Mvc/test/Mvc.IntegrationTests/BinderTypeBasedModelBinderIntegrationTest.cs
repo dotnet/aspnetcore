@@ -317,10 +317,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
 
             Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
@@ -345,10 +342,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
 
             Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
@@ -373,10 +367,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
             Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
             var model = "Success";
@@ -394,10 +385,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
             Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
             bindingContext.Result = ModelBindingResult.Success(model: null);
@@ -409,10 +397,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
             Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
             bindingContext.Result = ModelBindingResult.Failed();

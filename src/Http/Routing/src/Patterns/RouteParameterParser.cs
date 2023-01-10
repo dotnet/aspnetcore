@@ -11,10 +11,7 @@ internal static class RouteParameterParser
     // The factoring between this class and RoutePatternParser is due to legacy.
     public static RoutePatternParameterPart ParseRouteParameter(string parameter)
     {
-        if (parameter == null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        ArgumentNullException.ThrowIfNull(parameter);
 
         if (parameter.Length == 0)
         {

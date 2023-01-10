@@ -17,15 +17,8 @@ public class FilterProviderContext
     /// </param>
     public FilterProviderContext(ActionContext actionContext, IList<FilterItem> items)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
-
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(items);
 
         ActionContext = actionContext;
         Results = items;

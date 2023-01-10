@@ -22,10 +22,7 @@ public class HelperResult : IHtmlContent
     /// <paramref name="asyncAction"/>.</remarks>
     public HelperResult(Func<TextWriter, Task> asyncAction)
     {
-        if (asyncAction == null)
-        {
-            throw new ArgumentNullException(nameof(asyncAction));
-        }
+        ArgumentNullException.ThrowIfNull(asyncAction);
 
         _asyncAction = asyncAction;
     }
@@ -42,15 +39,8 @@ public class HelperResult : IHtmlContent
     /// <param name="encoder">The <see cref="HtmlEncoder"/> to encode the content.</param>
     public virtual void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(encoder);
 
         _asyncAction(writer).GetAwaiter().GetResult();
     }

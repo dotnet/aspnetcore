@@ -70,18 +70,9 @@ public class ForwardedHeadersMiddleware
     /// <param name="options">The <see cref="ForwardedHeadersOptions"/> for configuring the middleware.</param>
     public ForwardedHeadersMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<ForwardedHeadersOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(options);
 
         // Make sure required options is not null or whitespace
         EnsureOptionNotNullorWhitespace(options.Value.ForwardedForHeaderName, nameof(options.Value.ForwardedForHeaderName));

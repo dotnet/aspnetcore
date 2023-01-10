@@ -20,10 +20,7 @@ internal sealed class RedirectToNonWwwRule : IRule
 
     public RedirectToNonWwwRule(int statusCode, params string[] domains)
     {
-        if (domains == null)
-        {
-            throw new ArgumentNullException(nameof(domains));
-        }
+        ArgumentNullException.ThrowIfNull(domains);
 
         if (domains.Length < 1)
         {

@@ -59,10 +59,7 @@ internal sealed class ControllerActionInvokerProvider : IActionInvokerProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ActionInvokerProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.ActionContext.ActionDescriptor is ControllerActionDescriptor)
         {
