@@ -57,10 +57,7 @@ public static class HttpRequestJsonExtensions
         JsonSerializerOptions? options,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -100,10 +97,7 @@ public static class HttpRequestJsonExtensions
         JsonTypeInfo<TValue> jsonTypeInfo,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -141,10 +135,7 @@ public static class HttpRequestJsonExtensions
         JsonTypeInfo jsonTypeInfo,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -202,14 +193,8 @@ public static class HttpRequestJsonExtensions
         JsonSerializerOptions? options,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(type);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -251,20 +236,9 @@ public static class HttpRequestJsonExtensions
         JsonSerializerContext context,
         CancellationToken cancellationToken = default)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -298,10 +272,7 @@ public static class HttpRequestJsonExtensions
 
     private static bool HasJsonContentType(this HttpRequest request, out StringSegment charset)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
         {

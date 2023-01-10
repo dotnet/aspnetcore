@@ -29,10 +29,7 @@ public sealed class NewtonsoftJsonValidationMetadataProvider : IDisplayMetadataP
     /// <param name="namingStrategy">The <see cref="NamingStrategy"/> to be used to configure the metadata provider.</param>
     public NewtonsoftJsonValidationMetadataProvider(NamingStrategy namingStrategy)
     {
-        if (namingStrategy == null)
-        {
-            throw new ArgumentNullException(nameof(namingStrategy));
-        }
+        ArgumentNullException.ThrowIfNull(namingStrategy);
 
         _jsonNamingPolicy = namingStrategy;
     }
@@ -40,10 +37,7 @@ public sealed class NewtonsoftJsonValidationMetadataProvider : IDisplayMetadataP
     /// <inheritdoc />
     public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var propertyName = ReadPropertyNameFrom(context.Attributes);
 
@@ -56,10 +50,7 @@ public sealed class NewtonsoftJsonValidationMetadataProvider : IDisplayMetadataP
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var propertyName = ReadPropertyNameFrom(context.Attributes);
 

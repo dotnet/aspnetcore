@@ -30,10 +30,7 @@ internal sealed class ObjectMethodExecutor
 
     private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[]? parameterDefaultValues)
     {
-        if (methodInfo == null)
-        {
-            throw new ArgumentNullException(nameof(methodInfo));
-        }
+        ArgumentNullException.ThrowIfNull(methodInfo);
 
         MethodInfo = methodInfo;
         MethodParameters = methodInfo.GetParameters();
@@ -84,10 +81,7 @@ internal sealed class ObjectMethodExecutor
 
     public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[] parameterDefaultValues)
     {
-        if (parameterDefaultValues == null)
-        {
-            throw new ArgumentNullException(nameof(parameterDefaultValues));
-        }
+        ArgumentNullException.ThrowIfNull(parameterDefaultValues);
 
         return new ObjectMethodExecutor(methodInfo, targetTypeInfo, parameterDefaultValues);
     }

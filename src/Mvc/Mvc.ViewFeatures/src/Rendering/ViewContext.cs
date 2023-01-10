@@ -51,35 +51,12 @@ public class ViewContext : ActionContext
         HtmlHelperOptions htmlHelperOptions)
         : base(actionContext)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
-
-        if (view == null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
-
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
-
-        if (tempData == null)
-        {
-            throw new ArgumentNullException(nameof(tempData));
-        }
-
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (htmlHelperOptions == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelperOptions));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(view);
+        ArgumentNullException.ThrowIfNull(viewData);
+        ArgumentNullException.ThrowIfNull(tempData);
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(htmlHelperOptions);
 
         View = view;
         ViewData = viewData;
@@ -109,25 +86,10 @@ public class ViewContext : ActionContext
         TextWriter writer)
         : base(viewContext)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (view == null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
-
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
-
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(view);
+        ArgumentNullException.ThrowIfNull(viewData);
+        ArgumentNullException.ThrowIfNull(writer);
 
         FormContext = viewContext.FormContext;
 
@@ -157,10 +119,7 @@ public class ViewContext : ActionContext
 
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _formContext = value;
         }

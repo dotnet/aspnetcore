@@ -13,20 +13,14 @@ internal sealed class DfaMatcherFactory : MatcherFactory
     // of DfaMatcherBuilder.
     public DfaMatcherFactory(IServiceProvider services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         _services = services;
     }
 
     public override Matcher CreateMatcher(EndpointDataSource dataSource)
     {
-        if (dataSource == null)
-        {
-            throw new ArgumentNullException(nameof(dataSource));
-        }
+        ArgumentNullException.ThrowIfNull(dataSource);
 
         // Creates a tracking entry in DI to stop listening for change events
         // when the services are disposed.

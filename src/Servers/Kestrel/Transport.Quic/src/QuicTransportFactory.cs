@@ -21,7 +21,6 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
     public QuicTransportFactory(ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic");

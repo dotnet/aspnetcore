@@ -254,14 +254,8 @@ public class OwinEnvironment : IDictionary<string, object>
 
     void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
     {
-        if (array is null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
-        if (arrayIndex < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-        }
+        ArgumentNullException.ThrowIfNull(array);
+        ArgumentOutOfRangeException.ThrowIfNegative(arrayIndex);
         if (arrayIndex + _entries.Count + _context.Items.Count > array.Length)
         {
             throw new ArgumentException("Not enough available space in array", nameof(array));

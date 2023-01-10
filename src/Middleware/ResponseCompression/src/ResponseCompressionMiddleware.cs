@@ -22,14 +22,8 @@ public class ResponseCompressionMiddleware
     /// <param name="provider">The <see cref="IResponseCompressionProvider"/>.</param>
     public ResponseCompressionMiddleware(RequestDelegate next, IResponseCompressionProvider provider)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(provider);
 
         _next = next;
         _provider = provider;

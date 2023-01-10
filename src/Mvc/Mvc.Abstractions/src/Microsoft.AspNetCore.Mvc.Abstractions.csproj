@@ -15,6 +15,8 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)\ParameterBindingMethodCache.cs" Link="ModelBinding\ParameterBindingMethodCache.cs" />
     <Compile Include="$(SharedSourceRoot)\TypeNameHelper\TypeNameHelper.cs" Link="ModelBinding\TypeNameHelper.cs" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

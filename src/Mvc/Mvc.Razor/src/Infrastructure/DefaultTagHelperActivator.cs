@@ -16,10 +16,7 @@ internal sealed class DefaultTagHelperActivator : ITagHelperActivator
     public TTagHelper Create<TTagHelper>(ViewContext context)
         where TTagHelper : ITagHelper
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return Cache<TTagHelper>.Create(context.HttpContext.RequestServices);
     }

@@ -27,10 +27,7 @@ public class SessionStateTempDataProvider : ITempDataProvider
     /// <inheritdoc />
     public virtual IDictionary<string, object> LoadTempData(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Accessing Session property will throw if the session middleware is not enabled.
         var session = context.Session;
@@ -49,10 +46,7 @@ public class SessionStateTempDataProvider : ITempDataProvider
     /// <inheritdoc />
     public virtual void SaveTempData(HttpContext context, IDictionary<string, object> values)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Accessing Session property will throw if the session middleware is not enabled.
         var session = context.Session;

@@ -29,10 +29,7 @@ public sealed class ControllerActionEndpointConventionBuilder : IEndpointConvent
     /// <param name="convention">The convention to add to the builder.</param>
     public void Add(Action<EndpointBuilder> convention)
     {
-        if (convention == null)
-        {
-            throw new ArgumentNullException(nameof(convention));
-        }
+        ArgumentNullException.ThrowIfNull(convention);
 
         // The lock is shared with the data source. We want to lock here
         // to avoid mutating this list while its read in the data source.

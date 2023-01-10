@@ -22,10 +22,7 @@ public sealed class DefaultEndpointDataSource : EndpointDataSource
     /// <param name="endpoints">The <see cref="Endpoint"/> instances that the data source will return.</param>
     public DefaultEndpointDataSource(params Endpoint[] endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         _endpoints = (Endpoint[])endpoints.Clone();
     }
@@ -36,10 +33,7 @@ public sealed class DefaultEndpointDataSource : EndpointDataSource
     /// <param name="endpoints">The <see cref="Endpoint"/> instances that the data source will return.</param>
     public DefaultEndpointDataSource(IEnumerable<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         _endpoints = new List<Endpoint>(endpoints);
     }
