@@ -51,7 +51,7 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [Fact]
-    public async Task WriteAsync_Works_WithKnownDerivedProblemDetails()
+    public async Task WriteAsync_Works_WithHttpValidationProblemDetails()
     {
         // Arrange
         var writer = GetWriter();
