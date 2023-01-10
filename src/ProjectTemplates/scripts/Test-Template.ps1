@@ -67,8 +67,17 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         if ($templateArgs -match '-au') {
             dotnet.exe ef migrations add Initial
         }
-        dotnet.exe publish --configuration Release
-        Set-Location .\bin\Release\net8.0\publish
+
+        $publishOutputDir = ".\.publish";
+        dotnet.exe publish --configuration Release --output $publishOutputDir
+
+        if (Test-Path $publishOutputDir) {
+            Set-Location $publishOutputDir
+        }
+        else {
+            throw "Publish output directory could not be found";
+        }
+
         if ($isBlazorWasm -eq $false) {
             Invoke-Expression "./$templateName.exe"
         }
