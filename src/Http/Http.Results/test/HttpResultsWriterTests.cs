@@ -112,7 +112,41 @@ public partial class HttpResultsWriterTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task WriteResultAsJsonAsync_Works_ForChildTypes_WithJsonPolymorphism(bool useJsonContext)
+    public async Task WriteResultAsJsonAsync_Works_UsingBaseType_ForChildTypes(bool useJsonContext)
+    {
+        // Arrange
+        var value = new TodoChild()
+        {
+            Id = 1,
+            IsComplete = true,
+            Name = "Write even more tests!",
+            Child = "With type hierarchies!"
+        };
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.AddContext<TestJsonContext>();
+        }
+
+        // Act
+        await HttpResultsWriter.WriteResultAsJsonAsync<Todo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+
+        // Assert
+        var body = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), serializerOptions);
+
+        Assert.NotNull(body);
+        Assert.Equal("Write even more tests!", body!.Name);
+        Assert.True(body!.IsComplete);
+        Assert.Equal("With type hierarchies!", body!.Child);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WriteResultAsJsonAsync_Works_UsingBaseType_ForChildTypes_WithJsonPolymorphism(bool useJsonContext)
     {
         // Arrange
         var value = new TodoJsonChild()
