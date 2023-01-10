@@ -1788,7 +1788,7 @@ public class HubConnectionTests : FunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 CONNECT"));
     }
 
-    [Theory]
+    [ConditionalTheory]
     [MemberData(nameof(TransportTypes))]
     // Negotiate auth on non-windows requires a lot of setup which is out of scope for these tests
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
