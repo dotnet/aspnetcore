@@ -40,10 +40,7 @@ public class BufferedReadStream : Stream
     /// <param name="bytePool">ArrayPool for the buffer.</param>
     public BufferedReadStream(Stream inner, int bufferSize, ArrayPool<byte> bytePool)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
 
         _inner = inner;
         _bytePool = bytePool;

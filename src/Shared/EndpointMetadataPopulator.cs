@@ -11,7 +11,8 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
-[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
+[RequiresUnreferencedCode("This API performs reflection on types that can't be statically analyzed.")]
+[RequiresDynamicCode("This API performs reflection on types that can't be statically analyzed.")]
 internal static class EndpointMetadataPopulator
 {
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;

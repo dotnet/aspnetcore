@@ -13,20 +13,14 @@ internal sealed class BrowserTestOutputLogger : ITestOutputHelper
 
     public BrowserTestOutputLogger(ILogger logger)
     {
-        if (logger is null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         _logger = logger;
     }
 
     public void WriteLine(string message)
     {
-        if (message is null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
+        ArgumentNullException.ThrowIfNull(message);
 
         _logger.LogInformation(message);
     }

@@ -22,10 +22,7 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     /// </param>
     public HostAttribute(string host) : this(new[] { host })
     {
-        if (host == null)
-        {
-            throw new ArgumentNullException(nameof(host));
-        }
+        ArgumentNullException.ThrowIfNull(host);
     }
 
     /// <summary>
@@ -38,10 +35,7 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     /// </param>
     public HostAttribute(params string[] hosts)
     {
-        if (hosts == null)
-        {
-            throw new ArgumentNullException(nameof(hosts));
-        }
+        ArgumentNullException.ThrowIfNull(hosts);
 
         Hosts = hosts.ToArray();
     }

@@ -14,10 +14,7 @@ internal sealed class DynamicPageEndpointSelector : IDisposable
 
     public DynamicPageEndpointSelector(EndpointDataSource dataSource)
     {
-        if (dataSource == null)
-        {
-            throw new ArgumentNullException(nameof(dataSource));
-        }
+        ArgumentNullException.ThrowIfNull(dataSource);
 
         _dataSource = dataSource;
         _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
@@ -27,10 +24,7 @@ internal sealed class DynamicPageEndpointSelector : IDisposable
 
     public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         var table = Table;
         var matches = table.Select(values);

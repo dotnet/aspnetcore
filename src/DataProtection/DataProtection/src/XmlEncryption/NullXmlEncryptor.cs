@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -43,10 +44,7 @@ public sealed class NullXmlEncryptor : IXmlEncryptor
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintextElement);
 
         _logger.EncryptingUsingNullEncryptor();
 

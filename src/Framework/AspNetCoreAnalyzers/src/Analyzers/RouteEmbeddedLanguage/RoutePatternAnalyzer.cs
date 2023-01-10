@@ -82,7 +82,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
                     foreach (var parameter in routeUsage.UsageContext.ResolvedParameters)
                     {
-                        routeParameterNames.Remove(parameter.Symbol.Name);
+                        routeParameterNames.Remove(parameter.RouteParameterName);
                     }
 
                     foreach (var unusedParameterName in routeParameterNames)
@@ -143,7 +143,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var parameterSymbol = resolvedParameterSymbols.FirstOrDefault(s => string.Equals(s.Symbol.Name, routeParameter.Name, StringComparison.OrdinalIgnoreCase));
+            var parameterSymbol = resolvedParameterSymbols.FirstOrDefault(s => string.Equals(s.RouteParameterName, routeParameter.Name, StringComparison.OrdinalIgnoreCase));
             if (parameterSymbol.Symbol != null)
             {
                 var s = parameterSymbol.TopLevelSymbol ?? parameterSymbol.Symbol;

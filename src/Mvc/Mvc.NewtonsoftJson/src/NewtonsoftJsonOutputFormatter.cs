@@ -58,15 +58,8 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
         MvcOptions mvcOptions,
         MvcNewtonsoftJsonOptions? jsonOptions)
     {
-        if (serializerSettings == null)
-        {
-            throw new ArgumentNullException(nameof(serializerSettings));
-        }
-
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
+        ArgumentNullException.ThrowIfNull(serializerSettings);
+        ArgumentNullException.ThrowIfNull(charPool);
 
         SerializerSettings = serializerSettings;
         _charPool = new JsonArrayPool<char>(charPool);
@@ -98,10 +91,7 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
     /// <returns>The <see cref="JsonWriter"/> used during serialization.</returns>
     protected virtual JsonWriter CreateJsonWriter(TextWriter writer)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         var jsonWriter = new JsonTextWriter(writer)
         {
@@ -143,15 +133,8 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
     /// <inheritdoc />
     public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (selectedEncoding == null)
-        {
-            throw new ArgumentNullException(nameof(selectedEncoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         // Compat mode for derived options
         _jsonOptions ??= context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcNewtonsoftJsonOptions>>().Value;

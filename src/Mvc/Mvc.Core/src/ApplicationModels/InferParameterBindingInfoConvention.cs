@@ -66,10 +66,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     /// <param name="action">The <see cref="ActionModel"/>.</param>
     public void Apply(ActionModel action)
     {
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         if (!ShouldApply(action))
         {

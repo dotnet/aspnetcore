@@ -24,10 +24,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     public TagHelperAttributeList(IEnumerable<TagHelperAttribute> attributes)
         : base(new List<TagHelperAttribute>(attributes))
     {
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
     }
 
     /// <summary>
@@ -38,10 +35,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     public TagHelperAttributeList(List<TagHelperAttribute> attributes)
         : base(attributes)
     {
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
     }
 
     /// <inheritdoc />
@@ -56,10 +50,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             Items[index] = value;
         }
@@ -96,10 +87,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     /// case-insensitively.</remarks>
     public void SetAttribute(TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         var attributeReplaced = false;
 
@@ -147,10 +135,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     /// <inheritdoc />
     public void Add(TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         Items.Add(attribute);
     }
@@ -158,10 +143,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     /// <inheritdoc />
     public void Insert(int index, TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         Items.Insert(index, attribute);
     }
@@ -172,10 +154,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     /// </remarks>
     public bool Remove(TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         return Items.Remove(attribute);
     }
@@ -199,10 +178,7 @@ public class TagHelperAttributeList : ReadOnlyTagHelperAttributeList, IList<TagH
     /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
     public bool RemoveAll(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         // Perf: Avoid allocating enumerator
         var removedAtLeastOne = false;

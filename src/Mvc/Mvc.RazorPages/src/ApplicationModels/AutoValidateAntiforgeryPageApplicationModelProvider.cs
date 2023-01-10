@@ -17,10 +17,7 @@ internal sealed class AutoValidateAntiforgeryPageApplicationModelProvider : IPag
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var pageApplicationModel = context.PageApplicationModel;
 

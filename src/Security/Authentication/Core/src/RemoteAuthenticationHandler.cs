@@ -215,10 +215,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <param name="properties"></param>
     protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
     {
-        if (properties == null)
-        {
-            throw new ArgumentNullException(nameof(properties));
-        }
+        ArgumentNullException.ThrowIfNull(properties);
 
         var bytes = new byte[32];
         RandomNumberGenerator.Fill(bytes);
@@ -240,10 +237,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <returns></returns>
     protected virtual bool ValidateCorrelationId(AuthenticationProperties properties)
     {
-        if (properties == null)
-        {
-            throw new ArgumentNullException(nameof(properties));
-        }
+        ArgumentNullException.ThrowIfNull(properties);
 
         if (!properties.Items.TryGetValue(CorrelationProperty, out var correlationId))
         {

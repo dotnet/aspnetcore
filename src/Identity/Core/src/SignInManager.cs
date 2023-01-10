@@ -38,18 +38,9 @@ public class SignInManager<TUser> where TUser : class
         IAuthenticationSchemeProvider schemes,
         IUserConfirmation<TUser> confirmation)
     {
-        if (userManager == null)
-        {
-            throw new ArgumentNullException(nameof(userManager));
-        }
-        if (contextAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(contextAccessor));
-        }
-        if (claimsFactory == null)
-        {
-            throw new ArgumentNullException(nameof(claimsFactory));
-        }
+        ArgumentNullException.ThrowIfNull(userManager);
+        ArgumentNullException.ThrowIfNull(contextAccessor);
+        ArgumentNullException.ThrowIfNull(claimsFactory);
 
         UserManager = userManager;
         _contextAccessor = contextAccessor;
@@ -122,10 +113,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>True if the user is logged in with identity.</returns>
     public virtual bool IsSignedIn(ClaimsPrincipal principal)
     {
-        if (principal == null)
-        {
-            throw new ArgumentNullException(nameof(principal));
-        }
+        ArgumentNullException.ThrowIfNull(principal);
         return principal.Identities != null &&
             principal.Identities.Any(i => i.AuthenticationType == IdentityConstants.ApplicationScheme);
     }
@@ -327,10 +315,7 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         var attempt = await CheckPasswordSignInAsync(user, password, lockoutOnFailure);
         return attempt.Succeeded
@@ -371,10 +356,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns></returns>
     public virtual async Task<SignInResult> CheckPasswordSignInAsync(TUser user, string password, bool lockoutOnFailure)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         var error = await PreSignInCheck(user);
         if (error != null)
@@ -688,10 +670,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
     public virtual async Task<IdentityResult> UpdateExternalAuthenticationTokensAsync(ExternalLoginInfo externalLogin)
     {
-        if (externalLogin == null)
-        {
-            throw new ArgumentNullException(nameof(externalLogin));
-        }
+        ArgumentNullException.ThrowIfNull(externalLogin);
 
         if (externalLogin.AuthenticationTokens != null && externalLogin.AuthenticationTokens.Any())
         {

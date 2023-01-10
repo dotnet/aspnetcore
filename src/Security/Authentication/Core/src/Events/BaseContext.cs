@@ -18,18 +18,9 @@ public abstract class BaseContext<TOptions> where TOptions : AuthenticationSchem
     /// <param name="options">The authentication options associated with the scheme.</param>
     protected BaseContext(HttpContext context, AuthenticationScheme scheme, TOptions options)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-        if (scheme == null)
-        {
-            throw new ArgumentNullException(nameof(scheme));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(scheme);
+        ArgumentNullException.ThrowIfNull(options);
 
         HttpContext = context;
         Scheme = scheme;

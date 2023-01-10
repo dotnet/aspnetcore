@@ -10,10 +10,7 @@ internal sealed class RelativeRedirectUriValidator : StrictRedirectUriValidator
 {
     public RelativeRedirectUriValidator(IAbsoluteUrlFactory absoluteUrlFactory)
     {
-        if (absoluteUrlFactory == null)
-        {
-            throw new ArgumentNullException(nameof(absoluteUrlFactory));
-        }
+        ArgumentNullException.ThrowIfNull(absoluteUrlFactory);
 
         AbsoluteUrlFactory = absoluteUrlFactory;
     }

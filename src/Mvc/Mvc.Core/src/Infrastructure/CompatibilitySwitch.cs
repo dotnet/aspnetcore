@@ -77,10 +77,7 @@ public class CompatibilitySwitch<TValue> : ICompatibilitySwitch where TValue : s
     /// </param>
     public CompatibilitySwitch(string name, TValue initialValue)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Name = name;
         _value = initialValue;

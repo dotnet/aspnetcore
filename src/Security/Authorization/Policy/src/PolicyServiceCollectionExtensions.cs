@@ -27,10 +27,7 @@ public static class PolicyServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<AuthorizationPolicyMarkerService>();
         services.TryAddTransient<IPolicyEvaluator, PolicyEvaluator>();
@@ -45,10 +42,7 @@ public static class PolicyServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAuthorization(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthorizationCore();
         services.AddAuthorizationPolicyEvaluator();
@@ -64,10 +58,7 @@ public static class PolicyServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAuthorization(this IServiceCollection services, Action<AuthorizationOptions> configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthorizationCore(configure);
         services.AddAuthorizationPolicyEvaluator();

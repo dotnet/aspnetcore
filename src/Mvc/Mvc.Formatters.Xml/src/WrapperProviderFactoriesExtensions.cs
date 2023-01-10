@@ -20,15 +20,8 @@ public static class WrapperProviderFactoriesExtensions
         this IEnumerable<IWrapperProviderFactory> wrapperProviderFactories,
         WrapperProviderContext wrapperProviderContext)
     {
-        if (wrapperProviderFactories == null)
-        {
-            throw new ArgumentNullException(nameof(wrapperProviderFactories));
-        }
-
-        if (wrapperProviderContext == null)
-        {
-            throw new ArgumentNullException(nameof(wrapperProviderContext));
-        }
+        ArgumentNullException.ThrowIfNull(wrapperProviderFactories);
+        ArgumentNullException.ThrowIfNull(wrapperProviderContext);
 
         foreach (var wrapperProviderFactory in wrapperProviderFactories)
         {

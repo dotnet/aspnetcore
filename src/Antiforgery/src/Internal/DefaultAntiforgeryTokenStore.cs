@@ -14,10 +14,7 @@ internal sealed class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
 
     public DefaultAntiforgeryTokenStore(IOptions<AntiforgeryOptions> optionsAccessor)
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
 
         _options = optionsAccessor.Value;
     }

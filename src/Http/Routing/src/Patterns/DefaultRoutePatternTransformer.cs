@@ -13,10 +13,7 @@ internal sealed class DefaultRoutePatternTransformer : RoutePatternTransformer
 
     public DefaultRoutePatternTransformer(ParameterPolicyFactory policyFactory)
     {
-        if (policyFactory == null)
-        {
-            throw new ArgumentNullException(nameof(policyFactory));
-        }
+        ArgumentNullException.ThrowIfNull(policyFactory);
 
         _policyFactory = policyFactory;
     }
@@ -25,20 +22,14 @@ internal sealed class DefaultRoutePatternTransformer : RoutePatternTransformer
         "Consider using a different overload to avoid this issue.")]
     public override RoutePattern SubstituteRequiredValues(RoutePattern original, object requiredValues)
     {
-        if (original == null)
-        {
-            throw new ArgumentNullException(nameof(original));
-        }
+        ArgumentNullException.ThrowIfNull(original);
 
         return SubstituteRequiredValues(original, new RouteValueDictionary(requiredValues));
     }
 
     public override RoutePattern SubstituteRequiredValues(RoutePattern original, RouteValueDictionary requiredValues)
     {
-        if (original is null)
-        {
-            throw new ArgumentNullException(nameof(original));
-        }
+        ArgumentNullException.ThrowIfNull(original);
 
         // Process each required value in sequence. Bail if we find any rejection criteria. The goal
         // of rejection is to avoid creating RoutePattern instances that can't *ever* match.

@@ -35,10 +35,7 @@ internal sealed class ExplicitIndexCollectionValidationStrategy : IValidationStr
     /// <param name="elementKeys">The keys of collection elements that were used during model binding.</param>
     public ExplicitIndexCollectionValidationStrategy(IEnumerable<string> elementKeys)
     {
-        if (elementKeys == null)
-        {
-            throw new ArgumentNullException(nameof(elementKeys));
-        }
+        ArgumentNullException.ThrowIfNull(elementKeys);
 
         ElementKeys = elementKeys;
     }
