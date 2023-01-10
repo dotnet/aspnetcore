@@ -462,10 +462,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
-#if NETSTANDARD2_1_OR_GREATER || NET7_0_OR_GREATER
-                // HttpClient gracefully falls back to HTTP/1.1, so it's fine to set the preferred version to a higher version
-                request.Version = HttpVersion.Version20;
-#endif
 #if NET5_0_OR_GREATER
                 request.Options.Set(new HttpRequestOptionsKey<bool>("IsNegotiate"), true);
 #else
@@ -542,6 +538,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         HttpMessageHandler httpMessageHandler = httpClientHandler;
 
         var isBrowser = OperatingSystem.IsBrowser();
+        var useHttp2 = true;
 
         if (_httpConnectionOptions != null)
         {
@@ -579,11 +576,17 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 if (_httpConnectionOptions.UseDefaultCredentials != null)
                 {
                     httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
+                    // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
+                    // https://github.com/dotnet/runtime/issues/1582
+                    useHttp2 = !_httpConnectionOptions.UseDefaultCredentials.Value;
                 }
 
                 if (_httpConnectionOptions.Credentials != null)
                 {
                     httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
+                    // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
+                    // https://github.com/dotnet/runtime/issues/1582
+                    useHttp2 = false;
                 }
             }
 
@@ -603,6 +606,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         // Wrap message handler after HttpMessageHandlerFactory to ensure not overridden
         httpMessageHandler = new LoggingHttpMessageHandler(httpMessageHandler, _loggerFactory);
+
+        if (useHttp2)
+        {
+            httpMessageHandler = new Http2HttpMessageHandler(httpMessageHandler);
+        }
 
         var httpClient = new HttpClient(httpMessageHandler);
         httpClient.Timeout = HttpClientTimeout;
