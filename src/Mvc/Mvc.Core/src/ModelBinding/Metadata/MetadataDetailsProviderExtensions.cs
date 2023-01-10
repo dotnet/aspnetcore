@@ -17,10 +17,7 @@ public static class MetadataDetailsProviderExtensions
     /// <typeparam name="TMetadataDetailsProvider">The type to remove.</typeparam>
     public static void RemoveType<TMetadataDetailsProvider>(this IList<IMetadataDetailsProvider> list) where TMetadataDetailsProvider : IMetadataDetailsProvider
     {
-        if (list == null)
-        {
-            throw new ArgumentNullException(nameof(list));
-        }
+        ArgumentNullException.ThrowIfNull(list);
 
         RemoveType(list, typeof(TMetadataDetailsProvider));
     }
@@ -32,15 +29,8 @@ public static class MetadataDetailsProviderExtensions
     /// <param name="type">The type to remove.</param>
     public static void RemoveType(this IList<IMetadataDetailsProvider> list, Type type)
     {
-        if (list == null)
-        {
-            throw new ArgumentNullException(nameof(list));
-        }
-
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(list);
+        ArgumentNullException.ThrowIfNull(type);
 
         for (var i = list.Count - 1; i >= 0; i--)
         {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 
@@ -23,10 +24,7 @@ public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequire
     /// <param name="handler">Function that is called to handle this requirement.</param>
     public AssertionRequirement(Func<AuthorizationHandlerContext, bool> handler)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(handler);
 
         Handler = context => Task.FromResult(handler(context));
     }
@@ -37,10 +35,7 @@ public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequire
     /// <param name="handler">Function that is called to handle this requirement.</param>
     public AssertionRequirement(Func<AuthorizationHandlerContext, Task<bool>> handler)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(handler);
 
         Handler = handler;
     }

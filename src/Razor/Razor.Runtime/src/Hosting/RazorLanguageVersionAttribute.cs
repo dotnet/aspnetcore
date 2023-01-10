@@ -20,10 +20,7 @@ public sealed class RazorLanguageVersionAttribute : Attribute
     /// <param name="languageVersion">The language version of Razor</param>
     public RazorLanguageVersionAttribute(string languageVersion)
     {
-        if (languageVersion == null)
-        {
-            throw new ArgumentNullException(nameof(languageVersion));
-        }
+        ArgumentNullException.ThrowIfNull(languageVersion);
 
         LanguageVersion = languageVersion;
     }

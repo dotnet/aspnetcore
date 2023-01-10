@@ -33,10 +33,7 @@ public class PagePropertyModel : ParameterModelBase, ICommonModel
     public PagePropertyModel(PagePropertyModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Page = other.Page;
         BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);

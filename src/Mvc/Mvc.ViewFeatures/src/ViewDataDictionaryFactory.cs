@@ -11,10 +11,7 @@ internal static class ViewDataDictionaryFactory
 {
     public static Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> CreateFactory(Type modelType)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var type = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
         var constructor = type.GetConstructor(new[] { typeof(IModelMetadataProvider), typeof(ModelStateDictionary) });
@@ -35,10 +32,7 @@ internal static class ViewDataDictionaryFactory
 
     public static Func<ViewDataDictionary, ViewDataDictionary> CreateNestedFactory(Type modelType)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var type = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
         var constructor = type.GetConstructor(new[] { typeof(ViewDataDictionary) });

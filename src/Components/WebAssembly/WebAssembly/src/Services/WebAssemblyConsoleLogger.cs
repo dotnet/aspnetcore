@@ -48,10 +48,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
             return;
         }
 
-        if (formatter == null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
+        ArgumentNullException.ThrowIfNull(formatter);
 
         var message = formatter(state, exception);
 

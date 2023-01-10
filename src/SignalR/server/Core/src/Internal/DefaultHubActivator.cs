@@ -35,10 +35,7 @@ internal sealed class DefaultHubActivator<THub> : IHubActivator<THub> where THub
 
     public void Release(THub hub)
     {
-        if (hub == null)
-        {
-            throw new ArgumentNullException(nameof(hub));
-        }
+        ArgumentNullException.ThrowIfNull(hub);
 
         Debug.Assert(_created.HasValue, "hubs must be released with the hub activator they were created");
 

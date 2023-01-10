@@ -17,10 +17,7 @@ public sealed class OutputElementHintAttribute : Attribute
     /// </param>
     public OutputElementHintAttribute(string outputElement)
     {
-        if (outputElement == null)
-        {
-            throw new ArgumentNullException(nameof(outputElement));
-        }
+        ArgumentNullException.ThrowIfNull(outputElement);
 
         OutputElement = outputElement;
     }

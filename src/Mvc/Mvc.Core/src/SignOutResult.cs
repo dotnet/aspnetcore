@@ -89,10 +89,7 @@ public partial class SignOutResult : ActionResult, IResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return ExecuteAsync(context.HttpContext);
     }

@@ -149,10 +149,7 @@ public class TagBuilder : IHtmlContent
     /// </remarks>
     public static string CreateSanitizedId(string? name, string invalidCharReplacement)
     {
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -223,10 +220,7 @@ public class TagBuilder : IHtmlContent
     /// <seealso cref="CreateSanitizedId(string, string)"/>
     public void GenerateId(string name, string invalidCharReplacement)
     {
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -337,15 +331,8 @@ public class TagBuilder : IHtmlContent
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(encoder);
 
         WriteTo(this, writer, encoder, TagRenderMode);
     }

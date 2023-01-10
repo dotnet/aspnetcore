@@ -31,10 +31,7 @@ public class HandleRequestResult : AuthenticateResult
     /// <returns>The result.</returns>
     public static new HandleRequestResult Success(AuthenticationTicket ticket)
     {
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
         return new HandleRequestResult() { Ticket = ticket, Properties = ticket.Properties };
     }
 

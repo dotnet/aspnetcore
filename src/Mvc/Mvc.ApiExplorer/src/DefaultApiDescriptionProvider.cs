@@ -58,10 +58,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ApiDescriptionProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
         {

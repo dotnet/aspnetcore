@@ -26,10 +26,7 @@ internal sealed class AuthorizationPageApplicationModelProvider : IPageApplicati
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_mvcOptions.EnableEndpointRouting)
         {

@@ -53,10 +53,7 @@ public class CorsPolicyBuilder
     /// </remarks>
     public CorsPolicyBuilder WithOrigins(params string[] origins)
     {
-        if (origins is null)
-        {
-            throw new ArgumentNullException(nameof(origins));
-        }
+        ArgumentNullException.ThrowIfNull(origins);
 
         foreach (var origin in origins)
         {
@@ -69,10 +66,7 @@ public class CorsPolicyBuilder
 
     internal static string GetNormalizedOrigin(string origin)
     {
-        if (origin is null)
-        {
-            throw new ArgumentNullException(nameof(origin));
-        }
+        ArgumentNullException.ThrowIfNull(origin);
 
         if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
             (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
@@ -248,10 +242,7 @@ public class CorsPolicyBuilder
     /// <returns>The current policy builder.</returns>
     private CorsPolicyBuilder Combine(CorsPolicy policy)
     {
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         WithOrigins(policy.Origins.ToArray());
         WithHeaders(policy.Headers.ToArray());

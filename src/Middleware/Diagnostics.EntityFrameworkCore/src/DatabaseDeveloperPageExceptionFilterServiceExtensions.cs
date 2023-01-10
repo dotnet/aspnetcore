@@ -23,10 +23,7 @@ public static class DatabaseDeveloperPageExceptionFilterServiceExtensions
     /// </remarks>
     public static IServiceCollection AddDatabaseDeveloperPageExceptionFilter(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddEnumerable(new ServiceDescriptor(typeof(IDeveloperPageExceptionFilter), typeof(DatabaseDeveloperPageExceptionFilter), ServiceLifetime.Singleton));
 

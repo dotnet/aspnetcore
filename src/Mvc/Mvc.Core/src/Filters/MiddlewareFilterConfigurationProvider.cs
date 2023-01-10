@@ -17,10 +17,7 @@ internal sealed class MiddlewareFilterConfigurationProvider
 {
     public static Action<IApplicationBuilder> CreateConfigureDelegate(Type configurationType)
     {
-        if (configurationType == null)
-        {
-            throw new ArgumentNullException(nameof(configurationType));
-        }
+        ArgumentNullException.ThrowIfNull(configurationType);
 
         if (!HasParameterlessConstructor(configurationType))
         {

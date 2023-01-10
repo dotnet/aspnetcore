@@ -22,10 +22,7 @@ public static class ComponentEndpointRouteBuilderExtensions
     /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
     public static ComponentEndpointConventionBuilder MapBlazorHub(this IEndpointRouteBuilder endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         return endpoints.MapBlazorHub(ComponentHub.DefaultPath);
     }
@@ -40,15 +37,8 @@ public static class ComponentEndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         string path)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(path);
 
         return endpoints.MapBlazorHub(path, configureOptions: _ => { });
     }
@@ -63,15 +53,8 @@ public static class ComponentEndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         Action<HttpConnectionDispatcherOptions> configureOptions)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         return endpoints.MapBlazorHub(ComponentHub.DefaultPath, configureOptions);
     }
@@ -88,20 +71,9 @@ public static class ComponentEndpointRouteBuilderExtensions
         string path,
         Action<HttpConnectionDispatcherOptions> configureOptions)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
-
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions);
 

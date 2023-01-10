@@ -45,10 +45,7 @@ internal sealed class RazorPagePropertyActivator
 
     public void Activate(object page, ViewContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.ViewData = CreateViewDataDictionary(context);
         for (var i = 0; i < _propertyActivators.Length; i++)
