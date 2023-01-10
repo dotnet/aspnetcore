@@ -68,10 +68,7 @@ public class ObjectResult : ActionResult, IStatusCodeActionResult
     /// </summary>
     public virtual void OnFormatting(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (Value is ProblemDetails details)
         {

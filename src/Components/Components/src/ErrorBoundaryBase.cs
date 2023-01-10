@@ -56,11 +56,7 @@ public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
 
     void IErrorBoundary.HandleException(Exception exception)
     {
-        if (exception is null)
-        {
-            // This would be a framework bug if it happened. It should not be possible.
-            throw new ArgumentNullException(nameof(exception));
-        }
+        ArgumentNullException.ThrowIfNull(exception);
 
         // If rendering the error content itself causes an error, then re-rendering on error risks creating an
         // infinite error loop. Unfortunately it's very hard to distinguish whether the error source is "child content"

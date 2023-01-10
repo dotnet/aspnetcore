@@ -25,15 +25,8 @@ public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActio
     /// <inheritdoc />
     public virtual Task ExecuteAsync(ActionContext context, PhysicalFileResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         var fileInfo = GetFileInfo(result.FileName);
         if (!fileInfo.Exists)
@@ -74,15 +67,8 @@ public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActio
         long rangeLength,
         ILogger logger)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(result);
 
         if (range != null && rangeLength == 0)
         {
@@ -118,10 +104,7 @@ public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActio
     [Obsolete("This API is no longer called.")]
     protected virtual Stream GetFileStream(string path)
     {
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullException.ThrowIfNull(path);
 
         return new FileStream(
                 path,

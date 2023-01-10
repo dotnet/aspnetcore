@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.WebEncoders.Testing;
 
@@ -21,10 +22,7 @@ public sealed class HtmlTestEncoder : HtmlEncoder
     /// <inheritdoc />
     public override string Encode(string value)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(value);
 
         if (value.Length == 0)
         {
@@ -37,15 +35,8 @@ public sealed class HtmlTestEncoder : HtmlEncoder
     /// <inheritdoc />
     public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(output);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
 
         if (characterCount == 0)
         {
@@ -60,15 +51,8 @@ public sealed class HtmlTestEncoder : HtmlEncoder
     /// <inheritdoc />
     public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(output);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
 
         if (characterCount == 0)
         {

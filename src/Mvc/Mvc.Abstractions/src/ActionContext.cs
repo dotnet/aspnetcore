@@ -64,25 +64,10 @@ public class ActionContext
         ActionDescriptor actionDescriptor,
         ModelStateDictionary modelState)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (routeData == null)
-        {
-            throw new ArgumentNullException(nameof(routeData));
-        }
-
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
-
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(routeData);
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
+        ArgumentNullException.ThrowIfNull(modelState);
 
         HttpContext = httpContext;
         RouteData = routeData;

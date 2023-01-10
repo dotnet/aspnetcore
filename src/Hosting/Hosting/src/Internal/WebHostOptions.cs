@@ -13,10 +13,7 @@ internal sealed class WebHostOptions
 {
     public WebHostOptions(IConfiguration primaryConfiguration, IConfiguration? fallbackConfiguration = null, IHostEnvironment? environment = null)
     {
-        if (primaryConfiguration is null)
-        {
-            throw new ArgumentNullException(nameof(primaryConfiguration));
-        }
+        ArgumentNullException.ThrowIfNull(primaryConfiguration);
 
         string? GetConfig(string key) => primaryConfiguration[key] ?? fallbackConfiguration?[key];
 

@@ -20,10 +20,7 @@ public static class GenericHostWebHostBuilderExtensions
     /// <returns>The <see cref="IHostBuilder"/>.</returns>
     public static IHostBuilder ConfigureWebHost(this IHostBuilder builder, Action<IWebHostBuilder> configure)
     {
-        if (configure is null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         return builder.ConfigureWebHost(configure, _ => { });
     }
@@ -37,15 +34,8 @@ public static class GenericHostWebHostBuilderExtensions
     /// <returns>The <see cref="IHostBuilder"/>.</returns>
     public static IHostBuilder ConfigureWebHost(this IHostBuilder builder, Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureWebHostBuilder)
     {
-        if (configure is null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
-
-        if (configureWebHostBuilder is null)
-        {
-            throw new ArgumentNullException(nameof(configureWebHostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
+        ArgumentNullException.ThrowIfNull(configureWebHostBuilder);
 
         // Light up custom implementations namely ConfigureHostBuilder which throws.
         if (builder is ISupportsConfigureWebHost supportsConfigureWebHost)

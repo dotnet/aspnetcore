@@ -39,10 +39,7 @@ public abstract partial class RouteBase : IRouter, INamedRouter
         IDictionary<string, object>? constraints,
         RouteValueDictionary? dataTokens)
     {
-        if (constraintResolver == null)
-        {
-            throw new ArgumentNullException(nameof(constraintResolver));
-        }
+        ArgumentNullException.ThrowIfNull(constraintResolver);
 
         template = template ?? string.Empty;
         Name = name;
@@ -108,10 +105,7 @@ public abstract partial class RouteBase : IRouter, INamedRouter
     /// <inheritdoc />
     public virtual Task RouteAsync(RouteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         EnsureMatcher();
         EnsureLoggers(context.HttpContext);

@@ -19,10 +19,7 @@ public static class AuthAppBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public static IApplicationBuilder UseAuthentication(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         app.Properties[AuthenticationMiddlewareSetKey] = true;
         return app.UseMiddleware<AuthenticationMiddleware>();

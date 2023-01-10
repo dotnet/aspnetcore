@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -29,10 +30,7 @@ public class AuthorizationHandlerContext
         ClaimsPrincipal user,
         object? resource)
     {
-        if (requirements == null)
-        {
-            throw new ArgumentNullException(nameof(requirements));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(requirements);
 
         Requirements = requirements;
         User = user;

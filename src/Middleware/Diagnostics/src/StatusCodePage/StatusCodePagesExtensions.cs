@@ -24,14 +24,8 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, StatusCodePagesOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<StatusCodePagesMiddleware>(Options.Create(options));
     }
@@ -44,10 +38,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<StatusCodePagesMiddleware>();
     }
@@ -61,14 +52,8 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Func<StatusCodeContext, Task> handler)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(handler);
 
         return app.UseStatusCodePages(new StatusCodePagesOptions
         {
@@ -86,10 +71,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, string contentType, string bodyFormat)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseStatusCodePages(context =>
         {
@@ -109,10 +91,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePagesWithRedirects(this IApplicationBuilder app, string locationFormat)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         if (locationFormat.StartsWith('~'))
         {
@@ -144,10 +123,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Action<IApplicationBuilder> configuration)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         var builder = app.New();
         configuration(builder);
@@ -168,10 +144,7 @@ public static class StatusCodePagesExtensions
         string pathFormat,
         string? queryFormat = null)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         // Only use this path if there's a global router (in the 'WebApplication' case).
         if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)

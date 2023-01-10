@@ -34,10 +34,7 @@ public class ModelPropertyCollection : ReadOnlyCollection<ModelMetadata>
     {
         get
         {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
+            ArgumentNullException.ThrowIfNull(propertyName);
 
             for (var i = 0; i < Items.Count; i++)
             {

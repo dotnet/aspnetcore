@@ -40,10 +40,7 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
         Value = value;
         HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
-        if (locationUri == null)
-        {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
+        ArgumentNullException.ThrowIfNull(locationUri);
 
         if (locationUri.IsAbsoluteUri)
         {

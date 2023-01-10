@@ -16,10 +16,7 @@ public class QueryStringValueProviderFactory : IValueProviderFactory
     /// <inheritdoc />
     public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var query = context.ActionContext.HttpContext.Request.Query;
         if (query != null && query.Count > 0)

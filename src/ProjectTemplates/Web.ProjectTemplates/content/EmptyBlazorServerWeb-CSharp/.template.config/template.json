@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Blazor.Server.Empty",
-  "precedence": "9000",
-  "identity": "Microsoft.Web.Blazor.Server.Empty.CSharp.7.0",
+  "precedence": "9800",
+  "identity": "Microsoft.Web.Blazor.Server.Empty.CSharp.8.0",
   "shortName": "blazorserver-empty",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
   "tags": {

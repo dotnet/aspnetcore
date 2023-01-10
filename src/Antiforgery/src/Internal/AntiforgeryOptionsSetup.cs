@@ -20,10 +20,7 @@ internal sealed class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOpt
 
     public void Configure(AntiforgeryOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.Cookie.Name == null)
         {
