@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -42,7 +43,7 @@ public class JsonOptions
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
         // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
         // .AddContext<TContext>()
-        TypeInfoResolver = CreateDefaultTypeResolver()
+        TypeInfoResolver = TrimmingAppContextSwitches.EnsureJsonTrimmability ? null : CreateDefaultTypeResolver()
     };
 
     private static IJsonTypeInfoResolver CreateDefaultTypeResolver()
