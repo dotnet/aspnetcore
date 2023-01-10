@@ -109,6 +109,40 @@ public partial class HttpResultsWriterTests
         Assert.Equal("With type hierarchies!", body!.Child);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WriteResultAsJsonAsync_Works_ForChildTypes_WithJsonPolymorphism(bool useJsonContext)
+    {
+        // Arrange
+        var value = new TodoJsonChild()
+        {
+            Id = 1,
+            IsComplete = true,
+            Name = "Write even more tests!",
+            Child = "With type hierarchies!"
+        };
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.AddContext<TestJsonContext>();
+        }
+
+        // Act
+        await HttpResultsWriter.WriteResultAsJsonAsync<JsonTodo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+
+        // Assert
+        var body = JsonSerializer.Deserialize<TodoJsonChild>(responseBodyStream.ToArray(), serializerOptions);
+
+        Assert.NotNull(body);
+        Assert.Equal("Write even more tests!", body!.Name);
+        Assert.True(body!.IsComplete);
+        Assert.Equal("With type hierarchies!", body!.Child);
+    }
+
     private static DefaultHttpContext CreateHttpContext(Stream stream)
         => new()
         {
@@ -128,6 +162,7 @@ public partial class HttpResultsWriterTests
 
     [JsonSerializable(typeof(Todo))]
     [JsonSerializable(typeof(TodoChild))]
+    [JsonSerializable(typeof(JsonTodo))]
     [JsonSerializable(typeof(TodoStruct))]
     private partial class TestJsonContext : JsonSerializerContext
     { }
@@ -151,6 +186,16 @@ public partial class HttpResultsWriterTests
     }
 
     private class TodoChild : Todo
+    {
+        public string Child { get; set; }
+    }
+
+    [JsonDerivedType(typeof(TodoJsonChild))]
+    private class JsonTodo : Todo
+    {
+    }
+
+    private class TodoJsonChild : JsonTodo
     {
         public string Child { get; set; }
     }
