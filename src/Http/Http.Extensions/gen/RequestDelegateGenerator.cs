@@ -58,7 +58,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
                 if (builder.FilterFactories.Count > 0)
                 {
-                    filteredInvocation = BuildFilterDelegate(ic =>
+                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                     {
                         if (ic.HttpContext.Response.StatusCode == 400)
                         {
@@ -86,7 +86,7 @@ internal static Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.Http
         [System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
         [System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
     {
-        return MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);
+        return GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);
     }
 """);
 
