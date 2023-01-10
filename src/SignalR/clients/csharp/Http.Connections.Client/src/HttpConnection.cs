@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -121,10 +122,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private static HttpConnectionOptions CreateHttpOptions(Uri url, HttpTransportType transports)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(url);
         return new HttpConnectionOptions { Url = url, Transports = transports };
     }
 
@@ -135,10 +133,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     /// <param name="loggerFactory">The logger factory.</param>
     public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory? loggerFactory)
     {
-        if (httpConnectionOptions == null)
-        {
-            throw new ArgumentNullException(nameof(httpConnectionOptions));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(httpConnectionOptions);
 
         if (httpConnectionOptions.Url == null)
         {
@@ -665,10 +660,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpConnection));
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     private static bool IsWebSocketsSupported()

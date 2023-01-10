@@ -13,6 +13,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -221,10 +222,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(url);
 
         if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
         {

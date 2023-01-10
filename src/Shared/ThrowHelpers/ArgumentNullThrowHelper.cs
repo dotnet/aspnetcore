@@ -22,7 +22,7 @@ internal static partial class ArgumentNullThrowHelper
             Throw(paramName);
         }
 #else
-        ArgumentNullException.ThrowIfNull(argument, paramName);
+        ArgumentNullThrowHelper.ThrowIfNull(argument, paramName);
 #endif
     }
 

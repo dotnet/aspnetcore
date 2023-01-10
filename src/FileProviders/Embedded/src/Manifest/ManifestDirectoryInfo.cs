@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
@@ -10,10 +11,7 @@ internal sealed class ManifestDirectoryInfo : IFileInfo
 {
     public ManifestDirectoryInfo(ManifestDirectory directory, DateTimeOffset lastModified)
     {
-        if (directory == null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(directory);
 
         Directory = directory;
         LastModified = lastModified;

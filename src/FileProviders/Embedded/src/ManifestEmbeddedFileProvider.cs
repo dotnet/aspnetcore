@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.FileProviders.Embedded.Manifest;
 using Microsoft.Extensions.Primitives;
 
@@ -62,15 +63,8 @@ public class ManifestEmbeddedFileProvider : IFileProvider
 
     internal ManifestEmbeddedFileProvider(Assembly assembly, EmbeddedFilesManifest manifest, DateTimeOffset lastModified)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (manifest == null)
-        {
-            throw new ArgumentNullException(nameof(manifest));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
+        ArgumentNullThrowHelper.ThrowIfNull(manifest);
 
         Assembly = assembly;
         Manifest = manifest;
@@ -121,10 +115,7 @@ public class ManifestEmbeddedFileProvider : IFileProvider
     /// <inheritdoc />
     public IChangeToken Watch(string filter)
     {
-        if (filter == null)
-        {
-            throw new ArgumentNullException(nameof(filter));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(filter);
 
         return NullChangeToken.Singleton;
     }
