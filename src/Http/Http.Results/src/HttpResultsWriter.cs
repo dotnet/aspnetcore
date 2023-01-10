@@ -18,8 +18,7 @@ internal static partial class HttpResultsWriter
 {
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
-    private static JsonSerializerOptions? _defaultSerializerOptions;
-    private readonly static object _syncObj = new();
+    private static JsonOptions? _defaultOptions;
 
     public static Task WriteResultAsJsonAsync<T>(
         HttpContext httpContext,
@@ -33,7 +32,7 @@ internal static partial class HttpResultsWriter
             return Task.CompletedTask;
         }
 
-        jsonSerializerOptions ??= GetDefaultOptions(httpContext);
+        jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
 
         var declaredTypeInfo = (JsonTypeInfo<T>)jsonSerializerOptions.GetTypeInfo(typeof(T));
         if (value is null || declaredTypeInfo.IsPolymorphicSafe())
@@ -58,20 +57,6 @@ internal static partial class HttpResultsWriter
             value,
             jsonTypeInfo,
             contentType: contentType);
-
-        static JsonSerializerOptions GetDefaultOptions(HttpContext httpContext)
-        {
-            if (_defaultSerializerOptions != null)
-            {
-                return _defaultSerializerOptions;
-            }
-
-            // TODO: Should I lock it???
-            lock (_syncObj)
-            {
-                return _defaultSerializerOptions = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
-            }
-        }
     }
 
     public static Task WriteResultAsContentAsync(
@@ -159,6 +144,12 @@ internal static partial class HttpResultsWriter
         {
             ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
+    }
+
+    private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
+    {
+        // Attempt to resolve options from DI then fallback to default options
+        return _defaultOptions ??= httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
     }
 
     internal static partial class Log

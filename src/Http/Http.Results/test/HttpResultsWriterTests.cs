@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public partial class HttpResultsHelperTests
+public partial class HttpResultsWriterTests
 {
     [Theory]
     [InlineData(true)]
@@ -37,10 +37,7 @@ public partial class HttpResultsHelperTests
         await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
-        var body = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var body = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), serializerOptions);
 
         Assert.Equal("Write even more tests!", body!.Name);
         Assert.True(body!.IsComplete);
@@ -71,10 +68,7 @@ public partial class HttpResultsHelperTests
         await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
-        var body = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var body = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), serializerOptions);
 
         Assert.NotNull(body);
         Assert.Equal("Write even more tests!", body!.Name);
@@ -107,10 +101,7 @@ public partial class HttpResultsHelperTests
         await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
-        var body = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var body = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), serializerOptions);
 
         Assert.NotNull(body);
         Assert.Equal("Write even more tests!", body!.Name);
