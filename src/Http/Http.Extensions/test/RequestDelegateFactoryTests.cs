@@ -1878,7 +1878,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         });
         httpContext.RequestServices = mock.Object;
 
-        var factoryResult = RequestDelegateFactory.Create(action);
+        var factoryResult = RequestDelegateFactory.Create(action, new RequestDelegateFactoryOptions() { ServiceProvider = mock.Object });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);

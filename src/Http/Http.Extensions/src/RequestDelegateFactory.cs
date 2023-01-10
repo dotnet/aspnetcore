@@ -265,7 +265,7 @@ public static partial class RequestDelegateFactory
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
-        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
+        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -1163,7 +1163,7 @@ public static partial class RequestDelegateFactory
         Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
 
         var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
-        var jsonTypeInfo = factoryContext.JsonSerializerOptions?.GetReadOnlyTypeInfo(bodyType);
+        var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(bodyType);
         var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
         var parameterName = factoryContext.JsonRequestBodyParameter.Name;
 
@@ -1196,7 +1196,6 @@ public static partial class RequestDelegateFactory
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
                     factoryContext.ThrowOnBadRequest,
-                    factoryContext.JsonSerializerOptions,
                     jsonTypeInfo);
 
                 if (!successful)
@@ -1222,7 +1221,6 @@ public static partial class RequestDelegateFactory
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
                     factoryContext.ThrowOnBadRequest,
-                    factoryContext.JsonSerializerOptions,
                     jsonTypeInfo);
 
                 if (!successful)
@@ -1241,8 +1239,7 @@ public static partial class RequestDelegateFactory
             string parameterName,
             bool allowEmptyRequestBody,
             bool throwOnBadRequest,
-            JsonSerializerOptions? jsonSerializerOptions,
-            JsonTypeInfo? jsonTypeInfo)
+            JsonTypeInfo jsonTypeInfo)
         {
             object? defaultBodyValue = null;
 
@@ -1264,12 +1261,6 @@ public static partial class RequestDelegateFactory
                 }
                 try
                 {
-                    // Edge case but possible if the RequestDelegateFactoryOptions.ServiceProvider and
-                    // RequestDelegateFactoryOptions.EndpointBuilder.ServiceProvider are null
-                    // In this situation both options and jsonTypeInfo are null.
-                    jsonSerializerOptions ??= httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
-                    jsonTypeInfo ??= jsonSerializerOptions.GetTypeInfo(bodyType);
-
                     bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
                 }
                 catch (IOException ex)
