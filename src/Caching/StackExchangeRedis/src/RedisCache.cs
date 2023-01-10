@@ -130,7 +130,12 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         if (data != null)
         {
+            Log.RedisCacheHit(_logger, expandedKey);
             RefreshExpiration(expandedKey, absoluteExpiration, slidingWindow);
+        }
+        else
+        {
+            Log.RedisCacheMiss(_logger, expandedKey);
         }
 
         return data;
@@ -157,7 +162,12 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         if (data != null)
         {
+            Log.RedisCacheHit(_logger, expandedKey);
             await RefreshExpirationAsync(expandedKey, absoluteExpiration, slidingWindow, token).ConfigureAwait(false);
+        }
+        else
+        {
+            Log.RedisCacheMiss(_logger, expandedKey);
         }
 
         return data;
@@ -222,6 +232,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         var expandedKey = _expandKey(key);
 
+        Log.RedisCacheRefresh(_logger, expandedKey);
+
         Connect();
 
         var value = _cache.HashGet(expandedKey, _refreshLabels);
@@ -248,6 +260,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
         token.ThrowIfCancellationRequested();
 
         var expandedKey = _expandKey(key);
+
+        Log.RedisCacheRefresh(_logger, expandedKey);
 
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache != null);
@@ -279,6 +293,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
         var (absExpiration, slidingWindow) = CalcExpirationValues(currentTime, options);
         var keyTimeout = CalcKeyTimeout(currentTime, absExpiration, slidingWindow);
         var expandedKey = _expandKey(key);
+
+        Log.RedisCacheSet(_logger, expandedKey);
 
         Connect();
 
