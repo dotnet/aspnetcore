@@ -88,6 +88,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         var ticks = Volatile.Read(ref field); // avoid torn values
         return ticks == 0 ? DateTimeOffset.MinValue : new DateTimeOffset(ticks, TimeSpan.Zero);
     }
+
     private static void WriteTimeTicks(ref long field, DateTimeOffset value)
     {
         var ticks = value == DateTimeOffset.MinValue ? 0L : value.UtcTicks;
