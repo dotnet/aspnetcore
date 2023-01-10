@@ -96,9 +96,7 @@ public static partial class RequestDelegateFactory
     // but users still need to assert on it as in https://github.com/dotnet/aspnetcore/issues/45063
     // so we temporarily work around this here by using reflection to get the actual type.
     private static readonly object? EmptyHttpResultInstance = Type.GetType("Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult, Microsoft.AspNetCore.Http.Results")?.GetProperty("Instance")?.GetValue(null, null);
-    private static readonly NewExpression EmptyHttpResultValueTaskExpr = EmptyHttpResultInstance is not null
-        ? Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Constant(EmptyHttpResultInstance))
-        : throw new UnreachableException("The EmptyHttpResult type could not be found.");
+    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Constant(EmptyHttpResultInstance));
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
@@ -400,6 +398,7 @@ public static partial class RequestDelegateFactory
     private static EndpointFilterDelegate? CreateFilterPipeline(MethodInfo methodInfo, Expression? targetExpression, RequestDelegateFactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory)
     {
         Debug.Assert(factoryContext.EndpointBuilder.FilterFactories.Count > 0);
+        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
         // : {
@@ -464,6 +463,7 @@ public static partial class RequestDelegateFactory
 
     private static Expression MapHandlerReturnTypeToValueTask(Expression methodCall, Type returnType)
     {
+        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         if (returnType == typeof(void))
         {
             return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
@@ -2159,7 +2159,7 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteTaskWithEmptyResult(Task task)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null);
+        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         static async ValueTask<object?> ExecuteAwaited(Task task)
         {
             await task;
@@ -2176,7 +2176,7 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteValueTaskWithEmptyResult(ValueTask valueTask)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null);
+        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         static async ValueTask<object?> ExecuteAwaited(ValueTask task)
         {
             await task;
