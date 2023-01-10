@@ -82,15 +82,8 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
         InputFormatterContext context,
         Encoding encoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var request = context.HttpContext.Request;
         Stream readStream = new NonDisposableStream(request.Body);
@@ -175,10 +168,7 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
     /// <inheritdoc />
     protected override bool CanReadType(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         return GetCachedSerializer(GetSerializableType(type)) != null;
     }
@@ -190,10 +180,7 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
     /// <returns>The type to which the XML will be deserialized.</returns>
     protected virtual Type GetSerializableType(Type declaredType)
     {
-        if (declaredType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredType));
-        }
+        ArgumentNullException.ThrowIfNull(declaredType);
 
         var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(
                                                 new WrapperProviderContext(declaredType, isSerialization: false));
@@ -221,15 +208,8 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
     /// <returns>The <see cref="XmlReader"/> used during deserialization.</returns>
     protected virtual XmlReader CreateXmlReader(Stream readStream, Encoding encoding)
     {
-        if (readStream == null)
-        {
-            throw new ArgumentNullException(nameof(readStream));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(readStream);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         return XmlDictionaryReader.CreateTextReader(readStream, encoding, _readerQuotas, onClose: null);
     }
@@ -259,10 +239,7 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
     /// <returns>The <see cref="XmlSerializer"/> instance.</returns>
     protected virtual XmlSerializer GetCachedSerializer(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         if (!_serializerCache.TryGetValue(type, out var serializer))
         {

@@ -36,10 +36,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     /// <returns>A new <see cref="RouteValueDictionary"/>.</returns>
     public static RouteValueDictionary FromArray(KeyValuePair<string, object?>[] items)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         // We need to compress the array by removing non-contiguous items. We
         // typically have a very small number of items to process. We don't need
@@ -406,10 +403,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         KeyValuePair<string, object?>[] array,
         int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         if (arrayIndex < 0 || arrayIndex > array.Length || array.Length - arrayIndex < this.Count)
         {
@@ -749,10 +743,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         /// <param name="dictionary">A <see cref="RouteValueDictionary"/>.</param>
         public Enumerator(RouteValueDictionary dictionary)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException(nameof(dictionary));
-            }
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _dictionary = dictionary;
 

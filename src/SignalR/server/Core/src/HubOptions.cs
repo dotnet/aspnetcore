@@ -65,10 +65,7 @@ public class HubOptions
         get => _maximumParallelInvocationsPerClient;
         set
         {
-            if (value < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(MaximumParallelInvocationsPerClient));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
 
             _maximumParallelInvocationsPerClient = value;
         }

@@ -193,10 +193,7 @@ public readonly struct PathString : IEquatable<PathString>
     /// <returns>The resulting PathString</returns>
     public static PathString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
         var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
         Span<char> pathBuffer = uriComponent.Length < StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length + 1];
         pathBuffer[0] = '/';
@@ -484,10 +481,7 @@ internal sealed class PathStringConverter : TypeConverter
     public override object? ConvertTo(ITypeDescriptorContext? context,
        CultureInfo? culture, object? value, Type destinationType)
     {
-        if (destinationType == null)
-        {
-            throw new ArgumentNullException(nameof(destinationType));
-        }
+        ArgumentNullException.ThrowIfNull(destinationType);
 
         return destinationType == typeof(string)
             ? value?.ToString() ?? string.Empty

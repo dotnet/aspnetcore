@@ -17,10 +17,7 @@ public class MediaTypeCollection : Collection<string>
     /// <param name="item">The media type to be added to the end of the <see cref="MediaTypeCollection"/>.</param>
     public void Add(MediaTypeHeaderValue item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         Add(item.ToString());
     }
@@ -37,10 +34,7 @@ public class MediaTypeCollection : Collection<string>
             throw new ArgumentOutOfRangeException(nameof(index));
         }
 
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         Insert(index, item.ToString());
     }
@@ -54,10 +48,7 @@ public class MediaTypeCollection : Collection<string>
     /// <see cref="MediaTypeCollection"/>.</returns>
     public bool Remove(MediaTypeHeaderValue item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         return Remove(item.ToString());
     }

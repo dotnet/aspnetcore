@@ -13,10 +13,7 @@ internal sealed class RuntimeCompilationFileProvider
 
     public RuntimeCompilationFileProvider(IOptions<MvcRazorRuntimeCompilationOptions> options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _options = options.Value;
     }

@@ -20,10 +20,7 @@ public class RouteTokenTransformerConvention : IActionModelConvention
     /// <param name="parameterTransformer">The <see cref="IOutboundParameterTransformer"/> to use with attribute routing token replacement.</param>
     public RouteTokenTransformerConvention(IOutboundParameterTransformer parameterTransformer)
     {
-        if (parameterTransformer == null)
-        {
-            throw new ArgumentNullException(nameof(parameterTransformer));
-        }
+        ArgumentNullException.ThrowIfNull(parameterTransformer);
 
         _parameterTransformer = parameterTransformer;
     }

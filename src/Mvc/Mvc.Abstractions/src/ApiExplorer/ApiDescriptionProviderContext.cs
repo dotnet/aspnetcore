@@ -16,10 +16,7 @@ public class ApiDescriptionProviderContext
     /// <param name="actions">The list of actions.</param>
     public ApiDescriptionProviderContext(IReadOnlyList<ActionDescriptor> actions)
     {
-        if (actions == null)
-        {
-            throw new ArgumentNullException(nameof(actions));
-        }
+        ArgumentNullException.ThrowIfNull(actions);
 
         Actions = actions;
 

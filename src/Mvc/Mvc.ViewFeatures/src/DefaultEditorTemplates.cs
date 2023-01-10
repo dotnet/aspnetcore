@@ -395,20 +395,14 @@ internal static class DefaultEditorTemplates
 
     public static IHtmlContent FileInputTemplate(IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return GenerateTextBox(htmlHelper, inputType: "file");
     }
 
     public static IHtmlContent FileCollectionInputTemplate(IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         var htmlAttributes =
             CreateHtmlAttributes(htmlHelper, className: "text-box single-line", inputType: "file");
@@ -506,10 +500,7 @@ internal static class DefaultEditorTemplates
 
         public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
+            ArgumentNullException.ThrowIfNull(output);
 
             if (characterCount == 0)
             {
@@ -521,15 +512,8 @@ internal static class DefaultEditorTemplates
 
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(output);
+            ArgumentNullException.ThrowIfNull(value);
 
             if (characterCount == 0)
             {

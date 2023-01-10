@@ -22,20 +22,14 @@ internal sealed class CorsApplicationModelProvider : IApplicationModelProvider
 
     public void OnProvidersExecuted(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Intentionally empty.
     }
 
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!_mvcOptions.EnableEndpointRouting)
         {

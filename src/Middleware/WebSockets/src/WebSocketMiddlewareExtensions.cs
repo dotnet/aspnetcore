@@ -22,10 +22,7 @@ public static class WebSocketMiddlewareExtensions
     /// </returns>
     public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<WebSocketMiddleware>();
     }
@@ -44,14 +41,8 @@ public static class WebSocketMiddlewareExtensions
     /// </returns>
     public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, WebSocketOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<WebSocketMiddleware>(Options.Create(options));
     }

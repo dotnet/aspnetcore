@@ -28,10 +28,7 @@ public static class MvcServiceCollectionExtensions
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
     public static IMvcBuilder AddMvc(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddControllersWithViews();
         return services.AddRazorPages();
@@ -45,15 +42,8 @@ public static class MvcServiceCollectionExtensions
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
     public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddMvc();
         builder.Services.Configure(setupAction);
@@ -88,10 +78,7 @@ public static class MvcServiceCollectionExtensions
     /// </remarks>
     public static IMvcBuilder AddControllers(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddControllersCore(services);
         return new MvcBuilder(builder.Services, builder.PartManager);
@@ -125,10 +112,7 @@ public static class MvcServiceCollectionExtensions
     /// </remarks>
     public static IMvcBuilder AddControllers(this IServiceCollection services, Action<MvcOptions>? configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         // This method excludes all of the view-related services by default.
         var builder = AddControllersCore(services);
@@ -185,10 +169,7 @@ public static class MvcServiceCollectionExtensions
     /// </remarks>
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddControllersWithViewsCore(services);
         return new MvcBuilder(builder.Services, builder.PartManager);
@@ -220,10 +201,7 @@ public static class MvcServiceCollectionExtensions
     /// </remarks>
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Action<MvcOptions>? configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         // This method excludes all of the view-related services by default.
         var builder = AddControllersWithViewsCore(services);
@@ -270,10 +248,7 @@ public static class MvcServiceCollectionExtensions
     /// </remarks>
     public static IMvcBuilder AddRazorPages(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddRazorPagesCore(services);
         return new MvcBuilder(builder.Services, builder.PartManager);
@@ -303,10 +278,7 @@ public static class MvcServiceCollectionExtensions
     /// </remarks>
     public static IMvcBuilder AddRazorPages(this IServiceCollection services, Action<RazorPagesOptions>? configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddRazorPagesCore(services);
         if (configure != null)

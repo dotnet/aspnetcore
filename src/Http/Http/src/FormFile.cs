@@ -83,10 +83,7 @@ public class FormFile : IFormFile
     /// <param name="target">The stream to copy the file contents to.</param>
     public void CopyTo(Stream target)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         using (var readStream = OpenReadStream())
         {
@@ -101,10 +98,7 @@ public class FormFile : IFormFile
     /// <param name="cancellationToken"></param>
     public async Task CopyToAsync(Stream target, CancellationToken cancellationToken = default(CancellationToken))
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         using (var readStream = OpenReadStream())
         {

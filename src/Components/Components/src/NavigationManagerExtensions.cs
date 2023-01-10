@@ -521,10 +521,7 @@ public static class NavigationManagerExtensions
     /// </remarks>
     public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, string? value)
     {
-        if (navigationManager is null)
-        {
-            throw new ArgumentNullException(nameof(navigationManager));
-        }
+        ArgumentNullException.ThrowIfNull(navigationManager);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -561,15 +558,8 @@ public static class NavigationManagerExtensions
         string uri,
         IReadOnlyDictionary<string, object?> parameters)
     {
-        if (navigationManager is null)
-        {
-            throw new ArgumentNullException(nameof(navigationManager));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(navigationManager);
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (!TryRebuildExistingQueryFromUri(
             uri,
@@ -752,7 +742,7 @@ public static class NavigationManagerExtensions
 
         if (queryStartIndex < 0)
         {
-            
+
             existingQueryStringEnumerable = default;
             uriWithoutQueryStringAndHash = hashStartIndex < 0 ? uri : uri.AsSpan(0, hashStartIndex);
             newQueryStringBuilder = new(uriWithoutQueryStringAndHash);

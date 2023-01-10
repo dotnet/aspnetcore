@@ -28,10 +28,7 @@ public class CookieRequestCultureProvider : RequestCultureProvider
     /// <inheritdoc />
     public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var cookie = httpContext.Request.Cookies[CookieName];
 
@@ -52,10 +49,7 @@ public class CookieRequestCultureProvider : RequestCultureProvider
     /// <returns>The cookie value.</returns>
     public static string MakeCookieValue(RequestCulture requestCulture)
     {
-        if (requestCulture == null)
-        {
-            throw new ArgumentNullException(nameof(requestCulture));
-        }
+        ArgumentNullException.ThrowIfNull(requestCulture);
 
         return string.Join(_cookieSeparator,
             $"{_culturePrefix}{requestCulture.Culture.Name}",

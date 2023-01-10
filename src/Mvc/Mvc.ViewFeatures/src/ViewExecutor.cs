@@ -44,20 +44,9 @@ public class ViewExecutor
         IModelMetadataProvider modelMetadataProvider)
         : this(writerFactory, viewEngine, diagnosticListener)
     {
-        if (viewOptions == null)
-        {
-            throw new ArgumentNullException(nameof(viewOptions));
-        }
-
-        if (tempDataFactory == null)
-        {
-            throw new ArgumentNullException(nameof(tempDataFactory));
-        }
-
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
+        ArgumentNullException.ThrowIfNull(viewOptions);
+        ArgumentNullException.ThrowIfNull(tempDataFactory);
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
 
         ViewOptions = viewOptions.Value;
         TempDataFactory = tempDataFactory;
@@ -75,20 +64,9 @@ public class ViewExecutor
         ICompositeViewEngine viewEngine,
         DiagnosticListener diagnosticListener)
     {
-        if (writerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(writerFactory));
-        }
-
-        if (viewEngine == null)
-        {
-            throw new ArgumentNullException(nameof(viewEngine));
-        }
-
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
+        ArgumentNullException.ThrowIfNull(writerFactory);
+        ArgumentNullException.ThrowIfNull(viewEngine);
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
 
         WriterFactory = writerFactory;
         ViewEngine = viewEngine;
@@ -148,15 +126,8 @@ public class ViewExecutor
         string? contentType,
         int? statusCode)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
-
-        if (view == null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(view);
 
         if (ViewOptions == null)
         {
@@ -211,10 +182,7 @@ public class ViewExecutor
         string? contentType,
         int? statusCode)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var response = viewContext.HttpContext.Response;
 

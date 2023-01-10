@@ -104,10 +104,7 @@ public class CookieBuilder
     /// <returns>The cookie options.</returns>
     public virtual CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var options = new CookieOptions
         {

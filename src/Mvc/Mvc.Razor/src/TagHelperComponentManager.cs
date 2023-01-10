@@ -17,10 +17,7 @@ internal sealed class TagHelperComponentManager : ITagHelperComponentManager
     /// <param name="tagHelperComponents">The collection of <see cref="ITagHelperComponent"/>s.</param>
     public TagHelperComponentManager(IEnumerable<ITagHelperComponent> tagHelperComponents)
     {
-        if (tagHelperComponents == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperComponents));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperComponents);
 
         Components = new List<ITagHelperComponent>(tagHelperComponents);
     }

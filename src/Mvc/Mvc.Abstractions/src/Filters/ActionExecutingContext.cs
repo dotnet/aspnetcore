@@ -27,10 +27,7 @@ public class ActionExecutingContext : FilterContext
         object controller)
         : base(actionContext, filters)
     {
-        if (actionArguments == null)
-        {
-            throw new ArgumentNullException(nameof(actionArguments));
-        }
+        ArgumentNullException.ThrowIfNull(actionArguments);
 
         ActionArguments = actionArguments;
         Controller = controller;

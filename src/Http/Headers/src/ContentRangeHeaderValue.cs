@@ -34,10 +34,7 @@ public class ContentRangeHeaderValue
     {
         // Scenario: "Content-Range: bytes 12-34/5678"
 
-        if (length < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         if ((to < 0) || (to > length))
         {
             throw new ArgumentOutOfRangeException(nameof(to));
@@ -61,10 +58,7 @@ public class ContentRangeHeaderValue
     {
         // Scenario: "Content-Range: bytes */1234"
 
-        if (length < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
 
         Length = length;
         _unit = HeaderUtilities.BytesUnit;
@@ -79,10 +73,7 @@ public class ContentRangeHeaderValue
     {
         // Scenario: "Content-Range: bytes 12-34/*"
 
-        if (to < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(to));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(to);
         if ((from < 0) || (from > to))
         {
             throw new ArgumentOutOfRangeException(nameof(@from));
