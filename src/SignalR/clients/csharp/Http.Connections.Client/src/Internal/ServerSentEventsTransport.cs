@@ -55,12 +55,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
 
         Log.StartTransport(_logger, transferFormat);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, url)
-        {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-            Version = HttpVersion.Version20,
-#endif
-        };
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
         HttpResponseMessage? response = null;
