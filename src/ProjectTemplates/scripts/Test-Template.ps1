@@ -57,6 +57,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
                 <Import Project="' + $importPath + '/Directory.Build.targets" />
                 <PropertyGroup>
                     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+                    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
                 </PropertyGroup>'))
             $projContent | Set-Content $projPath
         }

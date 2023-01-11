@@ -10,7 +10,6 @@
     <!--#if (NativeAot) -->
     <PublishAot>True</PublishAot>
     <TrimMode>full</TrimMode>
-    <EnableRequestDelegateGenerator>True</EnableRequestDelegateGenerator>
     <!--#endif -->
   </PropertyGroup>
 
