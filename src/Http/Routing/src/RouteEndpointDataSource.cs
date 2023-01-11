@@ -69,6 +69,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
     private static RequestDelegate BuildFilterPipeline(RequestDelegate requestDelegate, RequestDelegateFactoryOptions options)
     {
+        Debug.Assert(options.EndpointBuilder != null);
+
         var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
         var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
         var jsonSerializerOptions = jsonOptions.SerializerOptions;
