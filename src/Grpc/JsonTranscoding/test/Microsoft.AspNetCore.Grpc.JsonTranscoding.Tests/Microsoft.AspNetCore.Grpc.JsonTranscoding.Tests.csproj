@@ -7,6 +7,8 @@
   <ItemGroup>
     <Protobuf Include="Proto\httpbody.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\transcoding.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\Issue045270\hello.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\Issue045270\country.proto" GrpcServices="Both" />
 
     <Compile Include="..\Shared\TestGrpcServiceActivator.cs" Link="Infrastructure\TestGrpcServiceActivator.cs" />
 
