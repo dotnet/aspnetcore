@@ -37,8 +37,9 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
         }
     }
 
-    private static EnumDescriptor? ResolveEnumDescriptor(Type typeToConvert)
+    private EnumDescriptor? ResolveEnumDescriptor(Type typeToConvert)
     {
+        // Existing resolve descriptor logic. Use it when possible to minimize change.
         var containingType = typeToConvert?.DeclaringType?.DeclaringType;
 
         if (containingType != null)
@@ -56,7 +57,11 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
             }
         }
 
-        return null;
+        // Enum types in generated DTOs are regular enum types. That means there is no static Descriptor property
+        // to get the enum descriptor from.
+        //
+        // Search for enum descriptor using the enum type in a registry of descriptors.
+        return Context.DescriptorRegistry.FindEnumDescriptorByType(typeToConvert!);
     }
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
