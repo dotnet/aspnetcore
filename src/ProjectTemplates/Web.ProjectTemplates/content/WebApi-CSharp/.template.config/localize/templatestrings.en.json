@@ -26,6 +26,7 @@
   "symbols/UseMinimalAPIs/description": "Whether to use minimal APIs instead of controllers.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/CalledApiUrl/description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified.",
   "symbols/CallsMicrosoftGraph/description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified.",

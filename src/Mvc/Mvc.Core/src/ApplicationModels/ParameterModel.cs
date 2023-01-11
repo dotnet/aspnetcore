@@ -33,10 +33,7 @@ public class ParameterModel : ParameterModelBase, ICommonModel
     public ParameterModel(ParameterModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Action = other.Action;
         ParameterInfo = other.ParameterInfo;

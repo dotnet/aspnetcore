@@ -51,10 +51,7 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
     /// <inheritdoc />
     public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
     {
-        if (configureDelegate is null)
-        {
-            throw new ArgumentNullException(nameof(configureDelegate));
-        }
+        ArgumentNullException.ThrowIfNull(configureDelegate);
 
         _configureContainerActions.Add((context, containerBuilder) => configureDelegate(context, (TContainerBuilder)containerBuilder));
 
@@ -105,10 +102,7 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
     /// <inheritdoc />
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
     {
-        if (factory is null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         _serviceProviderFactory = new ServiceProviderFactoryAdapter<TContainerBuilder>(factory);
         return this;

@@ -26,10 +26,7 @@ public class EnumerableWrapperProvider : IWrapperProvider
         Type sourceEnumerableOfT,
         IWrapperProvider? elementWrapperProvider)
     {
-        if (sourceEnumerableOfT == null)
-        {
-            throw new ArgumentNullException(nameof(sourceEnumerableOfT));
-        }
+        ArgumentNullException.ThrowIfNull(sourceEnumerableOfT);
 
         var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
             sourceEnumerableOfT,

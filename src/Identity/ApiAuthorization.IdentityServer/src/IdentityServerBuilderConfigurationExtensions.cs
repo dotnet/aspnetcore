@@ -53,10 +53,7 @@ public static class IdentityServerBuilderConfigurationExtensions
             where TUser : class
             where TContext : DbContext, IPersistedGrantDbContext
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.AddAspNetIdentity<TUser>()
             .AddOperationalStore<TContext>()

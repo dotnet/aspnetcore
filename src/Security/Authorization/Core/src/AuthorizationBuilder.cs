@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization;
@@ -107,10 +108,7 @@ public class AuthorizationBuilder
     /// <returns>The builder.</returns>
     public virtual AuthorizationBuilder AddDefaultPolicy(string name, Action<AuthorizationPolicyBuilder> configurePolicy)
     {
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);
@@ -137,10 +135,7 @@ public class AuthorizationBuilder
     /// <returns>The builder.</returns>
     public virtual AuthorizationBuilder AddFallbackPolicy(string name, Action<AuthorizationPolicyBuilder> configurePolicy)
     {
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);

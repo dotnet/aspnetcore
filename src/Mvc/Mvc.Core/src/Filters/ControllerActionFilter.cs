@@ -19,15 +19,8 @@ internal sealed class ControllerActionFilter : IAsyncActionFilter, IOrderedFilte
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         var controller = context.Controller;
         if (controller == null)

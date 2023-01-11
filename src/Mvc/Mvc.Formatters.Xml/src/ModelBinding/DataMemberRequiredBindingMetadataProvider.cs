@@ -15,10 +15,7 @@ public class DataMemberRequiredBindingMetadataProvider : IBindingMetadataProvide
     /// <inheritdoc />
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Types cannot be required; only properties can
         if (context.Key.MetadataKind != ModelMetadataKind.Property)

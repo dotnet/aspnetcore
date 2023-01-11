@@ -19,10 +19,7 @@ public sealed class RouteData
     /// <param name="routeValues">The route parameter values extracted from the matched route.</param>
     public RouteData([DynamicallyAccessedMembers(Component)] Type pageType, IReadOnlyDictionary<string, object> routeValues)
     {
-        if (pageType == null)
-        {
-            throw new ArgumentNullException(nameof(pageType));
-        }
+        ArgumentNullException.ThrowIfNull(pageType);
 
         if (!typeof(IComponent).IsAssignableFrom(pageType))
         {

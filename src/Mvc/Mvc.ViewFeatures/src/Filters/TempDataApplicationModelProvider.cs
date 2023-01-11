@@ -27,10 +27,7 @@ internal sealed class TempDataApplicationModelProvider : IApplicationModelProvid
     /// <inheritdoc />
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var controllerModel in context.Result.Controllers)
         {

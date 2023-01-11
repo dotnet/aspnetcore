@@ -41,25 +41,10 @@ public class DirectoryBrowserMiddleware
     /// <param name="options">The configuration for this middleware.</param>
     public DirectoryBrowserMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, HtmlEncoder encoder, IOptions<DirectoryBrowserOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (hostingEnv == null)
-        {
-            throw new ArgumentNullException(nameof(hostingEnv));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(hostingEnv);
+        ArgumentNullException.ThrowIfNull(encoder);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;

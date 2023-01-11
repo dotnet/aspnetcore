@@ -67,10 +67,7 @@ public class HttpConnectionDispatcherOptions
         get => _transportMaxBufferSize;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             _transportMaxBufferSize = value;
         }
@@ -87,10 +84,7 @@ public class HttpConnectionDispatcherOptions
         get => _applicationMaxBufferSize;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             _applicationMaxBufferSize = value;
         }

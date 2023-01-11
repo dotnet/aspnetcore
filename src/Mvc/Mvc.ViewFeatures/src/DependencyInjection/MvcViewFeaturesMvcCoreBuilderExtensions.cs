@@ -38,10 +38,7 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddViews(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddDataAnnotations();
         AddViewComponentApplicationPartsProviders(builder.PartManager);
@@ -57,10 +54,7 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddCookieTempDataProvider(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         // Ensure the TempData basics are registered.
         AddViewServices(builder.Services);
@@ -89,15 +83,8 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<MvcViewOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddViews(builder);
         builder.Services.Configure(setupAction);
@@ -119,15 +106,8 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<CookieTempDataProviderOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddCookieTempDataProvider(builder);
         builder.Services.Configure(setupAction);
@@ -145,15 +125,8 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<MvcViewOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;

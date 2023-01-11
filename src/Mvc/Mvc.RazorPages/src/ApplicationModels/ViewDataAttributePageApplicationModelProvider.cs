@@ -20,10 +20,7 @@ internal sealed class ViewDataAttributePageApplicationModelProvider : IPageAppli
     /// <inheritdoc />
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var handlerType = context.PageApplicationModel.HandlerType.AsType();
 

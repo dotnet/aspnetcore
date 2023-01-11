@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
@@ -270,10 +271,7 @@ public static partial class HubConnectionExtensions
     /// </returns>
     public static async Task<ChannelReader<TResult>> StreamAsChannelCoreAsync<TResult>(this HubConnection hubConnection, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         var inputChannel = await hubConnection.StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cancellationToken).ConfigureAwait(false);
         var outputChannel = Channel.CreateUnbounded<TResult>();

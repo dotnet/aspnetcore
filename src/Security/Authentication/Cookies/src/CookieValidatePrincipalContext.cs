@@ -21,10 +21,7 @@ public class CookieValidatePrincipalContext : PrincipalContext<CookieAuthenticat
     public CookieValidatePrincipalContext(HttpContext context, AuthenticationScheme scheme, CookieAuthenticationOptions options, AuthenticationTicket ticket)
         : base(context, scheme, options, ticket?.Properties)
     {
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
 
         Principal = ticket.Principal;
     }

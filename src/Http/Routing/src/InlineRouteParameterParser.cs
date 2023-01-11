@@ -17,10 +17,7 @@ public static class InlineRouteParameterParser
     /// <returns>A <see cref="TemplatePart"/> instance.</returns>
     public static TemplatePart ParseRouteParameter(string routeParameter)
     {
-        if (routeParameter == null)
-        {
-            throw new ArgumentNullException(nameof(routeParameter));
-        }
+        ArgumentNullException.ThrowIfNull(routeParameter);
 
         if (routeParameter.Length == 0)
         {

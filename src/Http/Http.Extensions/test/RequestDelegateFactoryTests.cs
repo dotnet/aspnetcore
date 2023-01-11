@@ -17,7 +17,9 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -31,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Routing.Internal;
 
@@ -1878,7 +1881,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         });
         httpContext.RequestServices = mock.Object;
 
-        var factoryResult = RequestDelegateFactory.Create(action);
+        var factoryResult = RequestDelegateFactory.Create(action, new RequestDelegateFactoryOptions() { ServiceProvider = mock.Object });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -3070,6 +3073,122 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
+    public static IEnumerable<object[]> PolymorphicResult
+    {
+        get
+        {
+            JsonTodoChild originalTodo = new()
+            {
+                Name = "Write even more tests!",
+                Child = "With type hierarchies!",
+            };
+
+            JsonTodo TestAction() => originalTodo;
+
+            Task<JsonTodo> TaskTestAction() => Task.FromResult<JsonTodo>(originalTodo);
+            async Task<JsonTodo> TaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            ValueTask<JsonTodo> ValueTaskTestAction() => ValueTask.FromResult<JsonTodo>(originalTodo);
+            async ValueTask<JsonTodo> ValueTaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            return new List<object[]>
+                {
+                    new object[] { (Func<JsonTodo>)TestAction },
+                    new object[] { (Func<Task<JsonTodo>>)TaskTestAction},
+                    new object[] { (Func<Task<JsonTodo>>)TaskTestActionAwaited},
+                    new object[] { (Func<ValueTask<JsonTodo>>)ValueTaskTestAction},
+                    new object[] { (Func<ValueTask<JsonTodo>>)ValueTaskTestActionAwaited},
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptionsAndConfiguredJsonOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions { ServiceProvider = httpContext.RequestServices });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    }
+
+    [Theory]
+    [MemberData(nameof(PolymorphicResult))]
+    public async Task RequestDelegateWritesJsonTypeDiscriminatorToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
+            .BuildServiceProvider();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonNode.Parse(responseBodyStream.ToArray());
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.NotNull(deserializedResponseBody["$type"]);
+        Assert.Equal(nameof(JsonTodoChild), deserializedResponseBody["$type"]!.GetValue<string>());
+    }
+
     public static IEnumerable<object[]> JsonContextActions
     {
         get
@@ -3108,6 +3227,22 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+    }
+
+    [Fact]
+    public void CreateDelegateThrows_WhenGetJsonTypeInfoFail()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .ConfigureHttpJsonOptions(o => o.SerializerOptions.AddContext<TestJsonContext>())
+            .BuildServiceProvider();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        TodoStruct TestAction() => new TodoStruct(42, "Bob", true);
+        Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = httpContext.RequestServices }));
     }
 
     public static IEnumerable<object[]> CustomResults
@@ -7526,6 +7661,11 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public string? Child { get; set; }
     }
 
+    private class JsonTodoChild : JsonTodo
+    {
+        public string? Child { get; set; }
+    }
+
     private class CustomTodo : Todo
     {
         public static async ValueTask<CustomTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
@@ -7539,6 +7679,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(JsonTodoChild), nameof(JsonTodoChild))]
     private class JsonTodo : Todo
     {
         public static async ValueTask<JsonTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
