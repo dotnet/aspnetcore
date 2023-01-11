@@ -35,7 +35,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         RequestDelegate requestDelegate,
         IEnumerable<string>? httpMethods)
     {
-
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
 
