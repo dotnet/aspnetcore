@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -38,6 +40,15 @@ public static class ProblemDetailsServiceCollectionExtensions
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
+
+        services.PostConfigure<JsonOptions>((options) =>
+        {
+            if (options.SerializerOptions.TypeInfoResolver is not null)
+            {
+                // Combine the current resolver with our internal problem details context
+                options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.SerializerOptions.TypeInfoResolver, ProblemDetailsJsonContext.Default);
+            }
+        });
 
         if (configure != null)
         {
