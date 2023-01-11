@@ -21,6 +21,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// </summary>
 public partial class RedisCache : IDistributedCache, IDisposable
 {
+    // Note that the "force reconnect" pattern as described https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
+    // can be enabled via the "Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect" app-context switch
+    //
     // -- Explanation of why two kinds of SetScript are used --
     // * Redis 2.0 had HSET key field value for setting individual hash fields,
     // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key).
@@ -70,6 +73,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private readonly RedisCacheOptions _options;
     private readonly RedisKey _instancePrefix;
     private readonly ILogger _logger;
+    private readonly bool _useForceReconnect;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
@@ -137,6 +141,9 @@ public partial class RedisCache : IDistributedCache, IDisposable
             // would do this itself anyway, using UTF8
             _instancePrefix = (RedisKey)Encoding.UTF8.GetBytes(instanceName);
         }
+
+        // note the "out" var is explicitly "false" if no switch is defined
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect", out _useForceReconnect);
     }
 
     /// <inheritdoc />
@@ -300,7 +307,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                     }
                     else
                     {
-                        connection = ConnectionMultiplexer.Connect(_options.Configuration);
+                        connection = ConnectionMultiplexer.Connect(_options.Configuration!);
                     }
                 }
                 else
@@ -350,7 +357,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                     }
                     else
                     {
-                        connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
+                        connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration!).ConfigureAwait(false);
                     }
                 }
                 else
@@ -671,7 +678,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private void OnRedisError(Exception exception, IDatabase cache)
     {
-        if ((exception is RedisConnectionException or SocketException) && _options.UseForceReconnect)
+        if (_useForceReconnect && (exception is RedisConnectionException or SocketException))
         {
             var utcNow = DateTimeOffset.UtcNow;
             var previousConnectTime = ReadTimeTicks(ref _lastConnectTicks);

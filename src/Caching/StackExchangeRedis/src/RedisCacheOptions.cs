@@ -41,11 +41,6 @@ public class RedisCacheOptions : IOptions<RedisCacheOptions>
     /// </summary>
     public Func<ProfilingSession>? ProfilingSession { get; set; }
 
-    /// <summary>
-    /// Support the "force reconnect" pattern as described <a href="https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis">here</a>, which can help mitigate against unstable redis connections.
-    /// </summary>
-    public bool UseForceReconnect { get; set; }
-
     RedisCacheOptions IOptions<RedisCacheOptions>.Value
     {
         get { return this; }
