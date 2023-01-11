@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Company.WebApplication1;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddConsole();
 
 #if (NativeAot)
 builder.Services.ConfigureHttpJsonOptions(options =>
