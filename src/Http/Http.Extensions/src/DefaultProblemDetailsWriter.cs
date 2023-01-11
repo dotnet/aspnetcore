@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -19,7 +20,15 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options, IOptions<JsonOptions> jsonOptions)
     {
         _options = options.Value;
-        _serializerOptions = jsonOptions.Value.SerializerOptions;
+        _serializerOptions = new JsonSerializerOptions(jsonOptions.Value.SerializerOptions);
+
+        if (_serializerOptions.TypeInfoResolver is not null)
+        {
+            // Combine the current resolver with our internal problem details context
+            _serializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(_serializerOptions.TypeInfoResolver, ProblemDetailsJsonContext.Default);
+        }
+
+        _serializerOptions.MakeReadOnly();
     }
 
     public bool CanWrite(ProblemDetailsContext context)
