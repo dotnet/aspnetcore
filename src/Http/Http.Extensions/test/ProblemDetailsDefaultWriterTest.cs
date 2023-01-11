@@ -90,6 +90,44 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [Fact]
+    public async Task WriteAsync_Works_WithMultipleJsonContext()
+    {
+        // Arrange
+        var options = new JsonOptions();
+        options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(CustomProblemDetailsContext.Default, CustomProblemDetailsContext2.Default);
+
+        var writer = GetWriter(jsonOptions: options);
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedProblem = new ProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
+            Title = "Custom Bad Request",
+        };
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedProblem.Status, problemDetails.Status);
+        Assert.Equal(expectedProblem.Type, problemDetails.Type);
+        Assert.Equal(expectedProblem.Title, problemDetails.Title);
+        Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
+        Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+    }
+
+    [Fact]
     public async Task WriteAsync_Works_WithHttpValidationProblemDetails()
     {
         // Arrange
@@ -288,6 +326,46 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [Fact]
+    public async Task WriteAsync_AddExtensions_WithJsonContext()
+    {
+        // Arrange
+        var options = new JsonOptions();
+        options.SerializerOptions.AddContext<CustomProblemDetailsContext>();
+
+        var writer = GetWriter(jsonOptions: options);
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedProblem = new ProblemDetails();
+        var customExtensionData = new CustomExtensionData("test");
+        expectedProblem.Extensions["Extension"] = customExtensionData;
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        Assert.NotNull(problemDetails);
+
+        Assert.Collection(problemDetails.Extensions,
+            (extension) =>
+            {
+                Assert.Equal("Extension", extension.Key);
+                var expectedExtension = JsonSerializer.SerializeToElement(customExtensionData, options.SerializerOptions);
+                var value = Assert.IsType<JsonElement>(extension.Value);
+
+                Assert.Equal(expectedExtension.GetProperty("data").GetString(), value.GetProperty("data").GetString());
+            });
+    }
+
+    [Fact]
     public async Task WriteAsync_Applies_Defaults()
     {
         // Arrange
@@ -450,6 +528,13 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [JsonSerializable(typeof(CustomProblemDetails))]
+    [JsonSerializable(typeof(CustomExtensionData))]
     internal partial class CustomProblemDetailsContext : JsonSerializerContext
     { }
+
+    [JsonSerializable(typeof(CustomProblemDetails))]
+    internal partial class CustomProblemDetailsContext2 : JsonSerializerContext
+    { }
+
+    internal record CustomExtensionData(string Data);
 }
