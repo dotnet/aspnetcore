@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -32,14 +33,8 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous validation.</returns>
     public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         var errors = await ValidateRoleName(manager, role).ConfigureAwait(false);
         if (errors?.Count > 0)
         {

@@ -7,6 +7,7 @@ using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -124,10 +125,7 @@ public static class HubConnectionBuilderHttpExtensions
 
     private static IHubConnectionBuilder WithUrlCore(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType? transports, Action<HttpConnectionOptions>? configureHttpConnection)
     {
-        if (hubConnectionBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnectionBuilder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnectionBuilder);
 
         hubConnectionBuilder.Services.Configure<HttpConnectionOptions>(o =>
         {

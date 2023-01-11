@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.FileProviders.Embedded;
 using Microsoft.Extensions.Primitives;
 
@@ -43,10 +44,7 @@ public class EmbeddedFileProvider : IFileProvider
     /// <param name="baseNamespace">The base namespace that contains the embedded resources.</param>
     public EmbeddedFileProvider(Assembly assembly, string? baseNamespace)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
 
         _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";
         _assembly = assembly;

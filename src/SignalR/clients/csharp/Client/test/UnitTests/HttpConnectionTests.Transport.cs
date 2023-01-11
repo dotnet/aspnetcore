@@ -276,7 +276,7 @@ public partial class HttpConnectionTests
 
                     var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
                         () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
-                    Assert.Equal(nameof(HttpConnection), exception.ObjectName);
+                    Assert.Equal(typeof(HttpConnection).FullName, exception.ObjectName);
                 });
         }
 
