@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
@@ -51,10 +52,89 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [Fact]
+    public async Task WriteAsync_Works_WithJsonContext()
+    {
+        // Arrange
+        var options = new JsonOptions();
+        options.SerializerOptions.AddContext<CustomProblemDetailsContext>();
+
+        var writer = GetWriter(jsonOptions: options);
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedProblem = new ProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
+            Title = "Custom Bad Request",
+        };
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedProblem.Status, problemDetails.Status);
+        Assert.Equal(expectedProblem.Type, problemDetails.Type);
+        Assert.Equal(expectedProblem.Title, problemDetails.Title);
+        Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
+        Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+    }
+
+    [Fact]
     public async Task WriteAsync_Works_WithHttpValidationProblemDetails()
     {
         // Arrange
         var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedProblem = new HttpValidationProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
+            Title = "Custom Bad Request",
+        };
+        expectedProblem.Errors.Add("sample", new string[] { "error-message" });
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<HttpValidationProblemDetails>(stream);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedProblem.Status, problemDetails.Status);
+        Assert.Equal(expectedProblem.Type, problemDetails.Type);
+        Assert.Equal(expectedProblem.Title, problemDetails.Title);
+        Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
+        Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+        Assert.Equal(expectedProblem.Errors, problemDetails.Errors);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Works_WithHttpValidationProblemDetails_AndJsonContext()
+    {
+        // Arrange
+        var options = new JsonOptions();
+        options.SerializerOptions.AddContext<CustomProblemDetailsContext>();
+
+        var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
         var context = CreateContext(stream);
         var expectedProblem = new HttpValidationProblemDetails()
@@ -359,12 +439,7 @@ public partial class DefaultProblemDetailsWriterTest
     private static DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null, JsonOptions jsonOptions = null)
     {
         options ??= new ProblemDetailsOptions();
-
-        if (jsonOptions is null)
-        {
-            jsonOptions = new JsonOptions();
-            jsonOptions.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
-        }
+        jsonOptions ??= new JsonOptions();
 
         return new DefaultProblemDetailsWriter(Options.Create(options), Options.Create(jsonOptions));
     }
