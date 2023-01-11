@@ -5,10 +5,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -41,10 +46,92 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             HttpMethods = httpMethods,
             RouteAttributes = RouteAttributes.None,
             Conventions = conventions,
-            FinallyConventions = finallyConventions
+            FinallyConventions = finallyConventions,
+            InferMetadataFunc = null, // Metadata isn't infered from RequestDelegate endpoints
+            CreateHandlerRequestDelegateFunc = CreateHandlerRequestDelegate
         });
 
         return new RouteHandlerBuilder(conventions, finallyConventions);
+
+        static RequestDelegate CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
+        {
+            var requestDelegate = (RequestDelegate)handler;
+
+            // Use request delegate directly when there are no filters.
+            if (options.EndpointBuilder is null || options.EndpointBuilder.FilterFactories.Count == 0)
+            {
+                return requestDelegate;
+            }
+
+            return BuildFilterPipeline(requestDelegate, options);
+        }
+    }
+
+    private static RequestDelegate BuildFilterPipeline(RequestDelegate requestDelegate, RequestDelegateFactoryOptions options)
+    {
+        var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+        var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+        var jsonSerializerOptions = jsonOptions.SerializerOptions;
+
+        var factoryContext = new EndpointFilterFactoryContext
+        {
+            MethodInfo = requestDelegate.Method,
+            ApplicationServices = options.EndpointBuilder.ApplicationServices
+        };
+        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+
+        EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
+        {
+            if (context.HttpContext.Response.StatusCode >= 400)
+            {
+                return EmptyHttpResult.Instance;
+            }
+            else
+            {
+                await requestDelegate(context.HttpContext);
+                return EmptyHttpResult.Instance;
+            }
+        };
+
+        var initialFilteredInvocation = filteredInvocation;
+        for (var i = options.EndpointBuilder.FilterFactories.Count - 1; i >= 0; i--)
+        {
+            var currentFilterFactory = options.EndpointBuilder.FilterFactories[i];
+            filteredInvocation = currentFilterFactory(factoryContext, filteredInvocation);
+        }
+
+        // The filter factories have run without modifying per-request behavior, we can skip running the pipeline.
+        if (ReferenceEquals(initialFilteredInvocation, filteredInvocation))
+        {
+            return requestDelegate;
+        }
+
+        return async (HttpContext httpContext) =>
+        {
+            var obj = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext, new object[] { httpContext }));
+            if (obj is not null)
+            {
+                await ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonSerializerOptions, jsonTypeInfo);
+            }
+        };
+    }
+
+    // Due to cyclic references between Http.Extensions and
+    // Http.Results, we define our own instance of the `EmptyHttpResult`
+    // type here.
+    private sealed class EmptyHttpResult : IResult
+    {
+        private EmptyHttpResult()
+        {
+        }
+
+        public static EmptyHttpResult Instance { get; } = new();
+
+        /// <inheritdoc/>
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     public RouteHandlerBuilder AddRouteHandler(
@@ -69,10 +156,34 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             HttpMethods = httpMethods,
             RouteAttributes = routeAttributes,
             Conventions = conventions,
-            FinallyConventions = finallyConventions
+            FinallyConventions = finallyConventions,
+            InferMetadataFunc = InferHandlerMetadata,
+            CreateHandlerRequestDelegateFunc = CreateHandlerRequestDelegate
         });
 
         return new RouteHandlerBuilder(conventions, finallyConventions);
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2026",
+            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050",
+            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
+        static RequestDelegateMetadataResult InferHandlerMetadata(MethodInfo methodInfo, RequestDelegateFactoryOptions? options = null)
+        {
+            return RequestDelegateFactory.InferMetadata(methodInfo, options);
+        }
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2026",
+            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050",
+            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
+            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
+        static RequestDelegate CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
+        {
+            return RequestDelegateFactory.Create(handler, options, metadataResult).RequestDelegate;
+        }
     }
 
     public override IReadOnlyList<RouteEndpoint> Endpoints
@@ -196,8 +307,10 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // they can do so via IEndpointConventionBuilder.Finally like the do to override any other entry-specific metadata.
         if (isRouteHandler)
         {
+            Debug.Assert(entry.InferMetadataFunc != null, "A func to infer metadata must be provided for route handlers.");
+
             rdfOptions = CreateRdfOptions(entry, pattern, builder);
-            rdfMetadataResult = InferHandlerMetadata(entry.RouteHandler.Method, rdfOptions);
+            rdfMetadataResult = entry.InferMetadataFunc(entry.RouteHandler.Method, rdfOptions);
         }
 
         // Add delegate attributes as metadata before entry-specific conventions but after group conventions.
@@ -225,7 +338,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
             // We always set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
-            factoryCreatedRequestDelegate = CreateHandlerRequestDelegate(entry.RouteHandler, rdfOptions, rdfMetadataResult);
+            factoryCreatedRequestDelegate = entry.CreateHandlerRequestDelegateFunc(entry.RouteHandler, rdfOptions, rdfMetadataResult);
         }
 
         Debug.Assert(factoryCreatedRequestDelegate is not null);
@@ -251,28 +364,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         }
 
         return builder;
-
-        [UnconditionalSuppressMessage("Trimmer", "IL2026",
-            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050",
-            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
-        static RequestDelegateMetadataResult InferHandlerMetadata(MethodInfo methodInfo, RequestDelegateFactoryOptions? options = null)
-        {
-            return RequestDelegateFactory.InferMetadata(methodInfo, options);
-        }
-
-        [UnconditionalSuppressMessage("Trimmer", "IL2026",
-            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050",
-            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
-        static RequestDelegate CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
-        {
-            return RequestDelegateFactory.Create(handler, options, metadataResult).RequestDelegate;
-        }
     }
 
     private RequestDelegateFactoryOptions CreateRdfOptions(RouteEntry entry, RoutePattern pattern, RouteEndpointBuilder builder)
@@ -323,14 +414,16 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         return false;
     }
 
-    private struct RouteEntry
+    private readonly struct RouteEntry
     {
-        public RoutePattern RoutePattern { get; init; }
-        public Delegate RouteHandler { get; init; }
-        public IEnumerable<string>? HttpMethods { get; init; }
-        public RouteAttributes RouteAttributes { get; init; }
-        public ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
-        public ThrowOnAddAfterEndpointBuiltConventionCollection FinallyConventions { get; init; }
+        public required RoutePattern RoutePattern { get; init; }
+        public required Delegate RouteHandler { get; init; }
+        public required IEnumerable<string>? HttpMethods { get; init; }
+        public required RouteAttributes RouteAttributes { get; init; }
+        public required ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
+        public required ThrowOnAddAfterEndpointBuiltConventionCollection FinallyConventions { get; init; }
+        public required Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult>? InferMetadataFunc { get; init; }
+        public required Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegate> CreateHandlerRequestDelegateFunc { get; init; }
     }
 
     [Flags]
