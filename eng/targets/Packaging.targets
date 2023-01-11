@@ -1,9 +1,10 @@
 <Project>
 
+  <!-- Last released version was 3.1.32 - make sure the baseline stays there -->
   <Target Name="EnsureBaselineIsUpdated"
           Condition=" '$(ValidateBaseline)' == 'true' AND
               '$(IsServicingBuild)' == 'true' AND
-              '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)' AND
+              '$(AspNetCoreBaselineVersion)' != '3.1.32' AND
               '$(MSBuildProjectName)' != 'BaselineGenerator' AND
               '$(MSBuildProjectName)' != 'RepoTasks' "
           BeforeTargets="BeforeBuild">
