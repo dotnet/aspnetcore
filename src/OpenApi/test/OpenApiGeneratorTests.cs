@@ -913,6 +913,21 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operationWithNoBodyParams.RequestBody);
     }
 
+    [Fact]
+    public void HandlesParameterWithNameInAttribute()
+    {
+        static void ValidateParameter(OpenApiOperation operation, string expectedName)
+        {
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(expectedName, parameter.Name);
+        }
+
+        ValidateParameter(GetOpenApiOperation(([FromRoute(Name = "routeName")] string param) => ""), "routeName");
+        ValidateParameter(GetOpenApiOperation(([FromRoute(Name = "routeName")] string param) => "", "/{param}"), "routeName");
+        ValidateParameter(GetOpenApiOperation(([FromQuery(Name = "queryName")] string param) => ""), "queryName");
+        ValidateParameter(GetOpenApiOperation(([FromHeader(Name = "headerName")] string param) => ""), "headerName");
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,
