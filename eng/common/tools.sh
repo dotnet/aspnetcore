@@ -511,7 +511,7 @@ global_json_file="${repo_root}global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
 if command -v jq &> /dev/null; then
-  if jq -er '. | select(has("runtimes"))' "$global_json_file" &> /dev/null; then
+  if jq -e '.tools | has("runtimes")' "$global_json_file" &> /dev/null; then
     global_json_has_runtimes=true
   fi
 elif [[ "$(cat "$global_json_file")" =~ \"runtimes\"[[:space:]\:]*\{ ]]; then
