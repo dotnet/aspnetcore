@@ -1758,7 +1758,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnitedApp", "src\Components\Samples\BlazorUnitedApp\BlazorUnitedApp.csproj", "{09962BE7-48EC-44EA-B86A-3652FF0D7D1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BestForYouRecipes", "src\Components\Samples\BestForYouRecipes\BestForYouRecipes.csproj", "{0F2FA523-D28A-4C70-8E90-5AD24D03A765}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BestForYouRecipes", "src\Components\Samples\BestForYouRecipes\BestForYouRecipes.csproj", "{0F2FA523-D28A-4C70-8E90-5AD24D03A765}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -10,7 +10,7 @@
         {
             var id = $"star{i}";
             var value = i;
-            <input type="radio" id="@id" name="star-rating" value="@value" checked="@(Value == value)" @onchange="OnChange" />
+            <input type="radio" id="@id" name="rating" value="@value" checked="@(Value == value)" @onchange="OnChange" />
             <label for="@id"></label>
         }
     }

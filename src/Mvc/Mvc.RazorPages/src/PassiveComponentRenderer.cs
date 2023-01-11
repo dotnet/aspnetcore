@@ -78,11 +78,32 @@ internal class PassiveComponentRenderer
         using var writer = _writerFactory.CreateWriter(httpContext.Response.BodyWriter.AsStream(), Encoding.UTF8);
         await viewBuffer.WriteToAsync(writer, _htmlEncoder);
 
-        await foreach (var batch in htmlRenderer.StreamingRenderBatches.ReadAllAsync(httpContext.RequestAborted))
+        try
         {
-            // TODO: Instead of passing 'result', we should only pass 'batch', and WriteDiffAsync should
-            // render that batch to the output instead of the whole page
-            await WriteDiffAsync(httpContext, result);
+            if (htmlRenderer.StreamingRenderBatches is not null)
+            {
+                await foreach (var batch in htmlRenderer.StreamingRenderBatches.ReadAllAsync(httpContext.RequestAborted))
+                {
+                    // TODO: Instead of passing 'result', we should only pass 'batch', and WriteDiffAsync should
+                    // render that batch to the output instead of the whole page
+                    await WriteDiffAsync(httpContext, result);
+                }
+            }
+        }
+        catch (AggregateException ex) when (ex.InnerException is NavigationException navException)
+        {
+            if (!httpContext.Response.HasStarted)
+            {
+                httpContext.Response.Redirect(navException.Location);
+            }
+            else
+            {
+                // During streaming rendering, if there's a navigation, we have to translate that into script
+                await writer.WriteAsync("<script>location.href = ");
+                await writer.WriteAsync(JsonSerializer.Serialize(navException.Location));
+                await writer.WriteAsync("</script>");
+            }
+            return;
         }
 
         // Finally, emit any persisted state

@@ -1,2 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.EditContext<TModel>
+Microsoft.AspNetCore.Components.Forms.EditContext<TModel>.EditContext(TModel! model) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext<TModel>.Model.get -> TModel!
 static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.IServiceProvider! serviceProvider) -> System.IDisposable!

@@ -6,11 +6,32 @@ using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
+// While it might feel more natural to have EditContext<TModel> as the base class and derive EditContext from it,
+// that doesn't meet back-compat goals. EditContext is an existing API and external code will already refer to it.
+// We want existing library code that accepts EditContext to also accept EditContext<TModel>.
+
+/// <inheritdoc />
+public class EditContext<TModel> : EditContext where TModel : class
+{
+    /// <summary>
+    /// Constructs an instance of <see cref="EditContext"/>.
+    /// </summary>
+    /// <param name="model">The model object for the <see cref="EditContext"/>. This object should hold the data being edited, for example as a set of properties.</param>
+    public EditContext(TModel model) : base(model)
+    {
+    }
+
+    /// <summary>
+    /// Gets the model object for this <see cref="EditContext"/>.
+    /// </summary>
+    public new TModel Model => (TModel)base.Model;
+}
+
 /// <summary>
 /// Holds metadata related to a data editing process, such as flags to indicate which
 /// fields have been modified and the current set of validation messages.
 /// </summary>
-public sealed class EditContext
+public class EditContext
 {
     // Note that EditContext tracks state for any FieldIdentifier you give to it, plus
     // the underlying storage is sparse. As such, none of the APIs have a "field not found"

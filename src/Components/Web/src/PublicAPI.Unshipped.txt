@@ -1,4 +1,5 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Components.RenderTree.WebRenderer.ActivatePrerenderedComponentsAsync() -> System.Threading.Tasks.Task!
 const Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Auto = (Microsoft.AspNetCore.Components.ComponentRenderMode)34 -> Microsoft.AspNetCore.Components.ComponentRenderMode
 const Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.Server = (Microsoft.AspNetCore.Components.ComponentRenderMode)32 -> Microsoft.AspNetCore.Components.ComponentRenderMode
 const Microsoft.AspNetCore.Components.Web.WebComponentRenderMode.WebAssembly = (Microsoft.AspNetCore.Components.ComponentRenderMode)33 -> Microsoft.AspNetCore.Components.ComponentRenderMode

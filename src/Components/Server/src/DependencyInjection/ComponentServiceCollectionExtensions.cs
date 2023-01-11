@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -36,6 +37,7 @@ public static class ComponentServiceCollectionExtensions
 
         services.TryAddScoped<ProtectedLocalStorage>();
         services.TryAddScoped<ProtectedSessionStorage>();
+        services.TryAddTransient(typeof(EditContext<>), typeof(HttpRequestEditContext<>));
 
         // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
         // the global HubOptions before running the configure callback. We want to ensure that happens

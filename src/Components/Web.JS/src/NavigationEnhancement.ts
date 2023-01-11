@@ -62,6 +62,12 @@ export async function performEnhancedPageLoad(url: string, fetchOptions?: Reques
     const parsedHtml = new DOMParser().parseFromString(responseHtml, 'text/html');
     document.body.innerHTML = parsedHtml.body.innerHTML;
     responseHtml = '';
+    for (let i = 0; i < parsedHtml.scripts.length; i++) {
+        const script = parsedHtml.scripts[i];
+        if (script.textContent) {
+            eval(script.textContent);
+        }
+    }
 
     while (!finished) {
         const chunk = await responseReader.read();

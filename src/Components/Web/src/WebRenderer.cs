@@ -86,6 +86,9 @@ public abstract class WebRenderer : Renderer
         base.Dispose(disposing);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     protected internal abstract Task ActivatePrerenderedComponentsAsync();
 
     /// <summary>

@@ -1,12 +1,13 @@
-﻿@inject IHttpContextAccessor HttpContextAccessor
+﻿@inject EditContext<Review> EditContext
+@inject NavigationManager Nav
 <div class="reviews">
     <h2>Reviews</h2>
-    <EditForm method="post" class="review-editor" EditContext="editContext" enhance>
-        <StarRating @bind-Value="review.Rating" />
-        <ValidationMessage For="@(() => review.Rating)" />
+    <EditForm method="post" class="review-editor" EditContext="EditContext" enhance>
+        <StarRating @bind-Value="EditContext.Model.Rating" />
+        <ValidationMessage For="@(() => EditContext.Model.Rating)" />
 
-        <InputTextArea rows="5" name="review-text" placeholder="Write a review" @bind-Value="review.Text" />
-        <ValidationMessage For="@(() => review.Text)" />
+        <InputTextArea rows="5" name="text" placeholder="Write a review" @bind-Value="EditContext.Model.Text" />
+        <ValidationMessage For="@(() => EditContext.Model.Text)" />
 
         <button type="submit">Submit</button>
     </EditForm>
@@ -25,9 +26,6 @@
 </div>
 
 @code {
-    EditContext? editContext;
-    Review review = default!;
-
     [Parameter, EditorRequired]
     public IList<Review> Reviews { get; set; } = default!;
 
@@ -36,26 +34,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var httpContext = HttpContextAccessor.HttpContext;
-        if (httpContext.Request.HasFormContentType)
+        if (EditContext.IsModified() && EditContext.Validate())
         {
-            var form = httpContext.Request.Form;
-            review = new Review
-            {
-                Rating = int.TryParse(form["star-rating"], out var starRating) ? starRating : 0,
-                Text = form["review-text"],
-            };
-            editContext = new EditContext(review).AddDataAnnotationsValidation();
-            if (editContext.Validate())
-            {
-                await OnSubmitReview.InvokeAsync(review);
-                httpContext.Response.Redirect(httpContext.Request.Path);
-            }
-        }
-        else
-        {
-            review = new();
-            editContext = new(review);
+            await OnSubmitReview.InvokeAsync(EditContext.Model);
+            Nav.NavigateTo(Nav.Uri, forceLoad: true);
         }
     }
 }
