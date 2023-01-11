@@ -8,17 +8,19 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal class TestRateLimiter : RateLimiter
 {
     private readonly bool _alwaysAccept;
+    private RateLimiterStatistics _statistics;
 
-    public TestRateLimiter(bool alwaysAccept)
+    public TestRateLimiter(bool alwaysAccept, RateLimiterStatistics statistics = null)
     {
         _alwaysAccept = alwaysAccept;
+        _statistics = statistics;
     }
 
     public override TimeSpan? IdleDuration => throw new NotImplementedException();
 
     public override RateLimiterStatistics GetStatistics()
     {
-        throw new NotImplementedException();
+        return _statistics;
     }
 
     protected override RateLimitLease AttemptAcquireCore(int permitCount)

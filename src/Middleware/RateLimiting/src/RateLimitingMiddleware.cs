@@ -3,6 +3,7 @@
 
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +20,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
+    private readonly bool _trackStatistics;
     private readonly Dictionary<string, DefaultRateLimiterPolicy> _policyMap;
     private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
@@ -39,6 +41,7 @@ internal sealed partial class RateLimitingMiddleware
         _logger = logger;
         _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
+        _trackStatistics = options.Value.TrackStatistics;
         _policyMap = new Dictionary<string, DefaultRateLimiterPolicy>(options.Value.PolicyMap);
 
         // Activate policies passed to AddPolicy<TPartitionKey, TPolicy>
@@ -78,6 +81,12 @@ internal sealed partial class RateLimitingMiddleware
     private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         using var leaseContext = await TryAcquireAsync(context);
+
+        if (_trackStatistics)
+        {
+            AddRateLimiterStatisticsFeature(context);
+        }
+
         if (leaseContext.Lease?.IsAcquired == true)
         {
             await _next(context);
@@ -240,6 +249,11 @@ internal sealed partial class RateLimitingMiddleware
                 throw new InvalidOperationException("This endpoint requested a rate limiting policy with a null name.");
             }
         }, new DefaultKeyTypeEqualityComparer());
+    }
+
+    private void AddRateLimiterStatisticsFeature(HttpContext context)
+    {
+        context.Features.Set<IRateLimiterStatisticsFeature>(new DefaultRateLimiterStatisticsFeature(_globalLimiter, _endpointLimiter, context));
     }
 
     private static partial class RateLimiterLog

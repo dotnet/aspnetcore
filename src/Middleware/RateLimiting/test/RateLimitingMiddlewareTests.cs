@@ -4,6 +4,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -606,6 +607,75 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task StatisticsFeature_NotTracked()
+    {
+        // Arrange
+        var options = CreateOptionsAccessor();
+        var policy = new TestRateLimiterPolicy("myKey1", 404, false);
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+
+        var context = new DefaultHttpContext();
+        var endpoint = CreateEndpointWithRateLimitPolicy(policy);
+        context.SetEndpoint(endpoint);
+
+        // Act
+        await middleware.Invoke(context).DefaultTimeout();
+
+        // Assert
+        Assert.Null(context.Features.Get<IRateLimiterStatisticsFeature>());
+    }
+
+    [Fact]
+    public async Task StatisticsFeature_SuccessfullyTracked()
+    {
+        // Arrange
+        var options = CreateOptionsAccessor(trackStatistics: true);
+
+        var policy = new TestRateLimiterPolicy("myKey1", 404, false);
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+
+        var context = new DefaultHttpContext();
+        var endpoint = CreateEndpointWithRateLimitPolicy(policy);
+        context.SetEndpoint(endpoint);
+
+        // Act
+        await middleware.Invoke(context).DefaultTimeout();
+
+        // Assert
+        Assert.NotNull(context.Features.Get<IRateLimiterStatisticsFeature>());
+    }
+
+    [Fact]
+    public async Task StatisticsFeature_GetsStatistics_ForGlobalAndEndpointLimiter()
+    {
+        // Arrange
+        var options = CreateOptionsAccessor(trackStatistics: true);
+
+        var globalStatistics = new RateLimiterStatistics();
+        var endpointStatistics = new RateLimiterStatistics();
+
+        var policy = new TestRateLimiterPolicy("myKey1", 404, true, endpointStatistics);
+        options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false), globalStatistics);
+
+        var middleware = CreateTestRateLimitingMiddleware(options);
+
+        var context = new DefaultHttpContext();
+        var endpoint = CreateEndpointWithRateLimitPolicy(policy);
+        context.SetEndpoint(endpoint);
+
+        // Act
+        await middleware.Invoke(context).DefaultTimeout();
+
+        // Assert
+        var statisticsFeature = context.Features.Get<IRateLimiterStatisticsFeature>();
+
+        Assert.Equal(endpointStatistics, statisticsFeature.GetEndpointStatistics());
+        Assert.Equal(globalStatistics, statisticsFeature.GetGlobalStatistics());
+    }
+
     private Endpoint CreateEndpointWithRateLimitPolicy<TPartitionKey>(IRateLimiterPolicy<TPartitionKey> policy)
     {
         var endpointBuilder = new TestEndpointBuilder();
@@ -639,5 +709,8 @@ public class RateLimitingMiddlewareTests
             options,
             serviceProvider ?? Mock.Of<IServiceProvider>());
 
-    private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
+    private IOptions<RateLimiterOptions> CreateOptionsAccessor(bool trackStatistics = false) => Options.Create(new RateLimiterOptions()
+    {
+        TrackStatistics = trackStatistics
+    });
 }
