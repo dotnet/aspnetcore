@@ -14,5 +14,10 @@
       "id": "NativeAot",
       "isVisible": true
     }
+  ],
+  "unsupportedHosts": [
+    {
+      "id": "vs"
+    }
   ]
 }
