@@ -106,7 +106,7 @@
 
   <!-- blazor.server.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->
   <Target Name="_CheckBlazorServerJSPath" AfterTargets="ResolveProjectReferences" Condition=" '$(BuildNodeJS)' != 'false' and !EXISTS('$(BlazorServerJSFile)') ">
-    <Error Text="'$(BlazorServerJSFile)' does not exist. Falling back to checked-in copy." />
+    <Error Text="'$(BlazorServerJSFile)' does not exist. Build with NodeJS enabled." />
   </Target>
 
   <Target Name="_AddEmbeddedBlazor" AfterTargets="_CheckBlazorServerJSPath">
