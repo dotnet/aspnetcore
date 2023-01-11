@@ -19,6 +19,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
       <Reference Include="System.ValueTuple" />
+      <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
 </Project>
