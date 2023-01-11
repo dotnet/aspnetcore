@@ -158,7 +158,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         await Server.StartAsync(httpApplication, cancellationToken);
         HostingEventSource.Log.ServerReady();
 
-        if (addresses != null)
+        if (addresses != null && !Options.WebHostOptions.SuppressStatusMessages)
         {
             foreach (var address in addresses)
             {
