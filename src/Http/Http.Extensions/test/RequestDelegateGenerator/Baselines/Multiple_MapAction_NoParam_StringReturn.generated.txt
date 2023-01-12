@@ -126,6 +126,54 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
+            [(@"TestMapActions.cs", 16)] = (
+               (methodInfo, options) =>
+                {
+                    if (options == null || options.EndpointBuilder == null)
+                    {
+                        return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
+                    }
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 16));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    var handler = (System.Func<string>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler());
+
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    Task RequestHandler(HttpContext httpContext)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain";
+                        var result = handler();
+                        return GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
 
         };
 

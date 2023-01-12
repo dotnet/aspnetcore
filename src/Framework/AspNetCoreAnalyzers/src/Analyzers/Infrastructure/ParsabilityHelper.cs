@@ -12,6 +12,8 @@ using System.ComponentModel;
 
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 internal static class ParsabilityHelper
 {
     private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
@@ -160,7 +162,7 @@ internal static class ParsabilityHelper
             {
                 return Bindability.InvalidReturnType;
             }
-            
+
         }
 
         return Bindability.NotBindable;

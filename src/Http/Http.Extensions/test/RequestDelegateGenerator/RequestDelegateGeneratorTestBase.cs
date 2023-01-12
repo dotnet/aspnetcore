@@ -11,15 +11,17 @@ using Microsoft.AspNetCore.Http.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RequestDelegateGeneratorTestBase
+public class RequestDelegateGeneratorTestBase : LoggedTest
 {
     internal static (ImmutableArray<GeneratorRunResult>, Compilation) RunGenerator(string sources)
     {
@@ -58,7 +60,7 @@ public class RequestDelegateGeneratorTestBase
         return null;
     }
 
-    internal static Endpoint GetEndpointFromCompilation(Compilation compilation)
+    internal static Endpoint GetEndpointFromCompilation(Compilation compilation, bool checkSourceKey = true)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -100,7 +102,6 @@ public class RequestDelegateGeneratorTestBase
         var handler = assembly.GetType("TestMapActions")
             ?.GetMethod("MapTestEndpoints", BindingFlags.Public | BindingFlags.Static)
             ?.CreateDelegate<Func<IEndpointRouteBuilder, IEndpointRouteBuilder>>();
-        var sourceKeyType = assembly.GetType("Microsoft.AspNetCore.Builder.SourceKey");
 
         Assert.NotNull(handler);
 
@@ -111,12 +112,29 @@ public class RequestDelegateGeneratorTestBase
         // Trigger Endpoint build by calling getter.
         var endpoint = Assert.Single(dataSource.Endpoints);
 
-        var sourceKeyMetadata = endpoint.Metadata.Single(metadata => metadata.GetType() == sourceKeyType);
-        Assert.NotNull(sourceKeyMetadata);
+        if (checkSourceKey)
+        {
+            var sourceKeyType = assembly.GetType("Microsoft.AspNetCore.Builder.SourceKey");
+            var sourceKeyMetadata = endpoint.Metadata.Single(metadata => metadata.GetType() == sourceKeyType);
+            Assert.NotNull(sourceKeyMetadata);
+        }
 
         return endpoint;
     }
 
+    internal HttpContext CreateHttpContext()
+    {
+        var httpContext = new DefaultHttpContext();
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        return httpContext;
+    }
     private static Compilation CreateCompilation(string sources)
     {
         var source = $$"""
@@ -136,6 +154,20 @@ public static class TestMapActions
     {
         {{sources}}
         return app;
+    }
+
+    public interface ITodo
+    {
+        public int Id { get; }
+        public string? Name { get; }
+        public bool IsComplete { get; }
+    }
+
+    public class Todo
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; } = "Todo";
+        public bool IsComplete { get; set; }
     }
 }
 """;

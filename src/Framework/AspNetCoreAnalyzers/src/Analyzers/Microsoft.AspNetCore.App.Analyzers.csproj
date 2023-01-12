@@ -23,6 +23,8 @@
     <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Roslyn\MvcFacts.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

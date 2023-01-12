@@ -3,6 +3,8 @@
 
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -24,7 +26,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var endpoints = context.SyntaxProvider.CreateSyntaxProvider(
+        var endpointsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
             predicate: (node, _) => node is InvocationExpressionSyntax
             {
                 Expression: MemberAccessExpressionSyntax
@@ -39,83 +41,141 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             transform: (context, token) =>
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token) as IInvocationOperation;
-                return StaticRouteHandlerModelParser.GetEndpointFromOperation(operation);
+                var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
+                return new Endpoint(operation, wellKnownTypes);
             })
-            .Where(endpoint => endpoint.Response.ResponseType == "string")
-            .WithTrackingName("EndpointModel");
+            .WithTrackingName(GeneratorSteps.EndpointsStep);
+
+        context.RegisterSourceOutput(endpointsWithDiagnostics, (context, endpoint) =>
+        {
+            var (filePath, _) = endpoint.Location;
+            foreach (var diagnostic in endpoint.Diagnostics)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(diagnostic, endpoint.Operation.Syntax.GetLocation(), filePath));
+            }
+            foreach (var diagnostic in endpoint.Response.Diagnostics)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(diagnostic, endpoint.Operation.Syntax.GetLocation(), filePath));
+            }
+            foreach (var diagnostic in endpoint.Route.Diagnostics)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(diagnostic, endpoint.Operation.Syntax.GetLocation(), filePath));
+            }
+        });
+
+        var endpoints = endpointsWithDiagnostics
+            .Where(endpoint => endpoint.Diagnostics.Count == 0 &&
+                               endpoint.Response.Diagnostics.Count == 0 &&
+                               endpoint.Route.Diagnostics.Count == 0)
+            .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
 
         var thunks = endpoints.Select((endpoint, _) => $$"""
-[{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
-           (methodInfo, options) =>
-            {
-                if (options == null)
+            [{{endpoint.EmitSourceKey()}}] = (
+               (methodInfo, options) =>
                 {
-                    return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
-                }
-                options.EndpointBuilder.Metadata.Add(new SourceKey{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}});
-                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
-            },
-            (del, options, inferredMetadataResult) =>
-            {
-                var handler = ({{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}})del;
-                EndpointFilterDelegate? filteredInvocation = null;
-
-                if (options.EndpointBuilder.FilterFactories.Count > 0)
-                {
-                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                    if (options == null || options.EndpointBuilder == null)
                     {
-                        if (ic.HttpContext.Response.StatusCode == 400)
+                        return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
+                    }
+                    options.EndpointBuilder.Metadata.Add(new SourceKey{{endpoint.EmitSourceKey()}});
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    var handler = ({{endpoint.EmitHandlerDelegateType()}})del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
-                            return ValueTask.FromResult<object?>(Results.Empty);
-                        }
-                        {{StaticRouteHandlerModelEmitter.EmitFilteredInvocation()}}
-                    },
-                    options.EndpointBuilder,
-                    handler.Method);
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+{{endpoint.EmitFilteredInvocation()}}
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+{{endpoint.EmitRequestHandler()}}
+{{StaticRouteHandlerModelEmitter.EmitFilteredRequestHandler()}}
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+""");
+
+        var stronglyTypedEndpointDefinitions = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                var dedupedByDelegate = endpoints.Distinct(new LambdaComparer<Endpoint>((a, b) =>
+                {
+                    if (a.Response.IsAwaitable == b.Response.IsAwaitable &&
+                        a.Response.IsVoid == b.Response.IsVoid &&
+                        SymbolEqualityComparer.Default.Equals(a.Response.ResponseType, b.Response.ResponseType) &&
+                        a.HttpMethod == b.HttpMethod)
+                    {
+                        return 0;
+                    }
+                    return -1;
+                }, (endpoint) =>
+                {
+                    unchecked
+                    {
+                        var hashCode = SymbolEqualityComparer.Default.GetHashCode(endpoint.Response.ResponseType);
+                        hashCode = (hashCode * 397) ^ endpoint.Response.IsAwaitable.GetHashCode();
+                        hashCode = (hashCode * 397) ^ endpoint.Response.IsVoid.GetHashCode();
+                        hashCode = (hashCode * 397) ^ endpoint.HttpMethod.GetHashCode();
+                        return hashCode;
+                    }
+                }));
+                var code = new CodeWriter(new StringBuilder());
+                code.Indent(2);
+                foreach (var endpoint in dedupedByDelegate)
+                {
+                    code.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint.HttpMethod}(");
+                    code.Indent();
+                    code.WriteLine("this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
+                    code.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
+                    code.WriteLine($"global::{endpoint.EmitHandlerDelegateType()} handler,");
+                    code.WriteLine(@"[global::System.Runtime.CompilerServices.CallerFilePath] string filePath = """",");
+                    code.WriteLine("[global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)");
+                    code.Unindent();
+                    code.StartBlock();
+                    code.WriteLine($"return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, {endpoint.EmitVerb()}, filePath, lineNumber);");
+                    code.EndBlock();
                 }
 
-                {{StaticRouteHandlerModelEmitter.EmitRequestHandler()}}
-                {{StaticRouteHandlerModelEmitter.EmitFilteredRequestHandler()}}
+                return code.ToString();
+            });
 
-                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
-                var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
-                return new RequestDelegateResult(targetDelegate, metadata);
-            }),
-""");
-
-        var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) => $$"""
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
-            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::{{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}} handler,
-            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
-            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
-        {
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, {{StaticRouteHandlerModelEmitter.EmitVerb(endpoint)}}, filePath, lineNumber);
-        }
-""");
-
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions.Collect());
+        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var (thunks, endpoints) = sources;
+            var (thunks, endpointsCode) = sources;
 
-            var endpointsCode = new StringBuilder();
-            var thunksCode = new StringBuilder();
-            foreach (var endpoint in endpoints)
+            if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
-                endpointsCode.AppendLine(endpoint);
+                return;
             }
+
+            var thunksCode = new CodeWriter(new StringBuilder());
+
             foreach (var thunk in thunks)
             {
-                thunksCode.AppendLine(thunk);
+                thunksCode.WriteLine(thunk);
             }
 
             var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(
                 genericThunks: string.Empty,
                 thunks: thunksCode.ToString(),
-                endpoints: endpointsCode.ToString());
+                endpoints: endpointsCode);
+
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
     }

@@ -85,16 +85,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
-        private static void PopulateMetadata<T>(MethodInfo method, EndpointBuilder builder) where T : IEndpointMetadataProvider
-        {
-            T.PopulateMetadata(method, builder);
-        }
-
-        private static void PopulateMetadata<T>(ParameterInfo parameter, EndpointBuilder builder) where T : IEndpointParameterMetadataProvider
-        {
-            T.PopulateMetadata(parameter, builder);
-        }
-
         private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
         {
             if (obj is IResult r)
@@ -115,10 +105,10 @@ namespace Microsoft.AspNetCore.Http.Generated
 """;
     private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""
         private static class GenericThunks<T>
+        {
+            public static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
             {
-                public static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-                {
-                    {{genericThunks}}
+                {{genericThunks}}
             };
         }
 
@@ -138,7 +128,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     private static string GetThunks(string thunks) => thunks != string.Empty ? $$"""
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            {{thunks}}
+{{thunks}}
         };
 
         internal static RouteHandlerBuilder MapCore(

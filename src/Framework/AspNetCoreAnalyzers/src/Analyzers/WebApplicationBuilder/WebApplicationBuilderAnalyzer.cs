@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
 {
