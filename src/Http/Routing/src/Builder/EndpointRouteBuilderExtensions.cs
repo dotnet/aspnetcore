@@ -196,7 +196,23 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(requestDelegate);
 
-        return endpoints.GetOrAddRouteEndpointDataSource().AddRequestDelegate(pattern, requestDelegate, httpMethods);
+        return endpoints
+            .GetOrAddRouteEndpointDataSource()
+            .AddRequestDelegate(pattern, requestDelegate, httpMethods, CreateHandlerRequestDelegate);
+
+        static RequestDelegateResult CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
+        {
+            var requestDelegate = (RequestDelegate)handler;
+
+            // Create request delegate that calls filter pipeline.
+            if (options.EndpointBuilder?.FilterFactories.Count > 0)
+            {
+                requestDelegate = RequestDelegateFilterPipelineBuilder.Create(requestDelegate, options);
+            }
+
+            var metadata = new List<object>(options.EndpointBuilder?.Metadata ?? Array.Empty<object>());
+            return new RequestDelegateResult(RequestDelegateFilterPipelineBuilder.Create(requestDelegate, options), metadata);
+        }
     }
 
     /// <summary>
@@ -416,7 +432,9 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(handler);
 
-        return endpoints.GetOrAddRouteEndpointDataSource().AddRouteHandler(pattern, handler, httpMethods, isFallback);
+        return endpoints
+            .GetOrAddRouteEndpointDataSource()
+            .AddRouteHandler(pattern, handler, httpMethods, isFallback, RequestDelegateFactory.InferMetadata, RequestDelegateFactory.Create);
     }
 
     private static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)

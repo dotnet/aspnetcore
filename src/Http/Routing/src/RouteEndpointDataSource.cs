@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
@@ -28,7 +27,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     public RouteHandlerBuilder AddRequestDelegate(
         RoutePattern pattern,
         RequestDelegate requestDelegate,
-        IEnumerable<string>? httpMethods)
+        IEnumerable<string>? httpMethods,
+        Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
@@ -42,30 +42,19 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             Conventions = conventions,
             FinallyConventions = finallyConventions,
             InferMetadataFunc = null, // Metadata isn't infered from RequestDelegate endpoints
-            CreateHandlerRequestDelegateFunc = CreateHandlerRequestDelegate
+            CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc
         });
 
         return new RouteHandlerBuilder(conventions, finallyConventions);
-
-        static RequestDelegate CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
-        {
-            var requestDelegate = (RequestDelegate)handler;
-
-            // Use request delegate directly when there are no filters.
-            if (options.EndpointBuilder is null || options.EndpointBuilder.FilterFactories.Count == 0)
-            {
-                return requestDelegate;
-            }
-
-            return RequestDelegateFilterPipelineBuilder.Create(requestDelegate, options);
-        }
     }
 
     public RouteHandlerBuilder AddRouteHandler(
         RoutePattern pattern,
         Delegate routeHandler,
         IEnumerable<string>? httpMethods,
-        bool isFallback)
+        bool isFallback,
+        Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult>? inferMetadataFunc,
+        Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
@@ -84,33 +73,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             RouteAttributes = routeAttributes,
             Conventions = conventions,
             FinallyConventions = finallyConventions,
-            InferMetadataFunc = InferHandlerMetadata,
-            CreateHandlerRequestDelegateFunc = CreateHandlerRequestDelegate
+            InferMetadataFunc = inferMetadataFunc,
+            CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc
         });
 
         return new RouteHandlerBuilder(conventions, finallyConventions);
-
-        [UnconditionalSuppressMessage("Trimmer", "IL2026",
-            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050",
-            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
-        static RequestDelegateMetadataResult InferHandlerMetadata(MethodInfo methodInfo, RequestDelegateFactoryOptions? options = null)
-        {
-            return RequestDelegateFactory.InferMetadata(methodInfo, options);
-        }
-
-        [UnconditionalSuppressMessage("Trimmer", "IL2026",
-            Justification = "We surface a RequireUnreferencedCode in the call to the Map methods adding route handlers to this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use trimmer unsafe features.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050",
-            Justification = "We surface a RequiresDynamicCode in the call to the Map methods adding route handlers this EndpointDataSource. Analysis is unable to infer this. " +
-            "Map methods that configure a RequestDelegate don't use AOT unsafe features.")]
-        static RequestDelegate CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
-        {
-            return RequestDelegateFactory.Create(handler, options, metadataResult).RequestDelegate;
-        }
     }
 
     public override IReadOnlyList<RouteEndpoint> Endpoints
@@ -265,7 +232,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
             // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
             // We always set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
-            factoryCreatedRequestDelegate = entry.CreateHandlerRequestDelegateFunc(entry.RouteHandler, rdfOptions, rdfMetadataResult);
+            factoryCreatedRequestDelegate = entry.CreateHandlerRequestDelegateFunc(entry.RouteHandler, rdfOptions, rdfMetadataResult).RequestDelegate;
         }
 
         Debug.Assert(factoryCreatedRequestDelegate is not null);
@@ -350,7 +317,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public required ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
         public required ThrowOnAddAfterEndpointBuiltConventionCollection FinallyConventions { get; init; }
         public required Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult>? InferMetadataFunc { get; init; }
-        public required Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegate> CreateHandlerRequestDelegateFunc { get; init; }
+        public required Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> CreateHandlerRequestDelegateFunc { get; init; }
     }
 
     [Flags]
