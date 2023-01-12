@@ -175,6 +175,14 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     protected Task InvokeAsync(Func<Task> workItem)
         => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
+    /// <summary>
+    /// Dispatches an <see cref="Exception"/> to the renderer via the <see cref="RenderHandle"/>.
+    /// </summary>
+    /// <param name="exception">The <see cref="Exception"/> that will be dispatched to the renderer.</param>
+    /// <returns>A <see cref="Task"/> that will be completed when the exception has finished dispatching.</returns>
+    protected Task DispatchExceptionAsync(Exception exception)
+        => _renderHandle.DispatchExceptionAsync(exception);
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         // This implicitly means a ComponentBase can only be associated with a single
