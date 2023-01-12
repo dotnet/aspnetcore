@@ -1,4 +1,12 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.HubConnectionOptions() -> void
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.KeepAliveInterval.get -> System.TimeSpan?
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.KeepAliveInterval.set -> void
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.ServerTimeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.ServerTimeout.set -> void
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithKeepAliveInterval(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan timeout) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithServerTimeout(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan timeout) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions.On<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(this Microsoft.AspNetCore.SignalR.Client.HubConnection! hubConnection, string! methodName, System.Func<T1, T2, T3, T4, T5, T6, T7, T8, System.Threading.Tasks.Task<TResult>!>! handler) -> System.IDisposable!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions.On<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(this Microsoft.AspNetCore.SignalR.Client.HubConnection! hubConnection, string! methodName, System.Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult>! handler) -> System.IDisposable!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions.On<T1, T2, T3, T4, T5, T6, T7, TResult>(this Microsoft.AspNetCore.SignalR.Client.HubConnection! hubConnection, string! methodName, System.Func<T1, T2, T3, T4, T5, T6, T7, System.Threading.Tasks.Task<TResult>!>! handler) -> System.IDisposable!

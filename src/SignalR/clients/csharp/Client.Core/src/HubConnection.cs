@@ -21,8 +21,10 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
@@ -226,6 +228,21 @@ public partial class HubConnection : IAsyncDisposable
         _state = new ReconnectingConnectionState(_logger);
 
         _logScope = new ConnectionLogScope();
+
+        var options = serviceProvider.GetService<IOptions<HubConnectionOptions>>();
+
+        if (options != null)
+        {
+            if (options.Value.ServerTimeout.HasValue)
+            {
+                ServerTimeout = options.Value.ServerTimeout.Value;
+            }
+
+            if (options.Value.KeepAliveInterval.HasValue)
+            {
+                KeepAliveInterval = options.Value.KeepAliveInterval.Value;
+            }
+        }
     }
 
     /// <summary>
