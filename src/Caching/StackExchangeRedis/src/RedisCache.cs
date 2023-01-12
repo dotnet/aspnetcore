@@ -85,11 +85,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     {
         ArgumentNullThrowHelper.ThrowIfNull(optionsAccessor);
         ArgumentNullThrowHelper.ThrowIfNull(logger);
-
-        if (clock == null)
-        {
-            throw new ArgumentNullException(nameof(clock));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(clock);
 
         _options = optionsAccessor.Value;
         _logger = logger;
