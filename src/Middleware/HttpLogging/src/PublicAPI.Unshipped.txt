@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.AdditionalRequestHeaders.get -> System.Collections.Generic.ISet<string!>!
