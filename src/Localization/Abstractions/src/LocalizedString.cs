@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -41,15 +42,8 @@ public class LocalizedString
     /// <param name="searchedLocation">The location which was searched for a localization value.</param>
     public LocalizedString(string name, string value, bool resourceNotFound, string? searchedLocation)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
 
         Name = name;
         Value = value;
