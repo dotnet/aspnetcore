@@ -39,6 +39,9 @@ function parseLogLevel(name: string): LogLevel {
 
 /** A builder for configuring {@link @microsoft/signalr.HubConnection} instances. */
 export class HubConnectionBuilder {
+    private _serverTimeoutInMilliseconds?: number;
+    private _keepAliveIntervalInMilliseconds ?: number;
+
     /** @internal */
     public protocol?: IHubProtocol;
     /** @internal */
@@ -183,6 +186,30 @@ export class HubConnectionBuilder {
         return this;
     }
 
+    /** Configures serverTimeoutInMilliseconds for the {@link @microsoft/signalr.HubConnection}.
+     *
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
+     */
+    public withServerTimeout(milliseconds: number): HubConnectionBuilder{
+        Arg.isRequired(milliseconds, "milliseconds");
+
+        this._serverTimeoutInMilliseconds = milliseconds;
+
+        return this;
+    }
+
+    /** Configures keepAliveIntervalInMilliseconds for the {@link @microsoft/signalr.HubConnection}.
+     *
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
+     */
+    public withKeepAliveInterval(milliseconds: number): HubConnectionBuilder{
+        Arg.isRequired(milliseconds, "milliseconds");
+
+        this._keepAliveIntervalInMilliseconds = milliseconds;
+
+        return this;
+    }
+
     /** Creates a {@link @microsoft/signalr.HubConnection} from the configuration options specified in this builder.
      *
      * @returns {HubConnection} The configured {@link @microsoft/signalr.HubConnection}.
@@ -208,7 +235,9 @@ export class HubConnectionBuilder {
             connection,
             this.logger || NullLogger.instance,
             this.protocol || new JsonHubProtocol(),
-            this.reconnectPolicy);
+            this.reconnectPolicy,
+            this._serverTimeoutInMilliseconds,
+            this._keepAliveIntervalInMilliseconds);
     }
 }
 

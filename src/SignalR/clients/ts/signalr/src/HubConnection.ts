@@ -92,17 +92,38 @@ export class HubConnection {
     // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
     // be stripped away and the '.d.ts' file would have no constructor, which is interpreted as a
     // public parameter-less constructor.
-    public static create(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy): HubConnection {
-        return new HubConnection(connection, logger, protocol, reconnectPolicy);
+    public static create(
+        connection: IConnection,
+        logger: ILogger,
+        protocol: IHubProtocol,
+        reconnectPolicy?: IRetryPolicy,
+        serverTimeoutInMilliseconds?: number,
+        keepAliveIntervalInMilliseconds?: number): HubConnection {
+        return new HubConnection(connection, logger, protocol, reconnectPolicy, serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds);
     }
 
-    private constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy) {
+    private constructor(
+        connection: IConnection,
+        logger: ILogger,
+        protocol: IHubProtocol,
+        reconnectPolicy?: IRetryPolicy,
+        serverTimeoutInMilliseconds?: number,
+        keepAliveIntervalInMilliseconds?: number) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
 
-        this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
-        this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
+        if (serverTimeoutInMilliseconds !== undefined) {
+            this.serverTimeoutInMilliseconds = serverTimeoutInMilliseconds;
+        } else {
+            this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
+        }
+
+        if (keepAliveIntervalInMilliseconds !== undefined) {
+            this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds;
+        } else {
+            this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
+        }
 
         this._logger = logger;
         this._protocol = protocol;
