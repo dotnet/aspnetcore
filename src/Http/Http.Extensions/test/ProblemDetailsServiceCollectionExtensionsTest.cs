@@ -25,6 +25,23 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IPostConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
+    }
+
+    [Fact]
+    public void AddProblemDetails_DoesNotDuplicate_WhenMultipleCalls()
+    {
+        // Arrange
+        var collection = new ServiceCollection();
+
+        // Act
+        collection.AddProblemDetails();
+        collection.AddProblemDetails();
+
+        // Assert
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IPostConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
     }
 
     [Fact]

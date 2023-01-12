@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -41,19 +42,7 @@ public static class ProblemDetailsServiceCollectionExtensions
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
-        services.PostConfigure<JsonOptions>(options =>
-        {
-            if (options.SerializerOptions.TypeInfoResolver is not null)
-            {
-                if (options.SerializerOptions.IsReadOnly)
-                {
-                    options.SerializerOptions = new(options.SerializerOptions);
-                }
-
-                // Combine the current resolver with our internal problem details context
-                options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.SerializerOptions.TypeInfoResolver!, ProblemDetailsJsonContext.Default);
-            }
-        });
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JsonOptions>, ProblemDetailsJsonOptionsSetup>());
 
         if (configure != null)
         {
