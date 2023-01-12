@@ -277,20 +277,22 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
     private RequestDelegateFactoryOptions CreateRdfOptions(RouteEntry entry, RoutePattern pattern, RouteEndpointBuilder builder)
     {
-        var routeParamNames = new List<string>(pattern.Parameters.Count);
-        foreach (var parameter in pattern.Parameters)
-        {
-            routeParamNames.Add(parameter.Name);
-        }
-
         return new()
         {
             ServiceProvider = _applicationServices,
-            RouteParameterNames = routeParamNames,
+            RouteParameterNames = ProduceRouteParamNames(),
             ThrowOnBadRequest = _throwOnBadRequest,
             DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
             EndpointBuilder = builder,
         };
+
+        IEnumerable<string> ProduceRouteParamNames()
+        {
+            foreach (var routePatternPart in pattern.Parameters)
+            {
+                yield return routePatternPart.Name;
+            }
+        }
     }
 
     private static bool ShouldDisableInferredBodyParameters(IEnumerable<string>? httpMethods)
