@@ -73,7 +73,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private readonly RedisCacheOptions _options;
     private readonly RedisKey _instancePrefix;
     private readonly ILogger _logger;
-    private readonly bool _useForceReconnect;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
@@ -141,9 +140,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
             // would do this itself anyway, using UTF8
             _instancePrefix = (RedisKey)Encoding.UTF8.GetBytes(instanceName);
         }
-
-        // note the "out" var is explicitly "false" if no switch is defined
-        AppContext.TryGetSwitch("Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect", out _useForceReconnect);
     }
 
     /// <inheritdoc />
@@ -678,7 +674,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private void OnRedisError(Exception exception, IDatabase cache)
     {
-        if (_useForceReconnect && (exception is RedisConnectionException or SocketException))
+        if (_options.UseForceReconnect && (exception is RedisConnectionException or SocketException))
         {
             var utcNow = DateTimeOffset.UtcNow;
             var previousConnectTime = ReadTimeTicks(ref _lastConnectTicks);
