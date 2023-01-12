@@ -7,9 +7,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -218,6 +220,41 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.True((bool)httpContext.Items["First"]!);
         Assert.True((bool)httpContext.Items["Second"]!);
         Assert.False(httpContext.Items.ContainsKey("ExecutedEndpoint"));
+    }
+
+    [Fact]
+    public async Task RequestFilters_CanAssertOnEmptyResult()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var @delegate = (HttpContext context) => context.Items.Add("param", "Value");
+
+        object? response = null;
+        var endpointBuilder = builder.Map("/", @delegate)
+            .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
+            {
+                return async invocationContext =>
+                {
+                    response = await next(invocationContext);
+                    return response;
+                };
+            });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "Tester"
+        });
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.IsType<EmptyHttpResult>(response);
+        Assert.Same(Results.Empty, response);
     }
 
     private sealed class HttpContextArgFilter : IEndpointFilter

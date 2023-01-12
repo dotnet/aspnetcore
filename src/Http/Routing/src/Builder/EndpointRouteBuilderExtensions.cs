@@ -211,7 +211,7 @@ public static class EndpointRouteBuilderExtensions
             }
 
             var metadata = new List<object>(options.EndpointBuilder?.Metadata ?? Array.Empty<object>());
-            return new RequestDelegateResult(RequestDelegateFilterPipelineBuilder.Create(requestDelegate, options), metadata);
+            return new RequestDelegateResult(requestDelegate, metadata);
         }
     }
 
