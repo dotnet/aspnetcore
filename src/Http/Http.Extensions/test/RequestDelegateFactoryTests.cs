@@ -23,6 +23,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -100,7 +101,18 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
         var httpContext = CreateHttpContext();
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    var response = await next(context);
+                    Assert.IsType<EmptyHttpResult>(response);
+                    return response;
+                }
+            }),
+        });
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -7225,6 +7237,34 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Same(options.EndpointBuilder.RequestDelegate, result.RequestDelegate);
         Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
+    }
+
+    [Fact]
+    public async Task RDF_CanAssertOnEmptyResult()
+    {
+        var @delegate = (string name, HttpContext context) => context.Items.Add("param", name);
+
+        var result = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    var response = await next(context);
+                    Assert.IsType<EmptyHttpResult>(response);
+                    Assert.Same(Results.Empty, response);
+                    return response;
+                }
+            }),
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "Tester"
+        });
+
+        await result.RequestDelegate(httpContext);
     }
 
     private class ParameterListRequiredStringFromDifferentSources
