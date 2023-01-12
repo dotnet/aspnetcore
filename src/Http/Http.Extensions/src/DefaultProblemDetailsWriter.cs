@@ -19,7 +19,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options, IOptions<JsonOptions> jsonOptions)
     {
         _options = options.Value;
-        _serializerOptions = new JsonSerializerOptions(jsonOptions.Value.SerializerOptions);
+        _serializerOptions = jsonOptions.Value.SerializerOptions;
     }
 
     public bool CanWrite(ProblemDetailsContext context)
