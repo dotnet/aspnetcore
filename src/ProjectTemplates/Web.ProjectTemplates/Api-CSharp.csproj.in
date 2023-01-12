@@ -11,7 +11,6 @@
     <PublishAot>false</PublishAot>
     <TrimMode>full</TrimMode>
     <PublishIISAssets>false</PublishIISAssets>
-    <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <!--#endif -->
   </PropertyGroup>
 

@@ -58,6 +58,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
                 <PropertyGroup>
                     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
                     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+                    <TrimmerSingleWarn>false</TrimmerSingleWarn>
                 </PropertyGroup>'))
             $projContent | Set-Content $projPath
         }
