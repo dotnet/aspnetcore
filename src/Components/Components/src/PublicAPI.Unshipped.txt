@@ -13,6 +13,7 @@ Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> strin
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, Microsoft.AspNetCore.Components.ComponentRenderMode renderMode) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.WaitForStreamingQuiescence() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentRenderMode.get -> Microsoft.AspNetCore.Components.ComponentRenderMode
 Microsoft.AspNetCore.Components.RouteData.FormValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>?
 Microsoft.AspNetCore.Components.RouteData.FormValues.init -> void
@@ -30,6 +31,8 @@ Microsoft.AspNetCore.Components.Routing.LocationChangingContext.LocationChanging
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation() -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.get -> string!
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.init -> void
+Microsoft.AspNetCore.Components.StreamRenderingAttribute
+Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool streamRendering) -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void

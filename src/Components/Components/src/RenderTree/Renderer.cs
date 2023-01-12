@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -33,11 +34,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly ComponentFactory _componentFactory;
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
+    private Task? _ongoingStreamingQuiescenceTask;
 
     private int _nextComponentId;
     private bool _isBatchInProgress;
     private ulong _lastEventHandlerId;
     private List<Task>? _pendingTasks;
+    private List<Task>? _pendingStreamingTasks;
     private Task? _disposeTask;
     private bool _rendererIsDisposed;
 
@@ -249,7 +252,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         componentState.SetDirectParameters(initialParameters);
 
-        await WaitForQuiescence();
+        await WaitForBlockingQuiescence();
         Debug.Assert(_pendingTasks == null);
     }
 
@@ -291,7 +294,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="exception">The <see cref="Exception"/>.</param>
     protected abstract void HandleException(Exception exception);
 
-    private async Task WaitForQuiescence()
+    private async Task WaitForBlockingQuiescence()
     {
         // If there's already a loop waiting for quiescence, just join it
         if (_ongoingQuiescenceTask is not null)
@@ -302,7 +305,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         try
         {
-            _ongoingQuiescenceTask = ProcessAsynchronousWork();
+            _ongoingQuiescenceTask = ProcessAsynchronousWork(_pendingTasks);
             await _ongoingQuiescenceTask;
         }
         finally
@@ -311,23 +314,54 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _pendingTasks = null;
             _ongoingQuiescenceTask = null;
         }
+    }
 
-        async Task ProcessAsynchronousWork()
+    /// <summary>
+    /// Waits for any incomplete streaming rendering to finish.
+    /// </summary>
+    /// <returns>A Task.</returns>
+    protected async Task WaitForStreamingQuiescence()
+    {
+        if (_pendingStreamingTasks is null)
         {
-            // Child components SetParametersAsync are stored in the queue of pending tasks,
-            // which might trigger further renders.
-            while (_pendingTasks?.Count > 0)
-            {
-                // Create a Task that represents the remaining ongoing work for the rendering process
-                var pendingWork = Task.WhenAll(_pendingTasks);
+            return;
+        }
 
-                // Clear all pending work.
-                _pendingTasks.Clear();
+        // If there's already a loop waiting for quiescence, just join it
+        if (_ongoingStreamingQuiescenceTask is not null)
+        {
+            await _ongoingStreamingQuiescenceTask;
+            return;
+        }
 
-                // new work might be added before we check again as a result of waiting for all
-                // the child components to finish executing SetParametersAsync
-                await pendingWork;
-            }
+        try
+        {
+            _ongoingStreamingQuiescenceTask = ProcessAsynchronousWork(_pendingStreamingTasks);
+            await _ongoingStreamingQuiescenceTask;
+        }
+        finally
+        {
+            Debug.Assert(_pendingStreamingTasks.Count == 0);
+            _pendingStreamingTasks = null;
+            _ongoingStreamingQuiescenceTask = null;
+        }
+    }
+
+    static async Task ProcessAsynchronousWork(List<Task> taskGroup)
+    {
+        // Child components SetParametersAsync are stored in the queue of pending tasks,
+        // which might trigger further renders.
+        while (taskGroup?.Count > 0)
+        {
+            // Create a Task that represents the remaining ongoing work for the rendering process
+            var pendingWork = Task.WhenAll(taskGroup);
+
+            // Clear all pending work.
+            taskGroup.Clear();
+
+            // new work might be added before we check again as a result of waiting for all
+            // the child components to finish executing SetParametersAsync
+            await pendingWork;
         }
     }
 
@@ -474,7 +508,24 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
                 // The pendingTasks collection is only used during prerendering to track quiescence,
                 // so will be null at other times.
-                _pendingTasks?.Add(handledErrorTask);
+                if (_pendingTasks is not null || _pendingStreamingTasks is not null)
+                {
+                    // TODO: Obviously we should not do reflection like this on every render.
+                    // Also, we would need to guarantee that _pendingStreamingTasks does in fact become null by the time prerendering is
+                    // completed (whichever rendering system is being used) otherwise we'd keep accumulating these tasks forever
+                    // and leaking memory.
+                    var streamingConfig = owningComponentState.Component.GetType().GetCustomAttribute<StreamRenderingAttribute>();
+                    var isBlockingTask = streamingConfig is null || !streamingConfig.StreamRendering;
+                    if (isBlockingTask)
+                    {
+                        _pendingTasks.Add(handledErrorTask);
+                    }
+                    else
+                    {
+                        _pendingStreamingTasks ??= new();
+                        _pendingStreamingTasks.Add(handledErrorTask);
+                    }
+                }
 
                 break;
         }

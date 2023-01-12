@@ -1,5 +1,11 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 
+@* This design doesn't really work because, in this scenario, the button itself controls whether the host page rendering is streaming.
+   I'm not sure if there's a better design that lets us decide based on which component is going to get re-rendered rather than based
+   on which component is actually being rendered right now.
+*@
+@attribute [StreamRendering(true)]
+
 <button @attributes="@AdditionalAttributes" type="submit" name="@FormActionKey" value="@Name">@ChildContent</button>
 
 @code {

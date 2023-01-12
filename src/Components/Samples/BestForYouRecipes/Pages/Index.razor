@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject IRecipesStore RecipesStore
- 
+@attribute [StreamRendering(true)]
+
 <form class="search" enhance>
     <input name="query" placeholder="Search..." value="@Query" />
     <button title="Search" class="ms-Icon ms-Icon--Search"></button>

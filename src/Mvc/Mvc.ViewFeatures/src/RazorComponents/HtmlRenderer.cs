@@ -71,35 +71,30 @@ internal sealed class HtmlRenderer : Renderer
         return CanceledRenderTask;
     }
 
-    public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters, bool awaitQuiescence)
+    public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters)
     {
         var component = InstantiateComponent(componentType);
         var componentId = AssignRootComponentId(component);
 
-        var quiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
+        var blockingQuiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
+        await blockingQuiescenceTask;
 
-        if (awaitQuiescence)
+        // For any subsequent render batches, we'll advertise them through a channel so that
+        // streaming rendering can observe them
+        var streamingQuiescenceTask = WaitForStreamingQuiescence();
+        _streamingRenderBatches = Channel.CreateUnbounded<RenderBatch>();
+        StreamingRenderBatches = _streamingRenderBatches.Reader;
+        _ = streamingQuiescenceTask.ContinueWith(task =>
         {
-            await quiescenceTask;
-        }
-        else
-        {
-            // For any subsequent render batches, we'll advertise them through a channel so that
-            // streaming rendering can observe them
-            _streamingRenderBatches = Channel.CreateUnbounded<RenderBatch>();
-            StreamingRenderBatches = _streamingRenderBatches.Reader;
-            _ = quiescenceTask.ContinueWith(task =>
-            {
-                _streamingRenderBatches.Writer.Complete(task.Exception);
-            }, TaskScheduler.Current); // TODO: Preemptively cancel if request is cancelled?
-        }
+            _streamingRenderBatches.Writer.Complete(task.Exception);
+        }, TaskScheduler.Current); // TODO: Preemptively cancel if request is cancelled?
 
         return new ComponentRenderedText(componentId, new ComponentHtmlContent(this, componentId));
     }
 
-    public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters, bool awaitQuiescence) where TComponent : IComponent
+    public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
     {
-        return RenderComponentAsync(typeof(TComponent), initialParameters, awaitQuiescence);
+        return RenderComponentAsync(typeof(TComponent), initialParameters);
     }
 
     /// <inheritdoc />

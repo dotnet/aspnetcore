@@ -69,8 +69,7 @@ internal class PassiveComponentRenderer
         var result = await staticComponentRenderer.PrerenderComponentAsync(
             rootComponentParameters,
             httpContext,
-            rootComponentType,
-            awaitQuiescence: false);
+            rootComponentType);
 
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(RazorComponentsEndpointRouteBuilderExtensions), ViewBuffer.ViewPageSize);
         viewBuffer.AppendHtml(result);
