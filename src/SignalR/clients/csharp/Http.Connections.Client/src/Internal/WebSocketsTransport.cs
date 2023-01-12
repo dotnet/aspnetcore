@@ -13,6 +13,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -91,6 +92,10 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
             }
 
+#if NET7_0_OR_GREATER
+            var allowHttp2 = true;
+#endif
+
             if (!isBrowser)
             {
                 if (context.Options.Cookies != null)
@@ -106,6 +111,11 @@ internal sealed partial class WebSocketsTransport : ITransport
                 if (context.Options.Credentials != null)
                 {
                     webSocket.Options.Credentials = context.Options.Credentials;
+                    // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
+                    // https://github.com/dotnet/runtime/issues/1582
+#if NET7_0_OR_GREATER
+                    allowHttp2 = false;
+#endif
                 }
 
                 var originalProxy = webSocket.Options.Proxy;
@@ -117,12 +127,20 @@ internal sealed partial class WebSocketsTransport : ITransport
                 if (context.Options.UseDefaultCredentials != null)
                 {
                     webSocket.Options.UseDefaultCredentials = context.Options.UseDefaultCredentials.Value;
+                    if (context.Options.UseDefaultCredentials.Value)
+                    {
+                        // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
+                        // https://github.com/dotnet/runtime/issues/1582
+#if NET7_0_OR_GREATER
+                        allowHttp2 = false;
+#endif
+                    }
                 }
 
                 context.Options.WebSocketConfiguration?.Invoke(webSocket.Options);
 
 #if NET7_0_OR_GREATER
-                if (webSocket.Options.HttpVersion >= HttpVersion.Version20)
+                if (webSocket.Options.HttpVersion >= HttpVersion.Version20 && allowHttp2)
                 {
                     // Reset options we set on the users' behalf since they are already on the HttpClient that we're passing to ConnectAsync
                     // And ConnectAsync will throw if these options are set on the ClientWebSocketOptions
@@ -145,6 +163,19 @@ internal sealed partial class WebSocketsTransport : ITransport
                     if (ReferenceEquals(webSocket.Options.Proxy, context.Options.Proxy))
                     {
                         webSocket.Options.Proxy = originalProxy;
+                    }
+                }
+
+                if (!allowHttp2 && webSocket.Options.HttpVersion >= HttpVersion.Version20)
+                {
+                    // We shouldn't fallback to HTTP/1.1 if the user explicitly states
+                    if (webSocket.Options.HttpVersionPolicy == HttpVersionPolicy.RequestVersionOrLower)
+                    {
+                        webSocket.Options.HttpVersion = HttpVersion.Version11;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Negotiate Authentication doesn't work with HTTP/2 or higher.");
                     }
                 }
 
@@ -221,10 +252,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(url);
 
         if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
         {

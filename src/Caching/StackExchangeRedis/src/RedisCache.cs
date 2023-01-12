@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -82,15 +83,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <param name="clock">The system clock.</param>
     internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger, ISystemClock clock)
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(optionsAccessor);
+        ArgumentNullThrowHelper.ThrowIfNull(logger);
 
         if (clock == null)
         {
@@ -115,10 +109,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public byte[]? Get(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         var expandedKey = _expandKey(key);
 
@@ -146,10 +137,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -180,20 +168,9 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         // Create an
         var tx = MakeSetTransaction(key, value, options);
@@ -204,20 +181,9 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         token.ThrowIfCancellationRequested();
 
@@ -229,10 +195,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Refresh(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         var expandedKey = _expandKey(key);
 
@@ -257,10 +220,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -494,10 +454,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         Connect();
 
@@ -507,10 +464,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache is not null);
@@ -567,9 +521,6 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 }

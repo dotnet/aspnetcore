@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -50,20 +51,9 @@ public static class HealthChecksBuilderDelegateExtensions
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (check == null)
-        {
-            throw new ArgumentNullException(nameof(check));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(check);
 
         var instance = new DelegateHealthCheck((ct) => Task.FromResult(check()));
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout));
@@ -104,20 +94,9 @@ public static class HealthChecksBuilderDelegateExtensions
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (check == null)
-        {
-            throw new ArgumentNullException(nameof(check));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(check);
 
         var instance = new DelegateHealthCheck((ct) => Task.FromResult(check(ct)));
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout));
@@ -158,20 +137,9 @@ public static class HealthChecksBuilderDelegateExtensions
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (check == null)
-        {
-            throw new ArgumentNullException(nameof(check));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(check);
 
         var instance = new DelegateHealthCheck((ct) => check());
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout));
@@ -212,20 +180,9 @@ public static class HealthChecksBuilderDelegateExtensions
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = default)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (check == null)
-        {
-            throw new ArgumentNullException(nameof(check));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(check);
 
         var instance = new DelegateHealthCheck((ct) => check(ct));
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus: null, tags, timeout));
