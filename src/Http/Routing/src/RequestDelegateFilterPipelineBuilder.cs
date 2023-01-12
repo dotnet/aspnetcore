@@ -36,15 +36,11 @@ internal static class RequestDelegateFilterPipelineBuilder
         EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
         {
             Debug.Assert(EmptyHttpResultInstance != null, "Unable to get EmptyHttpResult instance via reflection.");
-            if (context.HttpContext.Response.StatusCode >= 400)
-            {
-                return EmptyHttpResultInstance;
-            }
-            else
+            if (context.HttpContext.Response.StatusCode < 400)
             {
                 await requestDelegate(context.HttpContext);
-                return EmptyHttpResultInstance;
             }
+            return EmptyHttpResultInstance;
         };
 
         var initialFilteredInvocation = filteredInvocation;
