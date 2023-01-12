@@ -257,6 +257,37 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Same(Results.Empty, response);
     }
 
+    [Fact]
+    public async Task RequestFilters_ReturnValue_SerializeJson()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var @delegate = (HttpContext context) => Task.CompletedTask;
+
+        var endpointBuilder = builder.Map("/", @delegate)
+            .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
+            {
+                return async invocationContext =>
+                {
+                    await next(invocationContext);
+                    return new MyCoolType(Name: "Jason"); // serialized as JSON
+                };
+            });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(@"{""name"":""Jason""}", responseBody);
+    }
+
+    private record struct MyCoolType(string Name);
+
     private sealed class HttpContextArgFilter : IEndpointFilter
     {
         private readonly string _name;
