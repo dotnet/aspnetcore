@@ -31,7 +31,7 @@ internal static class RequestDelegateFilterPipelineBuilder
             MethodInfo = requestDelegate.Method,
             ApplicationServices = options.EndpointBuilder.ApplicationServices
         };
-        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object));
 
         EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
         {

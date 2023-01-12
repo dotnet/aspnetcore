@@ -265,15 +265,15 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
-        var @delegate = (HttpContext context) => Task.CompletedTask;
+        RequestDelegate requestDelegate = (HttpContext context) => Task.CompletedTask;
 
-        var endpointBuilder = builder.Map("/", @delegate)
+        var endpointBuilder = builder.Map("/", requestDelegate)
             .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
             {
                 return async invocationContext =>
                 {
                     await next(invocationContext);
-                    return new MyCoolType(Name: "Jason"); // serialized as JSON
+                    return new MyCoolType(Name: "你好"); // serialized as JSON
                 };
             });
 
@@ -283,7 +283,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         await endpoint.RequestDelegate!(httpContext);
 
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-        Assert.Equal(@"{""name"":""Jason""}", responseBody);
+        Assert.Equal(@"{""name"":""你好""}", responseBody);
     }
 
     private record struct MyCoolType(string Name);
