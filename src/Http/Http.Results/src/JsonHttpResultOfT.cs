@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -44,6 +45,12 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
     internal JsonHttpResult(TValue? value, int? statusCode, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
     {
         Value = value;
+
+        if (jsonSerializerOptions is not null && !jsonSerializerOptions.IsReadOnly) //&& !TrimmingAppContextSwitches.EnsureJsonTrimmability
+        {
+            jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
+        }
+
         JsonSerializerOptions = jsonSerializerOptions;
         ContentType = contentType;
 

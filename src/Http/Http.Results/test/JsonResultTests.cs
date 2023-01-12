@@ -79,8 +79,6 @@ public class JsonResultTests
         {
             WriteIndented = true,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-            //TODO: Is that true????
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
         };
         var value = new Todo(10, "MyName") { Description = null };
         var result = new JsonHttpResult<object>(value, jsonSerializerOptions: jsonOptions);

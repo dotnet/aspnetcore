@@ -20,10 +20,10 @@ internal static partial class HttpResultsWriter
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
     private static JsonOptions? _defaultOptions;
 
-    public static Task WriteResultAsJsonAsync<T>(
+    public static Task WriteResultAsJsonAsync<TValue>(
         HttpContext httpContext,
         ILogger logger,
-        T? value,
+        TValue? value,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
@@ -33,30 +33,37 @@ internal static partial class HttpResultsWriter
         }
 
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
+        var jsonTypeInfo = GetTypeInfo(value, jsonSerializerOptions);
 
-        var declaredTypeInfo = (JsonTypeInfo<T>)jsonSerializerOptions.GetTypeInfo(typeof(T));
-        if (value is null || declaredTypeInfo.IsPolymorphicSafe())
+        Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
+
+        if (jsonTypeInfo is JsonTypeInfo<TValue> genericTypeInfo)
         {
-            // In this case the polymorphism is not
-            // relevant and we don't need to box.
+            // In this case we don't need to box.
             return httpContext.Response.WriteAsJsonAsync(
                 value,
-                declaredTypeInfo,
+                genericTypeInfo,
                 contentType: contentType);
         }
-
-        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
-        // and avoid source generators issues.
-        // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-
-        var jsonTypeInfo = jsonSerializerOptions.GetTypeInfo(value.GetType());
-        Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
 
         return httpContext.Response.WriteAsJsonAsync(
             value,
             jsonTypeInfo,
             contentType: contentType);
+    }
+
+    private static JsonTypeInfo GetTypeInfo<TValue>(TValue? value, JsonSerializerOptions jsonSerializerOptions)
+    {
+        var declaredTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
+        if (value is null || declaredTypeInfo.IsPolymorphicSafe())
+        {
+            return declaredTypeInfo;
+        }
+
+        // Since we don't know the type's polymorphic characteristics
+        // our best option is use the runtime type
+        return jsonSerializerOptions.GetTypeInfo(value.GetType());
+
     }
 
     public static Task WriteResultAsContentAsync(
