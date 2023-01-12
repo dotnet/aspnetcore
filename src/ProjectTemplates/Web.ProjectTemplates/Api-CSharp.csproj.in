@@ -4,12 +4,14 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
+    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">true</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
     <ServerGarbageCollection>False</ServerGarbageCollection>
     <!--#if (NativeAot) -->
-    <PublishAot>True</PublishAot>
+    <PublishAot>false</PublishAot>
     <TrimMode>full</TrimMode>
+    <PublishIISAssets>false</PublishIISAssets>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <!--#endif -->
   </PropertyGroup>
 

@@ -527,6 +527,48 @@
       "AuthOption": "None"
     }
   },
+  "api": {
+    "Default": {
+      "Template": "api",
+      "Arguments": "new api",
+      "Files": [
+        "Album.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "NativeAot": {
+      "Template": "api",
+      "Arguments": "new api -aot",
+      "Files": [
+        "Album.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "ProgramMain": {
+      "Template": "api",
+      "Arguments": "new api --use-program-main",
+      "Files": [
+        "Album.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "ProgramMainNativeAot": {
+      "Template": "api",
+      "Arguments": "new api -aot --use-program-main",
+      "Files": [
+        "Album.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    }
+  },
   "webapi": {
     "IndividualB2C": {
       "Template": "webapi",

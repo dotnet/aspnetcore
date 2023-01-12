@@ -1,4 +1,5 @@
-﻿{
+{
+//#if (!NativeAot)
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -7,6 +8,7 @@
       "sslPort": 0
     }
   },
+//#endif
   "profiles": {
     "http": {
       "commandName": "Project",
@@ -17,6 +19,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+//#if (!NativeAot)
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -26,5 +29,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
+//#else
+    }
+//#endif
   }
 }
