@@ -1,4 +1,4 @@
-namespace Company.WebApplication1;
+namespace Company.ApiApplication1;
 
 public class Album
 {

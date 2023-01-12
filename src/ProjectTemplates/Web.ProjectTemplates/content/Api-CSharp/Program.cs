@@ -1,7 +1,7 @@
 #if (NativeAot)
 using System.Text.Json.Serialization;
 #endif
-using Company.WebApplication1;
+using Company.ApiApplication1;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();

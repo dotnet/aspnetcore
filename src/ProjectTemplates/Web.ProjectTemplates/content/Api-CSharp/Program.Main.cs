@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 #endif
-namespace Company.WebApplication1;
+namespace Company.ApiApplication1;
 
 public class Program
 {
