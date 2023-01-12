@@ -55,11 +55,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<string?> setter,
+        Func<string?, Task> setter,
         string existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<string?>(factory, receiver, setter, culture, ConvertToString);
+        return CreateBinderCoreAsync<string?>(factory, receiver, setter, culture, ConvertToString);
     }
 
     /// <summary>
@@ -95,11 +95,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
     this EventCallbackFactory factory,
     object receiver,
-    EventCallback<bool> setter,
+    Func<bool, Task> setter,
     bool existingValue,
     CultureInfo? culture = null)
     {
-        return CreateBinderCore<bool>(factory, receiver, setter, culture, ConvertToBool);
+        return CreateBinderCoreAsync<bool>(factory, receiver, setter, culture, ConvertToBool);
     }
 
     /// <summary>
@@ -135,11 +135,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<bool?> setter,
+        Func<bool?, Task> setter,
         bool? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
+        return CreateBinderCoreAsync<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
     }
 
     /// <summary>
@@ -175,11 +175,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<int> setter,
+        Func<int, Task> setter,
         int existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<int>(factory, receiver, setter, culture, ConvertToInt);
+        return CreateBinderCoreAsync<int>(factory, receiver, setter, culture, ConvertToInt);
     }
 
     /// <summary>
@@ -215,11 +215,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<int?> setter,
+        Func<int?, Task> setter,
         int? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<int?>(factory, receiver, setter, culture, ConvertToNullableInt);
+        return CreateBinderCoreAsync<int?>(factory, receiver, setter, culture, ConvertToNullableInt);
     }
 
     /// <summary>
@@ -255,11 +255,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<long> setter,
+        Func<long, Task> setter,
         long existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<long>(factory, receiver, setter, culture, ConvertToLong);
+        return CreateBinderCoreAsync<long>(factory, receiver, setter, culture, ConvertToLong);
     }
 
     /// <summary>
@@ -295,11 +295,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<short> setter,
+        Func<short, Task> setter,
         short existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<short>(factory, receiver, setter, culture, ConvertToShort);
+        return CreateBinderCoreAsync<short>(factory, receiver, setter, culture, ConvertToShort);
     }
 
     /// <summary>
@@ -335,11 +335,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<long?> setter,
+        Func<long?, Task> setter,
         long? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
+        return CreateBinderCoreAsync<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
     }
 
     /// <summary>
@@ -375,11 +375,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<short?> setter,
+        Func<short?, Task> setter,
         short? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<short?>(factory, receiver, setter, culture, ConvertToNullableShort);
+        return CreateBinderCoreAsync<short?>(factory, receiver, setter, culture, ConvertToNullableShort);
     }
 
     /// <summary>
@@ -415,11 +415,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<float> setter,
+        Func<float, Task> setter,
         float existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<float>(factory, receiver, setter, culture, ConvertToFloat);
+        return CreateBinderCoreAsync<float>(factory, receiver, setter, culture, ConvertToFloat);
     }
 
     /// <summary>
@@ -455,11 +455,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<float?> setter,
+        Func<float?, Task> setter,
         float? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
+        return CreateBinderCoreAsync<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
     }
 
     /// <summary>
@@ -495,11 +495,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<double> setter,
+        Func<double, Task> setter,
         double existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<double>(factory, receiver, setter, culture, ConvertToDoubleDelegate);
+        return CreateBinderCoreAsync<double>(factory, receiver, setter, culture, ConvertToDoubleDelegate);
     }
 
     /// <summary>
@@ -535,11 +535,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<double?> setter,
+        Func<double?, Task> setter,
         double? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<double?>(factory, receiver, setter, culture, ConvertToNullableDoubleDelegate);
+        return CreateBinderCoreAsync<double?>(factory, receiver, setter, culture, ConvertToNullableDoubleDelegate);
     }
 
     /// <summary>
@@ -575,11 +575,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<decimal> setter,
+        Func<decimal, Task> setter,
         decimal existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<decimal>(factory, receiver, setter, culture, ConvertToDecimal);
+        return CreateBinderCoreAsync<decimal>(factory, receiver, setter, culture, ConvertToDecimal);
     }
 
     /// <summary>
@@ -615,11 +615,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<decimal?> setter,
+        Func<decimal?, Task> setter,
         decimal? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
+        return CreateBinderCoreAsync<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
     }
 
     /// <summary>
@@ -655,11 +655,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTime> setter,
+        Func<DateTime, Task> setter,
         DateTime existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
+        return CreateBinderCoreAsync<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
     }
 
     /// <summary>
@@ -698,12 +698,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTime> setter,
+        Func<DateTime, Task> setter,
         DateTime existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
+        return CreateBinderCoreAsync<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
     }
 
     /// <summary>
@@ -739,11 +739,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTime?> setter,
+        Func<DateTime?, Task> setter,
         DateTime? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
+        return CreateBinderCoreAsync<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
     }
 
     /// <summary>
@@ -782,12 +782,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTime?> setter,
+        Func<DateTime?, Task> setter,
         DateTime? existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeWithFormat);
+        return CreateBinderCoreAsync<DateTime?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeWithFormat);
     }
 
     /// <summary>
@@ -823,11 +823,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTimeOffset> setter,
+        Func<DateTimeOffset, Task> setter,
         DateTimeOffset existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
+        return CreateBinderCoreAsync<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
     }
 
     /// <summary>
@@ -866,12 +866,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTimeOffset> setter,
+        Func<DateTimeOffset, Task> setter,
         DateTimeOffset existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
+        return CreateBinderCoreAsync<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
     }
 
     /// <summary>
@@ -907,11 +907,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTimeOffset?> setter,
+        Func<DateTimeOffset?, Task> setter,
         DateTimeOffset? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, ConvertToNullableDateTimeOffset);
+        return CreateBinderCoreAsync<DateTimeOffset?>(factory, receiver, setter, culture, ConvertToNullableDateTimeOffset);
     }
 
     /// <summary>
@@ -950,12 +950,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateTimeOffset?> setter,
+        Func<DateTimeOffset?, Task> setter,
         DateTimeOffset? existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeOffsetWithFormat);
+        return CreateBinderCoreAsync<DateTimeOffset?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeOffsetWithFormat);
     }
 
     /// <summary>
@@ -991,11 +991,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateOnly> setter,
+        Func<DateOnly, Task> setter,
         DateOnly existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly);
+        return CreateBinderCoreAsync<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly);
     }
 
     /// <summary>
@@ -1034,12 +1034,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateOnly> setter,
+        Func<DateOnly, Task> setter,
         DateOnly existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat);
+        return CreateBinderCoreAsync<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat);
     }
 
     /// <summary>
@@ -1075,11 +1075,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateOnly?> setter,
+        Func<DateOnly?, Task> setter,
         DateOnly? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateOnly?>(factory, receiver, setter, culture, ConvertToNullableDateOnly);
+        return CreateBinderCoreAsync<DateOnly?>(factory, receiver, setter, culture, ConvertToNullableDateOnly);
     }
 
     /// <summary>
@@ -1118,12 +1118,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<DateOnly?> setter,
+        Func<DateOnly?, Task> setter,
         DateOnly? existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateOnly?>(factory, receiver, setter, culture, format, ConvertToNullableDateOnlyWithFormat);
+        return CreateBinderCoreAsync<DateOnly?>(factory, receiver, setter, culture, format, ConvertToNullableDateOnlyWithFormat);
     }
 
     /// <summary>
@@ -1159,11 +1159,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<TimeOnly> setter,
+        Func<TimeOnly, Task> setter,
         TimeOnly existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly);
+        return CreateBinderCoreAsync<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly);
     }
 
     /// <summary>
@@ -1202,12 +1202,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<TimeOnly> setter,
+        Func<TimeOnly, Task> setter,
         TimeOnly existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat);
+        return CreateBinderCoreAsync<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat);
     }
 
     /// <summary>
@@ -1243,11 +1243,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<TimeOnly?> setter,
+        Func<TimeOnly?, Task> setter,
         TimeOnly? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<TimeOnly?>(factory, receiver, setter, culture, ConvertToNullableTimeOnly);
+        return CreateBinderCoreAsync<TimeOnly?>(factory, receiver, setter, culture, ConvertToNullableTimeOnly);
     }
 
     /// <summary>
@@ -1286,12 +1286,12 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<TimeOnly?> setter,
+        Func<TimeOnly?, Task> setter,
         TimeOnly? existingValue,
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<TimeOnly?>(factory, receiver, setter, culture, format, ConvertToNullableTimeOnlyWithFormat);
+        return CreateBinderCoreAsync<TimeOnly?>(factory, receiver, setter, culture, format, ConvertToNullableTimeOnlyWithFormat);
     }
 
     /// <summary>
@@ -1329,11 +1329,11 @@ public static class EventCallbackFactoryBinderExtensions
     public static EventCallback<ChangeEventArgs> CreateBinder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<T> setter,
+        Func<T, Task> setter,
         T existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
+        return CreateBinderCoreAsync<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
     }
 
     private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
@@ -1379,10 +1379,10 @@ public static class EventCallbackFactoryBinderExtensions
         return factory.Create<ChangeEventArgs>(receiver, callback);
     }
 
-    private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
+    private static EventCallback<ChangeEventArgs> CreateBinderCoreAsync<T>(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<T> setter,
+        Func<T, Task> setter,
         CultureInfo? culture,
         BindConverter.BindParser<T> converter)
     {
@@ -1412,11 +1412,11 @@ public static class EventCallbackFactoryBinderExtensions
             //   know that the data they are submitting is different from what they think they've typed
             if (converted)
             {
-                await setter.InvokeAsync(value!);
+                await setter(value!);
             }
             else if (string.Empty.Equals(e.Value))
             {
-                await setter.InvokeAsync(default!);
+                await setter(default!);
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
@@ -1466,10 +1466,10 @@ public static class EventCallbackFactoryBinderExtensions
         return factory.Create<ChangeEventArgs>(receiver, callback);
     }
 
-    private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
+    private static EventCallback<ChangeEventArgs> CreateBinderCoreAsync<T>(
         this EventCallbackFactory factory,
         object receiver,
-        EventCallback<T> setter,
+        Func<T, Task> setter,
         CultureInfo? culture,
         string format,
         BindConverter.BindParserWithFormat<T> converter)
@@ -1500,11 +1500,11 @@ public static class EventCallbackFactoryBinderExtensions
             //   know that the data they are submitting is different from what they think they've typed
             if (converted)
             {
-                await setter.InvokeAsync(value!);
+                await setter(value!);
             }
             else if (string.Empty.Equals(e.Value))
             {
-                await setter.InvokeAsync(default!);
+                await setter(default!);
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
