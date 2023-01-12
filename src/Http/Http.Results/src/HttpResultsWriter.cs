@@ -18,7 +18,6 @@ internal static partial class HttpResultsWriter
 {
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
-    private static JsonOptions? _defaultOptions;
 
     public static Task WriteResultAsJsonAsync<TValue>(
         HttpContext httpContext,
@@ -156,7 +155,7 @@ internal static partial class HttpResultsWriter
     private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
     {
         // Attempt to resolve options from DI then fallback to default options
-        return _defaultOptions ??= httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+        return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
     }
 
     internal static partial class Log
