@@ -5,15 +5,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -62,76 +57,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
                 return requestDelegate;
             }
 
-            return BuildFilterPipeline(requestDelegate, options);
-        }
-    }
-
-    private static RequestDelegate BuildFilterPipeline(RequestDelegate requestDelegate, RequestDelegateFactoryOptions options)
-    {
-        Debug.Assert(options.EndpointBuilder != null);
-
-        var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-        var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-        var jsonSerializerOptions = jsonOptions.SerializerOptions;
-
-        var factoryContext = new EndpointFilterFactoryContext
-        {
-            MethodInfo = requestDelegate.Method,
-            ApplicationServices = options.EndpointBuilder.ApplicationServices
-        };
-        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetTypeInfo(typeof(object));
-
-        EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
-        {
-            if (context.HttpContext.Response.StatusCode >= 400)
-            {
-                return EmptyHttpResult.Instance;
-            }
-            else
-            {
-                await requestDelegate(context.HttpContext);
-                return EmptyHttpResult.Instance;
-            }
-        };
-
-        var initialFilteredInvocation = filteredInvocation;
-        for (var i = options.EndpointBuilder.FilterFactories.Count - 1; i >= 0; i--)
-        {
-            var currentFilterFactory = options.EndpointBuilder.FilterFactories[i];
-            filteredInvocation = currentFilterFactory(factoryContext, filteredInvocation);
-        }
-
-        // The filter factories have run without modifying per-request behavior, we can skip running the pipeline.
-        if (ReferenceEquals(initialFilteredInvocation, filteredInvocation))
-        {
-            return requestDelegate;
-        }
-
-        return async (HttpContext httpContext) =>
-        {
-            var obj = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext, new object[] { httpContext }));
-            if (obj is not null)
-            {
-                await ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonSerializerOptions, jsonTypeInfo);
-            }
-        };
-    }
-
-    // Due to cyclic references between Http.Extensions and
-    // Http.Results, we define our own instance of the `EmptyHttpResult`
-    // type here.
-    private sealed class EmptyHttpResult : IResult
-    {
-        private EmptyHttpResult()
-        {
-        }
-
-        public static EmptyHttpResult Instance { get; } = new();
-
-        /// <inheritdoc/>
-        public Task ExecuteAsync(HttpContext httpContext)
-        {
-            return Task.CompletedTask;
+            return RequestDelegateFilterPipelineBuilder.Create(requestDelegate, options);
         }
     }
 
