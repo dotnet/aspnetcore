@@ -74,6 +74,36 @@ public static class RuntimeHelpers
     /// Not intended for use by application code.
     /// </summary>
     /// <param name="callback"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    //
+    // This method is used with `@bind-Value:set` to coerce the user provided expression to a Func<T, Task>.
+    public static Func<T, Task> CreateInferredBindSetter<T>(Func<T, Task> callback, T value)
+    {
+        return callback;
+    }
+
+    /// <summary>
+    /// Not intended for use by application code.
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    //
+    // This method is used with `@bind-Value:set` to coerce the user provided expression to a Func<T, Task>.
+    public static Func<T, Task> CreateInferredBindSetter<T>(Action<T?> callback, T value)
+    {
+        return (value) =>
+        {
+            callback(value);
+            return Task.CompletedTask;
+        };
+    }
+
+    /// <summary>
+    /// Not intended for use by application code.
+    /// </summary>
+    /// <param name="callback"></param>
     /// <returns></returns>
     //
     // This method is used with `@bind-Value:after` for components. When :after is provided we don't know the
