@@ -19,10 +19,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <typeparam name="TField">The field <see cref="Type"/>.</typeparam>
     public static FieldIdentifier Create<TField>(Expression<Func<TField>> accessor)
     {
-        if (accessor == null)
-        {
-            throw new ArgumentNullException(nameof(accessor));
-        }
+        ArgumentNullException.ThrowIfNull(accessor);
 
         ParseAccessor(accessor, out var model, out var fieldName);
         return new FieldIdentifier(model, fieldName);
@@ -35,10 +32,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <param name="fieldName">The name of the editable field.</param>
     public FieldIdentifier(object model, string fieldName)
     {
-        if (model is null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         if (model.GetType().IsValueType)
         {

@@ -60,25 +60,15 @@ public class DistributedSession : ISession
         ILoggerFactory loggerFactory,
         bool isNewSessionKey)
     {
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
+        ArgumentNullException.ThrowIfNull(cache);
 
         if (string.IsNullOrEmpty(sessionKey))
         {
             throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
         }
 
-        if (tryEstablishSession == null)
-        {
-            throw new ArgumentNullException(nameof(tryEstablishSession));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(tryEstablishSession);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _cache = cache;
         _sessionKey = sessionKey;
@@ -150,10 +140,7 @@ public class DistributedSession : ISession
     /// <inheritdoc />
     public void Set(string key, byte[] value)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         if (IsAvailable)
         {

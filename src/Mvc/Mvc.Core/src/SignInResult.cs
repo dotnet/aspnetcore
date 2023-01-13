@@ -77,10 +77,7 @@ public partial class SignInResult : ActionResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var httpContext = context.HttpContext;
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();

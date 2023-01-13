@@ -28,15 +28,8 @@ public class RouteConstraintBuilder
         IInlineConstraintResolver inlineConstraintResolver,
         string displayName)
     {
-        if (inlineConstraintResolver == null)
-        {
-            throw new ArgumentNullException(nameof(inlineConstraintResolver));
-        }
-
-        if (displayName == null)
-        {
-            throw new ArgumentNullException(nameof(displayName));
-        }
+        ArgumentNullException.ThrowIfNull(inlineConstraintResolver);
+        ArgumentNullException.ThrowIfNull(displayName);
 
         _inlineConstraintResolver = inlineConstraintResolver;
         _displayName = displayName;
@@ -93,15 +86,8 @@ public class RouteConstraintBuilder
     /// </remarks>
     public void AddConstraint(string key, object value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
 
         var constraint = value as IRouteConstraint;
         if (constraint == null)
@@ -136,15 +122,8 @@ public class RouteConstraintBuilder
     /// </remarks>
     public void AddResolvedConstraint(string key, string constraintText)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (constraintText == null)
-        {
-            throw new ArgumentNullException(nameof(constraintText));
-        }
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(constraintText);
 
         var constraint = _inlineConstraintResolver.ResolveConstraint(constraintText);
         if (constraint == null)
@@ -171,10 +150,7 @@ public class RouteConstraintBuilder
     /// <param name="key">The key.</param>
     public void SetOptional(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         _optionalParameters.Add(key);
     }

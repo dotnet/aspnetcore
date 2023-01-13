@@ -294,10 +294,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal long TrackObjectReference<[DynamicallyAccessedMembers(JSInvokable)] TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class
     {
-        if (dotNetObjectReference == null)
-        {
-            throw new ArgumentNullException(nameof(dotNetObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(dotNetObjectReference);
 
         dotNetObjectReference.ThrowIfDisposed();
 

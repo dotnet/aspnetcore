@@ -163,10 +163,7 @@ public class AuthenticationService : IAuthenticationService
     /// <returns>A task.</returns>
     public virtual async Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
     {
-        if (principal == null)
-        {
-            throw new ArgumentNullException(nameof(principal));
-        }
+        ArgumentNullException.ThrowIfNull(principal);
 
         if (Options.RequireAuthenticatedSignIn)
         {

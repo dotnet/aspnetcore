@@ -18,10 +18,7 @@ public class TestCacheTagHelper : CacheTagHelper
         HtmlEncoder htmlEncoder,
         ILoggerFactory loggerFactory) : base(factory, htmlEncoder)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<TestCacheTagHelper>();
     }

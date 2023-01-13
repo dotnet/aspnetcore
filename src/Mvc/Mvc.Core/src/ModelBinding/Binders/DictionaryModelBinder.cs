@@ -28,10 +28,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
     public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
         : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
     {
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
+        ArgumentNullException.ThrowIfNull(valueBinder);
 
         _valueBinder = valueBinder;
     }
@@ -65,10 +62,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
             // CollectionModelBinder should not check IsRequired, done in this model binder.
             allowValidatingTopLevelNodes: false)
     {
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
+        ArgumentNullException.ThrowIfNull(valueBinder);
 
         _valueBinder = valueBinder;
     }
@@ -107,10 +101,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
               allowValidatingTopLevelNodes: false,
               mvcOptions)
     {
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
+        ArgumentNullException.ThrowIfNull(valueBinder);
 
         _valueBinder = valueBinder;
     }
@@ -118,10 +109,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
     /// <inheritdoc />
     public override async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         await base.BindModelAsync(bindingContext);
         if (!bindingContext.Result.IsModelSet)

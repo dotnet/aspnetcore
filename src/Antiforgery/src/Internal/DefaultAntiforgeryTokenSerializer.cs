@@ -19,15 +19,8 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         IDataProtectionProvider provider,
         ObjectPool<AntiforgerySerializationContext> pool)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
-        if (pool == null)
-        {
-            throw new ArgumentNullException(nameof(pool));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(pool);
 
         _cryptoSystem = provider.CreateProtector(Purpose);
         _pool = pool;
@@ -131,10 +124,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
     public string Serialize(AntiforgeryToken token)
     {
-        if (token == null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(token);
 
         var serializationContext = _pool.Get();
 

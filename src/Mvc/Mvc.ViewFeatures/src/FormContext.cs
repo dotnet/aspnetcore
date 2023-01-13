@@ -132,10 +132,7 @@ public class FormContext
     /// </returns>
     public bool RenderedField(string fieldName)
     {
-        if (fieldName == null)
-        {
-            throw new ArgumentNullException(nameof(fieldName));
-        }
+        ArgumentNullException.ThrowIfNull(fieldName);
 
         bool result;
         RenderedFields.TryGetValue(fieldName, out result);
@@ -151,10 +148,7 @@ public class FormContext
     /// <param name="value">If <c>true</c>, the given <paramref name="fieldName"/> has been rendered.</param>
     public void RenderedField(string fieldName, bool value)
     {
-        if (fieldName == null)
-        {
-            throw new ArgumentNullException(nameof(fieldName));
-        }
+        ArgumentNullException.ThrowIfNull(fieldName);
 
         RenderedFields[fieldName] = value;
     }

@@ -17,10 +17,7 @@ public class UrlHelperFactory : IUrlHelperFactory
     /// <inheritdoc />
     public IUrlHelper GetUrlHelper(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var httpContext = context.HttpContext;
 

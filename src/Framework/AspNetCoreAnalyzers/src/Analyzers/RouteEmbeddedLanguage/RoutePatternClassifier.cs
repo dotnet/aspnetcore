@@ -77,12 +77,12 @@ internal sealed class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassi
             // Nothing to highlight.
         }
 
-        public void Visit(RoutePatternSegmentSeperatorNode node)
+        public void Visit(RoutePatternSegmentSeparatorNode node)
         {
             // Nothing to highlight.
         }
 
-        public void Visit(RoutePatternOptionalSeperatorNode node)
+        public void Visit(RoutePatternOptionalSeparatorNode node)
         {
             // Nothing to highlight.
         }

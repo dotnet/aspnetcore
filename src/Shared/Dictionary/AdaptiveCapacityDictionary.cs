@@ -289,10 +289,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
         KeyValuePair<TKey, TValue>[] array,
         int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         if ((uint)arrayIndex > array.Length || array.Length - arrayIndex < this.Count)
         {
@@ -609,10 +606,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
         /// <param name="dictionary">A <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.</param>
         public Enumerator(AdaptiveCapacityDictionary<TKey, TValue> dictionary)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException(nameof(dictionary));
-            }
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _dictionary = dictionary;
 

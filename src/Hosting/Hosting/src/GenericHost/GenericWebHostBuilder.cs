@@ -341,6 +341,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         {
             var containerType = configureContainerBuilder.GetContainerType();
 
+            // Configure container uses MakeGenericType with the container type. MakeGenericType + struct container type requires IsDynamicCodeSupported.
             if (containerType.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
             {
                 throw new InvalidOperationException("A ValueType TContainerBuilder isn't supported with AOT.");

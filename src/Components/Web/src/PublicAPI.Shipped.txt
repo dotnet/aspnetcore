@@ -96,6 +96,8 @@ Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.ParsingErrorMessage.se
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
+Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.InputRadio() -> void
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Name.get -> string?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Name.set -> void
@@ -160,6 +162,12 @@ Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.get -> Microso
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.set -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.get -> string?
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.Selector.set -> void
+Microsoft.AspNetCore.Components.Routing.NavigationLock
+Microsoft.AspNetCore.Components.Routing.NavigationLock.ConfirmExternalNavigation.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavigationLock.ConfirmExternalNavigation.set -> void
+Microsoft.AspNetCore.Components.Routing.NavigationLock.NavigationLock() -> void
+Microsoft.AspNetCore.Components.Routing.NavigationLock.OnBeforeInternalNavigation.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!>
+Microsoft.AspNetCore.Components.Routing.NavigationLock.OnBeforeInternalNavigation.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink
 Microsoft.AspNetCore.Components.Routing.NavLink.ActiveClass.get -> string?
 Microsoft.AspNetCore.Components.Routing.NavLink.ActiveClass.set -> void
@@ -276,6 +284,10 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.Detail.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MetaKey.get -> bool
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MetaKey.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MouseEventArgs() -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.OffsetX.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.OffsetX.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.OffsetY.get -> double
@@ -362,19 +374,19 @@ Microsoft.AspNetCore.Components.Web.TouchPoint.ScreenY.set -> void
 Microsoft.AspNetCore.Components.Web.TouchPoint.TouchPoint() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderDelegate<TItem>
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest
-Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.ItemsProviderRequest() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.Count.get -> int
+Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.ItemsProviderRequest() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.ItemsProviderRequest(int startIndex, int count, System.Threading.CancellationToken cancellationToken) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest.StartIndex.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>
-Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.ItemsProviderResult() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!
+Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.ItemsProviderResult() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.ItemsProviderResult(System.Collections.Generic.IEnumerable<TItem>! items, int totalItemCount) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderResult<TItem>.TotalItemCount.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext
-Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.PlaceholderContext() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.Index.get -> int
+Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.PlaceholderContext() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.PlaceholderContext(int index, float size = 0) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext.Size.get -> float
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>
@@ -394,6 +406,8 @@ Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OverscanCou
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Placeholder.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext>?
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Placeholder.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.RefreshDataAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.SpacerElement.get -> string!
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.SpacerElement.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.Virtualize() -> void
 Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions
 Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions

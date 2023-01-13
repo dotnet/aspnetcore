@@ -304,10 +304,7 @@ public readonly struct ParameterView
     /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
     public void SetParameterProperties(object target)
     {
-        if (target is null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         ComponentProperties.SetProperties(this, target);
     }

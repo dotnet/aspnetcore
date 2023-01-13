@@ -3,6 +3,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />

@@ -27,10 +27,7 @@ internal sealed class PropertyActivator<TContext>
 
     public object Activate(object instance, TContext context)
     {
-        if (instance == null)
-        {
-            throw new ArgumentNullException(nameof(instance));
-        }
+        ArgumentNullException.ThrowIfNull(instance);
 
         var value = _valueAccessor(context);
         _fastPropertySetter(instance, value);
@@ -42,20 +39,9 @@ internal sealed class PropertyActivator<TContext>
         Type activateAttributeType,
         Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (activateAttributeType == null)
-        {
-            throw new ArgumentNullException(nameof(activateAttributeType));
-        }
-
-        if (createActivateInfo == null)
-        {
-            throw new ArgumentNullException(nameof(createActivateInfo));
-        }
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(activateAttributeType);
+        ArgumentNullException.ThrowIfNull(createActivateInfo);
 
         return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
     }
@@ -66,20 +52,9 @@ internal sealed class PropertyActivator<TContext>
         Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
         bool includeNonPublic)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (activateAttributeType == null)
-        {
-            throw new ArgumentNullException(nameof(activateAttributeType));
-        }
-
-        if (createActivateInfo == null)
-        {
-            throw new ArgumentNullException(nameof(createActivateInfo));
-        }
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(activateAttributeType);
+        ArgumentNullException.ThrowIfNull(createActivateInfo);
 
         var properties = type.GetRuntimeProperties()
             .Where((property) =>

@@ -29,10 +29,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Parse([StringSyntax("Route")] string pattern)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         return RoutePatternParser.Parse(pattern);
     }
@@ -57,10 +54,7 @@ public static class RoutePatternFactory
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
         return PatternCore(original.RawText, Wrap(defaults), Wrap(parameterPolicies), requiredValues: null, original.PathSegments);
@@ -85,10 +79,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Parse([StringSyntax("Route")] string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
         return PatternCore(original.RawText, defaults, parameterPolicies, requiredValues: null, original.PathSegments);
@@ -117,10 +108,7 @@ public static class RoutePatternFactory
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
         return PatternCore(original.RawText, Wrap(defaults), Wrap(parameterPolicies), Wrap(requiredValues), original.PathSegments);
@@ -148,10 +136,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Parse([StringSyntax("Route")] string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies, RouteValueDictionary? requiredValues)
     {
-        if (pattern is null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
         return PatternCore(original.RawText, defaults, parameterPolicies, requiredValues, original.PathSegments);
@@ -164,10 +149,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Pattern(IEnumerable<RoutePatternPathSegment> segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(null, null, null, null, segments);
     }
@@ -180,10 +162,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Pattern(string? rawText, IEnumerable<RoutePatternPathSegment> segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(rawText, null, null, null, segments);
     }
@@ -211,10 +190,7 @@ public static class RoutePatternFactory
         object? parameterPolicies,
         IEnumerable<RoutePatternPathSegment> segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
     }
@@ -241,10 +217,7 @@ public static class RoutePatternFactory
         RouteValueDictionary? parameterPolicies,
         IEnumerable<RoutePatternPathSegment> segments)
     {
-        if (segments is null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(null, defaults, parameterPolicies, requiredValues: null, segments);
     }
@@ -274,10 +247,7 @@ public static class RoutePatternFactory
         object? parameterPolicies,
         IEnumerable<RoutePatternPathSegment> segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
     }
@@ -306,10 +276,7 @@ public static class RoutePatternFactory
         RouteValueDictionary? parameterPolicies,
         IEnumerable<RoutePatternPathSegment> segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(rawText, defaults, parameterPolicies, requiredValues: null, segments);
     }
@@ -321,10 +288,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Pattern(params RoutePatternPathSegment[] segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(null, null, null, requiredValues: null, segments);
     }
@@ -337,10 +301,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     public static RoutePattern Pattern(string rawText, params RoutePatternPathSegment[] segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(rawText, null, null, requiredValues: null, segments);
     }
@@ -368,10 +329,7 @@ public static class RoutePatternFactory
         object? parameterPolicies,
         params RoutePatternPathSegment[] segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
     }
@@ -398,10 +356,7 @@ public static class RoutePatternFactory
         RouteValueDictionary? parameterPolicies,
         params RoutePatternPathSegment[] segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(null, defaults, parameterPolicies, requiredValues: null, segments);
     }
@@ -431,10 +386,7 @@ public static class RoutePatternFactory
         object? parameterPolicies,
         params RoutePatternPathSegment[] segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
     }
@@ -463,10 +415,7 @@ public static class RoutePatternFactory
         RouteValueDictionary? parameterPolicies,
         params RoutePatternPathSegment[] segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         return PatternCore(rawText, defaults, parameterPolicies, requiredValues: null, segments);
     }
@@ -719,10 +668,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternPathSegment"/>.</returns>
     public static RoutePatternPathSegment Segment(IEnumerable<RoutePatternPart> parts)
     {
-        if (parts == null)
-        {
-            throw new ArgumentNullException(nameof(parts));
-        }
+        ArgumentNullException.ThrowIfNull(parts);
 
         return SegmentCore(parts.ToArray());
     }
@@ -735,10 +681,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternPathSegment"/>.</returns>
     public static RoutePatternPathSegment Segment(params RoutePatternPart[] parts)
     {
-        if (parts == null)
-        {
-            throw new ArgumentNullException(nameof(parts));
-        }
+        ArgumentNullException.ThrowIfNull(parts);
 
         return SegmentCore((RoutePatternPart[])parts.Clone());
     }
@@ -910,10 +853,7 @@ public static class RoutePatternFactory
             throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
         }
 
-        if (parameterPolicies == null)
-        {
-            throw new ArgumentNullException(nameof(parameterPolicies));
-        }
+        ArgumentNullException.ThrowIfNull(parameterPolicies);
 
         return ParameterPartCore(
             parameterName: parameterName,
@@ -952,10 +892,7 @@ public static class RoutePatternFactory
             throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
         }
 
-        if (parameterPolicies == null)
-        {
-            throw new ArgumentNullException(nameof(parameterPolicies));
-        }
+        ArgumentNullException.ThrowIfNull(parameterPolicies);
 
         return ParameterPartCore(
             parameterName: parameterName,
@@ -1025,10 +962,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
     public static RoutePatternParameterPolicyReference Constraint(IRouteConstraint constraint)
     {
-        if (constraint == null)
-        {
-            throw new ArgumentNullException(nameof(constraint));
-        }
+        ArgumentNullException.ThrowIfNull(constraint);
 
         return ParameterPolicyCore(constraint);
     }
@@ -1059,10 +993,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
     public static RoutePatternParameterPolicyReference ParameterPolicy(IParameterPolicy parameterPolicy)
     {
-        if (parameterPolicy == null)
-        {
-            throw new ArgumentNullException(nameof(parameterPolicy));
-        }
+        ArgumentNullException.ThrowIfNull(parameterPolicy);
 
         return ParameterPolicyCore(parameterPolicy);
     }

@@ -43,10 +43,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(string key, string value, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // SameSite=None cookies must be marked as Secure.
         if (!options.Secure && options.SameSite == SameSiteMode.None)
@@ -70,10 +67,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // SameSite=None cookies must be marked as Secure.
         if (!options.Secure && options.SameSite == SameSiteMode.None)
@@ -117,10 +111,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Delete(string key, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var encodedKeyPlusEquals = key + "=";
         var domainHasValue = !string.IsNullOrEmpty(options.Domain);

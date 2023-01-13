@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
@@ -58,7 +57,6 @@ public static class ComponentServiceCollectionExtensions
         // Here we add a bunch of services that don't vary in any way based on the
         // user's configuration. So even if the user has multiple independent server-side
         // Components entrypoints, this lot is the same and repeated registrations are a no-op.
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();

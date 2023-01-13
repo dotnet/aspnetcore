@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -53,10 +54,7 @@ public sealed class TestFileOutputContext
 
     public string GetUniqueFileName(string prefix, string extension)
     {
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(prefix);
 
         if (extension != null && !extension.StartsWith(".", StringComparison.Ordinal))
         {

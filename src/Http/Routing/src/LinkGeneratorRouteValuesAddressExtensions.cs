@@ -37,15 +37,8 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, new(values));
         return generator.GetPathByAddress<RouteValuesAddress>(
@@ -84,15 +77,8 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, values);
         return generator.GetPathByAddress<RouteValuesAddress>(
@@ -127,10 +113,7 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
 
         var address = CreateAddress(httpContext: null, routeName, new(values));
         return generator.GetPathByAddress<RouteValuesAddress>(address, address.ExplicitValues, pathBase, fragment, options);
@@ -158,10 +141,7 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
 
         var address = CreateAddress(httpContext: null, routeName, values);
         return generator.GetPathByAddress<RouteValuesAddress>(address, address.ExplicitValues, pathBase, fragment, options);
@@ -210,15 +190,8 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, new(values));
         return generator.GetUriByAddress<RouteValuesAddress>(
@@ -276,15 +249,8 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, routeName, values);
         return generator.GetUriByAddress<RouteValuesAddress>(
@@ -336,10 +302,7 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
 
         var address = CreateAddress(httpContext: null, routeName, new(values));
         return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);
@@ -382,10 +345,7 @@ public static class LinkGeneratorRouteValuesAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
 
         var address = CreateAddress(httpContext: null, routeName, values);
         return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);

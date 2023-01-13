@@ -19,10 +19,7 @@ public class MiddlewareFilterAttribute : Attribute, IFilterFactory, IOrderedFilt
     /// <param name="configurationType">A type which configures a middleware pipeline.</param>
     public MiddlewareFilterAttribute(Type configurationType)
     {
-        if (configurationType == null)
-        {
-            throw new ArgumentNullException(nameof(configurationType));
-        }
+        ArgumentNullException.ThrowIfNull(configurationType);
 
         ConfigurationType = configurationType;
     }
@@ -41,10 +38,7 @@ public class MiddlewareFilterAttribute : Attribute, IFilterFactory, IOrderedFilt
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var middlewarePipelineService = serviceProvider.GetRequiredService<MiddlewareFilterBuilder>();
         var pipeline = middlewarePipelineService.GetPipeline(ConfigurationType);

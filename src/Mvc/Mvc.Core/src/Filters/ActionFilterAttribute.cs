@@ -32,15 +32,8 @@ public abstract class ActionFilterAttribute :
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         OnActionExecuting(context);
         if (context.Result == null)
@@ -64,15 +57,8 @@ public abstract class ActionFilterAttribute :
         ResultExecutingContext context,
         ResultExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         OnResultExecuting(context);
         if (!context.Cancel)

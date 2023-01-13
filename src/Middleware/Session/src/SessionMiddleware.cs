@@ -39,30 +39,11 @@ public class SessionMiddleware
         ISessionStore sessionStore,
         IOptions<SessionOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (dataProtectionProvider == null)
-        {
-            throw new ArgumentNullException(nameof(dataProtectionProvider));
-        }
-
-        if (sessionStore == null)
-        {
-            throw new ArgumentNullException(nameof(sessionStore));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(dataProtectionProvider);
+        ArgumentNullException.ThrowIfNull(sessionStore);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _logger = loggerFactory.CreateLogger<SessionMiddleware>();

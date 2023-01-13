@@ -115,10 +115,7 @@ public class BindingSource : IEquatable<BindingSource?>
     /// </param>
     public BindingSource(string id, string displayName, bool isGreedy, bool isFromRequest)
     {
-        if (id == null)
-        {
-            throw new ArgumentNullException(nameof(id));
-        }
+        ArgumentNullException.ThrowIfNull(id);
 
         Id = id;
         DisplayName = displayName;
@@ -182,10 +179,7 @@ public class BindingSource : IEquatable<BindingSource?>
     /// </remarks>
     public virtual bool CanAcceptDataFrom(BindingSource bindingSource)
     {
-        if (bindingSource == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
 
         if (bindingSource is CompositeBindingSource)
         {
