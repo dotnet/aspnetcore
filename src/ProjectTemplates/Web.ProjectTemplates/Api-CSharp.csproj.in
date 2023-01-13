@@ -8,7 +8,7 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
     <ServerGarbageCollection>False</ServerGarbageCollection>
     <!--#if (NativeAot) -->
-    <PublishAot>false</PublishAot>
+    <PublishAot>true</PublishAot>
     <TrimMode>full</TrimMode>
     <PublishIISAssets>false</PublishIISAssets>
     <!--#endif -->

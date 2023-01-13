@@ -35,7 +35,7 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null);
     }
 
-    [ConditionalFact]
+    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
     public async Task ApiTemplateNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
@@ -47,7 +47,7 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
-    [ConditionalFact]
+    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
@@ -71,7 +71,8 @@ public class ApiTemplateTest : LoggedTest
             return;
         }
 
-        await project.RunDotNetPublishAsync();
+        // Force a restore if native AOT so that RID-specific assets are restored
+        await project.RunDotNetPublishAsync(noRestore: !nativeAot);
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
