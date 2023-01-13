@@ -1,1 +1,7 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
+*REMOVED*Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+*REMOVED*static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)

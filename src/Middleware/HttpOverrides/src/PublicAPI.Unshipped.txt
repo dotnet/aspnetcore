@@ -1,1 +1,3 @@
 #nullable enable
+static Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse(System.ReadOnlySpan<char> networkSpan) -> Microsoft.AspNetCore.HttpOverrides.IPNetwork!
+static Microsoft.AspNetCore.HttpOverrides.IPNetwork.TryParse(System.ReadOnlySpan<char> networkSpan, out Microsoft.AspNetCore.HttpOverrides.IPNetwork? network) -> bool
