@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -602,7 +603,35 @@ public static class TypedResults
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
     /// <returns>The created <see cref="RedirectToRouteHttpResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static RedirectToRouteHttpResult RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(
+            routeName: routeName,
+            routeValues: routeValues,
+            permanent: permanent,
+            preserveMethod: preserveMethod,
+            fragment: fragment);
+
+    /// <summary>
+    /// Redirects to the specified route.
+    /// <list type="bullet">
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
+    /// <item><description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="routeName">The name of the route.</param>
+    /// <param name="routeValues">The parameters for a route.</param>
+    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
+    /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
+    /// <param name="fragment">The fragment to add to the URL.</param>
+    /// <returns>The created <see cref="RedirectToRouteHttpResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static RedirectToRouteHttpResult RedirectToRoute(string? routeName, RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => new(
             routeName: routeName,
             routeValues: routeValues,
@@ -727,15 +756,24 @@ public static class TypedResults
             Type = type,
         };
 
+        CopyExtensions(extensions, problemDetails);
+
+        return new(problemDetails);
+    }
+
+    private static void CopyExtensions(IDictionary<string, object?>? extensions, ProblemDetails problemDetails)
+    {
         if (extensions is not null)
         {
             foreach (var extension in extensions)
             {
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
                 problemDetails.Extensions.Add(extension);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
             }
         }
-
-        return new(problemDetails);
     }
 
     /// <summary>
@@ -779,13 +817,7 @@ public static class TypedResults
 
         problemDetails.Title = title ?? problemDetails.Title;
 
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions.Add(extension);
-            }
-        }
+        CopyExtensions(extensions, problemDetails);
 
         return new(problemDetails);
     }
@@ -849,9 +881,19 @@ public static class TypedResults
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static CreatedAtRoute CreatedAtRoute(string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        => new(routeName, routeValues);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <returns>The created <see cref="HttpResults.CreatedAtRoute"/> for the response.</returns>
+    public static CreatedAtRoute CreatedAtRoute(string? routeName, RouteValueDictionary routeValues)
         => new(routeName, routeValues);
 
     /// <summary>
@@ -862,9 +904,21 @@ public static class TypedResults
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute{TValue}"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.CreatedAtRoute{TValue}"/> for the response.</returns>
+    public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary routeValues)
         => new(routeName, routeValues, value);
 
     /// <summary>
@@ -917,9 +971,19 @@ public static class TypedResults
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static AcceptedAtRoute AcceptedAtRoute(string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        => new(routeName, routeValues);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <returns>The created <see cref="HttpResults.AcceptedAtRoute"/> for the response.</returns>
+    public static AcceptedAtRoute AcceptedAtRoute(string? routeName, RouteValueDictionary routeValues)
         => new(routeName, routeValues);
 
     /// <summary>
@@ -930,9 +994,21 @@ public static class TypedResults
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
+    public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary routeValues)
         => new(routeName, routeValues, value);
 
     /// <summary>

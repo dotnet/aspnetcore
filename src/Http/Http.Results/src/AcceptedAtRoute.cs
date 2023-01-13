@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -22,6 +23,7 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider, IStatu
     /// provided.
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     internal AcceptedAtRoute(object? routeValues)
         : this(routeName: null, routeValues: routeValues)
     {
@@ -33,12 +35,24 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider, IStatu
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    internal AcceptedAtRoute(string? routeName, object? routeValues)
+        : this(routeName, new RouteValueDictionary(routeValues))
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AcceptedAtRoute"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
     internal AcceptedAtRoute(
         string? routeName,
-        object? routeValues)
+        RouteValueDictionary routeValues)
     {
         RouteName = routeName;
-        RouteValues = new RouteValueDictionary(routeValues);
+        RouteValues = routeValues;
     }
 
     /// <summary>
