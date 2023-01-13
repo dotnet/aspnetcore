@@ -53,7 +53,7 @@ internal static partial class HttpResultsWriter
 
     private static JsonTypeInfo GetTypeInfo<TValue>(TValue? value, JsonSerializerOptions jsonSerializerOptions)
     {
-        var declaredTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
+        var declaredTypeInfo = jsonSerializerOptions.GetTypeInfo(typeof(TValue));
         if (value is null || declaredTypeInfo.IsPolymorphicSafe())
         {
             return declaredTypeInfo;
