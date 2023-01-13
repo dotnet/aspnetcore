@@ -13,11 +13,15 @@
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Value.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Value.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException.AccessTokenNotAvailableException(Microsoft.AspNetCore.Components.NavigationManager navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult tokenResult, System.Collections.Generic.IEnumerable<string> scopes) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException.Redirect(System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions> configureInteractionOptions) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions.ReturnUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions.ReturnUrl.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions.Scopes.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions.Scopes.set -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.AccessTokenResult(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus status, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken token, string interactiveRequestUrl, Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions interactiveRequest) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.AccessTokenResult(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus status, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken token, string redirectUrl) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.InteractionOptions.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.InteractiveRequestUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.RedirectUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.TryGetToken(out Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken accessToken) -> bool
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount>
@@ -30,6 +34,13 @@
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.BaseAddressAuthorizationMessageHandler.BaseAddressAuthorizationMessageHandler(Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider provider, Microsoft.AspNetCore.Components.NavigationManager navigationManager) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider.RequestAccessToken() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider.RequestAccessToken(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions options) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult>
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.ReturnUrl.init -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.Scopes.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.Scopes.init -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.TryAddAdditionalParameter<TValue>(string name, TValue value) -> bool
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.TryGetAdditionalParameter<TValue>(string name, out TValue value) -> bool
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.TryRemoveAdditionalParameter(string name) -> bool
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal.IAccessTokenProviderAccessor.TokenProvider.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>.CompleteSignInAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
@@ -75,6 +86,8 @@
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationApplicationPathsOptions.RemoteRegisterPath.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationApplicationPathsOptions.RemoteRegisterPath.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.InteractiveRequest.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.InteractiveRequest.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.State.get -> TRemoteAuthenticationState
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.State.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.Url.get -> string
@@ -92,6 +105,7 @@
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Navigation.get -> Microsoft.AspNetCore.Components.NavigationManager
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Options.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.Extensions.Options.IOptionsSnapshot<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>> options, Microsoft.AspNetCore.Components.NavigationManager navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.Extensions.Options.IOptionsSnapshot<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>> options, Microsoft.AspNetCore.Components.NavigationManager navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>> logger) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.ReturnUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.ReturnUrl.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions.AuthenticationType.get -> string
@@ -140,6 +154,10 @@
 ~override Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
 ~override Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) -> void
 ~override Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.OnParametersSetAsync() -> System.Threading.Tasks.Task
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogin(this Microsoft.AspNetCore.Components.NavigationManager manager, string loginPath) -> void
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogin(this Microsoft.AspNetCore.Components.NavigationManager manager, string loginPath, Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions request) -> void
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogout(this Microsoft.AspNetCore.Components.NavigationManager manager, string logoutPath) -> void
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogout(this Microsoft.AspNetCore.Components.NavigationManager manager, string logoutPath, string returnUrl) -> void
 ~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.IsAction(string action, string candidate) -> bool
 ~static Microsoft.Extensions.DependencyInjection.RemoteAuthenticationBuilderExtensions.AddAccountClaimsPrincipalFactory<TAccountClaimsPrincipalFactory>(this Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState, Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount> builder) -> Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState, Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount>
 ~static Microsoft.Extensions.DependencyInjection.RemoteAuthenticationBuilderExtensions.AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, TAccount, TAccountClaimsPrincipalFactory>(this Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> builder) -> Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
@@ -191,7 +209,16 @@ Microsoft.AspNetCore.Components.WebAssembly.Authentication.ApiAuthorizationProvi
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthorizationMessageHandler
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.BaseAddressAuthorizationMessageHandler
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType.GetToken = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType.SignIn = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType.SignOut = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.Interaction.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.Interaction.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.InteractiveRequestOptions() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal.IAccessTokenProviderAccessor
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.OidcProviderOptions() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions

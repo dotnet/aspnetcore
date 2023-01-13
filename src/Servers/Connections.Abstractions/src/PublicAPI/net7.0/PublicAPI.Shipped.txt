@@ -89,6 +89,8 @@ Microsoft.AspNetCore.Connections.Features.IProtocolErrorCodeFeature.Error.set ->
 Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature
 Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature.AbortRead(long errorCode, Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
 Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature.AbortWrite(long errorCode, Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
+Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature
+Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature.OnClosed(System.Action<object?>! callback, object? state) -> void
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature.CanRead.get -> bool
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature.CanWrite.get -> bool
@@ -146,6 +148,22 @@ Microsoft.AspNetCore.Connections.MultiplexedConnectionBuilder.Use(System.Func<Mi
 Microsoft.AspNetCore.Connections.MultiplexedConnectionContext
 Microsoft.AspNetCore.Connections.MultiplexedConnectionContext.MultiplexedConnectionContext() -> void
 Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.ClientHelloInfo.get -> System.Net.Security.SslClientHelloInfo
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.ClientHelloInfo.set -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.Connection.get -> Microsoft.AspNetCore.Connections.BaseConnectionContext!
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.Connection.set -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.State.get -> object?
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.State.set -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext.TlsConnectionCallbackContext() -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.ApplicationProtocols.get -> System.Collections.Generic.List<System.Net.Security.SslApplicationProtocol>!
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.ApplicationProtocols.set -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.OnConnection.get -> System.Func<Microsoft.AspNetCore.Connections.TlsConnectionCallbackContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Net.Security.SslServerAuthenticationOptions!>>!
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.OnConnection.set -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.OnConnectionState.get -> object?
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.OnConnectionState.set -> void
+Microsoft.AspNetCore.Connections.TlsConnectionCallbackOptions.TlsConnectionCallbackOptions() -> void
 Microsoft.AspNetCore.Connections.TransferFormat
 Microsoft.AspNetCore.Connections.TransferFormat.Binary = 1 -> Microsoft.AspNetCore.Connections.TransferFormat
 Microsoft.AspNetCore.Connections.TransferFormat.Text = 2 -> Microsoft.AspNetCore.Connections.TransferFormat

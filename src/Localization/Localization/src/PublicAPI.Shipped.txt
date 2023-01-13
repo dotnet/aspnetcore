@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.ResourceManagerStringLocalizerFactory(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions!>! localizationOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.Extensions.DependencyInjection.LocalizationServiceCollectionExtensions
 Microsoft.Extensions.Localization.IResourceNamesCache
 Microsoft.Extensions.Localization.IResourceNamesCache.GetOrAdd(string! name, System.Func<string!, System.Collections.Generic.IList<string!>?>! valueFactory) -> System.Collections.Generic.IList<string!>?
@@ -17,6 +16,7 @@ Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.ResourceManager
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.Create(string! baseName, string! location) -> Microsoft.Extensions.Localization.IStringLocalizer!
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.Create(System.Type! resourceSource) -> Microsoft.Extensions.Localization.IStringLocalizer!
+Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.ResourceManagerStringLocalizerFactory(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions!>! localizationOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.Extensions.Localization.ResourceNamesCache
 Microsoft.Extensions.Localization.ResourceNamesCache.GetOrAdd(string! name, System.Func<string!, System.Collections.Generic.IList<string!>?>! valueFactory) -> System.Collections.Generic.IList<string!>?
 Microsoft.Extensions.Localization.ResourceNamesCache.ResourceNamesCache() -> void
