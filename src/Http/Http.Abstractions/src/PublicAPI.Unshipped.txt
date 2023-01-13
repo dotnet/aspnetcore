@@ -24,6 +24,8 @@ Microsoft.AspNetCore.Http.EndpointFilterInvocationContext
 Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.EndpointFilterInvocationContext() -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
+Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
@@ -91,3 +93,4 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.GetArgument<T>(int index) -> T
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
