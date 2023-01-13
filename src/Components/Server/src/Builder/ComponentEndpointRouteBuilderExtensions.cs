@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -96,7 +97,8 @@ public static class ComponentEndpointRouteBuilderExtensions
     {
         var options = new StaticFileOptions
         {
-            FileProvider = new ManifestEmbeddedFileProvider(typeof(ComponentEndpointRouteBuilderExtensions).Assembly)
+            FileProvider = new ManifestEmbeddedFileProvider(typeof(ComponentEndpointRouteBuilderExtensions).Assembly),
+            OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders
         };
 
         var app = endpoints.CreateApplicationBuilder();
