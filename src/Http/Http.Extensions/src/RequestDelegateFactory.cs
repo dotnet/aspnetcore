@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -260,12 +261,12 @@ public static partial class RequestDelegateFactory
 
     private static RequestDelegateFactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options, RequestDelegateMetadataResult? metadataResult = null, Delegate? handler = null)
     {
-        if (metadataResult?.CachedFactoryContext is not null)
+        if (metadataResult?.CachedFactoryContext is RequestDelegateFactoryContext cachedFactoryContext)
         {
-            metadataResult.CachedFactoryContext.MetadataAlreadyInferred = true;
+            cachedFactoryContext.MetadataAlreadyInferred = true;
             // The handler was not passed in to the InferMetadata call that originally created this context.
-            metadataResult.CachedFactoryContext.Handler = handler;
-            return metadataResult.CachedFactoryContext;
+            cachedFactoryContext.Handler = handler;
+            return cachedFactoryContext;
         }
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
@@ -2135,21 +2136,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
     {
-        // Terminal built ins
-        if (obj is IResult result)
-        {
-            return ExecuteResultWriteResponse(result, httpContext);
-        }
-        else if (obj is string stringValue)
-        {
-            SetPlaintextContentType(httpContext);
-            return httpContext.Response.WriteAsync(stringValue);
-        }
-        else
-        {
-            // Otherwise, we JSON serialize when we reach the terminal state
-            return WriteJsonResponse(httpContext.Response, obj, options, jsonTypeInfo);
-        }
+        return ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, options, jsonTypeInfo);
     }
 
     private static Task ExecuteTaskOfTFast<T>(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
@@ -2188,7 +2175,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
     {
-        SetPlaintextContentType(httpContext);
+        ExecuteHandlerHelper.SetPlaintextContentType(httpContext);
         EnsureRequestTaskNotNull(task);
 
         static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
@@ -2206,7 +2193,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
     {
-        SetPlaintextContentType(httpContext);
+        ExecuteHandlerHelper.SetPlaintextContentType(httpContext);
         return httpContext.Response.WriteAsync(text);
     }
 
@@ -2293,7 +2280,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
     {
-        SetPlaintextContentType(httpContext);
+        ExecuteHandlerHelper.SetPlaintextContentType(httpContext);
 
         static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
         {
@@ -2342,21 +2329,7 @@ public static partial class RequestDelegateFactory
 
     private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
     {
-        var runtimeType = value?.GetType();
-
-        if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.IsPolymorphicSafe())
-        {
-            // In this case the polymorphism is not
-            // relevant for us and will be handled by STJ, if needed.
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, jsonTypeInfo, default);
-        }
-
-        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
-        // and avoid source generators issues.
-        // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        var runtimeTypeInfo = options.GetTypeInfo(runtimeType);
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, runtimeTypeInfo, default);
+        return ExecuteHandlerHelper.WriteJsonResponseAsync(response, value, options, jsonTypeInfo);
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
@@ -2543,11 +2516,6 @@ public static partial class RequestDelegateFactory
         }
 
         return result;
-    }
-
-    private static void SetPlaintextContentType(HttpContext httpContext)
-    {
-        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
     }
 
     private static string BuildErrorMessageForMultipleBodyParameters(RequestDelegateFactoryContext factoryContext)
