@@ -3,7 +3,6 @@
 
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RateLimiting.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,6 +20,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
     private readonly bool _trackStatistics;
+    private readonly DefaultRateLimiterStatisticsFeature? _statisticsFeature;
     private readonly Dictionary<string, DefaultRateLimiterPolicy> _policyMap;
     private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
@@ -53,6 +53,10 @@ internal sealed partial class RateLimitingMiddleware
         _globalLimiter = options.Value.GlobalLimiter;
         _endpointLimiter = CreateEndpointLimiter();
 
+        if (_trackStatistics)
+        {
+            _statisticsFeature = new DefaultRateLimiterStatisticsFeature(_globalLimiter, _endpointLimiter);
+        }
     }
 
     // TODO - EventSource?
@@ -253,7 +257,8 @@ internal sealed partial class RateLimitingMiddleware
 
     private void AddRateLimiterStatisticsFeature(HttpContext context)
     {
-        context.Features.Set<IRateLimiterStatisticsFeature>(new DefaultRateLimiterStatisticsFeature(_globalLimiter, _endpointLimiter, context));
+        _statisticsFeature.HttpContext = context;
+        context.Features.Set<IRateLimiterStatisticsFeature>(_statisticsFeature);
     }
 
     private static partial class RateLimiterLog

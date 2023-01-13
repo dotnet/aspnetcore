@@ -4,25 +4,24 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.RateLimiting.Features;
+namespace Microsoft.AspNetCore.RateLimiting;
 
-internal class DefaultRateLimiterStatisticsFeature : IRateLimiterStatisticsFeature
+internal sealed class DefaultRateLimiterStatisticsFeature : IRateLimiterStatisticsFeature
 {
-    private readonly HttpContext _httpContext;
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
 
+    internal HttpContext? HttpContext { private get; set; }
+
     public DefaultRateLimiterStatisticsFeature(
         PartitionedRateLimiter<HttpContext>? globalLimiter,
-        PartitionedRateLimiter<HttpContext> endpointLimiter,
-        HttpContext httpContext)
+        PartitionedRateLimiter<HttpContext> endpointLimiter)
     {
         _globalLimiter = globalLimiter;
         _endpointLimiter = endpointLimiter;
-        _httpContext = httpContext;
     }
 
-    public RateLimiterStatistics? GetEndpointStatistics() => _endpointLimiter.GetStatistics(_httpContext);
+    public RateLimiterStatistics? GetEndpointStatistics() => _endpointLimiter.GetStatistics(HttpContext);
 
-    public RateLimiterStatistics? GetGlobalStatistics() => _globalLimiter?.GetStatistics(_httpContext);
+    public RateLimiterStatistics? GetGlobalStatistics() => _globalLimiter?.GetStatistics(HttpContext);
 }

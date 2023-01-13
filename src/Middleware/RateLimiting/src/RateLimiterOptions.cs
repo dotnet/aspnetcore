@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RateLimiting.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.RateLimiting;
@@ -42,10 +41,10 @@ public sealed class RateLimiterOptions
     public int RejectionStatusCode { get; set; } = StatusCodes.Status503ServiceUnavailable;
 
     /// <summary>
-    /// Gets or sets flag to track or not to tracks global and endpoint <see cref="RateLimiterStatistics"/>
+    /// Gets or sets whether to track global and endpoint <see cref="RateLimiterStatistics"/>.
     /// </summary>
     /// <remarks>
-    /// If enabled, adds <see cref="IRateLimiterStatisticsFeature"/> to <see cref="HttpContext.Features"/>
+    /// If enabled, adds <see cref="IRateLimiterStatisticsFeature"/> to <see cref="HttpContext.Features"/>.
     /// </remarks>
     public bool TrackStatistics { get; set; }
 
