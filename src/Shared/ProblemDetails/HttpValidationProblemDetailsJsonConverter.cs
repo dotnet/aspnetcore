@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Http;
@@ -23,6 +24,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
             throw new JsonException("Unexpected end when reading JSON.");
         }
 
+        var objectTypeInfo = options.GetTypeInfo(typeof(object));
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
             if (reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
@@ -31,7 +33,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
             }
             else
             {
-                ProblemDetailsJsonConverter.ReadValue(ref reader, problemDetails, options);
+                ProblemDetailsJsonConverter.ReadValue(ref reader, problemDetails, objectTypeInfo);
             }
         }
 

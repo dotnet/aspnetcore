@@ -202,8 +202,6 @@ internal class DeveloperExceptionPageMiddlewareImpl
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
     private ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
     {
         var problemDetails = new ProblemDetails
