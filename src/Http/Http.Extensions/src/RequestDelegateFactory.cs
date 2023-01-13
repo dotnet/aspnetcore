@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Internal;
@@ -96,11 +97,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
-    // Due to https://github.com/dotnet/aspnetcore/issues/41330 we cannot reference the EmptyHttpResult type
-    // but users still need to assert on it as in https://github.com/dotnet/aspnetcore/issues/45063
-    // so we temporarily work around this here by using reflection to get the actual type.
-    private static readonly object? EmptyHttpResultInstance = Type.GetType("Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult, Microsoft.AspNetCore.Http.Results")?.GetProperty("Instance")?.GetValue(null, null);
-    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Constant(EmptyHttpResultInstance));
+    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(EmptyHttpResult) })!, Expression.Property(null, typeof(EmptyHttpResult), nameof(EmptyHttpResult.Instance)));
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
@@ -397,7 +394,6 @@ public static partial class RequestDelegateFactory
     private static EndpointFilterDelegate? CreateFilterPipeline(MethodInfo methodInfo, Expression? targetExpression, RequestDelegateFactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory)
     {
         Debug.Assert(factoryContext.EndpointBuilder.FilterFactories.Count > 0);
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
         // : {
@@ -487,7 +483,6 @@ public static partial class RequestDelegateFactory
 
     private static Expression MapHandlerReturnTypeToValueTask(Expression methodCall, Type returnType)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         if (returnType == typeof(void))
         {
             return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
@@ -2209,16 +2204,15 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteTaskWithEmptyResult(Task task)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         static async ValueTask<object?> ExecuteAwaited(Task task)
         {
             await task;
-            return EmptyHttpResultInstance;
+            return EmptyHttpResult.Instance;
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return new ValueTask<object?>(EmptyHttpResultInstance);
+            return new ValueTask<object?>(EmptyHttpResult.Instance);
         }
 
         return ExecuteAwaited(task);
@@ -2226,17 +2220,16 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteValueTaskWithEmptyResult(ValueTask valueTask)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         static async ValueTask<object?> ExecuteAwaited(ValueTask task)
         {
             await task;
-            return EmptyHttpResultInstance;
+            return EmptyHttpResult.Instance;
         }
 
         if (valueTask.IsCompletedSuccessfully)
         {
             valueTask.GetAwaiter().GetResult();
-            return new ValueTask<object?>(EmptyHttpResultInstance);
+            return new ValueTask<object?>(EmptyHttpResult.Instance);
         }
 
         return ExecuteAwaited(valueTask);

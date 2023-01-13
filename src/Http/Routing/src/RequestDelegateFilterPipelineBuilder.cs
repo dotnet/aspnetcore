@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,11 +14,6 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal static class RequestDelegateFilterPipelineBuilder
 {
-    // Due to https://github.com/dotnet/aspnetcore/issues/41330 we cannot reference the EmptyHttpResult type
-    // but users still need to assert on it as in https://github.com/dotnet/aspnetcore/issues/45063
-    // so we temporarily work around this here by using reflection to get the actual type.
-    private static readonly object? EmptyHttpResultInstance = Type.GetType("Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult, Microsoft.AspNetCore.Http.Results")?.GetProperty("Instance")?.GetValue(null, null);
-
     public static RequestDelegate Create(RequestDelegate requestDelegate, RequestDelegateFactoryOptions options)
     {
         Debug.Assert(options.EndpointBuilder != null);
@@ -35,12 +31,11 @@ internal static class RequestDelegateFilterPipelineBuilder
 
         EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
         {
-            Debug.Assert(EmptyHttpResultInstance != null, "Unable to get EmptyHttpResult instance via reflection.");
             if (context.HttpContext.Response.StatusCode < 400)
             {
                 await requestDelegate(context.HttpContext);
             }
-            return EmptyHttpResultInstance;
+            return EmptyHttpResult.Instance;
         };
 
         var initialFilteredInvocation = filteredInvocation;
