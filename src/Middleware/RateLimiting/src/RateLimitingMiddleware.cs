@@ -20,7 +20,6 @@ internal sealed partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
     private readonly bool _trackStatistics;
-    private readonly DefaultRateLimiterStatisticsFeature? _statisticsFeature;
     private readonly Dictionary<string, DefaultRateLimiterPolicy> _policyMap;
     private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
@@ -52,11 +51,6 @@ internal sealed partial class RateLimitingMiddleware
 
         _globalLimiter = options.Value.GlobalLimiter;
         _endpointLimiter = CreateEndpointLimiter();
-
-        if (_trackStatistics)
-        {
-            _statisticsFeature = new DefaultRateLimiterStatisticsFeature(_globalLimiter, _endpointLimiter);
-        }
     }
 
     // TODO - EventSource?
@@ -257,8 +251,7 @@ internal sealed partial class RateLimitingMiddleware
 
     private void AddRateLimiterStatisticsFeature(HttpContext context)
     {
-        _statisticsFeature?.SetHttpContext(context);
-        context.Features.Set<IRateLimiterStatisticsFeature>(_statisticsFeature);
+        context.Features.Set<IRateLimiterStatisticsFeature>(new DefaultRateLimiterStatisticsFeature(_globalLimiter, _endpointLimiter, context));
     }
 
     private static partial class RateLimiterLog
