@@ -532,7 +532,7 @@
       "Template": "api",
       "Arguments": "new api",
       "Files": [
-        "Album.cs",
+        "Todo.cs",
         "Program.cs",
         "Properties/launchSettings.json"
       ],
@@ -542,7 +542,7 @@
       "Template": "api",
       "Arguments": "new api -aot",
       "Files": [
-        "Album.cs",
+        "Todo.cs",
         "Program.cs",
         "Properties/launchSettings.json"
       ],
@@ -552,7 +552,7 @@
       "Template": "api",
       "Arguments": "new api --use-program-main",
       "Files": [
-        "Album.cs",
+        "Todo.cs",
         "Program.cs",
         "Properties/launchSettings.json"
       ],
@@ -562,7 +562,7 @@
       "Template": "api",
       "Arguments": "new api -aot --use-program-main",
       "Files": [
-        "Album.cs",
+        "Todo.cs",
         "Program.cs",
         "Properties/launchSettings.json"
       ],
