@@ -62,8 +62,6 @@ Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.RouteName.get -> st
 Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.StatusCode.get -> int
 Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>.Value.get -> TValue?
-Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
-Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult
 Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult.ContentType.get -> string!
 Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult.EnableRangeProcessing.get -> bool
@@ -234,7 +232,6 @@ Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.FileLength.get -> lo
 Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.FileName.get -> string!
 Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.LastModified.get -> System.DateTimeOffset?
 Microsoft.AspNetCore.Http.TypedResults
-static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
 static Microsoft.AspNetCore.Http.Results.Bytes(System.ReadOnlyMemory<byte> contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Empty.get -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Stream(System.Func<System.IO.Stream!, System.Threading.Tasks.Task!>! streamWriterCallback, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
