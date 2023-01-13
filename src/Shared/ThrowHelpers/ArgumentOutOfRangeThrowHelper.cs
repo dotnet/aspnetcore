@@ -83,6 +83,21 @@ internal static partial class ArgumentOutOfRangeThrowHelper
 #endif
     }
 
+    /// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is negative.</summary>
+    /// <param name="value">The argument to validate as non-negative.</param>
+    /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
+    public static void ThrowIfNegative(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+#if !NET7_0_OR_GREATER
+        if (value < 0)
+        {
+            ThrowNegative(paramName, value);
+        }
+#else
+        ArgumentOutOfRangeException.ThrowIfNegative(value, paramName);
+#endif
+    }
+
     /// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is negative or zero.</summary>
     /// <param name="value">The argument to validate as non-zero or non-negative.</param>
     /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>

@@ -1,4 +1,1 @@
 #nullable enable
-~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryConvertValue(object value, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out TValue convertedValue, out string errorMessage) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.TryConvertValue(object value, System.Type propertyType, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue) -> bool
-~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryConvertValue(object value, System.Type propertyType, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue) -> bool

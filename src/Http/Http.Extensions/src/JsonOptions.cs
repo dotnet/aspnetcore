@@ -33,7 +33,7 @@ public class JsonOptions
     /// <summary>
     /// Gets the <see cref="JsonSerializerOptions"/>.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(DefaultSerializerOptions);
+    public JsonSerializerOptions SerializerOptions { get; internal set; } = new JsonSerializerOptions(DefaultSerializerOptions);
 
 #pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
 #pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.

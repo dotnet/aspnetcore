@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />

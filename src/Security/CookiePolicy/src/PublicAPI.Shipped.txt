@@ -1,12 +1,12 @@
 #nullable enable
-Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
-Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
 Microsoft.AspNetCore.Builder.CookiePolicyAppBuilderExtensions
 Microsoft.AspNetCore.Builder.CookiePolicyOptions
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.CheckConsentNeeded.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>?
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.CheckConsentNeeded.set -> void
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookie.set -> void
+Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookieValue.get -> string!
+Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookieValue.set -> void
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.CookiePolicyOptions() -> void
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.HttpOnly.get -> Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.HttpOnly.set -> void
@@ -31,6 +31,8 @@ Microsoft.AspNetCore.CookiePolicy.AppendCookieContext.IsConsentNeeded.get -> boo
 Microsoft.AspNetCore.CookiePolicy.AppendCookieContext.IssueCookie.get -> bool
 Microsoft.AspNetCore.CookiePolicy.AppendCookieContext.IssueCookie.set -> void
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware
+Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
+Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.Options.get -> Microsoft.AspNetCore.Builder.CookiePolicyOptions!
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.Options.set -> void
