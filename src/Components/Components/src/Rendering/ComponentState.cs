@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
@@ -38,6 +40,10 @@ internal sealed class ComponentState : IDisposable
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
 
+        // If any component is streaming, so are its descendants in the tree
+        StreamingRendering = renderer.IsTrackingPendingTasks &&
+            (parentComponentState.StreamingRendering || IsStreamingRenderingComponentType(component.GetType()));
+
         if (_cascadingParameters.Count != 0)
         {
             _hasCascadingParameters = true;
@@ -45,11 +51,16 @@ internal sealed class ComponentState : IDisposable
         }
     }
 
+    private static readonly ConcurrentDictionary<Type, bool> _streamingRenderingFlagsByComponentType = new();
+    private static bool IsStreamingRenderingComponentType(Type type) => _streamingRenderingFlagsByComponentType.GetOrAdd(type,
+        type => type.GetCustomAttribute<StreamRenderingAttribute>() is { } attr && attr.StreamRendering);
+
     // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
     public int ComponentId { get; }
     public IComponent Component { get; }
     public ComponentState ParentComponentState { get; }
     public RenderTreeBuilder CurrentRenderTree { get; private set; }
+    public bool StreamingRendering { get; }
 
     public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {

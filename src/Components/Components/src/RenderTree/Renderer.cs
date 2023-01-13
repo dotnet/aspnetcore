@@ -129,6 +129,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </summary>
     internal bool Disposed => _rendererIsDisposed;
 
+    internal bool IsTrackingPendingTasks => _pendingTasks is not null;
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
@@ -510,20 +512,17 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // so will be null at other times.
                 if (_pendingTasks is not null || _pendingStreamingTasks is not null)
                 {
-                    // TODO: Obviously we should not do reflection like this on every render.
-                    // Also, we would need to guarantee that _pendingStreamingTasks does in fact become null by the time prerendering is
-                    // completed (whichever rendering system is being used) otherwise we'd keep accumulating these tasks forever
+                    // TODO: We would need to guarantee that _pendingStreamingTasks does in fact become null by the time prerendering
+                    // is completed (whichever rendering system is being used) otherwise we'd keep accumulating these tasks forever
                     // and leaking memory.
-                    var streamingConfig = owningComponentState.Component.GetType().GetCustomAttribute<StreamRenderingAttribute>();
-                    var isBlockingTask = streamingConfig is null || !streamingConfig.StreamRendering;
-                    if (isBlockingTask)
-                    {
-                        _pendingTasks.Add(handledErrorTask);
-                    }
-                    else
+                    if (owningComponentState.StreamingRendering)
                     {
                         _pendingStreamingTasks ??= new();
                         _pendingStreamingTasks.Add(handledErrorTask);
+                    }
+                    else
+                    {
+                        _pendingTasks.Add(handledErrorTask);
                     }
                 }
 
