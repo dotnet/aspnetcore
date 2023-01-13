@@ -55,6 +55,11 @@ public sealed class OutputCacheAttribute : Attribute
     public string[]? VaryByRouteValueNames { get; init; }
 
     /// <summary>
+    /// Gets or sets tags to apply to the output cache.
+    /// </summary>
+    public string[]? Tags { get; init; }
+
+    /// <summary>
     /// Gets or sets the value of the cache policy name.
     /// </summary>
     public string? PolicyName { get; init; }
@@ -97,6 +102,11 @@ public sealed class OutputCacheAttribute : Attribute
         if (VaryByRouteValueNames != null)
         {
             builder.SetVaryByRouteValue(VaryByRouteValueNames);
+        }
+
+        if (Tags != null)
+        {
+            builder.Tag(Tags);
         }
 
         if (_duration != null)

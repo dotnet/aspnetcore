@@ -8,7 +8,7 @@
     <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
-    <InstallArgs>--frozen-lockfile</InstallArgs>
+    <InstallArgs>$(InstallArgs) --frozen-lockfile</InstallArgs>
     <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
     <BuildDependsOn>
       PrepareForBuild;

@@ -24,10 +24,7 @@
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TrimmingAppContextSwitches.cs" LinkBase="Shared" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
+    <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared"/>
   </ItemGroup>
 
   <ItemGroup>

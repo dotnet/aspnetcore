@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <InstallArgs>--check-files</InstallArgs>
   </PropertyGroup>
 
   <ItemGroup>
