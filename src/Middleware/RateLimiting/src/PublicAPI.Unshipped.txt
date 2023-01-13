@@ -6,12 +6,12 @@ Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute.DisableRateLimiti
 Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute
 Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute.EnableRateLimitingAttribute(string! policyName) -> void
 Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute.PolicyName.get -> string?
-Microsoft.AspNetCore.RateLimiting.Features.IRateLimiterStatisticsFeature
-Microsoft.AspNetCore.RateLimiting.Features.IRateLimiterStatisticsFeature.GetEndpointStatistics() -> System.Threading.RateLimiting.RateLimiterStatistics?
-Microsoft.AspNetCore.RateLimiting.Features.IRateLimiterStatisticsFeature.GetGlobalStatistics() -> System.Threading.RateLimiting.RateLimiterStatistics?
 Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>
 Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>.GetPartition(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.RateLimiting.RateLimitPartition<TPartitionKey>
 Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>.OnRejected.get -> System.Func<Microsoft.AspNetCore.RateLimiting.OnRejectedContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.RateLimiting.IRateLimiterStatisticsFeature
+Microsoft.AspNetCore.RateLimiting.IRateLimiterStatisticsFeature.GetEndpointStatistics() -> System.Threading.RateLimiting.RateLimiterStatistics?
+Microsoft.AspNetCore.RateLimiting.IRateLimiterStatisticsFeature.GetGlobalStatistics() -> System.Threading.RateLimiting.RateLimiterStatistics?
 Microsoft.AspNetCore.RateLimiting.OnRejectedContext
 Microsoft.AspNetCore.RateLimiting.OnRejectedContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.RateLimiting.OnRejectedContext.HttpContext.init -> void

@@ -257,7 +257,7 @@ internal sealed partial class RateLimitingMiddleware
 
     private void AddRateLimiterStatisticsFeature(HttpContext context)
     {
-        _statisticsFeature.HttpContext = context;
+        _statisticsFeature?.SetHttpContext(context);
         context.Features.Set<IRateLimiterStatisticsFeature>(_statisticsFeature);
     }
 

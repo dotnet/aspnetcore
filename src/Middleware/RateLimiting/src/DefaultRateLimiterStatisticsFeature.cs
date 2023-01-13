@@ -11,7 +11,7 @@ internal sealed class DefaultRateLimiterStatisticsFeature : IRateLimiterStatisti
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
 
-    internal HttpContext? HttpContext { private get; set; }
+    private HttpContext? _httpContext;
 
     public DefaultRateLimiterStatisticsFeature(
         PartitionedRateLimiter<HttpContext>? globalLimiter,
@@ -21,7 +21,12 @@ internal sealed class DefaultRateLimiterStatisticsFeature : IRateLimiterStatisti
         _endpointLimiter = endpointLimiter;
     }
 
-    public RateLimiterStatistics? GetEndpointStatistics() => _endpointLimiter.GetStatistics(HttpContext);
+    public void SetHttpContext(HttpContext context)
+    {
+        _httpContext = context;
+    }
 
-    public RateLimiterStatistics? GetGlobalStatistics() => _globalLimiter?.GetStatistics(HttpContext);
+    public RateLimiterStatistics? GetEndpointStatistics() => _endpointLimiter.GetStatistics(_httpContext);
+
+    public RateLimiterStatistics? GetGlobalStatistics() => _globalLimiter?.GetStatistics(_httpContext);
 }
