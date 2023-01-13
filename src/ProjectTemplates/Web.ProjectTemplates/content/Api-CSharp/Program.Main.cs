@@ -23,9 +23,9 @@ public class Program
 
         var sampleTodos = TodoGenerator.GenerateTodos().ToArray();
 
-        var api = app.MapGroup("/todos");
-        api.MapGet("/", () => sampleTodos);
-        api.MapGet("/{id}", (int id) =>
+        var todosApi = app.MapGroup("/todos");
+        todosApi.MapGet("/", () => sampleTodos);
+        todosApi.MapGet("/{id}", (int id) =>
             sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
                 ? Results.Ok(todo)
                 : Results.NotFound());
@@ -35,7 +35,6 @@ public class Program
 }
 
 #if (NativeAot)
-[JsonSerializable(typeof(Todo))]
 [JsonSerializable(typeof(Todo[]))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
