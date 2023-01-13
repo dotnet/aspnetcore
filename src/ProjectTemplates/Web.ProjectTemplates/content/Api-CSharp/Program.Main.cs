@@ -21,23 +21,22 @@ public class Program
         #endif
         var app = builder.Build();
 
-        var sampleAlbums = AlbumGenerator.GenerateAlbums().ToArray();
+        var sampleTodos = TodoGenerator.GenerateTodos().ToArray();
 
-        var api = app.MapGroup("/albums");
-        api.MapGet("/", () => sampleAlbums);
+        var api = app.MapGroup("/todos");
+        api.MapGet("/", () => sampleTodos);
         api.MapGet("/{id}", (int id) =>
-            sampleAlbums.FirstOrDefault(a => a.Id == id) is { } album
-                ? Results.Ok(album)
-                : Results.NotFound($"Album with id {id} not found"));
+            sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
+                ? Results.Ok(todo)
+                : Results.NotFound());
 
         app.Run();
     }
 }
 
 #if (NativeAot)
-[JsonSerializable(typeof(string))]
-[JsonSerializable(typeof(Album))]
-[JsonSerializable(typeof(Album[]))]
+[JsonSerializable(typeof(Todo))]
+[JsonSerializable(typeof(Todo[]))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 

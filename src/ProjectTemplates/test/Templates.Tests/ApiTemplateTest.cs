@@ -101,9 +101,9 @@ public class ApiTemplateTest : LoggedTest
 
     private async Task AssertEndpoints(AspNetProcess aspNetProcess)
     {
-        await aspNetProcess.AssertOk("/albums");
-        await aspNetProcess.AssertOk("/albums/1");
-        await aspNetProcess.AssertNotFound("/albums/100");
+        await aspNetProcess.AssertOk("/todos");
+        await aspNetProcess.AssertOk("/todos/1");
+        await aspNetProcess.AssertNotFound("/todos/100");
         await aspNetProcess.AssertNotFound("/");
     }
 }
