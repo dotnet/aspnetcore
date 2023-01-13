@@ -103,7 +103,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
         string cumulativePath = "/";
-        foreach (var segment in requestPath.Value!.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var segment in requestPath.Value!.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
             cumulativePath = cumulativePath + segment + "/";
             builder.AppendFormat(

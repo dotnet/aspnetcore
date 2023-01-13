@@ -69,15 +69,16 @@ public class CookieRequestCultureProvider : RequestCultureProvider
             return null;
         }
 
-        var parts = value.Split(_cookieSeparator, StringSplitOptions.RemoveEmptyEntries);
-
-        if (parts.Length != 2)
+        //var parts = value.Split(_cookieSeparator, StringSplitOptions.RemoveEmptyEntries);
+        Span<Range> parts = stackalloc Range[3];
+        var valueSpan = value.AsSpan();
+        if (valueSpan.Split(parts, _cookieSeparator, StringSplitOptions.RemoveEmptyEntries) != 2)
         {
             return null;
         }
 
-        var potentialCultureName = parts[0];
-        var potentialUICultureName = parts[1];
+        var potentialCultureName = valueSpan[parts[0]];
+        var potentialUICultureName = valueSpan[parts[1]];
 
         if (!potentialCultureName.StartsWith(_culturePrefix, StringComparison.Ordinal) || !
             potentialUICultureName.StartsWith(_uiCulturePrefix, StringComparison.Ordinal))
@@ -85,8 +86,8 @@ public class CookieRequestCultureProvider : RequestCultureProvider
             return null;
         }
 
-        var cultureName = potentialCultureName.Substring(_culturePrefix.Length);
-        var uiCultureName = potentialUICultureName.Substring(_uiCulturePrefix.Length);
+        var cultureName = potentialCultureName.Slice(_culturePrefix.Length);
+        var uiCultureName = potentialUICultureName.Slice(_uiCulturePrefix.Length);
 
         if (cultureName == null && uiCultureName == null)
         {
@@ -105,6 +106,6 @@ public class CookieRequestCultureProvider : RequestCultureProvider
             cultureName = uiCultureName;
         }
 
-        return new ProviderCultureResult(cultureName, uiCultureName);
+        return new ProviderCultureResult(cultureName.ToString(), uiCultureName.ToString());
     }
 }
