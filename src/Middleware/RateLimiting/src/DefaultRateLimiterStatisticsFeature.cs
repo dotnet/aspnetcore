@@ -26,7 +26,7 @@ internal sealed class DefaultRateLimiterStatisticsFeature : IRateLimiterStatisti
         _httpContext = context;
     }
 
-    public RateLimiterStatistics? GetEndpointStatistics() => _endpointLimiter.GetStatistics(_httpContext);
+    public RateLimiterStatistics? GetEndpointStatistics() => _endpointLimiter.GetStatistics(_httpContext!);
 
-    public RateLimiterStatistics? GetGlobalStatistics() => _globalLimiter?.GetStatistics(_httpContext);
+    public RateLimiterStatistics? GetGlobalStatistics() => _globalLimiter?.GetStatistics(_httpContext!);
 }
