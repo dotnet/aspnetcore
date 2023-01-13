@@ -15,8 +15,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -95,17 +97,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
-    // Due to https://github.com/dotnet/aspnetcore/issues/41330 we cannot reference the EmptyHttpResult type
-    // but users still need to assert on it as in https://github.com/dotnet/aspnetcore/issues/45063
-    // so we temporarily work around this here by using reflection to get the actual type.
-    private static readonly object? EmptyHttpResultInstance = Type.GetType("Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult, Microsoft.AspNetCore.Http.Results")?.GetProperty("Instance")?.GetValue(null, null);
-#if DEBUG
-    private static readonly NewExpression EmptyHttpResultValueTaskExpr = EmptyHttpResultInstance is not null
-            ? Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Constant(EmptyHttpResultInstance))
-            : throw new UnreachableException("The EmptyHttpResult type could not be found.");
-#else
-    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(IResult) })!, Expression.Constant(EmptyHttpResultInstance));
-#endif
+    private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(EmptyHttpResult) })!, Expression.Property(null, typeof(EmptyHttpResult), nameof(EmptyHttpResult.Instance)));
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
@@ -260,12 +252,12 @@ public static partial class RequestDelegateFactory
 
     private static RequestDelegateFactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options, RequestDelegateMetadataResult? metadataResult = null, Delegate? handler = null)
     {
-        if (metadataResult?.CachedFactoryContext is not null)
+        if (metadataResult?.CachedFactoryContext is RequestDelegateFactoryContext cachedFactoryContext)
         {
-            metadataResult.CachedFactoryContext.MetadataAlreadyInferred = true;
+            cachedFactoryContext.MetadataAlreadyInferred = true;
             // The handler was not passed in to the InferMetadata call that originally created this context.
-            metadataResult.CachedFactoryContext.Handler = handler;
-            return metadataResult.CachedFactoryContext;
+            cachedFactoryContext.Handler = handler;
+            return cachedFactoryContext;
         }
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
@@ -402,7 +394,6 @@ public static partial class RequestDelegateFactory
     private static EndpointFilterDelegate? CreateFilterPipeline(MethodInfo methodInfo, Expression? targetExpression, RequestDelegateFactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory)
     {
         Debug.Assert(factoryContext.EndpointBuilder.FilterFactories.Count > 0);
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
         // : {
@@ -492,7 +483,6 @@ public static partial class RequestDelegateFactory
 
     private static Expression MapHandlerReturnTypeToValueTask(Expression methodCall, Type returnType)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         if (returnType == typeof(void))
         {
             return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
@@ -2135,21 +2125,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
     {
-        // Terminal built ins
-        if (obj is IResult result)
-        {
-            return ExecuteResultWriteResponse(result, httpContext);
-        }
-        else if (obj is string stringValue)
-        {
-            SetPlaintextContentType(httpContext);
-            return httpContext.Response.WriteAsync(stringValue);
-        }
-        else
-        {
-            // Otherwise, we JSON serialize when we reach the terminal state
-            return WriteJsonResponse(httpContext.Response, obj, options, jsonTypeInfo);
-        }
+        return ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, options, jsonTypeInfo);
     }
 
     private static Task ExecuteTaskOfTFast<T>(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
@@ -2188,7 +2164,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
     {
-        SetPlaintextContentType(httpContext);
+        ExecuteHandlerHelper.SetPlaintextContentType(httpContext);
         EnsureRequestTaskNotNull(task);
 
         static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
@@ -2206,7 +2182,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
     {
-        SetPlaintextContentType(httpContext);
+        ExecuteHandlerHelper.SetPlaintextContentType(httpContext);
         return httpContext.Response.WriteAsync(text);
     }
 
@@ -2228,16 +2204,15 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteTaskWithEmptyResult(Task task)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         static async ValueTask<object?> ExecuteAwaited(Task task)
         {
             await task;
-            return EmptyHttpResultInstance;
+            return EmptyHttpResult.Instance;
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return new ValueTask<object?>(EmptyHttpResultInstance);
+            return new ValueTask<object?>(EmptyHttpResult.Instance);
         }
 
         return ExecuteAwaited(task);
@@ -2245,17 +2220,16 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ExecuteValueTaskWithEmptyResult(ValueTask valueTask)
     {
-        Debug.Assert(EmptyHttpResultInstance is not null, "The EmptyHttpResult type could not be found.");
         static async ValueTask<object?> ExecuteAwaited(ValueTask task)
         {
             await task;
-            return EmptyHttpResultInstance;
+            return EmptyHttpResult.Instance;
         }
 
         if (valueTask.IsCompletedSuccessfully)
         {
             valueTask.GetAwaiter().GetResult();
-            return new ValueTask<object?>(EmptyHttpResultInstance);
+            return new ValueTask<object?>(EmptyHttpResult.Instance);
         }
 
         return ExecuteAwaited(valueTask);
@@ -2293,7 +2267,7 @@ public static partial class RequestDelegateFactory
 
     private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
     {
-        SetPlaintextContentType(httpContext);
+        ExecuteHandlerHelper.SetPlaintextContentType(httpContext);
 
         static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
         {
@@ -2342,21 +2316,7 @@ public static partial class RequestDelegateFactory
 
     private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
     {
-        var runtimeType = value?.GetType();
-
-        if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.IsPolymorphicSafe())
-        {
-            // In this case the polymorphism is not
-            // relevant for us and will be handled by STJ, if needed.
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, jsonTypeInfo, default);
-        }
-
-        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
-        // and avoid source generators issues.
-        // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        var runtimeTypeInfo = options.GetTypeInfo(runtimeType);
-        return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value!, runtimeTypeInfo, default);
+        return ExecuteHandlerHelper.WriteJsonResponseAsync(response, value, options, jsonTypeInfo);
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
@@ -2543,11 +2503,6 @@ public static partial class RequestDelegateFactory
         }
 
         return result;
-    }
-
-    private static void SetPlaintextContentType(HttpContext httpContext)
-    {
-        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
     }
 
     private static string BuildErrorMessageForMultipleBodyParameters(RequestDelegateFactoryContext factoryContext)

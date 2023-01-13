@@ -89,6 +89,8 @@ Microsoft.AspNetCore.Connections.Features.IProtocolErrorCodeFeature.Error.set ->
 Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature
 Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature.AbortRead(long errorCode, Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
 Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature.AbortWrite(long errorCode, Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
+Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature
+Microsoft.AspNetCore.Connections.Features.IStreamClosedFeature.OnClosed(System.Action<object?>! callback, object? state) -> void
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature.CanRead.get -> bool
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature.CanWrite.get -> bool

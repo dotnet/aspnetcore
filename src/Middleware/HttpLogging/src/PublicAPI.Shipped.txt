@@ -38,6 +38,7 @@ Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType) -
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType, System.Text.Encoding! encoding) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.Clear() -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions
+Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.AdditionalRequestHeaders.get -> System.Collections.Generic.ISet<string!>!
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.get -> string!
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileName.set -> void
 Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.FileSizeLimit.get -> int?

@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string!
-Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string?
