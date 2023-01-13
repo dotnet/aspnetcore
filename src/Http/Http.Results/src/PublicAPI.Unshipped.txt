@@ -5,3 +5,21 @@
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+static Microsoft.AspNetCore.Http.Results.Created() -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Created(string! uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Created(System.Uri! uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created(string? uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.Created() -> Microsoft.AspNetCore.Http.HttpResults.Created!
+static Microsoft.AspNetCore.Http.TypedResults.Created(string? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
+static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
+static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
+*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created(string! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
+*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
