@@ -62,30 +62,12 @@ public class ResponseCachingMiddleware
         IResponseCache cache,
         IResponseCachingKeyProvider keyProvider)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
-        if (keyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(keyProvider));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(policyProvider);
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(keyProvider);
 
         _next = next;
         _options = options.Value;

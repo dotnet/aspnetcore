@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
@@ -15,11 +12,14 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
 {
     private static readonly MediaTypeHeaderValue _jsonMediaType = new("application/json");
     private static readonly MediaTypeHeaderValue _problemDetailsJsonMediaType = new("application/problem+json");
-    private readonly ProblemDetailsOptions _options;
 
-    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options)
+    private readonly ProblemDetailsOptions _options;
+    private readonly JsonSerializerOptions _serializerOptions;
+
+    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options, IOptions<JsonOptions> jsonOptions)
     {
         _options = options.Value;
+        _serializerOptions = jsonOptions.Value.SerializerOptions;
     }
 
     public bool CanWrite(ProblemDetailsContext context)
@@ -49,49 +49,17 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         return false;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026",
-        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed. The property is annotated with RequiresUnreferencedCode.")]
-    [UnconditionalSuppressMessage("Trimming", "IL3050",
-        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed. The property is annotated with RequiresDynamicCode.")]
     public ValueTask WriteAsync(ProblemDetailsContext context)
     {
         var httpContext = context.HttpContext;
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
         _options.CustomizeProblemDetails?.Invoke(context);
 
-        // Use source generation serialization in two scenarios:
-        // 1. There are no extensions. Source generation is faster and works well with trimming.
-        // 2. Native AOT. In this case only the data types specified on ProblemDetailsJsonContext will work.
-        if (context.ProblemDetails.Extensions is { Count: 0 } || !RuntimeFeature.IsDynamicCodeSupported)
-        {
-            return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                context.ProblemDetails,
-                ProblemDetailsJsonContext.Default.ProblemDetails,
-                contentType: "application/problem+json"));
-        }
+        var problemDetailsType = context.ProblemDetails.GetType();
 
         return new ValueTask(httpContext.Response.WriteAsJsonAsync(
                         context.ProblemDetails,
-                        options: null,
+                         _serializerOptions.GetTypeInfo(problemDetailsType),
                         contentType: "application/problem+json"));
-    }
-
-    // Additional values are specified on JsonSerializerContext to support some values for extensions.
-    // For example, the DeveloperExceptionMiddleware serializes its complex type to JsonElement, which problem details then needs to serialize.
-    [JsonSerializable(typeof(ProblemDetails))]
-    [JsonSerializable(typeof(JsonElement))]
-    [JsonSerializable(typeof(string))]
-    [JsonSerializable(typeof(decimal))]
-    [JsonSerializable(typeof(float))]
-    [JsonSerializable(typeof(double))]
-    [JsonSerializable(typeof(int))]
-    [JsonSerializable(typeof(long))]
-    [JsonSerializable(typeof(Guid))]
-    [JsonSerializable(typeof(Uri))]
-    [JsonSerializable(typeof(TimeSpan))]
-    [JsonSerializable(typeof(DateTime))]
-    [JsonSerializable(typeof(DateTimeOffset))]
-    internal sealed partial class ProblemDetailsJsonContext : JsonSerializerContext
-    {
     }
 }

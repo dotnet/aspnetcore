@@ -23,10 +23,7 @@ public abstract class RevalidatingServerAuthenticationStateProvider
     /// <param name="loggerFactory">A logger factory.</param>
     public RevalidatingServerAuthenticationStateProvider(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory is null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<RevalidatingServerAuthenticationStateProvider>();
 

@@ -31,10 +31,7 @@ public sealed class NullHtmlEncoder : HtmlEncoder
     /// <inheritdoc />
     public override string Encode(string value)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         return value;
     }
@@ -42,15 +39,8 @@ public sealed class NullHtmlEncoder : HtmlEncoder
     /// <inheritdoc />
     public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(value);
 
         if (characterCount == 0)
         {
@@ -63,15 +53,8 @@ public sealed class NullHtmlEncoder : HtmlEncoder
     /// <inheritdoc />
     public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(value);
 
         if (characterCount == 0)
         {

@@ -26,10 +26,7 @@ public abstract class AuthenticationStateProvider
     /// <param name="task">A <see cref="Task"/> that supplies the updated <see cref="AuthenticationState"/>.</param>
     protected void NotifyAuthenticationStateChanged(Task<AuthenticationState> task)
     {
-        if (task == null)
-        {
-            throw new ArgumentNullException(nameof(task));
-        }
+        ArgumentNullException.ThrowIfNull(task);
 
         AuthenticationStateChanged?.Invoke(task);
     }

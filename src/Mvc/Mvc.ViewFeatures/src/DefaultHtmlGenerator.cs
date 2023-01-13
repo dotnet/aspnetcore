@@ -60,35 +60,12 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         HtmlEncoder htmlEncoder,
         ValidationHtmlAttributeProvider validationAttributeProvider)
     {
-        if (antiforgery == null)
-        {
-            throw new ArgumentNullException(nameof(antiforgery));
-        }
-
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
-
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
-
-        if (urlHelperFactory == null)
-        {
-            throw new ArgumentNullException(nameof(urlHelperFactory));
-        }
-
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
-
-        if (validationAttributeProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeProvider));
-        }
+        ArgumentNullException.ThrowIfNull(antiforgery);
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
+        ArgumentNullException.ThrowIfNull(metadataProvider);
+        ArgumentNullException.ThrowIfNull(urlHelperFactory);
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
+        ArgumentNullException.ThrowIfNull(validationAttributeProvider);
 
         _antiforgery = antiforgery;
         _metadataProvider = metadataProvider;
@@ -156,15 +133,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object routeValues,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var url = urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
@@ -183,15 +153,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object routeValues,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var url = urlHelper.Page(pageName, pageHandler, routeValues, protocol, hostname, fragment);
@@ -201,10 +164,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <inheritdoc />
     public virtual IHtmlContent GenerateAntiforgery(ViewContext viewContext)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var formContext = viewContext.FormContext;
         if (formContext.CanRenderAtEndOfForm)
@@ -231,10 +191,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool? isChecked,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         if (modelExplorer != null)
         {
@@ -278,10 +235,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         ModelExplorer modelExplorer,
         string expression)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var tagBuilder = new TagBuilder("input");
         tagBuilder.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
@@ -306,10 +260,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var defaultMethod = false;
         if (string.IsNullOrEmpty(method))
@@ -349,10 +300,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var action = urlHelper.Page(pageName, pageHandler, routeValues, protocol: null, host: null, fragment: fragment);
@@ -368,10 +316,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var action = urlHelper.RouteUrl(routeName, routeValues);
@@ -388,10 +333,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool useViewData,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         // Special-case opaque values and arbitrary binary data.
         if (value is byte[] byteArrayValue)
@@ -422,15 +364,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string labelText,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         var resolvedLabelText = labelText ??
             modelExplorer.Metadata.DisplayName ??
@@ -467,10 +402,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object value,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
         return GenerateInput(
@@ -496,10 +428,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool? isChecked,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
         if (modelExplorer == null)
@@ -509,10 +438,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
                 (htmlAttributeDictionary == null || !htmlAttributeDictionary.ContainsKey("checked")))
             {
                 // Note value may be null if isChecked is non-null.
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 // isChecked not provided nor found in the given attributes; fall back to view data.
                 var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
@@ -567,15 +493,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object routeValues,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var url = urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
@@ -592,10 +511,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool allowMultiple,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var currentValues = GetCurrentValues(viewContext, modelExplorer, expression, allowMultiple);
         return GenerateSelect(
@@ -620,10 +536,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool allowMultiple,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
@@ -688,10 +601,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         int columns,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         if (rows < 0)
         {
@@ -779,10 +689,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string format,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
         return GenerateInput(
@@ -808,10 +715,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string tag,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
@@ -901,10 +805,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string headerTag,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var viewData = viewContext.ViewData;
         if (!viewContext.ClientValidationEnabled && viewData.ModelState.IsValid)
@@ -1002,10 +903,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string expression,
         bool allowMultiple)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
         var type = allowMultiple ? typeof(string[]) : typeof(string);
@@ -1192,10 +1090,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var tagBuilder = new TagBuilder("form");
         tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
@@ -1244,10 +1139,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string format,
         IDictionary<string, object> htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
         // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
@@ -1389,10 +1281,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string url,
         object htmlAttributes)
     {
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var tagBuilder = new TagBuilder("a");
         tagBuilder.InnerHtml.SetContent(linkText);
@@ -1597,10 +1486,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         ViewContext viewContext,
         string expression)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         // Method is called only if user did not pass a select list in. They must provide select list items in the
         // ViewData dictionary and definitely not as the Model. (Even if the Model datatype were correct, a

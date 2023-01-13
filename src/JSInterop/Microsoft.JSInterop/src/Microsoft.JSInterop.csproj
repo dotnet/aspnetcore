@@ -9,6 +9,7 @@
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
     <DefineConstants>$(DefineConstants);JS_INTEROP</DefineConstants>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 

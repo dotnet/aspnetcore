@@ -61,10 +61,7 @@ public class PageContext : ActionContext
         get => _actionDescriptor!;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _actionDescriptor = value;
             base.ActionDescriptor = value;
@@ -87,10 +84,7 @@ public class PageContext : ActionContext
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _valueProviderFactories = value;
         }
@@ -104,10 +98,7 @@ public class PageContext : ActionContext
         get => _viewData!;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _viewData = value;
         }
@@ -121,10 +112,7 @@ public class PageContext : ActionContext
         get => _viewStartFactories!;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _viewStartFactories = value;
         }

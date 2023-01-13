@@ -33,10 +33,7 @@ public class PropertyModel : ParameterModelBase, ICommonModel, IBindingModel
     public PropertyModel(PropertyModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Controller = other.Controller;
         BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);

@@ -4,6 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -24,10 +25,7 @@ public class UserClaimsPrincipalFactory<TUser> : IUserClaimsPrincipalFactory<TUs
         UserManager<TUser> userManager,
         IOptions<IdentityOptions> optionsAccessor)
     {
-        if (userManager == null)
-        {
-            throw new ArgumentNullException(nameof(userManager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(userManager);
         if (optionsAccessor == null || optionsAccessor.Value == null)
         {
             throw new ArgumentNullException(nameof(optionsAccessor));
@@ -59,10 +57,7 @@ public class UserClaimsPrincipalFactory<TUser> : IUserClaimsPrincipalFactory<TUs
     /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsPrincipal"/>.</returns>
     public virtual async Task<ClaimsPrincipal> CreateAsync(TUser user)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         var id = await GenerateClaimsAsync(user).ConfigureAwait(false);
         return new ClaimsPrincipal(id);
     }
@@ -120,10 +115,7 @@ public class UserClaimsPrincipalFactory<TUser, TRole> : UserClaimsPrincipalFacto
     public UserClaimsPrincipalFactory(UserManager<TUser> userManager, RoleManager<TRole> roleManager, IOptions<IdentityOptions> options)
         : base(userManager, options)
     {
-        if (roleManager == null)
-        {
-            throw new ArgumentNullException(nameof(roleManager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(roleManager);
         RoleManager = roleManager;
     }
 

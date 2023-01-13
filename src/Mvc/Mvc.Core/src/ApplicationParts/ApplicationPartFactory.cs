@@ -34,10 +34,7 @@ public abstract class ApplicationPartFactory
     /// <returns>An instance of <see cref="ApplicationPartFactory"/>.</returns>
     public static ApplicationPartFactory GetApplicationPartFactory(Assembly assembly)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
 
         var provideAttribute = assembly.GetCustomAttribute<ProvideApplicationPartFactoryAttribute>();
         if (provideAttribute == null)

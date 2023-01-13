@@ -102,7 +102,7 @@ internal struct RoutePatternLexer
 
             if (ch.Value == '/')
             {
-                // Literal ends at a seperator or start of a parameter.
+                // Literal ends at a separator or start of a parameter.
                 break;
             }
             else if (ch.Value == '{' && IsUnescapedChar(ref Position, '{'))

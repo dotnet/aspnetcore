@@ -9,10 +9,7 @@ internal sealed class RazorViewEngineOptionsSetup : IConfigureOptions<RazorViewE
 {
     public void Configure(RazorViewEngineOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.ViewLocationFormats.Add("/Views/{1}/{0}" + RazorViewEngine.ViewExtension);
         options.ViewLocationFormats.Add("/Views/Shared/{0}" + RazorViewEngine.ViewExtension);

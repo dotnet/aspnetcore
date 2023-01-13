@@ -14,10 +14,7 @@ public class ActionInvokerProviderContext
     /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> to invoke.</param>
     public ActionInvokerProviderContext(ActionContext actionContext)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
         ActionContext = actionContext;
     }

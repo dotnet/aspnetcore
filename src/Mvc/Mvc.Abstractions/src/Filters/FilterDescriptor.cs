@@ -36,10 +36,7 @@ public class FilterDescriptor
     /// </remarks>
     public FilterDescriptor(IFilterMetadata filter, int filterScope)
     {
-        if (filter == null)
-        {
-            throw new ArgumentNullException(nameof(filter));
-        }
+        ArgumentNullException.ThrowIfNull(filter);
 
         Filter = filter;
         Scope = filterScope;

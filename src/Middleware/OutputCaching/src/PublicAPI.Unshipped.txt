@@ -37,6 +37,8 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.get -> s
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValueNames.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByRouteValueNames.init -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.init -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.get -> bool
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.EnableOutputCaching.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheContext.HttpContext.init -> void
