@@ -1,11 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultCloseErrorCode.get -> long
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultCloseErrorCode.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultStreamErrorCode.get -> long
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultStreamErrorCode.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.get -> int
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.get -> int
-*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.IdleTimeout.get -> System.TimeSpan
-*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.IdleTimeout.set -> void
-*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.get -> ushort
-*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.get -> ushort

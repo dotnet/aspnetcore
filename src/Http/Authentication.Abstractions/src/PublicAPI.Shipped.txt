@@ -88,6 +88,8 @@ Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions
 Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature
 Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?
 Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.set -> void
+Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider
+Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider.AuthenticationConfiguration.get -> Microsoft.Extensions.Configuration.IConfiguration!
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.set -> void
