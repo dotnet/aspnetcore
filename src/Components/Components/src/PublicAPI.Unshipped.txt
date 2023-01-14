@@ -78,3 +78,35 @@ virtual Microsoft.AspNetCore.Components.NavigationManager.HandleLocationChanging
 virtual Microsoft.AspNetCore.Components.NavigationManager.SetNavigationLockState(bool value) -> void
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.IHandleComponentPersistentState
+Microsoft.AspNetCore.Components.IHandleComponentPersistentState.Register(Microsoft.AspNetCore.Components.PersistentScope! scope) -> void
+Microsoft.AspNetCore.Components.IHandleComponentPersistentState.Scope.get -> Microsoft.AspNetCore.Components.PersistentScope!
+Microsoft.AspNetCore.Components.IHandleComponentPersistentState.Scope.set -> void
+Microsoft.AspNetCore.Components.IHandlePersistentState
+Microsoft.AspNetCore.Components.IHandlePersistentState.PersistState(Microsoft.AspNetCore.Components.IPersistentComponentState! state) -> void
+Microsoft.AspNetCore.Components.IHandlePersistentState.RestoreState(Microsoft.AspNetCore.Components.IPersistentComponentState! state) -> void
+Microsoft.AspNetCore.Components.IPersistentComponentState
+Microsoft.AspNetCore.Components.IPersistentComponentState.PersistAsJson<TValue>(string! key, TValue instance) -> void
+Microsoft.AspNetCore.Components.IPersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool
+Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.PersistedAttribute
+Microsoft.AspNetCore.Components.PersistedAttribute.PersistedAttribute() -> void
+Microsoft.AspNetCore.Components.PersistentBoundary
+Microsoft.AspNetCore.Components.PersistentBoundary.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.PersistentBoundary.ChildContent.set -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.Dispose() -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.Name.get -> string!
+Microsoft.AspNetCore.Components.PersistentBoundary.Name.set -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.ParentScope.get -> Microsoft.AspNetCore.Components.PersistentScope!
+Microsoft.AspNetCore.Components.PersistentBoundary.ParentScope.set -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.PersistentBoundary() -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.PersistentState.get -> Microsoft.AspNetCore.Components.PersistentComponentState!
+Microsoft.AspNetCore.Components.PersistentBoundary.PersistentState.set -> void
+Microsoft.AspNetCore.Components.PersistentBoundary.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.PersistentScope
+Microsoft.AspNetCore.Components.PersistentScope.Register(Microsoft.AspNetCore.Components.IHandleComponentPersistentState! component) -> void
+Microsoft.AspNetCore.Components.PersistentScope.Restore(Microsoft.AspNetCore.Components.IHandleComponentPersistentState! component) -> void
+Microsoft.AspNetCore.Components.ScopedPersistentComponentState
+Microsoft.AspNetCore.Components.ScopedPersistentComponentState.PersistAsJson<TValue>(string! key, TValue instance) -> void
+Microsoft.AspNetCore.Components.ScopedPersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool

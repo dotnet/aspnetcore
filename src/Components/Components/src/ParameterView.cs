@@ -78,6 +78,26 @@ public readonly struct ParameterView
         return false;
     }
 
+    internal bool TryGetFixedCascadingValue<TValue>([MaybeNullWhen(false)] out TValue result, string? parameterName = null)
+    {
+        var count = _cascadingParameters.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var cascading = _cascadingParameters[i].ValueSupplier;
+            if (cascading.CanSupplyValue(typeof(TValue), parameterName))
+            {
+                if (!cascading.CurrentValueIsFixed)
+                {
+                    throw new InvalidOperationException("The current parameter is not fixed.");
+                }
+                result = (TValue)cascading.CurrentValue!;
+                return true;
+            }
+        }
+        result = default;
+        return false;
+    }
+
     /// <summary>
     /// Gets the value of the parameter with the specified name, or a default value
     /// if no such parameter exists in the collection.

@@ -1,20 +1,20 @@
 ﻿@page "/fetchdata"
+@using BlazorServerApp.Data
+@layout PersistentLayout
+@implements IHandleComponentPersistentState
 
 <PageTitle>Weather forecast</PageTitle>
 
-@using BlazorServerApp.Data
 @inject WeatherForecastService ForecastService
 
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from a service.</p>
 
-@if (forecasts == null)
-{
+@if (Forecasts == null) {
     <p><em>Loading...</em></p>
 }
-else
-{
+else {
     <table class="table">
         <thead>
             <tr>
@@ -25,8 +25,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
-            {
+            @foreach (var forecast in Forecasts) {
                 <tr>
                     <td>@forecast.Date.ToShortDateString()</td>
                     <td>@forecast.TemperatureC</td>
@@ -39,10 +38,11 @@ else
 }
 
 @code {
-    WeatherForecast[]? forecasts;
+    [Persisted] public WeatherForecast[]? Forecasts { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    [CascadingParameter] public PersistentScope Scope { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync() {
+        Forecasts ??= await ForecastService.GetForecastAsync(DateTime.Now);
     }
 }

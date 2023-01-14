@@ -1,7 +1,9 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="sidebar">
-    <NavMenu />
+    <PersistentBoundary Name="sidebar">
+        <NavMenu />
+    </PersistentBoundary>
 </div>
 
 <div class="main">

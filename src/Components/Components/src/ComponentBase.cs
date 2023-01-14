@@ -211,6 +211,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         if (!_initialized)
         {
             _initialized = true;
+            if (this is IHandleComponentPersistentState persistent && persistent.Scope != null)
+            {
+                persistent.Scope.Register(persistent);
+                persistent.Scope.Restore(persistent);
+            }
 
             return RunInitAndSetParametersAsync();
         }

@@ -27,6 +27,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
     private readonly Dictionary<IComponent, ComponentState> _componentStateByComponent = new Dictionary<IComponent, ComponentState>();
+    private readonly Dictionary<int, ComponentState> _trackedComponentsById = new Dictionary<int, ComponentState>();
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
     private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
@@ -855,6 +856,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
             var disposeComponentState = GetRequiredComponentState(disposeComponentId);
+            NotifyTrackedComponent(disposeComponentId, disposeComponentState);
+
             Log.DisposingComponent(_logger, disposeComponentState);
             if (!(disposeComponentState.Component is IAsyncDisposable))
             {
@@ -906,6 +909,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         else if (exceptions?.Count == 1)
         {
             HandleException(exceptions[0]);
+        }
+    }
+
+    private void NotifyTrackedComponent(int disposeComponentId, ComponentState disposeComponentState)
+    {
+        if (_trackedComponentsById.TryGetValue(disposeComponentId, out var state) && state.Component is IComponentMutationObserver observer)
+        {
+            _trackedComponentsById.Remove(disposeComponentId);
+            observer.ComponentRemoved(disposeComponentState.Component);
         }
     }
 
@@ -1134,6 +1146,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 HandleException(exceptions[0]);
             }
         }
+    }
+
+    internal void ObserveChildRemoved(int trackerId, IComponent child)
+    {
+        var trackerState = GetRequiredComponentState(trackerId);
+        var childState = _componentStateByComponent[child];
+
+        _trackedComponentsById[childState.ComponentId] = trackerState;
     }
 
     /// <summary>

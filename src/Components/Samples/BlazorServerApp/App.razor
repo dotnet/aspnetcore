@@ -1,4 +1,5 @@
-﻿<Router AppAssembly="@typeof(Program).Assembly">
+﻿<PersistentBoundary Name="app">
+<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -10,3 +11,4 @@
         </LayoutView>
     </NotFound>
 </Router>
+</PersistentBoundary>

@@ -65,6 +65,16 @@ public readonly struct RenderHandle
         _renderer.AddToRenderQueue(_componentId, renderFragment);
     }
 
+    internal void ObserveChildComponentRemoved(IComponent component)
+    {
+        if (_renderer == null)
+        {
+            ThrowNotInitialized();
+        }
+
+        _renderer.ObserveChildRemoved(_componentId, component);
+    }
+
     [DoesNotReturn]
     private static void ThrowNotInitialized()
     {
