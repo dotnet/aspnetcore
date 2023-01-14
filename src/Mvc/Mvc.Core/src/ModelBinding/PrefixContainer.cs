@@ -23,10 +23,7 @@ public class PrefixContainer
     /// <param name="values">The values for the container.</param>
     public PrefixContainer(ICollection<string> values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         _originalValues = values;
 
@@ -49,10 +46,7 @@ public class PrefixContainer
     /// <returns>True if the prefix is present.</returns>
     public bool ContainsPrefix(string prefix)
     {
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix);
 
         if (_sortedValues.Length == 0)
         {

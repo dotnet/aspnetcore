@@ -25,10 +25,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
                                       IOptions<DataProtectionTokenProviderOptions> options,
                                       ILogger<DataProtectorTokenProvider<TUser>> logger)
     {
-        if (dataProtectionProvider == null)
-        {
-            throw new ArgumentNullException(nameof(dataProtectionProvider));
-        }
+        ArgumentNullException.ThrowIfNull(dataProtectionProvider);
 
         Options = options?.Value ?? new DataProtectionTokenProviderOptions();
 
@@ -78,10 +75,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
     /// <returns>A <see cref="Task{TResult}"/> representing the generated token.</returns>
     public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
         var ms = new MemoryStream();
         var userId = await manager.GetUserIdAsync(user);
         using (var writer = ms.CreateWriter())

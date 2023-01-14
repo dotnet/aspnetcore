@@ -25,14 +25,8 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// <param name="logger">The logger.</param>
     public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (signInManager == null)
-        {
-            throw new ArgumentNullException(nameof(signInManager));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(signInManager);
         SignInManager = signInManager;
         Options = options.Value;
         Clock = clock;

@@ -70,7 +70,7 @@ Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateDataFormat.get -
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateDataFormat.set -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.TwitterOptions() -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions
-Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions! options) -> void
+Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions! options) -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.TwitterPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
 Microsoft.Extensions.DependencyInjection.TwitterExtensions
 override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!

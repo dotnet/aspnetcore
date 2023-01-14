@@ -36,24 +36,39 @@ abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserCl
 abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetUsersInRoleAsync(string! normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser!>!>!
 abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.IsInRoleAsync(TUser! user, string! normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.RemoveFromRoleAsync(TUser! user, string! normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.IdentityRole
+Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole() -> void
 Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole(string! roleName) -> void
 Microsoft.AspNetCore.Identity.IdentityRole<TKey>
+Microsoft.AspNetCore.Identity.IdentityRole<TKey>.IdentityRole() -> void
 Microsoft.AspNetCore.Identity.IdentityRole<TKey>.IdentityRole(string! roleName) -> void
 Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>
+Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.IdentityRoleClaim() -> void
+Microsoft.AspNetCore.Identity.IdentityUser
+Microsoft.AspNetCore.Identity.IdentityUser.IdentityUser() -> void
 Microsoft.AspNetCore.Identity.IdentityUser.IdentityUser(string! userName) -> void
 Microsoft.AspNetCore.Identity.IdentityUser<TKey>
+Microsoft.AspNetCore.Identity.IdentityUser<TKey>.IdentityUser() -> void
 Microsoft.AspNetCore.Identity.IdentityUser<TKey>.IdentityUser(string! userName) -> void
 Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>
+Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.IdentityUserClaim() -> void
 Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>
+Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.IdentityUserLogin() -> void
 Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>
+Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.IdentityUserRole() -> void
 Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>
+Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>.IdentityUserToken() -> void
 Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>
+Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.Dispose() -> void
 Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.ErrorDescriber.get -> Microsoft.AspNetCore.Identity.IdentityErrorDescriber!
 Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.ErrorDescriber.set -> void
 Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.RoleStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber! describer) -> void
+Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.ThrowIfDisposed() -> void
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>
+Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Dispose() -> void
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ErrorDescriber.get -> Microsoft.AspNetCore.Identity.IdentityErrorDescriber!
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ErrorDescriber.set -> void
+Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ThrowIfDisposed() -> void
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber! describer) -> void
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.UserStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber! describer) -> void
@@ -71,16 +86,26 @@ virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimType.get -> s
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimType.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimValue.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimValue.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.get -> int
+virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.InitializeFromClaim(System.Security.Claims.Claim? other) -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.RoleId.get -> TKey
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.RoleId.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ToClaim() -> System.Security.Claims.Claim!
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.get -> int
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.ConcurrencyStamp.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.ConcurrencyStamp.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.Email.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.Email.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.Id.get -> TKey
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.Id.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.get -> System.DateTimeOffset?
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.NormalizedEmail.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.NormalizedEmail.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.NormalizedUserName.get -> string?
@@ -89,14 +114,20 @@ virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PasswordHash.get -> str
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PasswordHash.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumber.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumber.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.SecurityStamp.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.SecurityStamp.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.UserName.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.UserName.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimType.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimType.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimValue.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimValue.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.get -> int
+virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.InitializeFromClaim(System.Security.Claims.Claim! claim) -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ToClaim() -> System.Security.Claims.Claim!
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.UserId.get -> TKey
@@ -173,34 +204,3 @@ virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUs
 virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.SetTwoFactorEnabledAsync(TUser! user, bool enabled, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.SetUserNameAsync(TUser! user, string? userName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.CreateUserRole(TUser! user, TRole! role) -> TUserRole!
-Microsoft.AspNetCore.Identity.IdentityRole
-Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole() -> void
-Microsoft.AspNetCore.Identity.IdentityRole<TKey>.IdentityRole() -> void
-Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.IdentityRoleClaim() -> void
-Microsoft.AspNetCore.Identity.IdentityUser
-Microsoft.AspNetCore.Identity.IdentityUser.IdentityUser() -> void
-Microsoft.AspNetCore.Identity.IdentityUser<TKey>.IdentityUser() -> void
-Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.IdentityUserClaim() -> void
-Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.IdentityUserLogin() -> void
-Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.IdentityUserRole() -> void
-Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>.IdentityUserToken() -> void
-Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.Dispose() -> void
-Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.ThrowIfDisposed() -> void
-Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Dispose() -> void
-Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ThrowIfDisposed() -> void
-virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.get -> System.DateTimeOffset?
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void

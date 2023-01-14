@@ -33,14 +33,8 @@ internal sealed class DataAnnotationsModelValidatorProvider : IMetadataBasedMode
         IOptions<MvcDataAnnotationsLocalizationOptions> options,
         IStringLocalizerFactory? stringLocalizerFactory)
     {
-        if (validationAttributeAdapterProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
+        ArgumentNullException.ThrowIfNull(options);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         _options = options;

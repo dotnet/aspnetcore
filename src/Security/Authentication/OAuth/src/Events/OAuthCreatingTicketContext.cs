@@ -36,15 +36,8 @@ public class OAuthCreatingTicketContext : ResultContext<OAuthOptions>
         JsonElement user)
         : base(context, scheme, options)
     {
-        if (backchannel == null)
-        {
-            throw new ArgumentNullException(nameof(backchannel));
-        }
-
-        if (tokens == null)
-        {
-            throw new ArgumentNullException(nameof(tokens));
-        }
+        ArgumentNullException.ThrowIfNull(backchannel);
+        ArgumentNullException.ThrowIfNull(tokens);
 
         TokenResponse = tokens;
         Backchannel = backchannel;

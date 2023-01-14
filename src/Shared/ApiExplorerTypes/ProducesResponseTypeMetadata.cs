@@ -45,10 +45,7 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
     public ProducesResponseTypeMetadata(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
     {
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
 
         Type = type ?? throw new ArgumentNullException(nameof(type));
         StatusCode = statusCode;

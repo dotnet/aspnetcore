@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.TestHost.TestServer.CreateHandler(System.Action<Microsoft.AspNetCore.Http.HttpContext!>! additionalContextConfiguration) -> System.Net.Http.HttpMessageHandler!

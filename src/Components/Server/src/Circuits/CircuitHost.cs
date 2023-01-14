@@ -599,10 +599,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private void AssertNotDisposed()
     {
+#pragma warning disable CA1513 // Use ObjectDisposedException throw helper
         if (_disposed)
         {
             throw new ObjectDisposedException(objectName: null);
         }
+#pragma warning restore CA1513 // Use ObjectDisposedException throw helper
     }
 
     // We want to notify the client if it's still connected, and then tear-down the circuit.

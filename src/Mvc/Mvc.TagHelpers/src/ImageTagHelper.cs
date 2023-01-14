@@ -109,15 +109,8 @@ public class ImageTagHelper : UrlResolutionTagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         output.CopyHtmlAttribute(SrcAttributeName, context);
         ProcessUrlAttribute(SrcAttributeName, output);

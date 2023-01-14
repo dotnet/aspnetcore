@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.ObjectPool;
 
@@ -29,10 +30,7 @@ public class LeakTrackingObjectPool<T> : ObjectPool<T> where T : class
     /// <param name="inner">The <see cref="ObjectPool{T}"/> instance to track leaks in.</param>
     public LeakTrackingObjectPool(ObjectPool<T> inner)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(inner);
 
         _inner = inner;
     }

@@ -22,10 +22,7 @@ public static class DatabaseErrorPageExtensions
     [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseDeveloperPageExceptionFilter instead, see documentation at https://aka.ms/DatabaseDeveloperPageExceptionFilter.")]
     public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseDatabaseErrorPage(new DatabaseErrorPageOptions());
     }
@@ -41,15 +38,8 @@ public static class DatabaseErrorPageExtensions
     public static IApplicationBuilder UseDatabaseErrorPage(
         this IApplicationBuilder app, DatabaseErrorPageOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         app = app.UseMiddleware<DatabaseErrorPageMiddleware>(Options.Create(options));
 

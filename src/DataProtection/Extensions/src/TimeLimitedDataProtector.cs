@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNetCore.DataProtection.Extensions;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -27,10 +28,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     public ITimeLimitedDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return new TimeLimitedDataProtector(_innerProtector.CreateProtector(purpose));
     }
@@ -49,10 +47,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     public byte[] Protect(byte[] plaintext, DateTimeOffset expiration)
     {
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
         byte[] plaintextWithHeader = new byte[checked(8 + plaintext.Length)];
@@ -64,20 +59,14 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     public byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         return UnprotectCore(protectedData, DateTimeOffset.UtcNow, out expiration);
     }
 
     internal byte[] UnprotectCore(byte[] protectedData, DateTimeOffset now, out DateTimeOffset expiration)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         try
         {
@@ -117,20 +106,14 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     IDataProtector IDataProtectionProvider.CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return CreateProtector(purpose);
     }
 
     byte[] IDataProtector.Protect(byte[] plaintext)
     {
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         // MaxValue essentially means 'no expiration'
         return Protect(plaintext, DateTimeOffset.MaxValue);
@@ -138,10 +121,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     byte[] IDataProtector.Unprotect(byte[] protectedData)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         return Unprotect(protectedData, out _);
     }

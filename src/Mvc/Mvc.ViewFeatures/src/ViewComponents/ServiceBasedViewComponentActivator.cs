@@ -14,10 +14,7 @@ public class ServiceBasedViewComponentActivator : IViewComponentActivator
     /// <inheritdoc />
     public object Create(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var viewComponentType = context.ViewComponentDescriptor.TypeInfo.AsType();
 

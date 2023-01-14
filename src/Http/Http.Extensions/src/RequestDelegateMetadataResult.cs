@@ -19,5 +19,6 @@ public sealed class RequestDelegateMetadataResult
 
     // This internal cached context avoids redoing unnecessary reflection in Create that was already done in InferMetadata.
     // InferMetadata currently does more work than it needs to building up expression trees, but the expectation is that InferMetadata will usually be followed by Create.
-    internal RequestDelegateFactoryContext? CachedFactoryContext { get; set; }
+    // The property is typed as object to avoid having a dependency System.Linq.Expressions. The value is RequestDelegateFactoryContext.
+    internal object? CachedFactoryContext { get; set; }
 }

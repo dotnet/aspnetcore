@@ -27,7 +27,6 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory, IConnec
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;

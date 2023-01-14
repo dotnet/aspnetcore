@@ -1,6 +1,6 @@
 parameters:
   runAsPublic: false
-  sourceIndexPackageVersion: 1.0.1-20220804.1
+  sourceIndexPackageVersion: 1.0.1-20221220.2
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
   preSteps: []
@@ -40,10 +40,10 @@ jobs:
     - ${{ preStep }}
 
   - task: UseDotNet@2
-    displayName: Use .NET Core sdk 3.1
+    displayName: Use .NET Core SDK 6
     inputs:
       packageType: sdk
-      version: 3.1.x
+      version: 6.0.x
       installationPath: $(Agent.TempDirectory)/dotnet
       workingDirectory: $(Agent.TempDirectory)
 
