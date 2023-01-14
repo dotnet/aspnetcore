@@ -8,7 +8,7 @@ public class LdapAdapterTests
     [Fact]
     public void DistinguishedNameWithoutCommasSuccess()
     {
-        var parts = LdapAdapter.DistinguishedNameSeparator.Split("Testing group - City")
+        var parts = LdapAdapter.DistinguishedNameSeparator.Split("Testing group - City");
 
         Assert.Equal(new[] { "Testing group - City" }, parts);
     }
@@ -16,15 +16,15 @@ public class LdapAdapterTests
     [Fact]
     public void DistinguishedNameWithEscapedCommaSuccess()
     {
-        var parts = LdapAdapter.DistinguishedNameSeparator.Split("Testing group\,City")
+        var parts = LdapAdapter.DistinguishedNameSeparator.Split(@"Testing group\,City");
 
-        Assert.Equal(new[] { "Testing group\,City" }, parts);
+        Assert.Equal(new[] { @"Testing group\,City" }, parts);
     }
 
     [Fact]
     public void DistinguishedNameWithNotEscapedCommaSuccess()
     {
-        var parts = LdapAdapter.DistinguishedNameSeparator.Split("Testing group,City")
+        var parts = LdapAdapter.DistinguishedNameSeparator.Split("Testing group,City");
 
         Assert.Equal(new[] { "Testing group", "City" }, parts);
     }
@@ -32,8 +32,8 @@ public class LdapAdapterTests
     [Fact]
     public void DistinguishedNameWithEscapedBackslashAndNotEscapedCommaSuccess()
     {
-        var parts = LdapAdapter.DistinguishedNameSeparator.Split("Testing group\\,City")
+        var parts = LdapAdapter.DistinguishedNameSeparator.Split(@"Testing group\\,City");
 
-        Assert.Equal(new[] { "Testing group\\", "City" }, parts);
+        Assert.Equal(new[] { @"Testing group\\", "City" }, parts);
     }
 }
