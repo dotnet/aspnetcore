@@ -62,7 +62,9 @@ public class SimpleTypeModelBinder : IModelBinder
 
         try
         {
-            var value = valueProviderResult.ToString();
+            var value = bindingContext.ModelMetadata.IsFlagsEnum
+                ? valueProviderResult.Values.ToString()
+                : valueProviderResult.FirstValue;
 
             object? model;
             if (bindingContext.ModelType == typeof(string))
@@ -91,9 +93,6 @@ public class SimpleTypeModelBinder : IModelBinder
             }
 
             CheckModel(bindingContext, valueProviderResult, model);
-
-            _logger.DoneAttemptingToBindModel(bindingContext);
-            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -109,10 +108,10 @@ public class SimpleTypeModelBinder : IModelBinder
                 bindingContext.ModelName,
                 exception,
                 bindingContext.ModelMetadata);
-
-            // Were able to find a converter for the type but conversion failed.
-            return Task.CompletedTask;
         }
+
+        _logger.DoneAttemptingToBindModel(bindingContext);
+        return Task.CompletedTask;
     }
 
     /// <summary>
