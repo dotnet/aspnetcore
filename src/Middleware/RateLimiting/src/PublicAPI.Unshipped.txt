@@ -1,6 +1,6 @@
+#nullable enable
 Microsoft.AspNetCore.RateLimiting.IRateLimiterStatisticsFeature
 Microsoft.AspNetCore.RateLimiting.IRateLimiterStatisticsFeature.GetEndpointStatistics() -> System.Threading.RateLimiting.RateLimiterStatistics?
 Microsoft.AspNetCore.RateLimiting.IRateLimiterStatisticsFeature.GetGlobalStatistics() -> System.Threading.RateLimiting.RateLimiterStatistics?
 Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.TrackStatistics.get -> bool
 Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.TrackStatistics.set -> void
-#nullable enable
