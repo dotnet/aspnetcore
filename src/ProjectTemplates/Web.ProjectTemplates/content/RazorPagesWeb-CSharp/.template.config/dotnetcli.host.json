@@ -16,6 +16,9 @@
       "longName": "susi-policy-id",
       "shortName": "ssp"
     },
+    "SignedOutCallbackPath": {
+      "longName": "signed-out-callback-path"
+    },
     "ResetPasswordPolicyId": {
       "longName": "reset-password-policy-id",
       "shortName": "rp"

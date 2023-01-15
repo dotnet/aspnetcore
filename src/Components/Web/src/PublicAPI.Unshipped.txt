@@ -1,15 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
-Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.set -> void
-Microsoft.AspNetCore.Components.Routing.NavigationLock
-Microsoft.AspNetCore.Components.Routing.NavigationLock.ConfirmExternalNavigation.get -> bool
-Microsoft.AspNetCore.Components.Routing.NavigationLock.ConfirmExternalNavigation.set -> void
-Microsoft.AspNetCore.Components.Routing.NavigationLock.NavigationLock() -> void
-Microsoft.AspNetCore.Components.Routing.NavigationLock.OnBeforeInternalNavigation.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!>
-Microsoft.AspNetCore.Components.Routing.NavigationLock.OnBeforeInternalNavigation.set -> void
-Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.SpacerElement.get -> string!
-Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.SpacerElement.set -> void
-Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get -> double
-Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
-Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
-Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void

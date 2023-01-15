@@ -91,10 +91,7 @@ public class WebHostBuilder : IWebHostBuilder
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
     {
-        if (configureServices == null)
-        {
-            throw new ArgumentNullException(nameof(configureServices));
-        }
+        ArgumentNullException.ThrowIfNull(configureServices);
 
         return ConfigureServices((_, services) => configureServices(services));
     }
@@ -200,7 +197,10 @@ public class WebHostBuilder : IWebHostBuilder
 
         static IServiceProvider GetProviderFromFactory(IServiceCollection collection)
         {
+            // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             var provider = collection.BuildServiceProvider();
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
 
             if (factory != null && factory is not DefaultServiceProviderFactory)

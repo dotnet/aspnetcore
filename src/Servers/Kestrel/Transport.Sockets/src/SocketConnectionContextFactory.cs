@@ -31,7 +31,6 @@ public sealed class SocketConnectionContextFactory : IDisposable
     public SocketConnectionContextFactory(SocketConnectionFactoryOptions options, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(logger);
 
         _options = options;

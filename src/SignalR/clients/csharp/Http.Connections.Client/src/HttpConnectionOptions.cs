@@ -12,6 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
@@ -92,10 +93,7 @@ public class HttpConnectionOptions
         get => _transportMaxBufferSize;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeThrowHelper.ThrowIfNegative(value);
 
             _transportMaxBufferSize = value;
         }
@@ -115,10 +113,7 @@ public class HttpConnectionOptions
         get => _applicationMaxBufferSize;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeThrowHelper.ThrowIfNegative(value);
 
             _applicationMaxBufferSize = value;
         }

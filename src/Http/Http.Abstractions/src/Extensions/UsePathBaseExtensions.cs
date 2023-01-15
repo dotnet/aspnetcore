@@ -20,10 +20,7 @@ public static class UsePathBaseExtensions
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
     public static IApplicationBuilder UsePathBase(this IApplicationBuilder app, PathString pathBase)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         // Strip trailing slashes
         pathBase = new PathString(pathBase.Value?.TrimEnd('/'));

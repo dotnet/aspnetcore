@@ -21,6 +21,7 @@ public class GoogleOptions : OAuthOptions
         AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
         TokenEndpoint = GoogleDefaults.TokenEndpoint;
         UserInformationEndpoint = GoogleDefaults.UserInformationEndpoint;
+        UsePkce = true;
         Scope.Add("openid");
         Scope.Add("profile");
         Scope.Add("email");

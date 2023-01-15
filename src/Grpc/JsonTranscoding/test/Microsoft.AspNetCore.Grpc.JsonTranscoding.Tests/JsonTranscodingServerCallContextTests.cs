@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.Core;
 using Grpc.Shared;
@@ -38,11 +37,11 @@ public class JsonTranscodingServerCallContextTests
     {
         // Arrange
         var httpContext = CreateHttpContext();
-        httpContext.Request.Headers.Add("TestName", "TestValue");
-        httpContext.Request.Headers.Add(":method", "GET");
-        httpContext.Request.Headers.Add("grpc-encoding", "identity");
-        httpContext.Request.Headers.Add("grpc-timeout", "1S");
-        httpContext.Request.Headers.Add("hello-bin", Convert.ToBase64String(new byte[] { 1, 2, 3 }));
+        httpContext.Request.Headers.Append("TestName", "TestValue");
+        httpContext.Request.Headers.Append(":method", "GET");
+        httpContext.Request.Headers.Append("grpc-encoding", "identity");
+        httpContext.Request.Headers.Append("grpc-timeout", "1S");
+        httpContext.Request.Headers.Append("hello-bin", Convert.ToBase64String(new byte[] { 1, 2, 3 }));
         var serverCallContext = CreateServerCallContext(httpContext);
 
         // Act

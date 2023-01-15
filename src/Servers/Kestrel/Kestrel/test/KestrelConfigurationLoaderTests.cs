@@ -551,6 +551,15 @@ public class KestrelConfigurationLoaderTests
     [InlineData("http1", HttpProtocols.Http1)]
     [InlineData("http2", HttpProtocols.Http2)]
     [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
+    // [InlineData("http1AndHttp2andHttp3", HttpProtocols.Http1AndHttp2AndHttp3)] // HTTP/3 not currently supported on macOS
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+    public void DefaultConfigSectionCanSetProtocols_NonWin7(string input, HttpProtocols expected)
+        => DefaultConfigSectionCanSetProtocols(input, expected);
+
+    [ConditionalTheory]
+    [InlineData("http1", HttpProtocols.Http1)]
+    [InlineData("http2", HttpProtocols.Http2)]
+    [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
     [InlineData("http1AndHttp2andHttp3", HttpProtocols.Http1AndHttp2AndHttp3)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]

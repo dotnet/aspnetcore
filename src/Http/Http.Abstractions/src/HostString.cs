@@ -32,10 +32,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// <param name="port">A positive, greater than 0 value representing the port in the host string.</param>
     public HostString(string host, int port)
     {
-        if (host == null)
-        {
-            throw new ArgumentNullException(nameof(host));
-        }
+        ArgumentNullException.ThrowIfNull(host);
 
         if (port <= 0)
         {
@@ -200,10 +197,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// <returns>The <see cref="HostString"/> that was created.</returns>
     public static HostString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new HostString(uri.GetComponents(
             UriComponents.NormalizedHost | // Always convert punycode to Unicode.
@@ -231,10 +225,7 @@ public readonly struct HostString : IEquatable<HostString>
         {
             throw new ArgumentNullException(nameof(value));
         }
-        if (patterns == null)
-        {
-            throw new ArgumentNullException(nameof(patterns));
-        }
+        ArgumentNullException.ThrowIfNull(patterns);
 
         // Drop the port
         GetParts(value, out var host, out var port);

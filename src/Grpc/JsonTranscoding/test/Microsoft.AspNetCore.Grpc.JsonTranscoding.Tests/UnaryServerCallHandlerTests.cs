@@ -16,6 +16,7 @@ using Grpc.Core.Interceptors;
 using Grpc.Shared;
 using Grpc.Shared.Server;
 using Grpc.Tests.Shared;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
@@ -1270,9 +1271,14 @@ public class UnaryServerCallHandlerTests : LoggedTest
             MethodOptions.Create(new[] { serviceOptions }),
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
+        var descriptorRegistry = new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);
+        descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TResponse)).File);
+
         var jsonContext = new JsonContext(
             jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings(),
-            jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty);
+            jsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty,
+            descriptorRegistry);
 
         return new UnaryServerCallHandler<JsonTranscodingGreeterService, TRequest, TResponse>(
             unaryServerCallInvoker,

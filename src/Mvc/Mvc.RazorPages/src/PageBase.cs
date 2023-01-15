@@ -140,10 +140,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         return new BadRequestObjectResult(modelState);
     }
@@ -1302,10 +1299,7 @@ public abstract class PageBase : RazorPageBase
         TModel model)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         return TryUpdateModelAsync(model, prefix: string.Empty);
     }
@@ -1324,15 +1318,8 @@ public abstract class PageBase : RazorPageBase
         string prefix)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(prefix);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -1359,20 +1346,9 @@ public abstract class PageBase : RazorPageBase
         IValueProvider valueProvider)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(prefix);
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -1401,15 +1377,8 @@ public abstract class PageBase : RazorPageBase
         params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (includeExpressions == null)
-        {
-            throw new ArgumentNullException(nameof(includeExpressions));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(includeExpressions);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -1444,15 +1413,8 @@ public abstract class PageBase : RazorPageBase
         Func<ModelMetadata, bool> propertyFilter)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -1490,20 +1452,9 @@ public abstract class PageBase : RazorPageBase
         params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
-
-        if (includeExpressions == null)
-        {
-            throw new ArgumentNullException(nameof(includeExpressions));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(valueProvider);
+        ArgumentNullException.ThrowIfNull(includeExpressions);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -1534,20 +1485,9 @@ public abstract class PageBase : RazorPageBase
         Func<ModelMetadata, bool> propertyFilter)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
-
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(valueProvider);
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -1574,15 +1514,8 @@ public abstract class PageBase : RazorPageBase
         Type modelType,
         string prefix)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -1619,25 +1552,10 @@ public abstract class PageBase : RazorPageBase
         IValueProvider valueProvider,
         Func<ModelMetadata, bool> propertyFilter)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
-
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(modelType);
+        ArgumentNullException.ThrowIfNull(valueProvider);
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -1659,10 +1577,7 @@ public abstract class PageBase : RazorPageBase
     public virtual bool TryValidateModel(
         object model)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         return TryValidateModel(model, prefix: null);
     }
@@ -1678,10 +1593,7 @@ public abstract class PageBase : RazorPageBase
         object model,
         string? prefix)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         ObjectValidator.Validate(
             PageContext,

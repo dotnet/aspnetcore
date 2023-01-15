@@ -17,10 +17,7 @@ public class BrotliCompressionProvider : ICompressionProvider
     /// <param name="options">The options for this instance.</param>
     public BrotliCompressionProvider(IOptions<BrotliCompressionProviderOptions> options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         Options = options.Value;
     }

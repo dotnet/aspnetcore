@@ -29,20 +29,9 @@ internal sealed partial class RequestDecompressionMiddleware
         ILogger<RequestDecompressionMiddleware> logger,
         IRequestDecompressionProvider provider)
     {
-        if (next is null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (logger is null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
-        if (provider is null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(provider);
 
         _next = next;
         _logger = logger;

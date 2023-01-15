@@ -163,7 +163,11 @@ public class NavLink : ComponentBase, IDisposable
 
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "class", CssClass);
-        builder.AddContent(3, ChildContent);
+        if (_isActive)
+        {
+            builder.AddAttribute(3, "aria-current", "page");
+        }
+        builder.AddContent(4, ChildContent);
 
         builder.CloseElement();
     }

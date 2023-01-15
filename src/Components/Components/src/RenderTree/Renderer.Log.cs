@@ -43,9 +43,9 @@ public abstract partial class Renderer
         }
 
         [LoggerMessage(4, LogLevel.Debug, "Disposing component {ComponentId} of type {ComponentType}", EventName = "DisposingComponent", SkipEnabledCheck = true)]
-        private static partial void DisposingComponent(ILogger<Renderer> logger, int componentId, Type componentType);
+        private static partial void DisposingComponent(ILogger logger, int componentId, Type componentType);
 
-        public static void DisposingComponent(ILogger<Renderer> logger, ComponentState componentState)
+        public static void DisposingComponent(ILogger logger, ComponentState componentState)
         {
             if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
             {
@@ -54,9 +54,9 @@ public abstract partial class Renderer
         }
 
         [LoggerMessage(5, LogLevel.Debug, "Handling event {EventId} of type '{EventType}'", EventName = "HandlingEvent", SkipEnabledCheck = true)]
-        public static partial void HandlingEvent(ILogger<Renderer> logger, ulong eventId, string eventType);
+        public static partial void HandlingEvent(ILogger logger, ulong eventId, string eventType);
 
-        public static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, EventArgs? eventArgs)
+        public static void HandlingEvent(ILogger logger, ulong eventHandlerId, EventArgs? eventArgs)
         {
             if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
             {

@@ -77,11 +77,6 @@ internal sealed class CreateCommand
                 Resources.CreateCommand_ValidForOption_Description,
                 CommandOptionType.SingleValue);
 
-            var outputOption = cmd.Option(
-                "-o|--output",
-                Resources.CreateCommand_OutputOption_Description,
-                CommandOptionType.SingleValue);
-
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
@@ -94,7 +89,7 @@ internal sealed class CreateCommand
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, outputOption.Value(), program);
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, cmd.OutputOption.Value(), program);
             });
         });
     }

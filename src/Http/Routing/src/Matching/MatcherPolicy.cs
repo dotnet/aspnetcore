@@ -46,10 +46,7 @@ public abstract class MatcherPolicy
     /// </remarks>
     protected static bool ContainsDynamicEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         for (var i = 0; i < endpoints.Count; i++)
         {

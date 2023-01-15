@@ -78,14 +78,16 @@ public class TemplateParserTests
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
     }
 
-    [Fact]
-    public void Parse_SingleCatchAllParameter()
+    [Theory]
+    [InlineData("p", "{*p}")]
+    [InlineData("p", "{**p}")]
+    public void Parse_SingleCatchAllParameter(string parsedTemplate, string template)
     {
         // Arrange
-        var expected = new ExpectedTemplateBuilder().Parameter("p");
+        var expected = new ExpectedTemplateBuilder().Parameter(parsedTemplate);
 
         // Act
-        var actual = TemplateParser.ParseTemplate("{*p}");
+        var actual = TemplateParser.ParseTemplate(template);
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -201,13 +203,16 @@ public class TemplateParserTests
         Assert.Equal(expectedMessage, ex.Message);
     }
 
-    [Fact]
-    public void InvalidTemplate_CatchAllParamWithMultipleAsterisks()
+    [Theory]
+    [InlineData("/test/{a}/{***b}")]
+    [InlineData("/test/{a}/{**b*c}")]
+    [InlineData("/test/{a}/{*b*c}")]
+    public void InvalidTemplate_CatchAllParamWithIncorrectPlacedAsterisks(string template)
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a}/{**b}"));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate(template));
 
-        var expectedMessage = "Invalid template '/test/{a}/{**b}'. A catch-all parameter may only have one '*' at the beginning of the segment.";
-
+        var expectedMessage = $"Invalid template '{template}'. A catch-all parameter may only have '*' or '**' at the beginning of the segment.";
+        
         Assert.Equal(expectedMessage, ex.Message);
     }
 

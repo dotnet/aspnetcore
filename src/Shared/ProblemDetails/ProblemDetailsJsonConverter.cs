@@ -16,14 +16,13 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
     private static readonly JsonEncodedText Detail = JsonEncodedText.Encode("detail");
     private static readonly JsonEncodedText Instance = JsonEncodedText.Encode("instance");
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Trimmer does not allow annotating overriden methods with annotations different from the ones in base type.")]
     public override ProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var problemDetails = new ProblemDetails();
 
         if (reader.TokenType != JsonTokenType.StartObject)
         {
-            throw new JsonException("Unexcepted end when reading JSON.");
+            throw new JsonException("Unexpected end when reading JSON.");
         }
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
@@ -33,13 +32,12 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
 
         if (reader.TokenType != JsonTokenType.EndObject)
         {
-            throw new JsonException("Unexcepted end when reading JSON.");
+            throw new JsonException("Unexpected end when reading JSON.");
         }
 
         return problemDetails;
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Trimmer does not allow annotating overriden methods with annotations different from the ones in base type.")]
     public override void Write(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -47,7 +45,6 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         writer.WriteEndObject();
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonSerializerOptions options)
     {
         if (TryReadStringProperty(ref reader, Type, out var propertyValue))
@@ -82,7 +79,14 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         {
             var key = reader.GetString()!;
             reader.Read();
-            value.Extensions[key] = JsonSerializer.Deserialize(ref reader, typeof(object), options);
+            ReadExtension(value, key, ref reader, options);
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        static void ReadExtension(ProblemDetails problemDetails, string key, ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            problemDetails.Extensions[key] = JsonSerializer.Deserialize(ref reader, typeof(object), options);
         }
     }
 
@@ -99,7 +103,6 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         return true;
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void WriteProblemDetails(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         if (value.Type != null)
@@ -127,10 +130,18 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
             writer.WriteString(Instance, value.Instance);
         }
 
-        foreach (var kvp in value.Extensions)
+        WriteExtensions(value, writer, options);
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ProblemDetails.Extensions is annotated to expose this warning to callers.")]
+        static void WriteExtensions(ProblemDetails problemDetails, Utf8JsonWriter writer, JsonSerializerOptions options)
         {
-            writer.WritePropertyName(kvp.Key);
-            JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
+            foreach (var kvp in problemDetails.Extensions)
+            {
+                writer.WritePropertyName(kvp.Key);
+                // When AOT is enabled, Serialize will only work with values specified on the JsonContext.
+                JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
+            }
         }
     }
 }

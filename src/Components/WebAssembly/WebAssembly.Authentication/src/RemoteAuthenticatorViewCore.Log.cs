@@ -11,7 +11,7 @@ public partial class RemoteAuthenticatorViewCore<TAuthenticationState> where TAu
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "Processing action {Action}.", EventName = nameof(ProcessingAuthenticatorAction))]
-        public static partial void ProcessingAuthenticatorAction(ILogger logger, string action);
+        public static partial void ProcessingAuthenticatorAction(ILogger logger, string? action);
 
         [LoggerMessage(2, LogLevel.Debug, "Login completed successfully.", EventName = nameof(LoginCompletedSuccessfully))]
         public static partial void LoginCompletedSuccessfully(ILogger logger);
@@ -37,7 +37,7 @@ public partial class RemoteAuthenticatorViewCore<TAuthenticationState> where TAu
         [LoggerMessage(9, LogLevel.Debug, "The logout was not initiated from within the page.", EventName = nameof(LogoutOperationInitiatedExternally))]
         public static partial void LogoutOperationInitiatedExternally(ILogger logger);
 
-        [LoggerMessage(10, LogLevel.Debug, "Login completed successfully.", EventName = nameof(LoginCompletedSuccessfully))]
+        [LoggerMessage(10, LogLevel.Debug, "Logout completed successfully.", EventName = nameof(LogoutCompletedSuccessfully))]
         public static partial void LogoutCompletedSuccessfully(ILogger logger);
 
         [LoggerMessage(11, LogLevel.Debug, "Logout requires redirect to the identity provider.", EventName = nameof(LogoutRequiresRedirect))]

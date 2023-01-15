@@ -41,10 +41,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (policyNames == null)
-        {
-            throw new ArgumentNullException(nameof(policyNames));
-        }
+        ArgumentNullException.ThrowIfNull(policyNames);
 
         return builder.RequireAuthorization(policyNames.Select(n => new AuthorizeAttribute(n)).ToArray());
     }
@@ -65,10 +62,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (authorizeData == null)
-        {
-            throw new ArgumentNullException(nameof(authorizeData));
-        }
+        ArgumentNullException.ThrowIfNull(authorizeData);
 
         if (authorizeData.Length == 0)
         {
@@ -93,10 +87,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         RequirePolicyCore(builder, policy);
         return builder;
@@ -117,10 +108,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullException.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);

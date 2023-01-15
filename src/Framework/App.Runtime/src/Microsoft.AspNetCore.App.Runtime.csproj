@@ -32,8 +32,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
-    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
+    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -250,10 +249,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
 
-  <Target Name="FilterUnwantedContent">
+  <Target Name="FilterUnwantedContent"
+          DependsOnTargets="_ExpandRuntimePackageRoot">
     <ItemGroup>
       <!-- These files end up in this item group as a result of setting CopyLocalLockFileAssemblies, but shouldn't be. -->
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(FileName)' == 'apphost' OR '%(FileName)' == '$(LibPrefix)hostfxr' OR '%(FileName)' == '$(LibPrefix)hostpolicy' "/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
+      <!--
+        Filter out any overlap between our SharedFx (ReferenceCopyLocalPaths) and dotnet/runtime's SharedFx (RuntimePackageFiles).
+        Most of the time there is no overlap, but in certain rare corner cases there can be.
+        See https://github.com/dotnet/aspnetcore/issues/45033 for more detail.
+      -->
+      <ReferenceCopyLocalPaths Remove="@(RuntimePackageFiles)" MatchOnMetadata="FileName"/>
     </ItemGroup>
   </Target>
 
@@ -386,7 +396,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="PrepareForCrossGen"
           Condition="'$(CrossgenOutput)' == 'true'"
-          DependsOnTargets="_ExpandRuntimePackageRoot">
+          DependsOnTargets="FilterUnwantedContent">
     <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
     <RemoveDir Directories="$(CrossgenPlatformAssembliesDir)" />
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
@@ -427,10 +437,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         File="$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp"
         Overwrite="true" />
 
-    <ItemGroup>
-      <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
-    </ItemGroup>
-
     <Error Text="Could not find crossgen2 $(CrossgenToolPath)" Condition=" ! Exists($(CrossgenToolPath))" />
 
     <!-- Create tool directory with runtime assemblies -->
@@ -461,10 +467,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' != 'win'">$(Crossgen2Args) --perfmap --perfmap-format-version:1 --perfmap-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
     </PropertyGroup>
 
+    <Message Text="Running crossgen with $(CrossgenToolPath)"
+        Importance="High" />
     <!-- All metadata in batched task comes from current @(IntermediateCrossgenAssembly) item. -->
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
+    <Message Text="Finished crossgen"
+        Importance="High" />
   </Target>
 
   <Target Name="_GenerateComposites"
@@ -503,11 +513,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   #########################################
   -->
   <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
-      Uri="$(DotNetRuntimeDownloadUrl)"
-      PrivateUri="$(DotNetRuntimePrivateDownloadUrl)"
-      PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(DotNetRuntimeArchive)" />
+    <!-- Try various places to find the runtime. It's either released (use official version),
+         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
+    <ItemGroup>
+      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/$(DotNetRuntimeDownloadPath)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(DotNetRuntimeDownloadPath)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(DotNetRuntimeDownloadPath)"
+          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
+        <token>$(DotnetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
+    </ItemGroup>
+
+    <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="$(DotNetRuntimeArchive)" />
+
     <RemoveDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
     <MakeDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
 

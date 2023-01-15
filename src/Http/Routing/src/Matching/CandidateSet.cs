@@ -34,20 +34,9 @@ public sealed class CandidateSet
     /// <param name="scores">The list of endpoint scores. <see cref="CandidateState.Score"/>.</param>
     public CandidateSet(Endpoint[] endpoints, RouteValueDictionary[] values, int[] scores)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
-
-        if (scores == null)
-        {
-            throw new ArgumentNullException(nameof(scores));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(values);
+        ArgumentNullException.ThrowIfNull(scores);
 
         if (endpoints.Length != values.Length || endpoints.Length != scores.Length)
         {

@@ -14,7 +14,8 @@ public static class Tfm
     public const string Net50 = "net5.0";
     public const string Net60 = "net6.0";
     public const string Net70 = "net7.0";
-    public const string Default = Net70;
+    public const string Net80 = "net8.0";
+    public const string Default = Net80;
 
     public static bool Matches(string tfm1, string tfm2)
     {

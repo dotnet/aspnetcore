@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Reflection;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.Core.Interceptors;
@@ -29,6 +30,22 @@ internal static class TestHelpers
         httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
         httpContext.Features.Set<IHttpRequestLifetimeFeature>(new HttpRequestLifetimeFeature(cancellationToken));
         return httpContext;
+    }
+
+    internal static MessageDescriptor GetMessageDescriptor(Type typeToConvert)
+    {
+        var property = typeToConvert.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public, binder: null, typeof(MessageDescriptor), Type.EmptyTypes, modifiers: null);
+        if (property == null)
+        {
+            throw new InvalidOperationException("Couldn't find Descriptor property on message type: " + typeToConvert);
+        }
+
+        var descriptor = property.GetValue(null, null) as MessageDescriptor;
+        if (descriptor == null)
+        {
+            throw new InvalidOperationException("Couldn't resolve MessageDescriptor for message type: " + typeToConvert);
+        }
+        return descriptor;
     }
 
     private class TestInterceptorActivator<T> : IGrpcInterceptorActivator<T> where T : Interceptor

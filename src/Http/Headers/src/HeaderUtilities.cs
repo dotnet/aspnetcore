@@ -518,6 +518,27 @@ public static class HeaderUtilities
     }
 
     /// <summary>
+    /// Converts the 64-bit numeric value to its equivalent string representation.
+    /// </summary>
+    /// <param name="value">
+    /// The number to convert.
+    /// </param>
+    /// <returns>
+    /// The string representation of the value of this instance, consisting of a sequence of digits ranging from 0 to 9 with no leading zeroes.
+    /// In case of negative numeric value it will have a leading minus sign.
+    /// </returns>
+    internal static string FormatInt64(long value)
+    {
+        return value switch
+        {
+            0 => "0",
+            1 => "1",
+            -1 => "-1",
+            _ => value.ToString(NumberFormatInfo.InvariantInfo)
+        };
+    }
+
+    /// <summary>
     ///Attempts to parse the specified <paramref name="input"/> as a <see cref="DateTimeOffset"/> value.
     /// </summary>
     /// <param name="input">The input value.</param>

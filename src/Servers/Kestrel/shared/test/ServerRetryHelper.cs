@@ -19,11 +19,11 @@ public static class ServerRetryHelper
         var retryCount = 0;
 
         // Add a random number to starting port to reduce chance of conflicts because of multiple tests using this retry.
-        var nextPortAttempt = 5000 + Random.Shared.Next(500);
+        var nextPortAttempt = 30000 + Random.Shared.Next(10000);
 
         while (true)
         {
-            // Find a port that's available for TCP and UDP. Start with port 5000 and search upwards from there.
+            // Find a port that's available for TCP and UDP. Start with the given port search upwards from there.
             var port = GetAvailablePort(nextPortAttempt, logger);
 
             try
@@ -34,7 +34,7 @@ public static class ServerRetryHelper
             catch (Exception ex)
             {
                 retryCount++;
-                nextPortAttempt = port + 1;
+                nextPortAttempt = port + Random.Shared.Next(100);
 
                 if (retryCount >= RetryCount)
                 {
@@ -42,7 +42,7 @@ public static class ServerRetryHelper
                 }
                 else
                 {
-                    logger.LogError(ex, $"Error running test {retryCount}. Retrying.");
+                    logger.LogError(ex, "Error running test {retryCount}. Retrying.", retryCount);
                 }
             }
         }
@@ -50,7 +50,7 @@ public static class ServerRetryHelper
 
     private static int GetAvailablePort(int startingPort, ILogger logger)
     {
-        logger.LogInformation($"Searching for free port starting at {startingPort}.");
+        logger.LogInformation("Searching for free port starting at {startingPort}.", startingPort);
 
         var unavailableEndpoints = new List<IPEndPoint>();
 
@@ -65,19 +65,19 @@ public static class ServerRetryHelper
         // Ignore active UDP listeners
         AddEndpoints(startingPort, unavailableEndpoints, properties.GetActiveUdpListeners());
 
-        logger.LogInformation($"Found {unavailableEndpoints.Count} unavailable endpoints.");
+        logger.LogInformation("Found {count} unavailable endpoints.", unavailableEndpoints.Count);
 
         for (var i = startingPort; i < ushort.MaxValue; i++)
         {
             var match = unavailableEndpoints.FirstOrDefault(ep => ep.Port == i);
             if (match == null)
             {
-                logger.LogInformation($"Port {i} free.");
+                logger.LogInformation("Port {i} free.", i);
                 return i;
             }
             else
             {
-                logger.LogInformation($"Port {i} in use. End point: {match}");
+                logger.LogInformation("Port {i} in use. End point: {match}", i, match);
             }
         }
 

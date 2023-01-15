@@ -62,10 +62,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     {
         EnsureValidPageName(pageName);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new PageApplicationModelConvention(pageName, action));
     }
@@ -96,10 +93,7 @@ public class PageConventionCollection : Collection<IPageConvention>
 
         EnsureValidPageName(pageName);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new PageApplicationModelConvention(areaName, pageName, action));
     }
@@ -115,10 +109,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     {
         EnsureValidFolderPath(folderPath);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new FolderApplicationModelConvention(folderPath, action));
     }
@@ -149,10 +140,7 @@ public class PageConventionCollection : Collection<IPageConvention>
 
         EnsureValidFolderPath(folderPath);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new FolderApplicationModelConvention(areaName, folderPath, action));
     }
@@ -168,10 +156,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     {
         EnsureValidPageName(pageName);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new PageRouteModelConvention(pageName, action));
     }
@@ -199,10 +184,7 @@ public class PageConventionCollection : Collection<IPageConvention>
 
         EnsureValidPageName(pageName);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new PageRouteModelConvention(areaName, pageName, action));
     }
@@ -218,10 +200,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     {
         EnsureValidFolderPath(folderPath);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new FolderRouteModelConvention(folderPath, action));
     }
@@ -249,10 +228,7 @@ public class PageConventionCollection : Collection<IPageConvention>
 
         EnsureValidFolderPath(folderPath);
 
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         return Add(new FolderRouteModelConvention(areaName, folderPath, action));
     }

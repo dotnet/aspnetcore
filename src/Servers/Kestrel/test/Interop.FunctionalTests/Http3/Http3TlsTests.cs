@@ -250,7 +250,6 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43548")]
     public async Task OnAuthenticate_Available_Throws(HttpProtocols protocols)
     {
         await ServerRetryHelper.BindPortsWithRetry(async port =>
@@ -272,7 +271,6 @@ public class Http3TlsTests : LoggedTest
             });
 
             using var host = builder.Build();
-            using var client = HttpHelpers.CreateClient();
 
             var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
                 host.StartAsync().DefaultTimeout());

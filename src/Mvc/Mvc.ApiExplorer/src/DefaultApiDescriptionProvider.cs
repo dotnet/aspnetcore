@@ -58,10 +58,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ApiDescriptionProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
         {
@@ -658,10 +655,21 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 ModelMetadata = bindingContext.ModelMetadata,
                 Name = GetName(containerName, bindingContext),
                 Source = source,
-                Type = bindingContext.ModelMetadata.ModelType,
+                Type = GetModelType(bindingContext.ModelMetadata),
                 ParameterDescriptor = Parameter,
                 BindingInfo = bindingContext.BindingInfo
             };
+        }
+
+        private static Type GetModelType(ModelMetadata metadata)
+        {
+            // IsParseableType || IsConvertibleType
+            if (!metadata.IsComplexType)
+            {
+                return EndpointModelMetadata.GetDisplayType(metadata.ModelType);
+            }
+
+            return metadata.ModelType;
         }
 
         private static string GetName(string containerName, ApiParameterDescriptionContext metadata)

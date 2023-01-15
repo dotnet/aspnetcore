@@ -10,13 +10,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal sealed class IISServerSetupFilter : IStartupFilter
 {
-    private readonly string _virtualPath;
-
-    public IISServerSetupFilter(string virtualPath)
-    {
-        _virtualPath = virtualPath;
-    }
-
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
         return app =>
@@ -27,7 +20,6 @@ internal sealed class IISServerSetupFilter : IStartupFilter
                 throw new InvalidOperationException("Application is running inside IIS process but is not configured to use IIS server.");
             }
 
-            app.UsePathBase(_virtualPath);
             next(app);
         };
     }

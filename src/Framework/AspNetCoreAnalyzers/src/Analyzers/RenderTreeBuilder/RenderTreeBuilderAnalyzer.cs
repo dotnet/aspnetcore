@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -22,11 +23,7 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(context =>
         {
             var compilation = context.Compilation;
-
-            if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
-            {
-                return;
-            }
+            var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
 
             context.RegisterOperationAction(context =>
             {
@@ -39,7 +36,7 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 
                 foreach (var argument in invocation.Arguments)
                 {
-                    if (argument.Parameter.Ordinal == SequenceParameterOrdinal)
+                    if (argument.Parameter?.Ordinal == SequenceParameterOrdinal)
                     {
                         if (!argument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
                         {
@@ -58,7 +55,7 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
     }
 
     private static bool IsRenderTreeBuilderMethodWithSequenceParameter(WellKnownTypes wellKnownTypes, IMethodSymbol targetMethod)
-        => SymbolEqualityComparer.Default.Equals(wellKnownTypes.RenderTreeBuilder, targetMethod.ContainingType)
+        => SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder), targetMethod.ContainingType)
         && targetMethod.Parameters.Length > SequenceParameterOrdinal
         && targetMethod.Parameters[SequenceParameterOrdinal].Name == "sequence";
 }

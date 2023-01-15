@@ -24,6 +24,7 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
+  enableBuildRetry: false
   disableComponentGovernance: false
   componentGovernanceIgnoreDirectories: ''
   mergeTestResults: false
@@ -228,3 +229,8 @@ jobs:
         BuildDropPath: ${{ parameters.buildDropPath }}
         IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
+  - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+    - publish: $(Build.SourcesDirectory)\eng\common\BuildConfiguration
+      artifact: BuildConfiguration
+      displayName: Publish build retry configuration
+      continueOnError: true

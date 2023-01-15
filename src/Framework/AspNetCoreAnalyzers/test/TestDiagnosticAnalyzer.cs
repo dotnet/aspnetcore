@@ -65,12 +65,31 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
         }
     }
 
-    public async Task<AspNetCoreBraceMatchingResult?> GetBraceMatchesAsync(int caretPosition, params string[] sources)
+    private async Task<(SyntaxToken token, SemanticModel model)> TryGetStringSyntaxTokenAtPositionAsync(int caretPosition, params string[] sources)
     {
         var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
-        var doc = project.Solution.GetDocument(project.Documents.First().Id);
+        var document = project.Solution.GetDocument(project.Documents.First().Id);
 
-        var (_, token, model) = await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(doc, caretPosition, CancellationToken.None);
+        var semanticModel = await document.GetSemanticModelAsync(CancellationToken.None).ConfigureAwait(false);
+        if (semanticModel == null)
+        {
+            return default;
+        }
+
+        var root = await document.GetSyntaxRootAsync(CancellationToken.None).ConfigureAwait(false);
+        if (root == null)
+        {
+            return default;
+        }
+
+        var stringToken = root.FindToken(caretPosition);
+
+        return (token: stringToken, model: semanticModel);
+    }
+
+    public async Task<AspNetCoreBraceMatchingResult?> GetBraceMatchesAsync(int caretPosition, params string[] sources)
+    {
+        var (token, model) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
         var braceMatcher = new RoutePatternBraceMatcher();
 
         return braceMatcher.FindBraces(model, token, caretPosition, CancellationToken.None);
@@ -78,10 +97,7 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
 
     public async Task<List<AspNetCoreHighlightSpan>> GetHighlightingAsync(int caretPosition, params string[] sources)
     {
-        var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
-        var doc = project.Solution.GetDocument(project.Documents.First().Id);
-
-        var (_, token, model) = await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(doc, caretPosition, CancellationToken.None);
+        var (token, model) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
         var highlighter = new RoutePatternHighlighter();
 
         var highlights = highlighter.GetDocumentHighlights(model, token, caretPosition, CancellationToken.None);
