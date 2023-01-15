@@ -53,7 +53,24 @@ public sealed class HealthCheckRegistration
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
     public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout)
-        : this(name, instance, failureStatus, tags, timeout, default)
+        : this(name, instance, failureStatus, tags, timeout, default, default)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration" /> for an existing <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck" /> instance.
+    /// </summary>
+    /// <param name="name">The health check name.</param>
+    /// <param name="instance">The <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck" /> instance.</param>
+    /// <param name="failureStatus">
+    /// The <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus" /> that should be reported upon failure of the health check. If the provided value
+    /// is <c>null</c>, then <see cref="F:Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy" /> will be reported.
+    /// </param>
+    /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
+    /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the delay of the check.</param>
+    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, TimeSpan? delay)
+        : this(name, instance, failureStatus, tags, timeout, delay, default)
     {
     }
 
@@ -68,8 +85,9 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check parameters.</param>
-    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, HealthCheckRegistrationParameters? parameters)
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the delay of the check.</param>
+    /// <param name="period">An optional <see cref="TimeSpan"/> representing the period of the check.</param>
+    public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout, TimeSpan? delay, TimeSpan? period)
     {
         if (name == null)
         {
@@ -91,7 +109,8 @@ public sealed class HealthCheckRegistration
         Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         _factory = (_) => instance;
         Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
-        Parameters = parameters;
+        Delay = delay;
+        Period = period;
     }
 
     /// <summary>
@@ -109,7 +128,7 @@ public sealed class HealthCheckRegistration
         Func<IServiceProvider, IHealthCheck> factory,
         HealthStatus? failureStatus,
         IEnumerable<string>? tags)
-        : this(name, factory, failureStatus, tags, default, default)
+        : this(name, factory, failureStatus, tags, default, default, default)
     {
     }
 
@@ -130,7 +149,7 @@ public sealed class HealthCheckRegistration
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout)
-        : this(name, factory, failureStatus, tags, timeout, default)
+        : this(name, factory, failureStatus, tags, timeout, default, default)
     {
     }
 
@@ -145,14 +164,39 @@ public sealed class HealthCheckRegistration
     /// </param>
     /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check parameters.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the delay of the check.</param>
     public HealthCheckRegistration(
         string name,
         Func<IServiceProvider, IHealthCheck> factory,
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout,
-        HealthCheckRegistrationParameters? parameters)
+        TimeSpan? delay)
+        : this(name, factory, failureStatus, tags, timeout, delay, default)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="HealthCheckRegistration"/> for an existing <see cref="IHealthCheck"/> instance.
+    /// </summary>
+    /// <param name="name">The health check name.</param>
+    /// <param name="factory">A delegate used to create the <see cref="IHealthCheck"/> instance.</param>
+    /// <param name="failureStatus">
+    /// The <see cref="HealthStatus"/> that should be reported when the health check reports a failure. If the provided value
+    /// is <c>null</c>, then <see cref="HealthStatus.Unhealthy"/> will be reported.
+    /// </param>
+    /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
+    /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="delay">An optional <see cref="TimeSpan"/> representing the delay of the check.</param>
+    /// <param name="period">An optional <see cref="TimeSpan"/> representing the period of the check.</param>
+    public HealthCheckRegistration(
+        string name,
+        Func<IServiceProvider, IHealthCheck> factory,
+        HealthStatus? failureStatus,
+        IEnumerable<string>? tags,
+        TimeSpan? timeout,
+        TimeSpan? delay,
+        TimeSpan? period)
     {
         if (name == null)
         {
@@ -174,7 +218,8 @@ public sealed class HealthCheckRegistration
         Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         _factory = factory;
         Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
-        Parameters = parameters;
+        Delay = delay;
+        Period = period;
     }
 
     /// <summary>
@@ -217,9 +262,16 @@ public sealed class HealthCheckRegistration
     }
 
     /// <summary>
-    /// Gets the individual parameters associated with a health check.
+    /// Gets the individual delay applied to the health check after the application starts before executing
+    /// <see cref="IHealthCheckPublisher"/> instances. The delay is applied once at startup, and does
+    /// not apply to subsequent iterations.
     /// </summary>
-    public HealthCheckRegistrationParameters? Parameters { get; }
+    public TimeSpan? Delay { get; }
+
+    /// <summary>
+    /// Gets the individual period used for the check.
+    /// </summary>
+    public TimeSpan? Period { get; }
 
     /// <summary>
     /// Gets or sets the health check name.
