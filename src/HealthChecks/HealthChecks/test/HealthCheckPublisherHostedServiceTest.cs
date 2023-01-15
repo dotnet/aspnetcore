@@ -346,14 +346,6 @@ public class HealthCheckPublisherHostedServiceTest
                    timeout: default,
                    delay: TimeSpan.FromSeconds(9),
                    period: TimeSpan.FromSeconds(5)));
-
-            // TODO Disabled
-            //b.AddAsyncCheck("DisabledCheck", _ =>
-            //{
-            //    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-            //    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
-            //},
-            //parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
         });
 
         try
@@ -600,14 +592,6 @@ public class HealthCheckPublisherHostedServiceTest
                        timeout: default,
                        delay: TimeSpan.FromSeconds(9),
                        period: TimeSpan.FromSeconds(5)));
-
-                // TODO Disabled
-                //b.AddAsyncCheck("DisabledCheck", _ =>
-                //{
-                //    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                //    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
-                //},
-                //parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
             });
 
         try

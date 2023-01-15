@@ -212,8 +212,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
                 return false;
             }
 
-            // TODO Check if HC is enabled
-
             if (_healthCheckPublisherOptions?.Value.Predicate == null)
             {
                 return true;
