@@ -22,9 +22,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
     private readonly ILogger _logger;
     private readonly IHealthCheckPublisher[] _publishers;
-    private readonly (TimeSpan Delay, TimeSpan Period, TimeSpan Timeout) _defaultTimerOptions;
-    private readonly Dictionary<(TimeSpan Delay, TimeSpan Period, TimeSpan Timeout), List<HealthCheckRegistration>> _healthChecksByOptions;
-    private Dictionary<(TimeSpan Delay, TimeSpan Period, TimeSpan Timeout), Timer>? _timersByOptions;
+    private readonly (TimeSpan Delay, TimeSpan Period) _defaultTimerOptions;
+    private readonly Dictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> _healthChecksByOptions;
+    private Dictionary<(TimeSpan Delay, TimeSpan Period), Timer>? _timersByOptions;
 
     private readonly CancellationTokenSource _stopping;
     private CancellationTokenSource? _runTokenSource;
@@ -74,16 +74,16 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         // actually tries to **run** health checks would be real baaaaad.
         ValidateRegistrations(_healthCheckServiceOptions.Value.Registrations);
 
-        _defaultTimerOptions = (_healthCheckPublisherOptions.Value.Delay, _healthCheckPublisherOptions.Value.Period, _healthCheckPublisherOptions.Value.Timeout);
+        _defaultTimerOptions = (_healthCheckPublisherOptions.Value.Delay, _healthCheckPublisherOptions.Value.Period);
 
         // Group healthcheck registrations by Delay, Period and Timeout, to build a Dictionary<(TimeSpan, TimeSpan, TimeSpan), List<HealthCheckRegistration>>
         // For HCs with no Delay, Period or Timeout, we default to the publisher values
         _healthChecksByOptions = _healthCheckServiceOptions.Value.Registrations.GroupBy(GetTimerOptionsOrDefault).ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private (TimeSpan Delay, TimeSpan Period, TimeSpan Timeout) GetTimerOptionsOrDefault(HealthCheckRegistration registration)
+    private (TimeSpan Delay, TimeSpan Period) GetTimerOptionsOrDefault(HealthCheckRegistration registration)
     {
-        return (registration.Parameters?.Delay ?? _healthCheckPublisherOptions.Value.Delay, registration.Parameters?.Period ?? _healthCheckPublisherOptions.Value.Period, registration.Parameters?.Timeout ?? _healthCheckPublisherOptions.Value.Timeout);
+        return (registration?.Delay ?? _healthCheckPublisherOptions.Value.Delay, registration?.Period ?? _healthCheckPublisherOptions.Value.Period);
     }
 
     internal bool IsStopping => _stopping.IsCancellationRequested;
@@ -133,14 +133,14 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         return Task.CompletedTask;
     }
 
-    private Dictionary<(TimeSpan Delay, TimeSpan Period, TimeSpan Timeout), Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period, TimeSpan Timeout), List<HealthCheckRegistration>> healthChecksByOptions)
+    private Dictionary<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> healthChecksByOptions)
     {
         return healthChecksByOptions.Select(m => CreateTimer(m.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
-    private KeyValuePair<(TimeSpan Delay, TimeSpan Period, TimeSpan Timeout), Timer> CreateTimer((TimeSpan Delay, TimeSpan Period, TimeSpan Timeout) timerOptions)
+    private KeyValuePair<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimer((TimeSpan Delay, TimeSpan Period) timerOptions)
     {
-        return new KeyValuePair<(TimeSpan Delay, TimeSpan Period, TimeSpan Timeout), Timer>(
+        return new KeyValuePair<(TimeSpan Delay, TimeSpan Period), Timer>(
             timerOptions,
             NonCapturingTimer.Create(
             async (state) =>
@@ -160,7 +160,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     }
 
     // Internal for testing
-    internal async Task RunAsync((TimeSpan Delay, TimeSpan Period, TimeSpan Timeout)? timerOptions = null)
+    internal async Task RunAsync((TimeSpan Delay, TimeSpan Period)? timerOptions = null)
     {
         timerOptions ??= _defaultTimerOptions;
 
@@ -170,7 +170,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         CancellationTokenSource? cancellation = null;
         try
         {
-            var timeout = timerOptions.Value.Timeout;
+            var timeout = _healthCheckPublisherOptions.Value.Timeout;
 
             cancellation = CancellationTokenSource.CreateLinkedTokenSource(_stopping.Token);
             _runTokenSource = cancellation;
@@ -196,7 +196,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         }
     }
 
-    private async Task RunAsyncCore((TimeSpan Delay, TimeSpan Period, TimeSpan Timeout) timerOptions, CancellationToken cancellationToken)
+    private async Task RunAsyncCore((TimeSpan Delay, TimeSpan Period) timerOptions, CancellationToken cancellationToken)
     {
         // Forcibly yield - we want to unblock the timer thread.
         await Task.Yield();
@@ -212,11 +212,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
                 return false;
             }
 
-            // Check if HC is enabled
-            if (r.Parameters != null && !r.Parameters.IsEnabled)
-            {
-                return false;
-            }
+            // TODO Check if HC is enabled
 
             if (_healthCheckPublisherOptions?.Value.Predicate == null)
             {
