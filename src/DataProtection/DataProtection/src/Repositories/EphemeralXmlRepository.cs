@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories;
@@ -43,10 +44,7 @@ internal sealed class EphemeralXmlRepository : IXmlRepository
 
     public void StoreElement(XElement element, string friendlyName)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         var cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
 

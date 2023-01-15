@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -47,10 +48,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
             return;
         }
 
-        if (formatter == null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
+        ArgumentNullException.ThrowIfNull(formatter);
 
         var message = formatter(state, exception);
 
@@ -79,19 +77,19 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
                         // messages if you enable "Verbose" in the filter dropdown (which is off
                         // by default). As such "console.debug" is the best choice for messages
                         // with a lower severity level than "Information".
-                        _jsRuntime.InvokeVoid("console.debug", formattedMessage);
+                        ConsoleLoggerInterop.ConsoleDebug(formattedMessage);
                         break;
                     case LogLevel.Information:
-                        _jsRuntime.InvokeVoid("console.info", formattedMessage);
+                        ConsoleLoggerInterop.ConsoleInfo(formattedMessage);
                         break;
                     case LogLevel.Warning:
-                        _jsRuntime.InvokeVoid("console.warn", formattedMessage);
+                        ConsoleLoggerInterop.ConsoleWarn(formattedMessage);
                         break;
                     case LogLevel.Error:
-                        _jsRuntime.InvokeVoid("console.error", formattedMessage);
+                        ConsoleLoggerInterop.ConsoleError(formattedMessage);
                         break;
                     case LogLevel.Critical:
-                        _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
+                        ConsoleLoggerInterop.DotNetCriticalError(formattedMessage);
                         break;
                     default: // invalid enum values
                         Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
@@ -164,4 +162,18 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 
         public void Dispose() { }
     }
+}
+
+internal static partial class ConsoleLoggerInterop
+{
+    [JSImport("globalThis.console.debug")]
+    public static partial void ConsoleDebug(string message);
+    [JSImport("globalThis.console.info")]
+    public static partial void ConsoleInfo(string message);
+    [JSImport("globalThis.console.warn")]
+    public static partial void ConsoleWarn(string message);
+    [JSImport("globalThis.console.error")]
+    public static partial void ConsoleError(string message);
+    [JSImport("Blazor._internal.dotNetCriticalError", "blazor-internal")]
+    public static partial void DotNetCriticalError(string message);
 }

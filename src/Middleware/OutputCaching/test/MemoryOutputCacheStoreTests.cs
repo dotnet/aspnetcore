@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OutputCaching.Memory;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -57,7 +53,7 @@ public class MemoryOutputCacheStoreTests
     {
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
         var value = default(byte[]);
-        string key = "abc";
+        var key = "abc";
 
         _ = await Assert.ThrowsAsync<ArgumentNullException>("value", () => store.SetAsync(key, value, null, TimeSpan.FromMilliseconds(5), default).AsTask());
     }
@@ -75,7 +71,19 @@ public class MemoryOutputCacheStoreTests
         await store.EvictByTagAsync("tag1", default);
         var result = await store.GetAsync(key, default);
 
+        HashSet<string> tag1s;
+
+        // Wait for the hashset to be removed as it happens on a separate thread
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
+
         Assert.Null(result);
+        Assert.Null(tag1s);
     }
 
     [Fact]
@@ -142,6 +150,62 @@ public class MemoryOutputCacheStoreTests
 
         Assert.Null(result1);
         Assert.Null(result2);
+    }
+
+    [Fact]
+    public async Task ExpiredEntries_AreRemovedFromTags()
+    {
+        var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 1000, Clock = testClock, ExpirationScanFrequency = TimeSpan.FromMilliseconds(1) });
+        var store = new MemoryOutputCacheStore(cache);
+        var value = "abc"u8.ToArray();
+
+        await store.SetAsync("a", value, new[] { "tag1" }, TimeSpan.FromMilliseconds(5), default);
+        await store.SetAsync("b", value, new[] { "tag1", "tag2" }, TimeSpan.FromMilliseconds(5), default);
+        await store.SetAsync("c", value, new[] { "tag2" }, TimeSpan.FromMilliseconds(20), default);
+
+        testClock.Advance(TimeSpan.FromMilliseconds(10));
+
+        // Background expiration checks are triggered by misc cache activity.
+        _ = cache.Get("a");
+
+        var resulta = await store.GetAsync("a", default);
+        var resultb = await store.GetAsync("b", default);
+        var resultc = await store.GetAsync("c", default);
+
+        Assert.Null(resulta);
+        Assert.Null(resultb);
+        Assert.NotNull(resultc);
+
+        HashSet<string> tag1s, tag2s;
+
+        // Wait for the hashset to be removed as it happens on a separate thread
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        while (store.TaggedEntries.TryGetValue("tag1", out tag1s) && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
+
+        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && tag2s.Count != 1 && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
+
+        Assert.Null(tag1s);
+        Assert.Single(tag2s);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    public async Task Store_Throws_OnInvalidTag(string tag)
+    {
+        var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
+        var value = "abc"u8.ToArray();
+        var key = "abc";
+
+        await Assert.ThrowsAsync<ArgumentException>(async () => await store.SetAsync(key, value, new string[] { tag }, TimeSpan.FromMinutes(1), default));
     }
 
     private class TestMemoryOptionsClock : Extensions.Internal.ISystemClock

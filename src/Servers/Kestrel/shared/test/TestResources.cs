@@ -40,4 +40,38 @@ public static class TestResources
     {
         return new X509Certificate2(GetCertPath(certName), password);
     }
+
+    public static X509Certificate2 GetTestCertificateWithKey(string certName, string keyName)
+    {
+        var cert = X509Certificate2.CreateFromPemFile(GetCertPath(certName), GetCertPath(keyName));
+        if (OperatingSystem.IsWindows())
+        {
+            using (cert)
+            {
+                return new X509Certificate2(cert.Export(X509ContentType.Pkcs12));
+            }
+        }
+        return cert;
+    }
+
+    public static X509Certificate2Collection GetTestChain(string certName = "leaf.com.crt")
+    {
+        // On Windows, applications should not import PFX files in parallel to avoid a known system-level
+        // race condition bug in native code which can cause crashes/corruption of the certificate state.
+        if (importPfxMutex != null && !importPfxMutex.WaitOne(MutexTimeout))
+        {
+            throw new InvalidOperationException("Cannot acquire the global certificate mutex.");
+        }
+
+        try
+        {
+            var fullChain = new X509Certificate2Collection();
+            fullChain.ImportFromPemFile(GetCertPath("leaf.com.crt"));
+            return fullChain;
+        }
+        finally
+        {
+            importPfxMutex?.ReleaseMutex();
+        }
+    }
 }

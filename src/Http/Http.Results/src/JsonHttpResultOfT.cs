@@ -49,7 +49,7 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
 
         if (value is ProblemDetails problemDetails)
         {
-            HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, statusCode);
+            ProblemDetailsDefaults.Apply(problemDetails, statusCode);
             statusCode ??= problemDetails.Status;
         }
 
@@ -77,8 +77,6 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
     /// Gets the HTTP status code.
     /// </summary>
     public int? StatusCode { get; }
-
-    int IStatusCodeHttpResult.StatusCode => StatusCode ?? StatusCodes.Status200OK;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

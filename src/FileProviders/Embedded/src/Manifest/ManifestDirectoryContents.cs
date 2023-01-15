@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
@@ -16,15 +17,8 @@ internal sealed class ManifestDirectoryContents : IDirectoryContents
 
     public ManifestDirectoryContents(Assembly assembly, ManifestDirectory directory, DateTimeOffset lastModified)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (directory == null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
+        ArgumentNullThrowHelper.ThrowIfNull(directory);
 
         Assembly = assembly;
         Directory = directory;

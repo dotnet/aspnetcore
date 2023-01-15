@@ -17,10 +17,7 @@ public static class MultipartSectionConverterExtensions
     /// <returns>A file section</returns>
     public static FileMultipartSection? AsFileSection(this MultipartSection section)
     {
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(section);
 
         try
         {
@@ -39,10 +36,7 @@ public static class MultipartSectionConverterExtensions
     /// <returns>A form section</returns>
     public static FormMultipartSection? AsFormDataSection(this MultipartSection section)
     {
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(section);
 
         try
         {

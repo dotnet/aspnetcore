@@ -54,7 +54,7 @@ internal sealed class ChunkingCookieManager
 
     /// <summary>
     /// The maximum size of cookie to send back to the client. If a cookie exceeds this size it will be broken down into multiple
-    /// cookies. Set this value to null to disable this behavior. The default is 4090 characters, which is supported by all
+    /// cookies. Set this value to null to disable this behavior. The default is 4050 characters, which is supported by all
     /// common browsers.
     ///
     /// Note that browsers may also have limits on the total size of all cookies per domain, and on the number of cookies per domain.
@@ -88,15 +88,8 @@ internal sealed class ChunkingCookieManager
     /// <returns>The reassembled cookie, if any, or null.</returns>
     public string? GetRequestCookie(HttpContext context, string key)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(key);
 
         var requestCookies = context.Request.Cookies;
         var value = requestCookies[key];
@@ -150,20 +143,9 @@ internal sealed class ChunkingCookieManager
     /// <param name="options"></param>
     public void AppendResponseCookie(HttpContext context, string key, string? value, CookieOptions options)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(options);
 
         var responseCookies = context.Response.Cookies;
 
@@ -225,20 +207,9 @@ internal sealed class ChunkingCookieManager
     public void DeleteCookie(HttpContext context, string key, CookieOptions options)
 #pragma warning restore CA1822 // Mark members as static
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(options);
 
         var keys = new List<string>
         {

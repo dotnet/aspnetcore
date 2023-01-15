@@ -39,10 +39,7 @@ internal sealed partial class ManifestStaticWebAssetFileProvider : IFileProvider
 
     public IDirectoryContents GetDirectoryContents(string subpath)
     {
-        if (subpath == null)
-        {
-            throw new ArgumentNullException(nameof(subpath));
-        }
+        ArgumentNullException.ThrowIfNull(subpath);
 
         var segments = Normalize(subpath).Split('/', StringSplitOptions.RemoveEmptyEntries);
         var candidate = _root;
@@ -156,10 +153,7 @@ internal sealed partial class ManifestStaticWebAssetFileProvider : IFileProvider
 
     public IFileInfo GetFileInfo(string subpath)
     {
-        if (subpath == null)
-        {
-            throw new ArgumentNullException(nameof(subpath));
-        }
+        ArgumentNullException.ThrowIfNull(subpath);
 
         var segments = subpath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         StaticWebAssetNode? candidate = _root;

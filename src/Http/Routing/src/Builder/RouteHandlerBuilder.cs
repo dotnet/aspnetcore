@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Routing;
-
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
@@ -12,15 +10,12 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
 {
     private readonly IEnumerable<IEndpointConventionBuilder>? _endpointConventionBuilders;
     private readonly ICollection<Action<EndpointBuilder>>? _conventions;
+    private readonly ICollection<Action<EndpointBuilder>>? _finallyConventions;
 
-    /// <summary>
-    /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a ThrowOnAddAfterEndpointBuiltConventionCollection from
-    /// <see cref="RouteEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?, bool)"/>.
-    /// </summary>
-    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource"/>.</param>
-    internal RouteHandlerBuilder(ICollection<Action<EndpointBuilder>> conventions)
+    internal RouteHandlerBuilder(ICollection<Action<EndpointBuilder>> conventions, ICollection<Action<EndpointBuilder>> finallyConventions)
     {
         _conventions = conventions;
+        _finallyConventions = finallyConventions;
     }
 
     /// <summary>
@@ -48,6 +43,22 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
             foreach (var endpointConventionBuilder in _endpointConventionBuilders!)
             {
                 endpointConventionBuilder.Add(convention);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public void Finally(Action<EndpointBuilder> finalConvention)
+    {
+        if (_finallyConventions is not null)
+        {
+            _finallyConventions.Add(finalConvention);
+        }
+        else
+        {
+            foreach (var endpointConventionBuilder in _endpointConventionBuilders!)
+            {
+                endpointConventionBuilder.Finally(finalConvention);
             }
         }
     }

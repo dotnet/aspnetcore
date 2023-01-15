@@ -120,6 +120,10 @@ internal sealed class AddressBinder
         {
             options = new ListenOptions(parsedAddress.UnixPipePath);
         }
+        else if (parsedAddress.IsNamedPipe)
+        {
+            options = new ListenOptions(new NamedPipeEndPoint(parsedAddress.NamedPipeName));
+        }
         else if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
         {
             // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.

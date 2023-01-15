@@ -16,15 +16,8 @@ internal static class PageBinderFactory
         IModelBinderFactory modelBinderFactory,
         CompiledPageActionDescriptor actionDescriptor)
     {
-        if (parameterBinder == null)
-        {
-            throw new ArgumentNullException(nameof(parameterBinder));
-        }
-
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(parameterBinder);
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         var properties = actionDescriptor.BoundProperties;
         if (properties == null || properties.Count == 0)

@@ -49,6 +49,7 @@ parameters:
     type: object
     default:
       enable: false
+      publishGdn: false
       continueOnError: false
       params: ''
       artifactNames: ''
@@ -94,10 +95,11 @@ stages:
     displayName: Validate Build Assets
     variables:
       - template: common-variables.yml
+      - template: /eng/common/templates/variables/pool-providers.yml
     jobs:
     - job:
       displayName: NuGet Validation
-      condition: eq( ${{ parameters.enableNugetValidation }}, 'true')
+      condition: and(succeededOrFailed(), eq( ${{ parameters.enableNugetValidation }}, 'true'))
       pool:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
@@ -105,8 +107,8 @@ stages:
           demands: Cmd
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          name: $(DncEngInternalBuildPool)
+          demands: ImageOverride -equals windows.vs2019.amd64
 
       steps:
         - template: setup-maestro-vars.yml
@@ -142,8 +144,8 @@ stages:
           demands: Cmd
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          name: $(DncEngInternalBuildPool)
+          demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -169,12 +171,6 @@ stages:
         # otherwise it'll complain about accessing a private feed.
         - task: NuGetAuthenticate@0
           displayName: 'Authenticate to AzDO Feeds'
-
-        - task: PowerShell@2
-          displayName: Enable cross-org publishing
-          inputs:
-            filePath: eng\common\enable-cross-org-publishing.ps1
-            arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
 
         # Signing validation will optionally work with the buildmanifest file which is downloaded from
         # Azure DevOps above.
@@ -202,8 +198,8 @@ stages:
           demands: Cmd
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          name: $(DncEngInternalBuildPool)
+          demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -235,6 +231,7 @@ stages:
     - template: /eng/common/templates/job/execute-sdl.yml
       parameters:
         enable: ${{ parameters.SDLValidationParameters.enable }}
+        publishGuardianDirectoryToPipeline: ${{ parameters.SDLValidationParameters.publishGdn }}
         additionalParameters: ${{ parameters.SDLValidationParameters.params }}
         continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
         artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
@@ -249,6 +246,7 @@ stages:
     displayName: Publish using Darc
     variables:
       - template: common-variables.yml
+      - template: /eng/common/templates/variables/pool-providers.yml
     jobs:
     - job:
       displayName: Publish Using Darc
@@ -260,8 +258,8 @@ stages:
           demands: Cmd
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          name: $(DncEngInternalBuildPool)
+          demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: setup-maestro-vars.yml
           parameters:

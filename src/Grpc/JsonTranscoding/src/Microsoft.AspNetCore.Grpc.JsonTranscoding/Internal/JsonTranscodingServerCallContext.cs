@@ -104,8 +104,9 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
         if (ex is RpcException rpcException)
         {
             // RpcException is thrown by client code to modify the status returned from the server.
-            // Log the status and detail. Don't log the exception to reduce log verbosity.
-            GrpcServerLog.RpcConnectionError(Logger, rpcException.StatusCode, rpcException.Status.Detail);
+            // Log the status, detail and debug exception (if present).
+            // Don't log the RpcException itself to reduce log verbosity. All of its information is already captured.
+            GrpcServerLog.RpcConnectionError(Logger, rpcException.StatusCode, rpcException.Status.Detail, rpcException.Status.DebugException);
 
             status = rpcException.Status;
         }

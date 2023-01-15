@@ -182,7 +182,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
         var nullabilityContext = new NullabilityInfoContext();
         var nullability = nullabilityContext.Create(parameter);
-        var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
+        var isOptional = parameter is PropertyAsParameterInfo argument
+            ? argument.IsOptional || allowEmpty
+            : parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
         var parameterDescriptor = CreateParameterDescriptor(parameter, pattern);
         var routeInfo = CreateParameterRouteInfo(pattern, parameter, isOptional);
 
@@ -288,8 +290,8 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
             // complex types will display as strings since they use custom parsing via TryParse on a string
-            var displayType = !parameter.ParameterType.IsPrimitive && Nullable.GetUnderlyingType(parameter.ParameterType)?.IsPrimitive != true
-                ? typeof(string) : parameter.ParameterType;
+            var displayType = EndpointModelMetadata.GetDisplayType(parameter.ParameterType);
+
             // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
             if (parameter.Name is { } name && pattern.GetParameter(name) is { } routeParam)
             {

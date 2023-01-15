@@ -28,7 +28,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -50,6 +49,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
 
     protected readonly RequestDelegate _noopApplication;
+    protected readonly RequestDelegate _notImplementedApp;
     protected readonly RequestDelegate _echoApplication;
     protected readonly RequestDelegate _readRateApplication;
     protected readonly RequestDelegate _echoMethod;
@@ -58,28 +58,29 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
-            new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
-            new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
-            new KeyValuePair<string, string>("accept-encoding", "gzip, deflate, br"),
-            new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
+        new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+        new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
+        new KeyValuePair<string, string>("accept-encoding", "gzip, deflate, br"),
+        new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
+    };
 
     protected static IEnumerable<KeyValuePair<string, string>> ReadRateRequestHeaders(int expectedBytes) => new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/" + expectedBytes),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/" + expectedBytes),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+    };
 
     public Http3TestBase()
     {
         _noopApplication = context => Task.CompletedTask;
+        _notImplementedApp = _ => throw new NotImplementedException();
 
         _echoApplication = async context =>
         {

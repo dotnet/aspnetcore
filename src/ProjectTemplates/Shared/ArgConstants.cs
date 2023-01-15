@@ -25,4 +25,5 @@ internal static class ArgConstants
     public const string AadB2cInstance = "--aad-b2c-instance";
     public const string UseLocalDb = "-uld";
     public const string NoHttps = "--no-https";
+    public const string PublishNativeAot = "--publish-native-aot";
 }

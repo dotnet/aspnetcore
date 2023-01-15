@@ -147,8 +147,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-app.UseAuthentication();
+#if (IndividualAuth)
 app.UseAuthorization();
 
 #endif

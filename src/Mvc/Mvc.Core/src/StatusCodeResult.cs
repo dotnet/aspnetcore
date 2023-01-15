@@ -33,10 +33,7 @@ public partial class StatusCodeResult : ActionResult, IClientErrorActionResult
     /// <inheritdoc />
     public override void ExecuteResult(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var httpContext = context.HttpContext;
         var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();

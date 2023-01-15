@@ -4,7 +4,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
 
@@ -44,8 +46,9 @@ public class RoutingGroupsTests : IClassFixture<MvcTestFixture<StartupForGroups>
 
         var document = await response.GetHtmlDocumentAsync();
         var editLink = document.RequiredQuerySelector("#editlink");
+        var contactLink = document.RequiredQuerySelector("#contactlink");
         Assert.Equal("/pages/Edit/10", editLink.GetAttribute("href"));
-        // TODO: Investigate why the #contactlink to the controller is empty.
+        Assert.Equal("/controllers/contoso/Home/Contact", contactLink.GetAttribute("href"));
     }
 
     private record RouteInfo(string RouteName, IDictionary<string, string> RouteValues, string Link);

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Internal;
@@ -36,6 +37,8 @@ public class ControllerActionDescriptor : ActionDescriptor
     /// </summary>
     public TypeInfo ControllerTypeInfo { get; set; } = default!;
 
+    internal EndpointFilterDelegate? FilterDelegate { get; set; }
+
     // Cache entry so we can avoid an external cache
     internal ControllerActionInvokerCacheEntry? CacheEntry { get; set; }
 
@@ -59,10 +62,7 @@ public class ControllerActionDescriptor : ActionDescriptor
 
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             base.DisplayName = value;
         }

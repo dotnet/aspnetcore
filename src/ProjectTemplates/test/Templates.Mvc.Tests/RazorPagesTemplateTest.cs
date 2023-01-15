@@ -51,8 +51,7 @@ public class RazorPagesTemplateTest : LoggedTest
             : noHttps
                 ? new[] { ArgConstants.NoHttps }
                 : null;
-        var createResult = await project.RunDotNetNewAsync("razor", args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", project, createResult));
+        await project.RunDotNetNewAsync("razor", args: args);
 
         var expectedLaunchProfileNames = noHttps
             ? new[] { "http", "IIS Express" }
@@ -66,15 +65,13 @@ public class RazorPagesTemplateTest : LoggedTest
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
         Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, createResult));
+        await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, createResult));
+        await project.RunDotNetBuildAsync();
 
         var pages = new List<Page>
             {
@@ -147,8 +144,7 @@ public class RazorPagesTemplateTest : LoggedTest
             : noHttps
                 ? new[] { ArgConstants.NoHttps }
                 : null;
-        var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, args: args);
 
         // Individual auth supports no https OK
         var expectedLaunchProfileNames = noHttps
@@ -162,18 +158,15 @@ public class RazorPagesTemplateTest : LoggedTest
             Assert.Contains(".db", projectFileContents);
         }
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
-        var migrationsResult = await project.RunDotNetEfCreateMigrationAsync("razorpages");
-        Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
+        await project.RunDotNetEfCreateMigrationAsync("razorpages");
         project.AssertEmptyMigration("razorpages");
 
         // Note: if any links are updated here, MvcTemplateTest.cs should be updated as well
@@ -297,20 +290,17 @@ public class RazorPagesTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var createResult = await project.RunDotNetNewAsync("razor", auth: auth, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("razor", auth: auth, args: args);
 
         // Identity Web auth requires https and thus ignores the --no-https option if passed so there should never be an 'http' profile
         var expectedLaunchProfileNames = new[] { "https", "IIS Express" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Verify building in debug works
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
-        buildResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, buildResult));
+        await project.RunDotNetPublishAsync();
 
         return project;
     }

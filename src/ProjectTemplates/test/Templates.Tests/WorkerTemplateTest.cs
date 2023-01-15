@@ -38,18 +38,15 @@ public class WorkerTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var createResult = await project.RunDotNetNewAsync("worker", language: language, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("worker", language: language, args: args);
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         using (var aspNetProcess = project.StartBuiltProjectAsync(hasListeningUri: false))
         {

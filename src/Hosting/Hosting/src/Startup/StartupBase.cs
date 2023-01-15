@@ -38,7 +38,10 @@ public abstract class StartupBase : IStartup
     /// <returns>The <see cref="IServiceProvider"/>.</returns>
     public virtual IServiceProvider CreateServiceProvider(IServiceCollection services)
     {
+        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         return services.BuildServiceProvider();
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
     }
 }
 

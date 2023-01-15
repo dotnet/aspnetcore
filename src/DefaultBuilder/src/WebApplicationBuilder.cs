@@ -20,6 +20,7 @@ public sealed class WebApplicationBuilder
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
+    private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
@@ -32,6 +33,8 @@ public sealed class WebApplicationBuilder
 
         configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
 
+        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
         {
             Args = options.Args,
@@ -40,6 +43,7 @@ public sealed class WebApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -162,6 +166,8 @@ public sealed class WebApplicationBuilder
             if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
             {
                 app.UseRouting();
+                // Middleware the needs to re-route will use this property to call UseRouting()
+                _builtApplication.Properties[UseRoutingKey] = app.Properties[UseRoutingKey];
             }
             else
             {
@@ -172,7 +178,8 @@ public sealed class WebApplicationBuilder
 
         // Process authorization and authentication middlewares independently to avoid
         // registering middlewares for services that do not exist
-        if (_builtApplication.Services.GetService<IAuthenticationSchemeProvider>() is not null)
+        var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
+        if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
         {
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
@@ -184,7 +191,7 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        if (_builtApplication.Services.GetService<IAuthorizationHandlerProvider>() is not null)
+        if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
         {
             if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
             {

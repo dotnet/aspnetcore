@@ -12,14 +12,14 @@ import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
+import { RuntimeAPI, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, AssetEntry, ResourceRequest } from 'dotnet';
+import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
 
-const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
@@ -201,32 +201,15 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
     document.head.appendChild(scriptElem);
   }
 
-  // GOTCHA: remove this once runtime switched to ES6
-  // this is capturing the export via callback we have in CJS version of the runtime
-  let cjsExportResolve: (data: CreateDotnetRuntimeType) => void = undefined as any;
-  const cjsExport = new Promise<CreateDotnetRuntimeType>((resolve) => {
-    cjsExportResolve = resolve;
-  });
-  globalThis.__onDotnetRuntimeLoaded = (createDotnetRuntime) => {
-    delete globalThis.__onDotnetRuntimeLoaded;
-    cjsExportResolve(createDotnetRuntime);
-  };
-
   const absoluteSrc = (new URL(src, document.baseURI)).toString();
   const { default: createDotnetRuntime } = await import(/* webpackIgnore: true */ absoluteSrc);
-  if (createDotnetRuntime) {
-    // this runs when loaded module was ES6
-    delete globalThis.__onDotnetRuntimeLoaded;
-    return createDotnetRuntime;
-  }
-
-  return await cjsExport;
+  return await createDotnetRuntime;
 }
 
-async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<DotnetPublicAPI> {
-  let runtimeReadyResolve: (data: DotnetPublicAPI) => void = undefined as any;
+async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<RuntimeAPI> {
+  let runtimeReadyResolve: (data: RuntimeAPI) => void = undefined as any;
   let runtimeReadyReject: (reason?: any) => void = undefined as any;
-  const runtimeReady = new Promise<DotnetPublicAPI>((resolve, reject) => {
+  const runtimeReady = new Promise<RuntimeAPI>((resolve, reject) => {
     runtimeReadyResolve = resolve;
     runtimeReadyReject = reject;
   });
@@ -245,20 +228,60 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     console.error(line);
     showErrorNotification();
   };
-  const existingPreRun = moduleConfig.preRun || [];
-  const existingPostRun = moduleConfig.postRun || [];
+  const existingPreRun = moduleConfig.preRun || [] as any;
+  const existingPostRun = moduleConfig.postRun || [] as any;
   (moduleConfig as any).preloadPlugins = [];
 
+  let resourcesLoaded = 0;
+  function setProgress(){
+      resourcesLoaded++;
+      const percentage = resourcesLoaded / totalResources.length * 100;
+      document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
+      document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+    }
+
+  const monoToBlazorAssetTypeMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
+    'assembly': 'assembly',
+    'pdb': 'pdb',
+    'icu': 'globalization',
+    'dotnetwasm': 'dotnetwasm',
+  };
+
+  // it would not `loadResource` on types for which there is no typesMap mapping
+  const downloadResource = (asset: AssetEntry): LoadingResource | undefined => {
+    // this whole condition could be removed after the resourceLoader could cache in-flight requests
+    if (asset.behavior === 'dotnetwasm') {
+      return runtimeAssetsBeingLoaded
+        .filter(request => request.name === asset.name)[0];
+    }
+    const type = monoToBlazorAssetTypeMap[asset.behavior];
+    if (type !== undefined) {
+      return resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
+    }
+    return undefined;
+  };
+
+  const runtimeAssets = resourceLoader.bootConfig.resources.runtimeAssets;
+  // pass part of responsibility for asset loading to runtime
+  const assets: AssetEntry[] = Object.keys(runtimeAssets).map(name => {
+    const asset = runtimeAssets[name] as AssetEntry;
+    asset.name = name;
+    asset.resolvedUrl = `_framework/${name}`;
+    return asset;
+  });
+
+  // blazor could start downloading bit earlier than the runtime would
+  const runtimeAssetsBeingLoaded = assets
+    .filter(asset => asset.behavior === 'dotnetwasm')
+    .map(asset => {
+      asset.pendingDownload = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, 'dotnetwasm');
+      return asset.pendingDownload;
+    });
+
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
-  const dotnetWasmResourceName = 'dotnet.wasm';
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
   const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
-  const wasmBeingLoaded = resourceLoader.loadResource(
-    /* name */ dotnetWasmResourceName,
-    /* url */ `_framework/${dotnetWasmResourceName}`,
-    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
-    /* type */ 'dotnetwasm'
-  );
+  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, runtimeAssetsBeingLoaded);
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
@@ -269,6 +292,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
       'globalization'
     );
+    totalResources.push(timeZoneResource);
+    timeZoneResource.response.then(_ => setProgress());
   }
 
   let icuDataResource: LoadingResource | undefined;
@@ -281,8 +306,11 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
       'globalization'
     );
+    totalResources.push(icuDataResource);
+    icuDataResource.response.then(_ => setProgress());
   }
 
+  totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
@@ -290,23 +318,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     Module = module;
     BINDING = binding;
     MONO = mono;
-
-    // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-    const instantiateWasm = (imports, successCallback) => {
-      (async () => {
-        let compiledInstance: WebAssembly.Instance;
-        try {
-          const dotnetWasmResource = await wasmBeingLoaded;
-          compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
-        } catch (ex) {
-          printErr((ex as Error).toString());
-          throw ex;
-        }
-        successCallback(compiledInstance);
-      })();
-      return []; // No exports
-    };
-
     const onRuntimeInitialized = () => {
       if (!icuDataResource) {
         // Use invariant culture if the app does not carry icu data.
@@ -329,9 +340,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
       pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-      Blazor._internal.dotNetCriticalError = (message) => {
-        printErr(BINDING.conv_string(message) || '(null)');
-      };
+      Blazor._internal.dotNetCriticalError = (message) => printErr(message || '(null)');
 
       // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
       // startup sequence to load satellite assemblies for the application's culture.
@@ -465,8 +474,20 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       }
 
       // -1 enables debugging with logging disabled. 0 disables debugging entirely.
-      MONO.mono_wasm_load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
+      MONO.mono_wasm_load_runtime('unused', hasDebuggingEnabled() ? -1 : 0);
       MONO.mono_wasm_runtime_ready();
+      try {
+        BINDING.bind_static_method('invalid-fqn', '');
+      } catch (e) {
+        // HOTFIX: until https://github.com/dotnet/runtime/pull/72275
+        // this would always throw, but it will initialize runtime interop as side-effect
+      }
+
+      // makes Blazor._internal visible to [JSImport] as "blazor-internal" module
+      api.setModuleImports('blazor-internal', {
+        Blazor: { _internal: Blazor._internal },
+      });
+
       attachInteropInvoker();
       runtimeReadyResolve(api);
     };
@@ -485,7 +506,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
         const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress as any, data.length);
         heapMemory.set(data);
         MONO.mono_wasm_add_assembly(loadAsName, heapAddress, data.length);
-        MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
+        MONO.loaded_files.push(dependency.url);
       } catch (errorInfo) {
         runtimeReadyReject(errorInfo);
         return;
@@ -496,12 +517,16 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
     const dotnetModuleConfig: DotnetModuleConfig = {
       ...moduleConfig,
+      config: {
+        assets,
+        debugLevel: hasDebuggingEnabled() ? -1 : 0,
+      },
+      downloadResource,
       disableDotnet6Compatibility: false,
       preRun: [preRun, ...existingPreRun],
       postRun: [postRun, ...existingPostRun],
       print,
       printErr,
-      instantiateWasm,
       onRuntimeInitialized,
     };
 
@@ -509,12 +534,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   });
 
   return await runtimeReady;
-}
-
-const anchorTagForAbsoluteUrlConversions = document.createElement('a');
-function toAbsoluteUrl(possiblyRelativeUrl: string) {
-  anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
-  return anchorTagForAbsoluteUrlConversions.href;
 }
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
@@ -625,27 +644,6 @@ async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
     throw new Error('Error loading ICU asset.');
   }
   Module.removeRunDependency(runDependencyId);
-}
-
-async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
-  // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
-  // it doesn't provide any method for supplying a custom response provider, and we want to integrate
-  // with our resource loader cache.
-
-  if (typeof WebAssembly['instantiateStreaming'] === 'function') {
-    try {
-      const streamingResult = await WebAssembly['instantiateStreaming'](wasmResource.response, imports);
-      return streamingResult.instance;
-    } catch (ex) {
-      console.info('Streaming compilation failed. Falling back to ArrayBuffer instantiation. ', ex);
-    }
-  }
-
-  // If that's not available or fails (e.g., due to incorrect content-type header),
-  // fall back to ArrayBuffer instantiation
-  const arrayBuffer = await wasmResource.response.then(r => r.arrayBuffer());
-  const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-  return arrayBufferResult.instance;
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {

@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -363,6 +364,23 @@ public class FileBufferingWriteStreamTests : IDisposable
         // Assert
         Assert.Equal(input, memoryStream.ToArray());
         Assert.Equal(0, bufferingStream.Length);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void Write_BufferingContentToDisk_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        // Arrange
+        var input = new byte[] { 1, 2, 3, };
+        using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
+        bufferingStream.Write(input, 0, 2);
+
+        // Act
+        bufferingStream.Write(input, 2, 1);
+
+        // Assert
+        Assert.NotNull(bufferingStream.FileStream);
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(bufferingStream.FileStream.SafeFileHandle));
     }
 
     public void Dispose()

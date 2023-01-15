@@ -335,8 +335,38 @@ public class MethodHub : TestHub
 
     public async Task<int> GetClientResult(int num)
     {
-        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num);
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num, cancellationToken: default);
         return sum;
+    }
+
+    public void BackgroundClientResult(TcsService tcsService)
+    {
+        var caller = Clients.Caller;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await tcsService.StartedMethod.Task;
+                var result = await caller.InvokeAsync<int>("GetResult", 1, CancellationToken.None);
+                tcsService.EndMethod.SetResult(result);
+            }
+            catch (Exception ex)
+            {
+                tcsService.EndMethod.SetException(ex);
+            }
+        });
+    }
+
+    public async Task<int> GetClientResultWithStream(ChannelReader<int> channelReader)
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        return sum;
+    }
+
+    public async IAsyncEnumerable<int> StreamWithClientResult()
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        yield return sum;
     }
 }
 
@@ -537,6 +567,8 @@ public interface ITest
     Task Broadcast(string message);
 
     Task<int> GetClientResult(int value);
+
+    Task<int> GetClientResultWithCancellation(int value, CancellationToken cancellationToken);
 }
 
 public record ClientResults(int ClientResult, int CallerResult);
@@ -1254,6 +1286,22 @@ public class ConnectionLifetimeState
     public Exception DisconnectedException { get; set; }
 }
 
+public class OnConnectedClientResultHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
+    }
+}
+
+public class OnDisconnectedClientResultHub : Hub
+{
+    public override async Task OnDisconnectedAsync(Exception ex)
+    {
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
+    }
+}
+
 public class CallerServiceHub : Hub
 {
     private readonly CallerService _service;
@@ -1320,6 +1368,11 @@ public class ServicesHub : TestHub
     }
 
     public int ServiceWithAndWithoutAttribute(Service1 service, [FromService] Service2 service2)
+    {
+        return 1;
+    }
+
+    public int IEnumerableOfServiceWithoutAttribute(IEnumerable<Service1> services)
     {
         return 1;
     }

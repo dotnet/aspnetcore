@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -815,11 +816,26 @@ public partial class HubConnection : IAsyncDisposable
             responseError = $"Stream errored by client: '{ex}'";
         }
 
-        Log.CompletingStream(_logger, streamId);
-
         // Don't use cancellation token here
         // this is triggered by a cancellation token to tell the server that the client is done streaming
-        await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
+        try
+        {
+            // Avoid sending when the connection isn't active, likely happens if there is an active stream when the connection closes
+            if (_state.IsConnectionActive())
+            {
+                Log.CompletingStream(_logger, streamId);
+                await SendHubMessage(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
+            }
+            else
+            {
+                Log.CompletingStreamNotSent(_logger, streamId);
+            }
+        }
+        finally
+        {
+            _state.ReleaseConnectionLock();
+        }
     }
 
     private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
@@ -1025,7 +1041,14 @@ public partial class HubConnection : IAsyncDisposable
             if (expectsResult)
             {
                 Log.MissingResultHandler(_logger, invocation.Target);
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                try
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorSendingInvocationResult(_logger, invocation.InvocationId!, invocation.Target, ex);
+                }
             }
             else
             {
@@ -1066,18 +1089,25 @@ public partial class HubConnection : IAsyncDisposable
 
         if (expectsResult)
         {
-            if (resultException is not null)
+            try
             {
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, resultException.Message), cancellationToken: default).ConfigureAwait(false);
+                if (resultException is not null)
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, resultException.Message), cancellationToken: default).ConfigureAwait(false);
+                }
+                else if (hasResult)
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
+                }
+                else
+                {
+                    Log.MissingResultHandler(_logger, invocation.Target);
+                    await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                }
             }
-            else if (hasResult)
+            catch (Exception ex)
             {
-                await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
-            }
-            else
-            {
-                Log.MissingResultHandler(_logger, invocation.Target);
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                Log.ErrorSendingInvocationResult(_logger, invocation.InvocationId!, invocation.Target, ex);
             }
         }
         else if (hasResult)
@@ -1116,10 +1146,7 @@ public partial class HubConnection : IAsyncDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HubConnection));
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)
@@ -1252,7 +1279,14 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (invocationMessageChannelReader.TryRead(out var invocationMessage))
                 {
-                    await DispatchInvocationAsync(invocationMessage, connectionState).ConfigureAwait(false);
+                    var invokeTask = DispatchInvocationAsync(invocationMessage, connectionState);
+                    // If a client result is expected we shouldn't block on user code as that could potentially permanently block the application
+                    // Even if it doesn't permanently block, it would be better if non-client result handlers could still be called while waiting for a result
+                    // e.g. chat while waiting for user input for a turn in a game
+                    if (string.IsNullOrEmpty(invocationMessage.InvocationId))
+                    {
+                        await invokeTask.ConfigureAwait(false);
+                    }
                 }
             }
         }
@@ -2076,13 +2110,20 @@ public partial class HubConnection : IAsyncDisposable
         {
             await WaitConnectionLockAsync(token, methodName).ConfigureAwait(false);
 
-            if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
+            if (!IsConnectionActive())
             {
                 ReleaseConnectionLock(methodName);
                 throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
             }
 
             return CurrentConnectionStateUnsynchronized;
+        }
+
+        [MemberNotNullWhen(true, nameof(CurrentConnectionStateUnsynchronized))]
+        public bool IsConnectionActive()
+        {
+            AssertInConnectionLock();
+            return CurrentConnectionStateUnsynchronized is not null && !CurrentConnectionStateUnsynchronized.Stopping;
         }
 
         public void ReleaseConnectionLock([CallerMemberName] string? memberName = null,

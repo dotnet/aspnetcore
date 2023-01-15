@@ -40,6 +40,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     private readonly IUrlHelperFactory _urlHelperFactory;
     private readonly HtmlEncoder _htmlEncoder;
     private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
+    private readonly FormInputRenderMode _formInputRenderMode;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -59,41 +60,19 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         HtmlEncoder htmlEncoder,
         ValidationHtmlAttributeProvider validationAttributeProvider)
     {
-        if (antiforgery == null)
-        {
-            throw new ArgumentNullException(nameof(antiforgery));
-        }
-
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
-
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
-
-        if (urlHelperFactory == null)
-        {
-            throw new ArgumentNullException(nameof(urlHelperFactory));
-        }
-
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
-
-        if (validationAttributeProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeProvider));
-        }
+        ArgumentNullException.ThrowIfNull(antiforgery);
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
+        ArgumentNullException.ThrowIfNull(metadataProvider);
+        ArgumentNullException.ThrowIfNull(urlHelperFactory);
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
+        ArgumentNullException.ThrowIfNull(validationAttributeProvider);
 
         _antiforgery = antiforgery;
         _metadataProvider = metadataProvider;
         _urlHelperFactory = urlHelperFactory;
         _htmlEncoder = htmlEncoder;
         _validationAttributeProvider = validationAttributeProvider;
+        _formInputRenderMode = optionsAccessor.Value.HtmlHelperOptions.FormInputRenderMode;
 
         // Underscores are fine characters in id's.
         IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -134,7 +113,12 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <inheritdoc />
     public string FormatValue(object value, string format)
     {
-        return ViewDataDictionary.FormatValue(value, format);
+        return ViewDataDictionary.FormatValue(value, format, CultureInfo.CurrentCulture);
+    }
+
+    private static string FormatValue(object value, string format, IFormatProvider formatProvider)
+    {
+        return ViewDataDictionary.FormatValue(value, format, formatProvider);
     }
 
     /// <inheritdoc />
@@ -149,15 +133,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object routeValues,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var url = urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
@@ -176,15 +153,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object routeValues,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var url = urlHelper.Page(pageName, pageHandler, routeValues, protocol, hostname, fragment);
@@ -194,10 +164,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
     /// <inheritdoc />
     public virtual IHtmlContent GenerateAntiforgery(ViewContext viewContext)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var formContext = viewContext.FormContext;
         if (formContext.CanRenderAtEndOfForm)
@@ -224,10 +191,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool? isChecked,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         if (modelExplorer != null)
         {
@@ -271,10 +235,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         ModelExplorer modelExplorer,
         string expression)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var tagBuilder = new TagBuilder("input");
         tagBuilder.MergeAttribute("type", GetInputTypeString(InputType.Hidden));
@@ -299,10 +260,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var defaultMethod = false;
         if (string.IsNullOrEmpty(method))
@@ -342,10 +300,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var action = urlHelper.Page(pageName, pageHandler, routeValues, protocol: null, host: null, fragment: fragment);
@@ -361,10 +316,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var action = urlHelper.RouteUrl(routeName, routeValues);
@@ -381,10 +333,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool useViewData,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         // Special-case opaque values and arbitrary binary data.
         if (value is byte[] byteArrayValue)
@@ -415,15 +364,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string labelText,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         var resolvedLabelText = labelText ??
             modelExplorer.Metadata.DisplayName ??
@@ -460,10 +402,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object value,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
         return GenerateInput(
@@ -489,10 +428,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool? isChecked,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
         if (modelExplorer == null)
@@ -502,10 +438,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
                 (htmlAttributeDictionary == null || !htmlAttributeDictionary.ContainsKey("checked")))
             {
                 // Note value may be null if isChecked is non-null.
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 // isChecked not provided nor found in the given attributes; fall back to view data.
                 var valueString = Convert.ToString(value, CultureInfo.CurrentCulture);
@@ -560,15 +493,8 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         object routeValues,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
         var url = urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
@@ -585,10 +511,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool allowMultiple,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var currentValues = GetCurrentValues(viewContext, modelExplorer, expression, allowMultiple);
         return GenerateSelect(
@@ -613,10 +536,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         bool allowMultiple,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
@@ -681,10 +601,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         int columns,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         if (rows < 0)
         {
@@ -772,10 +689,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string format,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
         return GenerateInput(
@@ -801,10 +715,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string tag,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
         var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
@@ -894,10 +805,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string headerTag,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var viewData = viewContext.ViewData;
         if (!viewContext.ClientValidationEnabled && viewData.ModelState.IsValid)
@@ -995,10 +903,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string expression,
         bool allowMultiple)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
         var type = allowMultiple ? typeof(string[]) : typeof(string);
@@ -1185,10 +1090,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string method,
         object htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         var tagBuilder = new TagBuilder("form");
         tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
@@ -1237,10 +1139,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string format,
         IDictionary<string, object> htmlAttributes)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
         // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
@@ -1282,7 +1181,18 @@ public class DefaultHtmlGenerator : IHtmlGenerator
             AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
         }
 
-        var valueParameter = FormatValue(value, format);
+        CultureInfo culture;
+        if (ShouldUseInvariantFormattingForInputType(suppliedTypeString, viewContext.Html5DateRenderingMode))
+        {
+            culture = CultureInfo.InvariantCulture;
+            viewContext.FormContext.InvariantField(fullName, true);
+        }
+        else
+        {
+            culture = CultureInfo.CurrentCulture;
+        }
+
+        var valueParameter = FormatValue(value, format, culture);
         var usedModelState = false;
         switch (inputType)
         {
@@ -1329,29 +1239,16 @@ public class DefaultHtmlGenerator : IHtmlGenerator
 
             case InputType.Text:
             default:
+                if (string.Equals(suppliedTypeString, "file", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(suppliedTypeString, "image", StringComparison.OrdinalIgnoreCase))
+                {
+                    // 'value' attribute is not needed for 'file' and 'image' input types.
+                    break;
+                }
+
                 var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
-                if (attributeValue == null)
-                {
-                    attributeValue = useViewData ? EvalString(viewContext, expression, format) : valueParameter;
-                }
-
-                var addValue = true;
-                object typeAttributeValue;
-                if (htmlAttributes != null && htmlAttributes.TryGetValue("type", out typeAttributeValue))
-                {
-                    var typeAttributeString = typeAttributeValue.ToString();
-                    if (string.Equals(typeAttributeString, "file", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(typeAttributeString, "image", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // 'value' attribute is not needed for 'file' and 'image' input types.
-                        addValue = false;
-                    }
-                }
-
-                if (addValue)
-                {
-                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
-                }
+                attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
+                tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
 
                 break;
         }
@@ -1384,10 +1281,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         string url,
         object htmlAttributes)
     {
-        if (linkText == null)
-        {
-            throw new ArgumentNullException(nameof(linkText));
-        }
+        ArgumentNullException.ThrowIfNull(linkText);
 
         var tagBuilder = new TagBuilder("a");
         tagBuilder.InnerHtml.SetContent(linkText);
@@ -1556,14 +1450,43 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         }
     }
 
+    private bool ShouldUseInvariantFormattingForInputType(string inputType, Html5DateRenderingMode dateRenderingMode)
+    {
+        if (_formInputRenderMode == FormInputRenderMode.DetectCultureFromInputType)
+        {
+            var isNumberInput =
+                string.Equals(inputType, "number", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(inputType, "range", StringComparison.OrdinalIgnoreCase);
+
+            if (isNumberInput)
+            {
+                return true;
+            }
+
+            if (dateRenderingMode != Html5DateRenderingMode.CurrentCulture)
+            {
+                var isDateInput =
+                    string.Equals(inputType, "date", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "datetime-local", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "month", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "time", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(inputType, "week", StringComparison.OrdinalIgnoreCase);
+
+                if (isDateInput)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static IEnumerable<SelectListItem> GetSelectListItems(
         ViewContext viewContext,
         string expression)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         // Method is called only if user did not pass a select list in. They must provide select list items in the
         // ViewData dictionary and definitely not as the Model. (Even if the Model datatype were correct, a

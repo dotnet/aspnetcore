@@ -20,4 +20,7 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
     <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Localization.Test" />
+  </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -20,10 +21,7 @@ public sealed class CngCbcAuthenticatedEncryptorDescriptorDeserializer : IAuthen
     /// </summary>
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         // <descriptor>
         //   <!-- Windows CNG-CBC -->

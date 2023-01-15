@@ -207,6 +207,7 @@ public class DatabaseErrorPageTest
 
         var content = await ExecutePage(options, model);
 
+        Assert.NotNull(options.MigrationsEndPointPath.Value); // guard
         Assert.Contains(options.MigrationsEndPointPath.Value, content);
     }
 

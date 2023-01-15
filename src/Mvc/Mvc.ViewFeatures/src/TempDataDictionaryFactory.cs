@@ -20,10 +20,7 @@ public class TempDataDictionaryFactory : ITempDataDictionaryFactory
     /// <param name="provider">The <see cref="ITempDataProvider"/>.</param>
     public TempDataDictionaryFactory(ITempDataProvider provider)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
 
         _provider = provider;
     }
@@ -31,10 +28,7 @@ public class TempDataDictionaryFactory : ITempDataDictionaryFactory
     /// <inheritdoc />
     public ITempDataDictionary GetTempData(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         object obj;
         ITempDataDictionary result;

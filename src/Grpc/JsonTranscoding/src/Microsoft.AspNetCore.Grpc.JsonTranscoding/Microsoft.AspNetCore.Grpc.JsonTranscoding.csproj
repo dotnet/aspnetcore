@@ -3,8 +3,6 @@
     <Description>HTTP API for gRPC ASP.NET Core</Description>
     <PackageTags>gRPC RPC HTTP/2 REST</PackageTags>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Suppress warnings about lowercase variable names in generated code -->
-    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,11 +25,17 @@
     <Compile Include="..\Shared\HttpRoutePatternParser.cs" Link="Internal\Shared\HttpRoutePatternParser.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Internal\Shared" />
 
-    <Protobuf Include="Internal\Protos\errors.proto" Access="Internal" />
-
     <Reference Include="Google.Api.CommonProtos" />
     <Reference Include="Google.Protobuf" />
     <Reference Include="Grpc.AspNetCore.Server" />
-    <Reference Include="Grpc.Tools" PrivateAssets="All" />
+
+    <None Update="protos\google\api\*.proto">
+      <Pack>true</Pack>
+      <PackagePath>content</PackagePath>
+    </None>
+    <None Include="build\*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
   </ItemGroup>
 </Project>

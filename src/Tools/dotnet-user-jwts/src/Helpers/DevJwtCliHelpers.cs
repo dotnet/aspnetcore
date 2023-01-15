@@ -48,71 +48,25 @@ internal static class DevJwtCliHelpers
         userSecretsId = null;
         if (project == null)
         {
-            reporter.Error($"No project found at `-p|--project` path or current directory.");
+            reporter.Error(Resources.ProjectOption_ProjectNotFound);
             return false;
         }
 
         userSecretsId = GetOrSetUserSecretsId(project);
         if (userSecretsId == null)
         {
-            reporter.Error($"Project does not contain a user secrets ID.");
+            reporter.Error(Resources.ProjectOption_SercretIdNotFound);
             return false;
         }
         return true;
     }
 
-    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer)
-    {
-        var projectConfiguration = new ConfigurationBuilder()
-            .AddUserSecrets(userSecretsId)
-            .Build();
-
-        var signingKeyMaterial = projectConfiguration[GetSigningKeyPropertyName(schemeName, issuer)];
-
-        var keyMaterial = new byte[DevJwtsDefaults.SigningKeyLength];
-        if (signingKeyMaterial is not null && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten) && bytesWritten == DevJwtsDefaults.SigningKeyLength)
-        {
-            return keyMaterial;
-        }
-
-        return CreateSigningKeyMaterial(userSecretsId, schemeName, issuer);
-    }
-
-    public static byte[] CreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer, bool reset = false)
-    {
-        // Create signing material and save to user secrets
-        var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(DevJwtsDefaults.SigningKeyLength);
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
-        Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
-
-        JsonObject secrets = null;
-        if (File.Exists(secretsFilePath))
-        {
-            using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
-            if (secretsFileStream.Length > 0)
-            {
-                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream);
-            }
-        }
-
-        secrets ??= new JsonObject();
-        var key = GetSigningKeyPropertyName(schemeName, issuer);
-
-        if (reset && secrets.ContainsKey(key))
-        {
-            secrets.Remove(key);
-        }
-        secrets.Add(key, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
-
-        using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
-        JsonSerializer.Serialize(secretsWriteStream, secrets);
-
-        return newKeyMaterial;
-    }
-
     public static List<string> GetAudienceCandidatesFromLaunchSettings(string project)
     {
-        ArgumentException.ThrowIfNullOrEmpty(nameof(project));
+        if (string.IsNullOrEmpty(project))
+        {
+            return new List<string>();
+        }
 
         var launchSettingsFilePath = Path.Combine(Path.GetDirectoryName(project)!, "Properties", "launchSettings.json");
         var applicationUrls = new HashSet<string>();
@@ -189,48 +143,70 @@ internal static class DevJwtCliHelpers
         }
     }
 
-    public static void PrintJwt(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken = null)
+    public static void PrintJwt(IReporter reporter, Jwt jwt, bool showAll, string outputFormat, JwtSecurityToken fullToken = null)
     {
-        reporter.Output($"{Resources.JwtPrint_Id}: {jwt.Id}");
-        reporter.Output($"{Resources.JwtPrint_Name}: {jwt.Name}");
-        reporter.Output($"{Resources.JwtPrint_Scheme}: {jwt.Scheme}");
-        reporter.Output($"{Resources.JwtPrint_Audiences}: {jwt.Audience}");
-        reporter.Output($"{Resources.JwtPrint_NotBefore}: {jwt.NotBefore:O}");
-        reporter.Output($"{Resources.JwtPrint_ExpiresOn}: {jwt.Expires:O}");
-        reporter.Output($"{Resources.JwtPrint_IssuedOn}: {jwt.Issued:O}");
-
-        if (!jwt.Scopes.IsNullOrEmpty() || showAll)
+        switch (outputFormat)
         {
-            var scopesValue = jwt.Scopes.IsNullOrEmpty()
-                ? "none"
-                : string.Join(", ", jwt.Scopes);
-            reporter.Output($"{Resources.JwtPrint_Scopes}: {scopesValue}");
+            case "token":
+                reporter.Output(fullToken is not null ? jwt.Token : string.Empty);
+                break;
+            case "json":
+                PrintJwtJson(reporter, jwt, showAll, fullToken);
+                break;
+            default:
+                PrintJwtDefault(reporter, jwt, showAll, fullToken);
+                break;
         }
 
-        if (!jwt.Roles.IsNullOrEmpty() || showAll)
+        static void PrintJwtJson(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
         {
-            var rolesValue = jwt.Roles.IsNullOrEmpty()
-                ? "none"
-                : string.Join(", ", jwt.Roles);
-            reporter.Output($"{Resources.JwtPrint_Roles}: [{rolesValue}]");
+            reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
         }
 
-        if (!jwt.CustomClaims.IsNullOrEmpty() || showAll)
+        static void PrintJwtDefault(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
         {
-            var customClaimsValue = jwt.CustomClaims.IsNullOrEmpty()
-                ? "none"
-                : string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-            reporter.Output($"{Resources.JwtPrint_CustomClaims}: [{customClaimsValue}]");
-        }
+            reporter.Output(Resources.FormatPrintCommand_Confirmed(jwt.Id));
+            reporter.Output($"{Resources.JwtPrint_Id}: {jwt.Id}");
+            reporter.Output($"{Resources.JwtPrint_Name}: {jwt.Name}");
+            reporter.Output($"{Resources.JwtPrint_Scheme}: {jwt.Scheme}");
+            reporter.Output($"{Resources.JwtPrint_Audiences}: {jwt.Audience}");
+            reporter.Output($"{Resources.JwtPrint_NotBefore}: {jwt.NotBefore:O}");
+            reporter.Output($"{Resources.JwtPrint_ExpiresOn}: {jwt.Expires:O}");
+            reporter.Output($"{Resources.JwtPrint_IssuedOn}: {jwt.Issued:O}");
 
-        if (showAll)
-        {
-            reporter.Output($"{Resources.JwtPrint_TokenHeader}: {fullToken.Header.SerializeToJson()}");
-            reporter.Output($"{Resources.JwtPrint_TokenPayload}: {fullToken.Payload.SerializeToJson()}");
-        }
+            if (!jwt.Scopes.IsNullOrEmpty() || showAll)
+            {
+                var scopesValue = jwt.Scopes.IsNullOrEmpty()
+                    ? "none"
+                    : string.Join(", ", jwt.Scopes);
+                reporter.Output($"{Resources.JwtPrint_Scopes}: {scopesValue}");
+            }
 
-        var tokenValueFieldName = showAll ? Resources.JwtPrint_CompactToken : Resources.JwtPrint_Token;
-        reporter.Output($"{tokenValueFieldName}: {jwt.Token}");
+            if (!jwt.Roles.IsNullOrEmpty() || showAll)
+            {
+                var rolesValue = jwt.Roles.IsNullOrEmpty()
+                    ? "none"
+                    : string.Join(", ", jwt.Roles);
+                reporter.Output($"{Resources.JwtPrint_Roles}: [{rolesValue}]");
+            }
+
+            if (!jwt.CustomClaims.IsNullOrEmpty() || showAll)
+            {
+                var customClaimsValue = jwt.CustomClaims.IsNullOrEmpty()
+                    ? "none"
+                    : string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+                reporter.Output($"{Resources.JwtPrint_CustomClaims}: [{customClaimsValue}]");
+            }
+
+            if (showAll)
+            {
+                reporter.Output($"{Resources.JwtPrint_TokenHeader}: {fullToken.Header.SerializeToJson()}");
+                reporter.Output($"{Resources.JwtPrint_TokenPayload}: {fullToken.Payload.SerializeToJson()}");
+            }
+
+            var tokenValueFieldName = showAll ? Resources.JwtPrint_CompactToken : Resources.JwtPrint_Token;
+            reporter.Output($"{tokenValueFieldName}: {jwt.Token}");
+        }
     }
 
     public static bool TryParseClaims(List<string> input, out Dictionary<string, string> claims)
@@ -251,7 +227,4 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
-
-    public static string GetSigningKeyPropertyName(string scheme, string issuer)
-        => $"Authentication:Schemes:{scheme}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
 }

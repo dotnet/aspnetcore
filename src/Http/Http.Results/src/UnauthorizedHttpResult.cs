@@ -24,6 +24,8 @@ public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
     /// </summary>
     public int StatusCode => StatusCodes.Status401Unauthorized;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {

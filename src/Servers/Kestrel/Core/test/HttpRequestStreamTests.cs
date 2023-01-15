@@ -197,21 +197,21 @@ public class HttpRequestStreamTests
     }
 
     [Fact]
-    public void NullDestinationCausesCopyToAsyncToThrowArgumentNullException()
+    public async Task NullDestinationCausesCopyToAsyncToThrowArgumentNullException()
     {
         var pipeReader = new HttpRequestPipeReader();
         var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
         pipeReader.StartAcceptingReads(null);
-        Assert.Throws<ArgumentNullException>(() => { stream.CopyToAsync(null); });
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => { await stream.CopyToAsync(null); });
     }
 
     [Fact]
-    public void ZeroBufferSizeCausesCopyToAsyncToThrowArgumentException()
+    public async Task ZeroBufferSizeCausesCopyToAsyncToThrowArgumentException()
     {
         var pipeReader = new HttpRequestPipeReader();
         var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
         pipeReader.StartAcceptingReads(null);
         // This is technically a breaking change, to throw an ArgumentoutOfRangeException rather than an ArgumentException
-        Assert.Throws<ArgumentOutOfRangeException>(() => { stream.CopyToAsync(Mock.Of<Stream>(), 0); });
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => { await stream.CopyToAsync(Mock.Of<Stream>(), 0); });
     }
 }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -36,30 +37,11 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         ILogger<HealthCheckPublisherHostedService> logger,
         IEnumerable<IHealthCheckPublisher> publishers)
     {
-        if (healthCheckService == null)
-        {
-            throw new ArgumentNullException(nameof(healthCheckService));
-        }
-
-        if (healthCheckServiceOptions == null)
-        {
-            throw new ArgumentNullException(nameof(healthCheckServiceOptions));
-        }
-
-        if (healthCheckPublisherOptions == null)
-        {
-            throw new ArgumentNullException(nameof(healthCheckPublisherOptions));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
-        if (publishers == null)
-        {
-            throw new ArgumentNullException(nameof(publishers));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(healthCheckService);
+        ArgumentNullThrowHelper.ThrowIfNull(healthCheckServiceOptions);
+        ArgumentNullThrowHelper.ThrowIfNull(healthCheckPublisherOptions);
+        ArgumentNullThrowHelper.ThrowIfNull(logger);
+        ArgumentNullThrowHelper.ThrowIfNull(publishers);
 
         _healthCheckService = healthCheckService;
         _healthCheckServiceOptions = healthCheckServiceOptions;

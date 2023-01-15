@@ -54,6 +54,7 @@ internal sealed class ParameterBindingMethodCache
     }
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
+    [RequiresDynamicCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public bool HasTryParseMethod(Type type)
     {
         var nonNullableParameterType = Nullable.GetUnderlyingType(type) ?? type;
@@ -61,12 +62,17 @@ internal sealed class ParameterBindingMethodCache
     }
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
+    [RequiresDynamicCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
+    [RequiresDynamicCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
+        // This method is used to find TryParse methods from .NET types using reflection. It's used at app runtime.
+        // Routing analyzers also detect TryParse methods when calculating what types are valid in routes.
+        // Changes here to support new types should be reflected in analyzers.
         Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
@@ -192,6 +198,7 @@ internal sealed class ParameterBindingMethodCache
     }
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
+    [RequiresDynamicCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
     {
         (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
@@ -391,6 +398,7 @@ internal sealed class ParameterBindingMethodCache
         throw new InvalidOperationException($"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
     }
 
+    [RequiresDynamicCode("MakeGenericMethod is possible used with ValueTypes and isn't compatible with AOT.")]
     private static MethodInfo? GetIBindableFromHttpContextMethod(Type type)
     {
         // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
@@ -410,7 +418,8 @@ internal sealed class ParameterBindingMethodCache
     {
         return TValue.BindAsync(httpContext, parameter);
     }
-        
+
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
         bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);

@@ -23,10 +23,7 @@ public class DefaultViewComponentDescriptorProvider : IViewComponentDescriptorPr
     /// <param name="partManager">The <see cref="ApplicationPartManager"/>.</param>
     public DefaultViewComponentDescriptorProvider(ApplicationPartManager partManager)
     {
-        if (partManager == null)
-        {
-            throw new ArgumentNullException(nameof(partManager));
-        }
+        ArgumentNullException.ThrowIfNull(partManager);
 
         _partManager = partManager;
     }

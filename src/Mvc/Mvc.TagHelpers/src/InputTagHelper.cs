@@ -141,15 +141,8 @@ public class InputTagHelper : TagHelper
     /// </exception>
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attributes that are also well-known HTML attributes. Must be done prior to any copying
         // from a TagBuilder.
@@ -243,8 +236,18 @@ public class InputTagHelper : TagHelper
 
         if (tagBuilder != null)
         {
-            // This TagBuilder contains the one <input/> element of interest.
+            // This TagBuilder contains the primary <input/> element of interest.
             output.MergeAttributes(tagBuilder);
+
+            if (tagBuilder.Attributes.TryGetValue("name", out var fullName) &&
+                ViewContext.FormContext.InvariantField(fullName))
+            {
+                // If the value attribute used culture-invariant formatting, output a hidden
+                // <input/> element so the form submission includes an entry indicating such.
+                // This lets the model binding logic decide which CultureInfo to use when parsing form entries.
+                GenerateInvariantCultureMetadata(fullName, output.PostElement);
+            }
+
             if (tagBuilder.HasInnerHtml)
             {
                 // Since this is not the "checkbox" special-case, no guarantee that output is a self-closing
@@ -409,6 +412,14 @@ public class InputTagHelper : TagHelper
             format,
             htmlAttributes);
     }
+
+    private static void GenerateInvariantCultureMetadata(string propertyName, TagHelperContent builder)
+        => builder
+            .AppendHtml("<input name=\"")
+            .Append(FormValueHelper.CultureInvariantFieldName)
+            .AppendHtml("\" type=\"hidden\" value=\"")
+            .Append(propertyName)
+            .AppendHtml("\" />");
 
     // Imitate Generator.GenerateHidden() using Generator.GenerateTextBox(). This adds support for asp-format that
     // is not available in Generator.GenerateHidden().

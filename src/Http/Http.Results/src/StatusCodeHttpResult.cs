@@ -27,6 +27,8 @@ public sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResul
     /// </summary>
     public int StatusCode { get; }
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <summary>
     /// Sets the status code on the HTTP response.
     /// </summary>

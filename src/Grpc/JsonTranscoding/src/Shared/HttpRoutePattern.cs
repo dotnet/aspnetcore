@@ -27,7 +27,6 @@ internal sealed class HttpRoutePattern
 
 internal sealed class HttpRouteVariable
 {
-    public int Index { get; set; }
     public int StartSegment { get; set; }
     public int EndSegment { get; set; }
     public List<string> FieldPath { get; } = new List<string>();

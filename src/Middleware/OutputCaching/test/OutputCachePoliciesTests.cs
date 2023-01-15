@@ -19,6 +19,17 @@ public class OutputCachePoliciesTests
     }
 
     [Fact]
+    public async Task DefaultCachePolicy_VariesByHost()
+    {
+        IOutputCachePolicy policy = DefaultPolicy.Instance;
+        var context = TestUtils.CreateUninitializedContext();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.True(context.CacheVaryByRules.VaryByHost);
+    }
+
+    [Fact]
     public async Task DefaultCachePolicy_AllowsLocking()
     {
         IOutputCachePolicy policy = DefaultPolicy.Instance;
@@ -50,6 +61,17 @@ public class OutputCachePoliciesTests
         await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.EnableOutputCaching);
+    }
+
+    [Fact]
+    public async Task VaryByHostPolicy_Disabled_UpdatesCacheVaryByRule()
+    {
+        IOutputCachePolicy policy = VaryByHostPolicy.Disabled;
+        var context = TestUtils.CreateUninitializedContext();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.False(context.CacheVaryByRules.VaryByHost);
     }
 
     [Fact]
@@ -126,9 +148,10 @@ public class OutputCachePoliciesTests
     [Fact]
     public async Task ProfilePolicy_UsesNamedProfile()
     {
-        var context = TestUtils.CreateUninitializedContext();
-        context.Options.AddPolicy("enabled", EnableCachePolicy.Enabled);
-        context.Options.AddPolicy("disabled", EnableCachePolicy.Disabled);
+        var options = new OutputCacheOptions();
+        options.AddPolicy("enabled", EnableCachePolicy.Enabled);
+        options.AddPolicy("disabled", EnableCachePolicy.Disabled);
+        var context = TestUtils.CreateUninitializedContext(options: options);
 
         IOutputCachePolicy policy = new NamedPolicy("enabled");
 
@@ -161,11 +184,11 @@ public class OutputCachePoliciesTests
     {
         var context = TestUtils.CreateUninitializedContext();
 
-        IOutputCachePolicy policy = new VaryByHeaderPolicy();
+        IOutputCachePolicy policy = new VaryByHeaderPolicy(Array.Empty<string>());
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Empty(context.CacheVaryByRules.Headers);
+        Assert.Empty(context.CacheVaryByRules.HeaderNames);
     }
 
     [Fact]
@@ -178,7 +201,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(header, context.CacheVaryByRules.Headers);
+        Assert.Equal(header, context.CacheVaryByRules.HeaderNames);
     }
 
     [Fact]
@@ -191,7 +214,7 @@ public class OutputCachePoliciesTests
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(headers, context.CacheVaryByRules.Headers);
+        Assert.Equal(headers, context.CacheVaryByRules.HeaderNames);
     }
 
     [Fact]
@@ -199,7 +222,7 @@ public class OutputCachePoliciesTests
     {
         var context = TestUtils.CreateUninitializedContext();
 
-        IOutputCachePolicy policy = new VaryByQueryPolicy();
+        IOutputCachePolicy policy = new VaryByQueryPolicy(Array.Empty<string>());
 
         await policy.CacheRequestAsync(context, default);
 
@@ -225,6 +248,19 @@ public class OutputCachePoliciesTests
         var context = TestUtils.CreateUninitializedContext();
         var queries = new[] { "query1", "query2" };
 
+        IOutputCachePolicy policy = new VaryByQueryPolicy("query1", "query2");
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.Equal(queries, context.CacheVaryByRules.QueryKeys);
+    }
+
+    [Fact]
+    public async Task VaryByQueryPolicy_AddsMultipleHeadersArray()
+    {
+        var context = TestUtils.CreateUninitializedContext();
+        var queries = new[] { "query1", "query2" };
+
         IOutputCachePolicy policy = new VaryByQueryPolicy(queries);
 
         await policy.CacheRequestAsync(context, default);
@@ -233,29 +269,16 @@ public class OutputCachePoliciesTests
     }
 
     [Fact]
-    public async Task VaryByValuePolicy_SingleValue()
+    public async Task VaryByKeyPrefixPolicy_AddsKeyPrefix()
     {
         var context = TestUtils.CreateUninitializedContext();
         var value = "value";
 
-        IOutputCachePolicy policy = new VaryByValuePolicy(context => value);
+        IOutputCachePolicy policy = new SetCacheKeyPrefixPolicy((context, cancellationToken) => ValueTask.FromResult(value));
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(value, context.CacheVaryByRules.VaryByPrefix);
-    }
-
-    [Fact]
-    public async Task VaryByValuePolicy_SingleValueAsync()
-    {
-        var context = TestUtils.CreateUninitializedContext();
-        var value = "value";
-
-        IOutputCachePolicy policy = new VaryByValuePolicy((context, token) => ValueTask.FromResult(value));
-
-        await policy.CacheRequestAsync(context, default);
-
-        Assert.Equal(value, context.CacheVaryByRules.VaryByPrefix);
+        Assert.Equal(value, context.CacheVaryByRules.CacheKeyPrefix);
     }
 
     [Fact]
@@ -265,24 +288,10 @@ public class OutputCachePoliciesTests
         var key = "key";
         var value = "value";
 
-        IOutputCachePolicy policy = new VaryByValuePolicy(context => new KeyValuePair<string, string>(key, value));
+        IOutputCachePolicy policy = new VaryByValuePolicy((context, CancellationToken) => ValueTask.FromResult(new KeyValuePair<string, string>(key, value)));
 
         await policy.CacheRequestAsync(context, default);
 
-        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByCustom);
-    }
-
-    [Fact]
-    public async Task VaryByValuePolicy_KeyValuePairAsync()
-    {
-        var context = TestUtils.CreateUninitializedContext();
-        var key = "key";
-        var value = "value";
-
-        IOutputCachePolicy policy = new VaryByValuePolicy((context, token) => ValueTask.FromResult(new KeyValuePair<string, string>(key, value)));
-
-        await policy.CacheRequestAsync(context, default);
-
-        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByCustom);
+        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByValues);
     }
 }

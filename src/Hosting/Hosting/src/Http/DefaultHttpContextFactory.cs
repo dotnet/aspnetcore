@@ -43,10 +43,7 @@ public class DefaultHttpContextFactory : IHttpContextFactory
     /// <returns>An initialized <see cref="HttpContext"/> object.</returns>
     public HttpContext Create(IFeatureCollection featureCollection)
     {
-        if (featureCollection is null)
-        {
-            throw new ArgumentNullException(nameof(featureCollection));
-        }
+        ArgumentNullException.ThrowIfNull(featureCollection);
 
         var httpContext = new DefaultHttpContext(featureCollection);
         Initialize(httpContext, featureCollection);

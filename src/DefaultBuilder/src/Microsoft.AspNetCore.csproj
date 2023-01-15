@@ -36,6 +36,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authorization.Test" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Tests" />
+  </ItemGroup>
 </Project>

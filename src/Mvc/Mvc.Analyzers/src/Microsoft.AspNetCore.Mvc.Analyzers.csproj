@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-     <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
+    <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
     <IsShippingPackage>false</IsShippingPackage>
 
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -23,6 +23,10 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\MvcFacts.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mvc.Analyzers.Test" />
+  </ItemGroup>
 </Project>

@@ -45,9 +45,19 @@ public sealed class OutputCacheAttribute : Attribute
     public string[]? VaryByQueryKeys { get; init; }
 
     /// <summary>
-    /// Gets or sets the headers to vary by.
+    /// Gets or sets the header names to vary by.
     /// </summary>
-    public string[]? VaryByHeaders { get; init; }
+    public string[]? VaryByHeaderNames { get; init; }
+
+    /// <summary>
+    /// Gets or sets the route value names to vary by.
+    /// </summary>
+    public string[]? VaryByRouteValueNames { get; init; }
+
+    /// <summary>
+    /// Gets or sets tags to apply to the output cache.
+    /// </summary>
+    public string[]? Tags { get; init; }
 
     /// <summary>
     /// Gets or sets the value of the cache policy name.
@@ -61,11 +71,17 @@ public sealed class OutputCacheAttribute : Attribute
             return _builtPolicy;
         }
 
-        var builder = new OutputCachePolicyBuilder();
+        OutputCachePolicyBuilder builder;
 
         if (PolicyName != null)
         {
+            // Don't add the default policy if a named one is used as it could already contain it
+            builder = new OutputCachePolicyBuilder(excludeDefaultPolicy: true);
             builder.AddPolicy(new NamedPolicy(PolicyName));
+        }
+        else
+        {
+            builder = new();
         }
 
         if (_noCache != null && _noCache.Value)
@@ -75,7 +91,22 @@ public sealed class OutputCacheAttribute : Attribute
 
         if (VaryByQueryKeys != null)
         {
-            builder.VaryByQuery(VaryByQueryKeys);
+            builder.SetVaryByQuery(VaryByQueryKeys);
+        }
+
+        if (VaryByHeaderNames != null)
+        {
+            builder.SetVaryByHeader(VaryByHeaderNames);
+        }
+
+        if (VaryByRouteValueNames != null)
+        {
+            builder.SetVaryByRouteValue(VaryByRouteValueNames);
+        }
+
+        if (Tags != null)
+        {
+            builder.Tag(Tags);
         }
 
         if (_duration != null)

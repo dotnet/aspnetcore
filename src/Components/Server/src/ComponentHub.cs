@@ -296,6 +296,17 @@ internal sealed partial class ComponentHub : Hub
         _ = circuitHost.OnLocationChangedAsync(uri, state, intercepted);
     }
 
+    public async ValueTask OnLocationChanging(int callId, string uri, string? state, bool intercepted)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        _ = circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted);
+    }
+
     // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime
     // of the connection. It's possible that a misbehaving client could cause disposal of a CircuitHost
     // but keep a connection open indefinitely, preventing GC of the Circuit and related application state.

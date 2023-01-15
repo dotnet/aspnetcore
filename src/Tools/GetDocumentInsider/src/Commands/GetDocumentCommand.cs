@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if NETCOREAPP2_1
+#if NETCOREAPP
 using System.Runtime.Loader;
 #endif
 using Microsoft.Extensions.CommandLineUtils;
@@ -53,7 +53,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
         var packagedAssemblies = Directory
             .EnumerateFiles(toolsDirectory, "*.dll")
             .Except(new[] { Path.GetFullPath(thisAssembly.Location) })
-            .ToDictionary(path => Path.GetFileNameWithoutExtension(path), path => new AssemblyInfo(path));
+            .ToDictionary(Path.GetFileNameWithoutExtension, path => new AssemblyInfo(path));
 
         // Explicitly load all assemblies we need first to preserve target project as much as possible. This
         // executable is always run in the target project's context (either through location or .deps.json file).
@@ -69,7 +69,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
             }
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
         AssemblyLoadContext.Default.Resolving += (loadContext, assemblyName) =>
         {
             var name = assemblyName.Name;

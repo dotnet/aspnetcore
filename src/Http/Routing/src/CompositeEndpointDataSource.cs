@@ -76,7 +76,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     }
 
     /// <inheritdoc/>
-    public override IReadOnlyList<Endpoint> GetEndpointGroup(RouteGroupContext context)
+    public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
     {
         if (_dataSources.Count is 0)
         {
@@ -90,7 +90,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
         foreach (var dataSource in _dataSources)
         {
-            groupedEndpoints.AddRange(dataSource.GetEndpointGroup(context));
+            groupedEndpoints.AddRange(dataSource.GetGroupedEndpoints(context));
         }
 
         // There's no need to cache these the way we do with _endpoints. This is only ever used to get intermediate results.
@@ -242,8 +242,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     [MemberNotNull(nameof(_consumerChangeToken))]
     private void CreateChangeTokenUnsynchronized(bool collectionChanged)
     {
-        _cts = new CancellationTokenSource();
-        _consumerChangeToken = new CancellationChangeToken(_cts.Token);
+        var cts = new CancellationTokenSource();
 
         if (collectionChanged)
         {
@@ -255,17 +254,24 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
                     () => HandleChange(collectionChanged: false)));
             }
         }
+
+        _cts = cts;
+        _consumerChangeToken = new CancellationChangeToken(cts.Token);
     }
 
     [MemberNotNull(nameof(_endpoints))]
     private void CreateEndpointsUnsynchronized()
     {
-        _endpoints = new List<Endpoint>();
+        var endpoints = new List<Endpoint>();
 
         foreach (var dataSource in _dataSources)
         {
-            _endpoints.AddRange(dataSource.Endpoints);
+            endpoints.AddRange(dataSource.Endpoints);
         }
+
+        // Only cache _endpoints after everything succeeds without throwing.
+        // We don't want to create a negative cache which would cause 404s when there should be 500s.
+        _endpoints = endpoints;
     }
 
     // Use private variable '_endpoints' to avoid initialization

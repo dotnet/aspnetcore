@@ -21,7 +21,7 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     internal ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
-        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
+        ProblemDetailsDefaults.Apply(ProblemDetails, statusCode: null);
     }
 
     /// <summary>
@@ -42,6 +42,8 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     /// Gets the HTTP status code.
     /// </summary>
     public int StatusCode => ProblemDetails.Status!.Value;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

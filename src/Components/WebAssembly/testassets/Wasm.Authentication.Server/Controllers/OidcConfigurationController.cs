@@ -19,6 +19,7 @@ public class OidcConfigurationController : Controller
     public IActionResult GetClientRequestParameters([FromRoute] string clientId)
     {
         var parameters = ClientRequestParametersProvider.GetClientParameters(HttpContext, clientId);
+        parameters["scope"] = parameters["scope"]["SecondAPI ".Length..];
         return Ok(parameters);
     }
 }

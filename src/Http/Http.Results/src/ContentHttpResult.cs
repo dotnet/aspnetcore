@@ -50,8 +50,6 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, 
     /// </summary>
     public int? StatusCode { get; internal init; }
 
-    int IStatusCodeHttpResult.StatusCode => StatusCode ?? StatusCodes.Status200OK;
-
     /// <summary>
     /// Writes the content to the HTTP response.
     /// </summary>

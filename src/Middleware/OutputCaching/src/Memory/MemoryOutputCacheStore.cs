@@ -1,22 +1,26 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.OutputCaching.Memory;
 
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
-    private readonly IMemoryCache _cache;
+    private readonly MemoryCache _cache;
     private readonly Dictionary<string, HashSet<string>> _taggedEntries = new();
     private readonly object _tagsLock = new();
 
-    internal MemoryOutputCacheStore(IMemoryCache cache)
+    internal MemoryOutputCacheStore(MemoryCache cache)
     {
         ArgumentNullException.ThrowIfNull(cache);
 
         _cache = cache;
     }
+
+    // For testing
+    internal Dictionary<string, HashSet<string>> TaggedEntries => _taggedEntries;
 
     public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
@@ -26,12 +30,29 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         {
             if (_taggedEntries.TryGetValue(tag, out var keys))
             {
-                foreach (var key in keys)
+                if (keys != null && keys.Count > 0)
                 {
-                    _cache.Remove(key);
-                }
+                    // If MemoryCache changed to run eviction callbacks inline in Remove, iterating over keys could throw
+                    // To prevent allocating a copy of the keys we check if the eviction callback ran,
+                    // and if it did we restart the loop.
 
-                _taggedEntries.Remove(tag);
+                    var i = keys.Count;
+                    while (i > 0)
+                    {
+                        var oldCount = keys.Count;
+                        foreach (var key in keys)
+                        {
+                            _cache.Remove(key);
+                            i--;
+                            if (oldCount != keys.Count)
+                            {
+                                // eviction callback ran inline, we need to restart the loop to avoid
+                                // "collection modified while iterating" errors
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -62,35 +83,75 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 foreach (var tag in tags)
                 {
+                    if (tag is null)
+                    {
+                        throw new ArgumentException(Resources.TagCannotBeNull);
+                    }
+
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
                         keys = new HashSet<string>();
                         _taggedEntries[tag] = keys;
                     }
 
+                    Debug.Assert(keys != null);
+
                     keys.Add(key);
                 }
 
-                SetEntry();
+                SetEntry(key, value, tags, validFor);
             }
         }
         else
         {
-            SetEntry();
-        }
-
-        void SetEntry()
-        {
-            _cache.Set(
-            key,
-            value,
-            new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = validFor,
-                Size = value.Length
-            });
+            SetEntry(key, value, tags, validFor);
         }
 
         return ValueTask.CompletedTask;
+    }
+
+    void SetEntry(string key, byte[] value, string[]? tags, TimeSpan validFor)
+    {
+        Debug.Assert(key != null);
+
+        var options = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = validFor,
+            Size = value.Length
+        };
+
+        if (tags != null && tags.Length > 0)
+        {
+            // Remove cache keys from tag lists when the entry is evicted
+            options.RegisterPostEvictionCallback(RemoveFromTags, tags);
+        }
+
+        _cache.Set(key, value, options);
+    }
+
+    void RemoveFromTags(object key, object? value, EvictionReason reason, object? state)
+    {
+        var tags = state as string[];
+
+        Debug.Assert(tags != null);
+        Debug.Assert(tags.Length > 0);
+        Debug.Assert(key is string);
+
+        lock (_tagsLock)
+        {
+            foreach (var tag in tags)
+            {
+                if (_taggedEntries.TryGetValue(tag, out var tagged))
+                {
+                    tagged.Remove((string)key);
+
+                    // Remove the collection if there is no more keys in it
+                    if (tagged.Count == 0)
+                    {
+                        _taggedEntries.Remove(tag);
+                    }
+                }
+            }
+        }
     }
 }

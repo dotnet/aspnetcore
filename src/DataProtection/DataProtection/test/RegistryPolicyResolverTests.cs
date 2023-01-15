@@ -226,13 +226,13 @@ public class RegistryPolicyResolverTests
         var registryEntries = new Dictionary<string, object>()
         {
             ["EncryptionType"] = "managed",
-            ["EncryptionAlgorithmType"] = typeof(TripleDES).AssemblyQualifiedName,
+            ["EncryptionAlgorithmType"] = typeof(Aes).AssemblyQualifiedName,
             ["EncryptionAlgorithmKeySize"] = 2048,
             ["ValidationAlgorithmType"] = typeof(HMACSHA1).AssemblyQualifiedName
         };
         var expectedConfiguration = new ManagedAuthenticatedEncryptorConfiguration()
         {
-            EncryptionAlgorithmType = typeof(TripleDES),
+            EncryptionAlgorithmType = typeof(Aes),
             EncryptionAlgorithmKeySize = 2048,
             ValidationAlgorithmType = typeof(HMACSHA1)
         };

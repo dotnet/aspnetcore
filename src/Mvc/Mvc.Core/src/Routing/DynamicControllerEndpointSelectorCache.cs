@@ -26,7 +26,7 @@ internal class DynamicControllerEndpointSelectorCache
     public DynamicControllerEndpointSelector GetEndpointSelector(Endpoint endpoint)
     {
         var dataSourceId = endpoint.Metadata.GetMetadata<ControllerEndpointDataSourceIdMetadata>()!;
-        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
+        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, EnsureDataSource);
     }
 
     private DynamicControllerEndpointSelector EnsureDataSource(int key)

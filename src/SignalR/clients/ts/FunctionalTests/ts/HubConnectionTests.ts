@@ -198,7 +198,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe(errorMessage);
+                    expect((e as any).message).toBe(errorMessage);
                 }
 
                 await hubConnection.stop();
@@ -216,7 +216,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
+                    expect((e as any).message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
                 }
 
                 await hubConnection.stop();
@@ -234,7 +234,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
+                    expect((e as any).message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
                 }
 
                 await hubConnection.stop();
@@ -359,7 +359,8 @@ describe("hubConnection", () => {
                 await closePromise;
             });
 
-            it("closed with error or start fails if hub cannot be created", async () => {
+            // Skipped: https://github.com/dotnet/aspnetcore/issues/44608
+            xit("closed with error or start fails if hub cannot be created", async () => {
                 const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable", { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -376,7 +377,13 @@ describe("hubConnection", () => {
                 try {
                     await hubConnection.start();
                 } catch (error) {
-                    expect(error!.message).toEqual(expectedErrorMessage);
+                    if ((error as any)!.message.includes("404")) {
+                        // SSE can race with the connection closing and the initial ping being successful or failing with a 404.
+                        // LongPolling doesn't have pings and WebSockets is a synchronous API over a single HTTP request so it doesn't have the same issues
+                        expect((error as any)!.message).toEqual("No Connection with that ID: Status code '404'");
+                    } else {
+                        expect((error as any)!.message).toEqual(expectedErrorMessage);
+                    }
                     closePromise.resolve();
                 }
                 await closePromise;
@@ -508,7 +515,7 @@ describe("hubConnection", () => {
                     await resultPromise;
                     expect(false).toBe(true);
                 } catch (err) {
-                    expect(err.message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. Exception: Something bad");
+                    expect((err as any).message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. Exception: Something bad");
                 } finally {
                     await hubConnection.stop();
                 }

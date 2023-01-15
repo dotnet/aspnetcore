@@ -32,10 +32,7 @@ internal partial class Http3Stream : IHttpResetFeature,
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _userTrailers = value;
         }

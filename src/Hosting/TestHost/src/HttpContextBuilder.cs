@@ -60,20 +60,14 @@ internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFe
 
     internal void Configure(Action<HttpContext, PipeReader> configureContext)
     {
-        if (configureContext == null)
-        {
-            throw new ArgumentNullException(nameof(configureContext));
-        }
+        ArgumentNullException.ThrowIfNull(configureContext);
 
         configureContext(_httpContext, _requestPipe.Reader);
     }
 
     internal void SendRequestStream(Func<PipeWriter, Task> sendRequestStream)
     {
-        if (sendRequestStream == null)
-        {
-            throw new ArgumentNullException(nameof(sendRequestStream));
-        }
+        ArgumentNullException.ThrowIfNull(sendRequestStream);
 
         _sendRequestStream = sendRequestStream;
     }

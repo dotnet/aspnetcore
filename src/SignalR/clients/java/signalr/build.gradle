@@ -5,7 +5,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.14.0"
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:6.6.1"
     classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
   }
 }
@@ -17,7 +17,7 @@ plugins {
 
 allprojects {
     apply plugin: "java-library"
-    apply plugin: "com.diffplug.gradle.spotless"
+    apply plugin: "com.diffplug.spotless"
 
     // If we're run from outside MSBuild, just assign a bogus dev version.
     version project.findProperty('packageVersion') ?: "99.99.99-dev"

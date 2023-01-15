@@ -30,10 +30,7 @@ public class HtmlHelperOptions
         get => _idAttributeDotReplacement;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _idAttributeDotReplacement = value;
         }
@@ -60,4 +57,14 @@ public class HtmlHelperOptions
     /// Gets or sets the way hidden inputs are rendered for checkbox tag helpers and html helpers.
     /// </summary>
     public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; } = CheckBoxHiddenInputRenderMode.EndOfForm;
+
+    /// <summary>
+    /// Gets or sets a value that determines how form &lt;input/&gt; elements are rendered.
+    /// </summary>
+    /// <remarks>
+    /// Some form elements (e.g., &lt;input type="text"/&gt;) require culture-specific formatting and parsing because their values are
+    /// directly entered by the user. However, other inputs (e.g., &lt;input type="number"/&gt;) use culture-invariant
+    /// formatting both in the HTML source and in the form request.
+    /// </remarks>
+    public FormInputRenderMode FormInputRenderMode { get; set; }
 }

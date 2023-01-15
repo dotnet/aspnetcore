@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,7 @@ public sealed partial class RedirectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
-    internal RedirectHttpResult(string url)
+    internal RedirectHttpResult([StringSyntax(StringSyntaxAttribute.Uri)] string url)
          : this(url, permanent: false)
     {
     }
@@ -29,7 +30,7 @@ public sealed partial class RedirectHttpResult : IResult
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    internal RedirectHttpResult(string url, bool permanent)
+    internal RedirectHttpResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent)
         : this(url, permanent, preserveMethod: false)
     {
     }
@@ -42,7 +43,7 @@ public sealed partial class RedirectHttpResult : IResult
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
-    internal RedirectHttpResult(string url, bool permanent, bool preserveMethod)
+    internal RedirectHttpResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent, bool preserveMethod)
         : this(url, acceptLocalUrlOnly: false, permanent, preserveMethod)
     { }
 
@@ -56,7 +57,7 @@ public sealed partial class RedirectHttpResult : IResult
     /// or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted
     /// and will throw an exception when the supplied URL is not considered local.</param>
-    internal RedirectHttpResult(string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
+    internal RedirectHttpResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
     {
         Url = url;
         Permanent = permanent;

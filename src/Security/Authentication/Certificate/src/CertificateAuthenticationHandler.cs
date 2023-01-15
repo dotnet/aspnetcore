@@ -87,10 +87,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
                 }
             }
 
-            if (_cache != null)
-            {
-                _cache.Put(Context, clientCertificate, result);
-            }
+            _cache?.Put(Context, clientCertificate, result);
             return result;
         }
         catch (Exception ex)
@@ -126,7 +123,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
         {
             Logger.CertificateRejected("Self signed", clientCertificate.Subject);
-            return AuthenticateResult.Fail("Options do not allow self signed certificates.");
+            return AuthenticateResults.NoSelfSigned;
         }
 
         // If we have a chained cert, and they're not allowed, exit early and not bother with
@@ -135,7 +132,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
         {
             Logger.CertificateRejected("Chained", clientCertificate.Subject);
-            return AuthenticateResult.Fail("Options do not allow chained certificates.");
+            return AuthenticateResults.NoChainedCertificates;
         }
 
         var chainPolicy = BuildChainPolicy(clientCertificate, isCertificateSelfSigned);
@@ -153,7 +150,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
                 chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
             }
             Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
-            return AuthenticateResult.Fail("Client certificate failed validation.");
+            return AuthenticateResults.InvalidClientCertificate;
         }
 
         var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)

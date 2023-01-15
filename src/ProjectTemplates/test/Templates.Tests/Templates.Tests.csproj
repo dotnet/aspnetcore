@@ -16,8 +16,9 @@
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
-    <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
+    <RestoreFolderName>Other</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <HelixTimeout>01:00:00</HelixTimeout>
     <SkipHelixQueues>
       $(HelixQueueArmDebian11);
     </SkipHelixQueues>

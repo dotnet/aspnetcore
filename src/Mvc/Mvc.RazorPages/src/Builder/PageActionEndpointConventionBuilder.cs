@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Builder;
@@ -14,11 +14,13 @@ public sealed class PageActionEndpointConventionBuilder : IEndpointConventionBui
     // The lock is shared with the data source.
     private readonly object _lock;
     private readonly List<Action<EndpointBuilder>> _conventions;
+    private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
-    internal PageActionEndpointConventionBuilder(object @lock, List<Action<EndpointBuilder>> conventions)
+    internal PageActionEndpointConventionBuilder(object @lock, List<Action<EndpointBuilder>> conventions, List<Action<EndpointBuilder>> finallyConventions)
     {
         _lock = @lock;
         _conventions = conventions;
+        _finallyConventions = finallyConventions;
     }
 
     /// <summary>
@@ -27,10 +29,7 @@ public sealed class PageActionEndpointConventionBuilder : IEndpointConventionBui
     /// <param name="convention">The convention to add to the builder.</param>
     public void Add(Action<EndpointBuilder> convention)
     {
-        if (convention == null)
-        {
-            throw new ArgumentNullException(nameof(convention));
-        }
+        ArgumentNullException.ThrowIfNull(convention);
 
         // The lock is shared with the data source. We want to lock here
         // to avoid mutating this list while its read in the data source.
@@ -38,5 +37,16 @@ public sealed class PageActionEndpointConventionBuilder : IEndpointConventionBui
         {
             _conventions.Add(convention);
         }
+    }
+
+    /// <inheritdoc/>
+    public void Finally(Action<EndpointBuilder> finalConvention)
+    {
+        ArgumentNullException.ThrowIfNull(nameof(finalConvention));
+
+        lock (_lock)
+        {
+            _finallyConventions.Add(finalConvention);
+        };
     }
 }

@@ -26,10 +26,7 @@ public class QueryStringRequestCultureProvider : RequestCultureProvider
     /// <inheritdoc />
     public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var request = httpContext.Request;
         if (!request.QueryString.HasValue)

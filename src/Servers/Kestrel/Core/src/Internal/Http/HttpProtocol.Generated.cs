@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
+#pragma warning disable CA2252 // WebTransport is a preview feature
+
 #nullable enable
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -31,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
                                           IHttpRequestBodyDetectionFeature,
+                                          IHttpWebTransportFeature,
                                           IBadRequestExceptionFeature
     {
         // Implemented features
@@ -49,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
         internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
         internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
+        internal protected IHttpWebTransportFeature? _currentIHttpWebTransportFeature;
         internal protected IBadRequestExceptionFeature? _currentIBadRequestExceptionFeature;
 
         // Other reserved feature slots
@@ -90,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpBodyControlFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpRequestBodyDetectionFeature = this;
+            _currentIHttpWebTransportFeature = this;
             _currentIBadRequestExceptionFeature = this;
 
             _currentIServiceProvidersFeature = null;
@@ -267,6 +272,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpWebSocketFeature;
                 }
+                else if (key == typeof(IHttpWebTransportFeature))
+                {
+                    feature = _currentIHttpWebTransportFeature;
+                }
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
                     feature = _currentIBadRequestExceptionFeature;
@@ -406,6 +415,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpWebSocketFeature))
                 {
                     _currentIHttpWebSocketFeature = (IHttpWebSocketFeature?)value;
+                }
+                else if (key == typeof(IHttpWebTransportFeature))
+                {
+                    _currentIHttpWebTransportFeature = (IHttpWebTransportFeature?)value;
                 }
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
@@ -548,6 +561,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
             {
                 feature = Unsafe.As<IHttpWebSocketFeature?, TFeature?>(ref _currentIHttpWebSocketFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpWebTransportFeature))
+            {
+                feature = Unsafe.As<IHttpWebTransportFeature?, TFeature?>(ref _currentIHttpWebTransportFeature);
             }
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
@@ -697,6 +714,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpWebSocketFeature = Unsafe.As<TFeature?, IHttpWebSocketFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpWebTransportFeature))
+            {
+                _currentIHttpWebTransportFeature = Unsafe.As<TFeature?, IHttpWebTransportFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
                 _currentIBadRequestExceptionFeature = Unsafe.As<TFeature?, IBadRequestExceptionFeature?>(ref feature);
@@ -832,6 +853,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpWebSocketFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), _currentIHttpWebSocketFeature);
+            }
+            if (_currentIHttpWebTransportFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpWebTransportFeature), _currentIHttpWebTransportFeature);
             }
             if (_currentIBadRequestExceptionFeature != null)
             {

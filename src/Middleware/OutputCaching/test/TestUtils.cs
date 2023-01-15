@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+using System;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -194,15 +196,24 @@ internal class TestUtils
         return new OutputCacheMiddleware(
             next,
             Options.Create(options),
-            testSink == null ? (ILoggerFactory)NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
+            testSink == null ? NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
             cache,
             keyProvider);
     }
 
-    internal static OutputCacheContext CreateTestContext(IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
+    internal static OutputCacheContext CreateTestContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
-        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
+        var serviceProvider = new Mock<IServiceProvider>();
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new TestOutputCache());
+        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
+        serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
+
+        httpContext ??= new DefaultHttpContext();
+        httpContext.RequestServices = serviceProvider.Object;
+
+        return new OutputCacheContext()
         {
+            HttpContext = httpContext,
             EnableOutputCaching = true,
             AllowCacheStorage = true,
             AllowCacheLookup = true,
@@ -210,35 +221,21 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCacheContext CreateTestContext(HttpContext httpContext, IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
+    internal static OutputCacheContext CreateUninitializedContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
-        return new OutputCacheContext(httpContext, cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
+        var serviceProvider = new Mock<IServiceProvider>();
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new TestOutputCache());
+        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
+        serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
+
+        httpContext ??= new DefaultHttpContext();
+        httpContext.RequestServices = serviceProvider.Object;
+
+        return new OutputCacheContext()
         {
-            EnableOutputCaching = true,
-            AllowCacheStorage = true,
-            AllowCacheLookup = true,
-            ResponseTime = DateTimeOffset.UtcNow
+            HttpContext = httpContext,
         };
     }
-
-    internal static OutputCacheContext CreateTestContext(ITestSink testSink, IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
-    {
-        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, new TestLogger("OutputCachingTests", testSink, true))
-        {
-            EnableOutputCaching = true,
-            AllowCacheStorage = true,
-            AllowCacheLookup = true,
-            ResponseTime = DateTimeOffset.UtcNow
-        };
-    }
-
-    internal static OutputCacheContext CreateUninitializedContext(IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
-    {
-        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
-        {
-        };
-    }
-
     internal static void AssertLoggedMessages(IEnumerable<WriteContext> messages, params LoggedMessage[] expectedMessages)
     {
         var messageList = messages.ToList();
@@ -271,22 +268,17 @@ internal static class HttpResponseWritingExtensions
 
 internal class LoggedMessage
 {
-    internal static LoggedMessage RequestMethodNotCacheable => new LoggedMessage(1, LogLevel.Debug);
-    internal static LoggedMessage RequestWithAuthorizationNotCacheable => new LoggedMessage(2, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithSetCookieNotCacheable => new LoggedMessage(3, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithUnsuccessfulStatusCodeNotCacheable => new LoggedMessage(4, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedIfNoneMatchStar => new LoggedMessage(5, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedIfNoneMatchMatched => new LoggedMessage(6, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedIfModifiedSinceSatisfied => new LoggedMessage(7, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedServed => new LoggedMessage(8, LogLevel.Information);
-    internal static LoggedMessage CachedResponseServed => new LoggedMessage(9, LogLevel.Information);
-    internal static LoggedMessage GatewayTimeoutServed => new LoggedMessage(10, LogLevel.Information);
-    internal static LoggedMessage NoResponseServed => new LoggedMessage(11, LogLevel.Information);
-    internal static LoggedMessage VaryByRulesUpdated => new LoggedMessage(12, LogLevel.Debug);
-    internal static LoggedMessage ResponseCached => new LoggedMessage(13, LogLevel.Information);
-    internal static LoggedMessage ResponseNotCached => new LoggedMessage(14, LogLevel.Information);
-    internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(15, LogLevel.Warning);
-    internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(15, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedIfNoneMatchStar => new LoggedMessage(1, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedIfNoneMatchMatched => new LoggedMessage(2, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedIfModifiedSinceSatisfied => new LoggedMessage(3, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedServed => new LoggedMessage(4, LogLevel.Information);
+    internal static LoggedMessage CachedResponseServed => new LoggedMessage(5, LogLevel.Information);
+    internal static LoggedMessage GatewayTimeoutServed => new LoggedMessage(6, LogLevel.Information);
+    internal static LoggedMessage NoResponseServed => new LoggedMessage(7, LogLevel.Information);
+    internal static LoggedMessage ResponseCached => new LoggedMessage(8, LogLevel.Information);
+    internal static LoggedMessage ResponseNotCached => new LoggedMessage(9, LogLevel.Information);
+    internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(10, LogLevel.Warning);
+    internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(11, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {
@@ -318,33 +310,40 @@ internal class TestOutputCache : IOutputCacheStore
     private readonly Dictionary<string, byte[]?> _storage = new();
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
+    private readonly object synLock = new();
 
-    public ValueTask EvictByTagAsync(string tag, CancellationToken token)
+    public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<byte[]?> GetAsync(string? key, CancellationToken token)
+    public ValueTask<byte[]?> GetAsync(string? key, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        GetCount++;
-        try
+        lock (synLock)
         {
-            return ValueTask.FromResult(_storage[key]);
-        }
-        catch
-        {
-            return ValueTask.FromResult(default(byte[]));
+            GetCount++;
+            try
+            {
+                return ValueTask.FromResult(_storage[key]);
+            }
+            catch
+            {
+                return ValueTask.FromResult(default(byte[]));
+            }
         }
     }
 
-    public ValueTask SetAsync(string key, byte[] entry, string[]? tags, TimeSpan validFor, CancellationToken token)
+    public ValueTask SetAsync(string key, byte[] entry, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
-        SetCount++;
-        _storage[key] = entry;
+        lock (synLock)
+        {
+            SetCount++;
+            _storage[key] = entry;
 
-        return ValueTask.CompletedTask;
+            return ValueTask.CompletedTask;
+        }
     }
 }
 

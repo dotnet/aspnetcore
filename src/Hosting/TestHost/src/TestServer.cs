@@ -90,10 +90,7 @@ public class TestServer : IServer
     /// <param name="featureCollection"></param>
     public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
 
@@ -146,13 +143,30 @@ public class TestServer : IServer
         get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
     }
 
+    private PathString PathBase => BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
+
     /// <summary>
     /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
     /// </summary>
     public HttpMessageHandler CreateHandler()
     {
-        var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-        return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
+        return new ClientHandler(PathBase, Application)
+        {
+            AllowSynchronousIO = AllowSynchronousIO,
+            PreserveExecutionContext = PreserveExecutionContext
+        };
+    }
+
+    /// <summary>
+    /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with custom configuration with the test server.
+    /// </summary>
+    public HttpMessageHandler CreateHandler(Action<HttpContext> additionalContextConfiguration)
+    {
+        return new ClientHandler(PathBase, Application, additionalContextConfiguration)
+        {
+            AllowSynchronousIO = AllowSynchronousIO,
+            PreserveExecutionContext = PreserveExecutionContext
+        };
     }
 
     /// <summary>
@@ -192,10 +206,7 @@ public class TestServer : IServer
     /// <returns></returns>
     public async Task<HttpContext> SendAsync(Action<HttpContext> configureContext, CancellationToken cancellationToken = default)
     {
-        if (configureContext == null)
-        {
-            throw new ArgumentNullException(nameof(configureContext));
-        }
+        ArgumentNullException.ThrowIfNull(configureContext);
 
         var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
         builder.Configure((context, reader) =>
@@ -235,10 +246,7 @@ public class TestServer : IServer
     {
         _application = new ApplicationWrapper<TContext>(application, () =>
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         });
 
         return Task.CompletedTask;

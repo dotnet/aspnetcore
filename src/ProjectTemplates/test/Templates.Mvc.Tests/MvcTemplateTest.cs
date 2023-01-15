@@ -55,8 +55,7 @@ public class MvcTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var createResult = await project.RunDotNetNewAsync("mvc", language: languageOverride, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("mvc", language: languageOverride, args: args);
 
         var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
         var expectedLaunchProfileNames = noHttps
@@ -78,15 +77,13 @@ public class MvcTemplateTest : LoggedTest
             return;
         }
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         IEnumerable<string> menuLinks = new List<string> {
                 PageUrls.HomeUrl,
@@ -157,8 +154,7 @@ public class MvcTemplateTest : LoggedTest
             : noHttps
                 ? new[] { ArgConstants.NoHttps }
                 : null;
-        var createResult = await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB, args: args);
 
         var expectedLaunchProfileNames = noHttps
             ? new[] { "http", "IIS Express" }
@@ -171,18 +167,15 @@ public class MvcTemplateTest : LoggedTest
             Assert.Contains(".db", projectFileContents);
         }
 
-        var publishResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
         // later, while the opposite is not true.
 
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
-        var migrationsResult = await project.RunDotNetEfCreateMigrationAsync("mvc");
-        Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
+        await project.RunDotNetEfCreateMigrationAsync("mvc");
         project.AssertEmptyMigration("mvc");
 
         // Note: if any links are updated here, RazorPagesTemplateTest.cs should be updated as well
@@ -284,11 +277,9 @@ public class MvcTemplateTest : LoggedTest
         var project = await ProjectFactory.CreateProject(Output);
         project.RuntimeIdentifier = runtimeIdentifer;
 
-        var createResult = await project.RunDotNetNewAsync("mvc");
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("mvc");
 
-        var publishResult = await project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer} --self-contained", noRestore: false);
-        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+        await project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer} --self-contained", noRestore: false);
 
         var menuLinks = new[]
         {
@@ -361,20 +352,17 @@ public class MvcTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var createResult = await project.RunDotNetNewAsync("mvc", auth: auth, args: args);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        await project.RunDotNetNewAsync("mvc", auth: auth, args: args);
 
         // Identity Web auth requires https and thus ignores the --no-https option if passed so there should never be an 'http' profile
         var expectedLaunchProfileNames = new[] { "https", "IIS Express" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Verify building in debug works
-        var buildResult = await project.RunDotNetBuildAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        await project.RunDotNetBuildAsync();
 
         // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
-        buildResult = await project.RunDotNetPublishAsync();
-        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, buildResult));
+        await project.RunDotNetPublishAsync();
 
         return project;
     }

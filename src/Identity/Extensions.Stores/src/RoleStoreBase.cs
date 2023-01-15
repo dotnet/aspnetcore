@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
 /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
 /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
-public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
+public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserRole, TRoleClaim> :
     IQueryableRoleStore<TRole>,
     IRoleClaimStore<TRole>
     where TRole : IdentityRole<TKey>
@@ -33,10 +34,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
     public RoleStoreBase(IdentityErrorDescriber describer)
     {
-        if (describer == null)
-        {
-            throw new ArgumentNullException(nameof(describer));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(describer);
 
         ErrorDescriber = describer;
     }
@@ -82,10 +80,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return Task.FromResult(ConvertIdToString(role.Id)!);
     }
 
@@ -99,10 +94,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return Task.FromResult(role.Name);
     }
 
@@ -117,10 +109,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         role.Name = roleName;
         return Task.CompletedTask;
     }
@@ -130,6 +119,8 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// </summary>
     /// <param name="id">The id to convert.</param>
     /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "TKey is annoated with RequiresUnreferencedCodeAttribute.All.")]
     public virtual TKey? ConvertIdFromString(string? id)
     {
         if (id == null)
@@ -179,10 +170,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return Task.FromResult(role.NormalizedName);
     }
 
@@ -197,10 +185,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         role.NormalizedName = normalizedName;
         return Task.CompletedTask;
     }
@@ -210,10 +195,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// </summary>
     protected void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     /// <summary>

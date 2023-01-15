@@ -26,6 +26,9 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\HttpValidationProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
+    <Compile Include="$(SharedSourceRoot)Reroute.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,9 +37,9 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="RouteHandlerInvocationContextOfT.Generated.tt">
+    <None Update="EndpointFilterInvocationContextOfT.Generated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>RouteHandlerInvocationContextOfT.Generated.cs</LastGenOutput>
+      <LastGenOutput>EndpointFilterInvocationContextOfT.Generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -45,11 +48,14 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="RouteHandlerInvocationContextOfT.Generated.cs">
+    <Compile Update="EndpointFilterInvocationContextOfT.Generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>RouteHandlerInvocationContextOfT.Generated.tt</DependentUpon>
+      <DependentUpon>EndpointFilterInvocationContextOfT.Generated.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Tests" />
+  </ItemGroup>
 </Project>

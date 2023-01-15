@@ -16,7 +16,7 @@ public class ListenOptionsTests
     public void ProtocolsDefault()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-        Assert.Equal(HttpProtocols.Http1AndHttp2, listenOptions.Protocols);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, listenOptions.Protocols);
     }
 
     [Fact]
@@ -45,6 +45,24 @@ public class ListenOptionsTests
         Assert.NotNull(clone.KestrelServerOptions);
         Assert.NotNull(serviceProvider);
         Assert.Same(serviceProvider, clone.ApplicationServices);
+    }
+
+    [Fact]
+    public void ClonePreservesProtocolsSetExplicitly()
+    {
+        var localhostListenOptions = new LocalhostListenOptions(1004);
+        Assert.False(localhostListenOptions.ProtocolsSetExplicitly);
+
+        var clone1 = localhostListenOptions.Clone(IPAddress.IPv6Loopback);
+        Assert.False(clone1.ProtocolsSetExplicitly);
+        Assert.Equal(localhostListenOptions.Protocols, clone1.Protocols);
+
+        localhostListenOptions.Protocols = HttpProtocols.Http1;
+        Assert.True(localhostListenOptions.ProtocolsSetExplicitly);
+
+        var clone2 = localhostListenOptions.Clone(IPAddress.IPv6Loopback);
+        Assert.True(clone2.ProtocolsSetExplicitly);
+        Assert.Equal(localhostListenOptions.Protocols, clone2.Protocols);
     }
 
     [Fact]

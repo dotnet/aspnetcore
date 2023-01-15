@@ -26,4 +26,7 @@
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.IISIntegration.Tests" />
+  </ItemGroup>
 </Project>

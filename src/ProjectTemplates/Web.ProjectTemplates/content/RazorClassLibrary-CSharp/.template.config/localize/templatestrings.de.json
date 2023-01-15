@@ -1,13 +1,13 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor Class Library",
-  "description": "A project for creating a Razor class library that targets .NET Standard",
+  "name": "Razor Klassenbibliothek",
+  "description": "Ein Projekt zum Erstellen einer Razor Klassenbibliothek, die auf .NET Standard abzielt",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
+  "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
-  "symbols/SupportPagesAndViews/displayName": "Support pages and views",
-  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views in addition to components to this library.",
+  "symbols/SupportPagesAndViews/displayName": "Seiten und Ansichten unterstützen",
+  "symbols/SupportPagesAndViews/description": "Ob das Hinzufügen herkömmlicher Razor Seiten und Ansichten zusätzlich zu Komponenten zu dieser Bibliothek unterstützt werden soll.",
   "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
   "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen",
-  "postActions/openInEditor/description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor"
+  "postActions/openInEditor/description": "Öffnet Areas/MyFeature/Pages/Page1.cshtml im Editor"
 }

@@ -31,15 +31,8 @@ internal static class NameAndIdProvider
     /// </remarks>
     public static string CreateSanitizedId(ViewContext viewContext, string fullName, string invalidCharReplacement)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(fullName))
         {
@@ -101,20 +94,9 @@ internal static class NameAndIdProvider
         string fullName,
         string invalidCharReplacement)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (tagBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(tagBuilder));
-        }
-
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(tagBuilder);
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(fullName))
         {
@@ -176,7 +158,7 @@ internal static class NameAndIdProvider
 
         previousNameAndId.HtmlFieldPrefix = htmlFieldPrefix;
         previousNameAndId.Expression = expression;
-        if (expression.StartsWith("[", StringComparison.Ordinal))
+        if (expression.StartsWith('['))
         {
             // The expression might represent an indexer access, in which case  with a 'dot' would be invalid.
             previousNameAndId.OutputFullName = htmlFieldPrefix + expression;

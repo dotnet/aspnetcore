@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -30,6 +31,7 @@ public class RemoteAuthenticationService<
 {
     private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
     private bool _initialized;
+    private readonly RemoteAuthenticationServiceJavaScriptLoggingOptions _loggingOptions;
 
     // This defaults to 1/1/1970
     private DateTimeOffset _userLastCheck = DateTimeOffset.FromUnixTimeSeconds(0);
@@ -62,16 +64,40 @@ public class RemoteAuthenticationService<
     /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
     /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
     /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
+    [Obsolete("Use the constructor RemoteAuthenticationService(IJSRuntime,IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>>,NavigationManager,AccountClaimsPrincipalFactory<TAccount>,ILogger<RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>>) instead.")]
     public RemoteAuthenticationService(
         IJSRuntime jsRuntime,
         IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
         NavigationManager navigation,
         AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory)
+        : this(jsRuntime, options, navigation, accountClaimsPrincipalFactory, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance.
+    /// </summary>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.</param>
+    /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
+    /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
+    /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
+    /// <param name="logger">The logger to use for login authentication operations.</param>
+    public RemoteAuthenticationService(
+        IJSRuntime jsRuntime,
+        IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
+        NavigationManager navigation,
+        AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory,
+        ILogger<RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>>? logger)
     {
         JsRuntime = jsRuntime;
         Navigation = navigation;
         AccountClaimsPrincipalFactory = accountClaimsPrincipalFactory;
         Options = options.Value;
+        _loggingOptions = new RemoteAuthenticationServiceJavaScriptLoggingOptions
+        {
+            DebugEnabled = logger?.IsEnabled(LogLevel.Debug) ?? false,
+            TraceEnabled = logger?.IsEnabled(LogLevel.Trace) ?? false
+        };
     }
 
     /// <inheritdoc />
@@ -82,7 +108,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -104,7 +130,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -130,18 +156,21 @@ public class RemoteAuthenticationService<
         return new AccessTokenResult(
             result.Status,
             result.Token,
-            result.Status == AccessTokenResultStatus.RequiresRedirect ? GetRedirectUrl(null).ToString() : null);
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? Options.AuthenticationPaths.LogInPath : null,
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? new InteractiveRequestOptions
+            {
+                Interaction = InteractionType.GetToken,
+                ReturnUrl = GetReturnUrl(null)
+            } : null);
     }
 
     /// <inheritdoc />
     [DynamicDependency(JsonSerialized, typeof(AccessToken))]
     [DynamicDependency(JsonSerialized, typeof(AccessTokenRequestOptions))]
+
     public virtual async ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         await EnsureAuthService();
         var result = await JsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken", options);
@@ -149,16 +178,17 @@ public class RemoteAuthenticationService<
         return new AccessTokenResult(
             result.Status,
             result.Token,
-            result.Status == AccessTokenResultStatus.RequiresRedirect ? GetRedirectUrl(options.ReturnUrl).ToString() : null);
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? Options.AuthenticationPaths.LogInPath : null,
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? new InteractiveRequestOptions
+            {
+                Interaction = InteractionType.GetToken,
+                ReturnUrl = GetReturnUrl(options.ReturnUrl),
+                Scopes = options.Scopes ?? Array.Empty<string>(),
+            } : null);
     }
 
-    private Uri GetRedirectUrl(string customReturnUrl)
-    {
-        var returnUrl = customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).ToString() : null;
-        var encodedReturnUrl = Uri.EscapeDataString(returnUrl ?? Navigation.Uri);
-        var redirectUrl = Navigation.ToAbsoluteUri($"{Options.AuthenticationPaths.LogInPath}?returnUrl={encodedReturnUrl}");
-        return redirectUrl;
-    }
+    private string GetReturnUrl(string? customReturnUrl) =>
+        customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).AbsoluteUri : Navigation.Uri;
 
     private async Task<ClaimsPrincipal> GetUser(bool useCache = false)
     {
@@ -187,11 +217,12 @@ public class RemoteAuthenticationService<
         return user;
     }
 
+    [DynamicDependency(JsonSerialized, typeof(RemoteAuthenticationServiceJavaScriptLoggingOptions))]
     private async ValueTask EnsureAuthService()
     {
         if (!_initialized)
         {
-            await JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions);
+            await JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions, _loggingOptions);
             _initialized = true;
         }
     }
@@ -211,6 +242,16 @@ public class RemoteAuthenticationService<
 
         static async Task<AuthenticationState> UpdateAuthenticationState(Task<ClaimsPrincipal> futureUser) => new AuthenticationState(await futureUser);
     }
+
+}
+
+// We need to do this as it can't be nested inside RemoteAuthenticationService because
+// it needs to be put in an attribute for linking purposes and that can't be an open generic type.
+internal class RemoteAuthenticationServiceJavaScriptLoggingOptions
+{
+    public bool DebugEnabled { get; set; }
+
+    public bool TraceEnabled { get; set; }
 }
 
 // Internal for testing purposes

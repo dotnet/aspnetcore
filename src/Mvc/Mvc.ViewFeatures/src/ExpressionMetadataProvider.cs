@@ -16,15 +16,8 @@ internal static class ExpressionMetadataProvider
         ViewDataDictionary<TModel> viewData,
         IModelMetadataProvider metadataProvider)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
-
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
+        ArgumentNullException.ThrowIfNull(viewData);
 
         string propertyName = null;
         Type containerType = null;
@@ -145,10 +138,7 @@ internal static class ExpressionMetadataProvider
         ViewDataDictionary viewData,
         IModelMetadataProvider metadataProvider)
     {
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
+        ArgumentNullException.ThrowIfNull(viewData);
 
         var viewDataInfo = ViewDataEvaluator.Eval(viewData, expression);
         if (viewDataInfo == null)
@@ -206,10 +196,7 @@ internal static class ExpressionMetadataProvider
         ViewDataDictionary viewData,
         IModelMetadataProvider metadataProvider)
     {
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
+        ArgumentNullException.ThrowIfNull(viewData);
 
         if (viewData.ModelMetadata.ModelType == typeof(object))
         {

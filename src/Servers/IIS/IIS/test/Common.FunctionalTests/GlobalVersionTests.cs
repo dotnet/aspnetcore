@@ -1,12 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
+using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -41,12 +46,11 @@ public class GlobalVersionTests : IISFunctionalTestBase
 
         deploymentParameters.HandlerSettings["handlerVersion"] = _handlerVersion20;
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
-            var responseText = await response.Content.ReadAsStringAsync();
-            Assert.Equal(_helloWorldResponse, responseText);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
+        var responseText = await response.Content.ReadAsStringAsync();
+        Assert.Equal(_helloWorldResponse, responseText);
     }
 
     [ConditionalFact]
@@ -62,18 +66,16 @@ public class GlobalVersionTests : IISFunctionalTestBase
             deploymentParameters.PublishApplicationBeforeDeployment = true;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_OUTOFPROCESS_HANDLER"] = temporaryFile;
 
-            await RunTest(deploymentParameters, async deploymentResult =>
-            {
-                var requestHandlerPath = Path.Combine(GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20), "aspnetcorev2_outofprocess.dll");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var requestHandlerPath = Path.Combine(GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20), "aspnetcorev2_outofprocess.dll");
 
-                File.Delete(temporaryFile);
-                File.Move(requestHandlerPath, temporaryFile);
+            File.Delete(temporaryFile);
+            File.Move(requestHandlerPath, temporaryFile);
 
-                var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
-                var responseText = await response.Content.ReadAsStringAsync();
-                Assert.Equal(_helloWorldResponse, responseText);
-                StopServer();
-            });
+            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(_helloWorldResponse, responseText);
+            StopServer();
         }
         finally
         {
@@ -91,13 +93,12 @@ public class GlobalVersionTests : IISFunctionalTestBase
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
         deploymentParameters.HandlerSettings["handlerVersion"] = version;
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
-            Assert.False(response.IsSuccessStatusCode);
-            var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("500.0", responseString);
-        });
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
+        Assert.False(response.IsSuccessStatusCode);
+        var responseString = await response.Content.ReadAsStringAsync();
+        Assert.Contains("500.0", responseString);
     }
 
     [ConditionalTheory]
@@ -111,17 +112,16 @@ public class GlobalVersionTests : IISFunctionalTestBase
         CopyShimToOutput(deploymentParameters);
         deploymentParameters.HandlerSettings["handlerVersion"] = version;
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
-            var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
-            Directory.Move(originalANCMPath, newANCMPath);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
-            var responseText = await response.Content.ReadAsStringAsync();
-            Assert.Equal(_helloWorldResponse, responseText);
-            AssertLoadedVersion(version);
-        });
+        var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+        var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
+        Directory.Move(originalANCMPath, newANCMPath);
+
+        var response = await deploymentResult.HttpClient.GetAsync(_helloWorldRequest);
+        var responseText = await response.Content.ReadAsStringAsync();
+        Assert.Equal(_helloWorldResponse, responseText);
+        AssertLoadedVersion(version);
     }
 
     [ConditionalTheory]
@@ -133,21 +133,20 @@ public class GlobalVersionTests : IISFunctionalTestBase
     {
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
         CopyShimToOutput(deploymentParameters);
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
+        var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
 
-            CopyDirectory(originalANCMPath, newANCMPath);
+        var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
 
-            deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
-            var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
-            var responseText = await response.Content.ReadAsStringAsync();
+        CopyDirectory(originalANCMPath, newANCMPath);
 
-            Assert.Equal(_helloWorldResponse, responseText);
-            AssertLoadedVersion(version);
-        });
+        deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
+        var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
+        var responseText = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(_helloWorldResponse, responseText);
+        AssertLoadedVersion(version);
     }
 
     [ConditionalTheory]
@@ -159,34 +158,32 @@ public class GlobalVersionTests : IISFunctionalTestBase
     {
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
         CopyShimToOutput(deploymentParameters);
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", originalANCMPath);
-            var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
-            var responseText = await response.Content.ReadAsStringAsync();
+        var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
 
-            Assert.Equal(_helloWorldResponse, responseText);
+        deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", originalANCMPath);
+        var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
+        var responseText = await response.Content.ReadAsStringAsync();
 
-            StopServer();
-        });
+        Assert.Equal(_helloWorldResponse, responseText);
 
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+        StopServer();
 
-            var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
+        deploymentResult = await DeployAsync(deploymentParameters);
 
-            CopyDirectory(originalANCMPath, newANCMPath);
+        originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
 
-            deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
-            var response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
-            var responseText = await response.Content.ReadAsStringAsync();
+        var newANCMPath = GetANCMRequestHandlerPath(deploymentResult, version);
 
-            Assert.Equal(_helloWorldResponse, responseText);
-            AssertLoadedVersion(version);
-        });
+        CopyDirectory(originalANCMPath, newANCMPath);
+
+        deploymentResult.HttpClient.DefaultRequestHeaders.Add("ANCMRHPath", newANCMPath);
+        response = await deploymentResult.HttpClient.GetAsync("CheckRequestHandlerVersion");
+        responseText = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(_helloWorldResponse, responseText);
+        AssertLoadedVersion(version);
     }
 
     [ConditionalFact]
@@ -194,18 +191,19 @@ public class GlobalVersionTests : IISFunctionalTestBase
     {
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
         CopyShimToOutput(deploymentParameters);
-        await RunTest(deploymentParameters, async deploymentResult =>
-        {
-            var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
-            Directory.Delete(originalANCMPath, true);
-            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        });
+        var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
+        Directory.Delete(originalANCMPath, true);
+        var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     private IISDeploymentParameters GetGlobalVersionBaseDeploymentParameters()
-        => Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+    {
+        return Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+    }
 
     private void CopyDirectory(string from, string to)
     {
@@ -219,9 +217,11 @@ public class GlobalVersionTests : IISFunctionalTestBase
     }
 
     private string GetANCMRequestHandlerPath(IISDeploymentResult deploymentResult, string version)
-        => Path.Combine(deploymentResult.ContentRoot,
+    {
+        return Path.Combine(deploymentResult.ContentRoot,
             deploymentResult.DeploymentParameters.RuntimeArchitecture.ToString(),
             version);
+    }
 
     private void AssertLoadedVersion(string version)
     {
@@ -255,12 +255,12 @@ public class GlobalVersionTests : IISFunctionalTestBase
 
     private static void CopyFiles(DirectoryInfo source, DirectoryInfo target)
     {
-        foreach (var directoryInfo in source.GetDirectories())
+        foreach (DirectoryInfo directoryInfo in source.GetDirectories())
         {
             CopyFiles(directoryInfo, target.CreateSubdirectory(directoryInfo.Name));
         }
 
-        foreach (var fileInfo in source.GetFiles())
+        foreach (FileInfo fileInfo in source.GetFiles())
         {
             var destFileName = Path.Combine(target.FullName, fileInfo.Name);
             fileInfo.CopyTo(destFileName, overwrite: true);

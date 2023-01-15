@@ -14,17 +14,68 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
+[Collection(nameof(NoParallelCollection))]
 public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task Abort_AbortAfterDispose_Ignored()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            LoggerFactory,
+            defaultCloseErrorCode: (long)Http3ErrorCode.RequestCancelled);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+
+        await serverConnection.DisposeAsync();
+
+        // Assert
+        serverConnection.Abort(); // Doesn't throw ODE.
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeReported()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            LoggerFactory,
+            defaultCloseErrorCode: (long)Http3ErrorCode.RequestCancelled);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+
+        await serverConnection.DisposeAsync();
+
+        // Assert
+        var ex = await ExceptionAssert.ThrowsAsync<QuicException>(
+            () => clientConnection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional).AsTask(),
+            exceptionMessage: $"Connection aborted by peer ({(long)Http3ErrorCode.RequestCancelled}).");
+
+        Assert.Equal((long)Http3ErrorCode.RequestCancelled, ex.ApplicationErrorCode);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task AcceptAsync_CancellationThenAccept_AcceptStreamAfterCancellation()
     {
         // Arrange
-        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         // Act
@@ -32,8 +83,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await acceptTask.DefaultTimeout();
 
@@ -48,7 +98,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Wait for stream after cancellation
         acceptStreamTask = serverConnection.AcceptAsync();
 
-        await using var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
+        await using var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData);
 
         // Assert
@@ -74,8 +124,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await acceptTask.DefaultTimeout();
         serverConnection.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
@@ -86,8 +135,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptStreamTask.AsTask()).DefaultTimeout();
-        var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
-        Assert.Equal(256, innerEx.ErrorCode);
+        var innerEx = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.ConnectionAborted, innerEx.QuicError);
+        Assert.Equal(256, innerEx.ApplicationErrorCode.Value);
 
         await connectionClosedTcs.Task.DefaultTimeout();
     }
@@ -100,15 +150,14 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = await QuicConnection.ConnectAsync(options);
-        await quicConnection.ConnectAsync().DefaultTimeout();
+        await using var quicConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
         var acceptTask = serverConnection.AcceptAsync();
 
-        await using var clientStream = await quicConnection.OpenUnidirectionalStreamAsync();
+        await using var clientStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional);
         await clientStream.WriteAsync(TestData);
 
         await using var serverStream = await acceptTask.DefaultTimeout();
@@ -126,7 +175,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
 
         // Shutdown client.
-        clientStream.Shutdown();
+        clientStream.CompleteWrites();
 
         // Receive shutdown on server.
         read = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
@@ -143,15 +192,14 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = await QuicConnection.ConnectAsync(options);
-        await quicConnection.ConnectAsync().DefaultTimeout();
+        await using var quicConnection = await QuicConnection.ConnectAsync(options);
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
         var acceptTask = serverConnection.AcceptAsync();
 
-        await using var clientStream = await quicConnection.OpenBidirectionalStreamAsync();
+        await using var clientStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData);
 
         await using var serverStream = await acceptTask.DefaultTimeout();
@@ -175,7 +223,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(TestData, data);
 
         // Shutdown from client.
-        clientStream.Shutdown();
+        clientStream.CompleteWrites();
 
         // Get shutdown from client.
         read = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
@@ -194,13 +242,12 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = await QuicConnection.ConnectAsync(options);
-        await quicConnection.ConnectAsync().DefaultTimeout();
+        await using var quicConnection = await QuicConnection.ConnectAsync(options);
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        var acceptTask = quicConnection.AcceptStreamAsync();
+        var acceptTask = quicConnection.AcceptInboundStreamAsync();
 
         await using var serverStream = await serverConnection.ConnectAsync();
         await serverStream.Transport.Output.WriteAsync(TestData).DefaultTimeout();
@@ -240,8 +287,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = await QuicConnection.ConnectAsync(options);
-        await quicConnection.ConnectAsync().DefaultTimeout();
+        await using var quicConnection = await QuicConnection.ConnectAsync(options);
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -252,8 +298,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptTask).DefaultTimeout();
-        var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
-        Assert.Equal((long)Http3ErrorCode.NoError, innerEx.ErrorCode);
+        var innerEx = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.ConnectionAborted, innerEx.QuicError);
+        Assert.Equal((long)Http3ErrorCode.NoError, innerEx.ApplicationErrorCode.Value);
 
         Assert.Equal((long)Http3ErrorCode.NoError, serverConnection.Features.Get<IProtocolErrorCodeFeature>().Error);
     }
@@ -266,8 +313,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -278,8 +324,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
 
-        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
-        await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
@@ -310,8 +356,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -322,8 +367,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
 
-        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
-        await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
@@ -356,8 +401,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -368,19 +412,19 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
 
-        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
+        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
 
-        clientStream.AbortWrite((long)Http3ErrorCode.InternalError);
+        clientStream.Abort(QuicAbortDirection.Write, (long)Http3ErrorCode.InternalError);
 
         // Receive abort form client.
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => serverStream.Transport.Input.ReadAsync().AsTask()).DefaultTimeout();
         Assert.Equal("Stream aborted by peer (258).", ex.Message);
-        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)ex.InnerException).ErrorCode);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicException)ex.InnerException).ApplicationErrorCode.Value);
 
         // Complete reading and then abort.
         await serverStream.Transport.Input.CompleteAsync();
@@ -401,11 +445,12 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     public async Task StreamPool_StreamAbortedOnClientAndServer_NotPooled()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -416,19 +461,19 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
 
-        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
+        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
 
-        clientStream.AbortWrite((long)Http3ErrorCode.InternalError);
+        clientStream.Abort(QuicAbortDirection.Write, (long)Http3ErrorCode.InternalError);
 
         // Receive abort form client.
         var serverEx = await Assert.ThrowsAsync<ConnectionResetException>(() => serverStream.Transport.Input.ReadAsync().AsTask()).DefaultTimeout();
         Assert.Equal("Stream aborted by peer (258).", serverEx.Message);
-        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)serverEx.InnerException).ErrorCode);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicException)serverEx.InnerException).ApplicationErrorCode.Value);
 
         serverStream.Features.Get<IProtocolErrorCodeFeature>().Error = (long)Http3ErrorCode.RequestRejected;
         serverStream.Abort(new ConnectionAbortedException("Test message."));
@@ -438,8 +483,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await serverStream.Transport.Output.CompleteAsync();
 
         var buffer = new byte[1024];
-        var clientEx = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.ReadAsync(buffer).AsTask()).DefaultTimeout();
-        Assert.Equal((long)Http3ErrorCode.RequestRejected, clientEx.ErrorCode);
+        var clientEx = await Assert.ThrowsAsync<QuicException>(() => clientStream.ReadAsync(buffer).AsTask()).DefaultTimeout();
+        Assert.Equal(QuicError.StreamAborted, clientEx.QuicError);
+        Assert.Equal((long)Http3ErrorCode.RequestRejected, clientEx.ApplicationErrorCode.Value);
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
@@ -457,13 +503,14 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         var now = new DateTimeOffset(2021, 7, 6, 12, 0, 0, TimeSpan.Zero);
         var testSystemClock = new TestSystemClock { UtcNow = now };
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testSystemClock);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -474,7 +521,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
 
-        var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+        var stream1 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection, Logger);
 
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
@@ -487,7 +534,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
-        var stream2 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
+        var stream2 = await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection, Logger);
 
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         pooledStream = quicConnectionContext.StreamPool._array[0];
@@ -517,8 +564,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
@@ -551,8 +597,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         static async Task SendStream(RequestState requestState)
         {
-            var clientStream = await requestState.QuicConnection.OpenBidirectionalStreamAsync();
-            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var clientStream = await requestState.QuicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+            await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
             var serverStream = await requestState.ServerConnection.AcceptAsync().DefaultTimeout();
             var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
             serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
@@ -596,15 +642,14 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = await QuicConnection.ConnectAsync(options);
-        await clientConnection.ConnectAsync().DefaultTimeout();
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
         Logger.LogInformation("Client starting stream 1");
-        var clientStream1 = await clientConnection.OpenBidirectionalStreamAsync();
-        await clientStream1.WriteAsync(TestData, endStream: true).DefaultTimeout();
+        var clientStream1 = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream1.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
 
         Logger.LogInformation("Server accept stream 1");
         var serverStream1 = await serverConnection.AcceptAsync().DefaultTimeout();
@@ -631,8 +676,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         quicStreamContext1.Dispose();
 
         Logger.LogInformation("Client starting stream 2");
-        var clientStream2 = await clientConnection.OpenBidirectionalStreamAsync();
-        await clientStream2.WriteAsync(TestData, endStream: true).DefaultTimeout();
+        var clientStream2 = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream2.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
 
         Logger.LogInformation("Server accept stream 2");
         var serverStream2 = await serverConnection.AcceptAsync().DefaultTimeout();

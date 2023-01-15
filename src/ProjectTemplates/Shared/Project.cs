@@ -30,14 +30,18 @@ public class Project : IDisposable
     {
         get
         {
-            var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
-            if (!string.IsNullOrEmpty(testLogFolder))
+            var helixWorkItemUploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (!string.IsNullOrEmpty(helixWorkItemUploadRoot))
             {
-                return testLogFolder;
+                return helixWorkItemUploadRoot;
             }
 
-            var helixWorkItemUploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-            return string.IsNullOrEmpty(helixWorkItemUploadRoot) ? GetAssemblyMetadata("ArtifactsLogDir") : helixWorkItemUploadRoot;
+            var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
+            if (string.IsNullOrEmpty(testLogFolder))
+            {
+                throw new InvalidOperationException($"No test log folder specified via {nameof(TestFrameworkFileLoggerAttribute)}.");
+            }
+            return testLogFolder;
         }
     }
 
@@ -61,7 +65,7 @@ public class Project : IDisposable
     public ITestOutputHelper Output { get; set; }
     public IMessageSink DiagnosticsMessageSink { get; set; }
 
-    internal async Task<ProcessResult> RunDotNetNewAsync(
+    internal async Task RunDotNetNewAsync(
         string templateName,
         string auth = null,
         string language = null,
@@ -126,10 +130,10 @@ public class Project : IDisposable
             result.ExitCode = -1;
         }
 
-        return result;
+        Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", this, result));
     }
 
-    internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
+    internal async Task RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
     {
         Output.WriteLine("Publishing ASP.NET Core application...");
 
@@ -150,10 +154,11 @@ public class Project : IDisposable
         }
 
         CaptureBinLogOnFailure(execution);
-        return result;
+
+        Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", this, result));
     }
 
-    internal async Task<ProcessResult> RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool errorOnBuildWarning = true)
+    internal async Task RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool errorOnBuildWarning = true)
     {
         Output.WriteLine("Building ASP.NET Core application...");
 
@@ -172,7 +177,8 @@ public class Project : IDisposable
         }
 
         CaptureBinLogOnFailure(execution);
-        return result;
+
+        Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("build", this, result));
     }
 
     internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
@@ -206,7 +212,7 @@ public class Project : IDisposable
         return new AspNetProcess(DevCert, Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
     }
 
-    internal async Task<ProcessResult> RunDotNetEfCreateMigrationAsync(string migrationName)
+    internal async Task RunDotNetEfCreateMigrationAsync(string migrationName)
     {
         var args = $"--verbose --no-build migrations add {migrationName}";
 
@@ -222,10 +228,11 @@ public class Project : IDisposable
 
         using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
         await result.Exited;
-        return new ProcessResult(result);
+        var processResult = new ProcessResult(result);
+        Assert.True(0 == processResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", this, processResult));
     }
 
-    internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
+    internal async Task RunDotNetEfUpdateDatabaseAsync()
     {
         var args = "--verbose --no-build database update";
 
@@ -241,7 +248,8 @@ public class Project : IDisposable
 
         using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
         await result.Exited;
-        return new ProcessResult(result);
+        var processResult = new ProcessResult(result);
+        Assert.True(0 == processResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", this, processResult));
     }
 
     // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
@@ -289,7 +297,7 @@ public class Project : IDisposable
         }
     }
 
-    public async Task<Project> VerifyLaunchSettings(string[] expectedLaunchProfileNames)
+    public async Task VerifyLaunchSettings(string[] expectedLaunchProfileNames)
     {
         var launchSettingsFiles = Directory.EnumerateFiles(TemplateOutputDir, "launchSettings.json", SearchOption.AllDirectories);
 
@@ -342,8 +350,6 @@ public class Project : IDisposable
                 }
             }
         }
-
-        return this;
     }
 
     public string ReadFile(string path)
@@ -352,7 +358,7 @@ public class Project : IDisposable
         return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
     }
 
-    internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
+    internal async Task RunDotNetNewRawAsync(string arguments)
     {
         var result = ProcessEx.Run(
             Output,
@@ -362,7 +368,7 @@ public class Project : IDisposable
                 $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
                 $" -o {TemplateOutputDir}");
         await result.Exited;
-        return result;
+        Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
     }
 
     public void Dispose()

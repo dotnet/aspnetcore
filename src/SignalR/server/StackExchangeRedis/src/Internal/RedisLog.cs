@@ -61,6 +61,9 @@ internal static partial class RedisLog
     [LoggerMessage(14, LogLevel.Error, "Error connecting to Redis.", EventName = "ErrorConnecting")]
     public static partial void ErrorConnecting(ILogger logger, Exception ex);
 
+    [LoggerMessage(15, LogLevel.Warning, "Error parsing client result with protocol {HubProtocol}.", EventName = "ErrorParsingResult")]
+    public static partial void ErrorParsingResult(ILogger logger, string hubProtocol, Exception? ex);
+
     // This isn't DefineMessage-based because it's just the simple TextWriter logging from ConnectionMultiplexer
     public static void ConnectionMultiplexerMessage(ILogger logger, string? message)
     {

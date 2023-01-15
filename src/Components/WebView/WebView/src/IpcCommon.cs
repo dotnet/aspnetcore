@@ -62,6 +62,7 @@ internal sealed class IpcCommon
         OnRenderCompleted,
         OnLocationChanged,
         ReceiveByteArrayFromJS,
+        OnLocationChanging,
     }
 
     public enum OutgoingMessageType
@@ -73,5 +74,7 @@ internal sealed class IpcCommon
         NotifyUnhandledException,
         BeginInvokeJS,
         SendByteArrayToJS,
+        SetHasLocationChangingListeners,
+        EndLocationChanging,
     }
 }

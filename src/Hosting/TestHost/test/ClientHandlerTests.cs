@@ -260,6 +260,36 @@ public class ClientHandlerTests
     }
 
     [Fact]
+    public Task AdditionalConfigurationAllowsSettingConnectionInfo()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal(IPAddress.Parse("1.1.1.1"), features.Get<IHttpConnectionFeature>().RemoteIpAddress);
+        }), context =>
+        {
+            context.Connection.RemoteIpAddress = IPAddress.Parse("1.1.1.1");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
+    public Task AdditionalConfigurationAllowsOverridingDefaultBehavior()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal("?and=something", features.Get<IHttpRequestFeature>().QueryString);
+        }), context =>
+        {
+            context.Request.QueryString = new QueryString("?and=something");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
     public async Task ResponseStartAsync()
     {
         var hasStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -299,6 +329,19 @@ public class ClientHandlerTests
 
         Assert.False(preHasStarted);
         Assert.True(postHasStarted);
+    }
+
+    [Fact]
+    public void Send_ThrowsNotSupportedException()
+    {
+        var handler = new ClientHandler(
+            PathString.Empty,
+            new DummyApplication(context => { return Task.CompletedTask; }));
+
+        var invoker = new HttpMessageInvoker(handler);
+        var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+        Assert.Throws<NotSupportedException>(() => invoker.Send(message, CancellationToken.None));
     }
 
     [Fact]

@@ -17,12 +17,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.StaticFiles;
 
-public class StaticFileMiddlewareTests
+public class StaticFileMiddlewareTests : LoggedTest
 {
     [Fact]
     public async Task ReturnsNotFoundWithoutWwwroot()
     {
         using var host = new HostBuilder()
+            .ConfigureServices(AddTestLogging)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -38,6 +39,9 @@ public class StaticFileMiddlewareTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Null(response.Headers.ETag);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("The WebRootPath was not found")
+            && w.Message.Contains("Static files may be unavailable."));
     }
 
     [ConditionalFact]
@@ -52,6 +56,7 @@ public class StaticFileMiddlewareTests
         try
         {
             using var host = new HostBuilder()
+            .ConfigureServices(AddTestLogging)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -83,6 +88,7 @@ public class StaticFileMiddlewareTests
             .ThrowsAsync(new FileNotFoundException());
         mockSendFile.Setup(m => m.Stream).Returns(Stream.Null);
         using var host = new HostBuilder()
+            .ConfigureServices(AddTestLogging)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -193,6 +199,139 @@ public class StaticFileMiddlewareTests
                 Assert.True(responseContent.SequenceEqual(fileContents));
             }
         }
+    }
+
+    [Fact]
+    public async Task OnPrepareResponse_Executed_Test()
+    {
+        var baseUrl = "";
+        var baseDir = @".";
+        var requestUrl = "/TestDocument.txt";
+
+        var onPrepareResponseExecuted = false;
+
+        using var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir));
+        using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+        {
+            RequestPath = new PathString(baseUrl),
+            FileProvider = fileProvider,
+            OnPrepareResponse = context =>
+            {
+                onPrepareResponseExecuted = true;
+            }
+        }));
+        using var server = host.GetTestServer();
+        var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+        var response = await server.CreateRequest(requestUrl).GetAsync();
+        var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+        Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+        Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+        Assert.NotNull(response.Headers.ETag);
+
+        using (var stream = fileInfo.CreateReadStream())
+        {
+            var fileContents = new byte[stream.Length];
+            stream.Read(fileContents, 0, (int)stream.Length);
+            Assert.True(responseContent.SequenceEqual(fileContents));
+        }
+
+        Assert.True(onPrepareResponseExecuted);
+    }
+
+    [Fact]
+    public async Task OnPrepareResponseAsync_Executed_Test()
+    {
+        var baseUrl = "";
+        var baseDir = @".";
+        var requestUrl = "/TestDocument.txt";
+
+        var onPrepareResponseExecuted = false;
+
+        using var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir));
+        using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+        {
+            RequestPath = new PathString(baseUrl),
+            FileProvider = fileProvider,
+            OnPrepareResponseAsync = context =>
+            {
+                onPrepareResponseExecuted = true;
+
+                return Task.CompletedTask;
+            }
+        }));
+        using var server = host.GetTestServer();
+        var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+        var response = await server.CreateRequest(requestUrl).GetAsync();
+        var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+        Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+        Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+        Assert.NotNull(response.Headers.ETag);
+
+        using (var stream = fileInfo.CreateReadStream())
+        {
+            var fileContents = new byte[stream.Length];
+            stream.Read(fileContents, 0, (int)stream.Length);
+            Assert.True(responseContent.SequenceEqual(fileContents));
+        }
+
+        Assert.True(onPrepareResponseExecuted);
+    }
+
+    [Fact]
+    public async Task OnPrepareResponse_Execution_Order_Test()
+    {
+        var baseUrl = "";
+        var baseDir = @".";
+        var requestUrl = "/TestDocument.txt";
+
+        var syncCallbackInvoked = false;
+        var asyncCallbackInvoked = false;
+
+        using var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir));
+        using var host = await StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
+        {
+            RequestPath = new PathString(baseUrl),
+            FileProvider = fileProvider,
+            OnPrepareResponse = context =>
+            {
+                Assert.False(syncCallbackInvoked);
+                Assert.False(asyncCallbackInvoked);
+                syncCallbackInvoked = true;
+            },
+            OnPrepareResponseAsync = context =>
+            {
+                Assert.True(syncCallbackInvoked);
+                Assert.False(asyncCallbackInvoked);
+                asyncCallbackInvoked = true;
+                return Task.CompletedTask;
+            }
+        }));
+        using var server = host.GetTestServer();
+        var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(requestUrl));
+        var response = await server.CreateRequest(requestUrl).GetAsync();
+        var responseContent = await response.Content.ReadAsByteArrayAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+        Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
+        Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+        Assert.NotNull(response.Headers.ETag);
+
+        using (var stream = fileInfo.CreateReadStream())
+        {
+            var fileContents = new byte[stream.Length];
+            stream.Read(fileContents, 0, (int)stream.Length);
+            Assert.True(responseContent.SequenceEqual(fileContents));
+        }
+
+        Assert.True(syncCallbackInvoked);
+        Assert.True(asyncCallbackInvoked);
     }
 
     [Fact]

@@ -1,8 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.CookieOptions.CookieOptions(Microsoft.AspNetCore.Http.CookieOptions! options) -> void
-Microsoft.AspNetCore.Http.CookieOptions.CreateCookieHeader(string! name, string! value) -> Microsoft.Net.Http.Headers.SetCookieHeaderValue!
-Microsoft.AspNetCore.Http.CookieOptions.Extensions.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature
-Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature.AcceptAsync() -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
-Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature.IsExtendedConnect.get -> bool
-Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature.Protocol.get -> string?

@@ -34,7 +34,6 @@ public class HttpNoContentOutputFormatter : IOutputFormatter
     public Task WriteAsync(OutputFormatterWriteContext context)
     {
         var response = context.HttpContext.Response;
-        response.ContentLength = 0;
 
         if (response.StatusCode == StatusCodes.Status200OK)
         {

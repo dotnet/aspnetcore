@@ -212,7 +212,7 @@ public class UrlResolutionTagHelper : TagHelper
     /// <param name="resolvedUrl">Absolute URL beginning with the application's virtual root. <c>null</c> if
     /// <paramref name="url"/> could not be resolved.</param>
     /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-    protected bool TryResolveUrl(string url, out string? resolvedUrl)
+    protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, out string? resolvedUrl)
     {
         resolvedUrl = null;
         var start = FindRelativeStart(url);
@@ -238,7 +238,7 @@ public class UrlResolutionTagHelper : TagHelper
     /// not be resolved.
     /// </param>
     /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-    protected bool TryResolveUrl(string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
+    protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
     {
         resolvedUrl = null;
         var start = FindRelativeStart(url);

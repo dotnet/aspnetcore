@@ -3,10 +3,8 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -135,7 +133,6 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Collection(
             provider.ActionModelConventions,
             c => Assert.IsType<ApiVisibilityConvention>(c),
-            c => Assert.IsType<EndpointMetadataConvention>(c),
             c => Assert.IsType<ClientErrorResultFilterConvention>(c),
             c => Assert.IsType<InvalidModelStateFilterConvention>(c),
             c => Assert.IsType<ConsumesConstraintForFormFileParameterConvention>(c),

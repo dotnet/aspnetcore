@@ -99,17 +99,9 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 }
 
 /** @private */
-export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
+export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string,
                                   content: string | ArrayBuffer, options: IHttpConnectionOptions): Promise<void> {
-    let headers: {[k: string]: string} = {};
-    if (accessTokenFactory) {
-        const token = await accessTokenFactory();
-        if (token) {
-            headers = {
-                ["Authorization"]: `Bearer ${token}`,
-            };
-        }
-    }
+    const headers: {[k: string]: string} = {};
 
     const [name, value] = getUserAgentHeader();
     headers[name] = value;

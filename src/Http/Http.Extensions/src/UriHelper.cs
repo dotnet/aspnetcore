@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -55,10 +56,7 @@ public static class UriHelper
         QueryString query = new QueryString(),
         FragmentString fragment = new FragmentString())
     {
-        if (scheme == null)
-        {
-            throw new ArgumentNullException(nameof(scheme));
-        }
+        ArgumentNullException.ThrowIfNull(scheme);
 
         var hostText = host.ToUriComponent();
         var pathBaseText = pathBase.ToUriComponent();
@@ -105,17 +103,14 @@ public static class UriHelper
     /// <param name="query">The query, if any.</param>
     /// <param name="fragment">The fragment, if any.</param>
     public static void FromAbsolute(
-        string uri,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri,
         out string scheme,
         out HostString host,
         out PathString path,
         out QueryString query,
         out FragmentString fragment)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         path = new PathString();
         query = new QueryString();
@@ -163,10 +158,7 @@ public static class UriHelper
     /// <returns>The encoded string version of <paramref name="uri"/>.</returns>
     public static string Encode(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (uri.IsAbsoluteUri)
         {
