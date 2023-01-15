@@ -20,7 +20,7 @@ public class HealthChecksBuilderTest
         // Arrange
         var instance = new DelegateHealthCheck((_) =>
         {
-            return Task.FromResult(HealthCheckResult.Healthy());
+            return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy());
         });
 
         var services = CreateServices();
@@ -160,7 +160,7 @@ public class HealthChecksBuilderTest
         var services = CreateServices();
         services.AddHealthChecks().AddAsyncCheck("test", () =>
         {
-            return Task.FromResult(HealthCheckResult.Healthy());
+            return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy());
         }, tags: new[] { "tag", });
 
         var serviceProvider = services.BuildServiceProvider();
@@ -183,7 +183,7 @@ public class HealthChecksBuilderTest
         var services = CreateServices();
         services.AddHealthChecks().AddAsyncCheck("test", (_) =>
         {
-            return Task.FromResult(HealthCheckResult.Unhealthy());
+            return new ValueTask<HealthCheckResult>(HealthCheckResult.Unhealthy());
         }, tags: new[] { "tag", });
 
         var serviceProvider = services.BuildServiceProvider();
@@ -205,10 +205,10 @@ public class HealthChecksBuilderTest
         var services = new ServiceCollection();
         services
             .AddHealthChecks()
-            .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy()));
+            .AddAsyncCheck("Foo", () => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy()));
         services
             .AddHealthChecks()
-            .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Healthy()));
+            .AddAsyncCheck("Bar", () => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy()));
 
         // Act
         var options = services.BuildServiceProvider().GetRequiredService<IOptions<HealthCheckServiceOptions>>();

@@ -41,9 +41,9 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-            b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
-            b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
+            b.AddAsyncCheck("HealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
+            b.AddAsyncCheck("DegradedCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
+            b.AddAsyncCheck("UnhealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
         });
 
         // Act
@@ -144,9 +144,9 @@ public class DefaultHealthCheckServiceTest
 
         var service = CreateHealthChecksService(b =>
         {
-            b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
-            b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
-            b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
+            b.AddAsyncCheck("HealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage, data)));
+            b.AddAsyncCheck("DegradedCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Degraded(DegradedMessage)));
+            b.AddAsyncCheck("UnhealthyCheck", _ => new ValueTask<HealthCheckResult>(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
         });
 
         // Act
@@ -250,8 +250,8 @@ public class DefaultHealthCheckServiceTest
         var service = CreateHealthChecksService(b =>
         {
             b.AddAsyncCheck("Throws", ct => throw thrownException);
-            b.AddAsyncCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException));
-            b.AddAsyncCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy()));
+            b.AddAsyncCheck("Faults", ct => new ValueTask<HealthCheckResult>(Task.FromException<HealthCheckResult>(faultedException)));
+            b.AddAsyncCheck("Succeeds", ct => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy()));
         });
 
         // Act
@@ -301,7 +301,7 @@ public class DefaultHealthCheckServiceTest
                             Assert.Equal("TestScope", item.Value);
                         });
                 });
-            return Task.FromResult(HealthCheckResult.Healthy());
+            return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy());
         });
 
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);

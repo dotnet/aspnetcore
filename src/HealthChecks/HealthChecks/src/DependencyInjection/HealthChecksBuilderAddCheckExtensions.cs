@@ -72,7 +72,7 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// </param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck(
@@ -82,7 +82,7 @@ public static class HealthChecksBuilderAddCheckExtensions
         HealthStatus? failureStatus = default,
         IEnumerable<string>? tags = default,
         TimeSpan? timeout = default,
-        HealthCheckPublisherOptions? parameters = default)
+        HealthCheckRegistrationParameters? parameters = default)
     {
         if (builder == null)
         {
@@ -171,7 +171,7 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// </param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     /// <remarks>
     /// This method will use <see cref="ActivatorUtilities.GetServiceOrCreateInstance{T}(IServiceProvider)"/> to create the health check
@@ -186,7 +186,7 @@ public static class HealthChecksBuilderAddCheckExtensions
         HealthStatus? failureStatus = default,
         IEnumerable<string>? tags = default,
         TimeSpan? timeout = default,
-        HealthCheckPublisherOptions? parameters = default) where T : class, IHealthCheck
+        HealthCheckRegistrationParameters? parameters = default) where T : class, IHealthCheck
     {
         if (builder == null)
         {
@@ -325,7 +325,7 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="args">Additional arguments to provide to the constructor.</param>
     /// <param name="timeout">A <see cref="TimeSpan"/> representing the timeout of the check.</param>
-    /// <param name="parameters">An optional <see cref="HealthCheckPublisherOptions"/> representing the individual health check options.</param>
+    /// <param name="parameters">An optional <see cref="HealthCheckRegistrationParameters"/> representing the individual health check options.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     /// <remarks>
     /// This method will use <see cref="ActivatorUtilities.CreateInstance{T}(IServiceProvider, object[])"/> to create the health check
@@ -338,7 +338,7 @@ public static class HealthChecksBuilderAddCheckExtensions
         HealthStatus? failureStatus,
         IEnumerable<string>? tags,
         TimeSpan? timeout,
-        HealthCheckPublisherOptions? parameters,
+        HealthCheckRegistrationParameters? parameters,
         params object[] args) where T : class, IHealthCheck
     {
         if (builder == null)
