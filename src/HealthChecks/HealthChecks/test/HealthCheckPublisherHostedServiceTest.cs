@@ -49,11 +49,11 @@ public class HealthCheckPublisherHostedServiceTest
         serviceCollection.AddOptions();
         serviceCollection.AddLogging();
         serviceCollection.AddHealthChecks()
-            .AddCheck("Foo", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
-            .AddCheck("Foo", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
-            .AddCheck("Bar", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
-            .AddCheck("Baz", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())))
-            .AddCheck("Baz", new DelegateHealthCheck(_ => new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy())));
+            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
 
         // Choosing big values for tests to make sure that we're not dependent on the defaults.
         // All of the tests that rely on the timer will set their own values for speed.
@@ -306,36 +306,54 @@ public class HealthCheckPublisherHostedServiceTest
 
         var service = CreateService(publishers, configureBuilder: b =>
         {
-            b.AddAsyncCheck("CheckDefault", _ =>
-            {
-                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-            });
+            b.Add(
+                    new HealthCheckRegistration(
+                        name: "CheckDefault",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null));
 
-            b.AddAsyncCheck("CheckDelay2Period18", _ =>
-            {
-                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-            },
-            parameters: new(delay: TimeSpan.FromSeconds(2), period: TimeSpan.FromSeconds(18)));
+            b.Add(
+                new HealthCheckRegistration(
+                    name: "CheckDelay2Period18",
+                    instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                    failureStatus: null,
+                    tags: null,
+                    timeout: default,
+                    delay: TimeSpan.FromSeconds(2),
+                    period: TimeSpan.FromSeconds(18)));
 
-            b.AddAsyncCheck("CheckDelay7Period11", _ =>
-            {
-                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-            },
-            parameters: new(delay: TimeSpan.FromSeconds(7), period: TimeSpan.FromSeconds(11)));
+            b.Add(
+                new HealthCheckRegistration(
+                    name: "CheckDelay7Period11",
+                    instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                    failureStatus: null,
+                    tags: null,
+                    timeout: default,
+                    delay: TimeSpan.FromSeconds(7),
+                    period: TimeSpan.FromSeconds(11)));
 
-            b.AddAsyncCheck("CheckDelay9Period5", _ =>
-            {
-                unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-            },
-            parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5)));
+            b.Add(
+               new HealthCheckRegistration(
+                   name: "CheckDelay9Period5",
+                   instance: new DelegateHealthCheck(_ =>
+                   {
+                       unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                       return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
+                   }),
+                    failureStatus: null,
+                   tags: null,
+                   timeout: default,
+                   delay: TimeSpan.FromSeconds(9),
+                   period: TimeSpan.FromSeconds(5)));
 
-            b.AddAsyncCheck("DisabledCheck", _ =>
-            {
-                unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-            },
-            parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
+            // TODO Disabled
+            //b.AddAsyncCheck("DisabledCheck", _ =>
+            //{
+            //    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+            //    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
+            //},
+            //parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
         });
 
         try
@@ -542,36 +560,54 @@ public class HealthCheckPublisherHostedServiceTest
             },
             configureBuilder: b =>
             {
-                b.AddAsyncCheck("CheckDefault", _ =>
-                {
-                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-                });
+                b.Add(
+                    new HealthCheckRegistration(
+                        name: "CheckDefault",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null));
 
-                b.AddAsyncCheck("CheckDelay2Period18", _ =>
-                {
-                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-                },
-                parameters: new(delay: TimeSpan.FromSeconds(2), period: TimeSpan.FromSeconds(18)));
+                b.Add(
+                    new HealthCheckRegistration(
+                        name: "CheckDelay2Period18",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default,
+                        delay: TimeSpan.FromSeconds(2),
+                        period: TimeSpan.FromSeconds(18)));
 
-                b.AddAsyncCheck("CheckDelay7Period11", _ =>
-                {
-                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-                },
-                parameters: new(delay: TimeSpan.FromSeconds(7), period: TimeSpan.FromSeconds(11)));
+                b.Add(
+                    new HealthCheckRegistration(
+                        name: "CheckDelay7Period11",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default,
+                        delay: TimeSpan.FromSeconds(7),
+                        period: TimeSpan.FromSeconds(11)));
 
-                b.AddAsyncCheck("CheckDelay9Period5", _ =>
-                {
-                    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-                },
-                parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5)));
+                b.Add(
+                   new HealthCheckRegistration(
+                       name: "CheckDelay9Period5",
+                       instance: new DelegateHealthCheck(_ =>
+                       {
+                           unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                           return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
+                       }),
+                       failureStatus: null,
+                       tags: null,
+                       timeout: default,
+                       delay: TimeSpan.FromSeconds(9),
+                       period: TimeSpan.FromSeconds(5)));
 
-                b.AddAsyncCheck("DisabledCheck", _ =>
-                {
-                    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                    return new ValueTask<HealthCheckResult>(HealthCheckResult.Healthy(HealthyMessage));
-                },
-                parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
+                // TODO Disabled
+                //b.AddAsyncCheck("DisabledCheck", _ =>
+                //{
+                //    unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
+                //    return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
+                //},
+                //parameters: new(delay: TimeSpan.FromSeconds(9), period: TimeSpan.FromSeconds(5), isEnabled: false));
             });
 
         try
