@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
+using System.Collections.Immutable;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -75,5 +76,14 @@ public class IISServerOptions
             }
             _maxRequestBodySize = value;
         }
+    }
+
+    /// <summary>
+    /// Gets host addresses
+    /// </summary>
+    /// <returns></returns>
+    public ImmutableArray<string> GetServerAddresses()
+    {
+        return ImmutableArray.Create(ServerAddresses);
     }
 }
