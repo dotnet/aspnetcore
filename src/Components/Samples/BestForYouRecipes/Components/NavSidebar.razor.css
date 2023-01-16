@@ -1,0 +1,43 @@
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 4.5rem;
+    padding: 1rem;
+    box-sizing: border-box;
+    border-bottom-right-radius: 1.2rem;
+    color: white;
+    background-color: #435869;
+    box-shadow: 0 2px 4px 0px rgb(0 0 0 / 30%);
+    z-index: 1;
+}
+
+nav:hover {
+    width: 15rem;
+}
+
+::deep a {
+    display: flex;
+    gap: 1rem;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    color: #e1e1e1;
+    text-decoration: none;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+::deep a.active {
+    color: #a6ffb4;
+}
+
+    ::deep a:hover:not(.active) {
+        color: white;
+    }
+
+span {
+    font-family: 'Playfair Display', serif;
+    font-weight: normal;
+    font-size: 1.4rem;
+}

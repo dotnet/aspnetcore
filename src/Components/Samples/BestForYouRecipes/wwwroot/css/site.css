@@ -108,6 +108,7 @@ header {
     .recipe-card img {
         width: 100%;
         aspect-ratio: 508 / 472;
+        object-fit: cover;
     }
 
 .recipe-card-body {
@@ -154,15 +155,9 @@ header {
     display: block;
     width: 125%;
     margin: 0 -12.5%;
+    aspect-ratio: 1261 / 508;
+    object-fit: cover;
 }
-
-    .recipe-banner img {
-        display: block;
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 1800px;
-    }
 
 .recipe-details {
     padding: 0 5%;
@@ -256,4 +251,8 @@ footer {
     font-style: normal;
     font-weight: 400;
     src: local(''), url('fonts/playfair-display-v30-latin-regular.woff2') format('woff2');
+}
+
+.sortable-ghost {
+    background-color: #ddd;
 }

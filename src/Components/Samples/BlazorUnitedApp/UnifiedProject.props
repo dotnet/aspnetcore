@@ -16,14 +16,16 @@
 			<Pattern>**</Pattern>
 		</StaticWebAssetDiscoveryPattern>
 
-		<Compile Remove="**\*.WebAssembly.cs" />
-		<None Include="**\*.WebAssembly.cs" />
+    <Compile Remove="**\*.WebAssembly.cs" />
+    <Content Remove="**\*.WebAssembly.razor" />
+    <None Include="**\*.WebAssembly.cs" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(IsBrowser)' == 'true'">
-		<Compile Remove="Controllers\**" />
-		<Compile Remove="**\*.Server.cs" />
-		<None Include="Controllers\**" />
-		<None Include="**\*.Server.cs" />
+    <Compile Remove="Controllers\**" />
+    <Compile Remove="**\*.Server.cs" />
+    <Content Remove="**\*.Server.razor" />
+    <None Include="Controllers\**" />
+    <None Include="**\*.Server.cs" />
 	</ItemGroup>
 </Project>

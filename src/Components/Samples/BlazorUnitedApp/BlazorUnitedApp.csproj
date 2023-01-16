@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net7.0-browser</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
-    <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
 
   <Import Project="UnifiedProject.props" />

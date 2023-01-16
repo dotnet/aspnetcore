@@ -1,17 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project>
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net7.0-browser</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
+
+  <Import Project="..\BlazorUnitedApp\UnifiedProject.props" />
 
   <ItemGroup Condition="'$(IsBrowser)' != 'true'">
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.Extensions.Hosting" />
 
@@ -19,5 +21,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup Condition="'$(IsBrowser)' == 'true'">
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="System.Net.Http.Json" />
+  </ItemGroup>
+
+  <Import Project="..\BlazorUnitedApp\UnifiedProject.targets" />
 
 </Project>

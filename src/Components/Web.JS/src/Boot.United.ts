@@ -9,7 +9,7 @@ import { AutoComponentDescriptor, discoverComponents, ServerComponentDescriptor,
 import { beginLoadingDotNetRuntime, loadBootConfig, startWebAssembly } from './Boot.WebAssembly.Common';
 import { loadWebAssemblyResources } from './Platform/Mono/MonoPlatform';
 import { enableFormEnhancement } from './FormEnhancement';
-import { enableNavigationEnhancement } from './NavigationEnhancement';
+import { enableNavigationEnhancement, performEnhancedPageLoad } from './NavigationEnhancement';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 
@@ -80,6 +80,13 @@ async function activateInteractiveComponents(options?: Partial<UnitedStartOption
       await RootComponentsFunctions._internal_activatePrerenderedComponents();
     }
   }
+
+  // TODO: There are new routing scenarios now there might not be any Router component in use but we still expect server-side routing to work.
+  // For this prototype, assume there is no Router and that all programmatic navigations can be handled directly from here
+  Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+    performEnhancedPageLoad(uri);
+    return null as any;
+  }, null);
 }
 
 Blazor.start = boot;

@@ -32,7 +32,7 @@
                 }
             </ul>
             <h2>Instructions</h2>
-            @foreach (var instruction in recipe.Instructions.Split("\r\n"))
+            @foreach (var instruction in recipe.Instructions.Split("\n"))
             {
                 <p>@instruction</p>
             }

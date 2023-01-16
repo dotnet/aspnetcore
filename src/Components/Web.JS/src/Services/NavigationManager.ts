@@ -34,8 +34,8 @@ function listenForNavigationEvents(
   locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
   locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
 ): void {
-  notifyLocationChangedCallback = locationChangedCallback;
-  notifyLocationChangingCallback = locationChangingCallback;
+  notifyLocationChangedCallback = locationChangedCallback || notifyLocationChangedCallback;
+  notifyLocationChangingCallback = locationChangingCallback || notifyLocationChangingCallback;
 
   if (hasRegisteredNavigationEventListeners) {
     return;
