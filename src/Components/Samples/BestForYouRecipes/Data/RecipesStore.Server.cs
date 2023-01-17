@@ -29,7 +29,7 @@ public class RecipesStore : IRecipesStore
     public async Task<IEnumerable<Recipe>> GetRecipes(string? query)
     {
         // Simulate DB slowness
-        await Task.Delay(500);
+        await Task.Delay(1000);
 
         return string.IsNullOrWhiteSpace(query)
             ? recipes.Values
@@ -58,7 +58,7 @@ public class RecipesStore : IRecipesStore
     {
         using var ms = new MemoryStream();
         await imageData.CopyToAsync(ms);
-        Console.WriteLine("Received image of length " + ms.Length);
+
         var filename = Guid.NewGuid().ToString();
         images[filename] = ms.ToArray();
         return $"images/uploaded/{filename}";

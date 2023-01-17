@@ -26,45 +26,6 @@ h2 {
     text-align: center;
 }
 
-.units-group {
-    border: 1px solid #ddd;
-    display: inline-block;
-    padding: 0.6rem 1rem;
-    margin-bottom: 1rem;
-    border-radius: 6px;
-}
-
-.ingredient {
-    padding: 0.3rem;
-    display: flex;
-    gap: .5rem;
-}
-
-    .ingredient:last-of-type {
-        margin-bottom: 1rem;
-    }
-
-    .ingredient button {
-        background: none;
-        color: black;
-        width: 2.5rem;
-        padding: 0;
-        cursor: pointer;
-        margin-right: -0.5rem;
-    }
-
-        .ingredient button:hover {
-            background: #ddd;
-        }
-
-        .ingredient button:active {
-            background: #ccc;
-        }
-
-        .ingredient .draghandle {
-            cursor: move;
-        }
-
 img.preview {
     display: block;
     max-width: 30rem;

@@ -1,0 +1,132 @@
+﻿@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="units-group">
+    Units:
+    <InputRadioGroup @bind-Value="@metric" @bind-Value:after="UpdateSystem">
+        <label><InputRadio Value="@true" />Metric</label>
+        <label><InputRadio Value="@false" />Imperial</label>
+    </InputRadioGroup>
+</div>
+<div @ref="@ingredientsElem">
+    @foreach (var ingredient in ingredients)
+    {
+        <div class="ingredient" @key="@ingredient">
+            <InputNumber @bind-Value="@ingredient.Quantity" @bind-Value:after="UpdateIngredientsOnModel" />
+            <InputSelect @bind-Value="@ingredient.Unit" @bind-Value:after="UpdateIngredientsOnModel">
+                <option value=""></option>
+                @if (metric)
+                {
+                    <optgroup label="Weight">
+                        <option value="@IngredientUnit.Grams">g (grams)</option>
+                        <option value="@IngredientUnit.Kilograms">Kg (kilograms)</option>
+                    </optgroup>
+                    <optgroup label="Volume">
+                        <option value="@IngredientUnit.Millileters">ml (millileters)</option>
+                        <option value="@IngredientUnit.Liters">l (liters)</option>
+                    </optgroup>
+                }
+                else
+                {
+                    <optgroup label="Weight">
+                        <option value="@IngredientUnit.Ounces">oz (ounces)</option>
+                        <option value="@IngredientUnit.Pounds">lb (pounds)</option>
+                    </optgroup>
+                    <optgroup label="Volume">
+                        <option value="@IngredientUnit.Teaspoons">tsp (teaspoons)</option>
+                        <option value="@IngredientUnit.Tablespoons">tbsp (tablespoons)</option>
+                        <option value="@IngredientUnit.Cups">cups</option>
+                        <option value="@IngredientUnit.FluidOunces">floz (fluid ounces)</option>
+                        <option value="@IngredientUnit.Gallons">gallons</option>
+                        <option value="@IngredientUnit.Bushels">bushels</option>
+                        <option value="@IngredientUnit.AcreFeet">acre-feet</option>
+                    </optgroup>
+                }
+            </InputSelect>
+            <InputText @bind-Value="@ingredient.Name" @bind-Value:after="UpdateIngredientsOnModel" />
+            <button title="Sort" class="draghandle ms-Icon ms-Icon--Sort"></button>
+            <button title="Delete" class="ms-Icon ms-Icon--Delete" @onclick="@(() => RemoveIngredient(ingredient))"></button>
+        </div>
+    }
+</div>
+<div onkeypress="@onEnterClickNextButton">
+    <InputText placeholder="Example: 350g flour" @bind-Value="@newIngredientText" />
+    <button type="button" @onclick="AddIngredient">Add</button>
+</div>
+
+@code {
+    string? newIngredientText;
+    ElementReference ingredientsElem;
+    List<Ingredient> ingredients = new();
+    bool metric = true;
+    IJSObjectReference? jsModule;
+    DotNetObjectReference<IngredientsListEditor>? selfReference;
+    string onEnterClickNextButton = "if (event.code === 'Enter') { event.preventDefault(); event.target.dispatchEvent(new Event('change')); event.target.nextElementSibling.click(); }";
+
+    [CascadingParameter] public EditContext? EditContext { get; set; }
+    [Parameter] public string[] Ingredients { get; set; } = default!;
+    [Parameter] public EventCallback<string[]> IngredientsChanged { get; set; } = default!;
+    [Parameter] public Expression<Func<string[]>> IngredientsExpression { get; set; } = default!;
+
+    async Task UpdateSystem()
+    {
+        foreach (var i in ingredients)
+        {
+            i.SetSystem(metric);
+        }
+
+        await UpdateIngredientsOnModel();
+    }
+
+    async Task AddIngredient()
+    {
+        if (!string.IsNullOrWhiteSpace(newIngredientText))
+        {
+            ingredients.Add(Ingredient.Parse(newIngredientText, metric));
+        }
+
+        newIngredientText = null;
+        await UpdateIngredientsOnModel();
+    }
+
+    async Task RemoveIngredient(Ingredient ingredient)
+    {
+        ingredients.Remove(ingredient);
+        await UpdateIngredientsOnModel();
+    }
+
+    async Task UpdateIngredientsOnModel()
+    {
+        var result = ingredients.Select(i => i.ToString()).ToArray();
+        await IngredientsChanged.InvokeAsync(result);
+        EditContext?.NotifyFieldChanged(FieldIdentifier.Create(IngredientsExpression));
+    }
+
+    [JSInvokable]
+    public async Task ChangeIngredientsOrder(int oldIndex, int newIndex)
+    {
+        var item = ingredients[oldIndex];
+        ingredients.RemoveAt(oldIndex);
+        ingredients.Insert(newIndex, item);
+        await UpdateIngredientsOnModel();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/IngredientsListEditor.razor.js");
+            selfReference = DotNetObjectReference.Create(this);
+            await jsModule.InvokeVoidAsync("enableDragging", ingredientsElem, selfReference);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        selfReference?.Dispose();
+        if (jsModule is not null)
+        {
+            await jsModule.DisposeAsync();
+        }
+    }
+}

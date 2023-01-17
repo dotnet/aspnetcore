@@ -1,8 +1,7 @@
 ﻿@page "/submit"
 @inject IRecipesStore RecipesStore
-@inject IJSRuntime JS
 @inject NavigationManager Nav
-@implements IAsyncDisposable
+@inject IJSRuntime JS
 @attribute [ComponentRenderMode(WebComponentRenderMode.Auto)]
 
 <div>
@@ -27,167 +26,38 @@
         <ValidationMessage For="@(() => recipe.Servings)" />
 
         <h2>Ingredients</h2>
-        <div class="units-group">
-            Units:
-            <InputRadioGroup @bind-Value="@UseMetric">
-                <label><InputRadio Value="@true" />Metric</label>
-                <label><InputRadio Value="@false" />Imperial</label>
-            </InputRadioGroup>
-        </div>
-        <div @ref="@ingredientsElem">
-            @foreach (var ingredient in ingredients)
-            {
-                <div class="ingredient" @key="@ingredient">
-                    <InputNumber @bind-Value="@ingredient.Quantity" />
-                    <InputSelect @bind-Value="@ingredient.Unit">
-                        <option value=""></option>
-                        @if (metric)
-                        {
-                            <optgroup label="Weight">
-                                <option value="@IngredientUnit.Grams">g (grams)</option>
-                                <option value="@IngredientUnit.Kilograms">Kg (kilograms)</option>
-                            </optgroup>
-                            <optgroup label="Volume">
-                                <option value="@IngredientUnit.Millileters">ml (millileters)</option>
-                                <option value="@IngredientUnit.Liters">l (liters)</option>
-                            </optgroup>
-                        }
-                        else
-                        {
-                            <optgroup label="Weight">
-                                <option value="@IngredientUnit.Ounces">oz (ounces)</option>
-                                <option value="@IngredientUnit.Pounds">lb (pounds)</option>
-                            </optgroup>
-                            <optgroup label="Volume">
-                                <option value="@IngredientUnit.Teaspoons">tsp (teaspoons)</option>
-                                <option value="@IngredientUnit.Tablespoons">tbsp (tablespoons)</option>
-                                <option value="@IngredientUnit.Cups">cups</option>
-                                <option value="@IngredientUnit.FluidOunces">floz (fluid ounces)</option>
-                                <option value="@IngredientUnit.Gallons">gallons</option>
-                                <option value="@IngredientUnit.Bushels">bushels</option>
-                                <option value="@IngredientUnit.AcreFeet">acre-feet</option>
-                            </optgroup>
-                        }
-                    </InputSelect>
-                    <InputText @bind-Value="@ingredient.Name" />
-                    <button title="Sort" class="draghandle ms-Icon ms-Icon--Sort"></button>
-                    <button title="Delete" class="ms-Icon ms-Icon--Delete"@onclick="@(() => RemoveIngredient(ingredient))"></button>
-                </div>
-            }
-        </div>
-        <div>
-            <form @onsubmit="AddIngredient">
-                <InputText placeholder="Example: 350g flour" @bind-Value="@newIngredientText" @ref="@newIngredientInput" />
-                <button type="submit">Add</button>
-            </form>
-            <ValidationMessage For="@(() => recipe.Ingredients)" />
-        </div>
+        <IngredientsListEditor @bind-Ingredients="@recipe.Ingredients" />
+        <ValidationMessage For="@(() => recipe.Ingredients)" />
 
         <h2>Instructions</h2>
         <InputTextArea rows="5" name="text" placeholder="Write your instructions" @bind-Value="@recipe.Instructions" />
         <ValidationMessage For="@(() => recipe.Instructions)" />
 
         <h2>Tags</h2>
-        <div>TODO: Edit tags</div>
+        <p>TODO: Edit tags</p>
 
-        <p>
-            <button type="submit">Submit recipe</button>
-        </p>
+        <button type="submit">Submit recipe</button>
     </EditForm>
 </div>
 
 @code {
-    bool metric = true;
-    Recipe recipe = new Recipe { Servings = 2, Source = "Best For You community" };
-    string? newIngredientText;
-    InputText? newIngredientInput;
-    ElementReference ingredientsElem;
-    IJSObjectReference? jsModule;
-    DotNetObjectReference<SubmitRecipe>? selfReference;
+    Recipe recipe = new Recipe { Servings = 2, Source = "Best For You community", Ingredients = Array.Empty<string>() };
     private InputFile? inputFile;
     private ElementReference previewImageElem;
-    List<Ingredient> ingredients = new();
     EditForm? editForm;
-
-    // TODO: Use @bind:after when updating to newer SDK
-    bool UseMetric
-    {
-        get => metric;
-        set
-        {
-            metric = value;
-            foreach (var i in ingredients)
-            {
-                i.SetSystem(metric);
-            }
-        }
-    }
-
-    async Task AddIngredient()
-    {
-        if (!string.IsNullOrWhiteSpace(newIngredientText))
-        {
-            ingredients.Add(Ingredient.Parse(newIngredientText, metric));
-        }
-
-        newIngredientText = null;
-        await newIngredientInput!.Element!.Value.FocusAsync();
-        UpdateIngredientsOnModel();
-    }
-
-    void RemoveIngredient(Ingredient ingredient)
-    {
-        ingredients.Remove(ingredient);
-        UpdateIngredientsOnModel();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/SubmitRecipe.razor.js");
-            selfReference = DotNetObjectReference.Create(this);
-            await jsModule.InvokeVoidAsync("enableDragging", ingredientsElem, selfReference);
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        selfReference?.Dispose();
-        if (jsModule is not null)
-        {
-            await jsModule.DisposeAsync();
-        }
-    }
 
     private async Task ImageSelected(InputFileChangeEventArgs eventArgs)
     {
+        await using var jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/SubmitRecipe.razor.js");
         await jsModule!.InvokeVoidAsync("previewImage", inputFile!.Element, previewImageElem);
         var image = await eventArgs.File.RequestImageFileAsync("jpeg", 800, 600);
         recipe.ImageUrl = await RecipesStore.AddImage(image.OpenReadStream(2 * 1024 * 1024));
         editForm!.EditContext!.NotifyFieldChanged(FieldIdentifier.Create(() => recipe.ImageUrl));
     }
 
-    [JSInvokable]
-    public void ChangeIngredientsOrder(int oldIndex, int newIndex)
-    {
-        var item = ingredients[oldIndex];
-        ingredients.RemoveAt(oldIndex);
-        ingredients.Insert(newIndex, item);
-        StateHasChanged();
-    }
-
-    void UpdateIngredientsOnModel()
-    {
-        recipe.Ingredients = ingredients.Select(i => i.ToString()).ToArray();
-        editForm!.EditContext!.NotifyFieldChanged(FieldIdentifier.Create(() => recipe.Ingredients));
-    }
-
     async Task HandleSubmit()
     {
-        UpdateIngredientsOnModel();
         recipe.Tags = new[] { "TODO" };
-
         recipe.Id = await RecipesStore.AddRecipe(recipe); // In a real application, this would probably go through some kind of administrative review process
         Nav.NavigateTo($"recipe/{recipe.Id}");
     }
