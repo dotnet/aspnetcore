@@ -198,7 +198,7 @@ export class HubConnectionBuilder {
         return this;
     }
 
-    /** Configures keepAliveIntervalInMilliseconds for the {@link @microsoft/signalr.HubConnection}.
+    /** Configures {@link @microsoft/signalr.HubConnection.keepAliveIntervalInMilliseconds} for the {@link @microsoft/signalr.HubConnection}.
      *
      * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
