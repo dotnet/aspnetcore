@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json" Version="13.0.2" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.NETCore.BrowserDebugHost.Transport" GeneratePathProperty="true" PrivateAssets="All" />
   </ItemGroup>

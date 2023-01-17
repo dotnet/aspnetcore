@@ -31,8 +31,12 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
                     browserUrl = new Uri(browserParam);
                     devToolsHost = $"http://{browserUrl.Host}:{browserUrl.Port}";
                 }
-
-                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost);
+                var isFirefox = queryParams.Get("isFirefox");
+                if (isFirefox == "true")
+                {
+                    devToolsHost = "localhost:6000";
+                }
+                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost, isFirefox == "true");
                 var requestPath = context.Request.Path.ToString();
                 if (requestPath == string.Empty)
                 {
@@ -43,7 +47,14 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
                 {
                     case "/":
                         var targetPickerUi = new TargetPickerUi(debugProxyBaseUrl, devToolsHost);
-                        await targetPickerUi.Display(context);
+                        if (isFirefox == "true")
+                        {
+                            await targetPickerUi.DisplayFirefox(context);
+                        }
+                        else
+                        {
+                            await targetPickerUi.Display(context);
+                        }
                         break;
                     case "/ws-proxy":
                         context.Response.Redirect($"{debugProxyBaseUrl}{browserUrl!.PathAndQuery}");
