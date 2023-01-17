@@ -82,7 +82,7 @@ public static class HubConnectionBuilderExtensions
     /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
     /// <param name="timeout">KeepAliveInterval for the <see cref="HubConnection"/>.</param>
     /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
-    public static IHubConnectionBuilder WithKeepAliveInterval(this IHubConnectionBuilder hubConnectionBuilder, TimeSpan timeout)
+    public static IHubConnectionBuilder WithKeepAliveInterval(this IHubConnectionBuilder hubConnectionBuilder, TimeSpan interval)
     {
         hubConnectionBuilder.Services.Configure<HubConnectionOptions>(o => o.KeepAliveInterval = timeout);
         return hubConnectionBuilder;
