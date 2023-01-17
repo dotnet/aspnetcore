@@ -904,9 +904,9 @@ public static class TypedResults
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute{TValue}"/> for the response.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         => new(routeName, routeValues, value);
 
     /// <summary>
@@ -994,9 +994,9 @@ public static class TypedResults
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         => new(routeName, routeValues, value);
 
     /// <summary>
