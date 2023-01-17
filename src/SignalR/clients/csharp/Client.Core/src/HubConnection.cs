@@ -153,7 +153,7 @@ public partial class HubConnection : IAsyncDisposable
     /// <remarks>
     /// The client times out if it hasn't heard from the server for `this` long.
     /// </remarks>
-    public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
+    public TimeSpan ServerTimeout { get; set; }
 
     /// <summary>
     /// Gets or sets the interval at which the client sends ping messages.
@@ -161,7 +161,7 @@ public partial class HubConnection : IAsyncDisposable
     /// <remarks>
     /// Sending any message resets the timer to the start of the interval.
     /// </remarks>
-    public TimeSpan KeepAliveInterval { get; set; } = DefaultKeepAliveInterval;
+    public TimeSpan KeepAliveInterval { get; set; }
 
     /// <summary>
     /// Gets or sets the timeout for the initial handshake.
@@ -231,18 +231,9 @@ public partial class HubConnection : IAsyncDisposable
 
         var options = serviceProvider.GetService<IOptions<HubConnectionOptions>>();
 
-        if (options != null)
-        {
-            if (options.Value.ServerTimeout.HasValue)
-            {
-                ServerTimeout = options.Value.ServerTimeout.Value;
-            }
+        ServerTimeout = options?.Value.ServerTimeout ?? DefaultServerTimeout;
 
-            if (options.Value.KeepAliveInterval.HasValue)
-            {
-                KeepAliveInterval = options.Value.KeepAliveInterval.Value;
-            }
-        }
+        KeepAliveInterval = options?.Value.KeepAliveInterval ?? DefaultKeepAliveInterval;
     }
 
     /// <summary>
