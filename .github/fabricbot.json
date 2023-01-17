@@ -3481,6 +3481,45 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "Needs: Repro"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Needs: Repro] Request a minimal repro project",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimalistic repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem."
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "Needs: Author Feedback"
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": []
