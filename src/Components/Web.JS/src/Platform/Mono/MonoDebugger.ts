@@ -97,7 +97,7 @@ async function launchDebugger(isFirefox : boolean) {
     }
   } else {
     const link = document.createElement('a');
-    link.href = `_framework/debug?url=${encodeURIComponent(location.href)}&isFirefox=${isFirefox}`;
+    link.href = `_framework/debug?url=${encodeURIComponent(location.href)}`;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.click();

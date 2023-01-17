@@ -31,12 +31,12 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
                     browserUrl = new Uri(browserParam);
                     devToolsHost = $"http://{browserUrl.Host}:{browserUrl.Port}";
                 }
-                var isFirefox = queryParams.Get("isFirefox");
-                if (isFirefox == "true")
+                var isFirefox = string.IsNullOrEmpty(queryParams.Get("isFirefox")) ? false : true;
+                if (isFirefox)
                 {
                     devToolsHost = "localhost:6000";
                 }
-                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost, isFirefox == "true");
+                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost, isFirefox);
                 var requestPath = context.Request.Path.ToString();
                 if (requestPath == string.Empty)
                 {
@@ -47,7 +47,7 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
                 {
                     case "/":
                         var targetPickerUi = new TargetPickerUi(debugProxyBaseUrl, devToolsHost);
-                        if (isFirefox == "true")
+                        if (isFirefox)
                         {
                             await targetPickerUi.DisplayFirefox(context);
                         }
