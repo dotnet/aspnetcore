@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder;
 internal static class DebugProxyLauncher
 {
     private static readonly object LaunchLock = new object();
-    private static readonly TimeSpan DebugProxyLaunchTimeout = TimeSpan.FromSeconds(100);
+    private static readonly TimeSpan DebugProxyLaunchTimeout = TimeSpan.FromSeconds(10);
     private static Task<string>? LaunchedDebugProxyUrl;
     private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
     private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
